@@ -83,7 +83,7 @@ namespace Rock.Utility
 
             int version = 1;
 
-            if (versionParameter.StartsWith( "version=" ))
+            if ( versionParameter.StartsWith( "version=" ) )
             {
                 versionParameter = versionParameter.Substring( 8 );
 
@@ -106,7 +106,10 @@ namespace Rock.Utility
 
             var parameters = OnGetParameters();
 
-            settings.Add( "version=" + SettingsVersion );
+            if ( SettingsVersion > 1 )
+            {
+                settings.Add( "version=" + SettingsVersion );
+            }
 
             if (parameters != null)
             {

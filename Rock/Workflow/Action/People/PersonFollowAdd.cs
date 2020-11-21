@@ -64,7 +64,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute.Value, rockContext );
                 if ( attributePerson != null && attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )
                 {
-                    Guid? attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute.Value ).AsGuidOrNull();
+                    Guid? attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute.Value ).AsGuidOrNull();
                     if ( attributePersonValue.HasValue )
                     {
                         personAlias = new PersonAliasService( rockContext ).Queryable()
@@ -160,7 +160,7 @@ namespace Rock.Workflow.Action
                 if ( attribute != null )
                 {
                     // It was for an attribute, get the value
-                    string attributeValue = action.GetWorklowAttributeValue( guidEntity.Value );
+                    string attributeValue = action.GetWorkflowAttributeValue( guidEntity.Value );
 
                     // First check if that attribute's field type is an IEntityFieldType (like person or group)
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;

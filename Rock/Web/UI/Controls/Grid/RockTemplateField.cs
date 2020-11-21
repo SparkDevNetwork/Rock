@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// <see cref="Grid"/> Column to display a boolean value.
+    /// A Rock implementation of <seealso cref="TemplateField"/>
     /// </summary>
     [ToolboxData( "<{0}:RockTemplateField runat=server></{0}:RockTemplateField>" )]
     public class RockTemplateField : TemplateField, IPriorityColumn, IRockGridField
@@ -34,25 +34,36 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public ColumnPriority ColumnPriority
         {
-            get {
-                object t = ViewState["ColumnPriority"];
-                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
+            get
+            {
+                var columnPriority = ViewState["ColumnPriority"] as ColumnPriority?;
+                return columnPriority ?? ColumnPriority.AlwaysVisible;
             }
-            set { ViewState["ColumnPriority"] = value; }
+
+            set
+            {
+                ViewState["ColumnPriority"] = value;
+            }
         }
 
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included
+        /// in the export. See <seealso cref="ExcelExportBehavior" />.
         /// </summary>
         public virtual ExcelExportBehavior ExcelExportBehavior
         {
             get
             {
-                object t = ViewState["ExcelExportBehavior"];
-                return ( t == null ) ? ExcelExportBehavior.IncludeIfVisible : (ExcelExportBehavior)t;
+                var excelExportBehavior = ViewState["ExcelExportBehavior"] as ExcelExportBehavior?;
+
+                // default to IncludeIfVisible
+                return excelExportBehavior ?? ExcelExportBehavior.IncludeIfVisible;
             }
-            set { ViewState["ExcelExportBehavior"] = value; }
+
+            set
+            {
+                ViewState["ExcelExportBehavior"] = value;
+            }
         }
 
         /// <summary>
@@ -103,7 +114,7 @@ namespace Rock.Web.UI.Controls
             var textControls = dataControlFieldCell.ControlsOfTypeRecursive<Control>().OfType<ITextControl>();
             if ( textControls.Any() )
             {
-                return textControls.Select( a => a.Text ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
+                return textControls.Select( a => a.Text.ConvertBrToCrLf().StripHtml() ).Where( t => !string.IsNullOrWhiteSpace( t ) ).ToList().AsDelimited( string.Empty ).ReverseCurrencyFormatting();
             }
 
             return null;
@@ -124,7 +135,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                ViewState["OnRowSelectedEnabled"] = true;
+                ViewState["OnRowSelectedEnabled"] = value;
             }
         }
     }

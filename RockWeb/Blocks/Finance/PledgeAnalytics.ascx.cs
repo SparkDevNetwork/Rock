@@ -34,7 +34,7 @@ using System.Data;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Used to look at pledges using various criteria.
     /// </summary>
     [DisplayName( "Pledge Analytics" )]
     [Category( "Finance" )]
@@ -43,8 +43,6 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        // used for private variables
-        private RockContext _rockContext = null;
         #endregion
 
         #region Properties
@@ -71,8 +69,6 @@ namespace RockWeb.Blocks.Finance
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
-            _rockContext = new RockContext();
         }
 
         /// <summary>
@@ -276,26 +272,24 @@ namespace RockWeb.Blocks.Finance
         {
             string result = string.Empty;
 
-            if ( nickname != null )
+            if ( lastname != null )
             {
-                result = nickname.ToString();
+                result = lastname.ToString();
             }
 
-            if ( lastname != null )
+            if ( nickname != null )
             {
                 if ( !string.IsNullOrWhiteSpace( result ) )
                 {
-                    result += " ";
+                    result += ", ";
                 }
 
-                result += lastname;
+                result += nickname;
             }
 
             return result;
         }
 
         #endregion
-
-
-}
+    }
 }

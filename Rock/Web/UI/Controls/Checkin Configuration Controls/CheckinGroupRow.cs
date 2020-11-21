@@ -102,30 +102,30 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // checkin-group animation
-//$('section.checkin-group').click(function () {
+//$('section.checkin-group').on('click', function () {
 //    $(this).siblings('div').slideToggle();
 //    $expanded = $(this).children('input.group-expanded');
 //    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 //});
 
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.checkin-group a.btn-danger').click(function (event) {
+// fix so that the Remove button will fire its event, but not the parent event
+$('.checkin-group a.btn-danger').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Edit Group button will fire its event, but not the parent event 
-$('.checkin-group a.checkin-group-edit-group').click(function (event) {
+// fix so that the Edit Group button will fire its event, but not the parent event
+$('.checkin-group a.checkin-group-edit-group').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Ad Check-in Group button will fire its event, but not the parent event 
-$('.checkin-group a.checkin-group-add-group').click(function (event) {
+// fix so that the Ad Check-in Group button will fire its event, but not the parent event
+$('.checkin-group a.checkin-group-add-group').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;

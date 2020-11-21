@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -98,15 +97,15 @@ namespace Rock.Rest.Controllers
                                 {
                                     string[] idParts = fieldId.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
-                                    string fieldType = idParts.Length > 1 ? idParts[1] : fieldId;
+                                    string mergeFieldId = idParts.Length > 1 ? idParts[1] : fieldId;
 
-                                    var entityType = EntityTypeCache.Get( fieldType, false );
-                                    if ( entityType != null )
+                                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                                    if ( entityTypeInfo?.EntityType != null )
                                     {
                                         items.Add( new TreeViewItem
                                         {
-                                            Id = fieldId,
-                                            Name = parts.Length > 1 ? parts[1] : entityType.FriendlyName,
+                                            Id = fieldId.UrlEncode(),
+                                            Name = parts.Length > 1 ? parts[1] : entityTypeInfo.EntityType.FriendlyName,
                                             HasChildren = true
                                         } );
                                     }
@@ -115,8 +114,8 @@ namespace Rock.Rest.Controllers
                                         items.Add( new TreeViewItem
                                         {
                                             Id = fieldId,
-                                            Name = parts.Length > 1 ? parts[1] : fieldType.SplitCase(),
-                                            HasChildren = fieldType == "GlobalAttribute"
+                                            Name = parts.Length > 1 ? parts[1] : mergeFieldId.SplitCase(),
+                                            HasChildren = mergeFieldId == "GlobalAttribute"
                                         } );
                                     }
                                 }
@@ -155,13 +154,15 @@ namespace Rock.Rest.Controllers
                             // Get the root type
                             int pathPointer = 0;
                             EntityTypeCache entityType = null;
+                            MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] entityTypeQualifiers = null;
                             while ( entityType == null && pathPointer < idParts.Count() )
                             {
                                 string item = idParts[pathPointer];
                                 string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                                string itemType = itemParts.Length > 1 ? itemParts[1] : item;
-
-                                entityType = EntityTypeCache.Get( itemType, false );
+                                string entityTypeMergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
+                                MergeFieldPicker.EntityTypeInfo entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( entityTypeMergeFieldId );
+                                entityType = entityTypeInfo?.EntityType;
+                                entityTypeQualifiers = entityTypeInfo?.EntityTypeQualifiers;
                                 pathPointer++;
                             }
 
@@ -191,43 +192,34 @@ namespace Rock.Rest.Controllers
                                 entityType = EntityTypeCache.Get( type );
 
                                 // Add the tree view items
-                                foreach ( var propInfo in type.GetProperties() )
+                                foreach ( var propInfo in Rock.Lava.LavaHelper.GetLavaProperties( type ) )
                                 {
-                                    if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+
+                                    var treeViewItem = new TreeViewItem
                                     {
-                                        var treeViewItem = new TreeViewItem
-                                        {
-                                            Id = id + "|" + propInfo.Name,
-                                            Name = propInfo.Name.SplitCase()
-                                        };
+                                        Id = id + "|" + propInfo.Name,
+                                        Name = propInfo.Name.SplitCase()
+                                    };
 
-                                        Type propertyType = propInfo.PropertyType;
+                                    Type propertyType = propInfo.PropertyType;
 
-                                        if ( propertyType.IsGenericType &&
-                                            propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                                            propertyType.GetGenericArguments().Length == 1 )
-                                        {
-                                            treeViewItem.Name += " (Collection)";
-                                            propertyType = propertyType.GetGenericArguments()[0];
-                                        }
-
-                                        bool hasChildren = false;
-                                        if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
-                                        {
-                                            foreach ( var childPropInfo in propertyType.GetProperties() )
-                                            {
-                                                if ( childPropInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
-                                                {
-                                                    hasChildren = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        treeViewItem.HasChildren = hasChildren;
-
-                                        items.Add( treeViewItem );
+                                    if ( propertyType.IsGenericType &&
+                                        propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                        propertyType.GetGenericArguments().Length == 1 )
+                                    {
+                                        treeViewItem.Name += " (Collection)";
+                                        propertyType = propertyType.GetGenericArguments()[0];
                                     }
+
+                                    bool hasChildren = false;
+                                    if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
+                                    {
+                                        hasChildren = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Any();
+                                    }
+
+                                    treeViewItem.HasChildren = hasChildren;
+
+                                    items.Add( treeViewItem );
                                 }
 
                                 if ( type == typeof( Rock.Model.Person ) )
@@ -241,12 +233,31 @@ namespace Rock.Rest.Controllers
 
                                 if ( entityType.IsEntity )
                                 {
-                                    foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ) )
+                                    var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
+                                    if ( entityTypeQualifiers?.Any() == true )
                                     {
-                                        // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
-                                        if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&
-                                            string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
-                                            attribute.IsAuthorized( Authorization.VIEW, person ) )
+                                        var qualifiedAttributeList = new List<AttributeCache>();
+                                        foreach ( var entityTypeQualifier in entityTypeQualifiers )
+                                        {
+                                            var qualifierAttributes = attributeList.Where( a =>
+                                                 a.EntityTypeQualifierColumn.Equals( entityTypeQualifier.Column, StringComparison.OrdinalIgnoreCase )
+                                                 && a.EntityTypeQualifierValue.Equals( entityTypeQualifier.Value, StringComparison.OrdinalIgnoreCase ) ).ToList();
+
+                                            qualifiedAttributeList.AddRange( qualifierAttributes );
+                                        }
+
+                                        attributeList = qualifiedAttributeList;
+                                    }
+                                    else
+                                    {
+                                        // Only include attributes without a qualifier since we weren't specified a qualifiercolumn/value
+                                        attributeList = attributeList.Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() ).ToList();
+                                    }
+
+                                    foreach ( var attribute in attributeList )
+                                    {
+
+                                        if ( attribute.IsAuthorized( Authorization.VIEW, person ) )
                                         {
                                             items.Add( new TreeViewItem
                                             {
@@ -265,7 +276,5 @@ namespace Rock.Rest.Controllers
 
             return items.OrderBy( i => i.Name ).AsQueryable();
         }
-
-
     }
 }

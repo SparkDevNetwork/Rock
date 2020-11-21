@@ -72,6 +72,11 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
 
         /// <summary>
+        /// The mobile application bundle file type guid
+        /// </summary>
+        public const string MOBILE_APP_BUNDLE = "ED456BF6-78F4-4954-9043-CA6849DA2D7E";
+
+        /// <summary>
         /// The Signed Document Default File Type
         /// </summary>
         public const string SIGNED_DOCUMENT_FILE_TYPE = "8C9C5A97-005A-46E5-AF7B-AC2F359B738A";

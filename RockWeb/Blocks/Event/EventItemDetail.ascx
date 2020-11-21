@@ -20,7 +20,7 @@
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
-            <div class="panel-heading panel-follow clearfix">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -52,8 +52,8 @@
                                 <div id="divImage" runat="server" class="margin-b-sm">
                                     <asp:Literal ID="lImage" runat="server" />
                                 </div>
-                                    
-                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" /> 
+
+                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" />
                             </div>
                         </div>
 
@@ -102,7 +102,7 @@
                             </Rock:RockControlWrapper>
                             <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars" Help="Calendars that this item should be added to (at least one is required)."
                                 OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" Required="true" />
-                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
+                            <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL" Help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                         </div>
                         <div class="col-md-6">
                             <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />

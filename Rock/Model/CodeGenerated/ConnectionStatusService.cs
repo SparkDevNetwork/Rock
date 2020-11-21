@@ -94,14 +94,17 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionStatus target, ConnectionStatus source )
         {
             target.Id = source.Id;
+            target.AutoInactivateState = source.AutoInactivateState;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HighlightColor = source.HighlightColor;
             target.IsActive = source.IsActive;
             target.IsCritical = source.IsCritical;
             target.IsDefault = source.IsDefault;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

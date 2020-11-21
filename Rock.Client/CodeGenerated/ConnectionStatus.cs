@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AutoInactivateState { get; set; }
+
+        /// <summary />
         public int? ConnectionTypeId { get; set; }
 
         /// <summary />
@@ -45,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string HighlightColor { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; } = true;
@@ -62,6 +68,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -96,15 +105,18 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ConnectionStatus source )
         {
             this.Id = source.Id;
+            this.AutoInactivateState = source.AutoInactivateState;
             this.ConnectionTypeId = source.ConnectionTypeId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HighlightColor = source.HighlightColor;
             this.IsActive = source.IsActive;
             this.IsCritical = source.IsCritical;
             this.IsDefault = source.IsDefault;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -29,6 +30,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
+    [DisplayName( "Job Pulse" )]
+    [Description( "System job that allows Rock to monitor the jobs engine." )]
+
     [DisallowConcurrentExecution]
     public class JobPulse : IJob
     {
@@ -94,8 +98,12 @@ namespace Rock.Jobs
                     IJobDetail jobDetail = jobService.BuildQuartzJob( job );
                     ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                    scheduler.ScheduleJob( jobDetail, jobTrigger );
-                    jobsScheduleUpdated++;
+                    // Schedule the job (unless the cron expression is set to never run for an on-demand job like rebuild streaks)
+                    if ( job.CronExpression != ServiceJob.NeverScheduledCronExpression )
+                    {
+                        scheduler.ScheduleJob( jobDetail, jobTrigger );
+                        jobsScheduleUpdated++;
+                    }
 
                     if ( job.LastStatus == errorSchedulingStatus )
                     {

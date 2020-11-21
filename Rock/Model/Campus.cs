@@ -156,6 +156,35 @@ namespace Rock.Model
         [MaxLength( 50 )]
         public string TimeZoneId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the campus status value identifier.
+        /// </summary>
+        /// <value>
+        /// The campus status value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.CAMPUS_STATUS )]
+        public int? CampusStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus type value identifier.
+        /// </summary>
+        /// <value>
+        /// The campus type value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.CAMPUS_TYPE )]
+        public int? CampusTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the team group identifier.
+        /// </summary>
+        /// <value>
+        /// The team group identifier.
+        /// </value>
+        [DataMember]
+        public int? TeamGroupId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -202,10 +231,82 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the campus status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the campus status.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue CampusStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the campus type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the campus type
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue CampusTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the team group.
+        /// </summary>
+        /// <value>
+        /// The team group.
+        /// </value>
+        [DataMember]
+        public virtual Group TeamGroup { get; set; }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state of the entity.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        {
+            var rockContext = ( RockContext ) dbContext;
+
+            /*
+            * 1/15/2020 - JPH
+            * Upon saving a Campus, ensure it has a TeamGroup defined (GroupType = 'Team Group',
+            * IsSystem = true). We are creating this Campus-to-Group relationship behind the scenes
+            * so that we can assign GroupRoles to a Campus, and place people into those roles.
+            *
+            * Reason: Campus Team Feature
+            */
+            var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
+            if ( state != EntityState.Deleted && campusTeamGroupTypeId.HasValue )
+            {
+                if ( this.TeamGroup == null || this.TeamGroup.GroupTypeId != campusTeamGroupTypeId.Value )
+                {
+                    // this Campus does not yet have a Group of the correct GroupType: create one and assign it
+                    var teamGroup = new Group
+                    {
+                        IsSystem = true,
+                        GroupTypeId = campusTeamGroupTypeId.Value,
+                        Name = string.Format( "{0} Team", this.Name ),
+                        Description = "Are responsible for leading and administering the Campus."
+                    };
+
+                    new GroupService( rockContext ).Add( teamGroup );
+
+                    this.TeamGroup = teamGroup;
+                }
+
+                if ( !this.TeamGroup.IsSystem )
+                {
+                    // this Campus already had a Group of the correct GroupType, but the IsSystem value was incorrect
+                    this.TeamGroup.IsSystem = true;
+                }
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> containing the Location's Name that represents this instance.
@@ -258,6 +359,7 @@ namespace Rock.Model
         {
             this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.TeamGroup ).WithMany().HasForeignKey( c => c.TeamGroupId ).WillCascadeOnDelete( false );
         }
     }
 

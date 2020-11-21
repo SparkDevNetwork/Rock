@@ -16,13 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 
 using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -31,6 +34,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process communications
     /// </summary>
+    [DisplayName( "Send Communications" )]
+    [Description( "Job to send any future communications or communications not sent immediately by Rock." )]
+
     [IntegerField( "Delay Period", "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).", false, 30, "", 0 )]
     [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
     [DisallowConcurrentExecution]
@@ -53,15 +59,29 @@ namespace Rock.Jobs
             int expirationDays = dataMap.GetInt( "ExpirationPeriod" );
             int delayMinutes = dataMap.GetInt( "DelayPeriod" );
 
-            var rockContext = new RockContext();
-            var qry = new CommunicationService( rockContext )
-                .GetQueued( expirationDays, delayMinutes, false, false )
-                .OrderBy( c => c.Id );
+            IOrderedEnumerable<Model.Communication> sendCommunications = null;
+            var stopWatch = Stopwatch.StartNew();
+            using ( var rockContext = new RockContext() )
+            {
+                sendCommunications = new CommunicationService( rockContext )
+                    .GetQueued( expirationDays, delayMinutes, false, false )
+                    .AsNoTracking()
+                    .ToList()
+                    .OrderBy( c => c.Id );
+            }
+
+            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Queued communication query runtime: {1} ms", nameof(SendCommunications), stopWatch.ElapsedMilliseconds );
+
+            if ( sendCommunications == null )
+            {
+                context.Result = "No communications to send";
+            }
 
             var exceptionMsgs = new List<string>();
             int communicationsSent = 0;
-            
-            foreach ( var comm in qry.AsNoTracking().ToList() )
+
+            stopWatch = Stopwatch.StartNew();
+            foreach ( var comm in sendCommunications )
             {
                 try
                 {
@@ -75,6 +95,7 @@ namespace Rock.Jobs
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                 }
             }
+            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Send communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
 
             if ( communicationsSent > 0 )
             {
@@ -91,19 +112,26 @@ namespace Rock.Jobs
             }
 
             // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
-            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
-            var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
-                .Where( cr =>
-                    cr.Communication.Status == CommunicationStatus.Approved &&
-                    cr.Status == CommunicationRecipientStatus.Pending &&
-                    (
-                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < beginWindow )
-                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < beginWindow )
-                    ) );
+            var expireDateTimeEndWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
 
-            var count = qryExpiredRecipients.Count();
+            // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
+            var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
 
-            rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
+            stopWatch = Stopwatch.StartNew();
+            using ( var rockContext = new RockContext() )
+            {
+                var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
+                    .Where( cr =>
+                        cr.Communication.Status == CommunicationStatus.Approved &&
+                        cr.Status == CommunicationRecipientStatus.Pending &&
+                        (
+                            ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < expireDateTimeEndWindow && cr.Communication.CreatedDateTime > expireDateTimeBeginWindow )
+                            || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime > expireDateTimeBeginWindow )
+                        ) );
+
+                rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
+            }
+            RockLogger.Log.Information( RockLogDomains.Jobs, "{0}: Mark failed communications runtime: {1} ms", nameof( SendCommunications ), stopWatch.ElapsedMilliseconds );
         }
     }
 }

@@ -78,6 +78,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Route { get; set; }
 
+        /// <summary>
+        /// If true then the route will be accessable from all sites regardless if EnableExclusiveRoutes is set on the site
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsGlobal { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties

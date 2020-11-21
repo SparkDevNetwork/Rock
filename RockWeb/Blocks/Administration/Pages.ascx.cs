@@ -48,6 +48,24 @@ namespace RockWeb.Blocks.Administration
         #region Properties
 
         /// <summary>
+        /// Gets or sets the page identifier being deleted.
+        /// </summary>
+        /// <value>
+        /// The page identifier being deleted.
+        /// </value>
+        private int? PageIdBeingDeleted
+        {
+            get
+            {
+                return ViewState["PageIdBeingDeleted"].ToStringSafe().AsIntegerOrNull();
+            }
+            set
+            {
+                ViewState["PageIdBeingDeleted"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [page updated].
         /// </summary>
         /// <value>
@@ -187,16 +205,33 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
+            PageIdBeingDeleted = e.RowKeyId;
+            mdDeleteModal.Show();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the mdDeleteModal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void mdDeleteModal_SaveClick( object sender, EventArgs e )
+        {
+            if ( !PageIdBeingDeleted.HasValue )
+            {
+                return;
+            }
+
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
             var siteService = new SiteService( rockContext );
 
-            var page = pageService.Get( e.RowKeyId );
+            var page = pageService.Get( PageIdBeingDeleted.Value );
             if ( page != null )
             {
                 string errorMessage = string.Empty;
                 if ( !pageService.CanDelete( page, out errorMessage ) )
                 {
+                    mdDeleteModal.Hide();
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
                     return;
                 }
@@ -224,11 +259,19 @@ namespace RockWeb.Blocks.Administration
 
                 pageService.Delete( page );
 
+                if ( cbDeleteInteractions.Checked )
+                {
+                    var interactionComponentService = new InteractionComponentService( rockContext );
+                    var componentQuery = interactionComponentService.QueryByPage( page );
+                    interactionComponentService.DeleteRange( componentQuery );
+                }
+
                 rockContext.SaveChanges();
-                
+
                 PageUpdated = true;
             }
 
+            mdDeleteModal.Hide();
             BindGrid();
         }
 
@@ -469,6 +512,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-
     }
 }

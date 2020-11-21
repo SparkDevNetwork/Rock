@@ -52,145 +52,12 @@
   content: @fa-var-star;
 }
 
-// map all the missing v4 icons to fontawesome
-.fa.fa-glass,
-.fa.fa-remove,
-.fa.fa-close,
-.fa.fa-gear,
-.fa.fa-repeat,
-.fa.fa-rotate-right,
-.fa.fa-refresh,
-.fa.fa-dedent,
-.fa.fa-video-camera,
-.fa.fa-pencil,
-.fa.fa-map-marker,
-.fa.fa-arrows,
-.fa.fa-mail-forward,
-.fa.fa-warning,
-.fa.fa-calendar,
-.fa.fa-arrows-v,
-.fa.fa-arrows-h,
-.fa.fa-gears,
-.fa.fa-sign-out,
-.fa.fa-thumb-tack,
-.fa.fa-external-link,
-.fa.fa-sign-in,
-.fa.fa-feed,
-.fa.fa-arrows-alt,
-.fa.fa-group,
-.fa.fa-chain,
-.fa.fa-scissors,
-.fa.fa-navicon,
-.fa.fa-reorder,
-.fa.fa-unsorted,
-.fa.fa-sort-desc,
-.fa.fa-sort-asc,
-.fa.fa-rotate-left,
-.fa.fa-legal,
-.fa.fa-tachometer,
-.fa.fa-dashboard,
-.fa.fa-flash,
-.fa.fa-exchange,
-.fa.fa-cloud-download,
-.fa.fa-cloud-upload,
-.fa.fa-cutlery,
-.fa.fa-tablet,
-.fa.fa-mobile,
-.fa.fa-mobile-phone,
-.fa.fa-mail-reply,
-.fa.fa-mail-reply-all,
-.fa.fa-code-fork,
-.fa.fa-chain-broken,
-.fa.fa-shield,
-.fa.fa-ticket,
-.fa.fa-level-up,
-.fa.fa-level-down,
-.fa.fa-pencil-square,
-.fa.fa-external-link-square,
-.fa.fa-eur,
-.fa.fa-euro,
-.fa.fa-gbp,
-.fa.fa-usd,
-.fa.fa-dollar,
-.fa.fa-inr,
-.fa.fa-rupee,
-.fa.fa-jpy,
-.fa.fa-cny,
-.fa.fa-rmb,
-.fa.fa-yen,
-.fa.fa-rub,
-.fa.fa-ruble,
-.fa.fa-rouble,
-.fa.fa-krw,
-.fa.fa-won,
-.fa.fa-file-text,
-.fa.fa-sort-alpha-asc,
-.fa.fa-sort-alpha-desc,
-.fa.fa-sort-amount-asc,
-.fa.fa-sort-amount-desc,
-.fa.fa-sort-numeric-asc,
-.fa.fa-sort-numeric-desc,
-.fa.fa-long-arrow-down,
-.fa.fa-long-arrow-up,
-.fa.fa-long-arrow-left,
-.fa.fa-long-arrow-right,
-.fa.fa-try,
-.fa.fa-turkish-lira,
-.fa.fa-institution,
-.fa.fa-bank,
-.fa.fa-mortar-board,
-.fa.fa-spoon,
-.fa.fa-automobile,
-.fa.fa-cab,
-.fa.fa-circle-o-notch,
-.fa.fa-send,
-.fa.fa-header,
-.fa.fa-sliders,
-.fa.fa-trash,
-.fa.fa-eyedropper,
-.fa.fa-area-chart,
-.fa.fa-pie-chart,
-.fa.fa-line-chart,
-.fa.fa-ils,
-.fa.fa-shekel,
-.fa.fa-sheqel,
-.fa.fa-intersex,
-.fa.fa-hotel,
-.fa.fa-battery-4,
-.fa.fa-battery,
-.fa.fa-battery-3,
-.fa.fa-battery-2,
-.fa.fa-battery-1,
-.fa.fa-battery-0,
-.fa.fa-hourglass-1,
-.fa.fa-hourglass-2,
-.fa.fa-hourglass-3,
-.fa.fa-television,
-.fa.fa-commenting,
-.fa.fa-credit-card-alt,
-.fa.fa-volume-control-phone,
-.fa.fa-asl-interpreting,
-.fa.fa-deafness,
-.fa.fa-hard-of-hearing,
-.fa.fa-signing,
-.fa.fa-vcard,
-.fa.fa-drivers-license,
-.fa.fa-thermometer-4,
-.fa.fa-thermometer,
-.fa.fa-thermometer-3,
-.fa.fa-thermometer-2,
-.fa.fa-thermometer-1,
-.fa.fa-thermometer-0,
-.fa.fa-bathtub,
-.fa.fa-s15,
-.fa.fa-times-rectangle {
+// Force Icons for Rock Grid Buttons
+.fa.fa-clone,
+.fa.fa-file-text-o,
+.fa.fa-refresh {
   font-family: @fa-font-face;
   font-weight: @fa-theme-weight;
-}
-
-.fa-fw {
-  width: 1.25em;
-  text-align: center;
 }
 
 .fa-layers {
@@ -742,10 +609,10 @@
 .fa-arrows-v:before { content: @fa-var-arrows-alt-v; }
 .fa-asl-interpreting:before { content: @fa-var-american-sign-language-interpreting; }
 .fa-automobile:before { content: @fa-var-car; }
-.fa-bank:before { content: @fa-var-university; }
+.fa-bank:before, .fa-institution:before { content: @fa-var-university; }
 .fa-bar-chart-o:before { content: @fa-var-chart-bar; }
 .fa-bar-chart:before { content: @fa-var-chart-bar; }
-.fa-bathtub:before { content: @fa-var-bath; }
+.fa-bathtub:before, .fa-s15:before { content: @fa-var-bath; }
 .fa-battery:before { content: @fa-var-battery-full; }
 .fa-battery-0:before { content: @fa-var-battery-empty; }
 .fa-battery-1:before { content: @fa-var-battery-quarter; }
@@ -759,8 +626,6 @@
 .fa-bookmark-o:before { content: @fa-var-bookmark; }
 .fa-building-o:before { content: @fa-var-building; }
 .fa-cab:before { content: @fa-var-taxi; }
-.fa-calendar:before { content: @fa-var-calendar-alt; }
-.fa-calendar-alt:before { content: @fa-var-calendar; }
 .fa-calendar-check-o:before { content: @fa-var-calendar-check; }
 .fa-calendar-minus-o:before { content: @fa-var-calendar-minus; }
 .fa-calendar-o:before { content: @fa-var-calendar; }
@@ -776,8 +641,7 @@
 .fa-check-circle-o:before { content: @fa-var-check-circle; }
 .fa-check-square-o:before { content: @fa-var-check-square; }
 .fa-circle-o-notch:before { content: @fa-var-circle-notch; }
-.fa-circle-o:before { content: @fa-var-circle; }
-.fa-circle-thin:before { content: @fa-var-circle; }
+.fa-circle-o:before, .fa-circle-thin:before { content: @fa-var-circle; }
 .fa-clock-o:before { content: @fa-var-clock; }
 .fa-close:before { content: @fa-var-times; }
 .fa-cloud-download:before { content: @fa-var-cloud-download-alt; }
@@ -785,8 +649,7 @@
 .fa-cny:before, .fa-jpy:before, .fa-rmb:before, .fa-yen:before { content: @fa-var-yen-sign; }
 .fa-code-fork:before { content: @fa-var-code-branch; }
 .fa-comment-o:before { content: @fa-var-comment; }
-.fa-commenting-o:before { content: @fa-var-comment-alt; }
-.fa-commenting:before { content: @fa-var-comment-alt; }
+.fa-commenting-o:before, .fa-commenting:before { content: @fa-var-comment-alt; }
 .fa-comments-o:before { content: @fa-var-comments; }
 .fa-credit-card-alt:before { content: @fa-var-credit-card; }
 .fa-cutlery:before { content: @fa-var-utensils; }
@@ -807,25 +670,19 @@
 .fa-external-link:before { content: @fa-var-external-link-alt; }
 .fa-eyedropper:before { content: @fa-var-eye-dropper; }
 .fa-fa:before { content: @fa-var-font-awesome; }
-.fa-facebook-f:before { content: @fa-var-facebook-f; }
+.fa-facebook-f:before, .fa-facebook:before { content: @fa-var-facebook-f; }
 .fa-facebook-official:before { content: @fa-var-facebook; }
-.fa-facebook:before { content: @fa-var-facebook-f; }
 .fa-feed:before { content: @fa-var-rss; }
 .fa-file-archive-o:before { content: @fa-var-file-archive; }
-.fa-file-audio-o:before { content: @fa-var-file-audio; }
+.fa-file-audio-o:before, .fa-file-sound-o:before { content: @fa-var-file-audio; }
 .fa-file-code-o:before { content: @fa-var-file-code; }
 .fa-file-excel-o:before { content: @fa-var-file-excel; }
-.fa-file-image-o:before { content: @fa-var-file-image; }
-.fa-file-movie-o:before { content: @fa-var-file-video; }
+.fa-file-image-o:before, .fa-file-photo-o:before, .fa-file-picture-o:before { content: @fa-var-file-image; }
+.fa-file-movie-o:before, .fa-file-video-o:before { content: @fa-var-file-video; }
 .fa-file-o:before { content: @fa-var-file; }
 .fa-file-pdf-o:before { content: @fa-var-file-pdf; }
-.fa-file-photo-o:before { content: @fa-var-file-image; }
-.fa-file-picture-o:before { content: @fa-var-file-image; }
 .fa-file-powerpoint-o:before { content: @fa-var-file-powerpoint; }
-.fa-file-sound-o:before { content: @fa-var-file-audio; }
-.fa-file-text-o:before { content: @fa-var-file-alt; }
-.fa-file-text:before { content: @fa-var-file-alt; }
-.fa-file-video-o:before { content: @fa-var-file-video; }
+.fa-file-text:before, .fa-file-text-o:before { content: @fa-var-file-alt; }
 .fa-file-word-o:before { content: @fa-var-file-word; }
 .fa-file-zip-o:before { content: @fa-var-file-archive; }
 .fa-files-o:before { content: @fa-var-copy; }
@@ -851,13 +708,12 @@
 .fa-hand-o-left:before { content: @fa-var-hand-point-left; }
 .fa-hand-o-right:before { content: @fa-var-hand-point-right; }
 .fa-hand-o-up:before { content: @fa-var-hand-point-up; }
-.fa-hand-paper-o:before { content: @fa-var-hand-paper; }
+.fa-hand-paper-o:before, .fa-hand-stop-o:before { content: @fa-var-hand-paper; }
 .fa-hand-peace-o:before { content: @fa-var-hand-peace; }
 .fa-hand-pointer-o:before { content: @fa-var-hand-pointer; }
 .fa-hand-rock-o:before { content: @fa-var-hand-rock; }
 .fa-hand-scissors-o:before { content: @fa-var-hand-scissors; }
 .fa-hand-spock-o:before { content: @fa-var-hand-spock; }
-.fa-hand-stop-o:before { content: @fa-var-hand-paper; }
 .fa-handshake-o:before { content: @fa-var-handshake; }
 .fa-hard-of-hearing:before { content: @fa-var-deaf; }
 .fa-hdd-o:before { content: @fa-var-hdd; }
@@ -871,9 +727,8 @@
 .fa-hourglass-o:before { content: @fa-var-hourglass; }
 .fa-id-card-o:before { content: @fa-var-id-card; }
 .fa-ils:before { content: @fa-var-shekel-sign; }
-.fa-image:before { content: @fa-var-image; }
+.fa-image:before, .fa-photo:before, .fa-picture-o:before { content: @fa-var-image; }
 .fa-inr:before { content: @fa-var-rupee-sign; }
-.fa-institution:before { content: @fa-var-university; }
 .fa-intersex:before { content: @fa-var-transgender; }
 .fa-keyboard-o:before { content: @fa-var-keyboard; }
 .fa-krw:before, .fa-won:before { content: @fa-var-won-sign; }
@@ -911,8 +766,6 @@
 .fa-pencil-square-o:before { content: @fa-var-edit; }
 .fa-pencil-square:before { content: @fa-var-pen-square; }
 .fa-pencil:before { content: @fa-var-pencil-alt; }
-.fa-photo:before { content: @fa-var-image; }
-.fa-picture-o:before { content: @fa-var-image; }
 .fa-pie-chart:before { content: @fa-var-chart-pie; }
 .fa-play-circle-o:before { content: @fa-var-play-circle; }
 .fa-plus-square-o:before { content: @fa-var-plus-square; }
@@ -925,10 +778,8 @@
 .fa-resistance:before { content: @fa-var-rebel; }
 .fa-rotate-left:before { content: @fa-var-undo; }
 .fa-rotate-right:before { content: @fa-var-redo; }
-.fa-rouble:before { content: @fa-var-ruble-sign; }
-.fa-rub:before, .fa-ruble:before { content: @fa-var-ruble-sign; }
+.fa-rouble:before, .fa-rub:before, .fa-ruble:before { content: @fa-var-ruble-sign; }
 .fa-rupee:before { content: @fa-var-rupee-sign; }
-.fa-s15:before { content: @fa-var-bath; }
 .fa-scissors:before { content: @fa-var-cut; }
 .fa-send-o:before { content: @fa-var-paper-plane; }
 .fa-send:before { content: @fa-var-paper-plane; }
@@ -952,9 +803,7 @@
 .fa-sort-numeric-desc:before { content: @fa-var-sort-numeric-up; }
 .fa-spoon:before { content: @fa-var-utensil-spoon; }
 .fa-square-o:before { content: @fa-var-square; }
-.fa-star-half-empty:before { content: @fa-var-star-half; }
-.fa-star-half-full:before { content: @fa-var-star-half; }
-.fa-star-half-o:before { content: @fa-var-star-half; }
+.fa-star-half-empty:before, .fa-star-half-full:before, .fa-star-half-o:before { content: @fa-var-star-half; }
 .fa-star-o:before { content: @fa-var-star; }
 .fa-sticky-note-o:before { content: @fa-var-sticky-note; }
 .fa-stop-circle-o:before { content: @fa-var-stop-circle; }
@@ -967,21 +816,18 @@
 .fa-thermometer-1:before { content: @fa-var-thermometer-quarter; }
 .fa-thermometer-2:before { content: @fa-var-thermometer-half; }
 .fa-thermometer-3:before { content: @fa-var-thermometer-three-quarters; }
-.fa-thermometer-4:before { content: @fa-var-thermometer-full; }
-.fa-thermometer:before { content: @fa-var-thermometer-full; }
+.fa-thermometer-4:before, .fa-thermometer:before { content: @fa-var-thermometer-full; }
 .fa-thumb-tack:before { content: @fa-var-thumbtack; }
 .fa-thumbs-o-down:before { content: @fa-var-thumbs-down; }
 .fa-thumbs-o-up:before { content: @fa-var-thumbs-up; }
 .fa-ticket:before { content: @fa-var-ticket-alt; }
 .fa-times-circle-o:before { content: @fa-var-times-circle; }
-.fa-times-rectangle-o:before { content: @fa-var-window-close; }
-.fa-times-rectangle:before { content: @fa-var-window-close; }
+.fa-times-rectangle:before, .fa-times-rectangle-o:before, .fa-window-close-o:before { content: @fa-var-window-close; }
 .fa-toggle-down:before { content: @fa-var-caret-square-down; }
 .fa-toggle-left:before { content: @fa-var-caret-square-left; }
 .fa-toggle-right:before { content: @fa-var-caret-square-right; }
 .fa-toggle-up:before { content: @fa-var-caret-square-up; }
-.fa-trash-o:before { content: @fa-var-trash-alt; }
-.fa-trash:before { content: @fa-var-trash-alt; }
+.fa-trash:before, .fa-trash-o:before { content: @fa-var-trash-alt; }
 .fa-try:before, .fa-turkish-lira:before { content: @fa-var-lira-sign; }
 .fa-unsorted:before { content: @fa-var-sort; }
 .fa-user-circle-o:before { content: @fa-var-user-circle; }
@@ -993,8 +839,6 @@
 .fa-warning:before { content: @fa-var-exclamation-triangle; }
 .fa-wechat:before { content: @fa-var-weixin; }
 .fa-wheelchair-alt:before { content: @fa-var-accessible-icon; }
-.fa-window-close-o:before { content: @fa-var-window-close; }
-.fa-y-combinator-square:before { content: @fa-var-hacker-news; }
-.fa-yc-square:before { content: @fa-var-hacker-news; }
+.fa-y-combinator-square:before, .fa-yc-square:before { content: @fa-var-hacker-news; }
 .fa-yc:before { content: @fa-var-y-combinator; }
 .fa-youtube-play:before { content: @fa-var-youtube; }

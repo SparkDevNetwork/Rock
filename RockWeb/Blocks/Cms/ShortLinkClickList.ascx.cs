@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Cms
                     var qry = new InteractionService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( i =>
-                            i.InteractionComponent.Channel.ChannelTypeMediumValueId == dv.Id &&
+                            i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
                             i.InteractionComponent.EntityId == shortLinkId );
 
                     SortProperty sortProperty = gShortLinkClicks.SortProperty;

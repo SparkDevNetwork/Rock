@@ -9,7 +9,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-cloud-upload"></i>
+                    <h1 class="panel-title"><i class="fa fa-praying-hands"></i>
                         <asp:Literal ID="lActionTitle" runat="server" /></h1>
 
                     <div class="panel-labels">

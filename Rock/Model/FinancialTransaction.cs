@@ -98,6 +98,12 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
+        /// </summary>
+        [DataMember]
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
         /// For Credit Card transactions, this is the response code that the gateway returns. 
         /// For Scanned Checks, this is the check number.
         /// </summary>
@@ -274,16 +280,69 @@ namespace Rock.Model
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime? SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime? SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return TransactionDateTime?.SundayDate();
+            }
 
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the non cash asset type value identifier.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value identifier.
+        /// </value>
+        [DataMember]
+        public int? NonCashAssetTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets the transaction date key.
+        /// </summary>
+        /// <value>
+        /// The transaction date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? TransactionDateKey
+        {
+            get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
+                        ( int? ) null :
+                        TransactionDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the settled date key.
+        /// </summary>
+        /// <value>
+        /// The settled date key.
+        /// </value>
+        [DataMember]
+        [FieldType( Rock.SystemGuid.FieldType.DATE )]
+        public int? SettledDateKey
+        {
+            get => ( SettledDate == null || SettledDate.Value == default ) ?
+                        ( int? ) null :
+                        SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion Entity Properties
 
         #region Virtual Properties
@@ -460,7 +519,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -480,7 +539,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BatchHistoryChangeList instead" )]
+        [Obsolete( "Use BatchHistoryChangeList instead", true )]
         public virtual Dictionary<int, List<string>> BatchHistoryChanges { get; set; }
 
         /// <summary>
@@ -505,6 +564,32 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the non cash asset type value.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue NonCashAssetTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction source date.
+        /// </summary>
+        /// <value>
+        /// The transaction source date.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsSourceDate TransactionSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settled source date.
+        /// </summary>
+        /// <value>
+        /// The settled source date.
+        /// </value>
+        [DataMember]
+        public virtual AnalyticsSourceDate SettledSourceDate { get; set; }
         #endregion Virtual Properties
 
         #region Public Methods
@@ -531,16 +616,16 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        /// <param name="entry"></param>
+        /// <param name="entry">The database entity entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
 
             HistoryChangeList = new History.HistoryChangeList();
-            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList> ();
+            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
 
             switch ( entry.State )
             {
@@ -553,14 +638,14 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
                         History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
                         History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", ( DateTime? ) null, TransactionDateTime );
                         History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
                         History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChangeList, "Type", ( int? ) null, TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", ( int? ) null, SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", ( int? ) null, ScheduledTransactionId );
                         History.EvaluateChange( HistoryChangeList, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", ( DateTime? ) null, ProcessedDateTime );
                         History.EvaluateChange( HistoryChangeList, "Status", string.Empty, Status );
                         History.EvaluateChange( HistoryChangeList, "Status Message", string.Empty, StatusMessage );
 
@@ -655,6 +740,11 @@ namespace Rock.Model
                         {
                             image.PreSaveChanges( dbContext, entry.State );
                         }
+
+                        // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+
                         break;
                     }
             }
@@ -668,16 +758,19 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }
 
-            foreach ( var keyVal in BatchHistoryChangeList )
+            if ( BatchHistoryChangeList != null )
             {
-                if ( keyVal.Value.Any() )
+                foreach ( var keyVal in BatchHistoryChangeList )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    if ( keyVal.Value.Any() )
+                    {
+                        HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    }
                 }
             }
 
@@ -708,6 +801,12 @@ namespace Rock.Model
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.TransactionSourceDate ).WithMany().HasForeignKey( r => r.TransactionDateKey ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.SettledSourceDate ).WithMany().HasForeignKey( r => r.SettledDateKey ).WillCascadeOnDelete( false );
         }
     }
 

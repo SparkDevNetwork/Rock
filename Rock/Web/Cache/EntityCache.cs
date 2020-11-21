@@ -35,7 +35,7 @@ namespace Rock.Web.Cache
     /// <seealso cref="IEntityCache" />
     [Serializable]
     [DataContract]
-    public abstract class EntityCache<T, TT> : EntityItemCache<T>, IEntityCache
+    public abstract class EntityCache<T, TT> : EntityItemCache<T>, IEntityCache, IHasLifespan
         where T : IEntityCache, new()
         where TT : Entity<TT>, new()
     {
@@ -55,6 +55,17 @@ namespace Rock.Web.Cache
                 return EntityTypeCache.Get<TT>().Id;
             }
         }
+
+
+        #region Lifespan
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. If null, then the
+        /// default lifespan is used.
+        /// </summary>
+        public virtual TimeSpan? Lifespan => null;
+
+        #endregion Lifespan
 
         #endregion
 
@@ -101,7 +112,7 @@ namespace Rock.Web.Cache
                 var result = QueryDb( id, rockContext );
                 if ( result != null )
                 {
-                    IdFromGuidCache.UpdateCacheItem( result.Guid.ToString(), new IdFromGuidCache( id ), TimeSpan.MaxValue );
+                    IdFromGuidCache.UpdateCacheItem( result.Guid.ToString(), new IdFromGuidCache( id ) );
                 }
 
                 return result;
@@ -113,7 +124,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        public static T Get( string guidString )
+        public static T Get( string guidString ) 
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
@@ -160,8 +171,8 @@ namespace Rock.Web.Cache
             cachedEntity = QueryDb( guid, rockContext );
             if ( cachedEntity != null )
             {
-                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( cachedEntity.Id ), TimeSpan.MaxValue );
-                UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity, TimeSpan.MaxValue );
+                IdFromGuidCache.UpdateCacheItem( guid.ToString(), new IdFromGuidCache( cachedEntity.Id ) );
+                UpdateCacheItem( cachedEntity.Id.ToString(), cachedEntity );
             }
 
             return cachedEntity;
@@ -180,10 +191,48 @@ namespace Rock.Web.Cache
             var value = new T();
             value.SetFromEntity( entity );
 
-            IdFromGuidCache.UpdateCacheItem( entity.Guid.ToString(), new IdFromGuidCache( entity.Id ), TimeSpan.MaxValue );
-            UpdateCacheItem( entity.Id.ToString(), value, TimeSpan.MaxValue );
+            IdFromGuidCache.UpdateCacheItem( entity.Guid.ToString(), new IdFromGuidCache( entity.Id ) );
+            UpdateCacheItem( entity.Id.ToString(), value );
 
             return value;
+        }
+
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="id"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, int id, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( id, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Id=\"{ id }\"]." );
+            }
+        }
+
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="guid"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, Guid guid, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( guid, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Guid=\"{ guid }\"]." );
+            }
         }
 
         #region Obsolete Methods
@@ -195,7 +244,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static T Read( int id, RockContext rockContext = null )
         {
             return Get( id, rockContext );
@@ -208,7 +257,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static T Read( Guid guid, RockContext rockContext = null )
         {
             return Get( guid, rockContext );
@@ -220,7 +269,7 @@ namespace Rock.Web.Cache
         /// <param name="model">The model.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static T Read( TT model )
         {
             return Get( model );
@@ -231,7 +280,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FlushItem or Remove instead" )]
+        [Obsolete( "Use FlushItem or Remove instead", true )]
         public static void Flush( int id )
         {
             Remove( id );

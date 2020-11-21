@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Zone Blocks" )]
     [Category( "Administration" )]
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
         /// </value>
         protected bool PageUpdated
         {
-            get 
+            get
             {
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
                 }
                 return false;
             }
-            set 
+            set
             {
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
@@ -129,9 +129,9 @@ namespace RockWeb.Blocks.Administration
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
                     $('div.modal-header h3').html('{0} Zone');
-                    $('#{1} a').click(function() {{ $('#{4}').val('Page'); }});
-                    $('#{2} a').click(function() {{ $('#{4}').val('Layout'); }});
-                    $('#{3} a').click(function() {{ $('#{4}').val('Site'); }});
+                    $('#{1} a').on('click', function() {{ $('#{4}').val('Page'); }});
+                    $('#{2} a').on('click', function() {{ $('#{4}').val('Layout'); }});
+                    $('#{3} a').on('click', function() {{ $('#{4}').val('Site'); }});
                 }});",
                     _ZoneName,
                     liPage.ClientID,
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            PageCache.RemoveSiteBlocks( _Page.SiteId );
+            PageCache.FlushPagesForSite( _Page.SiteId );
             PageUpdated = true;
 
             BindGrids();
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    PageCache.RemoveSiteBlocks( _Page.SiteId );
+                    PageCache.FlushPagesForSite( _Page.SiteId );
                     PageUpdated = true;
                 }
             }
@@ -301,9 +301,9 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+            PageCache.FlushPagesForLayout( _Page.LayoutId );
             PageUpdated = true;
-            
+
             BindGrids();
         }
 
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.FlushPagesForLayout( _Page.LayoutId );
                     PageUpdated = true;
                 }
             }
@@ -376,7 +376,8 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            _Page.RemoveBlocks();
+            //_Page.RemoveBlocks();
+            PageCache.Remove( _Page.Id );
             PageUpdated = true;
 
             BindGrids();
@@ -408,7 +409,8 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    _Page.RemoveBlocks();
+                    //_Page.RemoveBlocks();
+                    PageCache.Remove( _Page.Id );
                     PageUpdated = true;
                 }
             }
@@ -497,7 +499,7 @@ namespace RockWeb.Blocks.Administration
                             block.SiteId = null;
                             break;
                     }
-                    
+
 
                     block.Zone = _ZoneName;
 
@@ -526,11 +528,12 @@ namespace RockWeb.Blocks.Administration
 
                 if ( block.Layout != null )
                 {
-                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.FlushPagesForLayout( _Page.LayoutId );
                 }
                 else
                 {
-                    _Page.RemoveBlocks();
+                    //_Page.RemoveBlocks();
+                    PageCache.Remove( _Page.Id );
                 }
             }
 
@@ -635,38 +638,45 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            // Load the block types
-            using ( var rockContext = new RockContext() )
+            // Get a list of BlockTypes that does not include Mobile block types.
+            var allExceptMobileBlockTypes = BlockTypeCache.All();
+            foreach ( var cachedBlockType in BlockTypeCache.All().Where( b => string.IsNullOrEmpty( b.Path ) ) )
             {
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( rockContext );
-                var blockTypes = blockTypeService.Queryable().AsNoTracking()
-                    .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
-                    .ToList();
-
-                ddlBlockType.Items.Clear();
-
-                // Add the categorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category != "" )
-                    .OrderBy( b => b.Category )
-                    .ThenBy( b => b.Name ) )
+                try
                 {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
-                    li.Attributes.Add( "optiongroup", blockType.Category );
-                    li.Attributes.Add( "title", blockType.Description );
-                    ddlBlockType.Items.Add( li );
-                }
+                    var blockCompiledType = cachedBlockType.GetCompiledType();
 
-                // Add the uncategorized block types
-                foreach ( var blockType in blockTypes
-                    .Where( b => b.Category == null || b.Category == "" )
-                    .OrderBy( b => b.Name ) )
-                {
-                    var li = new ListItem( blockType.Name, blockType.Id.ToString() );
-                    li.Attributes.Add( "optiongroup", "Other (not categorized)" );
-                    li.Attributes.Add( "title", blockType.Description );
-                    ddlBlockType.Items.Add( li );
+                    if ( typeof( Rock.Blocks.IRockMobileBlockType ).IsAssignableFrom( blockCompiledType ) )
+                    {
+                        allExceptMobileBlockTypes.Remove( cachedBlockType );
+                    }
                 }
+                catch ( Exception )
+                {
+                    // Intentionally ignored
+                }
+            }
+
+            var blockTypes = allExceptMobileBlockTypes.Select( b => new { b.Id, b.Name, b.Category, b.Description } ).ToList();
+
+            ddlBlockType.Items.Clear();
+
+            // Add the categorized block types
+            foreach ( var blockType in blockTypes.Where( b => b.Category != "" ).OrderBy( b => b.Category ).ThenBy( b => b.Name ) )
+            {
+                var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                li.Attributes.Add( "optiongroup", blockType.Category );
+                li.Attributes.Add( "title", blockType.Description );
+                ddlBlockType.Items.Add( li );
+            }
+
+            // Add the uncategorized block types
+            foreach ( var blockType in blockTypes.Where( b => b.Category == null || b.Category == "" ).OrderBy( b => b.Name ) )
+            {
+                var li = new ListItem( blockType.Name, blockType.Id.ToString() );
+                li.Attributes.Add( "optiongroup", "Other (not categorized)" );
+                li.Attributes.Add( "title", blockType.Description );
+                ddlBlockType.Items.Add( li );
             }
         }
 

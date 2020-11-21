@@ -128,6 +128,24 @@ namespace Rock.Model
         public bool IsIndexingEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has achievements enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is achievements enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAchievementsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is message bus event publish enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is message bus event publish enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessageBusEventPublishEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
         /// </summary>
         /// <value>
@@ -149,12 +167,24 @@ namespace Rock.Model
                 Type type = null;
                 if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
                 {
-                    type = Type.GetType( this.AssemblyName );
+                    try
+                    {
+                        type = Type.GetType( this.AssemblyName, false );
+                    }
+                    catch
+                    {
+                        /* 2020-05-22 MDP
+                         * GetType (string typeName, bool throwOnError) can throw exceptions even if throwOnError is false!
+                         * see https://docs.microsoft.com/en-us/dotnet/api/system.type.gettype?view=netframework-4.5.2#System_Type_GetType_System_String_System_Boolean_
+
+                          so, if this happens, we'll ignore any error it returns in those cases too
+                         */
+                    }
                 }
 
-                if (type != null )
+                if ( type != null )
                 {
-                    return typeof( IRockIndexable ).IsAssignableFrom( type ); 
+                    return typeof( IRockIndexable ).IsAssignableFrom( type );
                 }
 
                 return false;
@@ -168,22 +198,11 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead") ]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticsSupported(..) instead", true )]
         public bool IsAnalyticSupported
         {
             get
             {
-                Type type = null;
-                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-                {
-                    type = Type.GetType( this.AssemblyName );
-                }
-
-                if ( type != null )
-                {
-                    return typeof( IAnalytic ).IsAssignableFrom( type );
-                }
-
                 return false;
             }
         }
@@ -195,22 +214,11 @@ namespace Rock.Model
         /// <c>true</c> if this instance is analytic historical supported; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead" )]
+        [Obsolete( "Use EntityTypeCache.IsAnalyticHistoricalSupported(..) instead", true )]
         public bool IsAnalyticHistoricalSupported
         {
             get
             {
-                Type type = null;
-                if ( !string.IsNullOrWhiteSpace( this.AssemblyName ) )
-                {
-                    type = Type.GetType( this.AssemblyName );
-                }
-
-                if ( type != null )
-                {
-                    return typeof( IAnalyticHistorical ).IsAssignableFrom( type );
-                }
-
                 return false;
             }
         }
@@ -241,7 +249,7 @@ namespace Rock.Model
 
                         if ( method != null )
                         {
-                            var indexModelType = (Type)method.Invoke( instance, null );
+                            var indexModelType = ( Type ) method.Invoke( instance, null );
                             return indexModelType;
                         }
                     }
@@ -274,6 +282,12 @@ namespace Rock.Model
         /// The link URL.
         /// </value>
         public string LinkUrlLavaTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support displaying on bulk entry forms.
+        /// </summary>
+        [DataMember]
+        public bool AttributesSupportShowOnBulk { get; set; }
 
         #endregion
 
@@ -348,7 +362,7 @@ namespace Rock.Model
 
                 if ( entity is Rock.Security.ISecured )
                 {
-                    Rock.Security.ISecured iSecured = (Rock.Security.ISecured)entity;
+                    Rock.Security.ISecured iSecured = ( Rock.Security.ISecured ) entity;
                     return iSecured.IsAuthorized( action, person );
                 }
             }

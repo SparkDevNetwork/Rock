@@ -24,13 +24,14 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Reporting;
+using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Report Filter control
+    /// DataView Filter control
     /// </summary>
     [ToolboxData( "<{0}:FilterField runat=server></{0}:FilterField>" )]
     public class FilterField : CompositeControl
@@ -41,6 +42,19 @@ namespace Rock.Web.UI.Controls
         /// The filter type dropdown
         /// </summary>
         protected RockDropDownList ddlFilterType;
+
+        /// <summary>
+        /// The database filter error
+        /// </summary>
+        protected NotificationBox nbFilterError;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [filter has error].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [filter has error]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasFilterError { get; private set; } = false;
 
         /// <summary>
         /// The delte button
@@ -58,6 +72,11 @@ namespace Rock.Web.UI.Controls
         public RockCheckBox cbIncludeFilter;
 
         /// <summary>
+        /// If the component has a Description this will be rendered with a description
+        /// </summary>
+        protected NotificationBox nbComponentDescription;
+
+        /// <summary>
         /// The filter controls
         /// </summary>
         protected Control[] filterControls;
@@ -69,8 +88,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            ReportingHelper.RegisterJavascriptInclude( this );
         }
 
         /// <summary>
@@ -233,6 +250,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The entity fields override.
         /// </value>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Supported. Could cause inconsistent results." )]
         public Rock.Data.IEntity Entity { get; set; }
 
         /// <summary>
@@ -250,6 +269,24 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["FilterMode"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide filter criteria].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide filter criteria]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideDescription
+        {
+            get
+            {
+                return ViewState["HideDescription"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["HideDescription"] = value;
             }
         }
 
@@ -468,6 +505,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the related data view identifier.
+        /// </summary>
+        /// <returns></returns>
+        public int? GetRelatedDataViewId()
+        {
+            EnsureChildControls();
+
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName ) as IRelatedChildDataView;
+            if ( component != null )
+            {
+                var relatedDataViewId = component.GetRelatedDataViewId( filterControls );
+                if ( relatedDataViewId.HasValue && relatedDataViewId > 0 )
+                {
+                    return relatedDataViewId;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -478,19 +536,25 @@ namespace Rock.Web.UI.Controls
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
+            nbFilterError = new NotificationBox();
+            nbFilterError.ID = this.ID + "_nbFilterError";
+            nbFilterError.Visible = false;
+            HasFilterError = false;
+
+            var filterEntityType = EntityTypeCache.Get( FilterEntityTypeName );
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
-                if ( component is Reporting.DataFilter.PropertyFilter )
-                {
-                    ( component as Reporting.DataFilter.PropertyFilter ).Entity = this.Entity;
-                }
-
                 component.Options = FilterOptions;
                 filterControls = component.CreateChildControls( FilteredEntityType, this, this.FilterMode );
             }
             else
             {
+                nbFilterError.NotificationBoxType = NotificationBoxType.Danger;
+                nbFilterError.Text = $"Unable to determine filter component for {FilterEntityTypeName}. ";
+                nbFilterError.Visible = true;
+                HasFilterError = true;
+                Controls.Add( nbFilterError );
                 filterControls = new Control[0];
             }
 
@@ -500,32 +564,40 @@ namespace Rock.Web.UI.Controls
             ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
 
             ddlFilterType.Items.Clear();
-
-            foreach ( var section in AuthorizedComponents )
+            if ( HasFilterError )
             {
-                foreach ( var item in section.Value )
+                // if there is a FilterError, the filter component might not be listed, so it shows that nothing is selected if filtertype can't be found
+                ddlFilterType.Items.Add( new ListItem() );
+            }
+
+            if ( AuthorizedComponents != null )
+            {
+                foreach ( var section in AuthorizedComponents )
                 {
-                    if ( !this.ExcludedFilterTypes.Any( a => a == item.Key ) )
+                    foreach ( var item in section.Value )
                     {
-                        ListItem li = new ListItem( item.Value, item.Key );
-
-                        if ( !string.IsNullOrWhiteSpace( section.Key ) )
+                        if ( !this.ExcludedFilterTypes.Any( a => a == item.Key ) )
                         {
-                            li.Attributes.Add( "optiongroup", section.Key );
-                        }
+                            ListItem li = new ListItem( item.Value, item.Key );
 
-                        var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( item.Key );
-                        if ( filterComponent != null )
-                        {
-                            string description = Reflection.GetDescription( filterComponent.GetType() );
-                            if ( !string.IsNullOrWhiteSpace( description ) )
+                            if ( !string.IsNullOrWhiteSpace( section.Key ) )
                             {
-                                li.Attributes.Add( "title", description );
+                                li.Attributes.Add( "optiongroup", section.Key );
                             }
-                        }
 
-                        li.Selected = item.Key == FilterEntityTypeName;
-                        ddlFilterType.Items.Add( li );
+                            var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( item.Key );
+                            if ( filterComponent != null )
+                            {
+                                string description = Reflection.GetDescription( filterComponent.GetType() );
+                                if ( !string.IsNullOrWhiteSpace( description ) )
+                                {
+                                    li.Attributes.Add( "title", description );
+                                }
+                            }
+
+                            li.Selected = item.Key == FilterEntityTypeName;
+                            ddlFilterType.Items.Add( li );
+                        }
                     }
                 }
             }
@@ -551,6 +623,11 @@ namespace Rock.Web.UI.Controls
             cbIncludeFilter.TextCssClass = "control-label";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
+
+            nbComponentDescription = new NotificationBox();
+            nbComponentDescription.NotificationBoxType = NotificationBoxType.Info;
+            nbComponentDescription.ID = this.ID + "_nbComponentDescription";
+            Controls.Add( nbComponentDescription );
         }
 
         /// <summary>
@@ -572,12 +649,13 @@ namespace Rock.Web.UI.Controls
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 
-            if ( component == null )
+            if ( component == null || HasFilterError )
             {
+                writer.Write( "<a name='filtererror'></a>" );
                 hfExpanded.Value = "True";
             }
 
@@ -610,7 +688,22 @@ namespace Rock.Web.UI.Controls
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( component != null ? component.FormatSelection( FilteredEntityType, this.GetSelection() ) : "Select Filter" );
+
+                string filterHeaderSelectionHtml;
+                if ( HasFilterError )
+                {
+                    filterHeaderSelectionHtml = "<span class='label label-danger'>Filter has an error</span>";
+                }
+                else if ( component != null )
+                {
+                    filterHeaderSelectionHtml = component.FormatSelection( FilteredEntityType, this.GetSelection() );
+                }
+                else
+                {
+                    filterHeaderSelectionHtml = "Select Filter";
+                }
+
+                writer.Write( filterHeaderSelectionHtml );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
@@ -677,8 +770,20 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // label
             }
 
+            if ( HasFilterError )
+            {
+                nbFilterError.RenderControl( writer );
+            }
+
             if ( component != null && !HideFilterCriteria )
             {
+                if ( !string.IsNullOrEmpty( component.Description ) && !HideDescription )
+                {
+                    nbComponentDescription.Text = component.Description;
+                    nbComponentDescription.CssClass = "filter-field-description";
+                    nbComponentDescription.RenderControl( writer );
+                }
+
                 component.RenderControls( FilteredEntityType, this, writer, filterControls, this.FilterMode );
             }
 
@@ -698,7 +803,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFilterType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
             FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
 
@@ -708,7 +818,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void lbDelete_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbDelete_Click( object sender, EventArgs e )
         {
             if ( DeleteClick != null )
             {
@@ -725,7 +840,5 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [selection changed].
         /// </summary>
         public event EventHandler SelectionChanged;
-
-
     }
 }

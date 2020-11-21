@@ -144,7 +144,7 @@
       <addresses>
         <address type="home" street1="10828 N Biltmore Dr" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5855064" long="-112.1186981" />
       </addresses>
-
+      
       <members>
         <person guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"
           firstName="James" nickName="Jim" lastName="Simmons" birthDate="6/1/1979" age="35" gender="male"
@@ -346,7 +346,7 @@
           homePhone="4805551234" mobilePhone="6025554321" workPhone="6235552444">
           <attributes>
             <attribute Employer="Rock Solid Church"/>
-            <attribute Position="Outreach Pastor"/>
+            <attribute Position="Senior Pastor"/>
           </attributes>
           <logins>
             <login userName="pfoster"/>
@@ -624,6 +624,7 @@
       <addresses>
         <address type="home" street1="10638 N 16th Ave" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5835953" long="-112.09478" />
       </addresses>
+      
       <members>
         <person guid="28c4f2c0-0691-468f-b40e-550bd2976b9e" lastName="Greggs" firstName="Robert" nickName="Bob" middleName="" gender="male" familyRole="adult" recordStatus="active" connectionStatus="member" birthDate="6/9/1987" maritalStatus="Married" anniversaryDate="7/1/2007" email="rgreggs@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" homePhone="6235554450" cellPhone="6025558748" photoUrl="http://storage.rockrms.com/sampledata/person-images/greggs_bob_is_tonypeterson.jpg">
           <attributes>
@@ -903,7 +904,92 @@
         </person>
       </members>
     </family>
-    
+
+    <family name="Smith Family" guid="FB0CBFC9-A83A-403C-9E99-38E92F7D1269" campus="main campus">
+      <addresses>
+        <address type="home" street1="8196 W Lynwood St" street2="" city="Phoenix" state="AZ" postalCode="85043" lat="33.464592" long="-112.2351227" />
+      </addresses>
+
+      <members>
+        <person guid="077F2901-A51E-43F9-A35A-98CC97C4D465"
+          firstName="Jonathan" nickName="Jon" lastName="Smith" birthDate="8/1/1980" gender="male"
+          email="jon.smith@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="pending" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          homePhone="6235550878" mobilePhone="" workPhone=""/>
+      </members>
+    </family>
+
+    <family name="Smith Family" guid="AC39935F-E7D4-454F-AA9A-617C5D7C2C75" campus="main campus">
+      <addresses>
+        <address type="home" street1="8196 W Lynwood St" street2="" city="Phoenix" state="AZ" postalCode="85043" lat="33.464592" long="-112.2351227" />
+      </addresses>
+
+      <members>
+        <person guid="AAFC133A-F54F-4AFA-A9F3-AD650941B2CE"
+          firstName="John" nickName="John" lastName="Smith" gender="male"
+          email="jon.smith@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="pending" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="" mobilePhone="6235550878" workPhone=""/>
+      </members>
+    </family>
+
+    <family name="Smith Family" guid="1FE1F4F4-1241-4B14-B0D7-39BECFA2F4F8" campus="main campus">
+      <addresses>
+        <address type="home" street1="8196 W Lynwood St" street2="" city="Phoenix" state="AZ" postalCode="85043" lat="33.464592" long="-112.2351227" />
+      </addresses>
+
+      <members>
+        <person guid="C966D4EC-C84A-4F70-BA86-90E1F8480831"
+          firstName="John" nickName="John" lastName="Smith" gender="male"
+          email="jon.smith@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="pending" connectionStatus="attendee"  maritalStatus="single" familyRole="adult"
+          homePhone="" mobilePhone="" workPhone="6235550878"/>
+      </members>
+    </family>
+
+    <family name="Smith Family" guid="9008314E-230E-47C0-8199-1B5EC9B00120" campus="main campus">
+      <addresses>
+        <address type="home" street1="810 E Harmont Dr" street2="" city="Phoenix" state="AZ" postalCode="85020" lat="33.5554962" long="-112.0633087" />
+      </addresses>
+
+      <members>
+        <person guid="902984C3-BCE1-405A-8A74-416F7D15B288" birthDate="3/21/1987"
+          firstName="John" nickName="John" lastName="Smith" gender="male"
+          email="jon.smith22@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="pending" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="" mobilePhone="6235554567" workPhone=""/>
+      </members>
+    </family>
+
+    <family name="Ace Hardware" guid="B858AA01-E155-49B1-83CF-50EF1BCCDBCC">
+      <addresses>
+        <address type="work" street1="4225 E McDowell Rd" street2="" city="Phoenix" state="AZ" postalCode="85008" lat="33.4656423" long="-111.9908202" />
+      </addresses>
+
+      <members>
+        <person guid="9B97D1B2-EAF8-4E45-AD6F-D61477FE9E39"
+          firstName="Lenny" nickName="Len" lastName="Ace Hardware" gender="male"
+          email="ace.hardware@fakeinbox.com" emailIsActive="true" emailDoNotEmail="false" recordType="business"
+          recordStatus="active" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="" mobilePhone="" workPhone="6235558888"/>
+      </members>
+    </family>
+
+    <!-- A business called Copper State Glass and Screen which is owned by Bill Marble. -->
+    <family name="Copper State Glass and Screen" guid="DF327531-29B2-4E5C-BCF6-445588DEEF35">
+      <addresses>
+        <address type="work" street1="4129 W Charter Oak Rd" street2="" city="Phoenix" state="AZ" postalCode="85029" lat="33.5978737" long="-112.1479263" />
+      </addresses>
+
+      <members>
+        <person guid="6CE68373-7B38-40DA-B84D-281BEFF41114"
+          firstName="William" nickName="Bill" lastName="Copper State Glass and Screen" gender="male"
+          email="copperstateglass@fakeinbox.com" emailIsActive="true" emailDoNotEmail="true" recordType="business"
+          recordStatus="active" connectionStatus="web prospect"  maritalStatus="single" familyRole="adult"
+          homePhone="" mobilePhone="" workPhone="6235558880"/>
+      </members>
+    </family>
+
   </families>
 
   <relationships>
@@ -916,18 +1002,25 @@
     <relationship a="Jenny" personGuid="146b2103-fb28-49c6-b1a4-218c397b739e" has="parent" forGuid="28c4f2c0-0691-468f-b40e-550bd2976b9e" name="Robert"/>
     <relationship a="Jenny" personGuid="146b2103-fb28-49c6-b1a4-218c397b739e" has="parent" forGuid="1a5a4e5f-e0a4-4efa-b7d7-6698153ed718" name="Lorraine"/>
     
+    <relationship a="Bill Marble" personGuid="1EA811BB-3118-42D1-B020-32A82BC8081A" has="business" forGuid="6CE68373-7B38-40DA-B84D-281BEFF41114" name="Copper State Glass and Screen"/>
+    
   </relationships>
 
+  <locations>
+    <location type="building" name="Worship Center" guid="777777c6-dea3-40d5-a2e9-60f9abe3c41a" parentLocationGuid="d5171d44-c801-4b7d-9335-d23fb4ea0e60"></location>
+    <location type="room" name="A/V Booth" guid="17382278-9bf4-45b2-bc6a-021605680fef" parentLocationGuid="777777c6-dea3-40d5-a2e9-60f9abe3c41a"></location>
+  </locations>
+  
   <groups>
-    <group type="serving" name="Ushers" guid="0BA93D66-21B1-4229-979D-F76CEB57666D">
+    <group type="serving" name="A/V Team" guid="0BA93D66-21B1-4229-979D-F76CEB57666D" description="Responsible for all A/V equipment. Useful for testing volunteer Group Scheduling." parentGroupGuid="31730962-4c7b-425b-bd73-4185331f37ef">
       <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
       <person fullname="Jim Simmons" guid="FB5D2DC6-5AB4-4CBD-B02F-3FB9ADBEFD33"/>
-      <location guid="D5171D44-C801-4B7D-9335-D23FB4EA0E60">
-        <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1"/>
-        <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A"/>
-        <schedule guid="FF6FB240-0C32-4542-BE40-159C522F7E51"/>
-        <schedule guid="4628D917-EC9C-4269-B39C-5BCBEF3658E7"/>
-        <schedule guid="1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45"/>
+      <location guid="17382278-9bf4-45b2-bc6a-021605680fef">
+        <schedule guid="7883CAC8-6E30-482B-95A7-2F0DEE859BE1" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
+        <schedule guid="33FF69E9-059B-4702-B1E5-4D499CB7B07A" minimumCapacity="1" desiredCapacity="2" maximumCapacity="4" />
+        <schedule guid="FF6FB240-0C32-4542-BE40-159C522F7E51" minimumCapacity="1" desiredCapacity="3" maximumCapacity="6" />
+        <schedule guid="4628D917-EC9C-4269-B39C-5BCBEF3658E7" minimumCapacity="3" desiredCapacity="4" maximumCapacity="6" />
+        <schedule guid="1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45" minimumCapacity="3" desiredCapacity="4" maximumCapacity="6" />
       </location>
     </group>
 
@@ -1034,8 +1127,8 @@
       <forms>
         <form name="Default" guid="1709fc85-e539-40af-a3bc-3b7ac6c4dc72">
           <formFields>
-            <field name="First Name" source="Person Field" isRequired="true" showOnGrid="true"></field>
-            <field name="Last Name" source="Person Field" isRequired="true" showOnGrid="true"></field>
+            <field name="First Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
+            <field name="Last Name" source="Person Field" isRequired="true" showOnGrid="true" showOnWaitList="true"></field>
             <field name="Birthdate" source="Person Field" isRequired="true" showOnGrid="false"></field>
             <field name="Gender" source="Person Field" isRequired="true" showOnGrid="false"></field>
             <field name="Leader Preference" source="Registration Attribute" guid="2721ad1e-e941-467f-a984-4c50cdd348f5" type="Text" isCommon="true" isRequired="true" isInternal="false" showOnGrid="false" showCurrentValue="false" preText="" postText=""></field>

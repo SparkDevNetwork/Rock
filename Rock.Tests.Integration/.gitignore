@@ -1,7 +1,2 @@
-/bin/
-/obj/
-/*.suo
-/*.user
-/*.bak
 #specific files
 app.[Cc]onnectionStrings.config

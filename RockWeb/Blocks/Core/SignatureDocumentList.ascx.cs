@@ -38,10 +38,17 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing values for a signature document type." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     [ContextAware( typeof( Person ) )]
     public partial class SignatureDocumentList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Properties 
 
         protected Person TargetPerson { get; private set; }
@@ -241,7 +248,7 @@ namespace RockWeb.Blocks.Core
                 qryParams.Add( "PersonId", TargetPerson.Id.ToString() );
             }
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
         }
 
         #endregion

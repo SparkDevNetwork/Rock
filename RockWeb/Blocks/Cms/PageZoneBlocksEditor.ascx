@@ -11,6 +11,8 @@
                     <asp:Literal ID="lZoneTitle" runat="server" /></h1>
                 </div>
 
+                <Rock:HighlightLabel ID="hlInvalidZoneWarning" runat="server" LabelType="Danger" CssClass="margin-l-md" Text="Invalid Zone" ToolTip="This zone is no longer part of the zones for this layout." Visible="false" />
+
                 <div class="pull-right">
                     <div class="input-group input-group-sm">
                         <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" />
@@ -67,7 +69,8 @@
 
             <%--  This will hold blocks that need to be added to the page so that Custom Admin actions will work --%>
             <%-- Display -9999 offscreen. This will hopefully hide everything except for any modals that get shown with the Custom Action --%>
-            <asp:Panel ID="pnlBlocksHolder" runat="server" Style="position: absolute; left: -9999px">
+            <asp:Panel ID="pnlBlocksHolderDiv" runat="server" Style="position: absolute; left: -9999px">
+                <Rock:DynamicPlaceholder ID="phBlockHolder" runat="server" />
             </asp:Panel>
 
         </asp:Panel>

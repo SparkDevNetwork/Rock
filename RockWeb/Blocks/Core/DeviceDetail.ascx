@@ -53,12 +53,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbIpAddress" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="IPAddress"
-                                Help="What is the IP Address or Hostname of this device? Note: when using Hostname to match a Check-in Kiosk to this device, the 'Enable Kiosk Match By Name' setting on the check-in Admin block must be enabled." LabelTextFromPropertyName="false" Label="IPAddress / Hostname" />
+                                Help="What is the IP Address or Hostname of this device? Note: when using Hostname to match a Check-in Kiosk to this device, the 'Enable Kiosk Match By Name' setting on the check-in Admin block must be enabled." LabelTextFromPropertyName="false" Label="IP Address / Hostname" />
                             <asp:CustomValidator ID="cvIpAddress" runat="server" ControlToValidate="tbIpAddress" Display="None"
                                 OnServerValidate="cvIpAddress_ServerValidate" ErrorMessage="IP address must be unique to the device type." />
                             <Rock:DefinedValuePicker ID="dvpDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true" Label="Device Type"
                                 Help="What type of device is this?" AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged" />
                             <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
+                            <Rock:NotificationBox ID="nbGeoFence" runat="server" NotificationBoxType="Danger" />
                             <Rock:GeoPicker ID="geopFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
                         </div>
                         <div class="col-md-6">
@@ -77,6 +78,9 @@
                                         Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
                                 </div>
                             </asp:Panel>
+
+                            <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on iPads." />
+                            <Rock:RockDropDownList ID="ddlCameraBarcodeConfigurationType" runat="server" Label="Camera Barcode Configuration" Help="If set, this value will override any block setting for check-in." />
                         </div>
                     </div>
 

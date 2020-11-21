@@ -5,10 +5,10 @@
         <asp:HiddenField runat="server" ID="hfAreaGroupClicked" />
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block js-panel-details">
             <div class="panel-heading">
-                <h3 class="panel-title">
+                <h1 class="panel-title">
                     <i class="fa fa-list"></i>
                     Areas and Groups
-                </h3>
+                </h1>
                 <div class="pull-right">
                     <asp:CheckBox Text="Show Inactive Groups" ID="cbShowInactive" AutoPostBack="true" OnCheckedChanged="cbShowInactive_CheckedChanged" runat="server" />
                 </div>
@@ -94,7 +94,7 @@
                     return ui;
                 };
 
-                $('section.checkin-item').click(function () {
+                $('section.checkin-item').on('click', function () {
                     if (!isDirty()) {
                         var dataKeyValue = $(this).closest('li').attr('data-key');
                         var isCheckinArea = $(this).hasClass('checkin-area');

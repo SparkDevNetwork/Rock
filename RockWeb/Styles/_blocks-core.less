@@ -7,6 +7,88 @@
 
 */
 
+// Fullscreen Toggle
+
+.rock-fullscreen-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: inline-flex; /* make element size relative to content */
+  align-items: center; /* vertical alignment of items */
+  justify-content: center;
+  width: 50px;
+  padding: 0 10px; /* horizontal with padding-l/r */
+  line-height: 40px; /* vertically size by height, line-height or padding */
+  color: @text-color;
+  text-align: center;
+  cursor: pointer;
+  border-left: 1px solid @panel-border;
+  opacity: .5;
+  transition: .2s;
+
+  &:hover {
+    font-size: 110%;
+    color: @text-color;
+    opacity: .75;
+  }
+
+  &::before {
+    font-family: @fa-font-face;
+    font-weight: @fa-theme-weight;
+    text-align: center;
+    content: @fa-var-expand;
+  }
+
+  .is-fullscreen & {
+    color: @text-color;
+    &::before {
+      content: @fa-var-compress;
+    }
+  }
+}
+
+.panel-section {
+  border-width: 0;
+  box-shadow: none !important;
+
+  > .panel-heading {
+    background: @panel-section-heading-bg;
+    &::after {
+      position: absolute;
+      right: 25px;
+      left: 25px;
+      margin-top: 12px;
+      content: "";
+      border-bottom: 1px solid @input-border;
+    }
+  }
+
+  > .panel-body {
+    background: @panel-section-body-bg;
+  }
+}
+
+// Fancy Scrollbars
+
+.styled-scroll {
+  ::-webkit-scrollbar {
+    width: 8px;
+    background-color: rgba(0,0,0,.03);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    width: 8px;
+    background-color: rgba(0,0,0, .2);
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(0,0,0, .3);
+    }
+  }
+}
+
 // 1. Notes
 // -------------------------
 .panel-note {
@@ -17,7 +99,7 @@
 
   .panel-body {
     padding: 0;
-    background-color: #fff;
+    background-color: @white;
   }
 
   .panel-heading {
@@ -76,8 +158,10 @@
   width: 32px;
   height: 32px;
   overflow: hidden;
+  font-size: 24px;
   line-height: 1;
-  color: #fafafa;
+  color: @text-muted;
+  text-align: center;
   vertical-align: middle;
   border-radius: 50%;
 
@@ -94,16 +178,27 @@
   &-lg {
     width: 48px;
     height: 48px;
+    font-size: 32px;
+
+    &.avatar-icon {
+      padding-top: 5px;
+
+      &::after {
+        display: none;
+      }
+    }
   }
 
   &-sm {
     width: 24px;
     height: 24px;
+    font-size: 20px;
   }
 
   &-xs {
     width: 20px;
     height: 20px;
+    font-size: 16px;
   }
 
   &::after {
@@ -118,40 +213,6 @@
     border-radius: 50%;
   }
 }
-
-.icon {
-  position: relative;
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  overflow: hidden;
-  font-size: 24px;
-  line-height: 1;
-  color: @text-muted;
-  text-align: center;
-  vertical-align: middle;
-  border-radius: 50%;
-
-  &-lg {
-    width: 48px;
-    height: 48px;
-    padding-top: 5px;
-    font-size: 32px;
-  }
-
-  &-sm {
-    width: 24px;
-    height: 24px;
-    font-size: 20px;
-  }
-
-  &-xs {
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-  }
-}
-
 
 .meta {
   display: -webkit-box;
@@ -295,7 +356,6 @@
     -webkit-box-direction: normal;
 
     &-actions-list {
-      -ms-flex-order: 1;
       -ms-flex-order: 0;
       -ms-flex-pack: justify;
       justify-content: space-between;
@@ -440,13 +500,13 @@
 }
 
 // Fixes note-editor name conflict with Summernote and Timeline note
-.note-list .note-editor {
+.notes .note-editor {
   margin: 8px 16px;
 }
 
 .noteentry-control {
   textarea {
-    .resizable(vertical)
+    .resizable(vertical);
   }
 }
 
@@ -623,7 +683,7 @@
         i.panel-navigation {
           margin-top: 8px;
 
-          &:before {
+          &::before {
             margin-top: 6px;
             font-family: @fa-font-face;
             font-size: 20px;
@@ -639,5 +699,98 @@
         }
       }
     }
+  }
+}
+
+.checkin-buttons {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+
+  .btn-checkbox {
+    width: ~"calc(50% - 16px)";
+    margin: 0 8px 16px;
+
+    @media (min-width: @screen-sm-min) {
+      width: ~"calc(33.333% - 16px)";
+    }
+
+    @media (min-width: @screen-md-min) {
+      width: ~"calc(25% - 16px)";
+    }
+  }
+}
+
+.btn-checkbox {
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 10em;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  white-space: normal;
+
+  i {
+    margin-bottom: .25em;
+    font-size: 2em;
+  }
+
+  .name {
+    display: -webkit-box;
+    max-height: 2.6666666em;
+    overflow: hidden;
+    line-height: 1.3333333;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .small {
+    font-size: 80%;
+    line-height: 1;
+  }
+
+  &.active {
+    color: @btn-primary-color !important;
+    background: @btn-primary-bg !important;
+    border-color: @btn-primary-border !important;
+  }
+}
+
+.mobile-auth-row {
+  max-width: 400px;
+  margin-right: -4px;
+  margin-left: -4px;
+  font-size: 36px;
+  text-align: center;
+
+  .input-lg {
+    .max(36px, @font-size-large);
+    min-height: 54px;
+    font-size: @max;
+    border-radius: 0;
+  }
+
+  > .col {
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 0;
+    max-width: 100%;
+    padding-right: 4px;
+    padding-left: 4px;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+  }
+
+  > .col-auto {
+    -ms-flex: 0 0 auto;
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
   }
 }

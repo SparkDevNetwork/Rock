@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a group
     /// </summary>
     public class GroupPicker : ItemPicker
     {
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupPicker"/> class.
         /// </summary>
-        public GroupPicker(): base()
+        public GroupPicker() : base()
         {
             this.ShowSelectChildren = true;
         }
@@ -68,6 +68,38 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["RootGroupId"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit to scheduling enabled groups].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [limit to scheduling enabled groups]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToSchedulingEnabledGroups
+        {
+            get => ViewState["LimitToSchedulingEnabledGroups"] as bool? ?? false;
+            set
+            {
+                ViewState["LimitToSchedulingEnabledGroups"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit to scheduling enabled groups].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [limit to scheduling enabled groups]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToRSVPEnabledGroups
+        {
+            get => ViewState["LimitToRSVPEnabledGroups"] as bool? ?? false;
+            set
+            {
+                ViewState["LimitToRSVPEnabledGroups"] = value;
                 SetExtraRestParams();
             }
         }
@@ -176,7 +208,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // Create or add this node to the history stack for this tree walk.
-            ancestorGroupIds.Insert(0, group.Id );
+            ancestorGroupIds.Insert( 0, group.Id );
 
             ancestorGroupIds = this.GetGroupAncestorsIdList( group.ParentGroup, ancestorGroupIds );
 
@@ -233,7 +265,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var group = new GroupService( new RockContext() ).Get( int.Parse( ItemId ) );
+            var groupId = ItemId.AsIntegerOrNull();
+            Group group = null;
+            if ( groupId.HasValue && groupId > 0 )
+            {
+                group = new GroupService( new RockContext() ).Get( groupId.Value );
+            }
+
             SetValue( group );
         }
 
@@ -322,9 +360,20 @@ namespace Rock.Web.UI.Controls
             {
                 extraParams.Append( $"&rootGroupId={RootGroupId.Value}" );
             }
+
             if ( IncludedGroupTypeIds != null && IncludedGroupTypeIds.Any() )
             {
-                extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited(",")}" );
+                extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited( "," )}" );
+            }
+
+            if ( LimitToSchedulingEnabledGroups )
+            {
+                extraParams.Append( $"&limitToSchedulingEnabled={LimitToSchedulingEnabledGroups.ToTrueFalse()}" );
+            }
+
+            if ( LimitToRSVPEnabledGroups )
+            {
+                extraParams.Append( $"&limitToRSVPEnabled={LimitToRSVPEnabledGroups.ToTrueFalse()}" );
             }
 
             ItemRestUrlExtraParams = extraParams.ToString();

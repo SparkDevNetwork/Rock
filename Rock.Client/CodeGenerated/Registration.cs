@@ -141,6 +141,12 @@ namespace Rock.Client
     public partial class Registration : RegistrationEntity
     {
         /// <summary />
+        public int? CreatedDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate CreatedSourceDate { get; set; }
+
+        /// <summary />
         public ICollection<RegistrationRegistrant> Registrants { get; set; }
 
         /// <summary />

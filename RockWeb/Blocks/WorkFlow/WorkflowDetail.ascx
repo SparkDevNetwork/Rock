@@ -167,7 +167,6 @@
                                 <Columns>
                                     <Rock:DateTimeField DataField="LogDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                                     <Rock:RockBoundField DataField="LogText" HeaderText="Message" />
-                                    <Rock:RockBoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -29,6 +31,52 @@ namespace Rock.Model
     public partial class EntitySetService
     {
         /// <summary>
+        /// Create a new Entity Set for the specified entities.
+        /// </summary>
+        /// <remarks>
+        /// This method uses a bulk insert to improve performance when creating large Entity Sets.
+        /// </remarks>
+        /// <param name="name"></param>
+        /// <param name="entityTypeId"></param>
+        /// <param name="entityIdList"></param>
+        /// <param name="expiryMinutes"></param>
+        /// <returns></returns>
+        public int AddEntitySet( string name, int entityTypeId, IEnumerable<int> entityIdList, int expiryMinutes = 20 )
+        {
+            // Create a new Entity Set.
+            var entitySet = new Rock.Model.EntitySet();
+            entitySet.Name = name;
+            entitySet.EntityTypeId = entityTypeId;
+            entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( expiryMinutes );
+
+            Add( entitySet );
+
+            var rockContext = (RockContext)this.Context;
+
+            rockContext.SaveChanges();
+
+            // Add items to the new Entity Set, using a bulk insert to improve performance.
+            if ( entityIdList != null
+                 && entityIdList.Any() )
+            {
+                var entitySetItems = new List<Rock.Model.EntitySetItem>();
+
+                foreach ( var key in entityIdList )
+                {
+                    var item = new Rock.Model.EntitySetItem();
+                    item.EntityId = key;
+                    item.EntitySetId = entitySet.Id;
+
+                    entitySetItems.Add( item );
+                }
+
+                rockContext.BulkInsert( entitySetItems );
+            }
+
+            return entitySet.Id;
+        }
+
+        /// <summary>
         /// Gets the entity query, ordered by the EntitySetItem.Order
         /// For example: If the EntitySet.EntityType is Person, this will return a Person Query of the items in this set
         /// </summary>
@@ -37,7 +85,7 @@ namespace Rock.Model
         public IQueryable<IEntity> GetEntityQuery( int entitySetId )
         {
             var entitySet = this.Get( entitySetId );
-            if ( !entitySet.EntityTypeId.HasValue )
+            if ( entitySet?.EntityTypeId == null )
             {
                 // the EntitySet Items are not IEntity items
                 return null;
@@ -123,6 +171,31 @@ namespace Rock.Model
                 EntitySetId = a.EntitySetId,
                 Item = a.Item
             } );
+        }
+
+        /// <summary>
+        /// Launch a workflow for each item in the set using a Rock transaction.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        public void LaunchWorkflows( int entitySetId, int workflowTypeId )
+        {
+            LaunchWorkflows( entitySetId, workflowTypeId, null );
+        }
+
+        /// <summary>
+        /// Launch a workflow for each item in the set using a Rock transaction.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        public void LaunchWorkflows( int entitySetId, int workflowTypeId, Dictionary<string, string> attributeValues )
+        {
+            var query = GetEntityQuery( entitySetId ).AsNoTracking();
+            var entities = query.ToList();
+            var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
+
+            new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
         }
 
         /// <summary>

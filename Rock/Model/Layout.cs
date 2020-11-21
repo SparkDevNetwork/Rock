@@ -93,6 +93,12 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the layout mobile phone.
+        /// </summary>
+        /// <value>
+        /// The layout mobile phone.
+        /// </value>
         [DataMember]
         public string LayoutMobilePhone { get; set; }
 

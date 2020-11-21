@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -26,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Communication
@@ -37,42 +37,41 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField( "Series Colors", "A comma-delimited list of colors that the Clients chart will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order: 0 )]
+    #region Block Attributes
+
+    [TextField(
+        "Series Colors",
+        Description = "A comma-delimited list of colors that the Clients chart will use.",
+        IsRequired = false,
+        DefaultValue = "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766",
+        Key = AttributeKey.SeriesColors,
+        Order = 0 )]
+
+    #endregion Block Attributes
     public partial class EmailAnalytics : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string SeriesColors = "SeriesColors";
+        }
+
+        #endregion Attribute Keys
+
+        #region UserPreferenceKeys
+
+        private static class UserPreferenceKey
+        {
+            public const string SelectedMonthsDateRange = "SelectedMonthsDateRange";
+        }
+
+        #endregion
+
         #region Properties that are used by the markup file
-
-        /// <summary>
-        /// Gets or sets the line chart data labels json.
-        /// </summary>
-        /// <value>
-        /// The line chart data labels json.
-        /// </value>
-        public string LineChartDataLabelsJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the line chart data opens json.
-        /// </summary>
-        /// <value>
-        /// The line chart data opens json.
-        /// </value>
-        public string LineChartDataOpensJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the line chart data clicks json.
-        /// </summary>
-        /// <value>
-        /// The line chart data clicks json.
-        /// </value>
-        public string LineChartDataClicksJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the line chart data un opened json.
-        /// </summary>
-        /// <value>
-        /// The line chart data un opened json.
-        /// </value>
-        public string LineChartDataUnOpenedJSON { get; set; }
 
         /// <summary>
         /// Gets or sets the line chart time format. see http://momentjs.com/docs/#/displaying/format/
@@ -81,30 +80,6 @@ namespace RockWeb.Blocks.Communication
         /// The line chart time format.
         /// </value>
         public string LineChartTimeFormat { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pie chart data open clicks json.
-        /// </summary>
-        /// <value>
-        /// The pie chart data open clicks json.
-        /// </value>
-        public string PieChartDataOpenClicksJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pie chart data client labels json.
-        /// </summary>
-        /// <value>
-        /// The pie chart data client labels json.
-        /// </value>
-        public string PieChartDataClientLabelsJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pie chart data client counts json.
-        /// </summary>
-        /// <value>
-        /// The pie chart data client counts json.
-        /// </value>
-        public string PieChartDataClientCountsJSON { get; set; }
 
         /// <summary>
         /// Gets or sets the series colors.
@@ -145,6 +120,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
+                hfSelectedMonthsDateRange.Value = this.GetBlockUserPreference( UserPreferenceKey.SelectedMonthsDateRange );
                 ShowCharts();
             }
         }
@@ -216,6 +192,35 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnDateRange control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDateRange_Click( object sender, EventArgs e )
+        {
+            if ( sender == btnDateRangeThreeMonths )
+            {
+                hfSelectedMonthsDateRange.Value = "3";
+            }
+            else if ( sender == btnDateRangeSixMonths )
+            {
+                hfSelectedMonthsDateRange.Value = "6";
+            }
+            else if ( sender == btnDateRangeYear )
+            {
+                hfSelectedMonthsDateRange.Value = "12";
+            }
+            else
+            {
+                hfSelectedMonthsDateRange.Value = string.Empty;
+            }
+
+            this.SetBlockUserPreference( UserPreferenceKey.SelectedMonthsDateRange, hfSelectedMonthsDateRange.Value );
+
+            ShowCharts();
+        }
+
         #endregion
 
         #region Methods
@@ -225,6 +230,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         public void ShowCharts()
         {
+            SetDateRangeUI();
+
             var rockContext = new RockContext();
             hfCommunicationId.Value = this.PageParameter( "CommunicationId" );
             hfCommunicationListGroupId.Value = this.PageParameter( "CommunicationListId" );
@@ -232,6 +239,7 @@ namespace RockWeb.Blocks.Communication
             int? communicationId = hfCommunicationId.Value.AsIntegerOrNull();
             string noDataMessageName = string.Empty;
             int? communicationListGroupId = hfCommunicationListGroupId.Value.AsIntegerOrNull();
+            int? maxMonthsBack = null;
             if ( communicationId.HasValue )
             {
                 // specific communication specified
@@ -265,12 +273,28 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                // no specific communication or list specific, so just show overall stats
+                // no specific communication or list specific, so just show overall stats,
+                // but limit to a date range so that we don't impact performance or show years worth of data
+                pnlSelectedMonthsDateRange.Visible = true;
+                maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 12;
                 lTitle.Text = "Email Analytics";
             }
 
-            var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
-            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id );
+            var interactionChannelCommunicationId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+            if ( !interactionChannelCommunicationId.HasValue )
+            {
+                nbConfigurationError.Text = "Rock.SystemGuid.InteractionChannel.COMMUNICATION not found in database";
+                return;
+            }
+
+            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.EntityId.HasValue ).Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelCommunicationId.Value );
+
+            if ( maxMonthsBack.HasValue )
+            {
+                var startDate = RockDateTime.Today.AddMonths( -maxMonthsBack.Value );
+
+                interactionQuery = interactionQuery.Where( a => a.InteractionDateTime >= startDate );
+            }
 
             List<int> communicationIdList = null;
             if ( communicationId.HasValue )
@@ -294,13 +318,15 @@ namespace RockWeb.Blocks.Communication
                     a.InteractionDateTime,
                     a.Operation,
                     a.InteractionData,
-                    CommunicationRecipientId = a.EntityId
+                    CommunicationRecipientId = a.EntityId.Value,
+                    InteractionSessionDeviceTypeClientType = a.InteractionSession.DeviceType.ClientType,
+                    InteractionSessionDeviceTypeApplication = a.InteractionSession.DeviceType.Application
                 } )
                 .ToList();
 
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
-            this.SeriesColorsJSON = this.GetAttributeValue( "SeriesColors" ).SplitDelimitedValues().ToArray().ToJson();
+            this.SeriesColorsJSON = this.GetAttributeValue( AttributeKey.SeriesColors ).SplitDelimitedValues().ToArray().ToJson();
             this.LineChartTimeFormat = "LL";
 
             if ( interactionsList.Any() )
@@ -316,7 +342,7 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( weeksCount > 3 )
                 {
-                    // if there is more than 3 weeks worth, summarize by day
+                    // if there is between 3 and 26 weeks of data, summarize by day
                     roundTimeSpan = TimeSpan.FromDays( 1 );
                 }
                 else
@@ -348,7 +374,7 @@ namespace RockWeb.Blocks.Communication
             nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
             nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
-            this.LineChartDataLabelsJSON = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
+           hfLineChartDataLabelsJSON.Value = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
 
             List<int> cumulativeClicksList = new List<int>();
             List<int> clickCountsList = interactionsSummary.Select( a => a.ClickCounts ).ToList();
@@ -359,18 +385,18 @@ namespace RockWeb.Blocks.Communication
                 cumulativeClicksList.Add( clickCountsSoFar );
             }
 
-            this.LineChartDataClicksJSON = cumulativeClicksList.ToJson();
+            hfLineChartDataClicksJSON.Value = cumulativeClicksList.ToJson();
 
             List<int> cumulativeOpensList = new List<int>();
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
             int openCountsSoFar = 0;
-            foreach (var openCounts in openCountsList)
+            foreach ( var openCounts in openCountsList )
             {
                 openCountsSoFar += openCounts;
                 cumulativeOpensList.Add( openCountsSoFar );
             }
 
-            this.LineChartDataOpensJSON = cumulativeOpensList.ToJson();
+            hfLineChartDataOpensJSON.Value = cumulativeOpensList.ToJson();
 
             int? deliveredRecipientCount = null;
             int? failedRecipientCount = null;
@@ -395,11 +421,11 @@ namespace RockWeb.Blocks.Communication
                     unopenedCountsList.Add( Math.Max( unopenedRemaining, 0 ) );
                 }
 
-                this.LineChartDataUnOpenedJSON = unopenedCountsList.ToJson();
+                hfLineChartDataUnOpenedJSON.Value = unopenedCountsList.ToJson();
             }
             else
             {
-                this.LineChartDataUnOpenedJSON = "null";
+                hfLineChartDataUnOpenedJSON.Value = "null";
             }
 
             /* Actions Pie Chart and Stats */
@@ -412,13 +438,13 @@ namespace RockWeb.Blocks.Communication
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
-            string actionsStatFormatNumber =  "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:#,##0}</span>";
+            string actionsStatFormatNumber = "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:#,##0}</span>";
             string actionsStatFormatPercent = "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:P2}</span>";
 
-            if ( deliveredRecipientCount.HasValue  )
+            if ( deliveredRecipientCount.HasValue )
             {
                 lDelivered.Text = string.Format( actionsStatFormatNumber, "label label-default", "Delivered", "The number of recipients that the email was successfully delivered to", deliveredRecipientCount );
-                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "label label-opened", "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal) uniqueOpens  / deliveredRecipientCount : 0 );
+                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "label label-opened", "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal ) uniqueOpens / deliveredRecipientCount : 0 );
                 lFailedRecipients.Text = string.Format( actionsStatFormatNumber, "label label-danger", "Failed Recipients", "The number of emails that failed to get delivered", failedRecipientCount );
 
                 // just in case there are more opens then delivered, don't let it go negative
@@ -458,7 +484,7 @@ namespace RockWeb.Blocks.Communication
                 actionsStats[2] = null;
             }
 
-            this.PieChartDataOpenClicksJSON = actionsStats.ToJson();
+            hfPieChartDataOpenClicksJSON.Value = actionsStats.ToJson();
 
             var pieChartOpenClicksHasData = actionsStats.Sum() > 0;
             opensClicksPieChartCanvas.Style[HtmlTextWriterStyle.Display] = pieChartOpenClicksHasData ? string.Empty : "none";
@@ -468,8 +494,8 @@ namespace RockWeb.Blocks.Communication
             int interactionCount = interactionsList.Count();
 
             /* Clients-In-Use (Client Type) Pie Chart*/
-            var clientsUsageByClientType = interactionQuery
-                .GroupBy( a => ( a.InteractionSession.DeviceType.ClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
+            var clientsUsageByClientType = interactionsList
+                .GroupBy( a => ( a.InteractionSessionDeviceTypeClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
                 {
                     ClientType = a.Key,
                     UsagePercent = a.Count() * 100.00M / interactionCount
@@ -481,8 +507,8 @@ namespace RockWeb.Blocks.Communication
                     UsagePercent = Math.Round( a.UsagePercent, 2 )
                 } ).ToList();
 
-            this.PieChartDataClientLabelsJSON = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
-            this.PieChartDataClientCountsJSON = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
+            hfPieChartDataClientLabelsJSON.Value = clientsUsageByClientType.Select( a => string.IsNullOrEmpty( a.ClientType ) ? "Unknown" : a.ClientType.Transform( To.TitleCase ) ).ToList().ToJson();
+            hfPieChartDataClientCountsJSON.Value = clientsUsageByClientType.Select( a => a.UsagePercent ).ToList().ToJson();
 
             var clientUsageHasData = clientsUsageByClientType.Where( a => a.UsagePercent > 0 ).Any();
             clientsDoughnutChartCanvas.Style[HtmlTextWriterStyle.Display] = clientUsageHasData ? string.Empty : "none";
@@ -490,8 +516,8 @@ namespace RockWeb.Blocks.Communication
             nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
             /* Clients-In-Use (Application) Grid */
-            var clientsUsageByApplication = interactionQuery
-            .GroupBy( a => a.InteractionSession.DeviceType.Application ).Select( a => new ApplicationUsageInfo
+            var clientsUsageByApplication = interactionsList
+            .GroupBy( a => a.InteractionSessionDeviceTypeApplication ).Select( a => new ApplicationUsageInfo
             {
                 Application = a.Key,
                 UsagePercent = ( a.Count() * 100.00M / interactionCount )
@@ -517,7 +543,6 @@ namespace RockWeb.Blocks.Communication
                                 .Take( 100 )
                                 .ToList();
 
-
             if ( topClicks.Any() )
             {
                 int topLinkCount = topClicks.Max( a => a.UniqueClickCount );
@@ -542,6 +567,30 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 pnlMostPopularLinks.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Sets up what the DateRange buttons should look like
+        /// </summary>
+        private void SetDateRangeUI()
+        {
+            btnDateRangeThreeMonths.CssClass = "btn btn-xs btn-outline-primary";
+            btnDateRangeSixMonths.CssClass = "btn btn-xs btn-outline-primary";
+            btnDateRangeYear.CssClass = "btn btn-xs btn-outline-primary";
+            int maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 12;
+
+            if ( maxMonthsBack == 3 )
+            {
+                btnDateRangeThreeMonths.CssClass = "btn btn-xs btn-primary";
+            }
+            else if ( maxMonthsBack == 6 )
+            {
+                btnDateRangeSixMonths.CssClass = "btn btn-xs btn-primary";
+            }
+            else if ( maxMonthsBack == 12 )
+            {
+                btnDateRangeYear.CssClass = "btn btn-xs btn-primary";
             }
         }
 
@@ -662,5 +711,6 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
+
     }
 }

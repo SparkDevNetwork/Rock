@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Rock
 {
@@ -29,19 +31,71 @@ namespace Rock
         /// <summary>
         /// Converts to the enum value to its string value.
         /// </summary>
-        /// <param name="eff">The eff.</param>
-        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
+        /// <param name="enumValue">The enumValue.</param>
+        /// <param name="splitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static String ConvertToString( this Enum eff, bool SplitCase = true )
+        public static string ConvertToStringSafe( this Enum enumValue, bool splitCase = true )
         {
-            if ( SplitCase )
+            if ( enumValue == null )
             {
-                return Enum.GetName( eff.GetType(), eff ).SplitCase();
+                return string.Empty;
+            }
+
+            return ConvertToString( enumValue, splitCase );
+        }
+
+        /// <summary>
+        /// Converts to the enum value to its string value.
+        /// </summary>
+        /// <param name="enumValue">The enumValue.</param>
+        /// <param name="splitCase">if set to <c>true</c> [split case].</param>
+        /// <returns></returns>
+        public static string ConvertToString( this Enum enumValue, bool splitCase = true )
+        {
+            if ( splitCase )
+            {
+                return Enum.GetName( enumValue.GetType(), enumValue ).SplitCase();
             }
             else
             {
-                return Enum.GetName( eff.GetType(), eff );
+                return Enum.GetName( enumValue.GetType(), enumValue );
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Attribute"/>s of the specified type.
+        /// </summary>
+        /// <typeparam name="TAttribute">The type of the <see cref="System.Attribute"/>.</typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns>The <see cref="System.Attribute"/>s of the specified type, or an empty array if <paramref name="value"/> is a valid Enum but no matching <see cref="System.Attribute"/>s are found, or <see langword="null"/> if <paramref name="value"/> is not a valid Enum.</returns>
+        public static TAttribute[] GetAttributes<TAttribute>( this Enum value ) where TAttribute : class
+        {
+            TAttribute[] attrs = null;
+
+            var type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    attrs = System.Attribute.GetCustomAttributes( field,
+                        typeof( TAttribute ) ) as TAttribute[];
+                }
+            }
+
+            return attrs;
+        }
+
+        /// <summary>
+        /// Gets the first <see cref="System.Attribute"/> of the specified type.
+        /// </summary>
+        /// <typeparam name="TAttribute">The type of the <see cref="System.Attribute"/>.</typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns>The first <see cref="System.Attribute"/> of the specified type, or <see langword="null"/> if <paramref name="value"/> is not a valid Enum or no matching <see cref="System.Attribute"/>s are found.</returns>
+        public static TAttribute GetAttribute<TAttribute>( this Enum value ) where TAttribute : class
+        {
+            return GetAttributes<TAttribute>( value )?.FirstOrDefault();
         }
 
         /// <summary>
@@ -51,21 +105,13 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( this Enum value )
         {
-            var type = value.GetType();
-            string name = Enum.GetName( type, value );
-            if ( name != null )
+            var attr = GetAttribute<DescriptionAttribute>( value );
+
+            if ( attr != null )
             {
-                System.Reflection.FieldInfo field = type.GetField( name );
-                if ( field != null )
-                {
-                    var attr = System.Attribute.GetCustomAttribute( field,
-                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
-                    if ( attr != null )
-                    {
-                        return attr.Description;
-                    }
-                }
+                return attr.Description;
             }
+
             return null;
         }
 
@@ -128,6 +174,25 @@ namespace Rock
                 else
                 {
                     return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the individual enum values of a Flags enumeration value.
+        /// </summary>
+        /// <typeparam name="T">The Enum type of enumValue.</typeparam>
+        /// <param name="enumValue">The enum value whose flags should be retrieved.</param>
+        /// <returns>An enumerable collection of the individual flag values.</returns>
+        public static IEnumerable<T> GetFlags<T>( this Enum enumValue )
+        {
+            foreach ( var value in Enum.GetValues( enumValue.GetType() ).Cast<T>() )
+            {
+                Enum flag = ( Enum ) Enum.Parse( typeof( T ), value.ToString() );
+
+                if ( enumValue.HasFlag( flag ) )
+                {
+                    yield return value;
                 }
             }
         }

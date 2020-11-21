@@ -74,7 +74,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AddressControl { ID = id };
+            return new AddressControl { ID = id, SetDefaultValues = false };
         }
 
         /// <summary>
@@ -91,7 +91,8 @@ namespace Rock.Field.Types
                 var locationService = new LocationService( rockContext );
                 string result = null;
 
-                if ( addressControl != null )
+                if ( addressControl != null
+                     && addressControl.HasValue )
                 {
                     var guid = Guid.Empty;
 
@@ -128,17 +129,20 @@ namespace Rock.Field.Types
                     var location = new LocationService( new RockContext() ).Get( guid );
                     if ( location != null )
                     {
+                        /* 22-Sep-2020 - SK
+                          Always Set Country first as it loads all the related state in the dropdown before it's being set.
+                        */
+                        addressControl.Country = location.Country;
                         addressControl.Street1 = location.Street1;
                         addressControl.Street2 = location.Street2;
                         addressControl.City = location.City;
                         addressControl.State = location.State;
                         addressControl.PostalCode = location.PostalCode;
-                        addressControl.Country = location.Country;
                         addressControl.County = location.County;
                     }
                     else
                     {
-                        addressControl.Country = string.Empty;
+                        addressControl.Country = addressControl.GetDefaultCountry();
                         addressControl.Street1 = string.Empty;
                         addressControl.Street2 = string.Empty;
                         addressControl.City = string.Empty;

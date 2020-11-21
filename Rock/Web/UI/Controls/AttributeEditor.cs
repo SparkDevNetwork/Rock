@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,6 +57,11 @@ namespace Rock.Web.UI.Controls
         protected RockTextBox _tbName;
 
         /// <summary>
+        /// The abbreviated name control
+        /// </summary>
+        protected RockTextBox _tbAbbreviatedName;
+
+        /// <summary>
         /// Description control
         /// </summary>
         protected RockTextBox _tbDescription;
@@ -97,6 +102,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbShowInGrid;
 
         /// <summary>
+        /// Show on bulk control
+        /// </summary>
+        protected RockCheckBox _cbShowOnBulk;
+
+        /// <summary>
         /// Allow search control
         /// </summary>
         protected RockCheckBox _cbAllowSearch;
@@ -120,6 +130,11 @@ namespace Rock.Web.UI.Controls
         /// The IsActive checkbox
         /// </summary>
         protected RockCheckBox _cbIsActive;
+
+        /// <summary>
+        /// The IsPublic checkbox
+        /// </summary>
+        protected RockCheckBox _cbIsPublic;
 
         /// <summary>
         /// The Enable History checkbox
@@ -426,6 +441,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the abbreviated name.
+        /// </summary>
+        /// <value>
+        /// The name of the abbreviated.
+        /// </value>
+        public string AbbreviatedName
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbAbbreviatedName.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the label of the abbreviated name field.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name label.
+        /// </value>
+        public string AbbreviatedNameLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return string.IsNullOrEmpty( _tbAbbreviatedName.Label ) ? "Abbreviated Name" : _tbAbbreviatedName.Label;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbAbbreviatedName.Label = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -613,9 +669,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsShowInGridVisible instead.", true )]
-        public bool ShowInGridVisible
+        public bool IsShowInGridVisible
         {
             get
             {
@@ -630,22 +684,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether Show in Grid option is displayed
+        /// Gets or sets a value indicating whether Show on Bulk option is displayed
         /// </summary>
         /// <value>
-        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
+        ///   <c>true</c> if Show on Bulk option is visible; otherwise, <c>false</c>.
         /// </value>
-        public bool IsShowInGridVisible
+        public bool IsShowOnBulkVisible
         {
             get
             {
                 EnsureChildControls();
-                return _cbShowInGrid.Visible;
+                return _cbShowOnBulk.Visible;
             }
             set
             {
                 EnsureChildControls();
-                _cbShowInGrid.Visible = value;
+                _cbShowOnBulk.Visible = value;
             }
         }
 
@@ -710,6 +764,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _cbShowInGrid.Checked = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show on bulk].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on bulk]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnBulk
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbShowOnBulk.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbShowOnBulk.Checked = value;
             }
         }
 
@@ -914,13 +988,33 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPublic
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsPublic.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsPublic.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
         /// The field type id.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead", true )]
         public int? FieldTypeId
         {
             get
@@ -957,7 +1051,7 @@ namespace Rock.Web.UI.Controls
         /// The qualifiers.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead", true )]
         public Dictionary<string, ConfigurationValue> Qualifiers
         {
             get
@@ -989,7 +1083,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the FieldType and Qualifiers 
+        /// Sets the FieldType and Qualifiers
         /// </summary>
         /// <param name="fieldTypeId">The field type identifier.</param>
         /// <param name="qualifiers">The qualifiers.</param>
@@ -1034,7 +1128,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the ViewState of the field type qualifiers 
+        /// Gets or sets the ViewState of the field type qualifiers
         /// </summary>
         /// <value>
         /// The state of the field type qualifier.
@@ -1180,7 +1274,7 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            // Get the FieldType that was selected in the postback 
+            // Get the FieldType that was selected in the postback
             // This will either come from ddlFieldType of hfFieldTypeId depending if the FieldType is editable
             int? postBackFieldTypeId = this.Page.Request[_ddlFieldType.UniqueID].AsIntegerOrNull() ?? this.Page.Request[_hfReadOnlyFieldTypeId.UniqueID].AsIntegerOrNull();
             int? fieldTypeIdState = ViewState["FieldTypeIdState"] as int?;
@@ -1243,12 +1337,25 @@ namespace Rock.Web.UI.Controls
             _tbName.Required = true;
             Controls.Add( _tbName );
 
+            _tbAbbreviatedName = new RockTextBox();
+            _tbAbbreviatedName.ID = "tbAbbreviatedName";
+            _tbAbbreviatedName.Label = AbbreviatedNameLabel;
+            _tbAbbreviatedName.Required = false;
+            Controls.Add( _tbAbbreviatedName );
+
             _cbIsActive = new RockCheckBox();
             _cbIsActive.ID = "_cbIsActive";
             _cbIsActive.Label = "Active";
             _cbIsActive.Text = "Yes";
             _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
             Controls.Add( _cbIsActive );
+
+            _cbIsPublic = new RockCheckBox();
+            _cbIsPublic.ID = "_cbIsPublic";
+            _cbIsPublic.Label = "Public";
+            _cbIsPublic.Text = "Yes";
+            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts.";
+            Controls.Add(_cbIsPublic);
 
             _tbDescription = new RockTextBox();
             _tbDescription.Label = "Description";
@@ -1286,7 +1393,7 @@ namespace Rock.Web.UI.Controls
             _cvKey.CssClass = "validation-error help-inline";
             _cvKey.ErrorMessage = "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
             Controls.Add( _cvKey );
-                       
+
 
             _cbRequired = new RockCheckBox();
             _cbRequired.ID = "cbRequired";
@@ -1300,6 +1407,13 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.Text = "Yes";
             _cbShowInGrid.Help = "If selected, this attribute will be included in a grid.";
             Controls.Add( _cbShowInGrid );
+
+            _cbShowOnBulk = new RockCheckBox();
+            _cbShowOnBulk.ID = "cbShowOnBulk";
+            _cbShowOnBulk.Label = "Show on Bulk";
+            _cbShowOnBulk.Text = "Yes";
+            _cbShowOnBulk.Help = "If selected, this attribute will be shown with bulk update attributes.";
+            Controls.Add( _cbShowOnBulk );
 
             _lFieldType = new RockLiteral();
             _lFieldType.Label = "Field Type";
@@ -1332,7 +1446,7 @@ namespace Rock.Web.UI.Controls
             _pwAdvanced = new PanelWidget();
             _pwAdvanced.ID = "pwAdvanced";
             _pwAdvanced.Title = "Advanced Settings";
-            
+
             var pnlAdvancedTopRow = new Panel { CssClass = "row" };
             _pwAdvanced.Controls.Add( pnlAdvancedTopRow );
             var pnlAdvancedTopRowCol1 = new Panel { CssClass = "col-md-6" };
@@ -1414,7 +1528,7 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton();
             _btnCancel.ID = "btnCancel";
             _btnCancel.Text = "Cancel";
-            _btnCancel.CssClass = "btn btn-default";
+            _btnCancel.CssClass = "btn btn-link";
             _btnCancel.CausesValidation = false;
             _btnCancel.Click += btnCancel_Click;
             Controls.Add( _btnCancel );
@@ -1470,6 +1584,7 @@ namespace Rock.Web.UI.Controls
             string validationGroup = ValidationGroup;
             _validationSummary.ValidationGroup = validationGroup;
             _tbName.ValidationGroup = validationGroup;
+            _tbAbbreviatedName.ValidationGroup = validationGroup;
             _tbDescription.ValidationGroup = validationGroup;
             _cpCategories.ValidationGroup = validationGroup;
             _tbKey.ValidationGroup = validationGroup;
@@ -1477,6 +1592,7 @@ namespace Rock.Web.UI.Controls
             _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
+            _cbShowOnBulk.ValidationGroup = validationGroup;
             _cbAllowSearch.ValidationGroup = validationGroup;
             _cbIsIndexingEnabled.ValidationGroup = validationGroup;
             _cbIsAnalytic.ValidationGroup = validationGroup;
@@ -1554,9 +1670,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _tbDescription.RenderControl( writer );
+            _tbAbbreviatedName.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbIsPublic.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -1565,7 +1686,18 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // row 3 col 1
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbDescription.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // row
+
+            // row 4
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // row 4 col 1
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cpCategories.RenderControl( writer );
@@ -1586,11 +1718,16 @@ namespace Rock.Web.UI.Controls
             _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbShowOnBulk.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
 
-            // row 3 col 2
+            writer.RenderEndTag();
+
+            // row 4 col 2
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfReadOnlyFieldTypeId.RenderControl( writer );
@@ -1710,20 +1847,23 @@ namespace Rock.Web.UI.Controls
                 this.Description = attribute.Description;
                 this.Required = attribute.IsRequired;
                 this.ShowInGrid = attribute.IsGridColumn;
+                this.ShowOnBulk = attribute.ShowOnBulk;
                 this.AllowSearch = attribute.AllowSearch;
                 this.IsIndexingEnabled = attribute.IsIndexEnabled;
                 this.IsAnalytic = attribute.IsAnalytic;
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
                 this.IsActive = attribute.IsActive;
+                this.IsPublic = attribute.IsPublic;
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
+                this.AbbreviatedName = attribute.AbbreviatedName;
 
                 // only allow the fieldtype to be set if this a new attribute
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
-                
+
                 var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
                 if ( field != null )
                 {
@@ -1768,6 +1908,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( attribute != null )
             {
+                attribute.IsSystem = this.IsSystem;
                 attribute.Id = this.AttributeId ?? 0;
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
@@ -1778,14 +1919,17 @@ namespace Rock.Web.UI.Controls
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
+                attribute.ShowOnBulk = this.ShowOnBulk;
                 attribute.AllowSearch = this.AllowSearch;
                 attribute.IsIndexEnabled = this.IsIndexingEnabled;
                 attribute.IsAnalytic = this.IsAnalytic;
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
                 attribute.IsActive = this.IsActive;
+                attribute.IsPublic = this.IsPublic;
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;
+                attribute.AbbreviatedName = this.AbbreviatedName;
 
                 attribute.Categories.Clear();
                 new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
@@ -1914,12 +2058,12 @@ namespace Rock.Web.UI.Controls
 
             keyValue = $('#' + nameControlId).val().replace(/[^a-zA-Z0-9_.\-]/g, '');
             var newKeyValue = keyValue;
-        
+
             var i = 1;
             while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {
                 newKeyValue = keyValue + i++;
             }
-            
+
             $keyControl.val(newKeyValue);
             $literalKeyControl.html(newKeyValue);
         }
@@ -1953,4 +2097,51 @@ namespace Rock.Web.UI.Controls
 
     }
 
+    #region Extension Methods
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AttributeEditorExtensions
+    {
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        public static Rock.Model.Attribute SaveChangesToStateCollection( this AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
+    }
+
+    #endregion
 }

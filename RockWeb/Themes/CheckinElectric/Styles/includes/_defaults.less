@@ -1,0 +1,104 @@
+body {
+  display: block !important;
+  height: 100%;
+  overflow: hidden;
+  -ms-touch-action: none !important;
+  touch-action: none; /* Disable any special actions on tap/touch */
+  background-color: @background-color;
+  -ms-content-zooming: none; /* Disables zooming */
+
+  & when not (@logo-image = "") {
+    &::before {
+      display: block;
+      height: 52px;
+      content: " ";
+      background: url(@logo-image);
+      background-color: transparent;
+      background-repeat: no-repeat;
+      background-position: 50%;
+      background-size: auto 30%;
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+}
+
+#form1,
+.edit-family .modal-footer {
+  display: none;
+}
+
+.checkin-search-actions a {
+  display: block;
+  padding: 20px 30px;
+  svg {
+    margin: 0 auto;
+  }
+
+  @media (min-width: @screen-xs-min) {
+    display: inline-block;
+    padding: 20px 150px;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    padding: 20px 200px;
+  }
+}
+
+.checkin-search-body {
+  max-width: 100%;
+}
+
+.body-content {
+  position: inherit;
+  height: ~"calc(100vh - 52px)";
+}
+
+.checkin-body {
+  .scroller {
+    padding: 0 (@scrollbar-width + @scroller-gutters) 0 @scroller-gutters;
+  }
+
+  .iScrollVerticalScrollbar,
+  .iScrollLoneScrollbar {
+    width: @scrollbar-width;
+  }
+
+  .iScrollIndicator {
+    background-color: #edf2f7;
+    border-radius: @scrollbar-width;
+  }
+
+  @media (max-width: @screen-sm-max) {
+    @scrollbar-width: 6px;
+    @scroller-gutters: 15px;
+    margin: 0 -15px;
+    .scroller {
+      padding: 0 @scroller-gutters;
+    }
+
+    .iScrollVerticalScrollbar,
+    .iScrollLoneScrollbar {
+      width: @scrollbar-width;
+    }
+  }
+}
+
+.modal-header {
+  border-bottom: 1px solid #000;
+}
+
+
+.btn-block + .btn-block {
+  margin-top: 10px;
+  @media (min-width: @screen-xs-min) {
+    margin-top: 14px;
+  }
+}
+
+// Required Mixins
+
+.checkinBackground () {
+}
+
+.checkinBackgroundRetina() {
+}

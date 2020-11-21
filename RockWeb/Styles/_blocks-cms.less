@@ -21,9 +21,9 @@
 }
 
 .codeeditor-header {
-  /*position: absolute;
+  /* position: absolute;
     top: -4px;
-    right: 0;*/
+    right: 0; */
 
   .picker-mergefield {
     float: right;
@@ -31,6 +31,21 @@
 
   .picker .picker-label {
     padding: 2px 6px;
+  }
+}
+
+.ace_editor {
+  &.is-fullscreen {
+    position: fixed !important;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2500;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border: 0;
   }
 }
 
@@ -80,7 +95,7 @@
 
   p {
     margin-bottom: 10px;
-    font-weight: normal !important;
+    font-weight: @font-weight-normal !important;
 
     &.attributes {
       margin-bottom: 0;

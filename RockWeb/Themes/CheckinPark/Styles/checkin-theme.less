@@ -13,6 +13,7 @@
 @import "../../../Styles/_checkin-core.less";
 @import "../../../Styles/_modal.less";
 @import "../../../Styles/_helpers.less";
+@import "../../../Styles/_checkin-mobile.less";
 
 @import "_variables.less";
 @import "_variable-overrides.less";
@@ -76,7 +77,7 @@
 }
 
 .checkinBackgroundRetina() {
-  background-image: @bg-color @background-image-retina;
+  background-image: @background-image-retina;
   background-size: @background-image-retina-size;
 }
 
@@ -84,6 +85,27 @@
 //
 // Custom Overrides
 // --------------------------------------------------
+
+.administration {
+  .checkin-scroll-panel {
+    background: @btn-default-bg;
+    border-radius: @border-radius-base;
+
+    > .scroller {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+  }
+}
+
+.checkin-messages,
+.checkin-summary {
+  li {
+    border-radius: @border-radius-base;
+    background: @btn-default-bg;
+    padding: 15px;
+  }
+}
 
 .checkin-count h3,
 .checkin-count li {

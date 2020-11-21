@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.ConnectionRequestDetailPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, ConnectionType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
@@ -136,28 +142,31 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Id = source.Id;
+            target.AdditionalSettings = source.AdditionalSettings;
             target.AllowIndexing = source.AllowIndexing;
             target.BodyCssClass = source.BodyCssClass;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.HeaderContent = source.HeaderContent;
+            target.IconBinaryFileId = source.IconBinaryFileId;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
             target.InternalName = source.InternalName;
             target.IsSystem = source.IsSystem;
             target.KeyWords = source.KeyWords;
             target.LayoutId = source.LayoutId;
+            target.MedianPageLoadTimeDurationSeconds = source.MedianPageLoadTimeDurationSeconds;
             target.MenuDisplayChildPages = source.MenuDisplayChildPages;
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;
             target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
             target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             target.PageDisplayDescription = source.PageDisplayDescription;
             target.PageDisplayIcon = source.PageDisplayIcon;

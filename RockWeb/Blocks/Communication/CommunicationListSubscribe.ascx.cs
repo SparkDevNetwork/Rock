@@ -39,10 +39,41 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to" )]
-    [GroupCategoryField( "Communication List Categories", "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.", true, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, defaultValue: Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC, required: false, order: 1 )]
-    [BooleanField( "Show Medium Preference", "Show the user's current medium preference for each list and allow them to change it.", true, order: 2 )]
+
+    #region Block Attributes
+
+    [GroupCategoryField(
+        "Communication List Categories",
+        Description = "Select the categories of the communication lists to display, or select none to show all that the user is authorized to view.",
+        AllowMultiple = true,
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST,
+        DefaultValue = Rock.SystemGuid.Category.GROUPTYPE_COMMUNICATIONLIST_PUBLIC,
+        IsRequired = false,
+        Key = AttributeKey.CommunicationListCategories,
+        Order = 1 )]
+    [BooleanField(
+        "Show Medium Preference",
+        Description = "Show the user's current medium preference for each list and allow them to change it.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowMediumPreference,
+        Order = 2 )]
+
+    #endregion Block Attributes
     public partial class CommunicationListSubscribe : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string CommunicationListCategories = "CommunicationListCategories";
+            public const string ShowMediumPreference = "ShowMediumPreference";
+        }
+
+        #endregion Attribute Keys
+
         #region fields
 
         /// <summary>
@@ -125,22 +156,15 @@ namespace RockWeb.Blocks.Communication
                 cbCommunicationListIsSubscribed.Checked = groupMember != null && groupMember.GroupMemberStatus == GroupMemberStatus.Active;
 
                 CommunicationType communicationType = CurrentPerson.CommunicationPreference == CommunicationType.SMS ? CommunicationType.SMS : CommunicationType.Email;
-                if ( groupMember != null )
+
+                // if GroupMember record has SMS or Email specified, that takes precedence over their Person.CommunicationPreference
+                var groupMemberHasSmsOrEmailPreference = groupMember != null &&
+                        ( groupMember.CommunicationPreference == CommunicationType.SMS ||
+                            groupMember.CommunicationPreference == CommunicationType.Email );
+
+                if ( groupMemberHasSmsOrEmailPreference )
                 {
-                    groupMember.LoadAttributes();
-                    var groupMemberCommunicationType = ( CommunicationType? ) groupMember.GetAttributeValue( "PreferredCommunicationMedium" ).AsIntegerOrNull();
-                    if ( groupMemberCommunicationType.HasValue )
-                    {
-                        // if GroupMember record has SMS or Email specified, that takes precedence over their Person.CommunicationPreference
-                        if ( groupMemberCommunicationType.Value == CommunicationType.SMS )
-                        {
-                            communicationType = CommunicationType.SMS;
-                        }
-                        else if ( groupMemberCommunicationType.Value == CommunicationType.Email )
-                        {
-                            communicationType = CommunicationType.Email;
-                        }
-                    }
+                    communicationType = groupMember.CommunicationPreference;
                 }
 
                 tglCommunicationPreference.Checked = communicationType == CommunicationType.Email;
@@ -220,10 +244,8 @@ namespace RockWeb.Blocks.Communication
                             }
                         }
 
-                        groupMember.LoadAttributes();
                         CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
-                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
-                        groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
+                        groupMember.CommunicationPreference = communicationType;
                     }
                 }
                 else
@@ -248,15 +270,13 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        groupMember.LoadAttributes();
                         CommunicationType communicationType = tglCommunicationPreference.Checked ? CommunicationType.Email : CommunicationType.SMS;
-                        groupMember.SetAttributeValue( "PreferredCommunicationMedium", communicationType.ConvertToInt().ToString() );
+                        groupMember.CommunicationPreference = communicationType;
 
                         if ( groupMember.IsValidGroupMember( rockContext ) )
                         {
                             groupMemberService.Add( groupMember );
                             rockContext.SaveChanges();
-                            groupMember.SaveAttributeValue( "PreferredCommunicationMedium", rockContext );
                         }
                         else
                         {
@@ -305,7 +325,7 @@ namespace RockWeb.Blocks.Communication
                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ) )
                .ToList();
 
-            var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
+            var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
             var viewableCommunicationLists = new List<Group>();
 
             foreach ( var communicationList in communicationLists )
@@ -343,7 +363,7 @@ namespace RockWeb.Blocks.Communication
             var groupIds = viewableCommunicationLists.Select( a => a.Id ).ToList();
             var personId = this.CurrentPersonId.Value;
 
-            showMediumPreference = this.GetAttributeValue( "ShowMediumPreference" ).AsBoolean();
+            showMediumPreference = this.GetAttributeValue( AttributeKey.ShowMediumPreference ).AsBoolean();
 
             personCommunicationListsMember = new GroupMemberService( rockContext )
                 .Queryable()

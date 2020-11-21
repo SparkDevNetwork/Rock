@@ -183,7 +183,13 @@ namespace Rock.Client
         public Location Location { get; set; }
 
         /// <summary />
+        public int RequestDateKey { get; set; }
+
+        /// <summary />
         public PersonAlias RequestedByPersonAlias { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate RequestSourceDate { get; set; }
 
         /// <summary />
         public DefinedValue RequestStatusValue { get; set; }

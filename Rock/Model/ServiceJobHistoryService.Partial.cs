@@ -82,7 +82,7 @@ namespace Rock.Model
             ServiceJob serviceJob = serviceJobService.Get( serviceJobId );
             historyCount = serviceJob.HistoryCount;
 
-            historyCount = historyCount <= 0 ? historyCount = 100 : historyCount;
+            historyCount = historyCount <= 0 ? historyCount = 500 : historyCount;
             var matchingServiceJobs = this.AsNoFilter().Where( a => a.ServiceJobId == serviceJobId ).OrderByDescending( a => a.StartDateTime );
             var serviceJobsMoreThanMax = matchingServiceJobs.Skip( historyCount ).ToArray();
 

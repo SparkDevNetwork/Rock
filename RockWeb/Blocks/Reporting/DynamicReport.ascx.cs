@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindReportGrid(e.IsCommunication);
+            BindReportGrid( e.IsCommunication );
         }
 
         /// <summary>
@@ -283,6 +283,7 @@ namespace RockWeb.Blocks.Reporting
                     filterControl.Expanded = true;
 
                     filterControl.ShowCheckbox = filterIsVisible && showCheckbox;
+                    filterControl.HideDescription = true;
 
                     var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
                     var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
@@ -334,6 +335,25 @@ namespace RockWeb.Blocks.Reporting
                             try
                             {
                                 filterControl.SetSelection( selection );
+
+                                // if the selection is the same as what is stored in the database for that DataViewFilter,
+                                // Do a GetSelection to get the selection in the current format for that filter
+                                // This will prevent this dynamic report from thinking the selection has changed from the orig filter
+                                if ( selection == filter.Selection )
+                                {
+                                    var normalizedSelection = filterControl.GetSelection();
+                                    if ( normalizedSelection != filter.Selection )
+                                    {
+                                        // if the format of the filter.Selection has changed, update the dataViewFilter's Selection to match the current format
+                                        filter.Selection = normalizedSelection;
+                                        using ( var updateSelectionContext = new RockContext() )
+                                        {
+                                            var dataViewFilter = new DataViewFilterService( updateSelectionContext ).Get( filter.Id );
+                                            dataViewFilter.Selection = normalizedSelection;
+                                            updateSelectionContext.SaveChanges();
+                                        }
+                                    }
+                                }
                             }
                             catch ( Exception ex )
                             {
@@ -482,7 +502,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Binds the report grid.
         /// </summary>
-        private void BindReportGrid(bool isCommunication = false)
+        private void BindReportGrid( bool isCommunication = false )
         {
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
@@ -516,30 +536,61 @@ namespace RockWeb.Blocks.Reporting
             {
                 nbConfigurationWarning.Visible = false;
 
-                string errorMessage;
 
                 DataViewFilterOverrides dataViewFilterOverrides = ReportingHelper.GetFilterOverridesFromControls( report.DataView, phFilters );
 
-                ReportingHelper.BindGrid( report, gReport, this.CurrentPerson, dataViewFilterOverrides, null, isCommunication, out errorMessage );
-
-                if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
+                ReportingHelper.BindGridOptions bindGridOptions = new ReportingHelper.BindGridOptions
                 {
-                    var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
-                    if ( personColumn != null )
+                    CurrentPerson = this.CurrentPerson,
+                    DataViewFilterOverrides = dataViewFilterOverrides,
+                    DatabaseTimeoutSeconds = null,
+                    IsCommunication = isCommunication
+                };
+
+
+                nbReportErrors.Visible = false;
+
+                try
+                {
+                    bindGridOptions.ReportDbContext = Reflection.GetDbContextForEntityType( EntityTypeCache.Get( report.EntityTypeId.Value ).GetEntityType() );
+                    ReportingHelper.BindGrid( report, gReport, bindGridOptions );
+
+                    if ( report.EntityTypeId != EntityTypeCache.GetId<Rock.Model.Person>() )
                     {
-                        gReport.PersonIdField = personColumn.SortExpression;
+                        var personColumn = gReport.ColumnsOfType<BoundField>().Where( a => a.HeaderText == personIdField ).FirstOrDefault();
+                        if ( personColumn != null )
+                        {
+                            gReport.PersonIdField = personColumn.SortExpression;
+                        }
                     }
                 }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
 
-                if ( !string.IsNullOrWhiteSpace( errorMessage ) )
-                {
-                    nbReportErrors.NotificationBoxType = NotificationBoxType.Warning;
-                    nbReportErrors.Text = errorMessage;
-                    nbReportErrors.Visible = true;
-                }
-                else
-                {
-                    nbReportErrors.Visible = false;
+                    if ( sqlTimeoutException != null )
+                    {
+                        nbReportErrors.NotificationBoxType = NotificationBoxType.Warning;
+                        nbReportErrors.Text = "This report did not complete in a timely manner.";
+                    }
+                    else
+                    {
+                        if ( ex is RockDataViewFilterExpressionException )
+                        {
+                            RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
+                            nbReportErrors.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( report.DataView );
+                        }
+                        else
+                        {
+                            nbReportErrors.Text = "There was a problem with one of the filters for this report's dataview.";
+                        }
+
+                        nbReportErrors.NotificationBoxType = NotificationBoxType.Danger;
+
+                        nbReportErrors.Details = ex.Message;
+                        nbReportErrors.Visible = true;
+                    }
                 }
             }
         }
@@ -749,7 +800,7 @@ namespace RockWeb.Blocks.Reporting
                 tbPostHtml.Visible = showInputs;
 
                 hfDataFilterGuid.Value = filterInfo.Guid.ToString();
-                if (_selectedDataFilterGuids != null)
+                if ( _selectedDataFilterGuids != null )
                 {
                     cbIsVisible.Checked = _selectedDataFilterGuids.Contains( filterInfo.Guid );
                 }
@@ -791,7 +842,7 @@ namespace RockWeb.Blocks.Reporting
                 lFilterDetails.Text = new DescriptionList()
                     .Add( "Filter", filterInfo.TitlePath )
                     .Add( "Summary", filterInfo.Summary )
-                    .Add( "Parent Data View", filterInfo.FromOtherDataView )
+                    .Add( "Parent Data View", filterInfo.FromDataViewName )
                     .Html;
             }
         }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
@@ -30,10 +31,34 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class AttributeValuesContainer : CompositeControl, IHasValidationGroup, INamingContainer
     {
+        #region ViewStateKeys
+
+        private static class ViewStateKey
+        {
+            public const string IncludedAttributeIds = "IncludedAttributeIds";
+            public const string RequiredAttributeIds = "RequiredAttributeIds";
+            public const string ExcludedAttributeIds = "ExcludedAttributeIds";
+            public const string ValidationGroup = "ValidationGroup";
+            public const string SuppressOrderingWithinCategory = "SuppressOrderingWithinCategory";
+            public const string ShowCategoryLabel = "ShowCategoryLabel";
+            public const string IncludedCategoryNames = "IncludedCategoryNames";
+            public const string ExcludedCategoryNames = "ExcludedCategoryNames";
+            public const string NumberOfColumns = "NumberOfColumns";
+            public const string LimitToShowInGridAttributes = "LimitToShowInGridAttributes";
+            public const string DisplayAsTabs = "DisplayAsTabs";
+            public const string ShowPrePostHtml = "ShowPrePostHtml";
+            public const string EntityId = "EntityId";
+            public const string EntityTypeId = "EntityTypeId";
+            public const string DisplayModeAttributeIdValuesState = "DisplayModeAttributeIdValuesState";
+            public const string EditModeAttributeIdsState = "EditModeAttributeIdsState";
+        }
+
+        #endregion ViewStateKeys
+
         #region Controls
 
         /// <summary>
-        /// The ph attributes
+        /// The placeholder for attributes
         /// </summary>
         private DynamicPlaceholder _phAttributes;
 
@@ -41,19 +66,16 @@ namespace Rock.Web.UI.Controls
 
         #region Private fields
 
-        // Stores the Entity associated with the attributes
-        private IHasAttributes _entity;
-
-        // Keeps track of EntityTypeId of the Item we created edit/display controls for, so we can re-create them on postback
+        // Keeps track of EntityTypeId of the Item we created edit/display controls for, so we can re-create them on PostBack
         private int? _entityTypeId;
 
-        // Keeps track of Entity.Id of the Item we created edit/display controls for, so we can re-create them on postback
+        // Keeps track of Entity.Id of the Item we created edit/display controls for, so we can re-create them on PostBack
         private int? _entityId;
 
-        // Keeps track of which attributes we created edit controls for, so we can re-create them on postback
+        // Keeps track of which attributes we created edit controls for, so we can re-create them on PostBack
         private List<int> _editModeAttributeIdsState;
 
-        // Keeps track of which attributes and values we created display controls for, so we can re-create them on postback
+        // Keeps track of which attributes and values we created display controls for, so we can re-create them on PostBack
         private Dictionary<int, string> _displayModeAttributeIdValuesState { get; set; }
 
         #endregion
@@ -68,14 +90,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState["ValidationGroup"] as string ?? this.RockBlock()?.BlockValidationGroup;
-            set => ViewState["ValidationGroup"] = value;
+            get => ViewState[ViewStateKey.ValidationGroup] as string ?? this.RockBlock()?.BlockValidationGroup;
+            set => ViewState[ViewStateKey.ValidationGroup] = value;
         }
 
         /// <summary>
         /// Attribute Display/Edit controls are sorted by Category (if there is a category). Then, by default, they are sorted by EntityTypeQualifier, Order, and Name.
         /// To keep the order that the Attributes are in (as a result of LoadAttributes), set SuppressOrderingWithinCategory to False.
-        /// For example, if these are Group or GroupMemberAttributes, LoadAttributes will order the attributes based on Inheritence,
+        /// For example, if these are Group or GroupMemberAttributes, LoadAttributes will order the attributes based on Inheritance,
         /// so you might want to use that ordering instead of reordering them by EntityTypeQualifier, Order, Name
         /// </summary>
         /// <value>
@@ -83,8 +105,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool SuppressOrderingWithinCategory
         {
-            get => ViewState["SuppressOrderingWithinCategory"] as bool? ?? false;
-            set => ViewState["SuppressOrderingWithinCategory"] = value;
+            get => ViewState[ViewStateKey.SuppressOrderingWithinCategory] as bool? ?? false;
+            set => ViewState[ViewStateKey.SuppressOrderingWithinCategory] = value;
         }
 
         /// <summary>
@@ -95,8 +117,20 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] IncludedAttributes
         {
-            get => ViewState["IncludedAttributes"] as AttributeCache[];
-            set => ViewState["IncludedAttributes"] = value;
+            get => ( ViewState[ViewStateKey.IncludedAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray();
+            set => ViewState[ViewStateKey.IncludedAttributeIds] = value?.Select( a => a.Id ).ToArray();
+        }
+
+        /// <summary>
+        /// Overrides which Attributes are required. Leave null to use normal IsRequired for the attribute
+        /// </summary>
+        /// <value>
+        /// The required attributes.
+        /// </value>
+        public AttributeCache[] RequiredAttributes
+        {
+            get => ( ViewState[ViewStateKey.RequiredAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray();
+            set => ViewState[ViewStateKey.RequiredAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
 
         /// <summary>
@@ -107,8 +141,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public AttributeCache[] ExcludedAttributes
         {
-            get => ViewState["ExcludedAttributes"] as AttributeCache[] ?? new AttributeCache[0];
-            set => ViewState["ExcludedAttributes"] = value;
+            get => ( ViewState[ViewStateKey.ExcludedAttributeIds] as int[] )?.Select( a => AttributeCache.Get( a ) ).ToArray() ?? new AttributeCache[0];
+            set => ViewState[ViewStateKey.ExcludedAttributeIds] = value?.Select( a => a.Id ).ToArray();
         }
 
         /// <summary>
@@ -119,8 +153,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowCategoryLabel
         {
-            get => ViewState["ShowCategoryLabel"] as bool? ?? true;
-            set => ViewState["ShowCategoryLabel"] = value;
+            get => ViewState[ViewStateKey.ShowCategoryLabel] as bool? ?? true;
+            set => ViewState[ViewStateKey.ShowCategoryLabel] = value;
         }
 
         /// <summary>
@@ -131,8 +165,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string[] IncludedCategoryNames
         {
-            get => ViewState["IncludedCategoryNames"] as string[];
-            set => ViewState["IncludedCategoryNames"] = value;
+            get => ViewState[ViewStateKey.IncludedCategoryNames] as string[];
+            set => ViewState[ViewStateKey.IncludedCategoryNames] = value;
         }
 
         /// <summary>
@@ -143,8 +177,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string[] ExcludedCategoryNames
         {
-            get => ViewState["ExcludedCategoryNames"] as string[];
-            set => ViewState["ExcludedCategoryNames"] = value;
+            get => ViewState[ViewStateKey.ExcludedCategoryNames] as string[];
+            set => ViewState[ViewStateKey.ExcludedCategoryNames] = value;
         }
 
         /// <summary>
@@ -155,8 +189,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public int? NumberOfColumns
         {
-            get => ViewState["NumberOfColumns"] as int?;
-            set => ViewState["NumberOfColumns"] = value;
+            get => ViewState[ViewStateKey.NumberOfColumns] as int?;
+            set => ViewState[ViewStateKey.NumberOfColumns] = value;
         }
 
         /// <summary>
@@ -167,20 +201,32 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool LimitToShowInGridAttributes
         {
-            get => ViewState["LimitToShowInGridAttributes"] as bool? ?? false;
-            set => ViewState["LimitToShowInGridAttributes"] = value;
+            get => ViewState[ViewStateKey.LimitToShowInGridAttributes] as bool? ?? false;
+            set => ViewState[ViewStateKey.LimitToShowInGridAttributes] = value;
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
+        /// Gets or sets a value indicating whether the category header/label should be displayed as tabs
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [display as tabs]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayAsTabs
+        {
+            get => ViewState[ViewStateKey.DisplayAsTabs] as bool? ?? false;
+            set => ViewState[ViewStateKey.DisplayAsTabs] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show pre/post HTML] (if EntityType supports it)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show pre/post HTML]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowPrePostHtml
         {
-            get => ViewState["ShowPrePostHtml"] as bool? ?? true;
-            set => ViewState["ShowPrePostHtml"] = value;
+            get => ViewState[ViewStateKey.ShowPrePostHtml] as bool? ?? true;
+            set => ViewState[ViewStateKey.ShowPrePostHtml] = value;
         }
 
         #endregion Properties
@@ -207,10 +253,10 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            this._entityId = ViewState["_entityId"] as int?;
-            this._entityTypeId = ViewState["_entityTypeId"] as int?;
-            this._displayModeAttributeIdValuesState = ( ViewState["_displayModeAttributeIdValuesState"] as string ).FromJsonOrNull<Dictionary<int, string>>();
-            this._editModeAttributeIdsState = ( ViewState["_editModeAttributeIdsState"] as string ).FromJsonOrNull<List<int>>();
+            this._entityId = ViewState[ViewStateKey.EntityId] as int?;
+            this._entityTypeId = ViewState[ViewStateKey.EntityTypeId] as int?;
+            this._displayModeAttributeIdValuesState = ( ViewState[ViewStateKey.DisplayModeAttributeIdValuesState] as string ).FromJsonOrNull<Dictionary<int, string>>();
+            this._editModeAttributeIdsState = ( ViewState[ViewStateKey.EditModeAttributeIdsState] as string ).FromJsonOrNull<List<int>>();
 
             if ( _entityId.HasValue && _entityTypeId.HasValue )
             {
@@ -250,10 +296,10 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["_entityId"] = this._entityId;
-            ViewState["_entityTypeId"] = this._entityTypeId;
-            ViewState["_displayModeAttributeIdValuesState"] = this._displayModeAttributeIdValuesState.ToJson();
-            ViewState["_editModeAttributeIdsState"] = this._editModeAttributeIdsState.ToJson();
+            ViewState[ViewStateKey.EntityId] = this._entityId;
+            ViewState[ViewStateKey.EntityTypeId] = this._entityTypeId;
+            ViewState[ViewStateKey.DisplayModeAttributeIdValuesState] = this._displayModeAttributeIdValuesState.ToJson();
+            ViewState[ViewStateKey.EditModeAttributeIdsState] = this._editModeAttributeIdsState.ToJson();
 
             return base.SaveViewState();
         }
@@ -268,8 +314,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="item">The item.</param>
         private void SetEntity( Attribute.IHasAttributes item )
         {
-            this._entity = item;
-
             this._entityId = item.Id;
 
             Type entityType = item.GetType();
@@ -284,6 +328,24 @@ namespace Rock.Web.UI.Controls
         #endregion Private Methods
 
         #region Methods
+
+        /// <summary>
+        /// Adds the edit controls (and set the edit values) while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddEditControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddEditControls( item, true );
+        }
 
         /// <summary>
         /// Adds the edit controls (and set the edit values)
@@ -339,11 +401,11 @@ namespace Rock.Web.UI.Controls
             _editModeAttributeIdsState = new List<int>();
             if ( item != null && item.Attributes != null )
             {
-                List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
+                var categoryAttributes = GetDistinctAttributesByCategory( item );
 
-                foreach ( var attributeCategory in attributeCategories )
+                foreach ( var attributeCategory in categoryAttributes.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
-                    IEnumerable<AttributeCache> attributes = GetFilteredAttributesForCategory( attributeCategory );
+                    var attributes = attributeCategory.Attributes;
 
                     if ( attributes.Any() )
                     {
@@ -356,6 +418,7 @@ namespace Rock.Web.UI.Controls
                         {
                             NumberOfColumns = this.NumberOfColumns,
                             IncludedAttributes = attributes.ToList(),
+                            RequiredAttributes = this.RequiredAttributes?.ToList(),
                             ShowCategoryLabel = ShowCategoryLabel,
                             ShowPrePostHtml = this.ShowPrePostHtml
                         };
@@ -366,21 +429,172 @@ namespace Rock.Web.UI.Controls
                             _phAttributes,
                             this.ValidationGroup,
                             setValue,
-                            options
-                        );
+                            options );
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Gets the filtered attributes based the filters (IncludedCategoryNames, ExcludedCategoryNames, IncludedAttributes, ExcludedAttributes, etc)
+        /// Update the Attribute Values for the item from the Attribute Value Editors associated with this item
         /// </summary>
         /// <param name="item">The item.</param>
-        /// <returns></returns>
-        private IEnumerable<AttributeCache> GetFilteredAttributes( IHasAttributes item )
+        public void GetEditValues( Rock.Attribute.IHasAttributes item )
         {
-            return GetFilteredAttributeCategories( item ).SelectMany( c => GetFilteredAttributesForCategory( c ) );
+            if ( item == null )
+            {
+                return;
+            }
+
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            EnsureChildControls();
+
+            Rock.Attribute.Helper.GetEditValues( _phAttributes, item );
+        }
+
+        /// <summary>
+        /// Adds the display controls while honoring security for the given Rock.Security.Authorization action and person.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="action">The <see cref="Rock.Security.Authorization"/> action to use when checking attribute security.</param>
+        /// <param name="person">The person to check authorization against.</param>
+        public void AddDisplayControls( Rock.Attribute.IHasAttributes item, string action, Rock.Model.Person person )
+        {
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            ExcludedAttributes = item.Attributes.Where( a => !a.Value.IsAuthorized( action, person ) ).Select( a => a.Value ).ToArray();
+
+            this.AddDisplayControls( item );
+        }
+
+        /// <summary>
+        /// Adds the display controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void AddDisplayControls( Rock.Attribute.IHasAttributes item )
+        {
+            EnsureChildControls();
+            _phAttributes.Controls.Clear();
+
+            if ( item == null )
+            {
+                return;
+            }
+
+            this.SetEntity( item );
+
+            if ( item.Attributes == null )
+            {
+                item.LoadAttributes();
+            }
+
+            _displayModeAttributeIdValuesState = item.AttributeValues.ToDictionary( k => k.Value.AttributeId, v => v.Value.Value );
+
+            var attributeCategories = GetDistinctAttributesByCategory( item );
+
+            // only show heading labels if ShowCategoryLabel and there is at least attribute to show
+            bool showCategoryLabel = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
+
+            // only show heading labels if ShowCategoryLabel and there is at least one attribute with category name
+            bool displayAsTabs = this.DisplayAsTabs & attributeCategories.Where( a => a.CategoryName.IsNotNullOrWhiteSpace() ).SelectMany( a => a.Attributes ).Any();
+
+            var exclude = ( ExcludedAttributes != null && ExcludedAttributes.Count() != 0 ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
+
+            if ( displayAsTabs )
+            {
+                HtmlGenericControl tabs = new HtmlGenericControl( "ul" );
+                tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
+                _phAttributes.Controls.Add( tabs );
+
+                HtmlGenericControl tabContent = new HtmlGenericControl( "div" );
+                tabContent.AddCssClass( "tab-content" );
+                _phAttributes.Controls.Add( tabContent );
+
+                int tabIndex = 0;
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
+                {
+                    string categoryName = "Attributes";
+                    string id = "Attributes";
+                    if ( attributeCategory.Category != null )
+                    {
+                        categoryName = attributeCategory.Category.Name.Trim();
+                        id = attributeCategory.Category.Id.ToString();
+                    }
+
+                    HtmlGenericControl parentControl = new HtmlGenericControl( "div" );
+                    parentControl.ID = id;
+                    parentControl.AddCssClass( "tab-pane fade in" );
+                    tabContent.Controls.Add( parentControl );
+                    var tabClientId = parentControl.ClientID;
+
+                    // Add the tabs
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    HtmlGenericControl a = new HtmlGenericControl( "a" );
+                    a.Attributes.Add( "data-toggle", "tab" );
+                    a.Attributes.Add( "href", "#" + tabClientId );
+
+                    a.InnerText = categoryName;
+                    li.Controls.Add( a );
+                    tabs.Controls.Add( li );
+
+                    if ( tabIndex == 0 )
+                    {
+                        parentControl.AddCssClass( "active" );
+                        li.AddCssClass( "active" );
+                    }
+
+                    tabIndex++;
+
+                    Rock.Attribute.Helper.AddDisplayControls( item, new List<AttributeCategory>() { attributeCategory }, parentControl, exclude, false );
+                }
+            }
+            else
+            {
+                AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
+                {
+                    ExcludedAttributes = this.ExcludedAttributes.ToList(),
+                    NumberOfColumns = this.NumberOfColumns,
+                    ShowCategoryLabel = showCategoryLabel
+                };
+
+                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, attributeAddDisplayControlsOptions );
+            }
+        }
+
+        /// <summary>
+        /// Gets the attributes that ended up getting displayed as a result of AddDisplayControls
+        /// </summary>
+        /// <returns></returns>
+        public List<AttributeCache> GetDisplayedAttributes()
+        {
+            return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes );
+        }
+
+        private List<AttributeCategory> GetDistinctAttributesByCategory( IHasAttributes item )
+        {
+            var attributes = new List<AttributeCategory>();
+            var currentAttributes = new HashSet<string>();
+
+            foreach ( var category in GetFilteredAttributeCategories( item ) )
+            {
+                var categoryAttributes = GetFilteredAttributesForCategory( category );
+                var distinctCategoryAttributes = categoryAttributes.Where( a => !currentAttributes.Contains( a.Key ) );
+                if ( distinctCategoryAttributes.Any() )
+                {
+                    category.Attributes = distinctCategoryAttributes.ToList();
+                    attributes.Add( category );
+                    currentAttributes.UnionWith( categoryAttributes.Select( a => a.Key ) );
+                }
+            }
+
+            return attributes;
         }
 
         /// <summary>
@@ -411,7 +625,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         private List<AttributeCategory> GetFilteredAttributeCategories( IHasAttributes item )
         {
-            var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, false, this.SuppressOrderingWithinCategory );
+            var attributeCategories = Rock.Attribute.Helper.GetAttributeCategories( item, LimitToShowInGridAttributes, true, this.SuppressOrderingWithinCategory );
             if ( this.IncludedCategoryNames != null )
             {
                 attributeCategories = attributeCategories.Where( a => this.IncludedCategoryNames.Any( c => c.Equals( a.CategoryName, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
@@ -424,64 +638,6 @@ namespace Rock.Web.UI.Controls
 
             return attributeCategories;
         }
-
-        /// <summary>
-        /// Update the Attribute Values for the item from the Attribute Value Editors associated with this item
-        /// </summary>
-        /// <param name="item">The item.</param>
-        public void GetEditValues( Rock.Attribute.IHasAttributes item )
-        {
-            if ( item == null )
-            {
-                return;
-            }
-
-            if ( item.Attributes == null )
-            {
-                item.LoadAttributes();
-            }
-
-            EnsureChildControls();
-
-            Rock.Attribute.Helper.GetEditValues( _phAttributes, item );
-        }
-
-        /// <summary>
-        /// Adds the display controls.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        public void AddDisplayControls( Rock.Attribute.IHasAttributes item )
-        {
-            EnsureChildControls();
-            _phAttributes.Controls.Clear();
-
-            if ( item == null )
-            {
-                return;
-            }
-
-            this.SetEntity( item );
-
-            if ( item.Attributes == null )
-            {
-                item.LoadAttributes();
-            }
-
-            _displayModeAttributeIdValuesState = new Dictionary<int, string>();
-
-            List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
-
-            foreach ( var attributeCategory in attributeCategories )
-            {
-                attributeCategory.Attributes = GetFilteredAttributesForCategory( attributeCategory ).ToList();
-            }
-
-            // only show heading labels if ShowCategoryLabel and there is at least attribute to show
-            bool showHeadingLabels = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
-
-            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, null, showHeadingLabels );
-        }
-
         #endregion Methods
     }
 }

@@ -73,6 +73,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             gReport.DataKeyNames = new string[] { "Id" };
+            gReport.EntityIdField = "Id";
             gReport.Actions.ShowAdd = false;
             gReport.GridRebind += gReport_GridRebind;
             gReport.Actions.AddClick += gReport_AddClick;
@@ -93,7 +94,7 @@ namespace RockWeb.Blocks.Core
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
                             gReport.PersonIdField = "PersonId";
-                            gReport.Actions.ShowAdd = _tag.IsAuthorized( "Tag", CurrentPerson );
+                            gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 
                         var entityType = TagEntityType.GetEntityType();
@@ -104,7 +105,7 @@ namespace RockWeb.Blocks.Core
                         }
                     }
 
-                    gReport.ColumnsOfType<DeleteField>().First().Visible = _tag.IsAuthorized( "Tag", CurrentPerson );
+                    gReport.ColumnsOfType<DeleteField>().First().Visible = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
 
                     if ( !Page.IsPostBack )
                     {
@@ -191,7 +192,7 @@ namespace RockWeb.Blocks.Core
             {
                 var taggedItemService = new TaggedItemService( rockContext );
                 var taggedItem = taggedItemService.Get( e.RowKeyId );
-                if ( taggedItem != null && taggedItem.IsAuthorized( "Tag", CurrentPerson ) )
+                if ( taggedItem != null && taggedItem.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson ) )
                 {
                     string errorMessage;
                     if ( !taggedItemService.CanDelete( taggedItem, out errorMessage ) )
@@ -327,11 +328,7 @@ namespace RockWeb.Blocks.Core
                         } );
                 }
 
-                if ( TagEntityType != null )
-                {
-                    gReport.EntityTypeId = TagEntityType.Id;
-                }
-
+                gReport.EntityTypeId = EntityTypeCache.Get<TaggedItem>().Id;
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }

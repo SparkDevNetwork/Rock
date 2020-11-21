@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.Slingshot.Model
 {
     /// <summary>
-    /// 
+    /// Import Model for a Person (or Business)
     /// </summary>
     [System.Diagnostics.DebuggerDisplay( "{FirstName} {LastName}" )]
     public class PersonImport
@@ -300,11 +300,19 @@ namespace Rock.Slingshot.Model
         /// </value>
         public string InactiveReasonNote { get; set; }
 
-        
+
 
         #endregion Person Fields that map directly to Rock.Model.Person
 
         #region Collections
+
+        /// <summary>
+        /// Gets or sets the person search keys.
+        /// </summary>
+        /// <value>
+        /// The person search keys.
+        /// </value>
+        public ICollection<PersonSearchKeyImport> PersonSearchKeys { get; set; }
 
         /// <summary>
         /// Gets or sets the phone numbers.

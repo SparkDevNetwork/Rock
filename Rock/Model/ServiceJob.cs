@@ -37,6 +37,16 @@ namespace Rock.Model
     [DataContract]
     public partial class ServiceJob : Model<ServiceJob>
     {
+        #region Constants
+
+        /// <summary>
+        /// The never scheduled cron expression. This will only fire the job in the year 2200. This is useful for jobs
+        /// that should be run only on demand, such as rebuilding Streak data.
+        /// </summary>
+        public static string NeverScheduledCronExpression = "0 0 0 1 1 ? 2200";
+
+        #endregion Constants
+
         #region Entity Properties
 
         /// <summary>
@@ -216,7 +226,7 @@ namespace Rock.Model
         /// The history count per job.
         /// </value>
         [DataMember]
-        public int HistoryCount { get; set; } = 100;
+        public int HistoryCount { get; set; } = 500;
 
         #endregion
 

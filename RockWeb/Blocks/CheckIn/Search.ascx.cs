@@ -73,18 +73,18 @@ namespace RockWeb.Blocks.CheckIn
                 string searchType = "Phone";
 
                 // If mobile and the last phone number is saved in the cookie
-                if ( Request.Cookies[CheckInCookie.ISMOBILE] != null && Request.Cookies[CheckInCookie.PHONENUMBER] != null )
+                if ( Request.Cookies[CheckInCookieKey.IsMobile] != null && Request.Cookies[CheckInCookieKey.PhoneNumber] != null )
                 {
-                    tbPhone.Text = Request.Cookies[CheckInCookie.PHONENUMBER].Value;
+                    tbPhone.Text = Request.Cookies[CheckInCookieKey.PhoneNumber].Value;
                 }
 
                 if ( CurrentCheckInType != null && this.CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                 {
-                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Name or Phone
+                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Phone or Name
                     pnlSearchName.Visible = true;
                     pnlSearchPhone.Visible = false;
-                    txtName.Label = "Name or Phone";
-                    searchType = "Name or Phone";
+                    txtName.Label = "Phone or Name";
+                    searchType = "Phone or Name";
                 }
                 else
                 {
@@ -104,8 +104,8 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         pnlSearchName.Visible = true;
                         pnlSearchPhone.Visible = false;
-                        txtName.Label = "Name or Phone";
-                        searchType = "Name or Phone";
+                        txtName.Label = "Phone or Name";
+                        searchType = "Phone or Name";
                     }
                 }
 
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.CheckIn
                 Guid searchTypeGuid = Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER.AsGuid();
                 if ( ( this.CurrentCheckInState != null ) && this.CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                 {
-                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Name or Phone
+                    // If RegistrationMode is enabled for this device, override any SearchType settings and search by Phone or Name
                     searchTypeGuid = Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME_AND_PHONE.AsGuid();
                 }
                 else if ( CurrentCheckInType != null )
@@ -238,7 +238,7 @@ namespace RockWeb.Blocks.CheckIn
                 CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 CurrentCheckInState.CheckIn.SearchValue = searchInput;
 
-                if ( ProcessSelection() && Request.Cookies[CheckInCookie.ISMOBILE] != null )
+                if ( ProcessSelection() && Request.Cookies[CheckInCookieKey.IsMobile] != null )
                 {
                     SavePhoneCookie( tbPhone.Text );
                 }
@@ -308,8 +308,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="kiosk"></param>
         private void SavePhoneCookie( string phoneNumber )
         {
-            HttpCookie phoneCookie = new HttpCookie( CheckInCookie.PHONENUMBER, phoneNumber );
-            Response.Cookies.Set( phoneCookie );
+            HttpCookie phoneCookie = new HttpCookie( CheckInCookieKey.PhoneNumber, phoneNumber );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( phoneCookie );
         }
 
         /// <summary>

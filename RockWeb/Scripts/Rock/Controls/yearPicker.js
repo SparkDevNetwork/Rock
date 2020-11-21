@@ -15,10 +15,12 @@
                 // uses https://github.com/eternicode/bootstrap-datepicker
                 $('#' + options.id).datepicker({
                     format: 'yyyy',
+                    assumeNearbyYear: 10,
                     autoclose: true,
                     startView: 2,
                     minViewMode: 2,
-                    startDate: earliestDate
+                    startDate: earliestDate,
+                    zIndexOffset: 1050
                 });
 
             }

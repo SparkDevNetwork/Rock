@@ -38,5 +38,17 @@ namespace Rock.Attribute
             : base( name, description, required, defaultBinaryFileTypeGuid, category, order, key, typeof( Rock.Field.Types.BinaryFileTypeFieldType ).FullName )
         {
         }
+
+        /// <summary>
+        /// Gets or sets the default binary file type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default binary file type unique identifier.
+        /// </value>
+        public string DefaultBinaryFileTypeGuid
+        {
+            get => DefaultValue;
+            set => DefaultValue = value;
+        }
     }
 }

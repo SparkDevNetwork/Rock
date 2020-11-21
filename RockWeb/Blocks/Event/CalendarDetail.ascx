@@ -41,7 +41,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
                 </div>
@@ -77,12 +77,12 @@
 
                     <Rock:PanelWidget ID="wpEventAttributes" runat="server" Title="Event Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gEventAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Attribute" ShowConfirmDeleteDialog="false">
+                            <Rock:Grid ID="gEventAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Attribute" ShowConfirmDeleteDialog="false" HideDeleteButtonForIsSystem="false">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                    <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
+                                    <Rock:RockLiteralField ID="lFieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:BoolField DataField="IsGridColumn" HeaderText="Show in Grid" />
                                     <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />

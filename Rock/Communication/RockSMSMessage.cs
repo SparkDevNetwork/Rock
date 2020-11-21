@@ -14,9 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -67,7 +69,39 @@ namespace Rock.Communication
         public string communicationName { get; set; }
 
         /// <summary>
-        /// Returs the Person sending the SMS communication.
+        /// Initializes a new instance of the <see cref="RockSMSMessage"/> class.
+        /// </summary>
+        public RockSMSMessage() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockSMSMessage"/> class.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication.</param>
+        public RockSMSMessage( SystemCommunication systemCommunication ) : this()
+        {
+            if ( systemCommunication != null )
+            {
+                InitializeSmsMessage( systemCommunication );
+            }
+        }
+
+        /// <summary>
+        /// Initializes the SMS message.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication.</param>
+        private void InitializeSmsMessage( SystemCommunication systemCommunication )
+        {
+            if ( systemCommunication == null )
+            {
+                return;
+            }
+
+            this.FromNumber = DefinedValueCache.Get( systemCommunication.SMSFromDefinedValue );
+            this.Message = systemCommunication.SMSMessage;
+        }
+
+        /// <summary>
+        /// Returns the Person sending the SMS communication.
         /// Will use the Response Recipient if one exists otherwise the Current Person.
         /// </summary>
         /// <returns></returns>
@@ -91,5 +125,14 @@ namespace Rock.Communication
             return person;
         }
 
+        /// <summary>
+        /// Sets the recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        public void SetRecipients( List<RockSMSMessageRecipient> recipients )
+        {
+            this.Recipients = new List<RockMessageRecipient>();
+            this.Recipients.AddRange( recipients );
+        }
     }
 }

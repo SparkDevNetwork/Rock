@@ -95,6 +95,7 @@ namespace Rock.Model
             target.MediumEntityTypeId = source.MediumEntityTypeId;
             target.OpenedClient = source.OpenedClient;
             target.OpenedDateTime = source.OpenedDateTime;
+            target.PersonalDeviceId = source.PersonalDeviceId;
             target.PersonAliasId = source.PersonAliasId;
             target.ResponseCode = source.ResponseCode;
             target.SendDateTime = source.SendDateTime;

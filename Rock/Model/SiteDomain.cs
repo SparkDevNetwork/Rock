@@ -16,10 +16,12 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "SiteDomain" )]
     [DataContract]
-    public partial class SiteDomain : Model<SiteDomain>, IOrdered
+    public partial class SiteDomain : Model<SiteDomain>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -59,7 +61,7 @@ namespace Rock.Model
         public int SiteId { get; set; }
         
         /// <summary>
-        /// Gets or sets the the Url/Domain Name of this SiteDomain. This property is required.
+        /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
         /// <remarks>
         /// Examples include: localhost, mysite.com (or www.mysite.com), subdomain.mysite.com.
@@ -108,6 +110,30 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Domain;
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            // SiteCache has SiteDomains that could get stale if SiteDomains is modified
+            SiteCache.UpdateCachedEntity( this.SiteId, EntityState.Detached );
         }
 
         #endregion

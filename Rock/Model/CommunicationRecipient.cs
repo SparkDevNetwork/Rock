@@ -26,6 +26,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 
 using Rock.Data;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Model
 {
@@ -47,10 +48,10 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
+        /// Gets or sets the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/>.
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// The client.
         /// </value>
         [DataMember]
-        [MaxLength(200)]
+        [MaxLength( 200 )]
         public string OpenedClient { get; set; }
 
         /// <summary>
@@ -139,12 +140,16 @@ namespace Rock.Model
         public string UniqueMessageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the response code.
+        /// The response code from 100-99999 (excluding 666 and 911)
+        /// with a prefix of '@'. For example, '@126345'
+        /// Note: this numeric portion must be between 3 and 5 digits due
+        /// to a regex that parses the message to find response codes
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the response code.
+        /// The response code.
         /// </value>
         [DataMember]
+        [MaxLength( 6 )]
         public string ResponseCode { get; set; }
 
         /// <summary>
@@ -169,13 +174,13 @@ namespace Rock.Model
                 var objectKeys = AdditionalMergeValues
                     .Where( m => m.Value != null && m.Value.GetType() == typeof( JObject ) )
                     .Select( m => m.Key ).ToList();
-                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( (JObject)AdditionalMergeValues[k] ).ToDictionary() );
+                objectKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JObject ) AdditionalMergeValues[k] ).ToDictionary() );
 
                 // Convert any arrays to a list, and also check to see if it contains objects that need to be converted to a dictionary for Lava
                 var arrayKeys = AdditionalMergeValues
                     .Where( m => m.Value != null && m.Value.GetType() == typeof( JArray ) )
                     .Select( m => m.Key ).ToList();
-                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( (JArray)AdditionalMergeValues[k] ).ToObjectArray() );
+                arrayKeys.ForEach( k => AdditionalMergeValues[k] = ( ( JArray ) AdditionalMergeValues[k] ).ToObjectArray() );
             }
         }
 
@@ -187,6 +192,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SentMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal device identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device identifier.
+        /// </value>
+        public int? PersonalDeviceId { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -298,6 +311,14 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the personal device.
+        /// </summary>
+        /// <value>
+        /// The personal device.
+        /// </value>
+        public virtual PersonalDevice PersonalDevice { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -312,7 +333,7 @@ namespace Rock.Model
             var interactionService = new InteractionService( rockContext );
             var interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
             var result = interactionService.Queryable()
-                .Where( a => a.InteractionComponent.Channel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
+                .Where( a => a.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
             return result;
         }
 
@@ -342,7 +363,35 @@ namespace Rock.Model
             {
                 if ( !mergeValues.ContainsKey( mergeField.Key ) )
                 {
-                    mergeValues.Add( mergeField.Key, mergeField.Value );
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeField.Key );
+                    if ( entityTypeInfo?.EntityType != null )
+                    {
+                        // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
+                        var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
+                        var entityIdString = mergeField.Value.ToString();
+                        IEntity mergeEntity = null;
+                        var entityId = entityIdString.AsIntegerOrNull();
+                        if ( entityId.HasValue )
+                        {
+                            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
+                        }
+                        else
+                        {
+                            var entityGuid = entityIdString.AsGuidOrNull();
+                            if ( entityGuid.HasValue )
+                            {
+                                mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
+                            }
+                        }
+
+                        // Add Entity as Merge field. For example ("GroupMember", groupMember)
+                        mergeValues.Add( entityTypeType.Name, mergeEntity );
+                    }
+                    else
+                    {
+                        // regular mergefield value
+                        mergeValues.Add( mergeField.Key, mergeField.Value );
+                    }
                 }
             }
 
@@ -418,9 +467,10 @@ namespace Rock.Model
         /// </summary>
         public CommunicationRecipientConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.MediumEntityType ).WithMany().HasForeignKey( r => r.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

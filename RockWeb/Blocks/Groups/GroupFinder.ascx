@@ -7,7 +7,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-map-marker"></i> Group Finder
                 </h1>
@@ -41,12 +41,10 @@
                         <div id="map_wrapper">
                             <div id="map_canvas" class="mapping"></div>
                         </div>
-                        <asp:Literal ID="lMapInfoDebug" runat="server" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlLavaOutput" runat="server" CssClass="margin-v-sm">
                         <asp:Literal ID="lLavaOverview" runat="server" />
-                        <asp:Literal ID="lLavaOutputDebug" runat="server" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlGrid" runat="server" CssClass="margin-v-sm">
@@ -170,9 +168,11 @@
                                         <Rock:RockCheckBox ID="cbShowDescription" runat="server" Label="Show Description" Text="Yes"
                                             Help="Should the description for each group be displayed?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowCount" runat="server" Label="Show Member Count" Text="Yes"
-                                            Help="Should the number of members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                            Help="Should the number of active members in each group be displayed in the result grid?" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBox ID="cbShowAge" runat="server" Label="Show Average Age" Text="Yes"
-                                            Help="Should the average group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                            Help="Should the average active group member age be displayed for each group in the result grid?" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbIncludePending" runat="server" Label="Include Pending" Text="Yes"
+                                            Help="Should Pending members be included in the member count and average age calculations?" ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockCheckBox ID="cbShowCampus" runat="server" Label="Show Campus" Text="Yes"
@@ -191,10 +191,10 @@
                             <Rock:PanelWidget ID="wpLinkedPages" runat="server" Title="Linked Pages">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Help="If showing the Grid, this is the page user will be redirected to when they click on the row. If using Formatted ouput, a url to this page will be included as a 'GroupDetailPage' property of the 'LinkedPages' merge field." Required="false" />
+                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Help="If showing the Grid, this is the page user will be redirected to when they click on the row. If using Formatted ouput, a URL to this page will be included as a 'GroupDetailPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Help="If this value is set and the block is configured to show the Grid, a 'Register' button will be added to each row for user to click and be redirected to this page. If using Formatted ouput, a url to this page will be included as a 'RegisterPage' property of the 'LinkedPages' merge field." Required="false" />
+                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Help="If this value is set and the block is configured to show the Grid, a 'Register' button will be added to each row for user to click and be redirected to this page. If using Formatted ouput, a URL to this page will be included as a 'RegisterPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

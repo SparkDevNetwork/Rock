@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -33,6 +34,9 @@ namespace Rock.Jobs
     /// Job to update people/families based on the Data Automation settings.
     /// Data Automation tasks are tasks that update the status of data.
     /// </summary>
+    [DisplayName( "Data Automation" )]
+    [Description( "Updates person/family information based on data automation settings." )]
+
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {
@@ -229,6 +233,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds = GetPeopleWhoContributed( settings.IsLastContributionEnabled, settings.LastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedServiceGroup( settings.IsAttendanceInServiceGroupEnabled, settings.AttendanceInServiceGroupPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsAttendanceInGroupTypeEnabled, settings.AttendanceInGroupType, null, settings.AttendanceInGroupTypeDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsSiteLoginEnabled, settings.SiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsPrayerRequestEnabled, settings.PrayerRequestPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, null, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
@@ -418,6 +423,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds = GetPeopleWhoContributed( settings.IsNoLastContributionEnabled, settings.NoLastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsNoAttendanceInGroupTypeEnabled, null, settings.AttendanceInGroupType, settings.NoAttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsNoPrayerRequestEnabled, settings.NoPrayerRequestPeriod, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsNoSiteLoginEnabled, settings.NoSiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes, settings.NoPersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsNoInteractionsEnabled, settings.NoInteractions, rockContext ) );
 
@@ -569,15 +575,14 @@ Update Family Status: {updateFamilyStatus}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                        var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
-                                m.EntityTypeId == personEntityTypeId &&
-                                m.RelatedEntityId.HasValue &&
+                                m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.RelatedEntityId.Value )
+                            .Select( a => a.EntityId )
                             .ToList()
                             .Distinct();
 
@@ -606,14 +611,17 @@ Update Family Status: {updateFamilyStatus}
                             .ToList();
                     }
 
-                    // Query all of the giving tied to a campus 
+                    // Query all of the transactions that are considered as "giving activity" and are associated with a campus.
                     if ( settings.IsMostFamilyGivingEnabled )
                     {
+                        int transactionTypeContributionId = DefinedValueCache.GetOrThrow( "Transaction Type/Contribution", Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+
                         var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                         personCampusGiving = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
                                 a.Transaction != null &&
+                                a.Transaction.TransactionTypeValueId == transactionTypeContributionId &&
                                 a.Transaction.TransactionDateTime.HasValue &&
                                 a.Transaction.TransactionDateTime >= startPeriod &&
                                 a.Transaction.AuthorizedPersonAlias != null &&
@@ -1041,7 +1049,7 @@ Update Family Status: {updateFamilyStatus}
                                     History.EvaluateChange( familyChanges, groupLocation.GroupLocationTypeValue.Value + " Location", string.Empty, groupLocation.Location.ToString() );
                                 }
 
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, SOURCE_OF_CHANGE );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false, null, SOURCE_OF_CHANGE );
                             }
 
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
@@ -1206,41 +1214,49 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
-                    if ( dataView != null )
+                    if ( dataView == null )
                     {
-                        List<string> errorMessages = new List<string>();
-                        var qryPersonsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Person>;
-                        if ( qryPersonsInDataView != null )
+                        continue;
+                    }
+
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DbContext = dataViewRockContext
+                    };
+
+                    var qryPersonsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
+                    if ( qryPersonsInDataView == null )
+                    {
+                        continue;
+                    }
+
+                    var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
+                    totalToUpdate += personsToUpdate.Count();
+                    foreach ( var person in personsToUpdate )
+                    {
+                        try
                         {
-                            var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
-                            totalToUpdate += personsToUpdate.Count();
-                            foreach ( var person in personsToUpdate )
+                            using ( var updateRockContext = new RockContext() )
                             {
-                                try
-                                {
-                                    using ( var updateRockContext = new RockContext() )
-                                    {
-                                        updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                        // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                        updateRockContext.People.Attach( person );
+                                updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                updateRockContext.People.Attach( person );
 
-                                        recordsUpdated++;
-                                        person.ConnectionStatusValueId = connectionStatusValueId;
-                                        updateRockContext.SaveChanges();
+                                recordsUpdated++;
+                                person.ConnectionStatusValueId = connectionStatusValueId;
+                                updateRockContext.SaveChanges();
 
-                                        if ( recordsUpdated % 100 == 0 )
-                                        {
-                                            context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
-                                        }
-                                    }
-                                }
-                                catch ( Exception ex )
+                                if ( recordsUpdated % 100 == 0 )
                                 {
-                                    // log but don't throw
-                                    ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
-                                    recordsWithError += 1;
+                                    context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                                 }
                             }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // log but don't throw
+                            ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
+                            recordsWithError += 1;
                         }
                     }
                 }
@@ -1285,34 +1301,43 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
-                    if ( dataView != null )
+                    if ( dataView == null )
                     {
-                        List<string> errorMessages = new List<string>();
-                        var qryGroupsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Group>;
-                        if ( qryGroupsInDataView != null )
+                        continue;
+                    }
+
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DbContext = dataViewRockContext
+                    };
+
+                    var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Group>;
+                    if ( qryGroupsInDataView == null )
+                    {
+                        continue;
+                    }
+
+                    var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
+                    totalToUpdate += groupsToUpdate.Count();
+                    foreach ( var group in groupsToUpdate )
+                    {
+                        using ( var updateRockContext = new RockContext() )
                         {
-                            var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
-                            totalToUpdate += groupsToUpdate.Count();
-                            foreach ( var group in groupsToUpdate )
+                            updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                            // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                            updateRockContext.Groups.Attach( group );
+
+                            recordsUpdated++;
+                            group.StatusValueId = groupStatusValueId;
+                            updateRockContext.SaveChanges();
+
+                            if ( recordsUpdated % 100 == 0 )
                             {
-                                using ( var updateRockContext = new RockContext() )
-                                {
-                                    updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                    // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                    updateRockContext.Groups.Attach( group );
-
-                                    recordsUpdated++;
-                                    group.StatusValueId = groupStatusValueId;
-                                    updateRockContext.SaveChanges();
-
-                                    if ( recordsUpdated % 100 == 0 )
-                                    {
-                                        context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
-                                    }
-                                }
+                                context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                             }
                         }
                     }
+
                 }
             }
 
@@ -1430,6 +1455,33 @@ Update Family Status: {updateFamilyStatus}
         }
 
         /// <summary>
+        /// Gets the people who have logged into rock.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetPeopleWhoHaveSiteLogins( bool enabled, int periodInDays, RockContext rockContext )
+        {
+            if ( enabled )
+            {
+                var startDate = RockDateTime.Now.AddDays( -periodInDays );
+
+                return new UserLoginService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( u =>
+                        u.LastActivityDateTime >= startDate ||
+                        u.LastActivityDateTime >= startDate )
+                    .Where( u => u.PersonId != null )
+                    .Select( u => u.PersonId ?? 0 )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<int>();
+        }
+
+        /// <summary>
         /// Gets the people who submitted prayer request.
         /// </summary>
         /// <param name="enabled">if set to <c>true</c> [enabled].</param>
@@ -1510,9 +1562,10 @@ Update Family Status: {updateFamilyStatus}
         {
             if ( enabled && interactionItems != null && interactionItems.Any() )
             {
+                var enabledInteractions = interactionItems.Where( i => i.IsInteractionTypeEnabled );
                 var personIdList = new List<int>();
 
-                foreach ( var interactionItem in interactionItems )
+                foreach ( var interactionItem in enabledInteractions )
                 {
                     var startDate = RockDateTime.Now.AddDays( -interactionItem.LastInteractionDays );
 
@@ -1520,7 +1573,7 @@ Update Family Status: {updateFamilyStatus}
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionDateTime >= startDate &&
-                            a.InteractionComponent.Channel.Guid == interactionItem.Guid &&
+                            a.InteractionComponent.InteractionChannel.Guid == interactionItem.Guid &&
                             a.PersonAlias != null )
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()
@@ -1542,21 +1595,31 @@ Update Family Status: {updateFamilyStatus}
         /// <returns></returns>
         private IQueryable<int> GetPeopleInDataViewQuery( bool enabled, int? dataviewId, RockContext rockContext )
         {
-            if ( enabled && dataviewId.HasValue )
+            if ( !enabled || dataviewId == null )
             {
-                var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
-                if ( dataView != null )
-                {
-                    List<string> errorMessages = new List<string>();
-                    var qry = dataView.GetQuery( null, rockContext, null, out errorMessages );
-                    if ( qry != null )
-                    {
-                        return qry.Select( e => e.Id );
-                    }
-                }
+                return null;
             }
 
-            return null;
+            var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
+            if ( dataView == null )
+            {
+                return null;
+            }
+
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DbContext = rockContext
+            };
+
+            var qry = dataView.GetQuery( dataViewGetQueryArgs );
+
+            if ( qry == null )
+            {
+                return null;
+            }
+
+            return qry.Select( e => e.Id );
+
         }
 
         /// <summary>

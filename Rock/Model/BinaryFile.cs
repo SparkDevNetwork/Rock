@@ -238,6 +238,15 @@ namespace Rock.Model
         public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
+        /// Gets or sets the document.
+        /// </summary>
+        /// <value>
+        /// The document.
+        /// </value>
+        [DataMember]
+        public virtual Document Document { get; set; }
+
+        /// <summary>
         /// Gets the URL.
         /// </summary>
         /// <value>

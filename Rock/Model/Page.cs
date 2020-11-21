@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -25,11 +26,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
-
 using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Transactions;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -46,7 +48,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Page : Model<Page>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -106,7 +107,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int LayoutId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
         /// </summary>
@@ -128,6 +129,7 @@ namespace Rock.Model
             get { return _enableViewState; }
             set { _enableViewState = value; }
         }
+
         private bool _enableViewState = true;
 
         /// <summary>
@@ -142,6 +144,7 @@ namespace Rock.Model
             get { return _pageDisplayTitle; }
             set { _pageDisplayTitle = value; }
         }
+
         private bool _pageDisplayTitle = true;
 
         /// <summary>
@@ -156,6 +159,7 @@ namespace Rock.Model
             get { return _pageDisplayBreadCrumb; }
             set { _pageDisplayBreadCrumb = value; }
         }
+
         private bool _pageDisplayBreadCrumb = true;
 
         /// <summary>
@@ -170,6 +174,7 @@ namespace Rock.Model
             get { return _pageDisplayIcon; }
             set { _pageDisplayIcon = value; }
         }
+
         private bool _pageDisplayIcon = true;
 
         /// <summary>
@@ -184,6 +189,7 @@ namespace Rock.Model
             get { return _pageDisplayDescription; }
             set { _pageDisplayDescription = value; }
         }
+
         private bool _pageDisplayDescription = true;
 
         /// <summary>
@@ -243,6 +249,7 @@ namespace Rock.Model
             get { return _breadCrumbDisplayName; }
             set { _breadCrumbDisplayName = value; }
         }
+
         private bool _breadCrumbDisplayName = true;
 
         /// <summary>
@@ -266,14 +273,30 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the length of time in that rendered output is cached. This property is required.
+        /// Gets or sets a value indicating the length of time (in seconds) in that rendered output is cached. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> represents the length of time that output is cached. 0 = no caching.
+        /// An <see cref="System.Int32"/> represents the length of time (in seconds) that output is cached. 0 = no caching.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int OutputCacheDuration { get; set; }
+        [Obsolete( "You should use the new cache control header property." )]
+        [RockObsolete( "1.12" )]
+        [DataMember]
+        public int OutputCacheDuration
+        {
+            get
+            {
+                if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
+                {
+                    return 0;
+                }
+
+                return this.CacheControlHeader.MaxAge.ToSeconds();
+            }
+
+            private set
+            {
+            }
+        }
 
         /// <summary>
         /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page 
@@ -314,6 +337,7 @@ namespace Rock.Model
             get { return _allowIndexing; }
             set { _allowIndexing = value; }
         }
+
         private bool _allowIndexing = true;
 
         /// <summary>
@@ -339,6 +363,7 @@ namespace Rock.Model
             get { return _includeAdminFooter; }
             set { _includeAdminFooter = value; }
         }
+
         private bool _includeAdminFooter = true;
 
         /// <summary>
@@ -351,6 +376,79 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string BodyCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the median page load time in seconds. Typically calculated from a set of
+        /// <see cref="Interaction.InteractionTimeToServe"/> values.
+        /// </summary>
+        /// <value>
+        /// The median page load time in seconds.
+        /// </value>
+        [DataMember]
+        public double? MedianPageLoadTimeDurationSeconds { get; set; }
+
+        private string _cacheControlHeaderSettings;
+
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [MaxLength( 500 )]
+        [DataMember]
+        public string CacheControlHeaderSettings
+        {
+            get => _cacheControlHeaderSettings;
+            set
+            {
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
+
+                _cacheControlHeaderSettings = value;
+            }
+        }
+
+        private RockCacheability _cacheControlHeader;
+
+        /// <summary>
+        /// Gets the cache control header. This shouldn't be used to set the properties directly but the json version should be used to set the CacheControlHeaderSettings property.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+
+                return _cacheControlHeader;
+            }
+        }
         #endregion
 
         #region Virtual Properties
@@ -363,6 +461,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Page ParentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon binary file.
+        /// </summary>
+        /// <value>
+        /// The icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -381,6 +488,7 @@ namespace Rock.Model
                 return actions;
             }
         }
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Layout"/> that the pages uses.
         /// </summary>
@@ -406,7 +514,6 @@ namespace Rock.Model
             }
         }
 
-        
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
         /// </summary>
@@ -419,6 +526,7 @@ namespace Rock.Model
             get { return _blocks ?? ( _blocks = new Collection<Block>() ); }
             set { _blocks = value; }
         }
+
         private ICollection<Block> _blocks;
 
         /// <summary>
@@ -433,6 +541,7 @@ namespace Rock.Model
             get { return _pages ?? ( _pages = new Collection<Page>() ); }
             set { _pages = value; }
         }
+
         private ICollection<Page> _pages;
 
         /// <summary>
@@ -447,6 +556,7 @@ namespace Rock.Model
             get { return _pageRoutes ?? ( _pageRoutes = new Collection<PageRoute>() ); }
             set { _pageRoutes = value; }
         }
+
         private ICollection<PageRoute> _pageRoutes;
 
         /// <summary>
@@ -461,6 +571,7 @@ namespace Rock.Model
             get { return _pageContexts ?? ( _pageContexts = new Collection<PageContext>() ); }
             set { _pageContexts = value; }
         }
+
         private ICollection<PageContext> _pageContexts;
 
         /// <summary>
@@ -478,7 +589,7 @@ namespace Rock.Model
                 {
                     return this.ParentPage;
                 }
-                else if (this.Layout != null && this.Layout.Site != null)
+                else if ( this.Layout != null && this.Layout.Site != null )
                 {
                     return this.Layout.Site;
                 }
@@ -497,10 +608,16 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if (state == EntityState.Deleted)
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
+            {
+                _originalParentPageId = entry.Property( nameof( ParentPageId ) )?.OriginalValue?.ToString().AsIntegerOrNull();
+            }
+
+            if ( state == EntityState.Deleted )
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
@@ -509,8 +626,10 @@ namespace Rock.Model
                 var routes = RouteTable.Routes;
                 if ( routes != null )
                 {
-                    foreach( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
-                    { 
+                    var routesToRemove = new List<Route>();
+
+                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                    {
                         var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
                         pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
                         if ( pageAndRouteIds.Any() )
@@ -519,13 +638,40 @@ namespace Rock.Model
                         }
                         else
                         {
-                            RouteTable.Routes.Remove( existingRoute );
+                            routesToRemove.Add( existingRoute );
                         }
+                    }
+
+                    foreach ( var existingRoute in routesToRemove )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
                     }
                 }
             }
+            else if ( state == EntityState.Modified )
+            {
+                var previousInternalName = entry.Property( nameof( InternalName ) )?.OriginalValue.ToStringSafe();
+                _didNameChange = previousInternalName != InternalName;
+            }
 
             base.PreSaveChanges( dbContext, state );
+        }
+
+        private bool _didNameChange = false;
+        private int? _originalParentPageId = null;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            if ( _didNameChange )
+            {
+                new PageRenameTransaction( Guid ).Enqueue();
+            }
         }
 
         /// <summary>
@@ -543,24 +689,6 @@ namespace Rock.Model
 
         #region ICacheable
 
-        private int? _originalParentPageId;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Modified || state == EntityState.Deleted )
-            {
-                _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
-        }
-
         /// <summary>
         /// Gets the cache object associated with this Entity
         /// </summary>
@@ -577,12 +705,6 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
-            if ( oldPageCache != null )
-            {
-                oldPageCache.RemoveChildPages();
-            }
-
             PageCache.UpdateCachedEntity( this.Id, entityState );
 
             if ( this.ParentPageId.HasValue )
@@ -597,7 +719,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -614,6 +735,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

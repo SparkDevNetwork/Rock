@@ -96,7 +96,7 @@ namespace Rock.Workflow.Action
                 var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
                 if ( attributePerson != null )
                 {
-                    string attributePersonValue = action.GetWorklowAttributeValue( guidPersonAttribute );
+                    string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute );
                     if ( !string.IsNullOrWhiteSpace( attributePersonValue ) )
                     {
                         if ( attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType" )

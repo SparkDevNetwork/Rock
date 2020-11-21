@@ -30,7 +30,7 @@ namespace Rock.Data
     /// Helper class to set view cache
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed," )]
+    [Obsolete( "Does nothing. No longer needed,", true )]
     public static class RockInteractiveViews
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="path">The path.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,")]
+        [Obsolete("Does nothing. No longer needed,", true )]
         public static void SetViewFactory( string path )
         {
         }
@@ -68,6 +68,30 @@ namespace Rock.Data
         }
 
         #region Models
+
+        /// <summary>
+        /// Gets or sets the AchievementAttempts.
+        /// </summary>
+        /// <value>
+        /// The AchievementAttempts.
+        /// </value>
+        public DbSet<AchievementAttempt> AchievementAttempts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AchievementTypes.
+        /// </summary>
+        /// <value>
+        /// The AchievementTypes.
+        /// </value>
+        public DbSet<AchievementType> AchievementTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<AchievementTypePrerequisite> AchievementTypePrerequisites { get; set; }
 
         /// <summary>
         /// Gets or sets the analytics dim attendance locations.
@@ -214,6 +238,22 @@ namespace Rock.Data
         public DbSet<AssetStorageProvider> AssetStorageProviders { get; set; }
 
         /// <summary>
+        /// Gets or sets the assessments.
+        /// </summary>
+        /// <value>
+        /// The assessments
+        /// </value>
+        public DbSet<Assessment> Assessments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AssessmentTypes.
+        /// </summary>
+        /// <value>
+        /// The AssessmentTypes
+        /// </value>
+        public DbSet<AssessmentType> AssessmentTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendances.
         /// </summary>
         /// <value>
@@ -222,12 +262,28 @@ namespace Rock.Data
         public DbSet<Attendance> Attendances { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance check in sessions.
+        /// </summary>
+        /// <value>
+        /// The attendance check in sessions.
+        /// </value>
+        public DbSet<AttendanceCheckInSession> AttendanceCheckInSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance codes.
         /// </summary>
         /// <value>
         /// The attendance codes.
         /// </value>
         public DbSet<AttendanceCode> AttendanceCodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attendances data.
+        /// </summary>
+        /// <value>
+        /// The attendances data.
+        /// </value>
+        public DbSet<AttendanceData> AttendancesData { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance occurrences.
@@ -310,12 +366,36 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the Auth Clients.
+        /// </summary>
+        /// <value>
+        /// the Auth Clients.
+        /// </value>
+        public DbSet<AuthClient> AuthClients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Claim.
+        /// </summary>
+        /// <value>
+        /// The Auth Claim.
+        /// </value>
+        public DbSet<AuthClaim> AuthClaims { get; set; }
+                
+        /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
         /// the Auths.
         /// </value>
         public DbSet<Auth> Auths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Scope.
+        /// </summary>
+        /// <value>
+        /// The Auth Scope.
+        /// </value>
+        public DbSet<AuthScope> AuthScopes { get; set; }
 
         /// <summary>
         /// Gets or sets the background checks.
@@ -614,6 +694,22 @@ namespace Rock.Data
         public DbSet<DataViewPersistedValue> DataViewPersistedValues { get; set; }
 
         /// <summary>
+        /// Gets or sets the document types.
+        /// </summary>
+        /// <value>
+        /// The document types.
+        /// </value>
+        public DbSet<DocumentType> DocumentTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the documents.
+        /// </summary>
+        /// <value>
+        /// The documents.
+        /// </value>
+        public DbSet<Document> Documents { get; set; }
+
+        /// <summary>
         /// Gets or sets the Defined Types.
         /// </summary>
         /// <value>
@@ -636,6 +732,14 @@ namespace Rock.Data
         /// The devices.
         /// </value>
         public DbSet<Device> Devices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity campus filters.
+        /// </summary>
+        /// <value>
+        /// The entity campus filters.
+        /// </value>
+        public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the entity sets.
@@ -902,6 +1006,22 @@ namespace Rock.Data
         public DbSet<Group> Groups { get; set; }
 
         /// <summary>
+        /// Gets or sets the group demographic types.
+        /// </summary>
+        /// <value>
+        /// The group demographic types.
+        /// </value>
+        public DbSet<GroupDemographicType> GroupDemographicTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic values.
+        /// </summary>
+        /// <value>
+        /// The group demographic values.
+        /// </value>
+        public DbSet<GroupDemographicValue> GroupDemographicValues { get; set; }
+
+        /// <summary>
         /// Gets or sets the group historicals.
         /// </summary>
         /// <value>
@@ -934,12 +1054,28 @@ namespace Rock.Data
         public DbSet<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         /// <summary>
+        /// Gets or sets the group location schedule configs.
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        public DbSet<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; }
+
+        /// <summary>
         /// Gets or sets the Members.
         /// </summary>
         /// <value>
         /// the Members.
         /// </value>
         public DbSet<GroupMember> GroupMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member assignments.
+        /// </summary>
+        /// <value>
+        /// The group member assignments.
+        /// </value>
+        public DbSet<GroupMemberAssignment> GroupMemberAssignments { get; set; }
 
         /// <summary>
         /// Gets or sets the group member historicals.
@@ -956,6 +1092,14 @@ namespace Rock.Data
         /// The group member requirements.
         /// </value>
         public DbSet<GroupMemberRequirement> GroupMemberRequirements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group member schedule templates.
+        /// </summary>
+        /// <value>
+        /// The group member schedule templates.
+        /// </value>
+        public DbSet<GroupMemberScheduleTemplate> GroupMemberScheduleTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the group member workflow triggers.
@@ -1036,6 +1180,22 @@ namespace Rock.Data
         /// the Html Contents.
         /// </value>
         public DbSet<HtmlContent> HtmlContents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS actions.
+        /// </summary>
+        /// <value>
+        /// The SMS actions.
+        /// </value>
+        public DbSet<SmsAction> SmsActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SMS pipeline.
+        /// </summary>
+        /// <value>
+        /// The SMS pipelines.
+        /// </value>
+        public DbSet<SmsPipeline> SmsPipelines { get; set; }
 
         /// <summary>
         /// Gets or sets the Interactions.
@@ -1262,6 +1422,14 @@ namespace Rock.Data
         public DbSet<PageRoute> PageRoutes { get; set; }
 
         /// <summary>
+        /// Gets or sets the persisted datasets.
+        /// </summary>
+        /// <value>
+        /// The persisted datasets.
+        /// </value>
+        public DbSet<PersistedDataset> PersistedDatasets { get; set; }
+
+        /// <summary>
         /// Gets or sets the People.
         /// </summary>
         /// <value>
@@ -1286,12 +1454,12 @@ namespace Rock.Data
         public DbSet<PersonAlias> PersonAliases { get; set; }
 
         /// <summary>
-        /// Gets or sets the person badge types.
+        /// Gets or sets the badges.
         /// </summary>
         /// <value>
         /// The person badge types.
         /// </value>
-        public DbSet<PersonBadge> PersonBadges { get; set; }
+        public DbSet<Model.Badge> Badges { get; set; }
 
         /// <summary>
         /// Gets or sets the person duplicates.
@@ -1308,6 +1476,14 @@ namespace Rock.Data
         /// The person previous names.
         /// </value>
         public DbSet<PersonPreviousName> PersonPreviousNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person schedule exclusions.
+        /// </summary>
+        /// <value>
+        /// The person schedule exclusions.
+        /// </value>
+        public DbSet<PersonScheduleExclusion> PersonScheduleExclusions { get; set; }
 
         /// <summary>
         /// Gets or sets the Person Signals.
@@ -1348,6 +1524,22 @@ namespace Rock.Data
         /// the Phone Numbers.
         /// </value>
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone verifications.
+        /// </summary>
+        /// <value>
+        /// The phone verifications.
+        /// </value>
+        public DbSet<IdentityVerification> IdentityVerifications { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone verification codes.
+        /// </summary>
+        /// <value>
+        /// The phone verification codes.
+        /// </value>
+        public DbSet<IdentityVerificationCode> IdentityVerificationCodes { get; set; }
 
         /// <summary>
         /// Gets or sets the plugin migrations.
@@ -1444,6 +1636,22 @@ namespace Rock.Data
         /// The registration template form fields.
         /// </value>
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template placements.
+        /// </summary>
+        /// <value>
+        /// The registration template placements.
+        /// </value>
+        public DbSet<RegistrationTemplatePlacement> RegistrationTemplatePlacements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entities.
+        /// </summary>
+        /// <value>
+        /// The related entities.
+        /// </value>
+        public DbSet<RelatedEntity> RelatedEntities { get; set; }
 
         /// <summary>
         /// Gets or sets the reports.
@@ -1558,6 +1766,62 @@ namespace Rock.Data
         public DbSet<SiteDomain> SiteDomains { get; set; }
 
         /// <summary>
+        /// Gets or sets the steps.
+        /// </summary>
+        /// <value>
+        /// The steps.
+        /// </value>
+        public DbSet<Step> Steps { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step programs.
+        /// </summary>
+        /// <value>
+        /// The step programs.
+        /// </value>
+        public DbSet<StepProgram> StepPrograms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step statuses.
+        /// </summary>
+        /// <value>
+        /// The step statuses.
+        /// </value>
+        public DbSet<StepStatus> StepStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step types.
+        /// </summary>
+        /// <value>
+        /// The step types.
+        /// </value>
+        public DbSet<StepType> StepTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The step type prerequisites.
+        /// </value>
+        public DbSet<StepTypePrerequisite> StepTypePrerequisites { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflows.
+        /// </summary>
+        /// <value>
+        /// The step workflows.
+        /// </value>
+        public DbSet<StepWorkflow> StepWorkflows { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step workflow triggers.
+        /// </summary>
+        /// <value>
+        /// The step workflow triggers.
+        /// </value>
+        public DbSet<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
+
+        /// <summary>
         /// Gets or sets the site URL maps.
         /// </summary>
         /// <value>
@@ -1566,12 +1830,46 @@ namespace Rock.Data
         public DbSet<PageShortLink> PageShortLinks { get; set; }
 
         /// <summary>
+        /// Gets or sets the Streaks.
+        /// </summary>
+        /// <value>
+        /// The Streaks.
+        /// </value>
+        public DbSet<Streak> Streaks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypes.
+        /// </summary>
+        /// <value>
+        /// The StreakTypes.
+        /// </value>
+        public DbSet<StreakType> StreakTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypeExclusions.
+        /// </summary>
+        /// <value>
+        /// The StreakTypeExclusions.
+        /// </value>
+        public DbSet<StreakTypeExclusion> StreakTypeExclusions { get; set; }
+
+        /// <summary>
         /// Gets or sets the system emails.
         /// </summary>
         /// <value>
         /// The system emails.
         /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use SystemCommunications instead." )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system emails.
+        /// </summary>
+        /// <value>
+        /// The system emails.
+        /// </value>
+        public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.
@@ -1596,6 +1894,22 @@ namespace Rock.Data
         /// the Users.
         /// </value>
         public DbSet<UserLogin> UserLogins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm nodes.
+        /// </summary>
+        /// <value>
+        /// The web farm nodes.
+        /// </value>
+        public DbSet<WebFarmNode> WebFarmNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node logs.
+        /// </summary>
+        /// <value>
+        /// The web farm node logs.
+        /// </value>
+        public DbSet<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.
@@ -1702,7 +2016,7 @@ namespace Rock.Data
 
         /// <summary>
         /// This method is called when the context has been initialized, but
-        /// before the model has been locked down and used to initialize the context. 
+        /// before the model has been locked down and used to initialize the context.
         /// </summary>
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
@@ -1763,7 +2077,7 @@ namespace Rock.Data
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class ContextHelper
     {
@@ -1773,6 +2087,7 @@ namespace Rock.Data
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
+            modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
         }

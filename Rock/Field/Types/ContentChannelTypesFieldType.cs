@@ -34,13 +34,10 @@ namespace Rock.Field.Types
         /// <value>
         /// The list source.
         /// </value>
-        internal override Dictionary<string, string> ListSource
+        internal override Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
         {
-            get
-            {
-                ContentChannelTypeService service = new ContentChannelTypeService( new RockContext() );
-                return service.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
-            }
+            ContentChannelTypeService service = new ContentChannelTypeService( new RockContext() );
+            return service.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
         }
     }
 }

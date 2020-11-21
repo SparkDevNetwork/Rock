@@ -137,6 +137,9 @@ namespace Rock.Client
     public partial class PhoneNumber : PhoneNumberEntity
     {
         /// <summary />
+        public string FullNumber { get; set; }
+
+        /// <summary />
         public DefinedValue NumberTypeValue { get; set; }
 
         /// <summary>

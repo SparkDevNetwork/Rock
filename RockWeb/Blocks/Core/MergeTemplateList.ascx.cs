@@ -31,10 +31,24 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of all merge templates." )]
 
-    [LinkedPage( "Detail Page" )]
-    [EnumField( "Merge Templates Ownership", "Set this to limit to merge templates depending on ownership type.", typeof( MergeTemplateOwnership ), true, "Personal" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    [EnumField( "Merge Templates Ownership",
+        Description = "Set this to limit to merge templates depending on ownership type.",
+        EnumSourceType = typeof( MergeTemplateOwnership ),
+        IsRequired = true,
+        DefaultValue = "Personal",
+        Key = AttributeKey.MergeTemplatesOwnership )]
+
     public partial class MergeTemplateList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string MergeTemplatesOwnership = "MergeTemplatesOwnership";
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -49,7 +63,7 @@ namespace RockWeb.Blocks.Core
             gMergeTemplates.Actions.AddClick += gMergeTemplates_Add;
             gMergeTemplates.GridRebind += gMergeTemplates_GridRebind;
 
-            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
+            var mergeTemplateOwnership = this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
 
             //// Block Security and special attributes (RockPage takes care of View)
             //// NOTE: If MergeTemplatesOwnership = Person, the CurrentPerson can edit their own templates regardless of Authorization.EDIT
@@ -120,7 +134,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gMergeTemplates_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "MergeTemplateId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "MergeTemplateId", 0 );
         }
 
         /// <summary>
@@ -130,7 +144,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gMergeTemplates_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "MergeTemplateId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "MergeTemplateId", e.RowKeyId );
         }
 
         /// <summary>
@@ -183,7 +197,7 @@ namespace RockWeb.Blocks.Core
 
             var qry = service.Queryable();
 
-            var mergeTemplateOwnership = this.GetAttributeValue( "MergeTemplatesOwnership" ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
+            var mergeTemplateOwnership = this.GetAttributeValue( AttributeKey.MergeTemplatesOwnership ).ConvertToEnum<MergeTemplateOwnership>( MergeTemplateOwnership.Personal );
 
             var personColumn = gMergeTemplates.Columns.OfType<PersonField>().FirstOrDefault();
             personColumn.Visible = false;

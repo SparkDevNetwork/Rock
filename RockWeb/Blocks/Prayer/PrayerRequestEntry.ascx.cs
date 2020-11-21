@@ -53,8 +53,8 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "Features", 9 )]
     [IntegerField( "Character Limit", "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.", false, 250, "Features", 10 )]
     [BooleanField( "Require Last Name", "Require that a last name be entered", true, "Features", 11 )]
-    [BooleanField( "Show Campus", "Show a campus picker", true, "Features", 12 )]
-    [BooleanField( "Require Campus", "Require that a campus be selected", false, "Features", 13 )]
+    [BooleanField( "Show Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true, "Features", 12 )]
+    [BooleanField( "Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "Features", 13 )]
     [BooleanField( "Enable Person Matching", "If enabled, the request will be linked to an existing person if a match can be made between the requester and an existing person.", false, "Features", 14 )]
 
     // On Save Behavior
@@ -100,14 +100,21 @@ namespace RockWeb.Blocks.Prayer
             this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             this.DefaultToPublic = GetAttributeValue( "DefaultToPublic" ).AsBoolean();
             tbLastName.Required = GetAttributeValue( "RequireLastName" ).AsBooleanOrNull() ?? true;
-            cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
-            cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
-            pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
+            cpCampus.Campuses = CampusCache.All( false );
+            cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+            
             if ( cpCampus.Visible )
             {
-                cpCampus.Campuses = CampusCache.All( false );
+                cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
             }
+
+            if ( EnableCommentsFlag )
+            {
+                cbAllowComments.Checked = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+            }
+
+            pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )
@@ -175,7 +182,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnLoad( e );
 
-            if ( ! Page.IsPostBack )
+            if ( !Page.IsPostBack )
             {
                 if ( CurrentPerson != null )
                 {
@@ -187,14 +194,14 @@ namespace RockWeb.Blocks.Prayer
 
                 dtbRequest.Text = PageParameter( "Request" );
                 cbAllowPublicDisplay.Checked = this.DefaultToPublic;
-            }
 
-            var prayerRequest = new PrayerRequest { Id = 0 };
-            prayerRequest.LoadAttributes();
-            phAttributes.Controls.Clear();
-            // Filter to only include attribute / attribute values that the person is authorized to edit.
-            var excludeForEdit = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
-            Rock.Attribute.Helper.AddEditControls( prayerRequest, phAttributes, false, BlockValidationGroup, excludeForEdit );
+
+                var prayerRequest = new PrayerRequest { Id = 0 };
+                prayerRequest.LoadAttributes();
+                avcEditAttributes.ExcludedAttributes = prayerRequest.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+                avcEditAttributes.AddEditControls( prayerRequest );
+                avcEditAttributes.ValidationGroup = this.BlockValidationGroup;
+            }
         }
 
         #endregion
@@ -350,7 +357,7 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
             prayerRequestService.Add( prayerRequest );
             prayerRequest.LoadAttributes( rockContext );
-            Rock.Attribute.Helper.GetEditValues( phAttributes, prayerRequest );
+            avcEditAttributes.GetEditValues( prayerRequest );
 
             if ( !prayerRequest.IsValid )
             {
@@ -420,8 +427,8 @@ namespace RockWeb.Blocks.Prayer
         {
             Guid guid = new Guid( categoryGuid );
 
-            bddlCategory.DataSource = new CategoryService( new RockContext() ).GetByEntityTypeId( this.PrayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
-                ( c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
+            bddlCategory.DataSource = new CategoryService( new RockContext() ).GetByEntityTypeId( this.PrayerRequestEntityTypeId )
+                .Where( c => ( c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
             bddlCategory.DataTextField = "Name";
             bddlCategory.DataValueField = "Id";
             bddlCategory.DataBind();

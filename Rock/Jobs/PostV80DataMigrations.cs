@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Data Migrations for v8.0" )]
+    [DisplayName( "Rock Update Helper v8.0" )]
     [Description( "This job will take care of any data migrations that need to occur after updating to v80. After all the operations are done, this job will delete itself." )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 7, "CommandTimeout" )]
     public class PostV80DataMigrations : IJob
@@ -303,7 +303,7 @@ END
                     SET [Interaction].[InteractionSummary] = [InteractionComponent].[Name]
                     FROM [Interaction]
                     INNER JOIN [InteractionComponent] ON [Interaction].[InteractionComponentId] = [InteractionComponent].[Id]
-                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)
+                    WHERE [InteractionComponent].[InteractionChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)
                     AND [Interaction].[InteractionSummary] != [InteractionComponent].[Name]";
 
                 rockContext.Database.ExecuteSqlCommand( sqlQuery );

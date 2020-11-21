@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "layoutId" ).AsInteger(), PageParameter( "siteId" ).AsIntegerOrNull() );
+                ShowDetail( PageParameter( "LayoutId" ).AsInteger(), PageParameter( "SiteId" ).AsIntegerOrNull() );
             }
         }
 
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Crm
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? layoutId = PageParameter(pageReference, "layoutId" ).AsIntegerOrNull();
+            int? layoutId = PageParameter(pageReference, "LayoutId" ).AsIntegerOrNull();
             if ( layoutId != null )
             {
                 Layout layout = new LayoutService( new RockContext() ).Get( layoutId.Value );
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Crm
                 rockContext.SaveChanges();
 
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams["layoutId"] = layout.Id.ToString();
+                qryParams["LayoutId"] = layout.Id.ToString();
                 NavigateToPage( RockPage.Guid, qryParams );
             }
         }
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Crm
             {
                 // Cancelling on Add
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["siteId"] = hfSiteId.Value;
+                qryString["SiteId"] = hfSiteId.Value;
                 NavigateToParentPage( qryString );
             }
             else

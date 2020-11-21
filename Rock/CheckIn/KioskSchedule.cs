@@ -98,6 +98,23 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets a value indicating whether the check-out window is active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckOutActive
+        {
+            get
+            {
+                var now = CampusCurrentDateTime;
+                return CheckInTimes.Any( t =>
+                    t.CheckInStart <= now &&
+                    t.End > now ); // End time is used for check-out window
+            }
+        }
+
+        /// <summary>
         /// Gets the start time.
         /// </summary>
         /// <value>

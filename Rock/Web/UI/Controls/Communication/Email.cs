@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls.Communication
         private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
         private HiddenField hfAttachments;
-        private FileUploader fuAttachments;
+        private FileUploader fupEmailAttachments;
 
         #endregion
 
@@ -209,7 +209,6 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
             //htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.Help = "<span class='tip tip-lava'></span> <span class='tip tip-html'>";
-            this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
             htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
@@ -218,11 +217,11 @@ namespace Rock.Web.UI.Controls.Communication
             hfAttachments.ID = string.Format( "hfAttachments_{0}", this.ID );
             Controls.Add( hfAttachments );
 
-            fuAttachments = new FileUploader();
-            fuAttachments.ID = string.Format( "fuAttachments_{0}", this.ID );
-            fuAttachments.Label = "Attachments";
-            fuAttachments.FileUploaded += fuAttachments_FileUploaded;
-            Controls.Add( fuAttachments );
+            fupEmailAttachments = new FileUploader();
+            fupEmailAttachments.ID = string.Format( "fupEmailAttachments_{0}", this.ID );
+            fupEmailAttachments.Label = "Attachments";
+            fupEmailAttachments.FileUploaded += fupEmailAttachments_FileUploaded;
+            Controls.Add( fupEmailAttachments );
 
             ebCcAddress = new EmailBox();
             ebCcAddress.ID = string.Format( "ebCcAddress_{0}", this.ID );
@@ -314,7 +313,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            fuAttachments.RenderControl( writer );
+            fupEmailAttachments.RenderControl( writer );
             hfAttachments.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "attachment" );
@@ -381,6 +380,8 @@ namespace Rock.Web.UI.Controls.Communication
                 htmlMessage.MergeFields.Add( "Communication.MediumData.ReplyTo|Reply To" );
                 htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             }
+            this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
+
             htmlMessage.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -394,17 +395,17 @@ namespace Rock.Web.UI.Controls.Communication
         #region Events
 
         /// <summary>
-        /// Handles the FileUploaded event of the fuAttachments control.
+        /// Handles the FileUploaded event of the fupEmailAttachments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void fuAttachments_FileUploaded( object sender, EventArgs e )
+        protected void fupEmailAttachments_FileUploaded( object sender, EventArgs e )
         {
             EnsureChildControls();
             var attachmentList = hfAttachments.Value.SplitDelimitedValues().ToList();
-            attachmentList.Add( fuAttachments.BinaryFileId.ToString() );
+            attachmentList.Add( fupEmailAttachments.BinaryFileId.ToString() );
             hfAttachments.Value = attachmentList.AsDelimited( "," );
-            fuAttachments.BinaryFileId = null;
+            fupEmailAttachments.BinaryFileId = null;
         }
 
         #endregion

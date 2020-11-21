@@ -16,6 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -28,9 +30,12 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// Job to makes sure that persisted dataviews are updated based on their schedule interval.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Update Persisted DataViews" )]
+    [Description( "Job to makes sure that persisted dataviews are updated based on their schedule interval." )]
+
     [DisallowConcurrentExecution]
     [IntegerField( "SQL Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (300 seconds). ", false, 5 * 60, "General", 1, TIMEOUT_KEY )]
     public class UpdatePersistedDataviews : IJob
@@ -61,42 +66,48 @@ namespace Rock.Jobs
             var errors = new List<string>();
             List<Exception> exceptions = new List<Exception>();
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContextList = new RockContext() )
             {
                 var currentDateTime = RockDateTime.Now;
 
                 // get a list of all the data views that need to be refreshed
-                var expiredPersistedDataViews = new DataViewService( rockContext ).Queryable()
+                var expiredPersistedDataViewIds = new DataViewService( rockContextList ).Queryable()
                     .Where( a => a.PersistedScheduleIntervalMinutes.HasValue )
-                    .Where( a =>
-                        ( a.PersistedLastRefreshDateTime == null )
-                        || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.PersistedScheduleIntervalMinutes.Value, a.PersistedLastRefreshDateTime.Value ) < currentDateTime )
-                        );
+                        .Where( a =>
+                            ( a.PersistedLastRefreshDateTime == null )
+                            || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.PersistedScheduleIntervalMinutes.Value, a.PersistedLastRefreshDateTime.Value ) < currentDateTime )
+                            )
+                        .Select( a => a.Id );
 
-                var expiredPersistedDataViewsList = expiredPersistedDataViews.ToList();
-                foreach ( var dataView in expiredPersistedDataViewsList )
+                var expiredPersistedDataViewsIdsList = expiredPersistedDataViewIds.ToList();
+                foreach ( var dataViewId in expiredPersistedDataViewsIdsList )
                 {
-                    var name = dataView.Name;
-                    try
+                    using ( var persistContext = new RockContext() )
                     {
-                        context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
-                        dataView.PersistResult( sqlCommandTimeout );
-                        dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                        rockContext.SaveChanges();
-                        updatedDataViewCount++;
-                    }
-                    catch ( Exception ex )
-                    {
-                        // Capture and log the exception because we're not going to fail this job
-                        // unless all the data views fail.
-                        var errorMessage = $"An error occurred while trying to update persisted data view '{name}' so it was skipped. Error: {ex.Message}";
-                        errors.Add( errorMessage );
-                        var ex2 = new Exception( errorMessage, ex );
-                        exceptions.Add( ex2 );
-                        ExceptionLogService.LogException( ex2, null );
-                        continue;
+                        var dataView = new DataViewService( persistContext ).Get( dataViewId );
+                        var name = dataView.Name;
+                        try
+                        {
+                            context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
+                            dataView.PersistResult( sqlCommandTimeout );
+                            persistContext.SaveChanges();
+                            updatedDataViewCount++;
+                        }
+                        catch ( Exception ex )
+                        {
+                            // Capture and log the exception because we're not going to fail this job
+                            // unless all the data views fail.
+                            var errorMessage = $"An error occurred while trying to update persisted data view '{name}' so it was skipped. Error: {ex.Message}";
+                            errors.Add( errorMessage );
+                            var ex2 = new Exception( errorMessage, ex );
+                            exceptions.Add( ex2 );
+                            ExceptionLogService.LogException( ex2, null );
+                            continue;
+
+                        }
                     }
                 }
+
             }
 
             // Format the result message

@@ -19,12 +19,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a campus
     /// </summary>
     public class CampusPicker : RockDropDownList
     {
@@ -36,6 +37,15 @@ namespace Rock.Web.UI.Controls
         {
             Label = "Campus";
         }
+
+        /// <summary>
+        /// By default the campus picker is not visible if there is only one campus.
+        /// Set this to true if it should be displayed regardless of the number of active campuses.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceVisible { get; set; } = false;
 
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -91,6 +101,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a list of Campus Type IDs that the picker should contain. If null or empty then all types are included.
+        /// </summary>
+        /// <value>
+        /// The campus types filter.
+        /// </value>
+        public List<int> CampusTypesFilter
+        {
+            get
+            {
+                return ViewState["CampusTypesFilter"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["CampusTypesFilter"] = value;
+                LoadItems( null );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of Campus Status IDs that the picker should contain. If null or empty then all statuses are included.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<int> CampusStatusFilter
+        {
+            get
+            {
+                return ViewState["CampusStatusFilter"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["CampusStatusFilter"] = value;
+                LoadItems( null );
+            }
+        }
+
+
+        /// <summary>
         /// Gets or sets the campuses.
         /// </summary>
         /// <value>
@@ -127,6 +178,7 @@ namespace Rock.Web.UI.Controls
                 if ( li != null )
                 {
                     li.Selected = true;
+                    this.SelectedValue = id.ToString();
                 }
                 else
                 {
@@ -160,23 +212,58 @@ namespace Rock.Web.UI.Controls
         /// <param name="selectedValue">The selected value.</param>
         private void LoadItems( int? selectedValue )
         {
+            // Get all the campi
+            var campuses = CampusCache.All()
+                .Where( c =>
+                    ( CampusIds.Contains( c.Id )
+                        && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive )
+                        && CampusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                        && CampusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    )
+                    || ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
+                .OrderBy( c => c.Order )
+                .ToList();
+
+            // Get the current text for the first item if its value is empty
             string firstItemText = Items.Count > 0 && Items[0].Value == string.Empty ? Items[0].Text : string.Empty;
 
-            var selectedItems = Items.Cast<ListItem>()
+            List<int> selectedItems = new List<int>();
+
+            // If there is one campus then only show if ForceVisible is true.
+            if ( campuses.Count == 0 )
+            {
+                // If the picker has any filter conditions then it should show even if the result is 0.
+                this.Visible = false || CampusTypesFilter.Any() || CampusStatusFilter.Any();
+            }
+            else if ( campuses.Count == 1 )
+            {
+                // If the picker has any filter conditions then it should show even if the result is 1.
+                this.Visible = ForceVisible || CampusTypesFilter.Any() || CampusStatusFilter.Any();
+
+                // if this is required then auto-select the only campus
+                if ( this.Required )
+                {
+                    selectedItems.Add( campuses[0].Id );
+                }
+            }
+            else
+            {
+                /*
+                 * 2020-04-09 ETD
+                 * Don't set the Visible property here. If a block setting or somthing else is hiding the control this will show it.
+                 * Removed this to fix issue #4172.
+                 * this.Visible = true;
+                 */
+
+                selectedItems = Items.Cast<ListItem>()
                 .Where( i => i.Selected )
                 .Select( i => i.Value ).AsIntegerList();
+            }
 
             Items.Clear();
 
-            // add Empty option first
+            // Add a blank first item.
             Items.Add( new ListItem( firstItemText, string.Empty ) );
-
-            var campuses = CampusCache.All()
-                .Where( c =>
-                    ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
-                    ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
-                .OrderBy( c => c.Name )
-                .ToList();
 
             foreach ( CampusCache campus in campuses )
             {

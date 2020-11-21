@@ -42,6 +42,15 @@ namespace Rock.Financial
         public decimal Amount { get; set; }
 
         /// <summary>
+        /// Gets or sets the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> indicating
+        /// the type of the transaction.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the TransactionType <see cref="Rock.Model.DefinedValue"/> for this transaction.
+        /// </value>
+        public int? TransactionTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the first name.
         /// </summary>
         public string FirstName { get; set; }
@@ -115,6 +124,16 @@ namespace Rock.Financial
         public string Country { get; set; }
 
         /// <summary>
+        /// Returns True if the payment info includes Address Data (Street1 or Street2).
+        /// For example, if updating a scheduled transaction, the address data could be null since the gateway would already know this.
+        /// </summary>
+        /// <returns></returns>
+        public bool IncludesAddressData()
+        {
+            return this.Street1.IsNotNullOrWhiteSpace() || this.Street2.IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
         /// Gets or sets the ip address.
         /// </summary>
         /// <value>
@@ -162,36 +181,18 @@ namespace Rock.Financial
         {
             get
             {
-                string result = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
-
-                var countryValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
-                    .DefinedValues
-                    .Where( v => v.Value.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
-                    .FirstOrDefault();
-                if ( countryValue != null )
+                var tempLocation = new Rock.Model.Location
                 {
-                    string format = countryValue.GetAttributeValue( "AddressFormat" );
-                    if ( !string.IsNullOrWhiteSpace( format ) )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Street1", Street1 );
-                        mergeFields.Add( "Street2", Street2 );
-                        mergeFields.Add( "City", City );
-                        mergeFields.Add( "State", State );
-                        mergeFields.Add( "PostalCode", PostalCode );
-                        mergeFields.Add( "Country", countryValue.Description );
+                    Street1 = this.Street1,
+                    Street2 = this.Street2,
+                    City = this.City,
+                    State = this.State,
+                    PostalCode = this.PostalCode,
+                    Country = this.Country,
+                };
 
-                        result = format.ResolveMergeFields( mergeFields );
-                    }
-                }
-
-                if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
-                {
-                    return string.Empty;
-                }
-
-                return result;
+                return tempLocation.GetFullStreetAddress();
+                
             }
         }
 

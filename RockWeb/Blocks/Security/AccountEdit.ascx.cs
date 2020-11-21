@@ -32,18 +32,45 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// Allows a person to edit their account information. 
+    /// Allows a person to edit their account information.
     /// </summary>
     [DisplayName( "Account Edit" )]
     [Category( "Security" )]
     [Description( "Allows a person to edit their account information." )]
 
-    [BooleanField("Show Address", "Allows hiding the address field.", false, order: 0)]
-    [BooleanField( "Address Required", "Whether the address is required.", false, order: 2 )]
-    [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
-        "The type of location that address should use.", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 14 )]
+    #region Block Attributes
+
+    [BooleanField( "Show Address",
+        Key = AttributeKey.ShowAddress,
+        Description = "Allows hiding the address field.",
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
+    [BooleanField( "Address Required",
+        Key = AttributeKey.AddressRequired,
+        Description = "Whether the address is required.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
+
+    [GroupLocationTypeField( "Location Type",
+        Key = AttributeKey.LocationType,
+        Description = "The type of location that address should use.",
+        GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        IsRequired = false,
+        Order = 2 )]
+
+    #endregion Block Attributes
+
     public partial class AccountEdit : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string ShowAddress = "ShowAddress";
+            public const string AddressRequired = "AddressRequired";
+            public const string LocationType = "LocationType";
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -55,7 +82,7 @@ namespace RockWeb.Blocks.Security
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
             string smsScript = @"
-    $('.js-sms-number').click(function () {
+    $('.js-sms-number').on('click', function () {
         if ($(this).is(':checked')) {
             $('.js-sms-number').not($(this)).prop('checked', false);
         }
@@ -278,7 +305,7 @@ namespace RockWeb.Blocks.Security
                                                 .FirstOrDefault();
                                 if ( familyGroup != null )
                                 {
-                                    Guid? addressTypeGuid = GetAttributeValue("LocationType").AsGuidOrNull();
+                                    Guid? addressTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuidOrNull();
                                     if ( addressTypeGuid.HasValue )
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
@@ -305,7 +332,7 @@ namespace RockWeb.Blocks.Security
                                                     familyAddress.IsMappedLocation = true;
                                                 }
                                                 else if ( hfStreet1.Value != string.Empty ) {
-                                                    
+
                                                     // user clicked move so create a previous address
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
@@ -369,8 +396,8 @@ namespace RockWeb.Blocks.Security
         {
             RockContext rockContext = new RockContext();
 
-            pnlAddress.Visible = GetAttributeValue( "ShowAddress" ).AsBoolean();
-            acAddress.Required = GetAttributeValue( "AddressRequired" ).AsBoolean();
+            pnlAddress.Visible = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean();
+            acAddress.Required = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean();
 
             var person = CurrentPerson;
             if ( person != null )
@@ -384,10 +411,10 @@ namespace RockWeb.Blocks.Security
                 dvpSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
-                tbEmail.Text = person.Email;             
+                tbEmail.Text = person.Email;
                 rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
-                Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
+                Guid? locationTypeGuid = GetAttributeValue( AttributeKey.LocationType ).AsGuidOrNull();
                 if ( locationTypeGuid.HasValue )
                 {
                     var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
@@ -415,7 +442,7 @@ namespace RockWeb.Blocks.Security
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id 
+                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id
                                                  && l.Group.Members.Any( m => m.PersonId == person.Id))
                                             .FirstOrDefault();
                         if ( familyAddress != null )

@@ -1,0 +1,85 @@
+/*
+
+     Electric Check-in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+@import (reference) "../../../Styles/Bootstrap/bootstrap.less";
+@import (reference) "../../../Styles/_checkin-core.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+:root {
+  --checkin-footer-background: @dark-checkin-footer-background;
+  --input-color: @dark-text-color;
+  --input-bg: @dark-background-color;
+  --input-border-focus: #fff;
+  --btn-checkinselect-bg: transparent !important;
+  --btn-checkinselect-color: #fff !important;
+  --btn-checkinselect-disabled-bg: rgba(0,0,0,.5);
+  --btn-default-color: #fff;
+  --btn-default-border: #f7fafc;
+  --btn-default-bg: transparent;
+  --btn-default-active-bg: #383838;
+  --btn-default-active-color: #fff;
+}
+
+body {
+  color: @dark-text-color;
+  background-color: @dark-background-color;
+
+  & when not (@dark-logo-image = ~"") {
+    &::before {
+      background: url(@dark-logo-image);
+      border-bottom: 1px solid #e2e8f0;
+    }
+  }
+}
+
+.modal-content.rock-modal .modal-body,
+.rock-modal .modal-content .modal-body,
+.control-label {
+  color: @dark-text-color;
+}
+
+.modal-content.rock-modal .modal-header,
+.rock-modal .modal-content .modal-header,
+.modal-content.rock-modal,
+.rock-modal .modal-content,
+.bootbox .modal-content,
+.modal {
+  color: @dark-text-color;
+  background: @dark-checkin-footer-background;
+}
+
+select.form-control,
+select.form-control option {
+  background-color: var(--input-bg) !important;
+}
+
+a,
+.btn-link {
+  color: @dark-link-color;
+
+  &:hover {
+    color: fade(@dark-link-color, 90%);
+  }
+}
+
+h1,
+.checkin-messages li,
+.checkin-summary li,
+.checkin-header .checkin-sub-title {
+  color: @dark-text-color;
+}
+
+.checkinBackground () {
+}
+
+.checkinBackgroundRetina() {
+}
+

@@ -41,6 +41,7 @@ namespace Rock.Storage.AssetStorage
         /// <value>
         /// The name.
         /// </value>
+        [JsonProperty( "Name" )]
         public string Name { get; set; }
 
         /// <summary>
@@ -74,6 +75,7 @@ namespace Rock.Storage.AssetStorage
         /// <value>
         /// The icon CSS class.
         /// </value>
+        [JsonProperty( "IconPath" )]
         public string IconPath { get; set; }
 
         /// <summary>
@@ -121,6 +123,27 @@ namespace Rock.Storage.AssetStorage
         /// The asset stream.
         /// </value>
         public Stream AssetStream { get; set; }
+
+        /// <summary>
+        /// Clones this instance.
+        /// </summary>
+        /// <returns></returns>
+        public Asset Clone()
+        {
+            return new Asset
+            {
+                AssetStorageProviderId = AssetStorageProviderId,
+                AssetStream = AssetStream,
+                Description = Description,
+                FileSize = FileSize,
+                IconPath = IconPath,
+                Key = Key,
+                LastModifiedDateTime = LastModifiedDateTime,
+                Name = Name,
+                Type = Type,
+                Uri = Uri
+            };
+        }
     }
 
     /// <summary>

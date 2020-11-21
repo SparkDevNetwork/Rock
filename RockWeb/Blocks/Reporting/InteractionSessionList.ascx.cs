@@ -42,19 +42,19 @@ namespace RockWeb.Blocks.Reporting
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"
 {% if InteractionChannel != null and InteractionChannel != '' %}
     {% for session in WebSessions %}
-        <div class='panel panel-widget'>
+        <div class='panel panel-widget pageviewsession'>
 	        <header class='panel-heading clearfix'>
 	        <div class='pull-left'>
 		        <h4 class='panel-title'>
 		            {{ session.PersonAlias.Person.FullName }}
 			        <small>
-			            Started {{ session.StartDateTime }} / 
+			            Started {{ session.StartDateTime }} /
 			            Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
 			        </small>
 		        </h4>
 		        <span class='label label-primary'></span>
 		        <span class='label label-info'>{{ InteractionChannel.Name }}</span>
-		        </div> 
+		        </div>
 		        {% assign icon = '' %}
 		        {% case session.InteractionSession.DeviceType.ClientType %}
 			        {% when 'Desktop' %}{% assign icon = 'fa-desktop' %}
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Reporting
 		        {% endcase %}
 		        {% if icon != '' %}
     		        <div class='pageviewsession-client pull-right'>
-                        <div class='pull-left'>
+                        <div class='pull-left margin-r-sm'>
                             <small>{{ session.InteractionSession.DeviceType.Application }} <br>
                             {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
                         </div>
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Reporting
 		        <ol>
 		        {% for interaction in session.Interactions %}
     			    <li><a href='{{ interaction.InteractionData }}'>{{ interaction.InteractionSummary }}</a></li>
-		        {% endfor %}				
+		        {% endfor %}
 		        </ol>
 	        </div>
         </div>
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "channelId" ).AsIntegerOrNull();
+            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Reporting
                     var interactionQry = interactionService
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.InteractionComponent.ChannelId == _channelId.Value &&
+                            a.InteractionComponent.InteractionChannelId == _channelId.Value &&
                             a.PersonAliasId.HasValue &&
                             a.InteractionSessionId.HasValue );
 

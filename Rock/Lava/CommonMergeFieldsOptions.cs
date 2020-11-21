@@ -36,6 +36,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Gets the common merge fields with all the options disabled.
+        /// Use this when RockPage and CurrentPerson should not be used.
+        /// </summary>
+        /// <value>
+        /// The common merge fields options none.
+        /// </value>
+        public static CommonMergeFieldsOptions CommonMergeFieldsOptionsEmpty
+        {
+            get
+            {
+                return new CommonMergeFieldsOptions
+                {
+                    GetPageContext = false,
+                    GetPageParameters = false,
+                    GetCurrentPerson = false,
+                    GetCampuses = false,
+                    GetDeviceFamily = false,
+                    GetOSFamily = false,
+                    GetLegacyGlobalMergeFields = false
+                };
+            }
+        }
+
+
+        /// <summary>
         /// Gets or sets a value indicating whether [get page context]. Defaults to True
         /// </summary>
         /// <value>

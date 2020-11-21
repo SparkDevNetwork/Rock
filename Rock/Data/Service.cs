@@ -62,7 +62,7 @@ namespace Rock.Data
         public virtual List<string> ErrorMessages { get; set; }
 
         /// <summary>
-        /// Gets a LINQ expression parameter.
+        /// Returns a new instance of a LINQ expression parameter for this service.
         /// </summary>
         /// <value>
         /// The parameter expression.
@@ -87,6 +87,7 @@ namespace Rock.Data
         {
             _context = dbContext;
             _objectSet = _context.Set<T>();
+            RelatedEntities = new RelatedEntityHelper<T>( this );
         }
 
         #endregion
@@ -97,11 +98,42 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
+        /// Note: You can sometimes improve performance by using Queryable().AsNoTracking(), but be careful. Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> Queryable()
         {
             return _objectSet;
+        }
+
+        /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models, optionally excluding those that are in the specified <see cref="EntityState"/>s within the <see cref="DbContext"/>.
+        /// Note: You can sometimes improve performance by using Queryable().AsNoTracking(), but be careful. Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
+        /// <para>
+        /// Important: This call should only be used when expecting a small handful of <see cref="Entity{T}"/>s to be excluded, as the resulting SQL will include a 'WHERE [Entity].[Id] NOT IN(x,y,z)' clause,
+        /// which has a limitation: https://stackoverflow.com/questions/1069415/limit-on-the-where-col-in-condition
+        /// </para>
+        /// </summary>
+        /// <returns></returns>
+        public virtual IQueryable<T> Queryable( params EntityState[] statesToExclude )
+        {
+            /*
+             * 2020-06-15 - JH
+             *
+             * Find the IDs for all Entity<T>s within the Context that are in the specified EntityState(s).
+             * Keep in mind that the Context might currently be referencing Entities of a different
+             * type than the one this call is targeting, hence the implicit type cast check below.
+             */
+            IList<int> excludedIds = statesToExclude?.Any() == true
+                ? Context.ChangeTracker
+                    .Entries()
+                    .Where( a => statesToExclude.Contains( a.State ) )
+                    .Where( a => a.Entity as Entity<T> != null )
+                    .Select( a => ( ( Entity<T> ) a.Entity ).Id )
+                    .ToList()
+                : new List<int>();
+
+            return _objectSet.Where( a => !excludedIds.Contains( a.Id ) );
         }
 
         /// <summary>
@@ -176,8 +208,33 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model with the Guid value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( Guid guid, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the id value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="id">id</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( int id, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Id == id );
+        }
+
+        /// <summary>
         /// Gets the model with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
+        /// Use this if you won't be making any changes to the record and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
@@ -188,7 +245,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets the model with the Guid value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
+        /// Use this if you won't be making any changes to the record and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
@@ -233,6 +291,19 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets a list of items that match the specified expression with EF tracking disabled.
+        /// Use this if you won't be making any changes to the records and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression, null, null ).AsNoTracking();
+        }
+
+        /// <summary>
         /// Gets a list of items that match the specified expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
@@ -242,6 +313,20 @@ namespace Rock.Data
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
             return Get( parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Gets the specified parameter expression with no tracking.
+        /// Use this if you won't be making any changes to the records and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417/// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            return this.Queryable().AsNoTracking().Where( parameterExpression, whereExpression, sortProperty, fetchTop );
         }
 
         /// <summary>
@@ -304,22 +389,44 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets entities from a list of ids.
+        /// Note: This could throw a SQL complexity exception if the list of ids is longer than a couple of thousand
         /// </summary>
         /// <param name="ids">The ids.</param>
         /// <returns></returns>
         public virtual IQueryable<T> GetByIds( List<int> ids )
         {
-            return Queryable().Where( t => ids.Contains( t.Id ) );
+            if ( ids.Count == 1 )
+            {
+                // if we only have 1 Id in our list, we don't have to use Contains
+                // Contains is less efficient, since Linq has to Recompile the SQL everytime. See https://docs.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper#41-using-ienumerabletcontainstt-value
+                int id = ids[0];
+                return Queryable().Where( t => t.Id == id );
+            }
+            else
+            {
+                return Queryable().Where( t => ids.Contains( t.Id ) );
+            }
         }
 
         /// <summary>
         /// Gets entities from a list of guids
+        /// Note: This could throw a SQL complexity exception if the list of guids is longer than a couple of thousand
         /// </summary>
         /// <param name="guids">The guids.</param>
         /// <returns></returns>
         public virtual IQueryable<T> GetByGuids( List<Guid> guids )
         {
-            return Queryable().Where( t => guids.Contains( t.Guid ) );
+            if ( guids.Count == 1 )
+            {
+                // if we only have 1 Guid in our list, we don't have to use Contains
+                // Contains is less efficient, since Linq has to Recompile the SQL everytime. See https://docs.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper#41-using-ienumerabletcontainstt-value
+                Guid guid = guids[0];
+                return Queryable().Where( t => t.Guid == guid );
+            }
+            else
+            {
+                return Queryable().Where( t => guids.Contains( t.Guid ) );
+            }
         }
 
 
@@ -461,9 +568,13 @@ namespace Rock.Data
 
                 items.RemoveAt( oldIndex );
                 if ( newIndex >= items.Count )
+                {
                     items.Add( movedItem );
+                }
                 else
+                {
                     items.Insert( newIndex, movedItem );
+                }
 
                 int order = 0;
                 foreach ( T item in items )
@@ -520,6 +631,18 @@ namespace Rock.Data
 
         #endregion
 
+        #region Related Entities
+
+        /// <summary>
+        /// Helper for Related Entities
+        /// </summary>
+        /// <value>
+        /// The related entities.
+        /// </value>
+        public RelatedEntityHelper<T> RelatedEntities { get; private set; }
+
+        #endregion Related Entities
+
         #region Following
 
         /// <summary>
@@ -558,21 +681,14 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
-            if ( entityType != null )
+            var entityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext )?.Id;
+            if ( !entityTypeId.HasValue )
             {
-                var ids = new Rock.Model.FollowingService( rockContext )
-                    .Queryable()
-                    .Where( f =>
-                        f.EntityTypeId == entityType.Id &&
-                        f.PersonAlias != null &&
-                        f.PersonAlias.PersonId == personId )
-                    .Select( f => f.PersonAlias.PersonId );
-
-                return Queryable().Where( t => ids.Contains( t.Id ) );
+                return null;
             }
 
-            return null;
+            var query = new Rock.Model.FollowingService( rockContext ).GetFollowedItems( entityTypeId.Value, personId ).Cast<T>();
+            return query;
         }
 
         #endregion
@@ -585,7 +701,6 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
             return _objectSet.SqlQuery( query, parameters );
@@ -637,5 +752,4 @@ namespace Rock.Data
 
         #endregion
     }
-
 }

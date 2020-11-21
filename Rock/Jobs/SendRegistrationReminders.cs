@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -26,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -33,6 +35,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process event registration reminders
     /// </summary>
+    [DisplayName( "Registration Reminder" )]
+    [Description( "Send any registration reminders that are due to be sent." )]
+
     [IntegerField( "Expire Date", "The number of days past the registration reminder to refrain from sending the email. This would only be used if something went wrong and acts like a safety net to prevent sending the reminder after the fact.", true, 1, key: "ExpireDate" )]
     [DisallowConcurrentExecution]
     public class SendRegistrationReminders : IJob
@@ -53,6 +58,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             var expireDays = dataMap.GetString( "ExpireDate" ).AsIntegerOrNull() ?? 1;
+            var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
 
             int remindersSent = 0;
             var errors = new List<string>();
@@ -71,7 +77,7 @@ namespace Rock.Jobs
                         !i.ReminderSent &&
                         i.SendReminderDateTime.HasValue &&
                         i.SendReminderDateTime <= now &&
-                        i.SendReminderDateTime >= expireDate)
+                        i.SendReminderDateTime >= expireDate )
                     .ToList() )
                 {
                     var template = instance.RegistrationTemplate;
@@ -82,21 +88,32 @@ namespace Rock.Jobs
                             r.ConfirmationEmail != null &&
                             r.ConfirmationEmail != string.Empty ) )
                     {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
-                        mergeFields.Add( "Registration", registration );
+                        try
+                        {
+                            var mergeFields = new Dictionary<string, object>();
+                            mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                            mergeFields.Add( "Registration", registration );
 
-                        var emailMessage = new RockEmailMessage();
-                        emailMessage.AdditionalMergeFields = mergeFields;
-                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeFields ) );
-                        emailMessage.FromEmail = template.ReminderFromEmail;
-                        emailMessage.FromName = template.ReminderFromName;
-                        emailMessage.Subject = template.ReminderSubject;
-                        emailMessage.Message = template.ReminderEmailTemplate;
+                            var emailMessage = new RockEmailMessage();
+                            emailMessage.AdditionalMergeFields = mergeFields;
 
-                        var emailErrors = new List<string>();
-                        emailMessage.Send(out emailErrors);
-                        errors.AddRange( emailErrors );
+                            emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
+
+                            emailMessage.FromEmail = template.ReminderFromEmail;
+                            emailMessage.FromName = template.ReminderFromName;
+                            emailMessage.Subject = template.ReminderSubject;
+                            emailMessage.AppRoot = publicAppRoot;
+                            emailMessage.Message = template.ReminderEmailTemplate;
+
+                            var emailErrors = new List<string>();
+                            emailMessage.Send( out emailErrors );
+                            errors.AddRange( emailErrors );
+                        }
+                        catch ( Exception exception )
+                        {
+                            ExceptionLogService.LogException( exception );
+                            continue;
+                        }
                     }
 
                     // Even if an error occurs, still mark as completed to prevent _everyone_ being sent the reminder multiple times due to a single failing address

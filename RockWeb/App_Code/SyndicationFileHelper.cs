@@ -177,7 +177,7 @@ public class SyndicationFeedHelper
                             idEntryHashed = sb.ToString();
 
                             Dictionary<string, string> queryString = new Dictionary<string, string>();
-                            queryString.Add( "feedItemId", idEntryHashed );
+                            queryString.Add( "FeedItemId", idEntryHashed );
 
                             if ( detailPageID > 0 )
                             {
@@ -319,7 +319,7 @@ public class SyndicationFeedHelper
     private static string BuildDetailPageLink( int detailPageId, string hashedId )
     {
         Dictionary<string, string> queryString = new Dictionary<string, string>();
-        queryString.Add( "feedItemId", hashedId );
+        queryString.Add( "FeedItemId", hashedId );
 
         return new PageReference( detailPageId, 0, queryString ).BuildUrl();
     }

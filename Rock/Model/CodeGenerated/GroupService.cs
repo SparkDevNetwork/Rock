@@ -58,6 +58,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Campus.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
@@ -126,11 +132,13 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Registration>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
+            if ( new Service<PersonScheduleExclusion>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Registration.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, PersonScheduleExclusion.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring Registration,GroupId 
  
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
@@ -177,13 +185,18 @@ namespace Rock.Model
             target.AllowGuests = source.AllowGuests;
             target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             target.ArchivedDateTime = source.ArchivedDateTime;
+            target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
             target.Description = source.Description;
+            target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
+            target.DisableScheduling = source.DisableScheduling;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
             target.GroupTypeId = source.GroupTypeId;
             target.InactiveDateTime = source.InactiveDateTime;
+            target.InactiveReasonNote = source.InactiveReasonNote;
+            target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;
@@ -193,7 +206,11 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
+            target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             target.ScheduleId = source.ScheduleId;
+            target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             target.StatusValueId = source.StatusValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

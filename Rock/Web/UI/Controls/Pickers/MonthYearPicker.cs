@@ -22,7 +22,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select month and year
     /// </summary>
     public class MonthYearPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
@@ -362,14 +362,14 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _monthDropDownList );
             _monthDropDownList.ID = "monthDropDownList";
             _monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
-            _monthDropDownList.CssClass = "form-control input-width-sm";
+            _monthDropDownList.CssClass = "form-control input-width-sm js-monthyear-month";
 
             BindMonths();
 
             _yearDropDownList = new DropDownList();
             Controls.Add( _yearDropDownList );
             _yearDropDownList.ID = "yearDropDownList_";
-            _yearDropDownList.CssClass = "form-control input-width-sm";
+            _yearDropDownList.CssClass = "form-control input-width-sm js-monthyear-year";
 
             this.RequiredFieldValidator.ControlToValidate = _yearDropDownList.ID;
 

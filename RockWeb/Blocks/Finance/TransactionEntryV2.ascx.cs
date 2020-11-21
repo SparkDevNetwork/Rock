@@ -57,13 +57,20 @@ namespace RockWeb.Blocks.Finance
         Category = AttributeCategory.None,
         Order = 1 )]
 
+    [BooleanField(
+        "Enable Credit Card",
+        Key = AttributeKey.EnableCreditCard,
+        DefaultBooleanValue = true,
+        Category = AttributeCategory.None,
+        Order = 2 )]
+
     [TextField(
         "Batch Name Prefix",
         Key = AttributeKey.BatchNamePrefix,
         Description = "The batch prefix name to use when creating a new batch.",
         DefaultValue = "Online Giving",
         Category = AttributeCategory.None,
-        Order = 2 )]
+        Order = 3 )]
 
     [DefinedValueField(
         "Source",
@@ -72,12 +79,12 @@ namespace RockWeb.Blocks.Finance
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
         DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
         Category = AttributeCategory.None,
-        Order = 3 )]
+        Order = 4 )]
 
     [AccountsField(
         "Accounts",
         Key = AttributeKey.AccountsToDisplay,
-        Description = "The accounts to display. By default all active accounts with a Public Name will be displayed. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
         Category = AttributeCategory.None,
         Order = 5 )]
 
@@ -90,12 +97,40 @@ namespace RockWeb.Blocks.Finance
         Order = 10 )]
 
     [BooleanField(
+        "Include Inactive Campuses",
+        Key = AttributeKey.IncludeInactiveCampuses,
+        Description = "Set this to true to include inactive campuses",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.None,
+        Order = 10 )]
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.IncludedCampusTypes,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        IsRequired = false,
+        Description = "Set this to limit campuses by campus type.",
+        Category = AttributeCategory.None,
+        Order = 11 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.IncludedCampusStatuses,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        IsRequired = false,
+        Description = "Set this to limit campuses by campus status.",
+        Category = AttributeCategory.None,
+        Order = 12 )]
+
+    [BooleanField(
         "Enable Multi-Account",
         Key = AttributeKey.EnableMultiAccount,
         Description = "Should the person be able specify amounts for more than one account?",
         DefaultBooleanValue = true,
         Category = AttributeCategory.None,
-        Order = 11 )]
+        Order = 13 )]
 
     [DefinedValueField(
         "Financial Source Type",
@@ -126,6 +161,7 @@ namespace RockWeb.Blocks.Finance
     [TextField(
         "Anonymous Giving Tool-tip",
         Key = AttributeKey.AnonymousGivingTooltip,
+        IsRequired = false,
         Description = "The tool-tip for the 'Give Anonymously' check box.",
         Category = AttributeCategory.None,
         Order = 25 )]
@@ -225,11 +261,27 @@ namespace RockWeb.Blocks.Finance
         Order = 3 )]
 
     [TextField(
-        "Give Button Text",
-        Key = AttributeKey.GiveButtonText,
+        "Give Button Text - Now ",
+        Key = AttributeKey.GiveButtonNowText,
         DefaultValue = "Give Now",
         Category = AttributeCategory.TextOptions,
         Order = 4 )]
+
+    [TextField(
+        "Give Button Text - Scheduled",
+        Key = AttributeKey.GiveButtonScheduledText,
+        DefaultValue = "Schedule Your Gift",
+        Category = AttributeCategory.TextOptions,
+        Order = 5 )]
+
+    [CodeEditorField(
+        "Amount Summary Template",
+        Key = AttributeKey.AmountSummaryTemplate,
+        EditorMode = CodeEditorMode.Lava,
+        Description = "The text (HTML) to display on the amount summary page. <span class='tip tip-lava'></span>",
+        DefaultValue = DefaultAmountSummaryTemplate,
+        Category = AttributeCategory.TextOptions,
+        Order = 6 )]
 
     [CodeEditorField(
         "Finish Lava Template",
@@ -238,21 +290,22 @@ namespace RockWeb.Blocks.Finance
         Description = "The text (HTML) to display on the success page. <span class='tip tip-lava'></span>",
         DefaultValue = DefaultFinishLavaTemplate,
         Category = AttributeCategory.TextOptions,
-        Order = 5 )]
+        Order = 7 )]
 
     #endregion
 
     #region Email Templates
 
-    [SystemEmailField( "Confirm Account Email Template",
+    [SystemCommunicationField(
+        "Confirm Account Email Template",
         Key = AttributeKey.ConfirmAccountEmailTemplate,
         Description = "The Email Template to use when confirming a new account",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Category = AttributeCategory.EmailTemplates,
         Order = 1 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipt.",
@@ -403,7 +456,14 @@ namespace RockWeb.Blocks.Finance
     {
         #region constants
 
-        protected const string DefaultFinishLavaTemplate = @"
+        private const string DefaultAmountSummaryTemplate = @"
+{% assign sortedAccounts = Accounts | Sort:'Order,PublicName' %}
+
+<span class='account-names'>{{ sortedAccounts | Map:'PublicName' | Join:', ' | ReplaceLast:',',' and' }}</span>
+-
+<span class='account-campus'>{{ Campus.Name }}</span>";
+
+        private const string DefaultFinishLavaTemplate = @"
 {% if Transaction.ScheduledTransactionDetails %}
     {% assign transactionDetails = Transaction.ScheduledTransactionDetails %}
 {% else %}
@@ -419,7 +479,7 @@ mission. We are so grateful for your commitment.</p>
     <dt>Confirmation Code</dt>
     <dd>{{ Transaction.TransactionCode }}</dd>
     <dd></dd>
-    
+
     <dt>Name</dt>
     <dd>{{ Person.FullName }}</dd>
     <dd></dd>
@@ -430,21 +490,21 @@ mission. We are so grateful for your commitment.</p>
 <dl class='dl-horizontal'>
     {% for transactionDetail in transactionDetails %}
         <dt>{{ transactionDetail.Account.PublicName }}</dt>
-        <dd>{{ transactionDetail.Amount }}</dd>
+        <dd>{{ transactionDetail.Amount | FormatAsCurrency }}</dd>
     {% endfor %}
     <dd></dd>
-    
+
     <dt>Payment Method</dt>
     <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
 
     {% if PaymentDetail.AccountNumberMasked  != '' %}
         <dt>Account Number</dt>
-        <dd>{{ PaymentDetail.AccountNumberMasked  }}</dd>
+        <dd>{{ PaymentDetail.AccountNumberMasked }}</dd>
     {% endif %}
 
     <dt>When<dt>
     <dd>
-    
+
     {% if Transaction.TransactionFrequencyValue %}
         {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
     {% else %}
@@ -454,7 +514,7 @@ mission. We are so grateful for your commitment.</p>
 </dl>
 ";
 
-        protected const string DefaultScheduledTransactionsTemplate = @"
+        private const string DefaultScheduledTransactionsTemplate = @"
 <h4>Scheduled {{ GiftTerm | Pluralize }}</h4>
 
 {% for scheduledTransaction in ScheduledTransactions %}
@@ -463,7 +523,7 @@ mission. We are so grateful for your commitment.</p>
             <div class='panel-heading'>
                 <span class='panel-title h1'>
                     <i class='fa fa-calendar'></i>
-                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}                              
+                    {{ scheduledTransaction.TransactionFrequencyValue.Value }}
                 </span>
 
                 <span class='js-scheduled-totalamount scheduled-totalamount margin-l-md'>
@@ -471,7 +531,7 @@ mission. We are so grateful for your commitment.</p>
                 </span>
 
                 <div class='panel-actions pull-right'>
-                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-plus'></span>
+                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-chevron-down'></span>
                 </div>
             </div>
 
@@ -480,7 +540,7 @@ mission. We are so grateful for your commitment.</p>
                     {% for scheduledTransactionDetail in scheduledTransaction.ScheduledTransactionDetails %}
                         <div class='account-details'>
                             <span class='scheduled-transaction-account control-label'>
-                                {{ scheduledTransactionDetail.Account.Name }}
+                                {{ scheduledTransactionDetail.Account.PublicName }}
                             </span>
                             <br />
                             <span class='scheduled-transaction-amount'>
@@ -488,7 +548,7 @@ mission. We are so grateful for your commitment.</p>
                             </span>
                         </div>
                     {% endfor %}
-                        
+
                     <br />
                     <span class='scheduled-transaction-payment-detail'>
                         {% assign financialPaymentDetail = scheduledTransaction.FinancialPaymentDetail %}
@@ -500,7 +560,7 @@ mission. We are so grateful for your commitment.</p>
                         {% endif %}
                     </span>
                     <br />
-                    
+
                     {% if scheduledTransaction.NextPaymentDate != null %}
                         Next Gift: {{ scheduledTransaction.NextPaymentDate | Date:'sd' }}.
                     {% endif %}
@@ -510,10 +570,10 @@ mission. We are so grateful for your commitment.</p>
                         {% if LinkedPages.ScheduledTransactionEditPage != '' %}
                             <a href='{{ LinkedPages.ScheduledTransactionEditPage }}?ScheduledTransactionId={{ scheduledTransaction.Id }}'>Edit</a>
                         {% endif %}
-                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>                    
+                        <a class='margin-l-sm' onclick=""{{ scheduledTransaction.Id | Postback:'DeleteScheduledTransaction' }}"">Delete</a>
                     </div>
                 </div>
-            </div>                
+            </div>
         </div>
     </div>
 {% endfor %}
@@ -537,7 +597,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.hide();
             }
 
-            $toggle.removeClass('fa-plus').addClass('fa-minus');
+            $toggle.removeClass('fa-chevron-down').addClass('fa-chevron-up');
         } else {
             if (animate) {
                 $scheduledDetails.slideUp();
@@ -547,7 +607,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.show();
             }
 
-            $toggle.removeClass('fa-minus').addClass('fa-plus');
+            $toggle.removeClass('fa-chevron-up').addClass('fa-chevron-down');
         }
     };
 
@@ -559,7 +619,7 @@ mission. We are so grateful for your commitment.</p>
         });
 
         var $toggleScheduledDetails = $('.js-toggle-scheduled-details');
-        $toggleScheduledDetails.click(function () {
+        $toggleScheduledDetails.on('click', function () {
             var $scheduledDetailsContainer = $(this).closest('.js-scheduled-transaction');
             if ($scheduledDetailsContainer.attr('data-expanded') == 1) {
                 $scheduledDetailsContainer.attr('data-expanded', 0);
@@ -580,7 +640,7 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string AccountsToDisplay = "AccountsToDisplay";
 
@@ -593,6 +653,8 @@ mission. We are so grateful for your commitment.</p>
             public const string FinancialGateway = "FinancialGateway";
 
             public const string EnableACH = "EnableACH";
+
+            public const string EnableCreditCard = "EnableCreditCard";
 
             public const string EnableCommentEntry = "EnableCommentEntry";
 
@@ -618,9 +680,19 @@ mission. We are so grateful for your commitment.</p>
 
             public const string GiftTerm = "GiftTerm";
 
-            public const string GiveButtonText = "Give Button Text";
+            public const string GiveButtonNowText = "GiveButtonNowText";
+
+            public const string GiveButtonScheduledText = "GiveButtonScheduledText";
+
+            public const string AmountSummaryTemplate = "AmountSummaryTemplate";
 
             public const string AskForCampusIfKnown = "AskForCampusIfKnown";
+
+            public const string IncludeInactiveCampuses = "IncludeInactiveCampuses";
+
+            public const string IncludedCampusTypes = "IncludedCampusTypes";
+
+            public const string IncludedCampusStatuses = "IncludedCampusStatuses";
 
             public const string EnableMultiAccount = "EnableMultiAccount";
 
@@ -663,20 +735,14 @@ mission. We are so grateful for your commitment.</p>
 
         #region Attribute Categories
 
-        public static class AttributeCategory
+        private static class AttributeCategory
         {
             public const string None = "";
-
             public const string ScheduleGifts = "Scheduled Gifts";
-
             public const string PaymentComments = "Payment Comments";
-
             public const string TextOptions = "Text Options";
-
             public const string Advanced = "Advanced";
-
             public const string EmailTemplates = "Email Templates";
-
             public const string PersonOptions = "Person Options";
         }
 
@@ -684,7 +750,7 @@ mission. We are so grateful for your commitment.</p>
 
         #region PageParameterKeys
 
-        public static class PageParameterKey
+        private static class PageParameterKey
         {
             public const string Person = "Person";
 
@@ -709,7 +775,7 @@ mission. We are so grateful for your commitment.</p>
         #region enums
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum EntryStep
         {
@@ -865,9 +931,10 @@ mission. We are so grateful for your commitment.</p>
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, enableACH, "_hostedPaymentInfoControl" );
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, "_hostedPaymentInfoControl", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
                 this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
             }
@@ -930,13 +997,11 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void _hostedPaymentInfoControl_TokenReceived( object sender, EventArgs e )
+        private void _hostedPaymentInfoControl_TokenReceived( object sender, HostedGatewayPaymentControlTokenEventArgs e )
         {
-            string errorMessage = null;
-            string token = this.FinancialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-            if ( errorMessage.IsNotNullOrWhiteSpace() )
+            if ( !e.IsValid )
             {
-                nbPaymentTokenError.Text = errorMessage;
+                nbPaymentTokenError.Text = e.ErrorMessage;
                 nbPaymentTokenError.Visible = true;
             }
             else
@@ -1000,11 +1065,11 @@ mission. We are so grateful for your commitment.</p>
             }
 
             // get the FinancialGateway's GatewayComponent so we can show a warning if they have an unsupported gateway.
-            bool unsupportedGateway = ( FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent ) == false;
+            var hostedGatewayComponent = FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
 
-            if ( unsupportedGateway )
+            if ( hostedGatewayComponent == null )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Unsupported Gateway", "This block only support Gateways that have a hosted payment interface." );
                 pnlTransactionEntry.Visible = false;
@@ -1148,6 +1213,7 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( !this.GetAttributeValue( AttributeKey.ShowScheduledTransactions ).AsBoolean() )
             {
+                HideScheduledTransactionsPanel();
                 return;
             }
 
@@ -1156,7 +1222,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( targetPerson == null )
             {
-                pnlScheduledTransactions.Visible = false;
+                HideScheduledTransactionsPanel();
                 return;
             }
 
@@ -1193,9 +1259,19 @@ mission. We are so grateful for your commitment.</p>
                 financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
             }
 
+            // in case .GetStatus set an schedule to IsActive=False, filter the scheduledTransactionList by IsActive=True again
+            scheduledTransactionList = scheduledTransactionList.Where( a => a.IsActive ).ToList();
+
             rockContext.SaveChanges();
 
-            pnlScheduledTransactions.Visible = scheduledTransactionList.Any();
+            if ( !scheduledTransactionList.Any() )
+            {
+                HideScheduledTransactionsPanel();
+            }
+            else
+            {
+                ShowScheduledTransactionsPanel();
+            }
 
             scheduledTransactionList = scheduledTransactionList.OrderByDescending( a => a.NextPaymentDate ).ToList();
 
@@ -1350,7 +1426,7 @@ mission. We are so grateful for your commitment.</p>
                 mergeFields.Add( "User", userLogin );
 
                 var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountEmailTemplate ).AsGuid() );
-                emailMessage.AddRecipient( new RecipientData( targetPerson.Email, mergeFields ) );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( targetPerson, mergeFields ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.CreateCommunicationRecord = false;
@@ -1360,12 +1436,17 @@ mission. We are so grateful for your commitment.</p>
             var financialGatewayComponent = this.FinancialGatewayComponent;
             var financialGateway = this.FinancialGateway;
 
-            var financialTransaction = new FinancialTransactionService( rockContext ).Get( hfTransactionGuid.Value.AsGuid() );
+            var financialPaymentDetail = new FinancialTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+            if ( financialPaymentDetail == null )
+            {
+                // if this was a ScheduledTransaction, get the FinancialPaymentDetail from that instead
+                financialPaymentDetail = new FinancialScheduledTransactionService( rockContext ).GetSelect( hfTransactionGuid.Value.AsGuid(), s => s.FinancialPaymentDetail );
+            }
 
             var gatewayPersonIdentifier = Rock.Security.Encryption.DecryptString( this.CustomerTokenEncrypted );
 
             var savedAccount = new FinancialPersonSavedAccount();
-            var paymentDetail = financialTransaction.FinancialPaymentDetail;
+            var paymentDetail = financialPaymentDetail;
 
             savedAccount.PersonAliasId = targetPerson.PrimaryAliasId;
             savedAccount.ReferenceNumber = gatewayPersonIdentifier;
@@ -1477,6 +1558,24 @@ mission. We are so grateful for your commitment.</p>
             }
 
             caapPromptForAccountAmounts.AskForCampusIfKnown = this.GetAttributeValue( AttributeKey.AskForCampusIfKnown ).AsBoolean();
+            caapPromptForAccountAmounts.IncludeInactiveCampuses = this.GetAttributeValue( AttributeKey.IncludeInactiveCampuses ).AsBoolean();
+            var includedCampusStatusIds = this.GetAttributeValues( AttributeKey.IncludedCampusStatuses )
+                .ToList()
+                .AsGuidList()
+                .Select( a => DefinedValueCache.Get( a ) )
+                .Where( a => a != null )
+                .Select( a => a.Id ).ToArray();
+
+            caapPromptForAccountAmounts.IncludedCampusStatusIds = includedCampusStatusIds;
+
+            var includedCampusTypeIds = this.GetAttributeValues( AttributeKey.IncludedCampusTypes )
+                .ToList()
+                .AsGuidList()
+                .Select( a => DefinedValueCache.Get( a ) )
+                .Where( a => a != null )
+                .Select( a => a.Id ).ToArray();
+
+            caapPromptForAccountAmounts.IncludedCampusTypeIds = includedCampusTypeIds;
 
             if ( allowAccountsInUrl )
             {
@@ -1523,6 +1622,18 @@ mission. We are so grateful for your commitment.</p>
             if ( !caapPromptForAccountAmounts.SelectableAccountIds.Any() )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "At least one Financial Account must be selected in the configuration for this block." );
+                pnlTransactionEntry.Visible = false;
+                return;
+            }
+
+            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+
+            if ( enableACH == false && enableCreditCard == false )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Enable ACH and/or Enable Credit Card needs to be enabled." );
+                pnlTransactionEntry.Visible = false;
+                return;
             }
 
             SetInitialTargetPersonControls();
@@ -1556,17 +1667,18 @@ mission. We are so grateful for your commitment.</p>
             }
 
             lIntroMessage.Text = introMessageTemplate.ResolveMergeFields( introMessageMergeFields );
+            btnGiveNow.Text = GetAttributeValue( AttributeKey.GiveButtonNowText );
 
             pnlTransactionEntry.Visible = true;
 
             if ( this.GetAttributeValue( AttributeKey.ShowScheduledTransactions ).AsBoolean() )
             {
-                pnlScheduledTransactions.Visible = true;
+                ShowScheduledTransactionsPanel();
                 BindScheduledTransactions();
             }
             else
             {
-                pnlScheduledTransactions.Visible = false;
+                HideScheduledTransactionsPanel();
             }
 
             tbEmailIndividual.Visible = GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
@@ -1575,6 +1687,24 @@ mission. We are so grateful for your commitment.</p>
             pnbPhoneBusiness.Visible = GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
 
             UpdateGivingControlsForSelections();
+        }
+
+        /// <summary>
+        /// Shows the scheduled transactions panel.
+        /// </summary>
+        public void ShowScheduledTransactionsPanel()
+        {
+            pnlScheduledTransactions.Visible = true;
+            pnlTransactionEntryPanel.RemoveCssClass( "col-sm-12" ).AddCssClass( "col-sm-8" );
+        }
+
+        /// <summary>
+        /// Hides the scheduled transactions panel.
+        /// </summary>
+        public void HideScheduledTransactionsPanel()
+        {
+            pnlScheduledTransactions.Visible = false;
+            pnlTransactionEntryPanel.RemoveCssClass( "col-sm-8" ).AddCssClass( "col-sm-12" );
         }
 
         /// <summary>
@@ -1779,7 +1909,7 @@ mission. We are so grateful for your commitment.</p>
                 return null;
             }
 
-            var targetPerson = new PersonService( rockContext ).GetNoTracking( targetPersonId.Value );
+            var targetPerson = new PersonService( rockContext ).Get( targetPersonId.Value );
             return targetPerson;
         }
 
@@ -1856,6 +1986,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             personService.AddContactToBusiness( business.Id, contactPerson.Id );
+            rockContext.SaveChanges();
 
             return business;
         }
@@ -1877,6 +2008,7 @@ mission. We are so grateful for your commitment.</p>
             newPersonOrBusiness.FirstName = firstName;
             newPersonOrBusiness.LastName = lastName;
 
+            newPersonOrBusiness.Email = email;
             newPersonOrBusiness.IsEmailActive = true;
             newPersonOrBusiness.EmailPreference = EmailPreference.EmailAllowed;
             if ( createBusiness )
@@ -1915,16 +2047,23 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="business">The business.</param>
         private void UpdateBusinessFromInputInformation( Person business )
         {
-            _updatePersonOrBusinessFromInputInformation( business, true );
+            _updatePersonOrBusinessFromInputInformation( business, PersonInputSource.Business );
         }
 
         /// <summary>
         /// Updates the person from input information collected (Phone, Email, Address) and saves changes (if any) to the database..
         /// </summary>
         /// <param name="person">The person.</param>
-        private void UpdatePersonFromInputInformation( Person person )
+        private void UpdatePersonFromInputInformation( Person person, PersonInputSource personInputSource )
         {
-            _updatePersonOrBusinessFromInputInformation( person, false );
+            _updatePersonOrBusinessFromInputInformation( person, personInputSource );
+        }
+
+        private enum PersonInputSource
+        {
+            Person,
+            Business,
+            BusinessContact
         }
 
         /// <summary>
@@ -1932,7 +2071,7 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="paymentInfo">The payment information.</param>
-        private void _updatePersonOrBusinessFromInputInformation( Person personOrBusiness, bool updateFromBusinessSelection )
+        private void _updatePersonOrBusinessFromInputInformation( Person personOrBusiness, PersonInputSource personInputSource )
         {
             var promptForEmail = this.GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
             var promptForPhone = this.GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
@@ -1942,26 +2081,42 @@ mission. We are so grateful for your commitment.</p>
             Guid locationTypeGuid;
             AddressControl acAddress;
 
-            if ( updateFromBusinessSelection )
+            switch ( personInputSource )
             {
-                tbEmail = tbEmailBusiness;
-                pnbPhone = pnbPhoneBusiness;
-                numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
-                locationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-                acAddress = acAddressBusiness;
-            }
-            else
-            {
-                tbEmail = tbEmailIndividual;
-                pnbPhone = pnbPhoneIndividual;
-                numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
-                locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
-                acAddress = acAddressIndividual;
-            }
+                
+                case PersonInputSource.Business:
+                    {
+                        tbEmail = tbEmailBusiness;
+                        pnbPhone = pnbPhoneBusiness;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                        locationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                        acAddress = acAddressBusiness;
+                        break;
+                    }
+                case PersonInputSource.BusinessContact:
+                    {
+                        tbEmail = tbBusinessContactEmail;
+                        pnbPhone = pnbBusinessContactPhone;;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                        locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                        acAddress = null;
+                        break;
 
-            if ( promptForEmail )
-            {
-                personOrBusiness.Email = tbEmail.Text;
+                    }
+                case PersonInputSource.Person:
+                    {
+                        // PersonInput
+                        tbEmail = tbEmailIndividual;
+                        pnbPhone = pnbPhoneIndividual;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                        locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                        acAddress = acAddressIndividual;
+                        break;
+                    }
+                default:
+                    {
+                        throw new Exception( "Unexpected PersonInputSource" );
+                    }
             }
 
             if ( promptForPhone )
@@ -1976,7 +2131,6 @@ mission. We are so grateful for your commitment.</p>
                         phone.NumberTypeValueId = numberTypeId;
                     }
 
-                    // TODO, verify if an unlisted home phone could get overwritten by their cell phone number if the home phone is unlisted
                     phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
                     phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                 }
@@ -1991,17 +2145,20 @@ mission. We are so grateful for your commitment.</p>
                 // fetch primaryFamily using rockContext so that any changes will get saved
                 primaryFamily = new GroupService( rockContext ).Get( primaryFamily.Id );
 
-                GroupService.AddNewGroupAddress(
-                    rockContext,
-                    primaryFamily,
-                    locationTypeGuid.ToString(),
-                    acAddress.Street1,
-                    acAddress.Street2,
-                    acAddress.City,
-                    acAddress.State,
-                    acAddress.PostalCode,
-                    acAddress.Country,
-                    true );
+                if ( acAddress != null )
+                {
+                    GroupService.AddNewGroupAddress(
+                        rockContext,
+                        primaryFamily,
+                        locationTypeGuid.ToString(),
+                        acAddress.Street1,
+                        acAddress.Street2,
+                        acAddress.City,
+                        acAddress.State,
+                        acAddress.PostalCode,
+                        acAddress.Country,
+                        true );
+                }
             }
         }
 
@@ -2025,18 +2182,30 @@ mission. We are so grateful for your commitment.</p>
                 .Where( a => !a.IsSystem )
                 .AsNoTracking();
 
-            DefinedValueCache[] allowedCurrencyTypes = {
-                DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid()),
-                DefinedValueCache.Get(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid())
-                };
-
-            int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
-
             var financialGateway = this.FinancialGateway;
-            if ( financialGateway == null )
+            var financialGatewayComponent = this.FinancialGatewayComponent;
+            if ( financialGateway == null || financialGatewayComponent == null )
             {
                 return;
             }
+
+            bool enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            bool enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
+            List<DefinedValueCache> allowedCurrencyTypes = new List<DefinedValueCache>();
+
+            if ( enableCreditCard && financialGatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
+            {
+                allowedCurrencyTypes.Add( creditCardCurrency );
+            }
+
+            if ( enableACH && financialGatewayComponent.SupportsSavedAccount( achCurrency ) )
+            {
+                allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
 
             personSavedAccountsQuery = personSavedAccountsQuery.Where( a =>
                 a.FinancialGatewayId == financialGateway.Id
@@ -2052,6 +2221,7 @@ mission. We are so grateful for your commitment.</p>
 
             // Only show the SavedAccount picker if there are saved accounts. If there aren't any (or if they choose 'Use a different payment method'), a later step will prompt them to enter Payment Info (CC/ACH fields)
             ddlPersonSavedAccount.Visible = personSavedAccountList.Any();
+            pnlSavedAccounts.Visible = personSavedAccountList.Any();
 
             ddlPersonSavedAccount.Items.Clear();
             foreach ( var personSavedAccount in personSavedAccountList )
@@ -2137,6 +2307,7 @@ mission. We are so grateful for your commitment.</p>
             int selectedScheduleFrequencyId = ddlFrequency.SelectedValue.AsInteger();
 
             int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+            int firstAndFifteenthFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() ) ?? 0;
             bool oneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
@@ -2154,11 +2325,33 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
+                btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonNowText );
             }
             else
             {
+                btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonScheduledText );
                 dtpStartDate.Visible = true;
                 dtpStartDate.Label = "Start Giving On";
+            }
+
+            if ( selectedScheduleFrequencyId == firstAndFifteenthFrequencyId )
+            {
+                var selectedDate = dtpStartDate.SelectedDate ?? RockDateTime.Now;
+
+                // Get the day of month (Day of Month for 11/9/2020 would be 9)
+                var nextBillDayOfMonth = selectedDate.Day;
+                if ( nextBillDayOfMonth > 1 && nextBillDayOfMonth < 15 )
+                {
+                    // they specified a start between the 1st and 15th, so round up the next 15th
+                    var nextFifteenth = new DateTime( selectedDate.Year, selectedDate.Month, 15 );
+                    dtpStartDate.SelectedDate = nextFifteenth;
+                }
+                else if ( nextBillDayOfMonth > 15 )
+                {
+                    // they specified a start after 15th, so round up the next month's 1st
+                    var nextFirst = new DateTime( selectedDate.Year, selectedDate.Month, 1 ).AddMonths( 1 );
+                    dtpStartDate.SelectedDate = nextFirst;
+                }
             }
 
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
@@ -2221,8 +2414,8 @@ mission. We are so grateful for your commitment.</p>
 
             if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {
-                var paymentToken = financialGatewayComponent.GetHostedPaymentInfoToken( this.FinancialGateway, _hostedPaymentInfoControl, out errorMessage );
-                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentToken, paymentInfo, out errorMessage );
+                financialGatewayComponent.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
                     nbProcessTransactionError.Text = errorMessage ?? "Unknown Error";
@@ -2254,7 +2447,7 @@ mission. We are so grateful for your commitment.</p>
                 hfTargetPersonId.Value = targetPerson.Id.ToString();
             }
 
-            UpdatePersonFromInputInformation( targetPerson );
+            UpdatePersonFromInputInformation( targetPerson, givingAsBusiness ? PersonInputSource.BusinessContact : PersonInputSource.Person );
 
             if ( givingAsBusiness )
             {
@@ -2272,6 +2465,9 @@ mission. We are so grateful for your commitment.</p>
             {
                 transactionPersonId = targetPerson.Id;
             }
+
+            // just in case anything about the person/business was updated (email or phone), save changes
+            rockContext.SaveChanges();
 
             nbProcessTransactionError.Visible = false;
 
@@ -2312,6 +2508,7 @@ mission. We are so grateful for your commitment.</p>
                         gatewayScheduleId = paymentInfo.TransactionCode;
                     }
 
+                    // if an exception occurred, it is possible that an orphaned subscription might be on the Gateway server. Some gateway components will clean-up when there is exception, but log it just in case it needs to be resolved by a human
                     throw new Exception( string.Format( "Error occurred when saving financial scheduled transaction for gateway scheduled payment with a gatewayScheduleId of {0} and FinancialScheduledTransaction with Guid of {1}.", gatewayScheduleId, transactionGuid ), ex );
                 }
             }
@@ -2414,6 +2611,8 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.LastName = tbLastName.Text;
             }
 
+            paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
+
             // get the payment comment
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
@@ -2444,6 +2643,12 @@ mission. We are so grateful for your commitment.</p>
             {
                 paymentInfo.Comment1 = paymentComment;
             }
+
+            var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
+            paymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            paymentInfo.TransactionTypeValueId = txnType.Id;
 
             return paymentInfo;
         }
@@ -2583,10 +2788,6 @@ mission. We are so grateful for your commitment.</p>
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
             }
 
-            decimal newControlAmount = batch.ControlAmount + transaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
-
             transaction.LoadAttributes( rockContext );
 
             var allowedTransactionAttributes = GetAttributeValue( AttributeKey.AllowedTransactionAttributesFromURL ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
@@ -2612,8 +2813,10 @@ mission. We are so grateful for your commitment.</p>
             // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
             financialTransactionService.Add( transaction );
             rockContext.SaveChanges();
-
             transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
 
             HistoryService.SaveChanges(
                 rockContext,
@@ -2751,6 +2954,9 @@ mission. We are so grateful for your commitment.</p>
         {
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
+            nbProcessTransactionError.Visible = false;
+            nbPaymentTokenError.Visible = false;
+
             if ( this.IsScheduledTransaction() )
             {
                 var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
@@ -2783,17 +2989,20 @@ mission. We are so grateful for your commitment.</p>
                     .Where( a => a.Amount.HasValue && a.Amount != 0.00M ).Select( a => a.AccountId )
                     .ToList();
 
-                var accountNames = new FinancialAccountService( new RockContext() )
-                    .GetByIds( amountAccountIds )
-                    .Select( a => a.PublicName )
-                    .ToList().AsDelimited( ", ", " and " );
+                var accounts = new FinancialAccountService( new RockContext() ).GetByIds( amountAccountIds ).ToList();
+                var amountSummaryMergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                amountSummaryMergeFields.Add( "Accounts", accounts );
 
-                lAmountSummaryAccounts.Text = accountNames;
-                lAmountSummaryAmount.Text = totalAmount.FormatAsCurrency();
                 if ( caapPromptForAccountAmounts.CampusId.HasValue )
                 {
-                    lAmountSummaryCampus.Text = CampusCache.Get( caapPromptForAccountAmounts.CampusId.Value ).Name;
+                    amountSummaryMergeFields.Add( "Campus", CampusCache.Get( caapPromptForAccountAmounts.CampusId.Value ) );
                 }
+
+                lAmountSummaryText.Text = GetAttributeValue( AttributeKey.AmountSummaryTemplate ).ResolveMergeFields( amountSummaryMergeFields );
+
+                lAmountSummaryAmount.Text = totalAmount.FormatAsCurrency();
+
+
 
                 if ( UsingPersonSavedAccount() )
                 {

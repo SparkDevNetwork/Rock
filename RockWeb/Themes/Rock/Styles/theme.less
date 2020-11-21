@@ -24,7 +24,7 @@
   5. Components
 */
 
-/*#region
+/* #region
 // 1. HTML Overrides         */
 // -------------------------
 
@@ -34,9 +34,14 @@
 
 html {
   -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+select {
+  -webkit-font-smoothing: none;
+}
+// End Temporary Fix
 
 main {
   display: block;
@@ -69,8 +74,8 @@ textarea,
 .form-control {
   &:focus {
     border: 1px solid @input-border-focus;
-    box-shadow: @input-focus-box-shadow;
     outline: none;
+    box-shadow: @input-focus-box-shadow;
   }
 }
 
@@ -85,21 +90,25 @@ textarea,
   background: @text-selection-bg;
 }
 
-/*#endregion */
+/* #endregion */
 
 
-/*#region
+/* #region
 // 2. Bootstrap Overrides    */
 // -------------------------
 
 .well {
-  .box-shadow(none)
+  .box-shadow(none);
 }
 
 .toggle-container {
   .btn-group {
     vertical-align: top;
   }
+}
+
+.btn {
+  transition: @btn-transition;
 }
 
 .btn-square {
@@ -122,12 +131,47 @@ textarea,
   }
 }
 
+// Show Toggle Buttons without muted colors
+.btn-toggle {
+  .btn-primary.active {
+    background-color: @btn-primary-bg;
+    border-color: @btn-primary-border;
+  }
+
+  .btn-success.active {
+    background-color: @btn-success-bg;
+    border-color: @btn-success-border;
+  }
+
+  .btn-info.active {
+    background-color: @btn-info-bg;
+    border-color: @btn-info-border;
+  }
+
+  .btn-warning.active {
+    background-color: @btn-warning-bg;
+    border-color: @btn-warning-border;
+  }
+
+  .btn-danger.active {
+    background-color: @btn-danger-bg;
+    border-color: @btn-danger-border;
+  }
+}
+
+.label.btn-label {
+  padding: .2em .5em .3em;
+  color: @btn-default-color !important;
+  background: @btn-default-bg;
+  box-shadow: inset 0 0 0 1px @btn-default-border;
+}
+
 .nav-tabs {
   border-bottom: 1px solid @nav-tabs-border-color;
 
   > li {
     padding: 0;
-    margin: 0 0 -1px 0;
+    margin: 0 0 -1px;
 
     // Actual tabs (as links)
     > a {
@@ -217,7 +261,7 @@ textarea,
 
 .tooltip-inner {
   padding: (@padding-base-horizontal / 2);
-  color: #fff;
+  color: @white;
   text-align: left;
   background-color: @gray-darker;
   border: 1px solid @ui-4;
@@ -236,7 +280,7 @@ textarea,
   .form-well {
     padding: @panel-body-padding;
     margin: 0 -(@panel-body-padding);
-    background: #fff;
+    background: @white;
     border: 0;
     .box-shadow(none);
   }
@@ -259,7 +303,7 @@ textarea,
 
 .has-error .form-control:focus {
   border-color: @brand-danger;
-  box-shadow: 0 0 0 3px rgba(red(@brand-danger), green(@brand-danger), blue(@brand-danger), .2);
+  box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
 }
 
 .has-error .control-label {
@@ -281,7 +325,7 @@ textarea,
 .grid-filter {
   border: 0;
 
-  .btn-link {
+  .btn-filter-toggle {
     margin: 5px 0 0 7px;
   }
 }
@@ -326,6 +370,10 @@ textarea,
       padding: 0 6px;
       vertical-align: middle;
     }
+
+    &.grid-bool-field {
+      vertical-align: middle;
+    }
   }
 
   > tfoot {
@@ -344,15 +392,42 @@ textarea,
     width: 33px;
     padding: 5px 7px;
   }
+
+  .btn-default,
+  .btn-danger {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .btn-default {
+    &:focus,
+    &:hover,
+    &:active {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+  }
+
+  .btn-danger {
+    background: transparent;
+    &:active,
+    &:hover {
+      color: @btn-danger-bg;
+      background: fade(@btn-danger-bg, 10%);
+    }
+
+    &:focus,
+    &:active &:active:hover,
+    &:active:focus {
+      color: @btn-danger-color;
+      background: @btn-danger-bg;
+      border-color: @btn-danger-border;
+    }
+  }
 }
 
 .btn.active,
 .btn:active { // removes the shadow from the toggles
   .box-shadow(none);
-}
-
-.control-label {
-  font-weight: @font-weight-semibold;
 }
 
 .badge-circle {
@@ -366,9 +441,9 @@ textarea,
   border-radius: 50%;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 3. Rock Overrides         */
 // -------------------------
 
@@ -384,8 +459,12 @@ textarea,
 }
 
 .modal {
-  .box-shadow(0 12px 24px 0 rgba(0, 0, 0, 0.1));
+  .box-shadow(@shadow-modal);
   border-radius: 0;
+
+  .modal-content {
+    .box-shadow(none);
+  }
 }
 
 .modal-header small {
@@ -412,11 +491,10 @@ textarea,
 }
 
 .wizard {
-  margin: -35px;
-  margin-bottom: 35px;
+  margin: -5px -15px 35px;
 
-  @media (max-width: @screen-md-min) {
-    margin-left: -12px;
+  @media (min-width: @screen-md-min) {
+    margin: -35px -35px 35px;
   }
 }
 
@@ -444,21 +522,87 @@ textarea,
 }
 
 .group-member-list .panel,
-.panel-widget,
-.panel-drawer {
+.panel-widget {
   .box-shadow(none);
 }
 
 
 .panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
   > .panel-heading {
+    border-bottom: 1px solid @panel-border;
+  }
+
+  > .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+    .row {
+      width: 100%;
+    }
+
+    > .panel-title {
+      margin-right: auto;
+    }
+
+    .filter-toggle {
+      margin-top: 0;
+    }
+
+    > .panel-labels,
+    > .pull-right {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    > .description {
+      display: block;
+    }
+  }
+
+  > .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: @white;
+
+    .panel-block {
+      height: auto !important;
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+  }
+
+  .wizard {
+    padding: 16px 0;
+    margin: 0;
+    background: @ui-2;
     border-bottom: 1px solid @panel-border;
   }
 }
 
 .panel-follow-status {
   width: 50px;
-  padding-top: 14px;
+  padding: 0;
+
+  &::before {
+    display: grid;
+    place-items: center;
+    height: 100%;
+  }
 }
 
 .panel .panel-heading.panel-follow {
@@ -482,7 +626,7 @@ td.grid-actions {
 }
 
 .grid-actions {
-  .btn {
+  .btn-grid-action {
     padding: 5px 7px;
     font-size: 1.125em;
     color: @ui-5;
@@ -490,7 +634,7 @@ td.grid-actions {
     border: 0;
     transition: color 250ms;
 
-    &:hover{
+    &:hover {
       color: @link-color;
     }
   }
@@ -500,9 +644,9 @@ td.grid-actions {
   }
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 4. Theme Styling          */
 // -------------------------
 
@@ -511,11 +655,11 @@ body.nav-open {
 }
 
 // Fixed Navbar #target fix
-:target:before {
-  content: "";
+:target::before {
   display: block;
   height: @navbar-top-height;
   margin-top: -@navbar-top-height;
+  content: "";
 }
 
 .page-wrapper {
@@ -529,8 +673,8 @@ body.nav-open {
 
 .rock-top-header {
   margin-bottom: 0;
-  background-color: @brand-color;
-  background-color: var(--brand-color);
+  background-color: @brand-primary;
+  background-color: var(--brand-primary, @brand-primary);
   border: 0;
 
   @media (max-width: @screen-sm-max) {
@@ -581,7 +725,7 @@ body.nav-open {
     margin: 0;
     font-size: 1.5em;
     line-height: @navbar-top-height;
-    color: #fff;
+    color: @white;
     cursor: pointer;
 
     .navbar-side-open & {
@@ -607,11 +751,15 @@ body.nav-open {
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 6px;
-    color: #fff;
-    background-color: @navbarside-background-color;
-    background-color: var(--navbarside-background-color);
+    color: @white;
+    background-color: @brand-primary;
+    background-color: var(--brand-primary, @brand-primary);
     background-size: 45px;
-    border-bottom: 1px solid lighten(@navbarside-background-color, 10%);
+
+    .nav-open & {
+      background-color: @navbarside-background-color;
+      background-color: var(--navbarside-background-color, @navbarside-background-color);
+    }
 
     &.no-logo::after {
       position: absolute;
@@ -783,13 +931,13 @@ body.nav-open {
         left: auto;
         @media (max-width: @screen-xs-max) {
           position: absolute;
-          top: 80px;
+          top: @navbar-top-height;
           left: 0;
           z-index: 1000;
-          background-color: @brand-color;
-          background-color: var(--brand-color);
+          background-color: @brand-primary;
+          background-color: var(--brand-primary, @brand-primary);
 
-          & > li > a{
+          & > li > a {
             color: @navbartop-color;
             color: var(--navbartop-color);
           }
@@ -816,9 +964,9 @@ body.nav-open {
       line-height: 34px;
 
       &:hover {
-        color: #fff;
-        background-color: @brand-color;
-        background-color: var(--brand-color);
+        color: @white;
+        background-color: @brand-primary;
+        background-color: var(--brand-primary, @brand-primary);
         opacity: 1;
       }
     }
@@ -832,7 +980,7 @@ body.nav-open {
         margin-left: -6px;
         content: "";
         border-right: 8px solid transparent;
-        border-bottom: 8px solid #fff;
+        border-bottom: 8px solid @white;
         border-left: 8px solid transparent;
       }
     }
@@ -842,7 +990,7 @@ body.nav-open {
 
 .navbar-brand-side {
   height: (@navbarside-width * .325) + (24 * 2);
-  color: #fff;
+  color: @white;
 
   &.no-logo::after {
     position: absolute;
@@ -884,7 +1032,6 @@ body.nav-open {
     bottom: 0;
     left: 0;
     z-index: -1;
-    width: inherit;
     width: @navbarside-width;
     content: "";
     background-color: @navbarside-background-color;
@@ -927,7 +1074,7 @@ body.nav-open {
   }
 
   @media (min-width: @screen-sm-min) {
-    top: 80px;
+    top: @navbar-top-height;
     margin-top: 0;
   }
 
@@ -993,7 +1140,7 @@ body.nav-open {
 
       &.open {
         background-color: @navbarside-sub-bg;
-        box-shadow: inset 3px 0 0 0 @brand-color;
+        box-shadow: inset 3px 0 0 0 @brand-primary;
 
         @media @sm {
           &::before {
@@ -1019,9 +1166,9 @@ body.nav-open {
 
       &.current,
       &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-color;
+        box-shadow: inset 3px 0 0 0 @brand-primary;
         > i {
-          color: #fff;
+          color: @white;
         }
       }
 
@@ -1033,7 +1180,7 @@ body.nav-open {
         z-index: 2000;
         display: none;
         width: 280px;
-        padding: 0 @padding-base-horizontal;
+        padding: 0 10px 0 12px;
         overflow-x: hidden;
         overflow-y: auto;
         text-align: left;
@@ -1041,16 +1188,17 @@ body.nav-open {
 
 
         /* Fix for https://bugs.webkit.org/show_bug.cgi?id=160953 Safari 10.1+ */
-          @media not all and (min-resolution:.001dpcm) and (min-width: @screen-sm-min) { @supports (-webkit-appearance:none) {
+        @media not all and (min-resolution: .001dpcm) and (min-width: @screen-sm-min) {
+          @supports (-webkit-appearance:none) {
             top: @navbar-top-height;
-          }}
-
+          }
+        }
 
 
         li {
 
           a {
-            padding: 0 0 0 4px;
+            padding: 0;
             line-height: 2.5;
             color: @navbarside-color;
 
@@ -1058,12 +1206,10 @@ body.nav-open {
               display: inline-block;
               width: 0;
               height: 8px;
-              margin-right: 0;
+              margin-right: 14px;
               margin-bottom: 1px;
               content: " ";
-              background: @brand-color;
-              -webkit-transition: all 100ms ease-in-out;
-              transition: all 100ms ease-in-out;
+              background: @brand-primary;
             }
 
             &:focus {
@@ -1072,13 +1218,13 @@ body.nav-open {
             }
 
             &:hover {
-              color: #fff;
+              color: @white;
               background-color: @navbarside-sub-bg;
 
               &::before {
                 width: 8px;
                 padding-left: 8px;
-                margin-right: 12px;
+                margin-right: 6px;
               }
             }
           }
@@ -1086,11 +1232,11 @@ body.nav-open {
           &.current {
             a {
               font-weight: 600;
-              color: #fff;
+              color: @white;
               &::before {
                 width: 8px;
                 padding-left: 8px;
-                margin-right: 12px;
+                margin-right: 6px;
               }
             }
           }
@@ -1151,6 +1297,11 @@ body.nav-open {
       }
     }
   }
+
+  // Hide config-bar inside navigation since it is always cropped
+  .config-bar {
+    display: none !important;
+  }
 }
 
 
@@ -1199,7 +1350,7 @@ body.navbar-side-open {
 
   .page-title {
     padding: 20px 15px;
-    margin: -5px -5px 5px -5px;
+    margin: -5px -15px 5px;
     color: @pagetitle-text-color;
     background-color: @pagetitle-background;
     background-color: var(--pagetitle-background);
@@ -1212,7 +1363,6 @@ body.navbar-side-open {
 
     .page-icon {
       display: none;
-      float: left;
     }
 
     .breadcrumb {
@@ -1231,7 +1381,7 @@ body.navbar-side-open {
       > li + li::before {
         font-family: @fa-font-face;
         font-size: 80%;
-        font-weight: 600;
+        font-weight: @fa-theme-weight;
         content: "@{breadcrumb-separator}";
       }
     }
@@ -1240,11 +1390,11 @@ body.navbar-side-open {
 
   @media (min-width: @screen-md-min) {
     padding: 0;
-    margin: 35px 35px 0 35px;
+    margin: 35px 35px 0;
 
     .page-title {
       padding: 20px 35px;
-      margin: -35px -35px 35px -35px;
+      margin: -35px -35px 35px;
     }
   }
 }
@@ -1287,8 +1437,8 @@ body.navbar-side-open {
     width: 120px;
     height: 120px;
     margin: 0 auto 40px;
-    fill: @brand-color;
-    fill: var(--brand-color);
+    fill: @brand-primary;
+    fill: var(--brand-primary, @brand-primary);
   }
 
   .login-block {
@@ -1308,12 +1458,12 @@ body.navbar-side-open {
 // workflow page
 .workflow-activity {
   & > .panel-heading {
-    color: #fff;
+    color: @white;
     background-color: @btn-action-bg;
     border-color: @btn-action-bg;
 
     a.btn-link {
-      color: #fff;
+      color: @white;
     }
   }
 
@@ -1324,7 +1474,7 @@ body.navbar-side-open {
   }
 }
 
-.attribute-panel{
+.attribute-panel {
   .panel-body {
     padding: 0;
   }
@@ -1335,9 +1485,9 @@ body.navbar-side-open {
   box-shadow: @shadow-sticky-nav;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 5. Specific Page Styling        */
 // -------------------------
 .personprofilebar-bio {
@@ -1360,9 +1510,9 @@ body.navbar-side-open {
   width: 270px;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 6. Components          */
 // -------------------------
 
@@ -1383,12 +1533,12 @@ body.navbar-side-open {
 
 .note-btn {
   padding: 5px 10px 7px;
-  background: #fff;
+  background: @white;
   border: 0;
 
   &:hover,
   &:focus {
-    background: #fff;
+    background: @white;
   }
 
   &:active,
@@ -1442,6 +1592,11 @@ body.navbar-side-open {
 
 }
 
-/*#endregion */
+// Move the debug timing table to the right so it's not hidden by the admin theme's left nav
+.debug-timings {
+  margin-left: 115px;
+}
+
+/* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";

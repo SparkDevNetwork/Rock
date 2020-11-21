@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -77,6 +78,13 @@ namespace Rock.Web.UI.Controls
             bool renderLabel = ( !string.IsNullOrEmpty( rockControl.Label ) );
             bool renderHelp = ( rockControl.HelpBlock != null && !string.IsNullOrWhiteSpace( rockControl.Help ) );
             bool renderWarning = ( rockControl.WarningBlock != null && !string.IsNullOrWhiteSpace( rockControl.Warning ) );
+
+            /* 2020-02-11 MDP
+             * If renderLabel is false (the label is blank), required inputs won't get highlighted if they are blank. 
+             * This is due to the lack of form-group around input that don't have label.
+             * There isn't a fix for this yet. Adding a form-group div around these would cause styling and javascript hook problems (since the dom is different)
+             * In the meantime, you could manually add a form-group div around these required inputs, but be careful so it doesn't break styling (even on custom themes)
+             */
 
             if ( renderLabel )
             {
@@ -181,8 +189,20 @@ namespace Rock.Web.UI.Controls
                     rockControl.RequiredFieldValidator.Enabled = true;
                     if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                     {
-                        rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is required.";
+                        // if the control is a Label, use that. Otherwise, if the control has PlaceHolder, use that.
+                        string requiredName = string.Empty;
+                        if ( rockControl.Label.IsNotNullOrWhiteSpace() )
+                        {
+                            requiredName = rockControl.Label;
+                        }
+                        else if ( rockControl is RockTextBox )
+                        {
+                            requiredName = ( rockControl as RockTextBox ).Placeholder;
+                        }
+
+                        rockControl.RequiredFieldValidator.ErrorMessage = requiredName + " is required.";
                     }
+
                     rockControl.RequiredFieldValidator.RenderControl( writer );
                 }
                 else
@@ -233,5 +253,36 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Renders a div using the panel panel-attributes, panel-heading, panel-title, and panel-body pattern.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="renderSection">The render section.</param>
+        public static void RenderSection( string title, string cssClass, HtmlTextWriter writer, Action<HtmlTextWriter> renderSection )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-section " + cssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
+            writer.RenderBeginTag( "h5" );
+            writer.Write( title );
+            writer.RenderEndTag(); // h5
+
+            writer.RenderEndTag(); // div panel-heading
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            renderSection( writer );
+
+            writer.RenderEndTag(); // div panel-body
+
+            writer.RenderEndTag(); // div panel
+        }
     }
 }

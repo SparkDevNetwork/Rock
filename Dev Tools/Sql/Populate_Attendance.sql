@@ -1,130 +1,225 @@
 set nocount on
 
+-- configuration
+declare
+    @populateStartDateTime datetime = DateAdd(month, -0, GetDate()),
+    @populateEndDateTime datetime  = DateAdd(week, 1, GetDate()),
+    @populateGroupScheduling int = 0, -- set this to true if the attendance records should be for scheduling attendences
+    @maxAttendanceCount int = 25000, 
+    @personSampleSize int = 10000 -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
+    
 declare
     @attendanceCounter int = 0,
-    @maxAttendanceCount int = 250000, 
-    --@maxPersonId int = (select min(id), max(id) from (select top 1000 id  from Person order by Id) x),  /* limit to first 4000 persons in the database */ 
     @LocationId int,
     @ScheduleId int,
     @PersonAliasId int,
     @GroupId int,
-    @DeviceId int,
+    @DeviceId int, 
     @SearchTypeValueId int,
     @AttendanceCodeId int,
     @QualifierValueId int,
-    @StartDateTime datetime,
-    @EndDateTime datetime,
     @DidAttend int,
     @CampusId int,
+	@OccurrenceDate date,
+	@AttendanceOccurrenceId int,
     @categoryServiceTimes int = (select id from Category where [Guid] = '4FECC91B-83F9-4269-AE03-A006F401C47E'),
     @randomDateInc decimal = 0.5,
-	@yearsBack int = 10
+    @randomSeed int = 1
+    
 
 declare
-  @daysBack int = @yearsBack * 366
+  @StartDateTime datetime = @populateStartDateTime,
+  @attendancesPerDay int = @maxAttendanceCount/DateDiff(day, @populateStartDateTime, @populateEndDateTime)
 
 declare
     @attendanceGroupIds table ( id Int );
 
-declare
-    @personAliasIds table ( id Int );
 
 declare
-    @attendanceCodeIds table ( id Int );
+    @locationIds table ( id Int );
+
+declare
+	@campusIds table ( id int);
 
 declare
      @attendanceTable TABLE(
-   	    [LocationId] [int] NULL,
-	    [ScheduleId] [int] NULL,
-	    [GroupId] [int] NULL,
 	    [PersonAliasId] [int] NULL,
 	    [DeviceId] [int] NULL,
-	    [SearchTypeValueId] [int] NULL,
 	    [AttendanceCodeId] [int] NULL,
 	    [QualifierValueId] [int] NULL,
 	    [StartDateTime] [datetime] NOT NULL,
-	    [EndDateTime] [datetime] NULL,
 	    [DidAttend] [bit] NOT NULL,
-	    [Note] [nvarchar](max) NULL,
 	    [Guid] [uniqueidentifier] NOT NULL,
-	    [CreatedDateTime] [datetime] NULL,
-	    [ModifiedDateTime] [datetime] NULL,
-	    [CreatedByPersonAliasId] [int] NULL,
-	    [ModifiedByPersonAliasId] [int] NULL,
-	    [ForeignId] [nvarchar](50) NULL,
-	    [CampusId] [int] NULL
+	    [CampusId] [int] NULL,
+		[OccurrenceId] [int],
+        [RSVP] int,
+        [RequestedToAttend] bit null,
+        [ScheduledToAttend] bit null,
+        [SundayDate] [date]
     );
 
 begin
-
-    insert into @attendanceGroupIds select Id from [Group] where GroupTypeId in (select Id from GroupType where TakesAttendance = 1);
-    insert into @personAliasIds select top 10000 Id from PersonAlias
-    insert into @attendanceCodeIds select top 10 id from AttendanceCode
-	set @StartDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
-
-    while @attendanceCounter < @maxAttendanceCount
+    if (@populateGroupScheduling = 1)
     begin
+        insert into @attendanceGroupIds select Id from [Group] g where GroupTypeId in (select Id from GroupType where IsSchedulingEnabled = 1) and g.DisableScheduling = 0;
+    end else begin
+        insert into @attendanceGroupIds select Id from [Group] where GroupTypeId in (select Id from GroupType where TakesAttendance = 1 or IsSchedulingEnabled = 1);
+    end
+    
+	insert into @locationIds select Id from [Location] where ParentLocationId = 3 or [Name] like 'A/V Booth'
+	insert into @campusIds select Id from Campus;
 
-        if (@attendanceCounter % 100 = 0) begin
+    
+    IF CURSOR_STATUS('global','personAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE personAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
+	declare personAliasIdCursor cursor LOCAL FAST_FORWARD for 
+        select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
+        not in (select Id from Person where IsDeceased = 1  and RecordStatusValueId != 3) order by newid();
+	open personAliasIdCursor;
+
+    IF CURSOR_STATUS('global','scheduleIdCursor')>=-1
+    BEGIN
+     DEALLOCATE scheduleIdCursor;
+    END
+
+    declare scheduleIdCursor cursor LOCAL FAST_FORWARD for select Id from Schedule s where s.CategoryId = @categoryServiceTimes and s.IsActive = 1;
+	open scheduleIdCursor;
+
+    IF CURSOR_STATUS('global','attendanceCodeIdCursor')>=-1
+    BEGIN
+     DEALLOCATE attendanceCodeIdCursor;
+    END
+
+    declare attendanceCodeIdCursor cursor LOCAL FAST_FORWARD for select Id from AttendanceCode
+	open attendanceCodeIdCursor;
+
+    while @StartDateTime <= @populateEndDateTime
+    begin
+		
+		if (@attendanceCounter % 100 = 0) begin
             set @GroupId = (select top 1 Id from @attendanceGroupIds order by newid()) 
-            set @PersonAliasId =  (select top 1 Id from @personAliasIds order by newid())
             set @DeviceId =  (select top 1 Id from Device where DeviceTypeValueId = 41 order by newid())
-            set @LocationId = (select top 1 Id from Location where ParentLocationId = 3 order by newid())
+            set @LocationId = (select top 1 Id from @locationIds order by newid())
+            set @CampusId = (select top 1 Id from @campusIds order by newid()) 
         end
+		
+		fetch next from personAliasIdCursor into @PersonAliasId;
+
+		if (@@FETCH_STATUS != 0) begin
+		   close personAliasIdCursor;
+		   open personAliasIdCursor;
+		   fetch next from personAliasIdCursor into @PersonAliasId;
+		end
+
+        fetch next from attendanceCodeIdCursor into @AttendanceCodeId;
+
+		if (@@FETCH_STATUS != 0) begin
+		   close attendanceCodeIdCursor;
+		   open attendanceCodeIdCursor;
+		   fetch next from attendanceCodeIdCursor into @AttendanceCodeId;
+		end
 
         if (@attendanceCounter % 10 = 0) begin
-            set @randomDateInc = rand()
-            set @ScheduleId = (select top 1 Id from Schedule where CategoryId = @categoryServiceTimes order by newid()) 
+            fetch next from scheduleIdCursor into @ScheduleId;
+		    if (@@FETCH_STATUS != 0) begin
+		       close scheduleIdCursor;
+		       open scheduleIdCursor;
+		       fetch next from scheduleIdCursor into @ScheduleId;
+		    end
         end
 
-		set @StartDateTime = DATEADD(ss, (86000*@daysBack/@maxAttendanceCount), @StartDateTime);
-        set @DidAttend = (select case when FLOOR(rand() * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
-        set @CampusId = (select top 1 Id from Campus order by newid()) 
-        set @AttendanceCodeId = (select top 1 Id from @attendanceCodeIds order by newid())
+        set @StartDateTime = DATEADD(ss, (86000/@attendancesPerDay), @StartDateTime)
+		set @OccurrenceDate = convert(date, @StartDateTime);
+        set @randomSeed = CHECKSUM(newid())
+        set @DidAttend = (select case when FLOOR(rand(@randomSeed) * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
 
-		if ( FLOOR(rand() * 10) = 5) begin
+        set @randomSeed = CHECKSUM(newid());
+
+		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
+		if (@AttendanceOccurrenceId is null) begin
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), newid());
+			set @AttendanceOccurrenceId = @@IDENTITY;
+		end
+
+        set @randomSeed = CHECKSUM(newid());
+
+		if ( FLOOR(rand(@randomSeed) * 10) = 5) begin
 			-- randomly set CampusId to null since some types of attendance don't have a campus (like neighborhood groups )
 			set @CampusId = null
 		end
 
-        INSERT INTO @attendanceTable
-                   ([LocationId]
-                    ,[ScheduleId]
-                    ,[GroupId]
-                    ,[PersonAliasId]
+
+        declare @rsvp int = 3;
+        declare @requestedToAttend bit = null
+        declare @scheduledToAttend bit = null;
+        if (@populateGroupScheduling = 1) begin
+            set @rsvp = round(rand(CHECKSUM(newid())) * 3, 0);
+            set @requestedToAttend = 1;
+            if (@rsvp = 1) begin
+                set @scheduledToAttend = 1;
+            end else begin
+                set @scheduledToAttend = 0;
+            end
+        end
+        
+
+        
+
+		INSERT INTO @attendanceTable
+                   ([PersonAliasId]
                     ,[DeviceId] 
-                    --,[SearchTypeValueId]
                     ,[AttendanceCodeId]
-                    --,[QualifierValueId]
                     ,[StartDateTime]
-                    --,[EndDateTime]
+                    ,[SundayDate]
                     ,[DidAttend]
                     ,[CampusId]
+					,[OccurrenceId]
+                    ,[RSVP]
+                    ,[RequestedToAttend]
+                    ,[ScheduledToAttend]
                     ,[Guid])
              VALUES
-                   (@LocationId
-                    ,@ScheduleId
-                    ,@GroupId
-                    ,@PersonAliasId
+                   (
+                    @PersonAliasId
                     ,@DeviceId
-                    --,@SearchTypeValueId
                     ,@AttendanceCodeId
-                    --,@QualifierValueId
                     ,@StartDateTime
-                    --,@EndDateTime
+                    ,dbo.ufnUtility_GetSundayDate(@StartDateTime)
                     ,@DidAttend
                     ,@CampusId
+					,@AttendanceOccurrenceId
+                    ,@rsvp
+                    ,@requestedToAttend
+                    ,@scheduledToAttend
                    ,NEWID()
+				   
         )
 
-        set @attendanceCounter += 1;
+		if (@attendanceCounter % 10000 = 0) begin
+		print @attendanceCounter
+		end
         
+		set @attendanceCounter += 1;
     end
 
-    --truncate table Attendance    
+	close personAliasIdCursor;
+    close scheduleIdCursor;
+    close attendanceCodeIdCursor;
+
     insert into Attendance 
-        ( LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
-    select LocationId, ScheduleId, GroupId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
+        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] ) 
+    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] 
+        from @attendanceTable order by StartDateTime
+
+	select count(*) [AttendanceCount] from Attendance
+    select count(*) [AttendanceOccurrenceCount] from AttendanceOccurrence
 end;
+
+
+
 
 

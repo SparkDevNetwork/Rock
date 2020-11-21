@@ -131,8 +131,8 @@ namespace Rock.Web.UI.Controls
         public Grid ParentGrid { get; internal set; }
 
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included
+        /// in the export. See <seealso cref="ExcelExportBehavior" />.
         /// </summary>
         public override ExcelExportBehavior ExcelExportBehavior
         {
@@ -231,7 +231,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void linkButton_DataBinding( object sender, EventArgs e )
         {
-            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+            GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).DataItemContainer;
             RowEventArgs args = new RowEventArgs( row );
             LinkButtonField.HandleOnDataBound( sender, args );
         }
@@ -253,7 +253,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( LinkButtonClick != null )
             {
-                GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).Parent.Parent;
+                GridViewRow row = ( GridViewRow ) ( ( LinkButton ) sender ).DataItemContainer;
                 RowEventArgs args = new RowEventArgs( row );
                 LinkButtonClick( sender, args );
             }

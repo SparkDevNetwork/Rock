@@ -52,7 +52,7 @@ namespace Rock.Search.Person
         }
 
         /// <summary>
-        /// The url to redirect user to after they've entered search criteria
+        /// The URL to redirect user to after they've entered search criteria
         /// </summary>
         public override string ResultUrl
         {
@@ -62,7 +62,7 @@ namespace Rock.Search.Person
                 if ( allowFirstNameSearch )
                 {
                     string url = base.ResultUrl;
-                    return url + ( url.Contains( "?" ) ? "&" : "?" ) + "allowFirstNameOnly=true";
+                    return url + ( url.Contains( "?" ) ? "&" : "?" ) + "AllowFirstNameOnly=true";
                 }
 
                 return base.ResultUrl;

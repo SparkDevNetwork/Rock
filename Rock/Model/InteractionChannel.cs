@@ -118,10 +118,10 @@ namespace Rock.Model
         public int? RetentionDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the length of time that components of this channel should be cached
+        /// Gets or sets the length of time (in minutes) that components of this channel should be cached
         /// </summary>
         /// <value>
-        /// The duration of the component cache.
+        /// The duration (in minutes) of the component cache.
         /// </value>
         [DataMember]
         public int? ComponentCacheDuration { get; set; }
@@ -225,6 +225,66 @@ namespace Rock.Model
         }
 
         private bool _isActive = true;
+
+        /// <summary>
+        /// Gets or sets the interaction custom 1 label.
+        /// </summary>
+        /// <value>
+        /// The interaction custom 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string InteractionCustom1Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction custom 2 label.
+        /// </summary>
+        /// <value>
+        /// The interaction custom 2 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string InteractionCustom2Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction custom indexed 1 label.
+        /// </summary>
+        /// <value>
+        /// The interaction custom indexed 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string InteractionCustomIndexed1Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component custom 1 label.
+        /// </summary>
+        /// <value>
+        /// The component custom 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ComponentCustom1Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component custom 2 label.
+        /// </summary>
+        /// <value>
+        /// The component custom 2 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ComponentCustom2Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the component custom indexed 1 label.
+        /// </summary>
+        /// <value>
+        /// The component custom indexed 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ComponentCustomIndexed1Label { get; set; }
 
         #endregion
 

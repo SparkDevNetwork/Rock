@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -25,6 +26,7 @@ using System.Xml.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Web.Cache
 {
@@ -36,7 +38,6 @@ namespace Rock.Web.Cache
     [DataContract]
     public class PageCache : ModelCache<PageCache, Page>
     {
-
         #region Properties
 
         private readonly object _obj = new object();
@@ -222,13 +223,30 @@ namespace Rock.Web.Cache
         public int Order { get; private set; }
 
         /// <summary>
-        /// Gets or sets the duration of the output cache.
+        /// Gets or sets the duration (in seconds) of the output cache.
         /// </summary>
         /// <value>
-        /// The duration of the output cache.
+        /// The duration (in seconds) of the output cache.
         /// </value>
+        [Obsolete( "You should use the new cache control header property." )]
+        [RockObsolete( "1.12" )]
         [DataMember]
-        public int OutputCacheDuration { get; private set; }
+        public int OutputCacheDuration
+        {
+            get
+            {
+                if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
+                {
+                    return 0;
+                }
+
+                return this.CacheControlHeader.MaxAge.ToSeconds();
+            }
+
+            private set
+            {
+            }
+        }
 
         /// <summary>
         /// Gets or sets the description.
@@ -294,6 +312,79 @@ namespace Rock.Web.Cache
         public string BodyCssClass { get; private set; }
 
         /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Gets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the median page load time in seconds. Typically calculated from a set of
+        /// <see cref="Interaction.InteractionTimeToServe"/> values.
+        /// </summary>
+        /// <value>
+        /// The median page load time in seconds.
+        /// </value>
+        [DataMember]
+        public double? MedianPageLoadTimeDurationSeconds { get; private set; }
+
+        private string _cacheControlHeaderSettings;
+
+        /// <summary>
+        /// Gets or sets the cache control header settings.
+        /// </summary>
+        /// <value>
+        /// The cache control header settings.
+        /// </value>
+        [DataMember]
+        public string CacheControlHeaderSettings
+        {
+            get => _cacheControlHeaderSettings;
+            set
+            {
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
+
+                _cacheControlHeaderSettings = value;
+            }
+        }
+
+        private RockCacheability _cacheControlHeader;
+
+        /// <summary>
+        /// Gets the cache control header. This shouldn't be used to set the properties directly but the json version should be used to set the CacheControlHeaderSettings property.
+        /// </summary>
+        /// <value>
+        /// The cache control header.
+        /// </value>
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+
+                return _cacheControlHeader;
+            }
+        }
+
+        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>
@@ -348,7 +439,10 @@ namespace Rock.Web.Cache
                 }
             }
 
-            if ( _pageIds == null ) return pages;
+            if ( _pageIds == null )
+            {
+                return pages;
+            }
 
             foreach ( var id in _pageIds )
             {
@@ -361,6 +455,7 @@ namespace Rock.Web.Cache
 
             return pages;
         }
+
         private List<int> _pageIds;
 
         /// <summary>
@@ -407,7 +502,10 @@ namespace Rock.Web.Cache
                     }
                 }
 
-                if ( _blockIds == null ) return blocks;
+                if ( _blockIds == null )
+                {
+                    return blocks;
+                }
 
                 blocks.AddRange(
                     _blockIds.Distinct()
@@ -417,6 +515,7 @@ namespace Rock.Web.Cache
                 return blocks;
             }
         }
+
         private List<int> _blockIds;
 
         /// <summary>
@@ -431,14 +530,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Helper class for PageRoute information
         /// </summary>
-		[Serializable]
+        [Serializable]
         [DataContract]
         public class PageRouteInfo
         {
             /// <summary>
             /// The id
             /// </summary>
-			[DataMember]
+            [DataMember]
             public int Id { get; internal set; }
 
             /// <summary>
@@ -452,6 +551,15 @@ namespace Rock.Web.Cache
             /// </summary>
             [DataMember]
             public string Route { get; internal set; }
+
+            /// <summary>
+            /// If true then the route should work on all sites regardless of the site exclusive setting.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
+            /// </value>
+            [DataMember]
+            public bool IsGlobal { get; internal set; }
         }
 
         /// <summary>
@@ -552,7 +660,10 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var page = entity as Page;
-            if ( page == null ) return;
+            if ( page == null )
+            {
+                return;
+            }
 
             InternalName = page.InternalName;
             PageTitle = page.PageTitle;
@@ -574,19 +685,22 @@ namespace Rock.Web.Cache
             BreadCrumbDisplayIcon = page.BreadCrumbDisplayIcon;
             IconCssClass = page.IconCssClass;
             Order = page.Order;
-            OutputCacheDuration = page.OutputCacheDuration;
+            CacheControlHeaderSettings = page.CacheControlHeaderSettings;
             Description = page.Description;
             KeyWords = page.KeyWords;
             HeaderContent = page.HeaderContent;
             IncludeAdminFooter = page.IncludeAdminFooter;
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
+            IconBinaryFileId = page.IconBinaryFileId;
+            AdditionalSettings = page.AdditionalSettings;
+            MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
 
             PageRoutes = new List<PageRouteInfo>();
-            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route } ) );
+            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route, IsGlobal = r.IsGlobal } ) );
         }
 
         /// <summary>
@@ -624,6 +738,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the cached block instances.
         /// </summary>
+        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get()." )]
+        [RockObsolete( "1.10" )]
         public void RemoveBlocks()
         {
             _blockIds = null;
@@ -632,6 +748,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the cached child pages.
         /// </summary>
+        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get()." )]
+        [RockObsolete( "1.10" )]
         public void RemoveChildPages()
         {
             _pageIds = null;
@@ -689,7 +807,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private XElement MenuXmlElement( int levelsDeep, Person person, RockContext rockContext, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep < 0 || !DisplayInNav( person ) ) return null;
+            if ( levelsDeep < 0 || !DisplayInNav( person ) )
+            {
+                return null;
+            }
 
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
@@ -716,7 +837,10 @@ namespace Rock.Web.Cache
 
             pageElement.Add( childPagesElement );
 
-            if ( levelsDeep <= 0 || !MenuDisplayChildPages ) return pageElement;
+            if ( levelsDeep <= 0 || !MenuDisplayChildPages )
+            {
+                return pageElement;
+            }
 
             foreach ( var page in GetPages( rockContext ) )
             {
@@ -728,7 +852,6 @@ namespace Rock.Web.Cache
             }
 
             return pageElement;
-
         }
 
         #endregion
@@ -758,7 +881,10 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, RockContext rockContext, List<int> currentPageHeirarchy = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            if ( levelsDeep < 0 ) return null;
+            if ( levelsDeep < 0 )
+            {
+                return null;
+            }
 
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
@@ -776,26 +902,32 @@ namespace Rock.Web.Cache
 
             var properties = new Dictionary<string, object>
             {
-                {"Id", Id},
-                {"Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle},
-                {"Current", isCurrentPage.ToString().ToLower()},
-                {"IsParentOfCurrent", isParentOfCurrent.ToString().ToLower()},
-                {"Url", new PageReference(Id, 0, parameters, queryString).BuildUrl()},
-                {"DisplayDescription", MenuDisplayDescription.ToString().ToLower()},
-                {"DisplayIcon", MenuDisplayIcon.ToString().ToLower()},
-                {"DisplayChildPages", MenuDisplayChildPages.ToString().ToLower()},
-                {"IconCssClass", IconCssClass ?? string.Empty},
-                {"Description", Description ?? string.Empty},
-                {"IconUrl", iconUrl}
+                { "Id", Id },
+                { "Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle },
+                { "Current", isCurrentPage },
+                { "IsParentOfCurrent", isParentOfCurrent },
+                { "Url", new PageReference(Id, 0, parameters, queryString).BuildUrl() },
+                { "DisplayDescription", MenuDisplayDescription },
+                { "DisplayIcon", MenuDisplayIcon.ToString().ToLower() },
+                { "DisplayChildPages", MenuDisplayChildPages },
+                { "IconCssClass", IconCssClass ?? string.Empty },
+                { "Description", Description ?? string.Empty },
+                { "IconUrl", iconUrl }
             };
 
-            if ( levelsDeep <= 0 || !MenuDisplayChildPages ) return properties;
+            if ( levelsDeep <= 0 || !MenuDisplayChildPages )
+            {
+                return properties;
+            }
 
             var childPages = new List<Dictionary<string, object>>();
 
             foreach ( var page in GetPages( rockContext ) )
             {
-                if ( page == null || !page.DisplayInNav( person ) ) continue;
+                if ( page == null || !page.DisplayInNav( person ) )
+                {
+                    continue;
+                }
 
                 var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, rockContext, currentPageHeirarchy, parameters, queryString );
                 if ( childPageElement != null )
@@ -808,7 +940,6 @@ namespace Rock.Web.Cache
             properties.Add( "Pages", childPages );
 
             return properties;
-
         }
 
         #endregion
@@ -823,7 +954,7 @@ namespace Rock.Web.Cache
         /// <param name="pageId">The page identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete( "No longer needed", true )]
         public static string CacheKey( int pageId )
         {
             return string.Format( "Rock:Page:{0}", pageId );
@@ -857,6 +988,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific layout.
         /// </summary>
+        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForLayout( int ) instead." )]
+        [RockObsolete( "1.10" )]
         public static void RemoveLayoutBlocks( int layoutId )
         {
             foreach ( var page in All() )
@@ -871,6 +1004,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific site.
         /// </summary>
+        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForSite( int ) instead." )]
+        [RockObsolete( "1.10" )]
         public static void RemoveSiteBlocks( int siteId )
         {
             foreach ( var page in All() )
@@ -880,6 +1015,47 @@ namespace Rock.Web.Cache
                     page.RemoveBlocks();
                 }
             }
+        }
+
+        /// <summary>
+        /// Flushes the pages for a layout.
+        /// </summary>
+        /// <param name="layoutId">The layout identifier.</param>
+        public static void FlushPagesForLayout( int layoutId )
+        {
+            foreach ( var page in All() )
+            {
+                if ( page != null && page.LayoutId == layoutId )
+                {
+                    PageCache.FlushItem( page.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes the pages for a site.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        public static void FlushPagesForSite( int siteId )
+        {
+            foreach ( var page in All() )
+            {
+                if ( page != null && page.SiteId == siteId )
+                {
+                    PageCache.FlushItem( page.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Flushes the page from the cache without removing it from AllIds.
+        /// Call this to force the cache to reload the page from the database the next time it is requested.
+        /// This is needed when a change is made to a PageRoute (which is not an ICacheable)
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        public static void FlushPage( int pageId )
+        {
+            PageCache.FlushItem( pageId );
         }
 
         #endregion

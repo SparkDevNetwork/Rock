@@ -211,8 +211,6 @@ function() {{
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
-
-            RegisterFilterCompareChangeScript( filterControl );
         }
 
         /// <summary>

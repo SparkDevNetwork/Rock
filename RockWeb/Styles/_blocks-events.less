@@ -13,7 +13,7 @@
 .calendar {
   display: inline-block;
   width: 100%;
-  padding: 0 10px 10px 10px;
+  padding: 0 10px 10px;
   border: 1px solid @panel-default-border;
   border-radius: @border-radius-base;
 }
@@ -49,10 +49,6 @@
     font-weight: @font-weight-semibold;
   }
 
-  .calendar-today {
-    border-radius: @border-radius-base;
-  }
-
   .calendar-today,
   .calendar-selecteditem {
     color: @alert-info-text !important;
@@ -60,12 +56,8 @@
     border-radius: 0;
   }
 
-  .calendar-selecteditem:first-child {
-    border-radius: @border-radius-base 0 0 @border-radius-base;
-  }
-
-  .calendar-selecteditem:last-child {
-    border-radius: 0 @border-radius-base @border-radius-base 0;
+  .calendar-today {
+    border-radius: @border-radius-base;
   }
 
   .calendar-selected {
@@ -74,6 +66,14 @@
 
     a {
       color: @label-color !important;
+    }
+
+    &:first-child {
+      border-radius: @border-radius-base 0 0 @border-radius-base;
+    }
+
+    &:last-child {
+      border-radius: 0 @border-radius-base @border-radius-base 0;
     }
   }
 
@@ -99,7 +99,7 @@
   }
 
   .input-group {
-    margin: 0 auto 48px auto;
+    margin: 0 auto 48px;
   }
 }
 
@@ -164,15 +164,6 @@
     }
   }
 }
-
-// Registration Template Detail Criteria
-.attribute-criteria {
-  &.criteria-exists {
-    // Match Filters from Workflow Criteria
-    .workflow-action .criteria-exists();
-  }
-}
-
 
 .fee-totals {
   margin-top: 24px;

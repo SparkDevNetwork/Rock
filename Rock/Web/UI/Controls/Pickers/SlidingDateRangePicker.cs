@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a sliding date range
     /// </summary>
     public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering, IRockChangeHandlerControl
     {
@@ -273,7 +273,7 @@ namespace Rock.Web.UI.Controls
 
             // change the inputsClass on the DateRangePicker to "" instead of "form-control-group";
             _drpDateRange.InputsClass = "";
-            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange";
+            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange pull-left";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 
             Controls.Add( _ddlLastCurrent );
@@ -317,9 +317,9 @@ namespace Rock.Web.UI.Controls
             _ddlLastCurrent.Items.Clear();
             _ddlLastCurrent.Items.Add( new ListItem( string.Empty, SlidingDateRangeType.All.ConvertToInt().ToString() ) );
 
-            SlidingDateRangeType[] sortedTypes = new SlidingDateRangeType[] 
-                { 
-                    SlidingDateRangeType.Current, 
+            SlidingDateRangeType[] sortedTypes = new SlidingDateRangeType[]
+                {
+                    SlidingDateRangeType.Current,
                     SlidingDateRangeType.Previous,
                     SlidingDateRangeType.Last,
                     SlidingDateRangeType.Next,
@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [Flags]
         public enum SlidingDateRangeType
@@ -390,7 +390,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum TimeUnitType
         {
@@ -502,7 +502,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", "form-control-group" );
+            writer.AddAttribute( "class", "form-control-group " + this.FormGroupCssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlLastCurrent.RenderControl( writer );
@@ -578,6 +578,8 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["EnabledSlidingDateRangeTypes"] = value;
+                EnsureChildControls();
+                PopulateDropDowns();
             }
         }
 
@@ -626,6 +628,12 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+
+                if ( !EnabledSlidingDateRangeUnits.Contains( value ) )
+                {
+                    throw new Exception( "Specified TimeUnitType is invalid for this SlidingDateRangePicker control." );
+                }
+
                 _ddlTimeUnitTypePlural.SelectedValue = value.ConvertToInt().ToString();
                 _ddlTimeUnitTypeSingular.SelectedValue = value.ConvertToInt().ToString();
             }
@@ -731,11 +739,13 @@ namespace Rock.Web.UI.Controls
             set
             {
                 string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+                var defaultTimeUnit = this.EnabledSlidingDateRangeUnits.First();
+
                 if ( splitValues.Length == 5 )
                 {
                     this.SlidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
                     this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
-                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? TimeUnitType.Day;
+                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? defaultTimeUnit;
                     this.DateRangeModeStart = splitValues[3].AsDateTime();
                     this.DateRangeModeEnd = splitValues[4].AsDateTime();
                 }
@@ -743,7 +753,7 @@ namespace Rock.Web.UI.Controls
                 {
                     this.SlidingDateRangeMode = SlidingDateRangeType.All;
                     this.NumberOfTimeUnits = 1;
-                    this.TimeUnit = TimeUnitType.Hour;
+                    this.TimeUnit = defaultTimeUnit;
                     this.DateRangeModeStart = null;
                     this.DateRangeModeEnd = null;
                 }
@@ -787,8 +797,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the selected date range.
+        /// </summary>
+        /// <value>
+        /// The selected date range.
+        /// </value>
+        public DateRange SelectedDateRange
+        {
+            get
+            {
+                return CalculateDateRangeFromDelimitedValues( this.DelimitedValues );
+            }
+        }
+
+        /// <summary>
         /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
-        /// NOTE: The Displayed End Date is one day before the actual end date. 
+        /// NOTE: The Displayed End Date is one day before the actual end date.
         /// So, if your date range is displayed as 1/3/2015 to 1/4/2015, this will return 1/5/2015 12:00 AM as the End Date
         /// </summary>
         /// <param name="value">The value.</param>
@@ -955,10 +979,12 @@ namespace Rock.Web.UI.Controls
                     }
                 }
 
-                // If time unit is days, weeks, months or years subtract a second from time so that end time is with same period
+                // To avoid confusion about the day or hour of the end of the date range, subtract a microsecond off our 'less than' end date
+                // for example, if our end date is 2019-11-7, we actually want all the data less than 2019-11-8, but if a developer does EndDate.DayOfWeek, they would want 2019-11-7 and not 2019-11-8
+                // So, to make sure we include all the data for 2019-11-7, but avoid the confusion about what DayOfWeek of the end, we'll compromise by subtracting a millisecond from the end date
                 if ( result.End.HasValue && timeUnit != TimeUnitType.Hour )
                 {
-                    result.End = result.End.Value.AddSeconds( -1 );
+                    result.End = result.End.Value.AddMilliseconds( -1 );
                 }
 
             }
@@ -977,7 +1003,7 @@ namespace Rock.Web.UI.Controls
             SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last, SlidingDateRangeType.Next, SlidingDateRangeType.Upcoming };
 
             string helpHtml = @"
-    
+
     <div class='slidingdaterange-help'>
 
         <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
@@ -1027,7 +1053,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SlidingDateRangeTypeArrayConverter : ArrayConverter
     {
@@ -1103,7 +1129,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SlidingDateRangeUnitArrayConverter : ArrayConverter
     {

@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlChooseCategories" runat="server">
             <asp:Literal ID="lWelcomeInstructions" runat="server"></asp:Literal>
             <Rock:NotificationBox ID="nbSelectCategories" runat="server" NotificationBoxType="Danger" Visible="false" Heading="I'm Sorry...">Please select at least one prayer category.</Rock:NotificationBox>
-            <Rock:NotificationBox ID="nbPrayerRequests" runat="server" NotificationBoxType="Danger" Text="There are no active prayer request for the current selection." Visible="false" />
+            <Rock:NotificationBox ID="nbPrayerRequests" runat="server" NotificationBoxType="Warning" Text="There are no active prayer request for the current selection." Visible="false" />
             <p>Select one or more categories to begin your prayer session:</p>
             <div class="row">
                 <div class="col-md-6">
@@ -15,7 +15,7 @@
                     <Rock:RockCheckBoxList ID="cblCategories" CssClass="js-category-items" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
                 </div>
                 <div class="col-md-6">
-                    <Rock:CampusPicker ID="cpCampus" runat="server"/>
+                    <Rock:CampusPicker ID="cpCampus" runat="server" IncludeInactive="false"/>
                 </div>
             </div>
             <div class="actions">
@@ -53,8 +53,8 @@
                     <asp:HiddenField ID="hfPrayerIndex" runat="server" />
                     <div class="row margin-b-md">
                         <div class="col-md-12">
-                            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-default" OnClick="lbBack_Click"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
-                            <asp:LinkButton ID="lbNext" TabIndex="1" AccessKey="n" ToolTip="Alt+n" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-default" OnClick="lbBack_Click" CausesValidation="false"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
+                            <asp:LinkButton ID="lbNext" TabIndex="1" AccessKey="n" ToolTip="Alt+n" runat="server" CssClass="btn btn-default pull-right" OnClick="lbNext_Click" CausesValidation="false">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
 
                         </div>
                     </div>
@@ -101,17 +101,20 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
+
 <script>
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
+
+    Sys.Application.add_load(function () {
+
+        $('.js-select-all').click(function () {
+            var selectAllChecked = $('.js-select-all').prop('checked');
+            $('.js-category-items input').prop('checked', selectAllChecked)
+        });
+    });
+
     // fade-in effect for the panel
     function FadePanelIn() {
         $("[id$='upPrayerSession']").rockFadeIn();
     }
-    $(document).ready(function () { FadePanelIn(); });
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
-
-    $('.js-select-all').click(function () {
-        var selectAllChecked = $('.js-select-all').prop('checked');
-        $('.js-category-items input').prop('checked', selectAllChecked)
-    });
-
 </script>

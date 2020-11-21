@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,20 +43,15 @@ namespace RockWeb.Blocks.Event
     {
         #region Fields
 
-        // used for private variables
         private RegistrationInstance _registrationInstance = null;
 
         #endregion
 
         #region Properties
 
-        // used for public / protected properties
-
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -129,8 +123,6 @@ namespace RockWeb.Blocks.Event
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
-                var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-                
                 if ( _registrationInstance == null )
                 {
                     int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
@@ -161,7 +153,7 @@ namespace RockWeb.Blocks.Event
                                 emailMessage.FromEmail = txtFromEmail.Text;
                                 emailMessage.FromName = txtFromName.Text;
                                 emailMessage.Subject = txtFromSubject.Text;
-                                emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                                emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeObjects ) );
                                 emailMessage.Message = ceEmailMessage.Text;
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );

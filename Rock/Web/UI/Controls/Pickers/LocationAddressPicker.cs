@@ -26,10 +26,24 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to add a new address or edit an existing address
     /// </summary>
     public class LocationAddressPicker : Panel, IRockControl, INamingContainer
     {
+        #region Constructors
+
+        /// <summary>
+        /// Initialize a new instance of the control.
+        /// </summary>
+        public LocationAddressPicker() : base()
+        {
+            _addressRequirementsValidator = new CustomValidator();
+        }
+
+        private CustomValidator _addressRequirementsValidator { get; set; }
+
+        #endregion
+
         #region IRockControl implementation
 
         /// <summary>
@@ -187,7 +201,20 @@ namespace Rock.Web.UI.Controls
         public string ValidationGroup
         {
             get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ValidationGroup = value;
+                }
+
+                if ( _addressRequirementsValidator != null )
+                {
+                    _addressRequirementsValidator.ValidationGroup = value;
+                }
+            }
         }
 
         /// <summary>
@@ -200,7 +227,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid ) && _addressRequirementsValidator.IsValid;
             }
         }
 
@@ -328,7 +355,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowDropDown 
+        public bool ShowDropDown
         {
             get
             {
@@ -386,8 +413,8 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
-            
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+
             base.Render( writer );
         }
 
@@ -445,6 +472,14 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
             _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); Rock.dialogs.updateModalScrollBar('{2}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID, this.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
+
+            _addressRequirementsValidator.ID = ID + "_addressrequirementsvalidator";
+            _addressRequirementsValidator.CssClass = "validation-error help-inline";
+            _addressRequirementsValidator.Enabled = true;
+            _addressRequirementsValidator.Display = ValidatorDisplay.None;
+            _addressRequirementsValidator.ValidationGroup = ValidationGroup;
+            this.Controls.Add( _addressRequirementsValidator );
+
         }
 
         /// <summary>
@@ -479,13 +514,33 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
-            LocationService locationService = new LocationService( new RockContext() );
-            var location = locationService.Get( _acAddress.Street1, _acAddress.Street2, _acAddress.City, _acAddress.State, _acAddress.PostalCode, _acAddress.Country );
-            Location = location;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            var editedLocation = new Location();
+
+            _acAddress.GetValues( editedLocation );
+
+            var locationService = new LocationService( new RockContext() );
+
+            string validationMessage;
+
+            var isValid = locationService.ValidateAddressRequirements( editedLocation, out validationMessage );
+
+            if ( !isValid )
+            {
+                _addressRequirementsValidator.ErrorMessage = validationMessage;
+                _addressRequirementsValidator.IsValid = false;
+
+                return;
+            }
+
+            var location = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
+
+            this.Location = location;
+
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+
             ShowDropDown = false;
 
-            if ( SelectGeography != null )
+            if ( this.SelectGeography != null )
             {
                 SelectGeography( sender, e );
             }
@@ -499,7 +554,7 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
         {
             Location = null;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i>{0}<b class='fa fa-caret-down pull-right'></b>", string.Empty );
         }
 
         /// <summary>
@@ -522,7 +577,7 @@ namespace Rock.Web.UI.Controls
         {
 
             RegisterJavaScript();
-            
+
             _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = ShowDropDown ? "block" : "none";
             this.Render( writer );
         }

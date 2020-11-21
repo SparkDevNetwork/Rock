@@ -35,6 +35,7 @@ namespace Rock.CheckIn
         /// </summary>
         private KioskLocationAttendance()
         {
+            DefaultLifespan = TimeSpan.FromMinutes( 2 );
         }
 
         /// <summary>
@@ -108,7 +109,7 @@ namespace Rock.CheckIn
         /// <param name="id">The id.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id ) instead.")]
+        [Obsolete( "Use Get( int id ) instead.", true )]
         public static KioskLocationAttendance Read( int id )
         {
             return Get( id );
@@ -121,7 +122,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskLocationAttendance Get( int id )
         {
-            return GetOrAddExisting( id, () => Create( id ), new TimeSpan( 0, 2, 0 ) );
+            return GetOrAddExisting( id, () => Create( id ) );
         }
 
         private static KioskLocationAttendance Create( int id )
@@ -159,7 +160,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.")]
+        [Obsolete( "Use Remove( int id ) instead.", true )]
         public static void Flush( int id )
         {
             Remove( id );

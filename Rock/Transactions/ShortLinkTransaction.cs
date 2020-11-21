@@ -138,7 +138,7 @@ namespace Rock.Transactions
                         }
 
                         // check that the page exists as a component
-                        var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannel.Id, PageShortLinkId.Value, Token );
+                        var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByChannelIdAndEntityId( interactionChannel.Id, PageShortLinkId, Token );
                         if ( Url.IsNotNullOrWhiteSpace() )
                         {
                             
@@ -168,7 +168,7 @@ namespace Rock.Transactions
 
                             ClientInfo client = uaParser.Parse( userAgent );
                             var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UserAgent.ToString();
+                            var clientBrowser = client.UA.ToString();
 
                             new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", Url, personAliasId, DateViewed,
                                 clientBrowser, clientOs, clientType, userAgent, IPAddress, this.SessionId?.AsGuidOrNull() );

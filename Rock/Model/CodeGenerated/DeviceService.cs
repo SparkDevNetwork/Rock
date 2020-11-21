@@ -58,6 +58,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<AttendanceCheckInSession>( Context ).Queryable().Any( a => a.DeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, AttendanceCheckInSession.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Device>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
@@ -106,10 +112,12 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Device target, Device source )
         {
             target.Id = source.Id;
+            target.CameraBarcodeConfigurationType = source.CameraBarcodeConfigurationType;
             target.Description = source.Description;
             target.DeviceTypeValueId = source.DeviceTypeValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HasCamera = source.HasCamera;
             target.IPAddress = source.IPAddress;
             target.IsActive = source.IsActive;
             target.LocationId = source.LocationId;

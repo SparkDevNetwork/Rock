@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "restUserId" ).AsInteger() );
+                ShowDetail( PageParameter( "RestUserId" ).AsInteger() );
             }
         }
 
@@ -163,48 +163,13 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbGenerate_Click( object sender, EventArgs e )
         {
-            // Generate a unique random 12 digit api key
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var key = string.Empty;
-            var isGoodKey = false;
-            while ( isGoodKey == false )
-            {
-                key = GenerateKey();
-                var userLogins = userLoginService.Queryable().Where( a => a.ApiKey == key );
-                if ( userLogins.Count() == 0 )
-                {
-                    // no other user login has this key.
-                    isGoodKey = true;
-                }
-            }
-
-            tbKey.Text = key;
+            tbKey.Text = Rock.Utility.KeyHelper.GenerateKey( (RockContext rockContext, string key) => new UserLoginService( rockContext ).Queryable().Any( a => a.ApiKey == key ) );
         }
 
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Generates the key.
-        /// </summary>
-        /// <returns></returns>
-        private string GenerateKey()
-        {
-            StringBuilder sb = new StringBuilder();
-            Random rnd = new Random();
-            char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
-            int poolSize = codeCharacters.Length;
-
-            for ( int i = 0; i < 24; i++ )
-            {
-                sb.Append( codeCharacters[rnd.Next( poolSize )] );
-            }
-
-            return sb.ToString();
-        }
-
+                
         /// <summary>
         /// Shows the detail.
         /// </summary>

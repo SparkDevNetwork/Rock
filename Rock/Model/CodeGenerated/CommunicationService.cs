@@ -100,6 +100,7 @@ namespace Rock.Model
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
+            target.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FromEmail = source.FromEmail;
@@ -110,7 +111,11 @@ namespace Rock.Model
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PushData = source.PushData;
+            target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;
+            target.PushOpenAction = source.PushOpenAction;
+            target.PushOpenMessage = source.PushOpenMessage;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             target.ReplyToEmail = source.ReplyToEmail;

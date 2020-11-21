@@ -22,18 +22,20 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using System.Web.UI;
-
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 using Rock;
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
+using Rock.Utility.Settings;
 using Rock.VersionInfo;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -48,75 +50,95 @@ namespace RockWeb.Blocks.Administration
         #region Fields
 
         private string _catalog = String.Empty;
+        private string _ActivePanel = SystemInfoPanels.Version;
 
         #endregion
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.OnInit" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            // Get Version, database info and executing assembly location
-            lRockVersion.Text = string.Format( "{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
-            lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
-            lDatabase.Text = GetDbInfo();
-            lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
-            lRockTime.Text = Rock.RockDateTime.Now.ToString( "G" ) + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset.ToString();
-            var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
-            if ( currentProcess != null && currentProcess.StartTime != null )
-            {
-                lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
-            }
-            else
-            {
-                lProcessStartTime.Text = "-";
-            }
-
-            try
-            {
-                lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + HttpRuntime.AppDomainAppPath;
-            }
-            catch { }
-            lLastMigrations.Text = GetLastMigrationData();
-
-            var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
-            lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
-
-            lCacheOverview.Text = GetCacheInfo();
-            lRoutes.Text = GetRoutesInfo();
-            lThreads.Text = GetThreadInfo();
-
-            // register btnDumpDiagnostics as a PostBackControl since it is returning a File download
+            // Register btnDumpDiagnostics as a PostBackControl since it is returning a File download.
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
         }
 
-        protected override void OnPreRender( EventArgs e )
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
         {
-            if ( Context.Items.Contains( "Cache_Hits" ) )
+            base.LoadViewState( savedState );
+
+            _ActivePanel = ( ViewState["ActivePanel"] as string ) ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !this.IsPostBack )
             {
-                var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
-                if ( cacheHits != null )
-                {
-                    var misses = cacheHits.Where( c => !c.Value );
-                    if ( misses.Any() )
-                    {
-                        lFalseCacheHits.Text = string.Format( "<p><strong>Cache Misses:</strong><br /> {0}</p>",
-                            misses.Select( c => c.Key )
-                                .OrderBy( c => c )
-                                .ToList()
-                                .AsDelimited( "<br />" ) );
-                    }
-                }
+                ShowDetailTab();
             }
-            
-            base.OnPreRender( e );
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["ActivePanel"] = _ActivePanel;
+
+            return base.SaveViewState();
         }
 
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbTab control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbTab_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = sender as LinkButton;
+
+            if ( lb != null )
+            {
+                if ( lb == lnkVersionInfo )
+                {
+                    _ActivePanel = SystemInfoPanels.Version;
+                }
+                else if ( lb == lnkDiagnostics )
+                {
+                    _ActivePanel = SystemInfoPanels.Diagnostics;
+                }
+                else
+                {
+                    // Default panel.
+                    _ActivePanel = SystemInfoPanels.Version;
+                }
+
+                ShowDetailTab();
+            }
+        }
 
         /// <summary>
         /// Used to manually flush the attribute cache.
@@ -133,8 +155,8 @@ namespace RockWeb.Blocks.Administration
             string webAppPath = Server.MapPath( "~" );
 
             // Check for any unregistered entity types, field types, and block types
-            EntityTypeService.RegisterEntityTypes( webAppPath );
-            FieldTypeService.RegisterFieldTypes( webAppPath );
+            EntityTypeService.RegisterEntityTypes();
+            FieldTypeService.RegisterFieldTypes();
             BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
             msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
 
@@ -191,7 +213,7 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Database:", lDatabase.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Execution Location:", lExecLocation.Text, response );
             ResponseWrite( "Migrations:", GetLastMigrationData().Replace( "<br />", Environment.NewLine.ToString() ), response );
-            ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response ); ;
+            ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Routes:", lRoutes.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Threads:", lThreads.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
 
@@ -199,10 +221,23 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Server Variables:", "", response );
             foreach ( string key in Request.ServerVariables )
             {
-                if ( !key.Equals("HTTP_COOKIE", StringComparison.OrdinalIgnoreCase ) )
+                bool isCookieOrPassword = key.Equals( "HTTP_COOKIE", StringComparison.OrdinalIgnoreCase ) || key.Equals( "AUTH_PASSWORD", StringComparison.OrdinalIgnoreCase );
+                // Skip cookies
+                if ( isCookieOrPassword )
+                {
+                    continue;
+                }
+
+                bool isSensitiveData = key.IndexOf( "ALL_HTTP", StringComparison.OrdinalIgnoreCase ) >= 0 || key.IndexOf( "ALL_RAW", StringComparison.OrdinalIgnoreCase ) >= 0;
+                if ( isSensitiveData )
+                {
+                    // strip out any sensitive data
+                    ResponseWrite( key, Regex.Replace( Request.ServerVariables[key], @"ASP.NET_SessionId=\S*;|\.ROCK=\S*;", string.Empty, RegexOptions.Multiline ), response );
+                }
+                else
                 {
                     ResponseWrite( key, Request.ServerVariables[key], response );
-                } 
+                }
             }
 
             response.Flush();
@@ -226,7 +261,7 @@ namespace RockWeb.Blocks.Administration
             var result = DbService.ExecuteScaler( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
             if ( result != null )
             {
-                sb.AppendFormat( "Last Core Migration: {0}{1}", (string)result, Environment.NewLine );
+                sb.AppendFormat( "Last Core Migration: {0}{1}", ( string ) result, Environment.NewLine );
             }
 
             var tableResult = DbService.GetDataTable( @"
@@ -254,6 +289,10 @@ namespace RockWeb.Blocks.Administration
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Gets the cache information (From Re-dis Cache Statistics)
+        /// </summary>
+        /// <returns></returns>
         private string GetCacheInfo()
         {
             StringBuilder sb = new StringBuilder();
@@ -261,11 +300,11 @@ namespace RockWeb.Blocks.Administration
             var cacheStats = RockCache.GetAllStatistics();
             foreach ( CacheItemStatistics cacheItemStat in cacheStats.OrderBy( s => s.Name ) )
             {
-                foreach( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
+                foreach ( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
                 {
                     var stats = new List<string>();
                     cacheHandleStat.Stats.ForEach( s => stats.Add( string.Format( "{0}: {1:N0}", s.CounterType.ConvertToString(), s.Count ) ) );
-                    sb.AppendFormat( "<p><strong>{0}:</strong><br/>{1}</p>{2}", cacheItemStat.Name, stats.AsDelimited(", "), Environment.NewLine );
+                    sb.AppendFormat( "<p><strong>{0}:</strong><br/>{1}</p>{2}", cacheItemStat.Name, stats.AsDelimited( ", " ), Environment.NewLine );
                 }
             }
 
@@ -277,26 +316,28 @@ namespace RockWeb.Blocks.Administration
         private string GetRoutesInfo()
         {
             var pageService = new PageService( new RockContext() );
-            
-            var routes = new SortedDictionary<string, System.Web.Routing.Route>();
+
+            var routes = new Dictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
                 if ( !routes.ContainsKey( route.Url ) )
                     routes.Add( route.Url, route );
             }
 
+            var pageLookup = pageService.Queryable().Select( a => new { a.InternalName, Id = a.Id } ).ToDictionary( a => a.Id, v => v );
+
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat( "<table class='table table-condensed'>" );
-            sb.Append( "<tr><th>Route</th><th>Pages</th></tr>" );
+            sb.AppendLine( "<table class='table table-condensed'>" );
+            sb.AppendLine( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                //sb.AppendFormat( "{0}<br />", routeItem.Key );
-                var pages = pageService.GetListByIds( routeItem.Value.PageIds() );
+                var pages = routeItem.Value.PageIds().Select( s => pageLookup.GetValueOrNull( s ) ).ToList();
 
-                sb.AppendFormat( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) );
+                sb.AppendLine( string.Format( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Where( a => a != null ).Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) ) );
             }
 
-            sb.AppendFormat( "</table>" );
+            sb.AppendLine( "</table>" );
+
             return sb.ToString();
         }
 
@@ -331,89 +372,31 @@ namespace RockWeb.Blocks.Administration
             return string.Format( "<span class='{0}'>{1}</span> out of {2} worker threads in use ({3}%)", badgeType, workerThreadsInUse, maxWorkerThreads, ( int ) Math.Ceiling( pctUse * 100 ) );
         }
 
+        /// <summary>
+        /// Get information about the current Rock database.
+        /// </summary>
+        /// <returns></returns>
         private string GetDbInfo()
         {
-            StringBuilder databaseResults = new StringBuilder();
-            
-            var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
-            object dataSource, catalog = string.Empty;
-            if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
-            {
-                _catalog = catalog.ToString();
-                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", catalog, dataSource ) );
-            }
+            var databaseResults = new StringBuilder();
 
             try
             {
-                // get database version
-                var reader = DbService.GetDataReader( "SELECT SERVERPROPERTY('productversion'), @@Version ", System.Data.CommandType.Text, null );
-                if ( reader != null )
+                RockInstanceDatabaseConfiguration databaseConfig = RockInstanceConfig.Database;
+                _catalog = databaseConfig.DatabaseName;
+
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, databaseConfig.ServerName ) );
+                databaseResults.Append( string.Format( "<br />Database Version: {0}", databaseConfig.Version ) );
+                databaseResults.Append( string.Format( "<br />Database Friendly Version: {0}", databaseConfig.VersionFriendlyName ) );
+                databaseResults.AppendFormat( "<br />Database Size: {0} MB", databaseConfig.DatabaseSize );
+                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", databaseConfig.LogSize );
+                databaseResults.AppendFormat( "<br />Recovery Model: {0}", databaseConfig.RecoverMode );
+                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", databaseConfig.SnapshotIsolationAllowed.ToYesNo(), databaseConfig.ReadCommittedSnapshotEnabled.ToYesNo() );
+
+                if ( databaseConfig.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
                 {
-                    string version = "";
-                    string versionInfo = "";
-                    
-                    while ( reader.Read() )
-                    {
-                        version = reader[0].ToString();
-                        versionInfo = reader[1].ToString();
-                    }
-
-                    databaseResults.Append( string.Format( "<br />Database Version: {0}", versionInfo ) );
+                    databaseResults.AppendFormat( "<br />Azure Service Tier Objective: {0}", databaseConfig.ServiceObjective );
                 }
-
-                try
-                {
-                    // get database size
-                    reader = DbService.GetDataReader( "sp_helpdb '" + catalog.ToStringSafe().Replace("'", "''") + "'", System.Data.CommandType.Text, null );
-                    if ( reader != null )
-                    {
-                        // get second data table
-                        reader.NextResult();
-                        reader.Read();
-
-                        string size = reader.GetValue( 5 ).ToString();
-                        if ( size != "Unlimited" )
-                        {
-                            if ( size.Contains( "KB" ) )
-                            {
-                                size = size.Replace( " KB", "" );
-                                int sizeInKB = Int32.Parse( size );
-
-                                int sizeInMB = sizeInKB / 1024;
-
-                                databaseResults.AppendFormat( "<br />Database Size: {0}", sizeInMB );
-                            }
-                        }
-                        else
-                        {
-                            databaseResults.Append( "<br />Database Size: Unlimited" );
-                        }
-                    }
-                }
-                catch
-                {
-                    databaseResults.AppendFormat( "<br />Database Size: unable to determine" );
-                }
-
-                try
-                {
-                    // get database snapshot isolation details
-                    reader = DbService.GetDataReader( string.Format( "SELECT [snapshot_isolation_state], [is_read_committed_snapshot_on] FROM sys.databases WHERE [name] = '{0}'", _catalog ), System.Data.CommandType.Text, null );
-                    if ( reader != null )
-                    {
-                        bool isAllowSnapshotIsolation = false;
-                        bool isReadCommittedSnapshopOn = true;
-
-                        while ( reader.Read() )
-                        {
-                            isAllowSnapshotIsolation = reader[0].ToStringSafe().AsBoolean();
-                            isReadCommittedSnapshopOn = reader[1].ToString().AsBoolean();
-                        }
-
-                        databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", isAllowSnapshotIsolation.ToYesNo(), isReadCommittedSnapshopOn.ToYesNo() );
-                    }
-                }
-                catch { }
             }
             catch ( Exception ex )
             {
@@ -459,6 +442,126 @@ namespace RockWeb.Blocks.Administration
         private void ResponseWrite( string key, string value, HttpResponse response )
         {
             response.Write( string.Format( "{0}: {1}{2}", key, value, System.Environment.NewLine ) );
+        }
+
+        /// <summary>
+        /// Shows the content for the active tab.
+        /// </summary>
+        private void ShowDetailTab()
+        {
+            nbMessage.Title = null;
+            nbMessage.Text = null;
+
+            if ( _ActivePanel == SystemInfoPanels.Version )
+            {
+                LoadPageVersionInfo();
+            }
+            else if ( _ActivePanel == SystemInfoPanels.Diagnostics )
+            {
+                LoadPageDiagnostics();
+            }
+
+            SetActivePanel( _ActivePanel );
+        }
+
+        /// <summary>
+        /// Set the active state of the tabs and associated controls.
+        /// </summary>
+        /// <param name="panelName"></param>
+        private void SetActivePanel( string panelName )
+        {
+            _ActivePanel = panelName;
+
+            if ( _TabList == null )
+            {
+                _TabList = new Dictionary<string, Tuple<HtmlGenericControl, Panel>>();
+
+                _TabList.Add( SystemInfoPanels.Version, new Tuple<HtmlGenericControl, Panel>( tabVersion, pnlVersionTab ) );
+                _TabList.Add( SystemInfoPanels.Diagnostics, new Tuple<HtmlGenericControl, Panel>( tabDiagnostics, pnlDiagnosticsTab ) );
+            }
+
+            foreach ( var tab in _TabList )
+            {
+                tab.Value.Item1.RemoveCssClass( "active" );
+                tab.Value.Item2.Visible = false;
+            }
+
+            if ( _TabList.ContainsKey( _ActivePanel ) )
+            {
+                _TabList[_ActivePanel].Item1.AddCssClass( "active" );
+                _TabList[_ActivePanel].Item2.Visible = true;
+            }
+        }
+
+        private Dictionary<string, Tuple<HtmlGenericControl, Panel>> _TabList = null;
+
+        /// <summary>
+        /// Load the data for the Version Info tab.
+        /// </summary>
+        private void LoadPageVersionInfo()
+        {
+            // Get Version, database info and executing assembly location
+            lRockVersion.Text = string.Format( "{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() );
+            lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
+        }
+
+        /// <summary>
+        /// Load the data for the Diagnostics tab.
+        /// </summary>
+        private void LoadPageDiagnostics()
+        {
+            lDatabase.Text = GetDbInfo();
+
+            var systemDataTime = RockInstanceConfig.SystemDateTime;
+
+            lSystemDateTime.Text = systemDataTime.ToString( "G" ) + " " + systemDataTime.ToString( "zzz" );
+
+            var rockDateTime = RockInstanceConfig.RockDateTime;
+
+            lRockTime.Text = rockDateTime.ToString( "G" ) + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset.ToString();
+
+            var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+
+            if ( currentProcess != null && currentProcess.StartTime != null )
+            {
+                lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
+            }
+            else
+            {
+                lProcessStartTime.Text = "-";
+            }
+
+            lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
+            lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;
+            
+            lLastMigrations.Text = GetLastMigrationData();
+
+            var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
+            lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
+
+            var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
+            if ( cacheStatisticsEnabled )
+            {
+                pnlHideCacheStatistics.Visible = false;
+                pnlShowCacheStatistics.Visible = true;
+                lCacheOverview.Text = GetCacheInfo();
+            }
+
+            lRoutes.Text = GetRoutesInfo();
+            lThreads.Text = GetThreadInfo();
+        }
+
+        #endregion
+
+        #region Support Classes and Enumerations
+
+        /// <summary>
+        /// SystemInfo Block panels.
+        /// </summary>
+        public static class SystemInfoPanels
+        {
+            public static string Version = "Version";
+            public static string Diagnostics = "Diagnostics";
         }
 
         #endregion

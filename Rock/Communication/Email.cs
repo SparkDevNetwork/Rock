@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mail;
 using System.Web;
 
 using Humanizer;
@@ -50,24 +49,51 @@ namespace Rock.Communication
 
             string bounceMessage = message.IsNotNullOrWhiteSpace() ? $" ({message})" : "";
 
-            // get people who have those emails
-            PersonService personService = new PersonService( new RockContext() );
-            var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
-
-            foreach ( int personId in peopleWithEmail )
+            using ( var rockContext = new RockContext() )
             {
-                RockContext rockContext = new RockContext();
-                personService = new PersonService( rockContext );
-                Person person = personService.Get( personId );
+                // get people who have those emails
+                var personService = new PersonService( rockContext );
+                var peopleWithEmail = personService.GetByEmail( email ).Select( p => p.Id ).ToList();
 
-                if ( person.IsEmailActive == true )
+                foreach ( int personId in peopleWithEmail )
                 {
-                    person.IsEmailActive = false;
-                }
+                    personService = new PersonService( rockContext );
+                    var person = personService.Get( personId );
 
-                person.EmailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}{bounceMessage}.";
-                rockContext.SaveChanges();
+                    if ( person.IsEmailActive == true )
+                    {
+                        person.IsEmailActive = false;
+                    }
+
+                    person.EmailNote = GetEmailNote( bounceType, message, bouncedDateTime );
+                    rockContext.SaveChanges();
+                }
             }
+        }
+
+        private static string GetEmailNote( BounceType bounceType, string message, DateTime bouncedDateTime )
+        {
+            var messages = new Dictionary<string, string>
+            {
+                {"550", "The user's mailbox was unavailable or could not be found." },
+                {"551", "The intended mailbox does not exist on this recipient server." },
+                {"552", "This message is larger than the current system limit or the recipient's mailbox is full." },
+                {"553", "The message was refused because the mailbox name is either malformed or does not exist." },
+                {"554", "Email refused." },
+            };
+
+            var emailNote = message;
+            foreach ( string key in messages.Keys )
+            {
+                if ( message.StartsWith( key ) )
+                {
+                    emailNote = messages[key];
+                    break;
+                }
+            }
+
+            emailNote = $"Email experienced a {bounceType.Humanize()} on {bouncedDateTime.ToShortDateString()}. {emailNote}";
+            return emailNote.SubstringSafe( 0, 250 );
         }
 
         /// <summary>
@@ -79,27 +105,29 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
         /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
-        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true  )
+        public static void NotifyAdmins( string subject, string message, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
         {
             try
             {
-                List<string> recipients = null;
+                List<Person> personList = null;
 
                 Guid adminGroup = Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid();
 
                 using ( var rockContext = new RockContext() )
                 {
-                    recipients = new GroupMemberService( rockContext ).Queryable()
+                    personList = new GroupMemberService( rockContext ).Queryable()
                         .Where( m =>
                             m.Group.Guid.Equals( adminGroup ) &&
                             m.GroupMemberStatus == GroupMemberStatus.Active &&
                             m.Person.Email != null &&
                             m.Person.Email != "" )
-                        .Select( m => m.Person.Email )
+                        .Select( m => m.Person )
                         .ToList();
                 }
 
                 var errorMessages = new List<string>();
+
+                var recipients = personList.Select( a => new RockEmailMessageRecipient( a, null ) ).ToList();
 
                 var emailMessage = new RockEmailMessage();
                 emailMessage.FromEmail = GlobalAttributesCache.Value( "OrganizationEmail" );
@@ -116,104 +144,6 @@ namespace Rock.Communication
                 ExceptionLogService.LogException( ex, HttpContext.Current );
             }
         }
-
-        #region Obsolete
-
-        /// <summary>
-        /// Sends the specified email template unique identifier.
-        /// </summary>
-        /// <param name="emailTemplateGuid">The email template unique identifier.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        /// <exception cref="System.Exception">
-        /// Error sending System Email: Could not read Email Medium Entity Type
-        /// </exception>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
-        public static void Send( Guid emailTemplateGuid, List<RecipientData> recipients, string appRoot = "", string themeRoot = "", bool createCommunicationHistory = true )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var template = new SystemEmailService( rockContext ).Get( emailTemplateGuid );
-                if ( template != null )
-                {
-                    var errorMessages = new List<string>();
-
-                    var message = new RockEmailMessage( template );
-                    message.SetRecipients( recipients );
-                    message.ThemeRoot = themeRoot;
-                    message.AppRoot = appRoot;
-                    message.CreateCommunicationRecord = createCommunicationHistory;
-                    message.Send( out errorMessages );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sends the specified from email.
-        /// </summary>
-        /// <param name="fromEmail">From email.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="attachments">The attachments.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
-        public static void Send( string fromEmail, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
-        {
-            Send( fromEmail, string.Empty, subject, recipients, message, appRoot, themeRoot, attachments, createCommunicationHistory );
-        }
-
-
-        /// <summary>
-        /// Sends the specified from email.
-        /// </summary>
-        /// <param name="fromEmail">From email.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="recipients">The recipients.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="appRoot">The application root.</param>
-        /// <param name="themeRoot">The theme root.</param>
-        /// <param name="attachments">The attachments.</param>
-        /// <param name="createCommunicationHistory">if set to <c>true</c> [create communication history].</param>
-        /// <exception cref="System.Exception">Error sending System Email: Could not read Email Medium Entity Type</exception>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use the RockEmailMessage object and its Send() method to send emails.", true )]
-        public static void Send( string fromEmail, string fromName, string subject, List<string> recipients, string message, string appRoot = "", string themeRoot = "", List<Attachment> attachments = null, bool createCommunicationHistory = true )
-        {
-            var errorMessages = new List<string>();
-
-            var emailMessage = new RockEmailMessage();
-            emailMessage.FromEmail = fromEmail;
-            emailMessage.FromName = fromName;
-            emailMessage.Subject = subject;
-            emailMessage.SetRecipients( recipients );
-            emailMessage.Message = message;
-            emailMessage.ThemeRoot = themeRoot;
-            emailMessage.AppRoot = appRoot;
-            emailMessage.CreateCommunicationRecord = createCommunicationHistory;
-
-            if ( attachments != null )
-            {
-                foreach ( var attachment in attachments )
-                {
-                    var binaryFile = new BinaryFile();
-                    binaryFile.ContentStream = attachment.ContentStream;
-                    binaryFile.FileName = attachment.Name;
-                    emailMessage.Attachments.Add( binaryFile );
-                }
-            }
-
-            emailMessage.Send( out errorMessages );
-        }
-
-        #endregion
     }
 
     /// <summary>

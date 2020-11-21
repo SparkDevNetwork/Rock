@@ -35,7 +35,16 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? ConnectionRequestDetailPageId { get; set; }
+
+        /// <summary />
+        public int? ConnectionRequestDetailPageRouteId { get; set; }
+
+        /// <summary />
         public int DaysUntilRequestIdle { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.ConnectionTypeViewMode DefaultView { get; set; }
 
         /// <summary />
         public string Description { get; set; }
@@ -45,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool EnableFutureFollowup { get; set; }
+
+        /// <summary />
+        public bool EnableRequestSecurity { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -67,7 +79,16 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? OwnerPersonAliasId { get; set; }
+
+        /// <summary />
+        public string RequestBadgeLava { get; set; }
+
+        /// <summary />
+        public string RequestHeaderLava { get; set; }
 
         /// <summary />
         public bool RequiresPlacementGroupToConnect { get; set; }
@@ -105,17 +126,24 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ConnectionType source )
         {
             this.Id = source.Id;
+            this.ConnectionRequestDetailPageId = source.ConnectionRequestDetailPageId;
+            this.ConnectionRequestDetailPageRouteId = source.ConnectionRequestDetailPageRouteId;
             this.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
+            this.DefaultView = source.DefaultView;
             this.Description = source.Description;
             this.EnableFullActivityList = source.EnableFullActivityList;
             this.EnableFutureFollowup = source.EnableFutureFollowup;
+            this.EnableRequestSecurity = source.EnableRequestSecurity;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            this.RequestBadgeLava = source.RequestBadgeLava;
+            this.RequestHeaderLava = source.RequestHeaderLava;
             this.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -132,6 +160,9 @@ namespace Rock.Client
     /// </summary>
     public partial class ConnectionType : ConnectionTypeEntity
     {
+        /// <summary />
+        public PageRoute ConnectionRequestDetailPageRoute { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

@@ -32,12 +32,23 @@ namespace Rock.Storage.AssetStorage
     /// <seealso cref="Rock.Extension.Component" />
     public abstract class AssetStorageComponent : Component
     {
+        /// <summary>
+        /// Common attribute keys
+        /// </summary>
+        protected static class CommonAttributeKey
+        {
+            /// <summary>
+            /// The root folder
+            /// </summary>
+            public const string RootFolder = "RootFolder";
+        }
+
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetStorageComponent"/> class.
         /// </summary>
-        public AssetStorageComponent() : base(false)
+        public AssetStorageComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (not needed for asset storage components, needs to be done by each AssetStorageProvider)
         }
@@ -45,26 +56,37 @@ namespace Rock.Storage.AssetStorage
         #endregion Constructors
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the file system component HTTP context.
+        /// </summary>
+        /// <value>
+        /// The file system component HTTP context.
+        /// </value>
+        public System.Web.HttpContext FileSystemComponentHttpContext
+        {
+            get
+            {
+                return System.Web.HttpContext.Current;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the file system compont HTTP context.
         /// </summary>
         /// <value>
         /// The file system compont HTTP context.
         /// </value>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use FileSystemComponentHttpContext instead, and using the setter is no longer supported" )]
         public System.Web.HttpContext FileSystemCompontHttpContext
         {
-            get
-            {
-                return _fileSystemCompontHttpContext ?? System.Web.HttpContext.Current;
-            }
-
+            get => FileSystemComponentHttpContext;
             set
             {
-                _fileSystemCompontHttpContext = value;
+                // do nothing, the getter will always use HttpContext.Current
             }
         }
-
-        private System.Web.HttpContext _fileSystemCompontHttpContext;
 
         /// <summary>
         /// Specify the font awesome icon for the AssetStorageComponent here. It will display in the folder tree.
@@ -79,13 +101,14 @@ namespace Rock.Storage.AssetStorage
             {
                 return "fa fa-server";
             }
+
             set
             {
-                _iconCssClass = value;
+                /* 2020-05-12 MDP
+                 *  This used to set a private variable, but it was never ends up getting used since the getter is hardcoded to return "fa fa-server"
+                 */
             }
         }
-
-        private string _iconCssClass;
 
         /// <summary>
         /// The thumbnail root path.
@@ -326,20 +349,37 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
+        /// Gets the root folder attribute value and fixes it to ensure it is trimmed and ends with a '/'.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <returns></returns>
+        public virtual string GetRootFolder( AssetStorageProvider assetStorageProvider )
+        {
+            var rawRootFolder = GetAttributeValue( assetStorageProvider, CommonAttributeKey.RootFolder ).Trim();
+            return FixRootFolder( rawRootFolder );
+        }
+
+        /// <summary>
         /// Gets the icon for the file type based on the extension of the provided file name.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         /// <returns></returns>
         protected virtual string GetFileTypeIcon( string fileName )
         {
+            // If this not running in an actual HttpContext (tests), just return the "other" icon.
+            if ( FileSystemComponentHttpContext == null )
+            {
+                return "/Assets/Icons/FileTypes/other.png";
+            }
+
             string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
             string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
-            string thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
+            string thumbnailFilePath = FileSystemComponentHttpContext.Request.MapPath( virtualThumbnailFilePath );
 
             if ( !File.Exists( thumbnailFilePath ) )
             {
                 virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
-                thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
+                //thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
             }
 
             return virtualThumbnailFilePath;
@@ -376,7 +416,7 @@ namespace Rock.Storage.AssetStorage
         {
             string cleanKey = asset.Key.TrimStart( '~' );
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
-            string physicalPath = FileSystemCompontHttpContext.Server.MapPath( virtualPath );
+            string physicalPath = FileSystemComponentHttpContext.Server.MapPath( virtualPath );
 
             try
             {
@@ -419,7 +459,7 @@ namespace Rock.Storage.AssetStorage
 
             // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
             string fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( new char[] { '.' } ).Trim();
-            
+
             if ( contentFileTypeWhiteList.Any() && !contentFileTypeWhiteList.Contains( fileExtension ) )
             {
                 return false;
@@ -490,7 +530,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="height">The height.</param>
         private void CreateImageThumbnailFromFile( AssetStorageProvider assetStorageProvider, Asset asset, string physicalThumbPath, int? width = null, int? height = null )
         {
-            string assetFilePath = FileSystemCompontHttpContext.Request.MapPath( asset.Key );
+            string assetFilePath = FileSystemComponentHttpContext.Request.MapPath( asset.Key );
 
             if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) ||
                 Path.GetExtension( asset.Name ).Equals( ".ico", StringComparison.OrdinalIgnoreCase ) )

@@ -114,7 +114,13 @@ namespace Rock.Workflow.Action.CheckIn
                                 else
                                 {
                                     //Qry dataview
-                                    var approvedPeopleQry = dataview.GetQuery( null, 30, out errorMessages );
+                                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                                    {
+                                        DatabaseTimeoutSeconds = 30
+                                    };
+
+                                    var approvedPeopleQry = dataview.GetQuery( dataViewGetQueryArgs );
+
                                     if ( approvedPeopleQry != null )
                                     {
                                         var approvedPeopleList = approvedPeopleQry.Select( e => e.Id ).ToList();

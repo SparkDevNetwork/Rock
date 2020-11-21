@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Groups
 
             try
             {
-                string groupMemberKey = PageParameter( "gm" );
+                string groupMemberKey = PageParameter( "GM" );
                 if ( string.IsNullOrWhiteSpace( groupMemberKey ) )
                 {
                     ShowError( "Missing Parameter Value" );
@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     var rockContext = new RockContext();
                     var groupMemberService = new GroupMemberService( rockContext );
-                    var groupMember = groupMemberService.GetByUrlEncodedKey( PageParameter( "gm" ) );
+                    var groupMember = groupMemberService.GetByUrlEncodedKey( PageParameter( "GM" ) );
                     if ( groupMember == null )
                     {
                         ShowError();

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -33,10 +34,27 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Business List" )]
     [Category( "Finance" )]
-    [Description( "Lists all businesses and provides filtering by business name and owner" )]
-    [LinkedPage( "Detail Page" )]
+    [Description( "Lists all businesses and provides filtering by business name" )]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    #endregion Block Attributes
     public partial class BusinessList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Control Methods
 
         /// <summary>
@@ -57,6 +75,7 @@ namespace RockWeb.Blocks.Finance
             gBusinessList.Actions.AddClick += gBusinessList_AddClick;
             gBusinessList.GridRebind += gBusinessList_GridRebind;
             gBusinessList.IsDeleteEnabled = canEdit;
+            gBusinessList.PersonIdField = "Id";
         }
 
         /// <summary>
@@ -141,8 +160,8 @@ namespace RockWeb.Blocks.Finance
         private void gBusinessList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "businessId", "0" );
-            NavigateToLinkedPage( "DetailPage", parms );
+            parms.Add( "BusinessId", "0" );
+            NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
         /// <summary>
@@ -154,8 +173,8 @@ namespace RockWeb.Blocks.Finance
         {
             var parms = new Dictionary<string, string>();
             var businessId = e.RowKeyId;
-            parms.Add( "businessId", businessId.ToString() );
-            NavigateToLinkedPage( "DetailPage", parms );
+            parms.Add( "BusinessId", businessId.ToString() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
         #endregion Events
@@ -171,7 +190,7 @@ namespace RockWeb.Blocks.Finance
 
             // Business Name Filter
             tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
-            
+
             // Set the Active Status
             var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfBusinessFilter.GetUserPreference( "Active Status" ) );
             if ( itemActiveStatus != null )
@@ -188,7 +207,7 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var recordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-            var queryable = new PersonService( rockContext ).Queryable()
+            var businessQueryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == recordTypeValueId );
 
             var businessName = string.Empty;
@@ -209,64 +228,80 @@ namespace RockWeb.Blocks.Finance
 
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
-                queryable = queryable.Where( a => a.LastName.Contains( businessName ) );
+                businessQueryable = businessQueryable.Where( a => a.LastName.Contains( businessName ) );
             }
 
-            if ( ! viaSearch )
+            if ( !viaSearch )
             {
                 var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
                 string activeFilterValue = gfBusinessFilter.GetUserPreference( "Active Status" );
                 if ( activeFilterValue == "inactive" )
                 {
-                    queryable = queryable.Where( b => b.RecordStatusValueId != activeRecordStatusValueId );
+                    businessQueryable = businessQueryable.Where( b => b.RecordStatusValueId != activeRecordStatusValueId );
                 }
                 else if ( activeFilterValue == "active" )
                 {
-                    queryable = queryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
+                    businessQueryable = businessQueryable.Where( b => b.RecordStatusValueId == activeRecordStatusValueId );
                 }
+            }
+
+            bool showBusinessDetail = false;
+            if ( viaSearch )
+            {
+                // if we got here from Business Search, and there is exactly one business that matches the search, continue in ShowBusinessDetail mode and don't do any of the grid related stuff
+                showBusinessDetail = businessQueryable.Count() == 1;
+            }
+
+            if ( showBusinessDetail )
+            {
+                var businessId = businessQueryable.Select( a => a.Id ).FirstOrDefault();
+                ShowDetailForm( businessId );
+            }
+            else
+            {
+                var workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() ).Id;
+
+                int groupTypeRoleIdKnownRelationShipsOwner = 0;
+                int groupTypeIdKnownRelationShips = 0;
+                var groupTypeKnownRelationShips = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+
+                if ( groupTypeKnownRelationShips != null )
+                {
+                    groupTypeIdKnownRelationShips = groupTypeKnownRelationShips.Id;
+                    groupTypeRoleIdKnownRelationShipsOwner = groupTypeKnownRelationShips.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                }
+
+                var businessSelectQry = businessQueryable
+                    .Select( b => new BusinessSelectInfo
+                    {
+                        Id = b.Id,
+                        LastName = b.LastName,
+                        BusinessName = b.LastName,
+                        PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
+                        Email = b.Email,
+                        Address = b.GivingGroup.GroupLocations
+                                            .Where( gl => gl.GroupLocationTypeValueId == workLocationTypeId )
+                                            .FirstOrDefault()
+                                            .Location,
+                        Contacts = b.Members
+                                            .Where( m => m.Group.GroupTypeId == groupTypeIdKnownRelationShips )
+                                            .SelectMany( m => m.Group.Members )
+                                            .Where( p => p.GroupRoleId == groupTypeRoleIdKnownRelationShipsOwner && p.PersonId != b.Id )
+                                            .Select( p => p.Person.LastName + ", " + p.Person.NickName )
+                    } );
 
                 SortProperty sortProperty = gBusinessList.SortProperty;
                 if ( sortProperty != null )
                 {
-                    queryable = queryable.Sort( sortProperty );
+                    businessSelectQry = businessSelectQry.Sort( sortProperty );
                 }
                 else
                 {
-                    queryable = queryable.OrderBy( q => q.LastName );
+                    businessSelectQry = businessSelectQry.OrderBy( q => q.LastName );
                 }
-            }
 
-            var workLocationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-
-            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
-
-            var businessList = queryable.Select( b => new
-            {
-                Id = b.Id,
-                b.LastName,
-                BusinessName = b.LastName,
-                PhoneNumber = b.PhoneNumbers.FirstOrDefault().NumberFormatted,
-                Email = b.Email,
-                Address = b.Members
-                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )
-                                .SelectMany( m => m.Group.GroupLocations.Where( l => l.GroupLocationTypeValue != null && l.GroupLocationTypeValue.Guid == workLocationTypeGuid ) )
-                                .FirstOrDefault()
-                                .Location,
-                Contacts = b.Members
-                                .Where( m => m.Group.GroupType.Guid.ToString() == Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS )
-                                .SelectMany( m => m.Group.Members)
-                                .Where( p => p.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER && p.PersonId != b.Id)
-                                .Select( p => p.Person.LastName + ", " + p.Person.NickName)
-            } );
-
-            if ( viaSearch && businessList.ToList().Count == 1 )
-            {
-                ShowDetailForm( businessList.ToList()[0].Id );
-            }
-            else
-            {
                 gBusinessList.EntityTypeId = EntityTypeCache.Get<Person>().Id;
-                gBusinessList.DataSource = businessList.ToList();
+                gBusinessList.SetLinqDataSource( businessSelectQry );
                 gBusinessList.DataBind();
             }
         }
@@ -287,5 +322,65 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion Internal Methods
+
+        /// <summary>
+        /// Handles the DataBound event of the lContactInformation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lContactInformation_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lContactInformation = e.Row.FindControl( "lContactInformation" ) as Literal;
+            BusinessSelectInfo businessSelectInfo = e.Row.DataItem as BusinessSelectInfo;
+            if ( lContactInformation != null && businessSelectInfo != null )
+            {
+                lContactInformation.Text = FormatContactInfo( businessSelectInfo.PhoneNumber, businessSelectInfo.Email );
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lAddress control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lAddress_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
+            BusinessSelectInfo businessSelectInfo = e.Row.DataItem as BusinessSelectInfo;
+            if ( lAddress != null && businessSelectInfo != null && businessSelectInfo.Address != null )
+            {
+                lAddress.Text = businessSelectInfo.Address.FormattedHtmlAddress;
+            }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lContacts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void lContacts_DataBound( object sender, RowEventArgs e )
+        {
+            Literal lContacts = e.Row.FindControl( "lContacts" ) as Literal;
+            BusinessSelectInfo businessSelectInfo = e.Row.DataItem as BusinessSelectInfo;
+            if ( lContacts != null && businessSelectInfo != null )
+            {
+                lContacts.Text = businessSelectInfo.Contacts.ToList().AsDelimited( "<br />" );
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="Rock.Utility.RockDynamic" />
+        private class BusinessSelectInfo : RockDynamic
+        {
+            public int Id { get; set; }
+            public string LastName { get; set; }
+            public string BusinessName { get; set; }
+            public string PhoneNumber { get; set; }
+            public string Email { get; set; }
+            public Location Address { get; set; }
+            public IEnumerable<string> Contacts { get; set; }
+        }
     }
 }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -57,6 +58,12 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.GetPeople( !loadAll ) )
                     {
+                        var memberGroupIds = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                                                                                  .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active
+                                                                                               && m.PersonId == person.Person.Id )
+                                                                                  .Select( m => m.GroupId )
+                                                                                  .ToList();
+
                         foreach ( var groupType in person.GetGroupTypes( !loadAll ) )
                         {
                             var kioskGroupType = checkInState.Kiosk.ActiveGroupTypes( checkInState.ConfiguredGroupTypes )
@@ -70,11 +77,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     bool validGroup = true;
                                     if ( groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
                                     {
-                                        validGroup = new GroupMemberService( rockContext ).Queryable()
-                                            .Any( m =>
-                                                m.GroupId == kioskGroup.Group.Id &&
-                                                m.GroupMemberStatus == GroupMemberStatus.Active &&
-                                                m.PersonId == person.Person.Id );
+                                        validGroup = memberGroupIds.Contains( kioskGroup.Group.Id );
                                     }
 
                                     if ( validGroup && !groupType.Groups.Any( g => g.Group.Id == kioskGroup.Group.Id ) )

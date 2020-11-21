@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Finance
         protected void rGridGateway_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "gatewayId", "0" );
+            parms.Add( "GatewayId", "0" );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Finance
         protected void rGridGateway_Edit( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "gatewayId", e.RowKeyValue.ToString() );
+            parms.Add( "GatewayId", e.RowKeyValue.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

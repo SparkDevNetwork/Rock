@@ -63,8 +63,8 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
-        /// that this is.
+        /// The Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.GroupLocation"/>
+        /// that this is. Examples: Home Address, Work Address, Primary Address.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> referencing the Id of the GroupLocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
@@ -164,12 +164,16 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
         [DataMember]
-        public virtual ICollection<Schedule> Schedules
-        {
-            get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }
-            set { _schedules = value; }
-        }
-        private ICollection<Schedule> _schedules;
+        public virtual ICollection<Schedule> Schedules { get; set; } = new Collection<Schedule>();
+
+        /// <summary>
+        /// Gets or sets properties that are specific to Group+Location+Schedule 
+        /// </summary>
+        /// <value>
+        /// The group location schedule configs.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<GroupLocationScheduleConfig> GroupLocationScheduleConfigs { get; set; } = new Collection<GroupLocationScheduleConfig>();
 
         /// <summary>
         /// Gets or sets the history changes.
@@ -249,7 +253,7 @@ namespace Rock.Model
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
             var rockContext = dbContext as RockContext;
-            if ( GroupHistoryChanges != null && GroupHistoryChanges.Any() )
+            if ( GroupHistoryChanges?.Any() == true )
             {
                 HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), GroupId, GroupHistoryChanges, true, this.ModifiedByPersonAliasId );
             }

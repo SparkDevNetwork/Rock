@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -69,7 +70,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the total amount of the transaction detail.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -107,10 +108,20 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
         /// </value>
         [DataMember]
-        [BoundFieldType(typeof(Rock.Web.UI.Controls.CurrencyField))]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         [IncludeAsEntityProperty]
         public decimal? FeeAmount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The fee coverage amount.
+        /// </value>
+        [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision(18, 2)]
+        public decimal? FeeCoverageAmount { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -150,7 +161,7 @@ namespace Rock.Model
         /// The history changes.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -184,7 +195,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
             HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
@@ -192,7 +203,7 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct).SetNewValue( Amount.FormatAsCurrency() );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency() );
                         break;
                     }
 
@@ -214,7 +225,7 @@ namespace Rock.Model
                 case EntityState.Deleted:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct).SetOldValue( Amount.FormatAsCurrency() );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency() );
                         break;
                     }
             }
@@ -228,20 +239,48 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            if ( HistoryChangeList.Any() )
+            if ( HistoryChangeList?.Any() == true )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.TransactionId, HistoryChangeList, true, this.ModifiedByPersonAliasId );
 
-                var txn = new FinancialTransactionService( (RockContext)dbContext ).GetSelect( this.TransactionId, s => new { s.Id, s.BatchId } );
+                var txn = new FinancialTransactionService( ( RockContext ) dbContext ).GetSelect( this.TransactionId, s => new { s.Id, s.BatchId } );
                 if ( txn != null && txn.BatchId != null )
                 {
                     var batchHistory = new History.HistoryChangeList();
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, $"Transaction ID:{txn.Id}" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), this.TransactionId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
             base.PostSaveChanges( dbContext );
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.TransactionId != 0 )
+                {
+                    FinancialTransaction parentTransaction = this.Transaction;
+                    if ( parentTransaction == null )
+                    {
+                        // All we need to auth a FinancialTransaction is FinancialTransaction object with the TransactionId
+                        parentTransaction = new FinancialTransaction { Id = this.TransactionId };
+                    }
+
+                    return parentTransaction;
+                }
+                else
+                {
+
+                    return base.ParentAuthority;
+                }
+            }
         }
 
         #endregion

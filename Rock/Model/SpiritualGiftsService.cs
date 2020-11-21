@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -25,13 +27,7 @@ namespace Rock.Model
     /// </summary>
     public class SpiritualGiftsService
     {
-        private static readonly double minDominantGiftScore = 1.0;
-
-        private static readonly double maxSupportiveGiftScore = 0.9;
-
-        private static readonly double minSupportiveGiftScore = 0;
-
-        private static readonly double maxOtherGiftScore = -0.1;
+        private static readonly double minSupportiveGiftScore = 0.0; // 50.0%
 
         private const string ATTRIBUTE_DOMINANT_GIFTS = "core_DominantGifts";
 
@@ -201,27 +197,27 @@ namespace Rock.Model
         };
 
         /// <summary>
-        /// Raw question data with code as key.
+        /// Raw question data with code as key. Updated with new mean and std.dev. data for 'Psychometric Data for V2.1'
         /// </summary>
         private static Dictionary<Guid, SpiritualGift> constructData = new Dictionary<Guid, SpiritualGift>()
         {
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ADMINISTRATION.AsGuid(),  new SpiritualGift(6.722,3.647, new List<string>(){"C6","C18","C94","C99","C102" }) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_APOSTLESHIP.AsGuid(), new SpiritualGift(8.377, 3.947,  new List<string>(){"C5","C8","C26","C56","C96"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_DISCERNMENT.AsGuid(), new SpiritualGift(6.586,3.853, new List<string>(){"C1","C20","C51","C76","C109"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ENCOURAGEMENT.AsGuid(), new SpiritualGift(5.960, 3.653, new List<string>(){"C59","C63","C75","C78","C111"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_EVANGELISM.AsGuid(), new SpiritualGift(11.173,4.484, new List<string>(){"C80","C112","C114","C117","C118"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_FAITH.AsGuid(), new SpiritualGift(7.130,3.677, new List<string>(){"C42","C57","C106","C108","C113"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_GIVING.AsGuid(), new SpiritualGift(6.210,3.548, new List<string>(){"C50","C71","C83","C86","C101"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HELPS.AsGuid(), new SpiritualGift(5.377,3.028, new List<string>(){"C9","C39","C70","C81","C103"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HOSPITALITY.AsGuid(),new SpiritualGift(11.211, 4.800, new List<string>(){"C12","C16","C30","C66","C105"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_KNOWLEDGE.AsGuid(),new SpiritualGift(8.753,4.095, new List<string>(){"C64","C69","C72","C85","C119"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_LEADERSHIP.AsGuid(),new SpiritualGift(7.483,4.081, new List<string>(){"C25","C29","C47","C74","C116"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_MERCY.AsGuid(),new SpiritualGift(6.774,3.664, new List<string>(){"C4","C31","C67","C90","C100"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_SHEPHERD.AsGuid(),new SpiritualGift(7.227,3.248, new List<string>(){"C13","C14","C15","C22","C61"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_TEACHER.AsGuid(), new SpiritualGift(8.249,3.612, new List<string>(){"C65","C68","C88","C89","C92"}) },
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PROPHECY.AsGuid(), new SpiritualGift(8.184,3.682, new List<string>(){"C7","C19","C35","C41","C60"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_TEACHING.AsGuid(),new SpiritualGift(8.757,4.227, new List<string>(){"C17","C33","C37","C45","C77"} )},
-            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_WISDOM.AsGuid(), new SpiritualGift(7.619,3.712, new List<string>(){"C3","C21","C58","C62","C87"} )}
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ADMINISTRATION.AsGuid(),  new SpiritualGift( 14.26, 3.54 , new List<string>(){"C6","C18","C94","C99","C102" }) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_APOSTLESHIP.AsGuid(),     new SpiritualGift( 11.16, 4.025, new List<string>(){"C5","C8","C26","C56","C96"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_DISCERNMENT.AsGuid(),     new SpiritualGift( 14.15, 3.759, new List<string>(){"C1","C20","C51","C76","C109"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_ENCOURAGEMENT.AsGuid(),   new SpiritualGift( 14.17, 3.404, new List<string>(){"C59","C63","C75","C78","C111"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_EVANGELISM.AsGuid(),      new SpiritualGift( 9.11,  4.391, new List<string>(){"C80","C112","C114","C117","C118"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_FAITH.AsGuid(),           new SpiritualGift( 12.82, 3.684, new List<string>(){"C42","C57","C106","C108","C113"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_GIVING.AsGuid(),          new SpiritualGift( 13.36, 3.491, new List<string>(){"C50","C71","C83","C86","C101"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HELPS.AsGuid(),           new SpiritualGift( 14.02, 3.132, new List<string>(){"C9","C39","C70","C81","C103"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_HOSPITALITY.AsGuid(),     new SpiritualGift( 10.56, 4.83 , new List<string>(){"C12","C16","C30","C66","C105"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_KNOWLEDGE.AsGuid(),       new SpiritualGift( 11.89, 4.172, new List<string>(){"C64","C69","C72","C85","C119"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_LEADERSHIP.AsGuid(),      new SpiritualGift( 12.55, 4.061, new List<string>(){"C25","C29","C47","C74","C116"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_MERCY.AsGuid(),           new SpiritualGift( 13.3,  3.682, new List<string>(){"C4","C31","C67","C90","C100"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_SHEPHERD.AsGuid(), new SpiritualGift( 13.26, 3.12 , new List<string>(){"C13","C14","C15","C22","C61"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PASTOR_TEACHER.AsGuid(),  new SpiritualGift( 13.33, 3.294, new List<string>(){"C65","C68","C88","C89","C92"}) },
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_PROPHECY.AsGuid(),        new SpiritualGift( 12.02, 3.518, new List<string>(){"C7","C19","C35","C41","C60"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_TEACHING.AsGuid(),        new SpiritualGift( 12.36, 3.912, new List<string>(){"C17","C33","C37","C45","C77"} )},
+            { SystemGuid.DefinedValue.SPIRITUAL_GIFTS_WISDOM.AsGuid(),          new SpiritualGift( 12.24, 3.613, new List<string>(){"C3","C21","C58","C62","C87"} )}
         };
 
         /// <summary>
@@ -242,8 +238,12 @@ namespace Rock.Model
         /// <returns>returns a AssessmentResults object</returns>
         static public AssessmentResults GetResult( Dictionary<string, int> assessmentResponse )
         {
-            AssessmentResults testResults = new AssessmentResults();
-            testResults.LastSaveDate = RockDateTime.Now;
+            AssessmentResults testResults = new AssessmentResults
+            {
+                SpiritualGiftScores = new List<SpiritualGiftScore>(),
+                LastSaveDate = RockDateTime.Now
+            };
+
             var zScores = new Dictionary<Guid, double>();
 
             foreach ( var spiritualGiftDefinedValue in constructData.Keys )
@@ -260,11 +260,30 @@ namespace Rock.Model
 
                 var zScore = Math.Round( ( totalResponse - spiritualGift.Mean ) / spiritualGift.StandardDeviation, 1 );
                 zScores.AddOrReplace( spiritualGiftDefinedValue, zScore );
+
+                zScoreToPercentage.TryGetValue( zScore, out double percentage );
+
+                testResults.SpiritualGiftScores.Add( new SpiritualGiftScore
+                {
+                    DefinedValueGuid = spiritualGiftDefinedValue,
+                    SpiritualGiftName = DefinedValueCache.Get( spiritualGiftDefinedValue )?.Value,
+                    ZScore = zScore,
+                    Percentage = percentage
+                } );
             }
 
-            testResults.DominantGifts = zScores.Where( a => a.Value >= minDominantGiftScore ).OrderByDescending(a=>a.Value).Select( a => a.Key ).ToList();
-            testResults.SupportiveGifts = zScores.Where( a => a.Value >= minSupportiveGiftScore && a.Value <= maxSupportiveGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
-            testResults.OtherGifts = zScores.Where( a => a.Value <= maxOtherGiftScore ).OrderByDescending( a => a.Value ).Select( a => a.Key ).ToList();
+            // Sort the scores from highest to lowest
+            var orderedZScores = zScores.OrderByDescending( s => s.Value );
+
+            // The DominantGifts should be populated based on the top 5 scores
+            testResults.DominantGifts = orderedZScores.Take( 5 ).Select( s => s.Key ).ToList();
+
+            // The SupportiveGifts should be populated based on a minimum score value, after bypassing the top 5
+            testResults.SupportiveGifts = orderedZScores.Skip( 5 ).Where( s => s.Value >= minSupportiveGiftScore ).Select( s => s.Key ).ToList();
+
+            // The OtherGifts should be populated by all that remain
+            testResults.OtherGifts = orderedZScores.Skip( 5 ).Where( s => s.Value < minSupportiveGiftScore ).Select( s => s.Key ).ToList();
+
             return testResults;
         }
 
@@ -303,10 +322,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Loads and returns saved Assessment scores for the Person, along with zScores and Percentages for each Spiritual Gift.
+        /// </summary>
+        /// <param name="person">The Person to get the scores for.</param>
+        /// <param name="assessment">The Assessment to get the scores for.</param>
+        /// <returns>AssessmentResults</returns>
+        static public AssessmentResults LoadSavedAssessmentResults( Person person, Assessment assessment )
+        {
+            var savedScores = LoadSavedAssessmentResults( person );
+
+            // Deserialize the stored JSON
+            savedScores.SpiritualGiftScores = assessment?
+                .AssessmentResultData
+                .FromJsonOrNull<AssessmentResultData>()?
+                .ResultScores;
+
+            return savedScores;
+        }
+
+        /// <summary>
         /// The AssessmentResults struct used to return the final assessment scores
         /// </summary>
         public class AssessmentResults
         {
+            /// <summary>
+            /// Gets or sets the Spiritual Gift Scores.
+            /// </summary>
+            /// <value>
+            /// The Spiritual Gift Scores.
+            /// </value>
+            public List<SpiritualGiftScore> SpiritualGiftScores { get; set; }
+
             /// <summary>
             /// Gets or sets the dominant gifts.
             /// </summary>
@@ -335,6 +381,74 @@ namespace Rock.Model
             /// The last save date
             /// </summary>
             public DateTime? LastSaveDate;
+        }
+        
+        /// <summary>
+        /// The AssessmentResultData class used for serializing/deserializing to/from JSON
+        /// </summary>
+        public class AssessmentResultData
+        {
+            /// <summary>
+            /// Gets or sets the Assessment result (responses).
+            /// </summary>
+            /// <value>
+            /// The Assessment result.
+            /// </value>
+            public Dictionary<string, int> Result { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Assessment result scores.
+            /// </summary>
+            /// <value>
+            /// The Assessment result scores.
+            /// </value>
+            public List<SpiritualGiftScore> ResultScores { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time to take the Assessment.
+            /// </summary>
+            /// <value>
+            /// The time to take the Assessment.
+            /// </value>
+            public double TimeToTake { get; set; }
+        }
+
+        /// <summary>
+        /// The SpiritualGiftScore struct used to return the spiritual gift score
+        /// </summary>
+        public class SpiritualGiftScore : RockDynamic
+        {
+            /// <summary>
+            /// Gets or sets the defined value unique identifier.
+            /// </summary>
+            /// <value>
+            /// The defined value unique identifier.
+            /// </value>
+            public Guid DefinedValueGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the spiritual gift.
+            /// </summary>
+            /// <value>
+            /// The name of the spiritual gift.
+            /// </value>
+            public string SpiritualGiftName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the zScore.
+            /// </summary>
+            /// <value>
+            /// The zScore.
+            /// </value>
+            public double ZScore { get; set; }
+
+            /// <summary>
+            /// Gets or sets the percentage.
+            /// </summary>
+            /// <value>
+            /// The percentage.
+            /// </value>
+            public double Percentage { get; set; }
         }
 
         /// <summary>

@@ -197,8 +197,26 @@ The following are new, proposed file format definitions that are being considere
 `Id,Name,RegistrationTemplateId,StartDateTime,EndDateTime,SendReminderDateTime,MaxAttendees,AccountId,ContactPhone,ContactEmail,PersonId,AdditionalReminderDetails,AdditionalConfirmationDetails`
 
 
+# Proposed 4/11/2019
 
+The following are new, proposed file format definitions that are being considered for addition to the Slingshot importer for "Business" data.
 
+## business.csv
 
+`Id,Name,RecordStatus,InactiveReason,Email,EmailPreference,CampusId`
 
+## business-address.csv
+
+`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
+
+## business-phone.csv
+
+`BusinessId,PhoneType,PhoneNumber,IsMessagingEnabled,IsUnlisted`
+
+## business-contact.csv
+
+`PersonId,BusinessId`
+
+Example:
+`14,3213213210`
 

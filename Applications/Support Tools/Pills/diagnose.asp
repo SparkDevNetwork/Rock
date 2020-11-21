@@ -3,22 +3,22 @@
 	<head>
 		<title>Rock Diagnose - Rock Pill</title>
 		<link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:300,400,600,700' type='text/css' />
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
-		<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
-		
-		<script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
-		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+
 		<link href="//rockrms.blob.core.windows.net/pills/Styles/rock-pills.css" rel="stylesheet" />
 		<link rel="shortcut icon" href="//rockrms.blob.core.windows.net/pills/Images/favicon.ico" />
 
 	</head>
 	<body>
-	
+
 		<div id="content">
             <h1 id="logo"></h1>
-	
+
 			<h1>Rock Pill</h1>
-			
+
 			<div id="console">
 				<ul>
 					<%
@@ -41,8 +41,8 @@
 					%>
 				</ul>
 			</div>
-			
-			
+
+
 		</div>
 	</body>
 </html>
@@ -54,10 +54,10 @@ Function ImportConnectionString(webConfig, attrName, reformatDSN)
     Set oXML=Server.CreateObject("Microsoft.XMLDOM")
     oXML.Async = "false"
     oXML.Load(Server.MapPath(webConfig))
-    Set oNode = oXML.GetElementsByTagName("connectionStrings").Item(0) 
+    Set oNode = oXML.GetElementsByTagName("connectionStrings").Item(0)
     Set oChild = oNode.GetElementsByTagName("add")
     ' Get the first match
-    For Each oAttr in oChild 
+    For Each oAttr in oChild
         If  oAttr.getAttribute("name") = attrName then
             dsn = oAttr.getAttribute("connectionString")
             If reformatDSN Then

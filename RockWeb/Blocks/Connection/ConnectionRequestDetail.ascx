@@ -1,8 +1,41 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
+<style>
+    #<%= upDetail.ClientID %> .request-photo {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto 16px;
+        background: center/cover #cbd4db;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+    }
+
+    #<%= upDetail.ClientID %> .request-photo:after {
+        content: "";
+        display: block;
+        padding-bottom: 100%;
+    }
+
+    #<%= upDetail.ClientID %> .board-card-photo {
+        width: 24px;
+        height: 24px;
+        align-items: center;
+        background: center/cover #cbd4db;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: inline-flex;
+        justify-content: center;
+        position: relative;
+        vertical-align: top;
+    }
+</style>
+
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-
+        <Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
+        <asp:Panel ID="pnlDetail" runat="server">
         <asp:HiddenField ID="hfConnectionOpportunityId" runat="server" />
         <asp:HiddenField ID="hfConnectionRequestId" runat="server" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -14,9 +47,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <asp:Literal ID="lConnectionOpportunityIconHtml" runat="server" />
-                    <asp:Literal ID="lTitle" runat="server" />
-                </h1>
+                    <asp:Literal ID="lConnectionOpportunityIconHtml" runat="server" /> Connection Request Detail</h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     <Rock:HighlightLabel ID="hlOpportunity" runat="server" LabelType="Info" />
@@ -29,34 +60,58 @@
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
 
                 <div class="panel-body">
+                    <asp:Literal ID="lHeading" runat="server"></asp:Literal>
                     <div class="row">
-                        <div class="col-md-2">
-                            <div class="photo">
-                                <asp:Literal ID="lPortrait" runat="server" />
-                            </div>
+                        <div class="col-sm-2">
+                            <div id="divPhoto" runat="server" class="request-photo mb-1"></div>
                         </div>
-                        <div class="col-md-8">
-                            <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
-                                <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
-                            </asp:Panel>
-                            
+                        <div class="col-sm-10">
+                            <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="small pull-right">
+                                <i class="fa fa-user"></i>
+                                Person Profile
+                            </asp:HyperLink>
+                            <h3 class="mt-0 mb-3">
+                                <asp:Literal ID="lTitle" runat="server" />
+                            </h3>
                             <div class="row">
-                                <div class="col-md-6">
-                                     <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
+                                <div class="col-sm-6 col-md-5 mb-3">
+                                    <h6 class="mt-0 mb-1">Contact Information</h6>
+                                    <div class="personcontact">
+                                        <Rock:RockLiteral ID="lContactInfo" runat="server" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-sm-6 col-md-4 mb-3">
+                                    <h6 class="mt-0 mb-1">Connector</h6>
+                                    <div class="btn-group">
+                                        <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                                            <asp:Literal runat="server" ID="lConnectorProfilePhoto" />
+                                            <asp:Literal ID="lConnectorFullName" runat="server" />
+                                        </div>
+                                        <ul class="dropdown-menu">
+                                            <asp:Repeater ID="rConnectorSelect" runat="server" OnItemCommand="rConnectorSelect_ItemCommand">
+                                                <ItemTemplate>
+                                                    <li>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("PersonAliasId") %>'>
+                                                            <%# Eval("FullName") %>
+                                                        </asp:LinkButton>
+                                                    </li>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-3 text-left text-md-right mb-3">
                                     <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                                     <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
                                 </div>
                             </div>
-       
+
+                            <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
+                                <Rock:BadgeListControl ID="blStatus" runat="server" />
+                            </asp:Panel>
+
                         </div>
 
-                        <div class="col-md-2 text-right">
-                            <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
-                        </div>
                     </div>
 
                     <div class="row">
@@ -64,12 +119,18 @@
                             <Rock:RockLiteral ID="lComments" runat="server" />
                         </div>
                     </div>
+                    <asp:Literal ID="lBadgeBar" runat="server" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" DisplayAsTabs="true"/>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                             <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                            <div class="margin-b-md">
+                            <div class="margin-b-lg">
                                 <asp:Repeater ID="rptRequestWorkflows" runat="server">
                                     <ItemTemplate>
                                         <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
@@ -137,7 +198,13 @@
                             <Rock:RockDropDownList ID="ddlPlacementGroupStatus" runat="server" Label="Group Member Status" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" />
+                            <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server"/>
                         </div>
                     </div>
 
@@ -162,7 +229,7 @@
                     <div class="row">
                         <div class="col-md-6">
 
-                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="New Opportunity">
+                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="Opportunity">
                                 <div class="row">
                                     <div class="col-md-8">
                                         <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
@@ -225,7 +292,7 @@
 
         <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true" CssClass="clickable">
             <div class="grid">
-                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" 
+                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light"
                     RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound" OnRowSelected="gConnectionRequestActivities_Edit">
                     <Columns>
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
@@ -251,6 +318,7 @@
                         <Rock:RockDropDownList ID="ddlActivityConnector" runat="server" Label="Connector" Required="true" ValidationGroup="Activity" />
                     </div>
                 </div>
+                <Rock:AttributeValuesContainer ID="avcActivityAttributes" runat="server"/>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" ValidationGroup="Activity" />
             </Content>
         </Rock:ModalDialog>
@@ -275,7 +343,8 @@
                                         </div>
                                         <div class="col-md-8">
                                             <%# Eval("Description") %>
-                                            </br>                                                
+
+                                            <br />
                                             <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default btn-sm" />
                                         </div>
                                     </div>
@@ -291,10 +360,10 @@
                 $(".js-transfer-connector").on("click", function (a) {
                     $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($(this).is('#<%=rbTransferSelectConnector.ClientID%>'));
                 });
-                
+
                 $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
             })
         </script>
-
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -26,30 +26,38 @@
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
-                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="List" OffText="Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
+                        </div>
+                        <div class="col-sm-6">
+                            <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm pull-right" Text="View List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
+                        </div>
+                    </div>
 
-                    <asp:Panel ID="pnlRecipientSelectionList" runat="server">
+                    <div class="row">
+                        <asp:Panel ID="pnlRecipientSelectionList" runat="server" CssClass="col-lg-6">
+                            <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true" OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
+                            <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
+                                <label>Segments</label>
+                                <p>Optionally, further refine your recipients by filtering by segment.</p>
+                                <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
 
-                        <Rock:RockDropDownList ID="ddlCommunicationGroupList" runat="server" Label="List" CssClass="input-width-xxl" ValidationGroup="vgRecipientSelection" Required="true"  OnSelectedIndexChanged="ddlCommunicationGroupList_SelectedIndexChanged" AutoPostBack="true" />
-                        <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
-                            <label>Segments</label>
-                            <p>Optionally, further refine your recipients by filtering by segment.</p>
-                            <asp:CheckBoxList ID="cblCommunicationGroupSegments" runat="server" RepeatDirection="Horizontal" CssClass="margin-b-lg" ValidationGroup="vgRecipientSelection" OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged" AutoPostBack="true" />
+                                <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
 
-                            <Rock:RockRadioButtonList ID="rblCommunicationGroupSegmentFilterType" runat="server" Label="Recipients Must Meet" RepeatDirection="Horizontal" ValidationGroup="vgRecipientSelection" AutoPostBack="true" OnSelectedIndexChanged="rblCommunicationGroupSegmentFilterType_SelectedIndexChanged" />
-
-                            <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
-                                <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                <asp:Panel ID="pnlRecipientFromListCount" runat="server" CssClass="label label-info">
+                                    <asp:Literal ID="lRecipientFromListCount" runat="server" Text="" />
+                                </asp:Panel>
                             </asp:Panel>
                         </asp:Panel>
-                    </asp:Panel>
+                        <div class="col-lg-6">
+                            <Rock:RockCheckBox ID="cbDuplicatePreventionOption" runat="server" Label="Prevent Duplicate Email/SMS Addresses" Text="Yes" Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.  This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                        </div>
+                    </div>
 
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-
-                                <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm" Text="Show List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
-
                                 <p>
                                     <asp:Panel ID="pnlIndividualRecipientCount" runat="server" CssClass="label label-info">
                                         <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
@@ -58,7 +66,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="pull-right">
-                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" EnableSelfSelection="true" />
                                 </div>
                             </div>
                         </div>
@@ -72,6 +80,7 @@
                     <%-- Recipient Selection: Individual Recipients Modal --%>
                     <Rock:ModalDialog Id="mdIndividualRecipients" runat="server" Title="Individual Recipients" ValidationGroup="mdIndividualRecipientsModal">
                         <Content>
+                            <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
                             <Rock:Grid ID="gIndividualRecipients" runat="server" OnRowDataBound="gIndividualRecipients_RowDataBound" HideDeleteButtonForIsSystem="false" ShowConfirmDeleteDialog="false">
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
@@ -110,6 +119,9 @@
                     </div>
 
                     <Rock:RockControlWrapper ID="rcwMediumType" runat="server" Label="Select the communication medium that you would like to send your message through.">
+
+                        <span class="small help-block js-medium-recipientpreference-notification" style="margin-top: -5px;">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
+
                         <div class="controls">
                             <div class="js-mediumtype">
                                 <Rock:HiddenFieldWithClass ID="hfMediumType" CssClass="js-hidden-selected" runat="server" />
@@ -117,8 +129,8 @@
                                     <a id="btnMediumRecipientPreference" runat="server" class="btn btn-info btn-sm active js-medium-recipientpreference" data-val="0" >Recipient Preference</a>
                                     <a id="btnMediumEmail" runat="server" class="btn btn-default btn-sm js-medium-email" data-val="1" >Email</a>
                                     <a id="btnMediumSMS" runat="server" class="btn btn-default btn-sm js-medium-sms" data-val="2" >SMS</a>
+                                    <a id="btnMediumPush" runat="server" class="btn btn-default btn-sm js-medium-push" data-val="3" >Push</a>
                                 </div>
-                                <span class="margin-t-md label label-info js-medium-recipientpreference-notification">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
                             </div>
                         </div>
                     </Rock:RockControlWrapper>
@@ -204,6 +216,7 @@
                                         <Rock:NotificationBox ID="nbEmailTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test Email has been sent." Visible="false" Dismissable="true" />
                                         <a class="btn btn-xs btn-default js-email-sendtest" href="#">Send Test</a>
                                         <asp:LinkButton ID="btnEmailPreview" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Preview" OnClick="btnEmailPreview_Click" />
+                                        <asp:LinkButton ID="btnEmailEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default js-saveeditorhtml" Text="Save" OnClick="btnEmailEditorSaveDraft_Click" />
                                     </div>
 
                                     <div class="js-email-sendtest-inputs" style="display: none">
@@ -211,17 +224,14 @@
                                         <asp:LinkButton ID="btnEmailSendTest" runat="server" CssClass="btn btn-xs btn-primary js-saveeditorhtml" Text="Send Test" CausesValidation="true" ValidationGroup="vgEmailEditorSendTest" OnClick="btnEmailSendTest_Click" />
                                         <a class="btn btn-xs btn-link js-email-sendtest-cancel" href="#">Cancel</a>
                                     </div>
-
-
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-
                         </div>
                     </div>
                     <div class="emaileditor-wrapper margin-t-md">
                         <section id="emaileditor">
-			                <div id="emaileditor-designer">
-				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0"></iframe>
+			                <div id="emaileditor-designer" style="opacity: 0;">
+				                <iframe id="ifEmailDesigner" name="emaileditor-iframe" class="emaileditor-iframe js-emaileditor-iframe" runat="server" src="javascript: window.frameElement.getAttribute('srcdoc');" frameborder="0" border="0" cellspacing="0" style="display:none;"></iframe>
 			                </div>
 			                <div id="emaileditor-properties">
 
@@ -235,7 +245,7 @@
                                         <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-text-backgroundcolor">Background Color</label>
+									                <label class="control-label" for="component-text-backgroundcolor">Background Color</label>
 									                <div id="component-text-backgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -257,7 +267,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-border-width">Border Width</label>
+									                <label class="control-label" for="component-text-border-width">Border Width</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-border-width" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -265,7 +275,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-border-color">Border Color</label>
+									                <label class="control-label" for="component-text-border-color">Border Color</label>
 									                <div id="component-text-border-color" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -277,13 +287,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-padding-top">Padding Top</label>
+									                <label class="control-label" for="component-text-padding-top">Padding Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-text-padding-left">Padding Left</label>
+									                <label class="control-label" for="component-text-padding-left">Padding Left</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-left" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -291,13 +301,13 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-text-padding-bottom">Padding Bottom</label>
+									                <label class="control-label" for="component-text-padding-bottom">Padding Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-text-padding-right">Padding Right</label>
+									                <label class="control-label" for="component-text-padding-right">Padding Right</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-text-padding-right" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -316,7 +326,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-image-imgcsswidth">Width</label>
+									                <label class="control-label" for="component-image-imgcsswidth">Width</label>
 									                <select id="component-image-imgcsswidth" class="form-control">
 										                <option value="0">Image Width</option>
 										                <option value="1">Full Width</option>
@@ -324,7 +334,7 @@
 								                </div>
 
                                                 <div class="form-group">
-									                <label for="component-image-imagealign">Align</label>
+									                <label class="control-label" for="component-image-imagealign">Align</label>
 									                <select id="component-image-imagealign" class="form-control">
 										                <option value="left">Left</option>
 										                <option value="center">Center</option>
@@ -333,7 +343,7 @@
 								                </div>
 
                                                 <div class="form-group">
-									                <label for="component-image-resizemode">Resize Mode</label>
+									                <label class="control-label" for="component-image-resizemode">Resize Mode</label>
 									                <select id="component-image-resizemode" class="form-control">
 										                <option value="crop">Crop</option>
 										                <option value="pad">Pad</option>
@@ -346,19 +356,19 @@
                                         <div class="row">
 							                <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-imagewidth">Image Width</label>
+                                                    <label class="control-label" for="component-image-imagewidth">Image Width</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-image-imagewidth" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-top">Margin Top</label>
+									                <label class="control-label" for="component-image-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-left">Margin Left</label>
+									                <label class="control-label" for="component-image-margin-left">Margin Left</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-left" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -366,19 +376,19 @@
 							                </div>
 							                <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-imageheight">Image Height</label>
+                                                    <label class="control-label" for="component-image-imageheight">Image Height</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-image-imageheight" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-bottom">Margin Bottom</label>
+									                <label class="control-label" for="component-image-margin-bottom">Margin Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-image-margin-right">Margin Right</label>
+									                <label class="control-label" for="component-image-margin-right">Margin Right</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-image-margin-right" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -389,7 +399,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-image-link">Link</label>
+                                                    <label class="control-label" for="component-image-link">Link</label>
                                                     <input type="url" id="component-image-link" class="form-control" />
                                                 </div>
                                             </div>
@@ -446,7 +456,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-1">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-1">Background Color</label>
 									                    <div id="component-section-backgroundcolor-1" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -459,13 +469,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-1">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-1">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-1">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-1">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -473,13 +483,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-1">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-1">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-1">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-1">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-1" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -495,7 +505,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-2">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-2">Background Color</label>
 									                    <div id="component-section-backgroundcolor-2" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -508,13 +518,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-2">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-2">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-2">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-2">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -522,13 +532,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-2">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-2">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-2">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-2">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-2" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -544,7 +554,7 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-backgroundcolor-3">Background Color</label>
+									                    <label class="control-label" for="component-section-backgroundcolor-3">Background Color</label>
 									                    <div id="component-section-backgroundcolor-3" class="input-group colorpicker-component">
 										                    <input type="text" value="" class="form-control" />
 										                    <span class="input-group-addon"><i></i></span>
@@ -557,13 +567,13 @@
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-top-3">Padding Top</label>
+									                    <label class="control-label" for="component-section-padding-top-3">Padding Top</label>
                                                         <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-top-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-left-3">Padding Left</label>
+									                    <label class="control-label" for="component-section-padding-left-3">Padding Left</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-left-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -571,13 +581,13 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-									                    <label for="component-section-padding-bottom-3">Padding Bottom</label>
+									                    <label class="control-label" for="component-section-padding-bottom-3">Padding Bottom</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-bottom-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
 								                    </div>
                                                     <div class="form-group">
-									                    <label for="component-section-padding-right-3">Padding Right</label>
+									                    <label class="control-label" for="component-section-padding-right-3">Padding Right</label>
 									                    <div class="input-group input-width-md">
 								                            <input class="form-control js-component-section-padding-input" id="component-section-padding-right-3" type="number"><span class="input-group-addon">px</span>
 							                            </div>
@@ -593,13 +603,13 @@
                                         <div class="row">
 							                <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-divider-height">Height</label>
+									                <label class="control-label" for="component-divider-height">Height</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-height" type="number"><span class="input-group-addon">px</span>
 							                        </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-divider-margin-top">Margin Top</label>
+									                <label class="control-label" for="component-divider-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -608,14 +618,14 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-									                <label for="component-divider-color">Color</label>
+									                <label class="control-label" for="component-divider-color">Color</label>
 									                <div id="component-divider-color" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
 									                </div>
 								                </div>
                                                 <div class="form-group">
-									                <label for="component-divider-margin-bottom">Margin Bottom</label>
+									                <label class="control-label" for="component-divider-margin-bottom">Margin Bottom</label>
 									                <div class="input-group input-width-md">
 								                        <input class="form-control" id="component-divider-margin-bottom" type="number"><span class="input-group-addon">px</span>
 							                        </div>
@@ -634,13 +644,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-top">Margin Top</label>
+                                                    <label class="control-label" for="component-code-margin-top">Margin Top</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-top" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-left">Margin Left</label>
+                                                    <label class="control-label" for="component-code-margin-left">Margin Left</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-left" type="number"><span class="input-group-addon">px</span>
                                                     </div>
@@ -648,13 +658,13 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-bottom">Margin Bottom</label>
+                                                    <label class="control-label" for="component-code-margin-bottom">Margin Bottom</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-bottom" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="component-code-margin-right">Margin Right</label>
+                                                    <label class="control-label" for="component-code-margin-right">Margin Right</label>
                                                     <div class="input-group input-width-md">
                                                         <input class="form-control" id="component-code-margin-right" type="number"><span class="input-group-addon">px</span>
                                                     </div>
@@ -668,12 +678,12 @@
 						                <h4 class="propertypanel-title">Button</h4>
 						                <hr />
 						                <div class="form-group">
-							                <label for="component-button-buttontext">Button Text</label>
+							                <label class="control-label" for="component-button-buttontext">Button Text</label>
 							                <input class="form-control" id="component-button-buttontext" placeholder="Press Me">
 						                </div>
 
 						                <div class="form-group">
-							                <label for="component-button-buttonurl">Url</label>
+							                <label class="control-label" for="component-button-buttonurl">Url</label>
 							                <div class="input-group">
 								                <span class="input-group-addon"><i class="fa fa-link"></i></span>
 								                <input class="form-control" id="component-button-buttonurl" placeholder="http://yourlink.com">
@@ -683,7 +693,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonbackgroundcolor">Background Color</label>
+									                <label class="control-label" for="component-button-buttonbackgroundcolor">Background Color</label>
 									                <div id="component-button-buttonbackgroundcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -692,7 +702,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontcolor">Font Color</label>
+									                <label class="control-label" for="component-button-buttonfontcolor">Font Color</label>
 									                <div id="component-button-buttonfontcolor" class="input-group colorpicker-component">
 										                <input type="text" value="" class="form-control" />
 										                <span class="input-group-addon"><i></i></span>
@@ -704,7 +714,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonwidth">Width</label>
+									                <label class="control-label" for="component-button-buttonwidth">Width</label>
 									                <select id="component-button-buttonwidth" class="form-control">
 										                <option value="0">Fit To Text</option>
 										                <option value="1">Full Width</option>
@@ -712,13 +722,13 @@
 									                </select>
 								                </div>
 								                <div class="form-group js-buttonfixedwidth">
-									                <label for="component-button-buttonfixedwidth">Fixed Width</label>
+									                <label class="control-label" for="component-button-buttonfixedwidth">Fixed Width</label>
 									                <input class="form-control" id="component-button-buttonfixedwidth">
 								                </div>
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonalign">Align</label>
+									                <label class="control-label" for="component-button-buttonalign">Align</label>
 									                <select id="component-button-buttonalign" class="form-control">
 										                <option value="left">Left</option>
 										                <option value="center">Center</option>
@@ -729,7 +739,7 @@
 						                </div>
 
 						                <div class="form-group">
-							                <label for="component-button-buttofont">Font</label>
+							                <label class="control-label" for="component-button-buttonfont">Font</label>
 							                <select id="component-button-buttonfont" class="form-control">
 								                <option value=""></option>
 								                <option value="Arial, Helvetica, sans-serif">Arial</option>
@@ -750,7 +760,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontweight">Font Weight</label>
+									                <label class="control-label" for="component-button-buttonfontweight">Font Weight</label>
 									                <select id="component-button-buttonfontweight" class="form-control">
 										                <option value="normal">Normal</option>
 										                <option value="bold">Bold</option>
@@ -761,7 +771,7 @@
 							                </div>
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonfontsize">Font Size</label>
+									                <label class="control-label" for="component-button-buttonfontsize">Font Size</label>
 									                <input class="form-control" id="component-button-buttonfontsize">
 								                </div>
 							                </div>
@@ -770,7 +780,7 @@
 						                <div class="row">
 							                <div class="col-md-6">
 								                <div class="form-group">
-									                <label for="component-button-buttonpadding">Button Padding</label>
+									                <label class="control-label" for="component-button-buttonpadding">Button Padding</label>
 									                <input class="form-control" id="component-button-buttonpadding">
 								                </div>
 							                </div>
@@ -778,6 +788,162 @@
 							                </div>
 						                </div>
 					                </div>
+
+                                    <!-- RSVP Properties -->
+                                    <div id="component-rsvp-panel" class="propertypanel propertypanel-rsvp" data-component="rsvp" style="display: none;">
+                                        <h4 class="propertypanel-title">RSVP</h4>
+						                <div class="row">
+							                <div class="col-md-12">
+								                <div class="form-group" id="component-rsvp-group">
+                                                    <Rock:GroupPicker ID="gpRSVPGroup" runat="server" CssClass="rsvp-group" LimitToRSVPEnabledGroups="true" />
+								                </div>
+							                </div>
+						                </div>
+						                <div class="row">
+							                <div class="col-md-12">
+								                <div class="form-group">
+									                <select id="component-rsvp-occurrence" class="form-control" disabled="disabled">
+                                                        <option value=""></option>
+                                                        <option value="1">Test Value</option>
+									                </select>
+								                </div>
+							                </div>
+							                <div class="col-md-12">
+								                <div class="form-group">
+                                                    <button id="component-rsvp-registerbutton" type="button" class="btn btn-xs btn-default disabled">Register Recipients</button>
+                                                    <span class="js-rsvp-person-ids">
+                                                        <asp:HiddenField ID="hfRSVPPersonIDs" runat="server" Value="" />
+                                                    </span>
+
+                                                    <asp:HiddenField ID="hfRSVPShowAdvancedSettings" runat="server" Value="false" />
+                                                    <div class="pull-right">
+                                                        <a href="#" class="btn btn-xs btn-link js-rsvp-show-advanced-settings disabled" >Show Advanced Settings</a>
+                                                    </div>
+								                </div>
+							                </div>
+						                </div>
+
+
+                                        <div class="form-group js-rsvp-advanced-settings">
+                                            <label class="control-label" for="component-rsvp-accepttext">Accept Button Label</label>
+                                            <input class="form-control" id="component-rsvp-accepttext" placeholder="Accept">
+                                        </div>
+
+                                        <div class="row js-rsvp-advanced-settings">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-rsvp-acceptbackgroundcolor">Accept Button Color</label>
+                                                    <div id="component-rsvp-acceptbackgroundcolor" class="input-group colorpicker-component">
+										                <input type="text" value="" class="form-control" />
+										                <span class="input-group-addon"><i></i></span>
+									                </div>
+								                </div>
+							                </div>
+							                <div class="col-md-6">
+								                <div class="form-group">
+									                <label class="control-label" for="component-rsvp-acceptfontcolor">Accept Button Text Color</label>
+									                <div id="component-rsvp-acceptfontcolor" class="input-group colorpicker-component">
+										                <input type="text" value="" class="form-control" />
+										                <span class="input-group-addon"><i></i></span>
+									                </div>
+								                </div>
+							                </div>
+						                </div>
+
+                                        <div class="row js-rsvp-advanced-settings">
+							                <div class="col-md-9">
+								                <div class="form-group">
+                                                    <label class="control-label" for="component-rsvp-declinetext">Decline Button Label</label>
+                                                    <input class="form-control" id="component-rsvp-declinetext" placeholder="Decline">
+								                </div>
+							                </div>
+							                <div class="col-md-3">
+								                <div class="form-group">
+                                                    <Rock:RockCheckBox ID="rcbIncludeDecline" runat="server" CssClass="js-rsvp-include-decline" Checked="true" Label="Show Decline" Text="Yes" />
+								                </div>
+							                </div>
+                                        </div>
+
+                                        <div class="row js-rsvp-advanced-settings">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-rsvp-declinebackgroundcolor">Decline Button Color</label>
+                                                    <div id="component-rsvp-declinebackgroundcolor" class="input-group colorpicker-component">
+										                <input type="text" value="" class="form-control" />
+										                <span class="input-group-addon"><i></i></span>
+									                </div>
+								                </div>
+							                </div>
+							                <div class="col-md-6">
+								                <div class="form-group">
+									                <label class="control-label" for="component-rsvp-declinefontcolor">Decline Button Text Color</label>
+									                <div id="component-rsvp-declinefontcolor" class="input-group colorpicker-component">
+										                <input type="text" value="" class="form-control" />
+										                <span class="input-group-addon"><i></i></span>
+									                </div>
+								                </div>
+							                </div>
+						                </div>
+
+						                <div class="form-group js-rsvp-advanced-settings">
+							                <label class="control-label" for="component-rsvp-buttonfont">Font Face</label>
+							                <select id="component-rsvp-buttonfont" class="form-control">
+								                <option value=""></option>
+								                <option value="Arial, Helvetica, sans-serif">Arial</option>
+								                <option value='"Arial Black", Gadget, sans-serif'>Arial Black</option>
+								                <option value='"Courier New", Courier, monospace'>Courier New</option>
+								                <option value="Georgia, serif">Georgia</option>
+								                <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+								                <option value="Impact, Charcoal, sans-serif">Impact</option>
+								                <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida</option>
+								                <option value='"Lucida Console", Monaco, monospace'>Lucida Console</option>
+								                <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+								                <option value='Times New Roman", Times, serif'>Times New Roman</option>
+								                <option value='Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
+								                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+							                </select>
+						                </div>
+
+                                        <div class="row js-rsvp-advanced-settings">
+							                <div class="col-md-6">
+								                    <div class="form-group">
+									                <label class="control-label" for="component-rsvp-buttonfontweight">Font Weight</label>
+									                <select id="component-rsvp-buttonfontweight" class="form-control">
+										                <option value="normal">Normal</option>
+										                <option value="bold">Bold</option>
+										                <option value="bolder">Bolder</option>
+										                <option value="lighter">Lighter</option>
+									                </select>
+								                </div>
+							                </div>
+							                <div class="col-md-6">
+								                <div class="form-group">
+									                <label class="control-label" for="component-rsvp-buttonfontsize">Font Size</label>
+									                <input class="form-control" id="component-rsvp-buttonfontsize">
+								                </div>
+							                </div>
+						                </div>
+
+						                <div class="row js-rsvp-advanced-settings">
+							                <div class="col-md-6">
+								                <div class="form-group">
+									                <label class="control-label" for="component-rsvp-buttonpadding">Button Padding</label>
+									                <input class="form-control" id="component-rsvp-buttonpadding">
+								                </div>
+							                </div>
+							                <div class="col-md-6">
+								                <div class="form-group">
+									                <label class="control-label" for="component-rsvp-buttonalign">Align</label>
+									                <select id="component-rsvp-buttonalign" class="form-control">
+										                <option value="left">Left</option>
+										                <option value="center">Center</option>
+										                <option value="right">Right</option>
+									                </select>
+								                </div>
+							                </div>
+						                </div>
+
+                                    </div>
 
                                     <div class="js-propertypanel-actions actions" style="display:none">
                                         <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event); return false;">Complete</a>
@@ -810,6 +976,9 @@
 				                    </div>
 				                    <div class="component component-button" data-content="<table class='button-outerwrap' border='0' cellpadding='0' cellspacing='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='button-innerwrap'><table border='0' cellpadding='0' cellspacing='0' class='button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: rgb(43, 170, 223);'><tbody><tr><td align='center' valign='middle' class='button-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='button-link' title='Push Me' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: rgb(255, 255, 255);'>Push Me</a></td></tr></tbody></table></td></tr></tbody></table>" data-state="template">
 					                    <i class="fa fa-square-o"></i> <br /> Button
+				                    </div>
+				                    <div class="component component-rsvp" data-content="<table class='rsvp-outerwrap' border='0' cellpadding='0' width='100%' style='min-width:100%;'><tbody><tr><td style='padding-top:0; padding-right:0; padding-bottom:0; padding-left:0;' valign='top' align='center' class='rsvp-innerwrap'><table border='0' cellpadding='0' cellspacing='0'><tr><td><table border='0' cellpadding='0' cellspacing='0' class='accept-button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: #16C98D;'><tbody><tr><td align='center' valign='middle' class='rsvp-accept-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='rsvp-accept-link' title='Accept' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;'>Accept</a></td></tr></tbody></table></td><td style='padding-left: 10px;'><table border='0' cellpadding='0' cellspacing='0' class='decline-button-shell' style='display: inline-table; border-collapse: separate !important; border-radius: 3px; background-color: #D4442E;'><tbody><tr><td align='center' valign='middle' class='rsvp-decline-content' style='font-family: Arial; font-size: 16px; padding: 15px;'><a class='rsvp-decline-link' title='Decline' href='http://' target='_blank' style='font-weight: bold; letter-spacing: normal; line-height: 100%; text-align: center; text-decoration: none; color: #FFFFFF;'>Decline</a></td></tr></tbody></table></td></tr></table></td></tr></tbody></table><input type='hidden' class='rsvp-group-id' /><input type='hidden' class='rsvp-occurrence-value' />" data-state="template">
+					                    <i class="fa fa-user-check"></i> <br /> RSVP
 				                    </div>
 
                                     <div class="component-separator"></div>
@@ -877,10 +1046,10 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" ValidationGroup="vgEmailSummary"/>
+                            <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary"/>
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields" >Show Additional Fields</a>
@@ -891,7 +1060,7 @@
                     <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" style="display:none">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" />
+                                <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" AllowLava="true" />
                             </div>
                             <div class="col-md-6">
 
@@ -901,10 +1070,10 @@
                             <p><strong>Note:</strong> Because Rock personalizes emails, CC and BCC recipients will receive one email per recipient.</p>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                    <Rock:EmailBox ID="ebCCList" runat="server" Label="CC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" AllowLava="true" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" />
+                                    <Rock:EmailBox ID="ebBCCList" runat="server" Label="BCC List" AllowMultiple="true" Help="Comma-delimited list of email addresses that will be blind copied on the email sent to every recipient. Lava can be used to access recipent data. <span class='tip tip-lava'></span>" AllowLava="true" />
                                 </div>
                             </div>
                         </div>
@@ -949,6 +1118,7 @@
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
                                 <div class="actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
+                                    <asp:LinkButton ID="btnSMSEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default" Text="Save" OnClick="btnSMSEditorSaveDraft_Click" />
                                     <div class="js-sms-sendtest-inputs" style="display:none">
                                         <Rock:RockTextBox ID="tbTestSMSNumber" runat="server" Label="SMS Number" ValidationGroup="vgMobileTextEditorSendTest" Required="true" Help="This will temporarily change your SMS number during the test, but it will be changed back after the test is complete." />
                                         <asp:Button ID="btnSMSSendTest" runat="server" CssClass="btn btn-xs btn-primary" Text="Send" CausesValidation="true" ValidationGroup="vgMobileTextEditorSendTest" OnClick="btnSMSSendTest_Click" />
@@ -983,6 +1153,20 @@
                     </div>
                 </asp:Panel>
 
+                <%-- Push Editor --%>
+                <asp:Panel ID="pnlPushEditor" CssClass="js-navigation-panel" runat="server" Visible="false">
+                    <h1 class="step-title">Push Notification Editor</h1>
+                    <asp:ValidationSummary ID="vsPushEditor" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgPushEditor" CssClass="alert alert-validation" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:PlaceHolder ID="phPushControl" runat="server" />
+                        </div>
+                    </div>
+                    <div class="actions margin-t-md">
+                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="btnPushEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorNext_Click" />
+                    </div>
+                </asp:Panel>
                 <%-- Confirmation --%>
                 <asp:Panel ID="pnlConfirmation" CssClass="js-navigation-panel" runat="server" Visible="false">
                     <h1 class="step-title">Confirmation</h1>
@@ -1018,11 +1202,45 @@
                     </div>
                 </asp:Panel>
 
-                <%-- Result --%>
-                <asp:Panel ID="pnlResult" CssClass="js-navigation-panel" runat="server" Visible="false">
-                    <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
-                    <br />
-                    <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
+                <%-- Panel: Result --%>
+                <asp:Panel ID="pnlResult" runat="server" Visible="false">
+                    <%-- Task Activity --%>
+                    <asp:Panel ID="pnlTaskActivity" runat="server" CssClass="panel js-global-task-progress">
+                        <div class="panel-heading">
+                            <p>Your communication is being created. This may take some time for a large number of recipients...</p>
+                        </div>
+                        <div class="panel-body">
+                            <div>
+                                <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
+                                <span id="_TaskActivityMessage">Working...</span>
+                            </div>
+                            <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">
+                                <div class="progress" style="position: relative">
+                                    <div id="_TaskActivityBarFill" class="progress-bar progress-bar-info progress-bar-striped active" role="progressbar"
+                                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                        <span style="position: absolute; display: block; color: black; width: 100%; text-align: center">
+                                            <span id="_TaskActivityPercentage">0.0% complete</span>
+                                            <span id="_TaskActivityTime" class="mr-1"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="_TaskActivityLog" style="display: none">
+                                <h3>Activity Log</h3>
+                                <div class="alert alert-info scrollableContainer" id="messageContainer" runat="server" />
+                            </div>
+                        </div>
+                    </asp:Panel>
+
+                    <%-- Task Result --%>
+                    <asp:Panel ID="pnlTaskResult" runat="server" CssClass="panel js-global-task-result">
+                        <div class="panel-body">
+                            <Rock:NotificationBox ID="TaskActivityNotificationBox" runat="server" NotificationBoxType="Success" Text="Task complete." />
+                            <br />
+                            <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
+                        </div>
+                    </asp:Panel>
+
                 </asp:Panel>
 
             </div>
@@ -1091,8 +1309,21 @@
                     $('.js-show-additional-fields').text('Hide Additional Fields');
                 }
 
+                $('.js-rsvp-show-advanced-settings').off('click').on('click', function ()
+                {
+                    var isVisible = !$('.js-rsvp-advanced-settings').is(':visible');
+                    $('#<%=hfRSVPShowAdvancedSettings.ClientID %>').val(isVisible);
+                    $('.js-rsvp-show-advanced-settings').text(isVisible ? 'Hide Advanced Settings' : 'Show Advanced Settings');
+                    $('.js-rsvp-advanced-settings').slideToggle();
+                    return false;
+                });
+
+                $('.js-rsvp-advanced-settings').hide();
+                $('.js-rsvp-show-advanced-settings').text('Show Advanced Settings');
+
                 $('.js-email-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').hide();
                     $('#<%=nbEmailTestResult.ClientID%>').hide();
                     $(this).hide();
                     $('#<%=btnEmailPreview.ClientID%>').hide();
@@ -1105,12 +1336,14 @@
                 {
                     $('.js-email-sendtest').show();
                     $('#<%=btnEmailPreview.ClientID%>').show();
+                    $('#<%=btnEmailEditorSaveDraft.ClientID%>').show();
                     $('.js-email-sendtest-inputs').hide();
                     return false;
                 });
 
                 $('.js-sms-sendtest').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').hide();
                     $(this).hide();
 
                     $('.js-sms-sendtest-inputs').slideDown();
@@ -1119,6 +1352,7 @@
 
                 $('.js-sms-sendtest-cancel').off('click').on('click', function ()
                 {
+                    $('#<%=btnSMSEditorSaveDraft.ClientID%>').show();
                     $('.js-sms-sendtest').show();
                     $('.js-sms-sendtest-inputs').hide();
                     return false;
@@ -1176,8 +1410,9 @@
                     $editorHtml.find('.js-emaileditor-addon').remove();
 
                     var emailHtmlContent = $editorHtml[0].outerHTML;
+                    var doctype = '<!DOCTYPE html>' + '\n';
 
-                    $('#<%=hfEmailEditorHtml.ClientID%>').val(emailHtmlContent);
+                    $('#<%=hfEmailEditorHtml.ClientID%>').val(doctype + emailHtmlContent);
                 });
 
                 // make sure scroll position is set to top after navigating (so that stuff doesn't roll out of view if navigating from a tall to a short height )
@@ -1281,15 +1516,13 @@
                     });
                 };
 
-                $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 0);
-
                 $editorIframe.load(function ()
                 {
-                    frames['emaileditor-iframe'].document.head.appendChild(jqueryLoaderScript);
-                    frames['emaileditor-iframe'].document.head.appendChild(cssLink);
-                    frames['emaileditor-iframe'].document.head.appendChild(fontAwesomeLink);
-                    frames['emaileditor-iframe'].document.head.appendChild(dragulaLoaderScript);
-                    frames['emaileditor-iframe'].document.head.appendChild(editorScript);
+                    frames['emaileditor-iframe'].document.head.appendChild(cssLink)
+                        .appendChild(jqueryLoaderScript)
+                        .appendChild(fontAwesomeLink)
+                        .appendChild(dragulaLoaderScript)
+                        .appendChild(editorScript);
 
                     var $this = $(this);
                     var contents = $this.contents();
@@ -1297,13 +1530,13 @@
                     var editorMarkup = $('#editor-controls-markup').contents();
 
                     $(contents).find('body').prepend(editorMarkup);
-                    $('#<%=pnlEmailEditor.ClientID%>').fadeTo(0, 1);
                 });
 
                 if ($editorIframe.length) {
                     $editorIframe[0].src = 'javascript: window.frameElement.getAttribute("srcdoc")';
 
                     // initialize component helpers
+                    Rock.controls.emailEditor.rsvpComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.buttonComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.codeComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
@@ -1311,6 +1544,9 @@
                     Rock.controls.emailEditor.videoComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
+
+                    $editorIframe.show();
+                    $('#emaileditor-designer').delay(300).css('opacity', '1');
                 }
             }
 
@@ -1329,6 +1565,9 @@
 				switch(componentType){
 					case 'text':
 					    Rock.controls.emailEditor.textComponentHelper.setProperties($currentComponent);
+						break;
+					case 'rsvp':
+					    Rock.controls.emailEditor.rsvpComponentHelper.setProperties($currentComponent);
 						break;
 					case 'button':
 					    Rock.controls.emailEditor.buttonComponentHelper.setProperties($currentComponent);
@@ -1505,6 +1744,9 @@
         <!-- Button Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/buttonComponentHelper.js", true)%>' ></script>
 
+        <!-- RSVP Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/rsvpComponentHelper.js", true)%>' ></script>
+
         <!-- Image Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>' ></script>
 
@@ -1516,6 +1758,5 @@
 
         <!-- Code Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/codeComponentHelper.js", true)%>' ></script>
-
     </ContentTemplate>
 </asp:UpdatePanel>

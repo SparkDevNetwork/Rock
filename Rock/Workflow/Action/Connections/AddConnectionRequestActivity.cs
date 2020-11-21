@@ -42,6 +42,8 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowAttribute( "Person Attribute", "An optional Person attribute that contains the person who is adding the activity.", false, "", "", 3, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Connection Request Activity Attribute", "An optional connection request activity attribute to store the request activity that is created.", false, "", "", 4, null,
+        new string[] { "Rock.Field.Types.ConnectionRequestActivityFieldType" } )]
 
     public class AddConnectionRequestActivity : ActionComponent
     {
@@ -60,7 +62,7 @@ namespace Rock.Workflow.Action
 
             // Get the connection request
             ConnectionRequest request = null;
-            Guid connectionRequestGuid = action.GetWorklowAttributeValue(GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid()).AsGuid();
+            Guid connectionRequestGuid = action.GetWorkflowAttributeValue(GetAttributeValue( action, "ConnectionRequestAttribute" ).AsGuid()).AsGuid();
             request = new ConnectionRequestService( rockContext ).Get( connectionRequestGuid );
             if ( request == null )
             {
@@ -70,7 +72,7 @@ namespace Rock.Workflow.Action
 
             // Get the activity type
             ConnectionActivityType activityType = null;
-            Guid activityTypeGuid = action.GetWorklowAttributeValue( GetAttributeValue( action, "ConnectionActivityTypeAttribute" ).AsGuid() ).AsGuid();
+            Guid activityTypeGuid = action.GetWorkflowAttributeValue( GetAttributeValue( action, "ConnectionActivityTypeAttribute" ).AsGuid() ).AsGuid();
             activityType = new ConnectionActivityTypeService( rockContext ).Get( activityTypeGuid );
             if ( activityType == null )
             {
@@ -87,7 +89,7 @@ namespace Rock.Workflow.Action
                 var attribute = AttributeCache.Get( noteGuid.Value, rockContext );
                 if ( attribute != null )
                 {
-                    note  = action.GetWorklowAttributeValue( noteGuid.Value );
+                    note  = action.GetWorkflowAttributeValue( noteGuid.Value );
                 }
             }
             else
@@ -100,7 +102,7 @@ namespace Rock.Workflow.Action
             Guid? personAttributeGuid = GetAttributeValue( action, "PersonAttribute" ).AsGuidOrNull();
             if ( personAttributeGuid.HasValue )
             {
-                Guid? personAliasGuid = action.GetWorklowAttributeValue( personAttributeGuid.Value ).AsGuidOrNull();
+                Guid? personAliasGuid = action.GetWorkflowAttributeValue( personAttributeGuid.Value ).AsGuidOrNull();
                 if ( personAliasGuid.HasValue )
                 {
                     var personAlias = new PersonAliasService( rockContext ).Get( personAliasGuid.Value );
@@ -118,8 +120,20 @@ namespace Rock.Workflow.Action
             activity.ConnectionOpportunityId = request.ConnectionOpportunityId;
             activity.ConnectorPersonAliasId = personAliasId;
             activity.Note = note.ResolveMergeFields( mergeFields );
-            new ConnectionRequestActivityService( rockContext ).Add( activity );
+            var connectionRequestActivityService  =  new ConnectionRequestActivityService( rockContext );
+            connectionRequestActivityService.Add( activity );
             rockContext.SaveChanges();
+
+            // If request activity attribute was specified, requery the request and set the attribute's value
+            Guid? connectionRequestActivityAttributeGuid = GetAttributeValue( action, "ConnectionRequestActivityAttribute" ).AsGuidOrNull();
+            if ( connectionRequestActivityAttributeGuid.HasValue )
+            {
+                activity = connectionRequestActivityService.Get( activity.Id );
+                if ( activity != null )
+                {
+                    SetWorkflowAttributeValue( action, connectionRequestActivityAttributeGuid.Value, activity.Guid.ToString() );
+                }
+            }
 
             return true;
         }

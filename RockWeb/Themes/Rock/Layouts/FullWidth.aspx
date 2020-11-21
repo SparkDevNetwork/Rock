@@ -76,6 +76,15 @@
                     <Rock:Zone Name="Section D" runat="server" />
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:Zone Name="Section E" runat="server" />
+                </div>
+                <div class="col-md-6">
+                    <Rock:Zone Name="Section F" runat="server" />
+                </div>
+            </div>
         </section>
 
         <!-- End Content Area -->

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Web;
 using System.Xml.Linq;
 
 using DocumentFormat.OpenXml.Packaging;
@@ -61,7 +62,39 @@ namespace Rock.MergeTemplates
         /// <value>
         /// The exceptions.
         /// </value>
-        public override List<Exception> Exceptions { get; set; }
+        public override List<Exception> Exceptions
+        {
+            get
+            {
+                if ( HttpContext.Current != null )
+                {
+                    return HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] as List<Exception>;
+                }
+
+                return _nonHttpContextExceptions;
+            }
+
+            set
+            {
+                if ( HttpContext.Current != null )
+                {
+                    HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] = value;
+                }
+                else
+                {
+                    _nonHttpContextExceptions = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Thread safe storage of property when HttpContext.Current is null
+        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
+        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
+        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
+        /// </summary>
+        [ThreadStatic]
+        private static List<Exception> _nonHttpContextExceptions = null;
 
         /// <summary>
         /// Creates the document.
@@ -459,7 +492,7 @@ namespace Rock.MergeTemplates
         /// <summary>
         /// The simplify markup settings all
         /// </summary>
-        private SimplifyMarkupSettings simplifyMarkupSettingsAll = new SimplifyMarkupSettings
+        private readonly SimplifyMarkupSettings simplifyMarkupSettingsAll = new SimplifyMarkupSettings
         {
             NormalizeXml = true,
             RemoveWebHidden = true,

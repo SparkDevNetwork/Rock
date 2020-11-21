@@ -61,6 +61,9 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? PhotoId { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.PhotoId = source.PhotoId;
             this.PublicName = source.PublicName;
             this.Summary = source.Summary;

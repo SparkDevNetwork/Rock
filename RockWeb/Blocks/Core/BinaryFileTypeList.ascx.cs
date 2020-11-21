@@ -33,9 +33,16 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Displays a list of all binary file types." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class BinaryFileTypeList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -85,7 +92,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BinaryFileTypeId", 0 );
         }
 
         /// <summary>
@@ -95,7 +102,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BinaryFileTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -163,7 +170,7 @@ namespace RockWeb.Blocks.Administration
                           BinaryFileCount = x.Key == null ? 0 : x.Count(),
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
                           ft.IsSystem,
-                          ft.AllowCaching,
+                          ft.CacheToServerFileSystem,
                           RequiresViewSecurity = ft.RequiresViewSecurity
                       };
 

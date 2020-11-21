@@ -1,3 +1,8 @@
+
+## Notice
+
+**We cannot guarantee that your pull request will be accepted.**  There are many factors involved.  We take into consideration whether or not the Rock system you run is a standard, main-line build.  If it is not, there is a lower chance we will accept your request (since it may impact a part of the system you don't regularly use).  Features that would be used by less than 80% of Rock organizations, or ones that don't match the goals of Rock, are other important factors.
+
 ## Proposed Changes
 
 <!--
@@ -21,6 +26,7 @@ _Put an `x` in the boxes that apply_
 
 _Put an `x` in the boxes that apply. You can also fill these out after creating the PR. If you're unsure about any of them, don't hesitate to ask. We're here to help! This is simply a reminder of what we are going to look for before merging your code._
 
+- [ ] This is a single-commit PR. (If not, please squash your commit and re-submit it.)
 - [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.	
 - [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
 - [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)

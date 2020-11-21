@@ -12,13 +12,15 @@
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
+        <asp:HiddenField ID="hfCampusId" runat="server" />
+
         <asp:Panel ID="pnlContent" runat="server">
 
             <div id="pnlGroupMembers" runat="server">
 
                 <div class="panel panel-block">
-                
-                    <div class="panel-heading clearfix">
+
+                    <div class="panel-heading">
                         <h1 class="panel-title pull-left">
                             <i class="fa fa-users"></i>
                             <asp:Literal ID="lHeading" runat="server" Text="Group Members" />
@@ -93,6 +95,9 @@
                                     <Rock:RockLiteralField ID="lExportHomeAddress" HeaderText="Home Address" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lExportLatitude" HeaderText="Latitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lExportLongitude" HeaderText="Longitude" Visible="false" ExcelExportBehavior="AlwaysInclude" />
+
+                                    <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                    <Rock:DeleteField OnClick="DeleteOrArchiveGroupMember_Click" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
@@ -109,21 +114,21 @@
 
                     // person-link-popover
                     $('.js-person-popover').popover({
-                        placement: 'right', 
+                        placement: 'right',
                         trigger: 'manual',
                         delay: 500,
                         html: true,
                         content: function() {
                             var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid') + '/false';
 
-                            var result = $.ajax({ 
-                                                type: 'GET', 
-                                                url: dataUrl, 
-                                                dataType: 'json', 
+                            var result = $.ajax({
+                                                type: 'GET',
+                                                url: dataUrl,
+                                                dataType: 'json',
                                                 contentType: 'application/json; charset=utf-8',
                                                 async: false }).responseText;
-            
-                            var resultObject = jQuery.parseJSON(result);
+
+                            var resultObject = JSON.parse(result);
 
                             return resultObject.PickerItemDetailsHtml;
 
@@ -146,11 +151,11 @@
                    // $('.js-person-popover').popover('show'); // uncomment for styling
 
                     // delete/archive prompt
-                    $('table.js-grid-group-members a.grid-delete-button').click(function (e) {
+                    $('table.js-grid-group-members a.grid-delete-button').on('click', function (e) {
                         var $btn = $(this);
                         var $row = $btn.closest('tr');
                         var actionName = 'delete';
-                        
+
                         if ( $row.hasClass('js-has-grouphistory') ) {
                             var actionName = 'archive';
                         }

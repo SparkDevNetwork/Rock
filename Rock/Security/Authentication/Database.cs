@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,13 +34,13 @@ namespace Rock.Security.Authentication
     /// Authenticates a username/password using the Rock database
     /// </summary>
     [Description( "Database Authentication Provider" )]
-    [Export(typeof(AuthenticationComponent))]
-    [ExportMetadata("ComponentName", "Database")]
+    [Export( typeof( AuthenticationComponent ) )]
+    [ExportMetadata( "ComponentName", "Database" )]
     [IntegerField( "BCrypt Cost Factor", "The higher this number, the more secure BCrypt can be. However it also will be slower.", false, 11 )]
     public class Database : AuthenticationComponent
     {
-        private static byte[] _encryptionKey;
-        private static List<byte[]> _oldEncryptionKeys;
+        private readonly static byte[] _encryptionKey;
+        private readonly static List<byte[]> _oldEncryptionKeys;
 
         /// <summary>
         /// Gets the type of the service.
@@ -51,8 +51,8 @@ namespace Rock.Security.Authentication
         public override AuthenticationServiceType ServiceType
         {
             get { return AuthenticationServiceType.Internal; }
-        }        
-        
+        }
+
         /// <summary>
         /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
         /// that site's credentials for authentication.
@@ -97,7 +97,7 @@ namespace Rock.Security.Authentication
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        public override Boolean Authenticate( UserLogin user, string password )
+        public override bool Authenticate( UserLogin user, string password )
         {
             try
             {
@@ -244,7 +244,7 @@ namespace Rock.Security.Authentication
         public static string GenerateUsername( string firstName, string lastName, int tryCount = 0 )
         {
             // create username
-            string username = (firstName.Substring( 0, 1 ) + lastName).ToLower();
+            string username = ( firstName.Substring( 0, 1 ) + lastName ).ToLower();
 
             if ( tryCount != 0 )
             {
@@ -264,12 +264,33 @@ namespace Rock.Security.Authentication
             }
         }
 
+        /// <summary>
+        /// Determines whether the hash matches the password using the same hash.
+        /// </summary>
+        /// <param name="hash">The hash.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>
+        ///   <c>true</c> if the hash and hashed password match; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsBcryptMatch( string hash, string password )
+        {
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify( password, hash );
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private bool AuthenticateBcrypt( UserLogin user, string password )
         {
-            try {
+            try
+            {
                 var hash = user.Password;
                 var currentCost = hash.Substring( 4, 2 ).AsInteger();
-                var matches = BCrypt.Net.BCrypt.Verify( password, hash );
+                var matches = IsBcryptMatch( hash, password );
 
                 if ( matches && ( currentCost != ( GetAttributeValue( "BCryptCostFactor" ).AsIntegerOrNull() ?? 11 ) ) )
                 {
@@ -312,6 +333,16 @@ namespace Rock.Security.Authentication
             return false;
         }
 
+        /// <summary>
+        /// Encrypts the string.
+        /// </summary>
+        /// <param name="valueToEncrypt">The value to encrypt.</param>
+        /// <returns></returns>
+        public string EncryptString(string valueToEncrypt )
+        {
+            return EncodeBcrypt( valueToEncrypt );
+        }
+
         private string EncodeBcrypt( string password )
         {
             var workFactor = ( GetAttributeValue( "BCryptCostFactor" ).AsIntegerOrNull() ?? 11 );
@@ -332,7 +363,7 @@ namespace Rock.Security.Authentication
 
         private UserLogin SetNewPassword( UserLogin user, string rawPassword )
         {
-            string hash =  EncodeBcrypt( rawPassword );
+            string hash = EncodeBcrypt( rawPassword );
             if ( hash == null )
             {
                 throw new NotImplementedException( "Could not generate hash from password." );
@@ -347,7 +378,5 @@ namespace Rock.Security.Authentication
                 return contextUser;
             }
         }
-
-
     }
 }

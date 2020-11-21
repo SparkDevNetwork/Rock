@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -232,42 +233,12 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
-        /// The GroupPicker
-        /// </summary>
-        private GroupPicker gp = null;
-
-        /// <summary>
-        /// The GroupTypeRole CheckBoxList
-        /// </summary>
-        private RockCheckBoxList cblRole = null;
-
-        /// <summary>
-        /// The "Include Child Groups" checkbox
-        /// </summary>
-        private RockCheckBox cbChildGroups = null;
-
-        /// <summary>
-        /// The "Include Selected Groups" checkbox
-        /// </summary>
-        private RockCheckBox cbIncludeSelectedGroup = null;
-
-        /// <summary>
-        /// The "Include Decendants Groups" checkbox
-        /// </summary>
-        private RockCheckBox cbChildGroupsPlusDescendants = null;
-
-        /// <summary>
-        /// The "Include Inactive" checkbox
-        /// </summary>
-        private RockCheckBox cbIncludeInactiveGroups = null;
-
-        /// <summary>
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            gp = new GroupPicker();
+            var gp = new GroupPicker();
             gp.ID = filterControl.ID + "_gp";
             gp.Label = "Group(s)";
             gp.SelectItem += gp_SelectItem;
@@ -275,7 +246,7 @@ namespace Rock.Reporting.DataFilter.Person
             gp.AllowMultiSelect = true;
             filterControl.Controls.Add( gp );
 
-            cbChildGroups = new RockCheckBox();
+            var cbChildGroups = new RockCheckBox();
             cbChildGroups.ID = filterControl.ID + "_cbChildsGroups";
             cbChildGroups.Text = "Include Child Group(s)";
             cbChildGroups.CssClass = "js-include-child-groups";
@@ -283,7 +254,7 @@ namespace Rock.Reporting.DataFilter.Person
             cbChildGroups.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbChildGroups );
 
-            cbIncludeSelectedGroup = new RockCheckBox();
+            var cbIncludeSelectedGroup = new RockCheckBox();
             cbIncludeSelectedGroup.ID = filterControl.ID + "_cbIncludeSelectedGroup";
             cbIncludeSelectedGroup.Text = "Include Selected Group(s)";
             cbIncludeSelectedGroup.CssClass = "js-include-selected-groups";
@@ -291,7 +262,7 @@ namespace Rock.Reporting.DataFilter.Person
             cbIncludeSelectedGroup.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbIncludeSelectedGroup );
 
-            cbChildGroupsPlusDescendants = new RockCheckBox();
+            var cbChildGroupsPlusDescendants = new RockCheckBox();
             cbChildGroupsPlusDescendants.ID = filterControl.ID + "_cbChildGroupsPlusDescendants";
             cbChildGroupsPlusDescendants.Text = "Include All Descendants(s)";
             cbChildGroupsPlusDescendants.CssClass = "js-include-child-groups-descendants";
@@ -299,7 +270,7 @@ namespace Rock.Reporting.DataFilter.Person
             cbChildGroupsPlusDescendants.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbChildGroupsPlusDescendants );
 
-            cbIncludeInactiveGroups = new RockCheckBox();
+            var cbIncludeInactiveGroups = new RockCheckBox();
             cbIncludeInactiveGroups.ID = filterControl.ID + "_cbIncludeInactiveGroups";
             cbIncludeInactiveGroups.Text = "Include Inactive Groups";
             cbIncludeInactiveGroups.CssClass = "js-include-inactive-groups";
@@ -307,7 +278,7 @@ namespace Rock.Reporting.DataFilter.Person
             cbIncludeInactiveGroups.CheckedChanged += gp_SelectItem;
             filterControl.Controls.Add( cbIncludeInactiveGroups );
 
-            cblRole = new RockCheckBoxList();
+            var cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Member Role(s) (optional)";
             cblRole.ID = filterControl.ID + "_cblRole";
             cblRole.CssClass = "js-roles";
@@ -360,34 +331,39 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gp_SelectItem( object sender, EventArgs e )
         {
+            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+
+            GroupPicker groupPicker = filterField.ControlsOfTypeRecursive<GroupPicker>().FirstOrDefault( a => a.HasCssClass( "js-group-picker" ) );
+            RockCheckBox cbChildGroups = filterField.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.HasCssClass( "js-include-child-groups" ) );
+            RockCheckBox cbChildGroupsPlusDescendants = filterField.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.HasCssClass( "js-include-child-groups-descendants" ) );
+            RockCheckBox cbIncludeInactiveGroups = filterField.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.HasCssClass( "js-include-inactive-groups" ) );
+            RockCheckBox cbIncludeSelectedGroup = filterField.ControlsOfTypeRecursive<RockCheckBox>().FirstOrDefault( a => a.HasCssClass( "js-include-selected-groups" ) );
+            RockCheckBoxList cblRoles = filterField.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( a => a.HasCssClass( "js-roles" ) );
+
             var rockContext = new RockContext();
 
-            var groupIdList = gp.SelectedValues.AsIntegerList();
+            var groupIdList = groupPicker.SelectedValues.AsIntegerList();
             var groupService = new GroupService( rockContext );
 
-            var qryGroups = groupService.GetByIds( groupIdList );
+            var selectedGroups = groupService.GetByIds( groupIdList ).Select( s => new { s.Id, s.GroupTypeId } ).ToList();
 
-            if ( qryGroups.Any() )
+            if ( selectedGroups.Any() )
             {
                 var groupTypeRoleService = new GroupTypeRoleService( rockContext );
                 var qryGroupTypeRoles = groupTypeRoleService.Queryable();
-                List<int> selectedGroupTypeIds = qryGroups.Select( a => a.GroupTypeId ).Distinct().ToList();
+                List<int> selectedGroupTypeIds = selectedGroups.Select( a => a.GroupTypeId ).Distinct().ToList();
 
                 if ( cbChildGroups.Checked )
                 {
                     List<int> childGroupTypeIds = new List<int>();
-                    foreach ( var groupId in qryGroups.Select( a => a.Id ).ToList() )
+                    foreach ( var groupId in selectedGroups.Select( a => a.Id ).ToList() )
                     {
                         if ( cbChildGroupsPlusDescendants.Checked )
                         {
                             // get all children and descendants of the selected group(s)
-                            var descendants = groupService.GetAllDescendents( groupId );
-                            if ( !cbIncludeInactiveGroups.Checked )
-                            {
-                                descendants = descendants.Where( a => a.IsActive == true );
-                            }
+                            var descendantGroupTypes = groupService.GetAllDescendentsGroupTypes( groupId, cbIncludeInactiveGroups.Checked );
 
-                            childGroupTypeIds.AddRange( descendants.Select( a => a.GroupTypeId ).Distinct().ToList() );
+                            childGroupTypeIds.AddRange( descendantGroupTypes.Select( a => a.Id ).ToList() );
                         }
                         else
                         {
@@ -418,18 +394,23 @@ namespace Rock.Reporting.DataFilter.Person
                     qryGroupTypeRoles = qryGroupTypeRoles.Where( a => a.GroupTypeId.HasValue && selectedGroupTypeIds.Contains( a.GroupTypeId.Value ) );
                 }
 
-                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-                cblRole.Items.Clear();
+                var list = qryGroupTypeRoles.OrderBy( a => a.GroupType.Order ).ThenBy( a => a.GroupType.Name ).ThenBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new
+                {
+                    a.Name,
+                    GroupTypeName = a.GroupType.Name,
+                    a.Guid
+                } ).ToList();
+                cblRoles.Items.Clear();
                 foreach ( var item in list )
                 {
-                    cblRole.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupType.Name ), item.Guid.ToString() ) );
+                    cblRoles.Items.Add( new ListItem( string.Format( "{0} ({1})", item.Name, item.GroupTypeName ), item.Guid.ToString() ) );
                 }
 
-                cblRole.Visible = list.Count > 0;
+                cblRoles.Visible = list.Count > 0;
             }
             else
             {
-                cblRole.Visible = false;
+                cblRoles.Visible = false;
             }
         }
 
@@ -511,7 +492,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
-            RockCheckBox cbInactiveGroups = controls[6] as RockCheckBox;
+            RockCheckBox cbIncludeInactiveGroups = controls[6] as RockCheckBox;
             SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
             SlidingDateRangePicker firstAttendanceDateRangePicker = controls[9] as SlidingDateRangePicker;
             SlidingDateRangePicker lastAttendanceDateRangePicker = controls[10] as SlidingDateRangePicker;
@@ -554,7 +535,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockCheckBox cbChildGroupsPlusDescendants = controls[3] as RockCheckBox;
             RockCheckBoxList cblRoles = controls[4] as RockCheckBoxList;
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
-            RockCheckBox cbIncludeInactive = controls[6] as RockCheckBox;
+            RockCheckBox cbIncludeInactiveGroups = controls[6] as RockCheckBox;
             SlidingDateRangePicker addedOnDateRangePicker = controls[7] as SlidingDateRangePicker;
             SlidingDateRangePicker firstAttendanceDateRangePicker = controls[9] as SlidingDateRangePicker;
             SlidingDateRangePicker lastAttendanceDateRangePicker = controls[10] as SlidingDateRangePicker;
@@ -595,7 +576,7 @@ namespace Rock.Reporting.DataFilter.Person
                     cbIncludeInactiveGroups.Checked = false;
                 }
 
-                gp_SelectItem( this, new EventArgs() );
+                gp_SelectItem( groupPicker, new EventArgs() );
 
                 string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -686,7 +667,7 @@ namespace Rock.Reporting.DataFilter.Person
                     groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable();
+                var groupMemberServiceQry = groupMemberService.Queryable( true );
 
                 List<int> childGroupIds = new List<int>();
 
@@ -697,13 +678,9 @@ namespace Rock.Reporting.DataFilter.Person
                         if ( includeChildGroupsPlusDescendants )
                         {
                             // get all children and descendants of the selected group(s)
-                            var descendants = groupService.GetAllDescendents( groupId );
-                            if ( !includeInactiveGroups )
-                            {
-                                descendants = descendants.Where( a => a.IsActive == true );
-                            }
+                            var descendantGroupIds = groupService.GetAllDescendentGroupIds( groupId, includeInactiveGroups );
 
-                            childGroupIds.AddRange( descendants.Select( a => a.Id ).Distinct().ToList() );
+                            childGroupIds.AddRange( descendantGroupIds );
                         }
                         else
                         {
@@ -784,9 +761,9 @@ namespace Rock.Reporting.DataFilter.Person
                     }
 
                     var groupAttendanceQuery = new AttendanceService( rockContext ).Queryable()
-                        .Where( a => 
-                            a.DidAttend == true && 
-                            a.Occurrence.GroupId.HasValue && 
+                        .Where( a =>
+                            a.DidAttend == true &&
+                            a.Occurrence.GroupId.HasValue &&
                             attendanceGroupIds.Contains( a.Occurrence.GroupId.Value ) );
 
                     string firstAttendanceSlidingDelimitedValues = selectionValues[8].Replace( ',', '|' );
@@ -849,13 +826,13 @@ namespace Rock.Reporting.DataFilter.Person
                     if ( firstAttendanceDateQry != null && lastAttendanceDateQry != null )
                     {
                         qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
-                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) 
+                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id )
                                 && firstAttendanceDateQry.Any( aa => aa.PersonId == p.Id ) && lastAttendanceDateQry.Any( bb => bb.PersonId == p.Id ) );
                     }
                     else if ( firstAttendanceDateQry != null )
                     {
                         qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
-                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) 
+                            .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id )
                                 && firstAttendanceDateQry.Any( aa => aa.PersonId == p.Id ) );
                     }
                     else if ( lastAttendanceDateQry != null )

@@ -54,6 +54,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AssessmentRequestStatus
+    {
+        Pending = 0x0,
+        Complete = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -61,6 +69,15 @@ namespace Rock.Client.Enums
         Campus = 0x2,
         Schedule = 0x3,
         Location = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AttendanceRecordRequiredForCheckIn
+    {
+        ScheduleNotRequired = 0x0,
+        PreSelect = 0x1,
+        ScheduleRequired = 0x2,
     }
 
     /// <summary>
@@ -110,6 +127,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CameraBarcodeConfiguration
+    {
+        Off = 0x0,
+        Available = 0x1,
+        AlwaysOn = 0x2,
+        Passive = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,
@@ -151,9 +178,6 @@ namespace Rock.Client.Enums
         Email = 0x1,
         SMS = 0x2,
         PushNotification = 0x3,
-
-        [Obsolete( "Not Supported", false )]
-        Other = 0x4,
     }
 
     /// <summary>
@@ -175,6 +199,37 @@ namespace Rock.Client.Enums
         EndsWith = 0x800,
         Between = 0x1000,
         RegularExpression = 0x2000,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConnectionRequestViewModelSortProperty
+    {
+        Requestor = 0x0,
+        RequestorDesc = 0x1,
+        Connector = 0x2,
+        ConnectorDesc = 0x3,
+        DateAdded = 0x4,
+        DateAddedDesc = 0x5,
+        LastActivity = 0x6,
+        LastActivityDesc = 0x7,
+        Order = 0x8,
+        Campus = 0x9,
+        CampusDesc = 0xa,
+        Group = 0xb,
+        GroupDesc = 0xc,
+        Status = 0xd,
+        StatusDesc = 0xe,
+        State = 0xf,
+        StateDesc = 0x10,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConnectionTypeViewMode
+    {
+        List = 0x0,
+        Board = 0x1,
     }
 
     /// <summary>
@@ -307,6 +362,17 @@ namespace Rock.Client.Enums
         MemberRoleChanged = 0x3,
         MemberAttendedGroup = 0x4,
         MemberPlacedElsewhere = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum GroupSchedulerResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
     }
 
     /// <summary>
@@ -449,6 +515,28 @@ namespace Rock.Client.Enums
         Info = 0x1,
         Warning = 0x2,
         Danger = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum OptionType
+    {
+        Agreement = 0x0,
+        Frequency = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersistedDatasetDataFormat
+    {
+        JSON = 0x0,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PersistedDatasetScriptType
+    {
+        Lava = 0x0,
     }
 
     /// <summary>
@@ -606,6 +694,43 @@ namespace Rock.Client.Enums
         No = 0x0,
         Yes = 0x1,
         Maybe = 0x2,
+        Unknown = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduledAttendanceItemMatchesPreference
+    {
+        MatchesPreference = 0x0,
+        NotMatchesPreference = 0x1,
+        NoPreference = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduledAttendanceItemStatus
+    {
+        Pending = 0x0,
+        Confirmed = 0x1,
+        Declined = 0x2,
+        Unscheduled = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceGroupMemberFilterType
+    {
+        ShowMatchingPreference = 0x0,
+        ShowAllGroupMembers = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SchedulerResourceListSourceType
+    {
+        Group = 0x0,
+        AlternateGroup = 0x1,
+        DataView = 0x2,
     }
 
     /// <summary>
@@ -625,6 +750,15 @@ namespace Rock.Client.Enums
     {
         All = 0x0,
         Any = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SeverityLevel
+    {
+        Info = 0x0,
+        Warning = 0x1,
+        Critical = 0x2,
     }
 
     /// <summary>
@@ -666,6 +800,28 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum StreakOccurrenceFrequency
+    {
+        Daily = 0x0,
+        Weekly = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum StreakStructureType
+    {
+        AnyAttendance = 0x0,
+        Group = 0x1,
+        GroupType = 0x2,
+        GroupTypePurpose = 0x3,
+        CheckInConfig = 0x4,
+        InteractionChannel = 0x5,
+        InteractionComponent = 0x6,
+        InteractionMedium = 0x7,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum TagType
     {
         Inline = 0x1,
@@ -692,12 +848,38 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ViewMode
+    {
+        Cards = 0x0,
+        Grid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowActionFormPersonEntryOption
+    {
+        Hidden = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum WorkflowLoggingLevel
     {
         None = 0x0,
         Workflow = 0x1,
         Activity = 0x2,
         Action = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowTriggerCondition
+    {
+        StatusChanged = 0x0,
+        Manual = 0x1,
+        IsComplete = 0x2,
     }
 
     /// <summary>

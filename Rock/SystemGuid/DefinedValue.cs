@@ -21,6 +21,133 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Block Template
+
+        /// <summary>
+        /// The block template for the event template on the mobile calendar event list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
+
+        /// <summary>
+        /// The block template for the event template on the mobile calendar item view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW = "128F7350-97FD-4ECA-9C79-D02DE0C434EB";
+
+        /// <summary>
+        /// The block template for the mobile communication view
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_COMMUNICATION_VIEW = "0D588D84-111C-4350-98DE-460C194F5DE5";
+
+        /// <summary>
+        /// The block template mobile event item occurrence list by audience
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE = "26944B71-7B69-4943-8EC2-3506F728D943";
+
+        /// <summary>
+        /// The block template for the mobile group member list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
+
+        /// <summary>
+        /// The block template for the mobile group member view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW = "09053C7C-9374-4489-8A7B-71F02E3E7D89";
+
+        /// <summary>
+        /// The block template for the mobile group view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
+        /// <summary>
+        /// The block template for the mobile prayer session block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
+
+        #endregion Block Template
+
+        #region Button Styles
+
+        /// <summary>
+        /// Button HTML - Primary 
+        /// </summary>
+        public const string BUTTON_HTML_PRIMARY = "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03";
+
+        /// <summary>
+        /// Button HTML - Secondary 
+        /// </summary>
+        public const string BUTTON_HTML_SECONDARY = "8CF6E927-4FA5-4241-991C-391038B79631";
+
+        /// <summary>
+        /// Button HTML - Deny 
+        /// </summary>
+        public const string BUTTON_HTML_DENY = "D6B809A9-C1CC-4EBB-816E-33D8C1E53EA4";
+
+        /// <summary>
+        /// Button HTML - Approve 
+        /// </summary>
+        public const string BUTTON_HTML_APPROVE = "C88FEF94-95B9-444A-BC93-58E983F3C047";
+
+        /// <summary>
+        /// Button HTML - Success 
+        /// </summary>
+        public const string BUTTON_HTML_SUCCESS = "53CA2CB9-8BFA-450C-A3AA-FD3F3FD3BC8A";
+
+        /// <summary>
+        /// Button HTML - Info 
+        /// </summary>
+        public const string BUTTON_HTML_INFO = "3C026B37-29D4-47CB-BB6E-DA43AFE779FE";
+
+        /// <summary>
+        /// Button HTML - Warning 
+        /// </summary>
+        public const string BUTTON_HTML_WARNING = "F03C9591-C497-4E27-A714-6A482E745141";
+
+        /// <summary>
+        /// Button HTML - Danger 
+        /// </summary>
+        public const string BUTTON_HTML_DANGER = "9B329020-E074-4326-8831-9DD534F491DF";
+
+        /// <summary>
+        /// Button HTML - Default 
+        /// </summary>
+        public const string BUTTON_HTML_DEFAULT = "638BEEE0-2F8F-4706-B9A4-5BAB70386697";
+
+        /// <summary>
+        /// Button HTML - Cancel 
+        /// </summary>
+        public const string BUTTON_HTML_CANCEL = "5683E775-B9F3-408C-80AC-94DE0E51CF3A";
+
+        #endregion Button Styles
+
+        #region Campus
+
+        /// <summary>
+        /// The campus status pending
+        /// </summary>
+        public const string CAMPUS_STATUS_PENDING = "008209F5-144E-4282-92C3-944A4AC78700";
+
+        /// <summary>
+        /// The campus status open
+        /// </summary>
+        public const string CAMPUS_STATUS_OPEN = "10696FD8-D0C7-486F-B736-5FB3F5D69F1A";
+
+        /// <summary>
+        /// The campus status closed
+        /// </summary>
+        public const string CAMPUS_STATUS_CLOSED = "99D2C9CB-B6DC-49C1-B626-B76BD398B63A";
+
+        /// <summary>
+        /// The campus type physical
+        /// </summary>
+        public const string CAMPUS_TYPE_PHYSICAL = "5A61507B-79CB-4DA2-AF43-6F82260203B3";
+
+        /// <summary>
+        /// The campus type on-line
+        /// </summary>
+        public const string CAMPUS_TYPE_ONLINE = "10101010-2DB4-4C95-B07D-C400E412289B";
+
+        #endregion Campus
+
         #region Communication Medium Type
 
         /// <summary>
@@ -48,7 +175,7 @@ namespace Rock.SystemGuid
         public const string CHECKIN_SEARCH_TYPE_NAME_AND_PHONE = "93773B0A-6E7F-1AA0-4F1D-9A4D6ACE930F";
 
         /// <summary>
-        /// Scanned Id Search Type. This type is always supported and if a barcode or bio id is scanned, the attendance will be updated to reflect this type os search was used.
+        /// Scanned Id Search Type. This type is always supported and if a BarCode or Bio id is scanned, the attendance will be updated to reflect this type OS search was used.
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_SCANNED_ID = "7668CE15-E372-47EE-8FF8-6FEE09F7C858";
 
@@ -134,6 +261,64 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_ANDROID_PAY = "6151F6E0-3223-46BA-A59E-E091BE4AF75C";
 
+        #endregion Financial Currency Type
+
+        #region Credit Card Types
+
+        /// <summary>
+        /// The credit card type AMEX
+        /// </summary>
+        public const string CREDITCARD_TYPE_AMEX = "696A54E3-352C-49FB-88A1-BCDBD81AA9EC";
+
+        /// <summary>
+        /// The credit card type diners club
+        /// </summary>
+        public const string CREDITCARD_TYPE_DINERS_CLUB = "1A9A4DB9-AFF3-4773-875C-C10346BD1CA7";
+
+        /// <summary>
+        /// The credit card type discover
+        /// </summary>
+        public const string CREDITCARD_TYPE_DISCOVER = "4B746601-E9EB-4660-BA13-C0B66B24E248";
+
+        /// <summary>
+        /// The credit card type JCB
+        /// </summary>
+        public const string CREDITCARD_TYPE_JCB = "	4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
+
+        /// <summary>
+        /// The credit card type MasterCard
+        /// </summary>
+        public const string CREDITCARD_TYPE_MASTERCARD = "6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621";
+
+        /// <summary>
+        /// The credit card type visa
+        /// </summary>
+        public const string CREDITCARD_TYPE_VISA = "FC66B5F8-634F-4800-A60D-436964D27B64";
+
+        #endregion
+
+        #region Financial Non-Cash Asset Type
+
+        /// <summary>
+        /// Non-Cash Asset Type: Property.
+        /// </summary>
+        public const string NONCASH_ASSET_PROPERTY = "FF4E8D66-CFF2-4A96-AA30-19721884C373";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Stocks and Bonds.
+        /// </summary>
+        public const string NONCASH_ASSET_STOCKSANDBONDS = "B29D7D89-357F-47F9-BE7B-52AFF3892007";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Vehicles.
+        /// </summary>
+        public const string NONCASH_ASSET_VEHICLES = "C1DCBE74-88FE-4876-8943-5783499CBBE0";
+
+        /// <summary>
+        /// Non-Cash Asset Type: Other.
+        /// </summary>
+        public const string NONCASH_ASSET_OTHER = "3086AF9A-108B-47C8-B299-CECF53B9D1DF";
+
         #endregion
 
         #region Financial Transaction Type
@@ -147,6 +332,12 @@ namespace Rock.SystemGuid
         /// An Event Registration Transaction
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
+
+        /// <summary>
+        /// A Transaction Type of Receipt
+        /// NOTE: This is not a core transaction type. It'll get created if needed when importing transactions from Slingshot
+        /// </summary>
+        public const string TRANSACTION_TYPE_RECEIPT = "F57AAF36-F208-4A85-A078-E2B1F91798EB";
 
         #endregion
 
@@ -165,34 +356,39 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The financial source of Kiosk
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_KIOSK	= "260EEA80-821A-4F79-973F-49DF79C955F7";
-        
+        public const string FINANCIAL_SOURCE_TYPE_KIOSK = "260EEA80-821A-4F79-973F-49DF79C955F7";
+
         /// <summary>
         /// The financial source of Mobile Application
         /// </summary>
-        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION	= "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
-        
+        public const string FINANCIAL_SOURCE_TYPE_MOBILE_APPLICATION = "8ADCEC72-63FC-4F08-A4CC-72BCE470172C";
+
         /// <summary>
         /// The financial source of On-site Collection
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE_ONSITE_COLLECTION = "BE7ECF50-52BC-4774-808D-574BA842DB98";
+
+        /// <summary>
+        /// The financial source of Text-to-Give (Give action of the SMS actions)
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_SMS_GIVE = "8BA95E24-D291-499E-A535-4DCAC365689B";
 
         #endregion
 
         #region Group Location Type
 
         /// <summary>
-        /// Home location type
+        /// Address Type - Home 
         /// </summary>
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
         /// <summary>
-        /// Work Record Type
+        /// Address Type - Work
         /// </summary>
         public const string GROUP_LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
         /// <summary>
-        /// Previous Location Type
+        /// Address Type - Previous
         /// </summary>
         public const string GROUP_LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
 
@@ -201,12 +397,18 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUP_LOCATION_TYPE_MEETING_LOCATION = "96D540F5-071D-4BBD-9906-28F0A64D39C4";
 
+        /// <summary>
+        /// Some other type of Group Location
+        /// NOTE: This is not a core group location type. It'll get created if needed when importing locations from Slingshot.
+        /// </summary>
+        public const string GROUP_LOCATION_TYPE_OTHER = "D49965C7-5254-4D2D-BC77-F390375F0C44";
+
         #endregion
 
         #region Group Type Purpose
 
         /// <summary>
-        /// Group Type Purpose of Check-in Template
+        /// Group Type Purpose of Check-in Template (Weekly Service Check-in, etc)
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE = "4A406CB0-495B-4795-B788-52BDFDE00B01";
 
@@ -214,6 +416,35 @@ namespace Rock.SystemGuid
         /// Group Type Purpose of Check-in Filter
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
+
+        #endregion
+
+        #region Group RSVP
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Illness.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_ILLNESS = "15B4124E-9717-4161-9974-86C4925053E3";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Vacation.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_VACATION = "759E0745-727B-493D-A44C-3A042A11B761";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Schedule Conflict.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_SCHEDULE_CONFLICT = "D5989FA4-2CE0-4427-83E4-E43F30045B43";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Childcare Not Available.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_CHILDCARE = "0E728945-3D74-4E03-9799-0CF5EE8D6B3D";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Other.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_OTHER = "1634AC71-0054-4F3C-A76D-A75A48E6BA56";
 
         #endregion
 
@@ -254,9 +485,14 @@ namespace Rock.SystemGuid
         public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
 
         /// <summary>
-        /// Twice a month
+        /// Twice a month on the 1st and 15th
         /// </summary>
         public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
+
+        /// <summary>
+        /// A Frequency of First and Fifteenth
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH = "C752403C-0F88-45CD-B574-069355C01D77";
 
         /// <summary>
         /// Monthly
@@ -283,7 +519,7 @@ namespace Rock.SystemGuid
         #region Metrics
 
         /// <summary>
-        /// Metric values come from a dataview
+        /// Metric values come from a DataView
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_DATAVIEW = "2EC60BCF-EF63-4CCC-A970-F152292765D0";
 
@@ -293,7 +529,7 @@ namespace Rock.SystemGuid
         public const string METRIC_SOURCE_VALUE_TYPE_MANUAL = "1D6511D6-B15D-4DED-B3C4-459CD2A7EC0E";
 
         /// <summary>
-        /// Metric values are populated from custom sql
+        /// Metric values are populated from custom SQL
         /// </summary>
         public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
 
@@ -345,17 +581,17 @@ namespace Rock.SystemGuid
         #region Person Record Status
 
         /// <summary>
-        /// Active Record Status
+        /// Record Status - Active
         /// </summary>
         public const string PERSON_RECORD_STATUS_ACTIVE = "618F906C-C33D-4FA3-8AEF-E58CB7B63F1E";
 
         /// <summary>
-        /// Inactive Record Status
+        /// Record Status - Inactive 
         /// </summary>
         public const string PERSON_RECORD_STATUS_INACTIVE = "1DAD99D5-41A9-4865-8366-F269902B80A4";
 
         /// <summary>
-        /// Pending Record Status
+        /// Record Status - Pending
         /// </summary>
         public const string PERSON_RECORD_STATUS_PENDING = "283999EC-7346-42E3-B807-BCE9B2BABB49";
 
@@ -364,17 +600,17 @@ namespace Rock.SystemGuid
         #region Person Record Status Reason
 
         /// <summary>
-        /// Inactive record status reason of Deceased 
+        /// Record Status set to Inactive because person is Deceased 
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
         /// <summary>
-        /// Inactive record status reason of No Activity 
+        /// Record Status set to Inactive because person has No Activity
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_NO_ACTIVITY = "64014FE6-943D-4ACF-8014-FED9F9169AE8";
 
         /// <summary>
-        /// Inactive record status reason of Moved
+        /// Record Status set to Inactive because person moved
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_MOVED = "3684CF84-F30F-4CE0-9EB9-D6AFFEA9B99B";
 
@@ -383,47 +619,51 @@ namespace Rock.SystemGuid
         #region Person Record Type
 
         /// <summary>
-        /// Person Record Type
+        /// Person Record Type - Person
         /// </summary>
         public const string PERSON_RECORD_TYPE_PERSON = "36CF10D6-C695-413D-8E7C-4546EFEF385E";
 
         /// <summary>
-        /// Business Record Type
+        /// Person Record Type - Business
         /// </summary>
         public const string PERSON_RECORD_TYPE_BUSINESS = "BF64ADD3-E70A-44CE-9C4B-E76BBED37550";
 
         /// <summary>
-        /// Rest User Record Type
+        /// Person Record Type - REST User
         /// </summary>
         public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
+
+        /// <summary>
+        /// Person Record Type - Nameless Person (usually due to SMS from unknown person)
+        /// </summary>
+        public const string PERSON_RECORD_TYPE_NAMELESS = "721300ED-1267-4DA0-B4F2-6C6B5B17B1C5";
 
         #endregion
 
         #region Person Connection Status
 
         /// <summary>
-        /// Member Person Connection Status
+        /// Person Connection Status - Member
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_MEMBER = "41540783-D9EF-4C70-8F1D-C9E83D91ED5F";
 
         /// <summary>
-        /// Attendee Person Connection Status
+        /// Person Connection Status - Attendee
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_ATTENDEE = "39F491C5-D6AC-4A9B-8AC0-C431CB17D588";
 
         /// <summary>
-        /// Visitor Person Connection Status
-        /// TODO: some places have B91BA046-BC1E-400C-B85D-638C1F4E0CE2
+        /// Person Connection Status - Visitor
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
 
         /// <summary>
-        /// Participant Connection Status
+        /// Person Connection Status - Participant
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
 
         /// <summary>
-        /// Web Prospect Connection Status
+        /// Person Connection Status - Web Prospect
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
@@ -432,7 +672,7 @@ namespace Rock.SystemGuid
         #region Person Review Reason
 
         /// <summary>
-        /// Member Person Connection Status
+        /// Person needs review due to being Self-Inactivated
         /// </summary>
         public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
 
@@ -441,12 +681,12 @@ namespace Rock.SystemGuid
         #region Personal Device Type
 
         /// <summary>
-        /// Mobile Personal device type
+        /// Personal Device Type - Mobile
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_MOBILE = "5A8F264F-3BE6-4F15-912A-3CE93A98E8F6";
 
         /// <summary>
-        /// Computer personal device type
+        /// Personal Device Type - Computer
         /// </summary>
         public const string PERSONAL_DEVICE_TYPE_COMPUTER = "828ADECE-EFE7-49DF-BA8C-B3F132509A95";
 
@@ -471,6 +711,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Structure Content Editor
+
+        /// <summary>
+        /// Default Structure Content Editor
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
+
+        #endregion
+
         #region Map Styles
 
         /// <summary>
@@ -491,7 +740,7 @@ namespace Rock.SystemGuid
         /// Flot Chart Style
         /// </summary>
         public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
-        
+
         /// <summary>
         /// Rock Chart Style
         /// </summary>
@@ -506,9 +755,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFAULT_RSS_CHANNEL = "D6149581-9EFC-40D8-BD38-E92C0717BEDA";
 
-
         /// <summary>
-        /// The default ical description
+        /// The default iCal description
         /// </summary>
         public const string DEFAULT_ICAL_DESCRIPTION = "DCBA4862-73E9-49B5-8AD5-08E17BE68025";
 
@@ -572,7 +820,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_SEARCH_KEYS_EMAIL = "D6CFD200-B33B-4D01-B49F-24325E47D8B8";
 
-
         /// <summary>
         /// Person Search Type: Alternate Id
         /// </summary>
@@ -586,7 +833,6 @@ namespace Rock.SystemGuid
         /// Spiritual Gifts: Administration
         /// </summary>
         public const string SPIRITUAL_GIFTS_ADMINISTRATION = "A276421D-F662-4723-99DA-6FDF3E9CFF7C";
-
 
         /// <summary>
         /// Spiritual Gifts: Apostleship
@@ -667,6 +913,271 @@ namespace Rock.SystemGuid
         /// Spiritual Gifts: Wisdom
         /// </summary>
         public const string SPIRITUAL_GIFTS_WISDOM = "5F1F5A92-D981-4027-A4BC-C3642E784D0B";
+
+        #endregion
+
+        #region Conflict Profile
+
+        /// <summary>
+        /// Conflict Profile: Avoiding 
+        /// </summary>
+        public const string CONFLICT_PROFILE_AVOIDING = "663B0F4A-DE1F-46BE-8BDD-D7C98863DDC4";
+
+        /// <summary>
+        /// Conflict Profile: Compromising 
+        /// </summary>
+        public const string CONFLICT_PROFILE_COMPROMISING = "CF78D6B1-38AA-4FF7-9A4B-E900438FA85A";
+
+        /// <summary>
+        /// Conflict Profile: Resolving 
+        /// </summary>
+        public const string CONFLICT_PROFILE_RESOLVING = "DF7B1EB2-7E7E-4F91-BD26-C6DFD88E38DF";
+
+        /// <summary>
+        /// Conflict Profile: Winning 
+        /// </summary>
+        public const string CONFLICT_PROFILE_WINNING = "56300095-86AD-43FE-98D2-50829E9223C2";
+
+        /// <summary>
+        /// Conflict Profile: Yielding 
+        /// </summary>
+        public const string CONFLICT_PROFILE_YEILDING = "4AB06A6F-F5B1-4385-9365-199EA7969E50";
+
+        #endregion
+
+        #region Motivator
+
+        /// <summary>
+        /// Motivator: Believing 
+        /// </summary>
+        public const string MOTIVATOR_BELIEVING = "99F598E0-E0AC-4B4B-BEAF-589D41764EE1";
+
+        /// <summary>
+        /// Motivator: Caring 
+        /// </summary>
+        public const string MOTIVATOR_CARING = "FFD7EF9C-5D68-40D2-A362-416B2D660D51";
+
+        /// <summary>
+        /// Motivator: Expressing 
+        /// </summary>
+        public const string MOTIVATOR_EXPRESSING = "FA70E27D-6642-4162-AF17-530F66B507E7";
+
+        /// <summary>
+        /// Motivator: Empowering 
+        /// </summary>
+        public const string MOTIVATOR_EMPOWERING = "C171D01E-C607-488B-A550-1E341081210B";
+
+        /// <summary>
+        /// Motivator: Engaging 
+        /// </summary>
+        public const string MOTIVATOR_ENGAGING = "5635E95B-3A07-43B7-837A-0F131EF1DA97";
+
+        /// <summary>
+        /// Motivator: Adapting 
+        /// </summary>
+        public const string MOTIVATOR_ADAPTING = "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89";
+
+        /// <summary>
+        /// Motivator: Gathering 
+        /// </summary>
+        public const string MOTIVATOR_GATHERING = "73087DD2-B892-4367-894F-8922477B2F10";
+
+        /// <summary>
+        /// Motivator: Innovating 
+        /// </summary>
+        public const string MOTIVATOR_INNOVATING = "D84E58E4-87FC-4CEB-B83E-A2C6D186366C";
+
+        /// <summary>
+        /// Motivator: Leading 
+        /// </summary>
+        public const string MOTIVATOR_LEADING = "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3";
+
+        /// <summary>
+        /// Motivator: Learning 
+        /// </summary>
+        public const string MOTIVATOR_LEARNING = "7EA44A56-58CB-4E40-9779-CC0A79772926";
+
+        /// <summary>
+        /// Motivator: Maximizing 
+        /// </summary>
+        public const string MOTIVATOR_MAXIMIZING = "3F678404-5844-494F-BDB0-DD9FEEBC98C9";
+
+        /// <summary>
+        /// Motivator: Organizing 
+        /// </summary>
+        public const string MOTIVATOR_ORGANIZING = "85459C0F-65A5-48F9-86F3-40B03F9C53E9";
+
+        /// <summary>
+        /// Motivator: Pacing 
+        /// </summary>
+        public const string MOTIVATOR_PACING = "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25";
+
+        /// <summary>
+        /// Motivator: Perceiving 
+        /// </summary>
+        public const string MOTIVATOR_PERCEIVING = "4C898A5C-B48E-4BAE-AB89-835F25A451BF";
+
+        /// <summary>
+        /// Motivator: Relating 
+        /// </summary>
+        public const string MOTIVATOR_RELATING = "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995";
+
+        /// <summary>
+        /// Motivator: Serving 
+        /// </summary>
+        public const string MOTIVATOR_SERVING = "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD";
+
+        /// <summary>
+        /// Motivator: Thinking 
+        /// </summary>
+        public const string MOTIVATOR_THINKING = "0D82DC77-334C-44B0-84A6-989910907DD4";
+
+        /// <summary>
+        /// Motivator: Transforming 
+        /// </summary>
+        public const string MOTIVATOR_TRANSFORMING = "2393C3CE-8E49-46FE-A75B-D5D624A37B49";
+
+        /// <summary>
+        /// Motivator: Uniting 
+        /// </summary>
+        public const string MOTIVATOR_UNITING = "D7601B56-7495-4D7B-A916-8C48F78675E3";
+
+        /// <summary>
+        /// Motivator: Persevering 
+        /// </summary>
+        public const string MOTIVATOR_PERSEVERING = "A027F6B2-56DD-4724-962D-F865606AEAB8";
+
+        /// <summary>
+        /// Motivator: Risk-Taking 
+        /// </summary>
+        public const string MOTIVATOR_RISKTAKING = "4D0A1A6D-3F5A-476E-A633-04EAEF457645";
+
+        /// <summary>
+        /// Motivator: Visioning 
+        /// </summary>
+        public const string MOTIVATOR_VISIONING = "EE1603BA-41AE-4CFA-B220-065768996501";
+
+        /// <summary>
+        /// Motivator: Growth Propensity 
+        /// </summary>
+        public const string MOTIVATOR_GROWTH_PROPENSITY = "605F3702-6AE7-4545-BEBE-23693E60031C";
+
+        #endregion Motivator
+
+        #region Motivator Theme
+
+        /// <summary>
+        /// Motivator Theme: Relational
+        /// </summary>
+        public const string MOTIVATOR_RELATIONAL_THEME = "840C414E-A261-4243-8302-6117E8949FE4";
+
+        /// <summary>
+        /// Motivator Theme: Directional 
+        /// </summary>
+        public const string MOTIVATOR_DIRECTIONAL_THEME = "112A35BE-3108-48D9-B057-125A788AB531";
+
+        /// <summary>
+        /// Motivator Theme: Intellectual 
+        /// </summary>
+        public const string MOTIVATOR_INTELLECTUAL_THEME = "58FEF15F-561D-420E-8937-6CF51D296F0E";
+
+        /// <summary>
+        /// Motivator Theme: Positional 
+        /// </summary>
+        public const string MOTIVATOR_POSITIONAL_THEME = "84322020-4E27-44EF-88F2-EAFDB7286A01";
+
+        #endregion Motivator Theme
+
+        #region Logging
+
+        /// <summary>
+        /// The logging domain CMS
+        /// </summary>
+        public const string LOGGING_DOMAIN_CMS = "C8A94BA4-9450-459C-B32E-E34C153AD02F";
+
+        /// <summary>
+        /// The logging domain event
+        /// </summary>
+        public const string LOGGING_DOMAIN_EVENT = "EF558F8A-08DA-4001-BBAA-83390613D20E";
+
+        /// <summary>
+        /// The logging domain reporting
+        /// </summary>
+        public const string LOGGING_DOMAIN_REPORTING = "A2960B6B-0DF5-458B-906C-F64521CB8C83";
+
+        /// <summary>
+        /// The logging domain communications
+        /// </summary>
+        public const string LOGGING_DOMAIN_COMMUNICATIONS = "8EE2657E-FF42-4E04-A5DA-15B14C8086B8";
+
+        /// <summary>
+        /// The logging domain finance
+        /// </summary>
+        public const string LOGGING_DOMAIN_FINANCE = "24230441-AE17-4F8B-ABF7-DA32CC5F2571";
+
+        /// <summary>
+        /// The logging domain steps
+        /// </summary>
+        public const string LOGGING_DOMAIN_STEPS = "0FE30F0C-E503-4DE6-A8EE-1E86B141967B";
+
+        /// <summary>
+        /// The logging domain connection
+        /// </summary>
+        public const string LOGGING_DOMAIN_CONNECTION = "E5125727-8361-4BBB-A615-28B3F045BA7E";
+
+        /// <summary>
+        /// The logging domain group
+        /// </summary>
+        public const string LOGGING_DOMAIN_GROUP = "134088B7-A12A-4ED8-AA18-E059FB5D17B5";
+
+        /// <summary>
+        /// The logging domain streaks
+        /// </summary>
+        public const string LOGGING_DOMAIN_STREAKS = "E7D3D04F-7BB8-4FE4-B2C2-924D8C0CA62B";
+
+        /// <summary>
+        /// The logging domain core
+        /// </summary>
+        public const string LOGGING_DOMAIN_CORE = "3B4F21DC-C169-453E-B119-8F33E122C84C";
+
+        /// <summary>
+        /// The logging domain jobs
+        /// </summary>
+        public const string LOGGING_DOMAIN_JOBS = "2741A4A3-8E57-4B58-ABCC-56C0A31C3A25";
+
+        /// <summary>
+        /// The logging domain workflow
+        /// </summary>
+        public const string LOGGING_DOMAIN_WORKFLOW = "FF8CBA1B-5DAF-4C0E-A7DA-A0277F7AA1E5";
+
+        /// <summary>
+        /// The logging domain CRM
+        /// </summary>
+        public const string LOGGING_DOMAIN_CRM = "5D737243-E7E0-4981-87A5-0787E52631C6";
+
+        /// <summary>
+        /// The logging domain prayer
+        /// </summary>
+        public const string LOGGING_DOMAIN_PRAYER = "F460BDE7-6FFC-4979-A3AC-7BBBED05C781";
+
+        /// <summary>
+        /// The logging domain other
+        /// </summary>
+        public const string LOGGING_DOMAIN_OTHER = "83CFDA4F-5867-4D4B-853F-D9B535EC5131";
+
+        #endregion
+
+        #region "Checkin Attendance Types"
+
+        /// <summary>
+        /// The check in attendance type physical
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPE_PHYSICAL = "290CE89F-7DA0-41ED-82C1-1249A4A42BA4";
+
+        /// <summary>
+        /// The check in attendance type virtual
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPE_VIRTUAL = "DF1C89D0-7D8A-48C2-B251-DFF3376C2931";
 
         #endregion
     }

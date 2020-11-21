@@ -52,12 +52,11 @@ namespace RockWeb
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public void ProcessRequest( HttpContext context )
         {
-
-            int? communicationId = context.Request.QueryString["c"].AsIntegerOrNull();
-            if ( communicationId.HasValue )
+            Guid? communicationGuid = context.Request.QueryString["c"].AsGuidOrNull();
+            if ( communicationGuid.HasValue )
             {
                 var rockContext = new RockContext();
-                var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                var communication = new CommunicationService( rockContext ).Get( communicationGuid.Value );
 
                 if ( communication != null )
                 {
@@ -142,7 +141,7 @@ namespace RockWeb
 
                             UAParser.ClientInfo client = UAParser.Parser.GetDefault().Parse( userAgent );
                             var clientOs = client.OS.ToString();
-                            var clientBrowser = client.UserAgent.ToString();
+                            var clientBrowser = client.UA.ToString();
                             var clientType = InteractionDeviceType.GetClientType( userAgent );
 
                             interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, RockDateTime.Now, clientBrowser, clientOs, clientType, userAgent, ipAddress, null );

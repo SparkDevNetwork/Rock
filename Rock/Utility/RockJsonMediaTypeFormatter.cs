@@ -20,7 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
-
+using System.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Utility
@@ -31,28 +31,67 @@ namespace Rock.Utility
     public class RockJsonMediaTypeFormatter : JsonMediaTypeFormatter
     {
         /// <summary>
-        /// Gets or sets a value indicating whether [load attributes].
+        /// 
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [load attributes]; otherwise, <c>false</c>.
-        /// </value>
-        private bool LoadAttributes { get; set; }
+        private class LoadAttributesOptions
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LoadAttributesOptions"/> class.
+            /// </summary>
+            /// <param name="loadAttributesEnabled">if set to <c>true</c> [load attributes enabled].</param>
+            /// <param name="serializeInSimpleMode">if set to <c>true</c> [serialize in simple mode].</param>
+            /// <param name="limitToAttributeKeyList">The limit to attribute key list.</param>
+            /// <param name="person">The person.</param>
+            public LoadAttributesOptions( bool loadAttributesEnabled, bool serializeInSimpleMode, string[] limitToAttributeKeyList, Rock.Model.Person person )
+            {
+                LoadAttributesEnabled = loadAttributesEnabled;
+                SerializeInSimpleMode = serializeInSimpleMode;
+                LimitToAttributeKeyList = limitToAttributeKeyList ?? new string[0];
+                Person = person;
+            }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [serialize in simple mode].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [serialize in simple mode]; otherwise, <c>false</c>.
-        /// </value>
-        private bool SerializeInSimpleMode { get; set; }
+            /// <summary>
+            /// The context items key
+            /// </summary>
+            public static readonly string ContextItemsKey = $"{typeof( RockJsonMediaTypeFormatter ).FullName}:LoadAttributesOptions";
 
-        /// <summary>
-        /// Gets or sets the person that initiated the REST request
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        private Rock.Model.Person Person { get; set; }
+            /// <summary>
+            /// Gets or sets a value indicating whether [load attributes].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [load attributes]; otherwise, <c>false</c>.
+            /// </value>
+            public readonly bool LoadAttributesEnabled;
+
+            /// <summary>
+            /// Gets or sets the limit to attribute key list.
+            /// </summary>
+            /// <value>
+            /// The limit to attribute key list.
+            /// </value>
+            public readonly string[] LimitToAttributeKeyList;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [serialize in simple mode].
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if [serialize in simple mode]; otherwise, <c>false</c>.
+            /// </value>
+            public readonly bool SerializeInSimpleMode;
+
+            /// <summary>
+            /// Gets or sets the person that initiated the REST request
+            /// </summary>
+            /// <value>
+            /// The person.
+            /// </value>
+            public readonly Rock.Model.Person Person;
+
+            public override string ToString()
+            {
+                return $"LoadAttributesEnabled:{LoadAttributesEnabled}&{SerializeInSimpleMode}, {Person}";
+            }
+        }
 
         /// <summary>
         /// Returns a specialized instance of the <see cref="T:System.Net.Http.Formatting.MediaTypeFormatter" /> that can format a response for the given parameters.
@@ -68,17 +107,25 @@ namespace Rock.Utility
             var qryParams = System.Web.HttpUtility.ParseQueryString( request.RequestUri.Query );
             string loadAttributes = qryParams["LoadAttributes"] ?? string.Empty;
 
+            string[] limitToAttributeKeyList = qryParams["AttributeKeys"]?.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).ToArray();
+
             // if "simple" or True is specified in the LoadAttributes param, tell the formatter to serialize in Simple mode
-            SerializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
+            bool serializeInSimpleMode = loadAttributes.Equals( "simple", StringComparison.OrdinalIgnoreCase ) || ( loadAttributes.AsBooleanOrNull() ?? false );
 
             // if either "simple", "expanded", or True is specified in the LoadAttributes param, tell the formatter to load the attributes on the way out
-            LoadAttributes = SerializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
-            
+            bool loadAttributesEnabled = serializeInSimpleMode || loadAttributes.Equals( "expanded", StringComparison.OrdinalIgnoreCase );
+
+            Rock.Model.Person person = null;
+
             // NOTE: request.Properties["Person"] gets set in Rock.Rest.Filters.SecurityAttribute.OnActionExecuting
-            if ( LoadAttributes && request.Properties.ContainsKey( "Person" ) )
+            if ( loadAttributesEnabled && request.Properties.ContainsKey( "Person" ) )
             {
-                this.Person = request.Properties["Person"] as Rock.Model.Person;
+                person = request.Properties["Person"] as Rock.Model.Person;
             }
+
+            // store the request options in HttpContext.Current.Items so they are thread safe, and only for this request
+            var loadAttributesOptions = new LoadAttributesOptions( loadAttributesEnabled, serializeInSimpleMode, limitToAttributeKeyList, person );
+            HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] = loadAttributesOptions;
 
             return base.GetPerRequestFormatterInstance( type, request, mediaType );
         }
@@ -92,56 +139,93 @@ namespace Rock.Utility
         /// <param name="effectiveEncoding">The encoding to use when writing.</param>
         public override void WriteToStream( Type type, object value, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
-            IEnumerable<Attribute.IHasAttributes> items = null;
+            bool isSelectAndExpand = false;
+            List<object> selectAndExpandList = null;
+            if ( value is IQueryable<object> && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
+            {
+                Type valueType = value.GetType();
+
+                // if this is an OData 'SelectAndExpand', we have convert stuff to Dictionary manually to get the stuff to serialize the way we want
+                if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
+                {
+                    isSelectAndExpand = true;
+
+                    var selectExpandQry = value as IQueryable<object>;
+
+                    selectAndExpandList = selectExpandQry.ToList();
+                }
+            }
+
+            var loadAttributesOptions = HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] as LoadAttributesOptions;
+            if ( loadAttributesOptions == null )
+            {
+                // shouldn't happen, but just in case
+                loadAttributesOptions = new LoadAttributesOptions( false, false, null, null );
+            }
 
             // query should be filtered by now, so iterate thru items and load attributes before the response is serialized
-            if ( LoadAttributes )
+            if ( loadAttributesOptions.LoadAttributesEnabled )
             {
+                IEnumerable<Attribute.IHasAttributes> items = null;
+
                 if ( value is IEnumerable<Attribute.IHasAttributes> )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a list of IHasAttributes..
-                    items = value as IEnumerable<Attribute.IHasAttributes>;
+                    // Also, do a ToList() to fetch the query into a list (instead re-querying multiple times)
+                    items = ( value as IEnumerable<Attribute.IHasAttributes> ).ToList();
+
+                    // Assign the items list back to value
+                    value = items;
                 }
                 else if ( value is Attribute.IHasAttributes )
                 {
                     // if the REST call specified that Attributes should be loaded and we are returning a single IHasAttributes..
                     items = new List<Attribute.IHasAttributes>( new Attribute.IHasAttributes[] { value as Attribute.IHasAttributes } );
                 }
-                else if ( value is IQueryable )
+                else if ( isSelectAndExpand && selectAndExpandList != null )
                 {
-                    Type valueType = value.GetType();
-                    if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
-                    {
-                        // 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
-                        // so use reflection to get that and load the attributes for each
-                        var selectExpandQry = value as IQueryable;
-                        var itemsList = new List<Attribute.IHasAttributes>();
-                        foreach ( var selectExpandItem in selectExpandQry )
-                        {
-                            var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
-                            var entity = entityProperty.GetValue( selectExpandItem ) as Attribute.IHasAttributes;
-                            if ( entity != null )
-                            {
-                                itemsList.Add( entity );
-                            }
+                    //// 'SelectAndExpand' buries the Entity in a private field called 'Instance', 
+                    //// so use reflection to get that and load the attributes for each
 
-                            entityProperty.SetValue( selectExpandItem, entity );
+                    var itemsList = new List<Attribute.IHasAttributes>();
+                    foreach ( var selectExpandItem in selectAndExpandList )
+                    {
+                        var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
+                        var entity = entityProperty.GetValue( selectExpandItem ) as Attribute.IHasAttributes;
+                        if ( entity != null )
+                        {
+                            itemsList.Add( entity );
                         }
 
-                        items = itemsList;
+                        entityProperty.SetValue( selectExpandItem, entity );
                     }
 
+                    items = itemsList;
+                }
+
+                List<AttributeCache> limitToAttributes = null;
+                if ( loadAttributesOptions.LimitToAttributeKeyList?.Any() == true && type.IsGenericType )
+                {
+                    var entityTypeType = type.GenericTypeArguments[0];
+                    if ( entityTypeType != null )
+                    {
+                        var entityType = EntityTypeCache.Get( entityTypeType );
+                        var entityAttributesList = AttributeCache.GetByEntity( entityType.Id )?.SelectMany( a => a.AttributeIds ).ToList().Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
+                        limitToAttributes = entityAttributesList?.Where( a => loadAttributesOptions.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                    }
                 }
 
                 if ( items != null )
                 {
-                    var rockContext = new Rock.Data.RockContext();
-                    foreach ( var item in items )
+                    using ( var rockContext = new Rock.Data.RockContext() )
                     {
-                        Rock.Attribute.Helper.LoadAttributes( item, rockContext );
-                    }
+                        foreach ( var item in items )
+                        {
+                            Rock.Attribute.Helper.LoadAttributes( item, rockContext, limitToAttributes );
+                        }
 
-                    FilterAttributes( rockContext, items, this.Person );
+                        FilterAttributes( rockContext, items, loadAttributesOptions.Person );
+                    }
                 }
             }
 
@@ -149,92 +233,100 @@ namespace Rock.Utility
             // This fixes a couple of issues:
             //  1) our special loadAttributes stuff didn't work if $expand is specified
             //  2) Only non-virtual,non-inherited fields were included (for example: Person.PrimaryAliasId, etc, wasn't getting included) if $expand was specified
-            if ( value is IQueryable && typeof( IQueryable<Rock.Data.IEntity> ).IsAssignableFrom( type ) )
+            if ( isSelectAndExpand )
             {
-                Type valueType = value.GetType();
-
-                // if this is an OData 'SelectAndExpand', we have convert stuff to Dictionary manually to get the stuff to serialize the way we want
-                if ( valueType.IsGenericType && valueType.GenericTypeArguments[0].Name == "SelectAllAndExpand`1" )
+                using ( var rockContext = new Rock.Data.RockContext() )
                 {
-                    var rockContext = new Rock.Data.RockContext();
-
-                    // The normal SelectAllAndExpand converts stuff into dictionaries, but some stuff ends up missing
-                    // So, this will do all that manually using reflection and our own dictionary of each Entity
-                    var valueAsDictionary = new List<Dictionary<string, object>>();
-                    var selectExpandQry = value as IQueryable;
-                    var selectExpandList = ( selectExpandQry as IQueryable<object> ).ToList();
-                    var isPersonModel = type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
-                    Dictionary<int, Rock.Model.PersonAlias> personAliasLookup = null;
-                    if ( isPersonModel )
-                    {
-                        var personIds = selectExpandList.Select( a => ( a.GetPropertyValue( "Instance" ) as Rock.Model.Person ).Id ).ToList();
-
-                        // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
-                        // so if it is more than 20000 just get *all* the personalias records which would probably be much faster than a giant where clause
-                        var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
-                        if ( personIds.Count < 20000 )
-                        {
-                            personAliasLookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
-                        }
-                        else
-                        {
-                            personAliasLookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
-                        }
-                    }
-
-                    foreach ( var selectExpandItem in selectExpandList )
-                    {
-                        var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
-                        var entity = entityProperty.GetValue( selectExpandItem ) as Rock.Data.IEntity;
-                        if ( entity is Rock.Model.Person )
-                        {
-                            // if this is a SelectAndExpand of Person, we manually need to load Aliases so that the PrimaryAliasId is populated
-                            var person = entity as Rock.Model.Person;
-                            if ( !person.Aliases.Any() )
-                            {
-                                var primaryAlias = personAliasLookup.GetValueOrNull( person.Id );
-                                if ( primaryAlias != null )
-                                {
-                                    person.Aliases.Add( personAliasLookup[person.Id] );
-                                }
-                            }
-                        }
-
-                        Dictionary<string, object> valueDictionary = new Dictionary<string, object>();
-
-                        // add the "Expanded" stuff first to emulate the default behavior
-                        var expandedStuff = selectExpandItem.GetPropertyValue( "Container" );
-                        while ( expandedStuff != null)
-                        {
-                            var expandedName = expandedStuff.GetPropertyValue( "Name" ) as string;
-                            var expandedValue = expandedStuff.GetPropertyValue( "Value" );
-                            valueDictionary.Add( expandedName, expandedValue );
-                            expandedStuff = expandedStuff.GetPropertyValue( "Next" );
-                        }
-
-                        // add each of the Entity's properties
-                        foreach ( var entityKeyValue in entity.ToDictionary() )
-                        {
-                            valueDictionary.Add( entityKeyValue.Key, entityKeyValue.Value );
-                        }
-
-                        // if LoadAttributes was specified, add those last
-                        if ( LoadAttributes && ( entity is Attribute.IHasAttributes ) )
-                        {
-                            // Add Attributes and AttributeValues
-                            valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
-                            valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
-                        }
-
-                        valueAsDictionary.Add( valueDictionary );
-                    }
-                    
+                    List<Dictionary<string, object>> valueAsDictionary = GetSelectAndExpandDictionaryObject( type, selectAndExpandList, rockContext, loadAttributesOptions );
                     base.WriteToStream( type, valueAsDictionary, writeStream, effectiveEncoding );
-                    return;
                 }
+
+                return;
             }
 
             base.WriteToStream( type, value, writeStream, effectiveEncoding );
+        }
+
+        /// <summary>
+        /// Gets the select and expand dictionary object.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="selectAndExpandList">The select and expand list.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="loadAttributesOptions">The load attributes options.</param>
+        /// <returns></returns>
+        private static List<Dictionary<string, object>> GetSelectAndExpandDictionaryObject( Type type, List<object> selectAndExpandList, Rock.Data.RockContext rockContext, LoadAttributesOptions loadAttributesOptions )
+        {
+            // The normal SelectAllAndExpand converts stuff into dictionaries, but some stuff ends up missing
+            // So, this will do all that manually using reflection and our own dictionary of each Entity
+            var valueAsDictionary = new List<Dictionary<string, object>>();
+            var isPersonModel = type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
+            Dictionary<int, Rock.Model.PersonAlias> personAliasLookup = null;
+            if ( isPersonModel )
+            {
+                var personIds = selectAndExpandList.Select( a => ( a.GetPropertyValue( "Instance" ) as Rock.Model.Person ).Id ).ToList();
+
+                // NOTE: If this is a really long list of PersonIds (20000+ or so), this might time out or get an error, 
+                // so if it is more than 20000 just get *all* the PersonAlias records which would probably be much faster than a giant where clause
+                var personAliasQry = new Rock.Model.PersonAliasService( rockContext ).Queryable().AsNoTracking();
+                if ( personIds.Count < 20000 )
+                {
+                    personAliasLookup = personAliasQry.Where( a => personIds.Contains( a.PersonId ) && a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                }
+                else
+                {
+                    personAliasLookup = personAliasQry.Where( a => a.AliasPersonId == a.PersonId ).ToDictionary( k => k.PersonId, v => v );
+                }
+            }
+
+            foreach ( var selectExpandItem in selectAndExpandList )
+            {
+                var entityProperty = selectExpandItem.GetType().GetProperty( "Instance" );
+                var entity = entityProperty.GetValue( selectExpandItem ) as Rock.Data.IEntity;
+                if ( entity is Rock.Model.Person )
+                {
+                    // if this is a SelectAndExpand of Person, we manually need to load Aliases so that the PrimaryAliasId is populated
+                    var person = entity as Rock.Model.Person;
+                    if ( !person.Aliases.Any() )
+                    {
+                        var primaryAlias = personAliasLookup.GetValueOrNull( person.Id );
+                        if ( primaryAlias != null )
+                        {
+                            person.Aliases.Add( personAliasLookup[person.Id] );
+                        }
+                    }
+                }
+
+                Dictionary<string, object> valueDictionary = new Dictionary<string, object>();
+
+                // add the "Expanded" stuff first to emulate the default behavior
+                var expandedStuff = selectExpandItem.GetPropertyValue( "Container" );
+                while ( expandedStuff != null )
+                {
+                    var expandedName = expandedStuff.GetPropertyValue( "Name" ) as string;
+                    var expandedValue = expandedStuff.GetPropertyValue( "Value" );
+                    valueDictionary.Add( expandedName, expandedValue );
+                    expandedStuff = expandedStuff.GetPropertyValue( "Next" );
+                }
+
+                // add each of the Entity's properties
+                foreach ( var entityKeyValue in entity.ToDictionary() )
+                {
+                    valueDictionary.Add( entityKeyValue.Key, entityKeyValue.Value );
+                }
+
+                // if LoadAttributes was specified, add those last
+                if ( loadAttributesOptions.LoadAttributesEnabled && ( entity is Attribute.IHasAttributes ) )
+                {
+                    // Add Attributes and AttributeValues
+                    valueDictionary.Add( "Attributes", ( entity as Attribute.IHasAttributes ).Attributes );
+                    valueDictionary.Add( "AttributeValues", ( entity as Attribute.IHasAttributes ).AttributeValues );
+                }
+
+                valueAsDictionary.Add( valueDictionary );
+            }
+
+            return valueAsDictionary;
         }
 
         /// <summary>
@@ -262,6 +354,7 @@ namespace Rock.Utility
             var entityAttributes = AttributeCache.GetByEntity( entityType.Id );
 
             // only return attributes that the person has VIEW auth to
+            // NOTE: There are some Attributes that even Admin doesn't have VIEW auth so (For example, some of obsolete DISC attributes)
             foreach ( var entityAttribute in entityAttributes )
             {
                 foreach ( var attributeId in entityAttribute.AttributeIds )
@@ -297,10 +390,17 @@ namespace Rock.Utility
         /// </returns>
         public override Newtonsoft.Json.JsonWriter CreateJsonWriter( Type type, System.IO.Stream writeStream, Encoding effectiveEncoding )
         {
-            if ( LoadAttributes && SerializeInSimpleMode )
+            var loadAttributesOptions = HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] as LoadAttributesOptions;
+            if ( loadAttributesOptions == null )
+            {
+                // shouldn't happen, but just in case
+                loadAttributesOptions = new LoadAttributesOptions( false, false, null, null );
+            }
+
+            if ( loadAttributesOptions.LoadAttributesEnabled && loadAttributesOptions.SerializeInSimpleMode )
             {
                 // Use the RockJsonTextWriter when we need to Serialize Model.AttributeValues and Model.Attributes in simple mode
-                return new RockJsonTextWriter( new System.IO.StreamWriter( writeStream ), this.SerializeInSimpleMode );
+                return new RockJsonTextWriter( new System.IO.StreamWriter( writeStream ), loadAttributesOptions.SerializeInSimpleMode );
             }
             else
             {

@@ -140,7 +140,28 @@ namespace Rock
             {
                 return obj.ToString();
             }
-            return String.Empty;
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Returns a string representation of the object or a default value.
+        /// </summary>
+        /// <param name="obj">an object</param>
+        /// <param name="defaultValue"></param>
+        /// <returns>A string representation of the object, or the default value if the representation is null or whitespace.</returns>
+        public static string ToStringOrDefault( this object obj, string defaultValue )
+        {
+            if ( obj != null )
+            {
+                var stringValue = obj.ToString();
+
+                if ( !string.IsNullOrWhiteSpace( stringValue ) )
+                { 
+                    return stringValue;
+                }
+            }
+
+            return defaultValue;
         }
 
         /// <summary>

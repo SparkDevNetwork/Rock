@@ -10,6 +10,7 @@
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    max-width: 100%;
   }
 
   .toggle-additional-search-fields {
@@ -33,10 +34,12 @@
   .picker-label {
     float: left;
     width: 225px;
+    max-width: ~"calc(100% - 25px)";
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
+    line-height: @line-height-computed;
     color: @input-color;
-    background-color: transparent;
+    background-color: @input-bg;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
     &:hover {
@@ -46,16 +49,15 @@
     i {
       float: left;
       margin-right: 6px;
-      line-height: @line-height-computed;
+      line-height: inherit;
       vertical-align: bottom;
     }
 
     span {
       float: left;
-      width: 140px;
-      margin-right: 6px;
+      width: ~"calc(100% - 42px)";
       overflow: hidden;
-      line-height: @line-height-computed;
+      line-height: inherit;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -86,13 +88,13 @@
     .viewport {
       width: ~"calc(100% - 15px)";
       height: 380px;
-      max-height: ~"calc(100vh - 200px)";
+      //max-height: ~"calc(100vh - 200px)";
     }
 
     .scrollbar {
       width: 5px;
       height: 380px;
-      max-height: ~"calc(100vh - 210px)";
+      //max-height: ~"calc(100vh - 210px)";
     }
   }
 
@@ -138,7 +140,7 @@
     padding: @picker-menu-padding;
     margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
     background-color: @picker-action-bg;
-    border-top: 1px solid darken(@picker-action-bg, 10%);
+    border-top: 1px solid @picker-action-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
   }
 
@@ -231,6 +233,7 @@
     // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
     .picker-label {
       width: 100%;
+      max-width: 100%;
     }
   }
 

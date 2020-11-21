@@ -110,7 +110,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get(Guid) instead")]
+        [Obsolete("Use Get(Guid) instead", true )]
         public static FieldTypeCache Read( string guid, RockContext rockContext = null )
         {
             return Get( new Guid( guid ), rockContext );
@@ -122,7 +122,7 @@ namespace Rock.Web.Cache
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get<T>() instead" )]
+        [Obsolete( "Use Get<T>() instead", true )]
         public static FieldTypeCache Read<T>() where T : Rock.Field.IFieldType
         {
             return Get<T>();

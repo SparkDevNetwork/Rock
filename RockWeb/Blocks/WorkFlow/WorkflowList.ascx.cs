@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.WorkFlow
                 workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
                 _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
             }
-            
+
             if ( _workflowType != null )
             {
                 breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Manage( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "WorkflowId", e.RowKeyId );
         }
 
         /// <summary>
@@ -355,12 +355,12 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     var qryParam = new Dictionary<string, string>();
                     qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
-                    qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                    qryParam.Add( "WorkflowGuid", workflow.Guid.ToString() );
                     NavigateToLinkedPage( "EntryPage", qryParam );
                 }
                 else
                 {
-                    NavigateToLinkedPage( "DetailPage", "workflowId", e.RowKeyId );
+                    NavigateToLinkedPage( "DetailPage", "WorkflowId", e.RowKeyId );
                 }
             }
         }
@@ -375,7 +375,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <returns></returns>
         private string GetState()
         {
-            // Get the check box list values by evaluating the posted form values for each input item in the rendered checkbox list.  
+            // Get the check box list values by evaluating the posted form values for each input item in the rendered checkbox list.
             // This is required because of a bug in ASP.NET that results in the Selected property for CheckBoxList items to not be
             // set correctly on a postback.
             var selectedItems = new List<string>();
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
             if ( _workflowType != null )
             {
@@ -451,7 +451,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) && 
+                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( workflowQualifier ) )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
@@ -569,7 +569,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 var manageField = new LinkButtonField();
                 gWorkflows.Columns.Add( manageField );
-                manageField.CssClass = "btn btn-default btn-sm fa fa-file-text-o";
+                manageField.CssClass = "btn btn-default btn-sm";
+                manageField.Text = "<i class='fa fa-file-text-o'></i>";
                 manageField.Click += gWorkflows_Manage;
             }
 

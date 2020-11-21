@@ -68,7 +68,7 @@ namespace Rock.Lava.Blocks
         public override void Render( Context context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
-            if ( ! this.IsAuthorized(context) )
+            if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
                 base.Render( context, result );
@@ -77,26 +77,26 @@ namespace Rock.Lava.Blocks
 
             bool hasFilter = false;
 
+            var modelName = string.Empty;
+
             // get a service for the entity based off it's friendly name
-            var entityTypes = EntityTypeCache.All();
-
-            var model = string.Empty;
-
-            if (_entityName == "business" )
+            if ( _entityName == "business" )
             {
-                model = "Rock.Model.Person";
+                modelName = "Rock.Model.Person";
             }
             else
             {
-                model = "Rock.Model." + _entityName;
+                modelName = "Rock.Model." + _entityName;
             }
 
-            // Check first to see if this is a core model
-            var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            // Check first to see if this is a core model. use the createIfNotFound = false option
+            var entityTypeCache = EntityTypeCache.Get( modelName, false );
 
-            // If not, look for first plug-in model that has same friendly name
             if ( entityTypeCache == null )
             {
+                var entityTypes = EntityTypeCache.All();
+
+                // If not, look for first plug-in model that has same friendly name
                 entityTypeCache = entityTypes
                     .Where( e =>
                         e.IsEntity &&
@@ -105,13 +105,13 @@ namespace Rock.Lava.Blocks
                         e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
                     .OrderBy( e => e.Id )
                     .FirstOrDefault();
-            }
 
-            // If still null check to see if this was a duplicate class and full class name was used as entity name
-            if ( entityTypeCache == null )
-            {
-                model = _entityName.Replace( '_', '.' );
-                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                // If still null check to see if this was a duplicate class and full class name was used as entity name
+                if ( entityTypeCache == null )
+                {
+                    modelName = _entityName.Replace( '_', '.' );
+                    entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, modelName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                }
             }
 
             if ( entityTypeCache != null )
@@ -119,16 +119,20 @@ namespace Rock.Lava.Blocks
                 Type entityType = entityTypeCache.GetEntityType();
                 if ( entityType != null )
                 {
-                    // Get the database context
+                    // Get the appropriate database context for this entity type.
+                    // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
                     var dbContext = Reflection.GetDbContextForEntityType( entityType );
 
-                    // create an instance of the entity's service
-                    Rock.Data.IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+                    // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
+                    dbContext.Configuration.AutoDetectChangesEnabled = false;
+
+                    // Create an instance of the entity's service
+                    IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
 
-                    // parse markup
+                    // Parse markup
                     var parms = ParseMarkup( _markup, context );
 
                     if ( parms.Any( p => p.Key == "id" ) )
@@ -207,39 +211,56 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                    // make the query from the expression
+                    // Make the query from the expression.                    
+                    /* [2020-10-08] DL
+                     * "Get" is intentionally used here rather than "GetNoTracking" to allow lazy-loading of navigation properties from the Lava context.
+                     * (Refer https://github.com/SparkDevNetwork/Rock/issues/4293)
+                     */
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+
                     if ( getMethod != null )
                     {
-                        var queryResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, queryExpression, null, null } ) as IQueryable<IEntity>;
+                        // get a listing of ids and build it into the query expression
+                        if ( parms.Any( p => p.Key == "ids" ) )
+                        {
+                            List<int> value = parms["ids"].ToString().Split( ',' ).Select( int.Parse ).ToList();
+                            MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
+                            ConstantExpression constantExpression = Expression.Constant( value, typeof( List<int> ) );
+                            Expression containsExpression = Expression.Call( constantExpression, typeof( List<int> ).GetMethod( "Contains", new Type[] { typeof( int ) } ), propertyExpression );
+                            if ( queryExpression != null )
+                            {
+                                queryExpression = Expression.AndAlso( queryExpression, containsExpression );
+                            }
+                            else
+                            {
+                                queryExpression = containsExpression;
+                            }
+
+                            hasFilter = true;
+                        }
+
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, queryExpression, null, null } );
+                        var queryResult = getResult as IQueryable<IEntity>;
 
                         // process entity specific filters
                         switch ( _entityName )
                         {
                             case "person":
                                 {
-                                    queryResult = PersonFilters( (IQueryable<Person>)queryResult, parms );
+                                    queryResult = PersonFilters( ( IQueryable<Person> ) queryResult, parms );
                                     break;
                                 }
                             case "business":
                                 {
-                                    queryResult = BusinessFilters( (IQueryable<Person>)queryResult, parms );
+                                    queryResult = BusinessFilters( ( IQueryable<Person> ) queryResult, parms );
                                     break;
                                 }
                         }
 
                         // if there was a dynamic expression add it now
-                        if ( parms.Any( p => p.Key == "expression" ) )
+                        if ( parms.Any( p => p.Key == "expression" ) ) 
                         {
                             queryResult = queryResult.Where( parms["expression"] );
-                            hasFilter = true;
-                        }
-
-                        // get a listing of ids
-                        if ( parms.Any( p => p.Key == "ids" ) )
-                        {
-                            var value = parms["ids"].ToString().Split( ',' ).Select( int.Parse ).ToList();
-                            queryResult = queryResult.Where( x => value.Contains(x.Id ) );
                             hasFilter = true;
                         }
 
@@ -249,7 +270,6 @@ namespace Rock.Lava.Blocks
                         if ( parms.Any( p => p.Key == "sort" ) )
                         {
                             string orderByMethod = "OrderBy";
-
 
                             foreach ( var column in parms["sort"].Split( ',' ).Select( x => x.Trim() ).Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList() )
                             {
@@ -294,7 +314,7 @@ namespace Rock.Lava.Blocks
                                     if ( attributeId.HasValue )
                                     {
                                         // get AttributeValue queryable and parameter
-                                        if ( dbContext is RockContext)
+                                        if ( dbContext is RockContext )
                                         {
                                             var attributeValues = new AttributeValueService( dbContext as RockContext ).Queryable();
                                             ParameterExpression attributeValueParameter = Expression.Parameter( typeof( AttributeValue ), "v" );
@@ -315,6 +335,12 @@ namespace Rock.Lava.Blocks
                             }
                         }
 
+                        // check to ensure we had some form of filter (otherwise we'll return all results in the table)
+                        if ( !hasFilter )
+                        {
+                            throw new Exception( "Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist." );
+                        }
+
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
@@ -325,22 +351,56 @@ namespace Rock.Lava.Blocks
                         }
                         else
                         {
-                            // run security check on each result
-                            var items = queryResult.ToList();
-                            var itemsSecured = new List<IEntity>();
-
-                            Person person = GetCurrentPerson( context );
-
-                            foreach ( IEntity item in items )
+                            // Run security check on each result if enabled and entity is not a person (we do not check security on people)
+                            if ( parms["securityenabled"].AsBoolean() && _entityName != "person" )
                             {
-                                ISecured itemSecured = item as ISecured;
-                                if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
-                                {
-                                    itemsSecured.Add( item );
-                                }
-                            }
+                                var items = queryResult.ToList();
+                                var itemsSecured = new List<IEntity>();
 
-                            queryResult = itemsSecured.AsQueryable();
+                                Person person = GetCurrentPerson( context );
+
+                                foreach ( IEntity item in items )
+                                {
+                                    ISecured itemSecured = item as ISecured;
+                                    if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
+                                    {
+                                        itemsSecured.Add( item );
+
+                                        /*
+	                                        8/13/2020 - JME 
+	                                        It might seem logical to break out of the loop if there is limit parameter provided once the
+                                            limit is reached. This though has two issues.
+
+                                            FIRST
+                                            Depending how it was implemented it can have the effect of breaking when an offset is
+                                            provided. 
+	                                            {% contentchannelitem where:'ContentChannelId == 1' limit:'3' %}
+                                                    {% for item in contentchannelitemItems %}
+                                                        {{ item.Id }} - {{ item.Title }}<br>
+                                                    {% endfor %}
+                                                {% endcontentchannelitem %}
+                                            Returns 3 items (correct)
+
+                                                {% contentchannelitem where:'ContentChannelId == 1' limit:'3' offset:'1' %}
+                                                    {% for item in contentchannelitemItems %}
+                                                        {{ item.Id }} - {{ item.Title }}<br>
+                                                    {% endfor %}
+                                                {% endcontentchannelitem %}
+                                            Returns only 2 items (incorrect) - because of the offset
+
+                                            SECOND
+                                            If the limit is moved before the security check it's possible that the security checks
+                                            will remove items and will therefore not give you the amount of items that you asked for.
+
+                                            Unfortunately this has to be an inefficent process to ensure pagination works. I will also
+                                            add a detailed note to the documentation to encourage people to disable security checks,
+                                            especially when used with pagination, in the Lava docs.
+                                        */
+                                    }
+                                }
+
+                                queryResult = itemsSecured.AsQueryable();
+                            }
 
                             // offset
                             if ( parms.Any( p => p.Key == "offset" ) )
@@ -356,12 +416,6 @@ namespace Rock.Lava.Blocks
                             else
                             {
                                 queryResult = queryResult.Take( 1000 );
-                            }
-
-                            // check to ensure we had some form of filter (otherwise we'll return all results in the table)
-                            if ( !hasFilter )
-                            {
-                                throw new Exception( "Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist." );
                             }
 
                             var resultList = queryResult.ToList();
@@ -394,7 +448,7 @@ namespace Rock.Lava.Blocks
         /// <param name="query">The query.</param>
         /// <param name="parms">The parms.</param>
         /// <returns></returns>
-        private IQueryable<IEntity> PersonFilters(IQueryable<Person> query, Dictionary<string,string> parms)
+        private IQueryable<IEntity> PersonFilters( IQueryable<Person> query, Dictionary<string, string> parms )
         {
             // limit to record type of person
             var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON ).Id;
@@ -404,7 +458,7 @@ namespace Rock.Lava.Blocks
             // filter out deceased records unless they specifically want them
             var includeDeceased = false;
 
-            if (parms.Any( p => p.Key == "includedeceased" ) )
+            if ( parms.Any( p => p.Key == "includedeceased" ) )
             {
                 includeDeceased = parms["includedeceased"].AsBoolean( false );
             }
@@ -559,6 +613,7 @@ namespace Rock.Lava.Blocks
 
             var parms = new Dictionary<string, string>();
             parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
+            parms.Add( "securityenabled", "true" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
@@ -606,6 +661,7 @@ namespace Rock.Lava.Blocks
                             case "iterator":
                             case "checksecurity":
                             case "includedeceased":
+                            case "securityenabled":
                                 {
                                     parms.AddOrReplace( dynamicParm, dynamicParmValue );
                                     break;
@@ -644,8 +700,7 @@ namespace Rock.Lava.Blocks
 
                 if ( isCorrectDataType )
                 {
-                    List<string> errorMessages = new List<string>();
-                    var whereExpression = dataViewSource.GetExpression( service, parmExpression, out errorMessages );
+                    var whereExpression = dataViewSource.GetExpression( service, parmExpression );
                     return whereExpression;
                 }
                 else
@@ -722,29 +777,33 @@ namespace Rock.Lava.Blocks
                         AttributeCache filterAttribute = null;
                         Expression attributeWhereExpression = null;
 
+                        var attributeKey = property;
+
                         // We would really love to further qualify this beyond the EntityType by including the
                         // EntityTypeQualifier and EntityTypeQualifierValue but we can't easily do that so, we
                         // will do that "Just in case..." code below (because this actually happened in our Spark
                         // environment.
-                        foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
+                        // Also, there could be multiple attributes that have the same key (due to attribute qualifiers or just simply a duplicate key)
+                        var entityAttributeListForAttributeKey = AttributeCache.GetByEntity( entityTypeCache.Id )
+                            .SelectMany( a => a.AttributeIds )
+                            .Select( a => AttributeCache.Get( a ) )
+                            .Where( a => a != null && a.Key == attributeKey ).ToList();
+
+
+                        // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
+                        // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type
+                        foreach ( var attribute in entityAttributeListForAttributeKey )
                         {
-                            var attribute = AttributeCache.Get( id );
+                            filterAttribute = attribute;
+                            var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
 
-                            // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
-                            // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type
-                            if ( attribute.Key == property )
+                            if ( attributeWhereExpression == null )
                             {
-                                filterAttribute = attribute;
-                                var attributeEntityField = EntityHelper.GetEntityFieldForAttribute( filterAttribute );
-
-                                if ( attributeWhereExpression == null )
-                                {
-                                    attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
-                                }
-                                else
-                                {
-                                    attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
-                                }
+                                attributeWhereExpression = ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms );
+                            }
+                            else
+                            {
+                                attributeWhereExpression = Expression.OrElse( attributeWhereExpression, ExpressionHelper.GetAttributeExpression( service, parmExpression, attributeEntityField, selectionParms ) );
                             }
                         }
 
@@ -754,12 +813,18 @@ namespace Rock.Lava.Blocks
                         }
                     }
 
-                   if ( returnExpression == null )
+                    if ( returnExpression == null )
                     {
                         returnExpression = expression;
                     }
                     else
                     {
+                        if ( expression == null )
+                        {
+                            // unable to match to property or attribute, so just return what we got
+                            return returnExpression;
+                        }
+
                         if ( currentExpressionComparisonType == ExpressionComparisonType.And )
                         {
                             returnExpression = Expression.AndAlso( returnExpression, expression );

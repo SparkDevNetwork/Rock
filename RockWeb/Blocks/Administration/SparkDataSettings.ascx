@@ -67,9 +67,9 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSparkDataEdit" runat="server" Visible="false">
-                        <p> For more information about your account, or to update your payment information please visit your organization’s profile on the
+                        <p> For more information about your account, or to update your payment information please visit your organization's profile on the
                         Rock RMS website.</p>
-                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank" >Organization Profile</a></p>
+                        <p><a href="https://www.rockrms.com/sparkdatalink" target="_blank">Organization Profile</a></p>
                         <asp:ValidationSummary ID="vsSparkDataEdit" runat="server" HeaderText="Please Correct the Following" ValidationGroup="SparkDataEditValidationGroup" CssClass="alert alert-validation" />
                         <div class="row">
                             <div class="col-md-6">
@@ -90,7 +90,7 @@
                                     <Rock:HighlightLabel ID="hlAccountStatus" runat="server" LabelType="Success" Text="" />
                             </div>
                         <div class="pull-right">
-                        <asp:LinkButton ID="btnUpdateSettings" runat="server" CssClass="btn btn-default btn-sm" style="padding:3px 10px;" OnClick="btnUpdateSettings_Click" >Update Settings</asp:LinkButton>
+                        <asp:LinkButton ID="btnUpdateSettings" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnUpdateSettings_Click" >Update Settings</asp:LinkButton>
                             </div>
                             </header>
                     </asp:Panel>

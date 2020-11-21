@@ -69,12 +69,37 @@ namespace Rock.Attribute
         {
             if ( enabledSlidingDateRangeTypes != null )
             {
-                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( enabledSlidingDateRangeTypes ) );
+                EnabledSlidingDateRangeTypes = enabledSlidingDateRangeTypes;
             }
             if ( enabledSlidingDateRangeUnits != null )
             {
-                FieldConfigurationValues.Add( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( enabledSlidingDateRangeUnits ) );
+                EnabledSlidingDateRangeUnits = EnabledSlidingDateRangeUnits;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the enabled sliding date range types.
+        /// </summary>
+        /// <value>
+        /// The enabled sliding date range types.
+        /// </value>
+        public string EnabledSlidingDateRangeTypes
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENABLED_SLIDING_DATE_RANGE_TYPES );
+            set => FieldConfigurationValues.AddOrReplace( ENABLED_SLIDING_DATE_RANGE_TYPES, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the enabled sliding date range units.
+        /// </summary>
+        /// <value>
+        /// The enabled sliding date range units.
+        /// </value>
+        public string EnabledSlidingDateRangeUnits
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENABLED_SLIDING_DATE_RANGE_UNITS );
+            set => FieldConfigurationValues.AddOrReplace( ENABLED_SLIDING_DATE_RANGE_UNITS, new Field.ConfigurationValue( value ) );
+        }
+
     }
 }

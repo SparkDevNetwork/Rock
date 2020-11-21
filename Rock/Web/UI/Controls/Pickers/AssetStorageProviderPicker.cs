@@ -26,6 +26,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control than can be used to select an asset storage provider
+    /// </summary>
     class AssetStorageProviderPicker : RockDropDownList
     {
         public bool ShowAll

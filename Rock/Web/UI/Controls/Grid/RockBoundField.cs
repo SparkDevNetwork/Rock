@@ -45,24 +45,37 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public ColumnPriority ColumnPriority
         {
-            get {
-                object t = ViewState["ColumnPriority"];
-                return (t == null) ? ColumnPriority.AlwaysVisible : (ColumnPriority)t; 
+            get
+            {
+                var columnPriority = ViewState["ColumnPriority"] as ColumnPriority?;
+                return columnPriority ?? ColumnPriority.AlwaysVisible;
             }
-            set { ViewState["ColumnPriority"] = value; }
+
+            set
+            {
+                ViewState["ColumnPriority"] = value;
+            }
         }
 
+
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included
+        /// in the export. See <seealso cref="ExcelExportBehavior" />.
         /// </summary>
         public virtual ExcelExportBehavior ExcelExportBehavior
         {
-            get {
-                object t = ViewState["ExcelExportBehavior"];
-                return ( t == null ) ? ExcelExportBehavior.IncludeIfVisible : (ExcelExportBehavior)t;
+            get
+            {
+                var excelExportBehavior = ViewState["ExcelExportBehavior"] as ExcelExportBehavior?;
+
+                // default to IncludeIfVisible
+                return excelExportBehavior ?? ExcelExportBehavior.IncludeIfVisible;
             }
-            set { ViewState["ExcelExportBehavior"] = value; }
+
+            set
+            {
+                ViewState["ExcelExportBehavior"] = value;
+            }
         }
 
         /// <summary>
@@ -85,12 +98,24 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override string FormatDataValue( object dataValue, bool encode )
         {
-            if (dataValue is string && TruncateLength > 0)
+            if ( dataValue is string && TruncateLength > 0 )
             {
-                return base.FormatDataValue( ( (string)dataValue ).Truncate( TruncateLength ), encode );
+                return base.FormatDataValue( ( ( string ) dataValue ).Truncate( TruncateLength ), encode );
             }
 
-            return base.FormatDataValue( dataValue, encode );
+            /*
+             * [2020-07-04] DL - If dataValue.ToString() returns null, avoid calling
+             * System.Web.UI.WebControls.BoundField.FormatDataValue because it will throw an Exception.
+             */
+            if ( dataValue != null
+                 && string.IsNullOrEmpty( dataValue.ToString() ) )
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return base.FormatDataValue( dataValue, encode );
+            }
         }
 
         /// <summary>
@@ -102,7 +127,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( row.DataItem is System.Data.DataRowView )
             {
-                var dataRow = ( (System.Data.DataRowView)row.DataItem ).Row;
+                var dataRow = ( ( System.Data.DataRowView ) row.DataItem ).Row;
                 return dataRow[this.DataField];
             }
 
@@ -119,7 +144,7 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         public override bool Initialize( bool sortingEnabled, Control control )
         {
-            
+
             return base.Initialize( sortingEnabled, control );
         }
 
