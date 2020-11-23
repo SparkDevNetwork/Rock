@@ -109,6 +109,7 @@
     <Compile Include="Rock\Utility\RockDynamicTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalSettingTests.cs" />
     <Compile Include="Rock\Utility\RockCacheabilityTests.cs" />
+    <Compile Include="Rock\Utility\ReflectionTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
   </ItemGroup>
   <ItemGroup>
