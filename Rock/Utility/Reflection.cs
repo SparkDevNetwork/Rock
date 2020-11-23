@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -50,11 +52,7 @@ namespace Rock
         public static SortedDictionary<string, Type> FindTypes( Type baseType, string typeName = null )
         {
             SortedDictionary<string, Type> types = new SortedDictionary<string, Type>();
-
-            var assemblies = Reflection.GetPluginAssemblies();
-
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            assemblies.Add( executingAssembly );
+            var assemblies = GetRockAndPluginAssemblies();
 
             foreach ( var assemblyEntry in assemblies )
             {
@@ -219,6 +217,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the specified entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static IEntity GetIEntityForEntityType( int entityTypeId, Guid entityGuid, Data.DbContext dbContext = null )
+        {
+            var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+            var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
+            return entity;
+        }
+
+        /// <summary>
         /// Gets the appropriate Rock.Data.IService based on the entity type
         /// </summary>
         /// <param name="entityType">Type of the Entity.</param>
@@ -297,6 +317,20 @@ namespace Rock
             {
                 _pluginAssemblies.Add( _appCodeAssembly );
             }
+        }
+
+        /// <summary>
+        /// Gets a list of Assemblies, including Rock and all those in the ~/Bin and ~/Plugins folders as well as the RockWeb.App_Code assembly that are
+        /// assemblies that might have plugins
+        /// </summary>
+        /// <returns></returns>
+        public static List<Assembly> GetRockAndPluginAssemblies()
+        {
+            var assemblies = GetPluginAssemblies();
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            assemblies.Add( executingAssembly );
+
+            return assemblies;
         }
 
         /// <summary>
@@ -394,6 +428,50 @@ namespace Rock
             _pluginAssemblies = pluginAssemblies;
 
             return _pluginAssemblies.ToList();
+        }
+
+
+        /// <summary>
+        /// Gets the name of the type in a "friendly" manner.
+        /// Nested types are returned as "A.B.C."
+        /// Generic types are returned as "A&lt;B,C&gt;"
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public static string GetFriendlyName( Type type )
+        {
+            if ( type == null )
+            {
+                return string.Empty;
+            }
+
+            var rawTypeName = type.Name;
+
+            if ( type.IsGenericType && type.IsNested )
+            {
+                var nameWithoutParamCount = rawTypeName.Substring( 0, rawTypeName.IndexOf( "`" ) );
+                var nestedName = string.Format( "{0}.{1}", GetFriendlyName( type.DeclaringType ), nameWithoutParamCount );
+
+                return string.Format(
+                    "{0}<{1}>",
+                    nestedName,
+                    type.GetGenericArguments().Select( GetFriendlyName ).JoinStrings( ", " ) );
+            }
+
+            if ( type.IsGenericType )
+            {
+                return string.Format(
+                    "{0}<{1}>",
+                    rawTypeName.Substring( 0, rawTypeName.IndexOf( "`" ) ),
+                    type.GetGenericArguments().Select( GetFriendlyName ).JoinStrings( ", " ) );
+            }
+
+            if ( type.IsNested )
+            {
+                return string.Format( "{0}.{1}", GetFriendlyName( type.DeclaringType ), type.Name );
+            }
+
+            return rawTypeName;
         }
     }
 }

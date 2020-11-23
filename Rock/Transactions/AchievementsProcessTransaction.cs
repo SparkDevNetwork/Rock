@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
@@ -26,6 +27,8 @@ namespace Rock.Transactions
     /// Transaction to process achievements for updated source entities
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use ProcessAchievements Task instead." )]
+    [RockObsolete( "1.13" )]
     public class AchievementsProcessingTransaction : ITransaction
     {
         /// <summary>

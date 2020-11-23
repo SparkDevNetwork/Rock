@@ -66,7 +66,7 @@ namespace Rock.Migrations
             {
                 rockContext.Database.ExecuteSqlCommand( "DELETE [MetaLastNameLookup]" );
                 rockContext.Database.ExecuteSqlCommand( "ALTER TABLE MetaLastNameLookup ALTER COLUMN LastName NVARCHAR(100)" );
-                rockContext.BulkInsert( metaLastNameLookupsToInsert );
+                rockContext.BulkInsertWithConditionalCacheUse( metaLastNameLookupsToInsert, false );
             }
 
             Sql( "DELETE [MetaNickNameLookup]" );
