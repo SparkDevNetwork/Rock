@@ -214,7 +214,7 @@ namespace Rock.Rest.Controllers
 
                 return ControllerContext.Request.CreateErrorResponse(
                         HttpStatusCode.BadRequest,
-                        $"{person} can not be scheduled due a scheduling conflict with {firstConflict?.GroupName} in the {firstConflict?.LocationName}." );
+                        $"{person} cannot be scheduled due a scheduling conflict with {firstConflict?.GroupName} in the {firstConflict?.LocationName}." );
             }
 
             return new HttpResponseMessage( HttpStatusCode.OK );
