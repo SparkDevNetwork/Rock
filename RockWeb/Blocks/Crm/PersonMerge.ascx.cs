@@ -143,13 +143,14 @@ namespace RockWeb.Blocks.Crm
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
 
-            string resetConfirmation =
-                GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() ?
-                @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the validity of the request before completing this merge." :
-                @"Because of this, make sure to confirm the validity of the request before completing this merge.";
+            var resetConfirmation = string.Empty;
+            if ( GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() )
+            {
+                resetConfirmation = @"<br>Additionally, this person will be prompted to reconfirm before they can login using the email address you select.";
+            }
 
             nbSecurityNotice.Text = string.Format(
-                @"Because there are two different emails associated with this merge, and at least one of the records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account through the merge process. {0}",
+                @"There are two different emails associated with this merge, and at least one of the records has a login.  It is possible that the new record was created in an attempt to gain access to the account through the merge process. Because all email addresses are saved and used when searching for this person,<b> remove any invalid email address before you perform this merge </b>. {0}",
                 resetConfirmation );
         }
 
@@ -284,7 +285,6 @@ namespace RockWeb.Blocks.Crm
                     {
                         MergeData.PrimaryPersonId = selectedPersonIds.FirstOrDefault();
                     }
-
 
                     BuildColumns();
                     BindGrid();
