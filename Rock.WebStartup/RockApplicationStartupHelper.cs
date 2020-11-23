@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,14 +81,6 @@ namespace Rock.WebStartup
 
             LogStartupMessage( "Application Starting" );
 
-            // Start the message bus
-            ShowDebugTimingMessage( "Message Bus" );
-            RockMessageBus.StartAsync().Wait();
-
-            // Start stage 1 of the web farm
-            ShowDebugTimingMessage( "Web Farm (stage 1)" );
-            RockWebFarm.StartStage1();
-
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
 
             bool hasPendingEFMigrations = runMigrationFileInfo.Exists || HasPendingEFMigrations();
@@ -143,6 +135,14 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Send Version Update Notifications" );
             }
 
+            // Start the message bus
+            RockMessageBus.StartAsync().Wait();
+            ShowDebugTimingMessage( "Message Bus" );
+
+            // Start stage 1 of the web farm
+            RockWebFarm.StartStage1();
+            ShowDebugTimingMessage( "Web Farm (stage 1)" );
+
             RegisterHttpModules();
 
             // Get Lava set up
@@ -159,8 +159,8 @@ namespace Rock.WebStartup
             }
 
             // Start stage 2 of the web farm
-            ShowDebugTimingMessage( "Web Farm (stage 2)" );
             RockWebFarm.StartStage2();
+            ShowDebugTimingMessage( "Web Farm (stage 2)" );
         }
 
         /// <summary>
