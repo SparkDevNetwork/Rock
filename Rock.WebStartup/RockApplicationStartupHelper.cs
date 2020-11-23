@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,12 +30,14 @@ using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.WebFarm;
 
 namespace Rock.WebStartup
 {
@@ -77,7 +79,15 @@ namespace Rock.WebStartup
 
             StartDateTime = RockDateTime.Now;
 
-            RockApplicationStartupHelper.LogStartupMessage( "Application Starting" );
+            LogStartupMessage( "Application Starting" );
+
+            // Start the message bus
+            ShowDebugTimingMessage( "Message Bus" );
+            RockMessageBus.StartAsync().Wait();
+
+            // Start stage 1 of the web farm
+            ShowDebugTimingMessage( "Web Farm (stage 1)" );
+            RockWebFarm.StartStage1();
 
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
 
@@ -147,6 +157,10 @@ namespace Rock.WebStartup
                 StartJobScheduler();
                 ShowDebugTimingMessage( "Start Job Scheduler" );
             }
+
+            // Start stage 2 of the web farm
+            ShowDebugTimingMessage( "Web Farm (stage 2)" );
+            RockWebFarm.StartStage2();
         }
 
         /// <summary>
