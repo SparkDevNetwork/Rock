@@ -1,0 +1,136 @@
+﻿<style>
+.sg-group-details {
+    box-shadow: 0px 1px 2px rgba(0,0,0,0.24);
+    background-color: #fff;
+    border: 1px solid #f4f4f4;
+    padding-left: 15px;
+    padding-right: 15px;
+
+    margin-top: 20px;
+    border-radius: 6px;
+    margin-bottom: 40px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+ .sg-name {
+    font-weight: bold;
+    font-size: 23px;
+    line-height: 32px;
+    margin: 2rem 0px 0px 0px;
+}
+
+  .sg-campus {
+    font-size: 16px;
+    color: #777779;
+}
+
+  .sg-description {
+    line-height: 28px;
+    font-size: 18px;
+    color: #404041;
+    margin: 10px 0px 15px 0px;
+}
+
+  .sg-interested-text {
+    text-align: center;
+    font-size: 28px;
+
+    color: #428bca;
+    font-weight: bold;
+}
+
+  .sg-sub-head {
+    font-size: 14px;
+    text-align: center;
+    color: #8a8a8c;
+    margin-bottom: 30px;
+}
+
+.table>tbody>tr>td {
+    border-top: none;
+    font-size: 16px;
+    padding: 8px 0px !important;
+}
+
+.btn-primary {
+    color: #fff;
+    height: 48px;
+    border-radius: 30px !important;
+    width: 75%;
+    margin-left: 12.5%;
+    font-size: 18px !important;
+    letter-spacing: -0.225px;
+    padding: 10px 0 0 0 !important;
+    margin-top: 3rem;
+}
+</style>
+
+{% assign group = Workflow | Attribute:'Group','Object' %}
+
+<div class="sg-group-details">
+  <div class="sg-name">{{group.Name}}</div>
+  <div class="sg-campus"> {{group.Campus.Name}} </div>
+  <div class="sg-description"> {{group.Description}} </div>
+  <table class="sg-table table table-borderless">
+    <tbody>
+      <tr>
+        <td style="width: 50%">
+          <strong>Age</strong> <br>
+          {% assign minAge = group | Attribute:'MinimumAge' %}
+          {% assign maxAge = group | Attribute:'MaximumAge' %}
+          {% if minAge != empty or maxAge != empty %}
+            {% if minAge == empty %}
+              {{maxAge}} & Under
+            {% else %}
+              {% if maxAge == empty %}
+                {{minAge}} & Up
+              {% else %}
+                {{minAge}} - {{maxAge}}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        </td>
+        <td style="width: 50%">
+          <strong>Type</strong> <br>
+          {{group | Attribute:'Category'}}
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 50%">
+          <strong>Schedule</strong> <br>
+          {{group.Schedule.FriendlyScheduleText}}</br>
+
+          {% assign roomNumber = group | Attribute:'RoomNumber1' %}
+          {% if roomNumber != empty %}
+          </br>
+          <strong>Room Number</strong> <br>
+          {{roomNumber}}</br>
+          {% endif %}
+
+          {% assign groupImage = group | Attribute:'Image' %}
+          {% if groupImage != empty %}
+          </br>
+          <strong>Image</strong> <br>
+          {{groupImage}}</br>
+          {% endif %}
+        </td>
+        <td style="width: 50%">
+          <strong>Leaders</strong>
+            {% for member in group.Members %}
+              {% if member.GroupRole.IsLeader %}
+                <br>{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
+              {% endif %}
+            {% endfor %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% assign groupTypeName = group.GroupType | Attribute:'PublicName' %}
+{% if groupTypeName == ''%}
+  {% assign groupTypeName = group.GroupType.Name %}
+{% endif %}
+<p id="sg-header" class="sg-interested-text">Interested in this {{groupTypeName}}?</p>
+<p class=" sg-sub-head">
+    We’ll let the {{groupTypeName}} leader know so they can follow up with more details.
+</p>
