@@ -743,6 +743,11 @@ $@"Rock.controls.itemPicker.initialize({{
             {
                 writer.AddAttribute( "id", this.ClientID.ToString() );
                 writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
+                foreach( string styleKey in this.Style.Keys)
+                {
+                    writer.AddStyleAttribute( styleKey, this.Style[styleKey] );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _hfItemId.RenderControl( writer );
