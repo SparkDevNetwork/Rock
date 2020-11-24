@@ -1811,7 +1811,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             {
                 var groupTypeIds = new List<int>() { checkInArea.Id };
                 groupTypeIds.AddRange( checkInArea.ChildGroupTypes.Select( a => a.Id ) );
-                /// Get all Attendance records for the current day and location
+                // Get all Attendance records for the current day and location
                 var attendanceQueryToUpdate = new AttendanceService( rockContext ).Queryable().Where( a =>
                     !a.PresentDateTime.HasValue
                     && a.CreatedDateTime >= lastRunDateTime
