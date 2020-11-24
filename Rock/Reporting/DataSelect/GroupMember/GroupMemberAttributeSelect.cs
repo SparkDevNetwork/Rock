@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
@@ -388,11 +389,19 @@ namespace Rock.Reporting.DataSelect.GroupMember
             var settings = new SelectSettings( selection );
 
             var entityFields = GetGroupMemberAttributeEntityFields();
-            var entityField = entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
+            
+            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
 
             if ( entityField == null )
             {
-                return null;
+                // This shouldn't happe, but if searching by UniqueName didn't work, search by Name instead
+                entityField = entityFields.FirstOrDefault( f => f.Name == settings.AttributeKey );
+            }
+
+            if ( entityField == null )
+            {
+                // should't happen, but just in case
+                return new BoundField();
             }
 
             if ( entityField.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.BOOLEAN.AsGuid() ) )
