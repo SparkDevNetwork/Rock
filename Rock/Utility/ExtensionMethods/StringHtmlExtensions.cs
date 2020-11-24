@@ -182,6 +182,12 @@ namespace Rock
         /// <returns></returns>
         public static string SanitizeLava( this string lava )
         {
+            // Don't choke on nulls
+            if ( string.IsNullOrWhiteSpace( lava ) )
+            {
+                return string.Empty;
+            }
+
             var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
             lava = doubleBracesRegex.Replace( lava, string.Empty );
 
@@ -280,7 +286,16 @@ namespace Rock
             var settings = CommonMark.CommonMarkSettings.Default.Clone();
             settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
 
-            return CommonMark.CommonMarkConverter.Convert( markdown, settings );
+            /*
+	            6/9/2020 - JME 
+	            Added the .Trim() to the return below. Without it CommonMark was converting strings
+                like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
+                when other filters were being applied in Lava to make line breaks '<br>'.
+
+                Reason: Notes Lava was having extra <br>'s at the end.
+            */
+            
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
         }
 
         /// <summary>

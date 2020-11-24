@@ -58,6 +58,8 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
     {% endif %}
 </a>
 ", "", 9 )]
+    [BooleanField("Display Final Steps","Show user be able to select optional checbox options for connection requests, prayer requests, etc.", true)]
+    [TextField("Thanks Text","Override the default thanks text with this string.", false, "")]
 
     public partial class ConnectionCard : RockBlock
     {
@@ -410,7 +412,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                        a.Person.BirthMonth,
                        a.Person.BirthDay,
                        a.Person.Gender,
-                       a.Person.NickName,
+                       a.Person.FirstName,
                        a.Person.RecordStatusValueId,
                        a.Person
                    })
@@ -425,7 +427,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     var familyMemberQry = familyMembers
                         .Where(m =>
                            m.GroupId == familyId &&
-                           m.NickName != null);
+                           m.FirstName != null);
 
                     if (preventInactive && dvInactive != null)
                     {
@@ -448,7 +450,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                             .ThenBy(m => m.BirthMonth)
                             .ThenBy(m => m.BirthDay)
                             .ThenBy(m => m.Gender)
-                            .Select(m => m.NickName)
+                            .Select(m => m.FirstName)
                             .ToList();
 
                         var family = new CheckInFamily();
@@ -992,7 +994,16 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
         private void FinalStep()
         {
             pnFamilyMembers.Visible = false;
-            pnFinalStep.Visible = true;
+
+            if( GetAttributeValue("DisplayFinalSteps").AsBoolean() )
+            {
+                pnFinalStep.Visible = true;
+            }
+            else
+            {
+                //Skip this screen and submit
+                btnSubmit_Click( null, null );
+            }
         }
 
         protected void btnSubmit_Click( object sender, EventArgs e )
@@ -1034,6 +1045,11 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
 
             pnSelectedData.Visible = false;
             pnFinalStep.Visible = false;
+
+            if( GetAttributeValue( "ThanksText" ).IsNotNullOrWhiteSpace() )
+            {
+                literalThanks.Text = GetAttributeValue( "ThanksText" );
+            }
             pnThanks.Visible = true;
         }
 
@@ -1926,7 +1942,7 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                     familyPersonState.ChildRelationshipToAdult = childRelationshipToAdult;
                     familyPersonState.InPrimaryFamily = inPrimaryFamily;
                     familyPersonState.Email = person.Email;
-                    familyPersonState.FirstName = person.NickName;
+                    familyPersonState.FirstName = person.FirstName;
                     familyPersonState.Gender = person.Gender;
                     familyPersonState.GradeOffset = person.GradeOffset;
                     familyPersonState.IsMarried = person.MaritalStatusValueId == _maritalStatusMarriedId;
@@ -2283,10 +2299,10 @@ namespace RockWeb.Plugins.com_visitgracechurch.Connection
                         person = personService.Get(familyPersonState.PersonId.Value);
                     }
 
-                    // NOTE, Gender, MaritalStatusValueId, NickName, LastName are required fields so, always updated them to match the UI (even if a matched person was found)
+                    // NOTE, Gender, MaritalStatusValueId, FirstName, LastName are required fields so, always updated them to match the UI (even if a matched person was found)
                     person.Gender = familyPersonState.Gender;
                     person.MaritalStatusValueId = familyPersonState.IsMarried ? maritalStatusMarried.Id : maritalStatusSingle.Id;
-                    person.NickName = familyPersonState.FirstName;
+                    person.FirstName = familyPersonState.FirstName;
                     person.LastName = familyPersonState.LastName;
 
                     // if the familyPersonState was converted to a Matched Person, don't overwrite existing values with blank values

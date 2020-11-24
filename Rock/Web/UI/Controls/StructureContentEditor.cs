@@ -247,13 +247,15 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfValue.Value;
+                return HttpUtility.UrlDecode(  _hfValue.Value );
             }
             set
             {
                 EnsureChildControls();
-                _hfValue.Value = value;
-
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    _hfValue.Value = Uri.EscapeUriString( value ); // HttpUtility.UrlEncode makes spaces + instead of %20
+                }
             }
         }
 
@@ -357,7 +359,7 @@ namespace Rock.Web.UI.Controls
             _hfValue.RenderControl( writer );
             writer.WriteLine();
 
-            writer.AddStyleAttribute( HtmlTextWriterStyle.BackgroundColor, "#f7f7f7" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "structured-content-container" );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
@@ -385,7 +387,7 @@ namespace Rock.Web.UI.Controls
                 var structuredContentToolValue = DefinedValueCache.Get( StructuredContentToolValueId.Value );
                 if ( structuredContentToolValue != null )
                 {
-                    structuredContentToolConfiguration = structuredContentToolValue.Description; 
+                    structuredContentToolConfiguration = structuredContentToolValue.Description;
                 }
             }
 
@@ -400,13 +402,8 @@ namespace Rock.Web.UI.Controls
 
             var script = string.Format( @"
 var fieldContent = $('#{1}').val();
- var output = document.getElementById('output');
-/**
- * To initialize the Editor, create a new instance with configuration object
- * @see docs/installation.md for mode details
- */
 var editor = new EditorJS({{
-holderId: '{0}',
+holder: '{0}',
 tools: {2},
 initialBlock: 'paragraph',
 data: JSON.parse(decodeURIComponent(fieldContent)),
@@ -430,7 +427,7 @@ onChange: function() {{
             var structureContent = JsonConvert.DeserializeObject<Root>( structureContentJson );
             StringBuilder html = new StringBuilder();
 
-            if ( StructuredContent == null )
+            if ( structureContent == null || structureContent.blocks == null )
             {
                 return html.ToString();
             }
@@ -492,7 +489,7 @@ onChange: function() {{
                                     }
                                     html.Append( $"</tr>" );
                                 }
-                                
+
                             }
                             html.Append( $"</table>" );
                         }

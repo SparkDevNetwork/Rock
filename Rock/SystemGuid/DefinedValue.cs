@@ -24,6 +24,16 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for the event template on the mobile calendar event list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
+
+        /// <summary>
+        /// The block template for the event template on the mobile calendar item view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW = "128F7350-97FD-4ECA-9C79-D02DE0C434EB";
+
+        /// <summary>
         /// The block template for the mobile group member list.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
@@ -37,6 +47,11 @@ namespace Rock.SystemGuid
         /// The block template for the mobile group view.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
+        /// <summary>
+        /// The block template for the mobile prayer session block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
 
         #endregion
 

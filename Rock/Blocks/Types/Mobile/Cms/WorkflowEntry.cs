@@ -75,10 +75,27 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.RedirectToPage,
         Order = 4 )]
 
+    [CustomDropdownListField( "Scan Mode",
+        description: "",
+        listSource: "0^Off,1^Automatic",
+        IsRequired = false,
+        DefaultValue = "0",
+        Key = AttributeKeys.ScanMode,
+        Order = 5 )]
+
+    [TextField( "Scan Attribute",
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Key = AttributeKeys.ScanAttribute,
+        Order = 6 )]
+
     #endregion
 
     public class WorkflowEntry : RockMobileBlockType
     {
+        #region Block Attributes
+
         /// <summary>
         /// The block setting attribute keys for the MobileWorkflowEntry block.
         /// </summary>
@@ -105,10 +122,38 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string RedirectToPage = "RedirectToPage";
 
             /// <summary>
+            /// The scan mode key
+            /// </summary>
+            public const string ScanMode = "ScanMode";
+
+            /// <summary>
+            /// The scan attribute key
+            /// </summary>
+            public const string ScanAttribute = "ScanAttribute";
+
+            /// <summary>
             /// The workflow type key
             /// </summary>
             public const string WorkflowType = "WorkflowType";
         }
+
+        /// <summary>
+        /// Gets the scan mode.
+        /// </summary>
+        /// <value>
+        /// The scan mode.
+        /// </value>
+        protected int ScanMode => GetAttributeValue( AttributeKeys.ScanMode ).AsInteger();
+
+        /// <summary>
+        /// Gets the scan attribute.
+        /// </summary>
+        /// <value>
+        /// The scan attribute.
+        /// </value>
+        protected string ScanAttribute => GetAttributeValue( AttributeKeys.ScanAttribute );
+
+        #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -136,7 +181,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            return new { };
+            return new
+            {
+                ScanAttribute = ScanMode == 1 && ScanAttribute.IsNotNullOrWhiteSpace() ? ScanAttribute : null
+            };
         }
 
         #endregion
@@ -146,20 +194,47 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <summary>
         /// Loads the workflow.
         /// </summary>
-        /// <param name="workflowId">The workflow identifier.</param>
+        /// <param name="workflowGuid">The workflow identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Model.Workflow LoadWorkflow( int? workflowId, RockContext rockContext )
+        private Model.Workflow LoadWorkflow( Guid? workflowGuid, RockContext rockContext )
         {
-            if ( workflowId.HasValue )
+            if ( workflowGuid.HasValue )
             {
-                return new WorkflowService( rockContext ).Get( workflowId.Value );
+                return new WorkflowService( rockContext ).Get( workflowGuid.Value );
             }
             else
             {
                 var workflowType = WorkflowTypeCache.Get( GetAttributeValue( AttributeKeys.WorkflowType ).AsGuid() );
 
                 return Model.Workflow.Activate( workflowType, $"New {workflowType.Name}" );
+            }
+        }
+
+        /// <summary>
+        /// Sets the initial workflow attributes.
+        /// </summary>
+        /// <param name="workflow">The workflow.</param>
+        /// <param name="fields">The fields.</param>
+        private void SetInitialWorkflowAttributes( Model.Workflow workflow, List<MobileField> fields )
+        {
+            //
+            // Set initial values from the page parameters.
+            //
+            foreach ( var pageParameter in RequestContext.PageParameters )
+            {
+                workflow.SetAttributeValue( pageParameter.Key, pageParameter.Value );
+            }
+
+            //
+            // Set/Update initial values from what the shell sent us.
+            //
+            if ( fields != null )
+            {
+                foreach ( var field in fields )
+                {
+                    workflow.SetAttributeValue( field.Key, field.Value );
+                }
             }
         }
 
@@ -228,7 +303,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 if ( formAttribute.IsVisible && !formAttribute.IsReadOnly )
                 {
                     var attribute = AttributeCache.Get( formAttribute.AttributeId );
-                    var formField = formFields.FirstOrDefault( f => f.AttributeId == formAttribute.AttributeId );
+                    var formField = formFields.FirstOrDefault( f => f.AttributeGuid == formAttribute.Attribute.Guid );
 
                     if ( attribute != null && formField != null )
                     {
@@ -435,13 +510,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <returns>A collection of string/string pairs.</returns>
         [BlockAction]
-        public WorkflowForm GetNextForm( int? workflowId = null, string formAction = null, List<MobileField> formFields = null )
+        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null )
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
 
-            var workflow = LoadWorkflow( workflowId, rockContext );
+            var workflow = LoadWorkflow( workflowGuid, rockContext );
             var currentPerson = GetCurrentPerson();
+
+            //
+            // Set initial workflow attribute values.
+            //
+            if ( !workflowGuid.HasValue )
+            {
+                SetInitialWorkflowAttributes( workflow, formFields );
+            }
 
             var action = ProcessAndGetNextAction( workflow, currentPerson, rockContext, out var message );
             if ( action == null )
@@ -468,6 +551,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         Message = message ?? GetCompletionMessage( workflow, responseText )
                     };
                 }
+                else
+                {
+                    //
+                    // If there is a second form, we need to persist.
+                    //
+                    workflowService.PersistImmediately( action );
+                }
             }
 
             //
@@ -478,7 +568,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var mobileForm = new WorkflowForm
             {
-                WorkflowId = workflow.Id
+                WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null
             };
 
             //
@@ -505,7 +595,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                     var mobileField = new MobileField
                     {
-                        AttributeId = attribute.Id,
+                        AttributeGuid = attribute.Guid,
                         Key = attribute.Key,
                         Title = attribute.Name,
                         IsRequired = formAttribute.IsRequired,
@@ -552,7 +642,19 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var actionDetails = btn.Split( new char[] { '^' } );
                 if ( actionDetails.Length > 0 )
                 {
-                    var btnType = DefinedValueCache.Get( actionDetails[1].AsGuid() );
+                    DefinedValueCache btnType;
+
+                    if ( !actionDetails[1].IsNullOrWhiteSpace() )
+                    {
+                        btnType = DefinedValueCache.Get( actionDetails[1].AsGuid() );
+                    }
+                    else
+                    {
+                        btnType = DefinedTypeCache.Get( SystemGuid.DefinedType.BUTTON_HTML )
+                            .DefinedValues
+                            .OrderBy( a => a.Order )
+                            .FirstOrDefault();
+                    }
 
                     if ( btnType != null )
                     {

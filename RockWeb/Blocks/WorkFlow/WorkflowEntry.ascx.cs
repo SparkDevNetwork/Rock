@@ -60,12 +60,13 @@ namespace RockWeb.Blocks.WorkFlow
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
-        IsRequired = true,
-        Order = 2 )]
+        IsRequired = false,
+        Order = 2)]
     [TextField(
         "Block Title Icon CSS Class",
         Description = "The CSS class for the icon displayed in the block title. If not specified, the icon for the Workflow Type will be shown.",
         Key = AttributeKey.BlockTitleIconCssClass,
+        IsRequired = false,
         Order = 3 )]
 
     #endregion
@@ -908,7 +909,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void SetBlockTitle()
         {
-            // Set the Block Title.
+            // If the block title is specified by a configuration setting, use it.
             var blockTitle = GetAttributeValue( AttributeKey.BlockTitleTemplate );
 
             if ( !string.IsNullOrWhiteSpace( blockTitle ) )
@@ -924,25 +925,22 @@ namespace RockWeb.Blocks.WorkFlow
                 blockTitle = blockTitle.ResolveMergeFields( mergeFields );
             }
 
-            // If the Block Title is blank, set the default.
+            // If the block title is not configured, use the Workflow Type if it is available.
             if ( string.IsNullOrWhiteSpace( blockTitle ) )
             {
-                if ( _workflowType != null && !ConfiguredType )
+                if ( _workflowType != null )
                 {
                     blockTitle = string.Format( "{0} Entry", _workflowType.WorkTerm );
                 }
+                else
+                {
+                    blockTitle = "Workflow Entry";
+                }
             }
 
-            if ( !string.IsNullOrWhiteSpace( blockTitle ) )
-            {
-                lTitle.Text = blockTitle;
-            }
-            else if ( _workflowType != null )
-            {
-                lTitle.Text = string.Format( "{0} Entry", _workflowType.WorkTerm );
-            }
+            lTitle.Text = blockTitle;
 
-            // Set the Page Title to the Workflow Type name, unless the Workflow Type is restricted by a block configuration setting.
+            // Set the Page Title to the Workflow Type name, unless the Workflow Type has been specified by a configuration setting.
             if ( _workflowType != null && !ConfiguredType )
             {
                 RockPage.PageTitle = _workflowType.Name;

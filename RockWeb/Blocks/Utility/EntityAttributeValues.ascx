@@ -4,7 +4,9 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block" Visible="false">
-            <div class="panel-heading"><i class="fa fa-list-ul"></i> <asp:Literal ID="ltTitle" runat="server"></asp:Literal></div>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-list-ul"></i> <asp:Literal ID="ltTitle" runat="server"></asp:Literal></h1>
+            </div>
             <div class="panel-body">
                 <asp:Panel ID="pnlView" runat="server">
                     <asp:PlaceHolder ID="phAttributes" runat="server" />

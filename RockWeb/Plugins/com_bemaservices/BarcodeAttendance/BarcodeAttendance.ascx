@@ -172,12 +172,11 @@
 <script type="text/javascript">
 
     function pageLoad() {
-        //Hopefully this gets called...
         
         //Set Event Handlers for textfield and button
         $('#<%=btnBarcode.ClientID%>').click(function () {
             var text = $('#<%=tbBarcode.ClientID%>').val();
-            //console.log("Found Text: " + text);
+
             text = text.trim();
             text = text.replace("%", "");
             
@@ -190,20 +189,31 @@
                     //If not already marked attended
                     if ($('#<%=listMarkedAttendance.ClientID%>').val().indexOf("|" + personId + "|") == -1) {
 
-                        //Add To the listMarkedAttendance Hidden Field (initial pipe should already be there)
-                        $('#<%=listMarkedAttendance.ClientID%>').val($('#<%=listMarkedAttendance.ClientID%>').val() + personId + "|")
+                        // Check if attendee person record is available in this list
+                        var $attendeeRow = $("#tableAttendees").find('#attendeeRow_' + personId);
 
-                        //Search Through Table For Rows with PersonId and Mark As Attended
+                        //IF Row exists
+                        if ($attendeeRow.length) {
+                            //Add To the listMarkedAttendance Hidden Field (initial pipe should already be there)
+                            $('#<%=listMarkedAttendance.ClientID%>').val($('#<%=listMarkedAttendance.ClientID%>').val() + personId + "|");
 
-                        $("#tableAttendees").find('#attendeeRow_' + personId).find("a[id$=linkRemoveAttendance]").removeClass("aspNetDisabled");
-                        $("#tableAttendees").find('#attendeeRow_' + personId).find("span[id$=labelAttended]").text("-Marked-");
+                            //Search Through Table For Rows with PersonId and Mark As Attended
 
-                        //Add 1 to Attendance Totals
+                            $attendeeRow.find("a[id$=linkRemoveAttendance]").removeClass("aspNetDisabled");
+                            $attendeeRow.find("span[id$=labelAttended]").text("-Marked-");
+
+                            //Add 1 to Attendance Totals
+
+                            var capacityTotal = $("#tableAttendees").find("span[id$=labelAttended]").length;
+                            var attendedTotal = $('#<%=listMarkedAttendance.ClientID%>').val().split("|").length - 2;
+
+                            $('#<%=nbCapacity.ClientID%>').find("font").text(attendedTotal + "/" + capacityTotal);
+                        }
+                        //ELSE, show popup alert
+                        else {
+                            window.alert("No Person Id Matched In Current Group Selection");
+                        }
                         
-                        var capacityTotal = $("#tableAttendees").find("span[id$=labelAttended]").length;
-                        var attendedTotal = $('#<%=listMarkedAttendance.ClientID%>').val().split("|").length - 2;
-
-                        $('#<%=nbCapacity.ClientID%>').find("font").text(attendedTotal + "/" + capacityTotal);
 
                     }
                     
@@ -227,7 +237,6 @@
         //Create row click to attendance function 
         $("#tableAttendees").find("tr").click(function () {
             var personId = $(this).find("span[id$=labelID]").text();
-            //console.log("PersonId selected: " + personId);
 
             //prefill scan text and trigger button
             $('#<%=tbBarcode.ClientID%>').val(personId);

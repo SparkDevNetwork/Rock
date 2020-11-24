@@ -129,10 +129,9 @@ namespace Rock.Model
             var recipients = new PersonService( ( RockContext ) Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
-                .Select( a => new RockEmailMessageRecipient( a, null ) )
                 .ToList();
 
-            return this.CreateEmailCommunication( recipients, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+            return this.CreateEmailCommunication( recipients.Select( a => new RockEmailMessageRecipient( a, null ) ).ToList(), fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
         }
 
         /// <summary>

@@ -85,9 +85,24 @@ namespace RockWeb.Blocks.Connection
 </div>
 ", key: "ConnectionRequestStatusIconsTemplate", order:7
 )]
+    [BooleanField(
+        "Enable Request Security",
+        DefaultBooleanValue = false,
+        Description = "When enabled, the the security column for request would be displayed.",
+        Key = AttributeKeys.EnableRequestSecurity,
+        IsRequired = true,
+        Order = 8
+    )]
 
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKeys
+        {
+            public const string EnableRequestSecurity = "EnableRequestSecurity";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private const string TOGGLE_ACTIVE_SETTING = "MyConnectionOpportunities_ToggleShowActive";
@@ -136,6 +151,9 @@ namespace RockWeb.Blocks.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
+            var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+            securityField.Visible = GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean();
 
             var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
             if ( lastActivityNoteBoundField != null )
@@ -274,7 +292,7 @@ namespace RockWeb.Blocks.Connection
                 if ( tglMyOpportunities.Checked )
                 {
                     // if 'My Opportunities' is selected, only include the opportunities that have active requests with current person as the connector
-                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.Where( o => o.HasActiveRequestsForConnector ).ToList();
+                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.Where( o => o.HasActiveRequestsForConnector ).OrderBy( c => c.Name ).ToList();
                 }
                 else
                 {
@@ -485,9 +503,9 @@ namespace RockWeb.Blocks.Connection
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void gRequests_GridRebind( object sender, EventArgs e )
+        protected void gRequests_GridRebind( object sender, GridRebindEventArgs e )
         {
-            BindGrid();
+            BindGrid( e.IsExporting );
         }
 
         /// <summary>
@@ -556,6 +574,10 @@ namespace RockWeb.Blocks.Connection
 
             }
 
+            var selfAssignedOpportunities = new List<int>();
+            var enableRequestSecurity = GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean();
+            bool isSelfAssignedOpportunitiesQueried = false;
+
             // Loop through opportunities
             foreach ( var opportunity in opportunities )
             {
@@ -564,7 +586,7 @@ namespace RockWeb.Blocks.Connection
                 bool canEdit = UserCanEdit || opportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool campusSpecificConnector = false;
                 var campusIds = new List<int>();
-
+                
                 if ( CurrentPersonId.HasValue )
                 {
                     // Check to see if person belongs to any connector group that is not campus specific
@@ -596,7 +618,20 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                var canView = canEdit || opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                if ( enableRequestSecurity && CurrentPersonId.HasValue && !isSelfAssignedOpportunitiesQueried )
+                {
+                    isSelfAssignedOpportunitiesQueried = true;
+                    selfAssignedOpportunities = new ConnectionRequestService( rockContext )
+                        .Queryable()
+                        .Where( a => a.ConnectorPersonAlias.PersonId == CurrentPersonId.Value )
+                        .Select( a => a.ConnectionOpportunityId )
+                        .Distinct()
+                        .ToList();
+                }
+
+                var canView = canEdit ||
+                                opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                                ( enableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
 
                 // Is user is authorized to view this opportunity type...
                 if ( canView )
@@ -609,6 +644,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             Id = opportunity.ConnectionTypeId,
                             Name = opportunity.ConnectionType.Name,
+                            EnableRequestSecurity = enableRequestSecurity,
                             Opportunities = new List<OpportunitySummary>()
                         };
                         SummaryState.Add( connectionTypeSummary );
@@ -695,6 +731,7 @@ namespace RockWeb.Blocks.Connection
                     allOpportunities.Contains( r.ConnectionOpportunityId ) &&
                     ( r.ConnectionState == ConnectionState.Active ||
                         ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ) )
+                .AsEnumerable()
                 .Select( r => new
                 {
                     r.Id,
@@ -876,16 +913,18 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void BindGrid( bool isExporting = false )
         {
+            ConnectionTypeSummary connectionTypeSummary = null;
             OpportunitySummary opportunitySummary = null;
 
             if ( SelectedOpportunityId.HasValue )
             {
+                connectionTypeSummary = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
                 opportunitySummary = SummaryState.SelectMany( t => t.Opportunities.Where( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
             }
 
-            if ( opportunitySummary != null )
+            if ( connectionTypeSummary != null && opportunitySummary != null )
             {
                 gRequests.Actions.ShowAdd = opportunitySummary.CanEdit;
                 gRequests.IsDeleteEnabled = opportunitySummary.CanEdit;
@@ -942,7 +981,6 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
@@ -1032,28 +1070,30 @@ namespace RockWeb.Blocks.Connection
 
                     var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
 
-                    var connectionRequests = requests.ToList()
-                    .Select( r => new
-                    {
-                        r.Id,
-                        r.Guid,
-                        PersonId = r.PersonAlias.PersonId,
-                        Name = r.PersonAlias.Person.FullNameReversed,
-                        Campus = r.Campus,
-                        Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
-                        GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
-                        GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
-                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullNameReversed : "",
-                        LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
-                        LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
-                        LastActivityNote = lastActivityNoteBoundField != null && lastActivityNoteBoundField.Visible ? r.ConnectionRequestActivities.OrderByDescending(
-                            a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
-                        Status = r.ConnectionStatus.Name,
-                        StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
-                        ConnectionState = r.ConnectionState,
-                        StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate )
-                    } )
-                   .ToList();
+                    var connectionRequests = requests
+                        .AsEnumerable()
+                        .Where( r => IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson, r ) )
+                        .Select( r => new
+                        {
+                            r.Id,
+                            r.Guid,
+                            PersonId = r.PersonAlias.PersonId,
+                            Name = r.PersonAlias.Person.FullNameReversed,
+                            Campus = r.Campus,
+                            Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
+                            GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
+                            GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
+                            Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullNameReversed : "",
+                            LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault(), isExporting ),
+                            LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
+                            LastActivityNote = lastActivityNoteBoundField != null && ( lastActivityNoteBoundField.Visible || isExporting ) ? r.ConnectionRequestActivities.OrderByDescending(
+                                a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
+                            Status = r.ConnectionStatus.Name,
+                            StatusLabel = r.ConnectionStatus.IsCritical ? "warning" : "info",
+                            ConnectionState = r.ConnectionState,
+                            StateLabel = FormatStateLabel( r.ConnectionState, r.FollowupDate, isExporting )
+                        } )
+                       .ToList();
 
                     if ( sortProperty != null && sortProperty.Property == LAST_ACTIVITY )
                     {
@@ -1117,13 +1157,21 @@ namespace RockWeb.Blocks.Connection
             return string.Format( "{0}-{1}", SelectedOpportunityId ?? 0, key );
         }
 
-        private string FormatActivity( object item )
+        private string FormatActivity( object item, bool isExporting )
         {
             var connectionRequestActivity = item as ConnectionRequestActivity;
             if ( connectionRequestActivity != null )
             {
-                return string.Format( "{0} (<span class='small'>{1}</small>)",
-                    connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                if ( isExporting )
+                {
+                    return string.Format( "{0} ({1})",
+                        connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                }
+                else
+                {
+                    return string.Format( "{0} (<span class='small'>{1}</small>)",
+                        connectionRequestActivity.ConnectionActivityType.Name, connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
+                }
             }
             return string.Empty;
         }
@@ -1150,7 +1198,7 @@ namespace RockWeb.Blocks.Connection
             return resolvedValues.AsDelimited( ", " );
         }
 
-        private string FormatStateLabel( ConnectionState connectionState, DateTime? followupDate )
+        private string FormatStateLabel( ConnectionState connectionState, DateTime? followupDate, bool isExporting )
         {
             string css = string.Empty;
             switch ( connectionState )
@@ -1175,7 +1223,32 @@ namespace RockWeb.Blocks.Connection
                 text += string.Format( " ({0})", followupDate.Value.ToShortDateString() );
             }
 
-            return string.Format( "<span class='label label-{0}'>{1}</span>", css, text );
+            if ( isExporting )
+            {
+                return text;
+            }
+            else
+            {
+                return string.Format( "<span class='label label-{0}'>{1}</span>", css, text );
+            }
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on connection request.
+        /// </summary>
+        private bool IsAuthorized( string action, Person person, ConnectionRequest request )
+        {
+            if ( GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean()
+                && person != null
+                && request.ConnectorPersonAlias != null
+                && request.ConnectorPersonAlias.PersonId == person.Id )
+            {
+                return true;
+            }
+            else
+            {
+                return request.IsAuthorized( action, person );
+            }
         }
 
         #endregion
@@ -1187,6 +1260,7 @@ namespace RockWeb.Blocks.Connection
         {
             public int Id { get; set; }
             public string Name { get; set; }
+            public bool EnableRequestSecurity { get; set; }
             public List<OpportunitySummary> Opportunities { get; set; }
         }
 

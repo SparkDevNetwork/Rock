@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -27,7 +28,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors
@@ -186,6 +187,22 @@ namespace Rock.Web.Cache
             {
                 var attribute = AttributeCache.Get( AttributeId );
                 return attribute != null ? attribute.Key : string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute category ids.
+        /// </summary>
+        /// <value>
+        /// The attribute category ids.
+        /// </value>
+        [LavaInclude]
+        public virtual List<int> AttributeCategoryIds
+        {
+            get
+            {
+                var attribute = AttributeCache.Get( AttributeId );
+                return attribute != null ? attribute.CategoryIds : null;
             }
         }
 

@@ -77,23 +77,21 @@ namespace Rock.Jobs
         private static class AttributeKey
         {
             /// <summary>
-            /// The unique identifier (GUID) of the Data View that will supply the list of entities.
+            /// The unique identifier (Guid) of the System Communication template to be used for the notifications.
             /// </summary>
             public const string SystemEmail = "SystemEmail";
-
             /// <summary>
-            /// The unique identifier (Guid) of the Workflow that will be launched for each item in the list of entities.
+            /// A list of the categories of Prayer Requests to include. If not specified, requests from all categories will be included.
             /// </summary>
             public const string PrayerCategories = "PrayerCategories";
             /// <summary>
-            /// The unique identifier (Guid) of the Workflow that will be launched for each item in the list of entities.
+            /// A flag indicating if prayer requests from child categories of the specified categories should also be included.
             /// </summary>
             public const string IncludeChildCategories = "IncludeChildCategories";
             /// <summary>
-            /// The unique identifier (Guid) of the Workflow that will be launched for each item in the list of entities.
+            /// A flag indicating if the notifications should be saved to the communication history of the recipient.
             /// </summary>
             public const string SaveCommunications = "SaveCommunications";
-
         }
 
         #endregion
@@ -183,12 +181,12 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// The start of the period in which comments will be notified.
+        /// The start of the period for which comments activity will be processed.
         /// </summary>
         public DateTime? StartDate;
 
         /// <summary>
-        /// The end of the period in which comments will be notified.
+        /// The end of the period for which comments activity will be processed.
         /// </summary>
         public DateTime? EndDate;
 
@@ -212,24 +210,23 @@ namespace Rock.Jobs
 
             this.CreateCommunicationRecord = dataMap.Get( AttributeKey.SaveCommunications ).ToString().AsBoolean();
 
+            // Job settings are stored uniquely for each instance of this Job, identified by the ServiceJob.Id.
             this.SystemSettingsId = context.JobDetail.Description;
 
-            // Get the persisted settings from the previous run, and calculate the appropriate time period.
-            var lastRunDate = Rock.Web.SystemSettings.GetValue( GetSystemSettingsKey() ).AsDateTime();
-
-            // If this is the first run, set the start date to the beginning of the previous day.
-            if ( !lastRunDate.HasValue )
-            {
-                lastRunDate = RockDateTime.Now.Date.AddDays( -1 );
-            }
-
-            this.StartDate = lastRunDate.Value.AddSeconds( 1 );
+            this.StartDate = this.GetNextStartDate();
             this.EndDate = RockDateTime.Now;
         }
 
         private string GetSystemSettingsKey()
         {
-            return string.Format( "core-prayercommentsdigest-lastrundate-{0}", this.SystemSettingsId );
+            string settingsKey = "core-prayercommentsdigest-lastrundate";
+
+            if ( this.SystemSettingsId.IsNotNullOrWhiteSpace() )
+            {
+                settingsKey += "-" + this.SystemSettingsId;
+            }
+
+            return settingsKey;
         }
 
         /// <summary>
@@ -261,7 +258,7 @@ namespace Rock.Jobs
             {
                 if ( _PrayerRequests == null )
                 {
-                    this.LoadPrayerRequests();
+                    LoadPrayerRequests();
                 }
 
                 var rockContext = new RockContext();
@@ -283,12 +280,12 @@ namespace Rock.Jobs
             {
                 if ( _PrayerRequests == null )
                 {
-                    this.LoadPrayerRequests();
+                    LoadPrayerRequests();
                 }
 
                 if ( _Notifications == null )
                 {
-                    this.PrepareNotifications();
+                    PrepareNotifications();
                 }
 
                 var rockContext = new RockContext();
@@ -302,23 +299,44 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Execute the job using the settings supplied by the specified Quartz scheduler job context.
+        /// Execute the job using the current settings.
+        /// </summary>
+        public void Execute()
+        {
+            Execute( null );
+        }
+
+        /// <summary>
+        /// Execute the job using the context supplied by the job scheduling framework.
+        /// This is the entry point used when the job is executed by the Quartz Job Scheduler.
         /// </summary>
         /// <param name="context">The context.</param>
         public virtual void Execute( IJobExecutionContext context )
         {
             Log.LogProgress( $"Job Started: SendPrayerComments" );
 
-            GetSettingsFromJobContext( context );
+            if ( context != null )
+            {
+                GetSettingsFromJobContext( context );
+            }
 
-            this.LoadPrayerRequests();
+            LoadPrayerRequests();
 
-            this.SendNotifications();
+            SendNotifications();
 
             // Construct the result message.
             var resultMessage = _Log.GetLastMessage( TaskLog.TaskLogMessage.MessageTypeSpecifier.Progress );
 
             var sb = new StringBuilder();
+
+            if ( this.StartDate.HasValue )
+            {
+                sb.AppendFormat( "Processed Comments from {0:g}.\n", this.StartDate );
+            }
+            else
+            {
+                sb.AppendLine( "Processed full Comment history." );
+            }
 
             if ( resultMessage != null )
             {
@@ -340,7 +358,10 @@ namespace Rock.Jobs
 
             var message = sb.ToString();
 
-            context.Result = message;
+            if ( context != null )
+            {
+                context.Result = message;
+            }
 
             // If any errors occurred, throw an exception.
             if ( errors.Any() )
@@ -354,8 +375,10 @@ namespace Rock.Jobs
                 throw exception;
             }
 
-            // Save settings to be used for the next job execution.
-            Rock.Web.SystemSettings.SetValue( GetSystemSettingsKey(), this.EndDate.ToISO8601DateString() );
+            // Set the last run date to the specified EndDate or the current date.
+            var lastRunDate = this.EndDate ?? RockDateTime.Now;
+
+            Rock.Web.SystemSettings.SetValue( GetSystemSettingsKey(), lastRunDate.ToISO8601DateString() );
 
             Log.LogProgress( $"Job Completed: SendPrayerComments" );
         }
@@ -433,6 +456,12 @@ namespace Rock.Jobs
                 if ( person != null
                      && person.Email.IsNotNullOrWhiteSpace() )
                 {
+                    if ( !person.IsEmailActive )
+                    {
+                        _Log.LogWarning( $"Notification not sent. {person.FullName.ToPossessive()} email address is inactive." );
+                        continue;
+                    }
+
                     recipient = new RockEmailMessageRecipient( person, mergeFields );
                 }
                 else
@@ -454,7 +483,7 @@ namespace Rock.Jobs
 
                 emailMessage.SetRecipients( recipients );
 
-                _Log.LogVerbose( $"Preparing notification for \"{ prayerRequest.Email }\"... " );
+                _Log.LogVerbose( $"Preparing notification for \"{ prayerRequest.Name }\" [{ prayerRequest.Email }]... " );
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
@@ -472,7 +501,7 @@ namespace Rock.Jobs
         {
             if ( _Notifications == null )
             {
-                this.PrepareNotifications( rockContext );
+                PrepareNotifications( rockContext );
             }
 
             int processedCount = 0;
@@ -484,7 +513,7 @@ namespace Rock.Jobs
             {
                 var recipient = emailMessage.GetRecipients().FirstOrDefault();
 
-                _Log.LogVerbose( $"Sending notification to \"{ recipient.Name }\"..." );
+                _Log.LogVerbose( $"Sending notification \"{ emailMessage.Subject }\" [{ recipient.Name }]... " );
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
@@ -504,6 +533,56 @@ namespace Rock.Jobs
             }
 
             _Log.LogProgress( $"{ processedCount } notifications processed, { errorCount } failed." );
+        }
+
+        /// <summary>
+        /// Get the date and time of the most recent execution of this task.
+        /// </summary>
+        /// <returns></returns>
+        public DateTime? GetLastNotificationDate()
+        {
+            // Get the persisted settings from the previous execution.
+            var settingsKey = GetSystemSettingsKey();
+
+            var lastRunDate = Rock.Web.SystemSettings.GetValue( settingsKey ).AsDateTime();
+
+            return lastRunDate;
+        }
+
+        /// <summary>
+        /// Set the date and time on which notifications were most recently sent.
+        /// This setting is automatically updated to match the EndDate each time notifications are sent.
+        /// </summary>
+        /// <returns></returns>
+        public void SetLastNotificationDate( DateTime? dateTime )
+        {
+            // Persist the last run date.
+            Rock.Web.SystemSettings.SetValue( GetSystemSettingsKey(), dateTime.ToISO8601DateString() );
+        }
+
+        /// <summary>
+        /// Get the start date for the next execution of this task.
+        /// The next start date is the date and time immediately following the most recent execution of this task.
+        /// If the task is executing for the first time in this Rock instance, use the beginning of the previous day.
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GetNextStartDate()
+        {
+            var lastRunDate = GetLastNotificationDate();
+
+            DateTime nextStartDate;
+
+            if ( lastRunDate.HasValue )
+            {
+                nextStartDate = lastRunDate.Value;
+            }
+            else
+            {
+                // If this is the first run, set the start date to the beginning of the previous day.
+                nextStartDate = RockDateTime.Now.Date.AddDays( -1 );
+            }
+
+            return nextStartDate;
         }
 
         /// <summary>
@@ -528,7 +607,10 @@ namespace Rock.Jobs
             var prayerRequestService = new PrayerRequestService( rockContext );
 
             // Get Prayer Requests with comments enabled.
-            var prayerRequestQuery = prayerRequestService.Queryable().Where( x => x.AllowComments.HasValue && x.AllowComments.Value );
+            var prayerRequestQuery = prayerRequestService.Queryable()
+                .Where( x => ( x.IsActive.HasValue && x.IsActive.Value )
+                             && ( x.IsApproved.HasValue && x.IsApproved.Value )
+                             && ( x.AllowComments.HasValue && x.AllowComments.Value ) );
 
             // Filter by Categories.
             if ( _CategoryIdList != null )
@@ -554,17 +636,14 @@ namespace Rock.Jobs
             // Filter Comments by Date Range.
             if ( StartDate.HasValue )
             {
-                DateTime startDate = StartDate.Value.Date;
+                DateTime startDate = StartDate.Value;
 
                 prayerCommentsQuery = prayerCommentsQuery.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value >= startDate );
             }
 
             if ( EndDate.HasValue )
             {
-                // Add one day in order to include everything up to the end of the selected datetime.
-                var endDate = EndDate.Value.Date.AddDays( 1 );
-
-                prayerCommentsQuery = prayerCommentsQuery.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < endDate );
+                prayerCommentsQuery = prayerCommentsQuery.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value <= this.EndDate.Value );
             }
 
             // Retrieve and store the comments.

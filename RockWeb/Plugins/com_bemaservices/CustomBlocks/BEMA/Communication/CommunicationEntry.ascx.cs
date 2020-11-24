@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -63,76 +63,82 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         Description = "The Lava commands that should be enabled for this HTML block if Enable Lava is checked.",
         IsRequired = false,
         Order = 1 )]
+    [BooleanField("Enable Person Parameter",
+        Key = AttributeKey.EnablePersonParameter,
+        Description = "When enabled, allows passing a 'person' querystring parameter with a person Id to the block to create a communication for that person.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 2 )]
     [ComponentsField( "Rock.Communication.MediumContainer, Rock",
         Name = "Mediums",
         Key = AttributeKey.Mediums,
         Description = "The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).",
         IsRequired = false,
-        Order = 1 )]
+        Order = 3 )]
     [CommunicationTemplateField( "Default Template",
         Key = AttributeKey.DefaultTemplate,
         Description = "The default template to use for a new communication.  (Note: This will only be used if the template is for the same medium as the communication.)",
         IsRequired = false,
-        Order = 2 )]
+        Order = 4 )]
     [IntegerField( "Maximum Recipients",
         Key = AttributeKey.MaximumRecipients,
         Description = "The maximum number of recipients allowed before communication will need to be approved",
         IsRequired = false,
         DefaultIntegerValue = 0,
-        Order = 3 )]
+        Order = 5 )]
     [IntegerField( "Display Count",
         Key = AttributeKey.DisplayCount,
         Description = "The initial number of recipients to display prior to expanding list",
         IsRequired = false,
         DefaultIntegerValue = 0,
-        Order = 4 )]
+        Order = 6 )]
     [BooleanField( "Send When Approved",
         Key = AttributeKey.SendWhenApproved,
         Description = "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?",
         DefaultBooleanValue = true,
-        Order = 5 )]
+        Order = 7 )]
     [CustomDropdownListField( "Mode",
         "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).",
         "Full,Simple",
         Key = AttributeKey.Mode,
         IsRequired = true,
         DefaultValue = "Full",
-        Order = 6 )]
+        Order = 8 )]
     [BooleanField( "Allow CC/Bcc",
         Key = AttributeKey.AllowCcBcc,
         Description = "Allow CC and Bcc addresses to be entered for email communications?",
         DefaultBooleanValue = false,
-        Order = 7 )]
+        Order = 9 )]
     [BooleanField( "Show Attachment Uploader",
         Key = AttributeKey.ShowAttachmentUploader,
         Description = "Should the attachment uploader be shown for email communications.",
         DefaultBooleanValue = true,
-        Order = 8 )]
+        Order = 10 )]
     [DefinedValueField( "Allowed SMS Numbers",
         Key = AttributeKey.AllowedSMSNumbers,
         Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included).",
         IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         AllowMultiple = true,
-        Order = 9 )]
+        Order = 11 )]
     [BooleanField( "Simple Communications Are Bulk",
         Key = AttributeKey.SendSimpleAsBulk,
         Description = "Should simple mode communications be sent as a bulk communication?",
         DefaultBooleanValue = true,
-        Order = 10 )]
+        Order = 12 )]
     [BinaryFileTypeField( "Attachment Binary File Type",
         Key = AttributeKey.AttachmentBinaryFileType,
         Description = "The FileType to use for files that are attached to an sms or email communication",
         IsRequired = true,
         DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        Order = 11 )]
+        Order = 13 )]
     [BooleanField( "Default As Bulk",
         Key = AttributeKey.DefaultAsBulk,
         Description = "Should new entries be flagged as bulk communication by default?",
         DefaultBooleanValue = false,
-        Order = 12 )]
+        Order = 14 )]
     [TextField( "Document Root Folder",
-        Key = AttributeKey.DocumentRootFolder,
+        Key =  AttributeKey.DocumentRootFolder,
         Description = "The folder to use as the root when browsing or uploading documents.",
         IsRequired = false,
         DefaultValue = "~/Content",
@@ -193,6 +199,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             public const string Mediums = "Mediums";
             public const string DefaultTemplate = "DefaultTemplate";
             public const string EnableLava = "EnableLava";
+            public const string EnablePersonParameter = "EnablePersonParameter";
         }
 
         #endregion Attribute Keys
@@ -938,7 +945,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
 
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
-                int? personId = PageParameter( "Person" ).AsIntegerOrNull();
+                int? personId = GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() ? PageParameter( "Person" ).AsIntegerOrNull() : null;
                 if ( personId.HasValue )
                 {
                     communication.IsBulkCommunication = false;
@@ -1091,7 +1098,8 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             lNumRecipients.Text = recipientCount.ToString( "N0" ) +
                 ( recipientCount == 1 ? " Person" : " People" );
 
-            ppAddPerson.PersonId = Rock.Constants.None.Id;
+            // Reset the PersonPicker control selection.
+            ppAddPerson.SetValue( null );
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;

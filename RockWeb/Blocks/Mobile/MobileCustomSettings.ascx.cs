@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Mobile
             cbShowOnPhone.Checked = additionalSettings.ShowOnPhone;
             cbRequiresNetwork.Checked = additionalSettings.RequiresNetwork;
             ceNoNetworkContent.Text = additionalSettings.NoNetworkContent;
+            ceCssStyles.Text = additionalSettings.CssStyles;
         }
 
         /// <summary>
@@ -73,6 +74,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.ShowOnPhone = cbShowOnPhone.Checked;
             additionalSettings.RequiresNetwork = cbRequiresNetwork.Checked;
             additionalSettings.NoNetworkContent = ceNoNetworkContent.Text;
+            additionalSettings.CssStyles = ceCssStyles.Text;
 
             mobileBlock.AdditionalSettings = additionalSettings.ToJson();
         }

@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EventLink.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Event.EventLink" %>
 
-<%@ Register TagPrefix="CentralAZ" Assembly="com.centralaz.RoomManagement" Namespace="com.centralaz.RoomManagement.Web.UI.Controls" %>
+<%@ Register TagPrefix="BEMA" Assembly="com.bemaservices.RoomManagement" Namespace="com.bemaservices.RoomManagement.Web.UI.Controls" %>
 <script type="text/javascript">
     $(document).ready(function () {
         contentSlug.init({
@@ -92,7 +92,7 @@
                                     <asp:HiddenField ID="hfReservationId" runat="server" />
                                     
                                     <div class="col-md-4">
-                                        <Rock:RockDropDownList ID="ddlReservationType" Label="Reservation Type" runat="server"  />
+                                        <Rock:RockDropDownList ID="ddlReservationType" Label="Reservation Type" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlReservationType_SelectedIndexChanged" />
                                      </div>
 
                                     <div class="col-md-4">
@@ -103,10 +103,12 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <CentralAZ:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="true" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" />
+                                        <BEMA:ScheduledLocationItemPicker ID="slpLocation" runat="server" Label="Location" Required="true" Enabled="false" AllowMultiSelect="false" OnSelectItem="slpLocation_SelectItem" />
                                     </div>
 
                                 </div>
+
+                                <asp:PlaceHolder ID="phReservationAttributes" runat="server"></asp:PlaceHolder>
 
                             </div>
                         </asp:Panel>
@@ -198,7 +200,7 @@
                                     </div>
                                     -->
                                     <div class="col-md-4">
-                                        <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
+                                        <Rock:DynamicPlaceholder ID="phEventAttributes" runat="server" />
                                     </div>
                                 </div>
                             </div>

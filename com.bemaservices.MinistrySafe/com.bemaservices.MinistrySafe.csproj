@@ -41,6 +41,9 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\RockWeb\Bin\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Humanizer">
+      <HintPath>..\RockWeb\Bin\Humanizer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Data.Edm, Version=5.6.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Microsoft.Data.Edm.dll</HintPath>
@@ -78,19 +81,22 @@
   <ItemGroup>
     <Compile Include="Constants\MinistrySafeConstants.cs" />
     <Compile Include="Constants\MinistrySafeSystemGuid.cs" />
+    <Compile Include="Migrations\008_TrainingWorkflowUpdates.cs" />
+    <Compile Include="Migrations\007_BackgroundChecks.cs" />
     <Compile Include="Migrations\006_NamespaceMove.cs" />
     <Compile Include="Migrations\005_FixWorkflowDeleteIssue.cs" />
     <Compile Include="Migrations\004_WorkflowFix.cs" />
     <Compile Include="Migrations\002_Workflow.cs" />
     <Compile Include="Migrations\003_Pages.cs" />
     <Compile Include="Migrations\001_Data.cs" />
+    <Compile Include="MinistrySafeApi\BackgroundCheckWebhook.cs" />
+    <Compile Include="MinistrySafeApi\PackageResponse.cs" />
     <Compile Include="MinistrySafe.cs" />
-    <Compile Include="MinistrySafeApi\AssignTrainingResponse.cs" />
+    <Compile Include="MinistrySafeApi\TrainingResponse.cs" />
     <Compile Include="MinistrySafeApi\CreateUserRequest.cs" />
-    <Compile Include="MinistrySafeApi\CreateUserResponse.cs" />
+    <Compile Include="MinistrySafeApi\BackgroundCheckResponse.cs" />
+    <Compile Include="MinistrySafeApi\UserResponse.cs" />
     <Compile Include="MinistrySafeApi\GetTrainingResponse.cs" />
-    <Compile Include="MinistrySafeApi\GetUsersDataResponse.cs" />
-    <Compile Include="MinistrySafeApi\GetUsersResponse.cs" />
     <Compile Include="MinistrySafeApi\TrainingWebhook.cs" />
     <Compile Include="MinistrySafeApi\MinistrySafeApiUtility.cs" />
     <Compile Include="Model\MinistrySafeUser.cs" />
@@ -102,6 +108,9 @@
     <None Include=".gitignore" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utility\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using com.centralaz.RoomManagement.Model;
+using com.bemaservices.RoomManagement.Model;
 using DDay.iCal;
 using Rock;
 using Rock.Attribute;
@@ -34,9 +34,10 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using com.centralaz.RoomManagement.Attribute;
+using com.bemaservices.RoomManagement.Attribute;
 using Attribute = Rock.Model.Attribute;
 using Newtonsoft.Json;
+using OpenXmlPowerTools;
 
 namespace RockWeb.Plugins.com_bemaservices.Event
 {
@@ -385,7 +386,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         ddlReservationType.Items.Add( new ListItem( reservationType.Name, reservationType.Id.ToString().ToUpper() ) );
                     }
                 }
-               
+            
+            ddlReservationType_SelectedIndexChanged( null, null );
 
         }
 
@@ -472,7 +474,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             {
                 ItemsState = new List<EventCalendarItem>();
             }
-            phAttributes.Controls.Clear();
+            phEventAttributes.Controls.Clear();
 
             using ( var rockContext = new RockContext() )
             {
@@ -492,9 +494,9 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
                     if ( eventCalendarItem.Attributes.Count > 0 )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
+                        phEventAttributes.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
                         PlaceHolder phcalAttributes = new PlaceHolder();
-                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phAttributes, true, BlockValidationGroup );
+                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, phEventAttributes, true, BlockValidationGroup );
                     }
                 }
             }
@@ -650,7 +652,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 foreach ( EventCalendarItem eventCalendarItem in eventItem.EventCalendarItems )
                 {
                     eventCalendarItem.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, eventCalendarItem );
+                    Rock.Attribute.Helper.GetEditValues( phEventAttributes, eventCalendarItem );
                     eventCalendarItem.SaveAttributeValues();
                 }
 
@@ -1290,6 +1292,9 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     reservationService.Add( reservation );
                 }
 
+                reservation.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phReservationAttributes, reservation );
+
                 rockContext.WrapTransaction( () =>
                  {
                      rockContext.SaveChanges();
@@ -1410,12 +1415,67 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             if ( tEventRoom.Checked )
             {
+
+                if( _reservation == null )
+                {
+                    _reservation = new Reservation();
+                    _reservation.ReservationType = ReservationType;
+                    _reservation.ReservationTypeId = ReservationType.Id;
+
+                    _reservation.LoadAttributes();
+                    BuildAttributeEdits( _reservation, false );
+                }
+
                 pnlEventRoom.Visible = true;
             }
             else
             {
                 pnlEventRoom.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Shows the item attributes.
+        /// </summary>
+        private void BuildAttributeEdits( Reservation reservation, bool setValues )
+        {
+            phReservationAttributes.Controls.Clear();
+
+            reservation.ReservationType = ReservationType;
+            reservation.ReservationTypeId = ReservationType.Id;
+            reservation.LoadAttributes();
+            var editableAttributes = reservation.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && a.Value.ShowOnBulk ).Select( a => a.Key ).ToList();
+            var excludeKeys = reservation.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+
+            if ( editableAttributes.Count() > 0 )
+            {
+                var headingTitle = new HtmlGenericControl( "h3" );
+                headingTitle.InnerText = "Reservation Attributes";
+                phReservationAttributes.Controls.Add( headingTitle );
+                Rock.Attribute.Helper.AddEditControls( reservation, phReservationAttributes, setValues, BlockValidationGroup, excludeKeys );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlReservationType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlReservationType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            ReservationType = new ReservationTypeService( rockContext ).Get( ddlReservationType.SelectedValueAsId().Value );
+
+            var reservation = new ReservationService( rockContext ).Get( hfReservationId.Value.AsInteger() );
+            if ( reservation == null )
+            {
+                reservation = new Reservation();
+                reservation.ReservationType = ReservationType;
+                reservation.ReservationTypeId = ReservationType.Id;
+            }
+
+            BuildAttributeEdits( reservation, true );
+
         }
 
         #endregion

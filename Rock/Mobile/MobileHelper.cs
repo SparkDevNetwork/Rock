@@ -69,7 +69,7 @@ namespace Rock.Mobile
             //
             if ( validateApiKey )
             {
-                var appApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
+                var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
                 //
@@ -81,9 +81,11 @@ namespace Rock.Mobile
                 }
 
                 rockContext = rockContext ?? new Data.RockContext();
-                var userLogin = new UserLoginService( rockContext ).GetByApiKey( appApiKey ).FirstOrDefault();
 
-                if ( userLogin != null && userLogin.Id == additionalSettings.ApiKeyId )
+                // Get user login for the app and verify that it matches the request's key
+                var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
+
+                if ( appUserLogin != null && appUserLogin.ApiKey == requestApiKey )
                 {
                     return site;
                 }
@@ -109,6 +111,7 @@ namespace Rock.Mobile
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var homePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
             var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
+            var alternateIdTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID ).Id;
 
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
@@ -125,6 +128,10 @@ namespace Rock.Mobile
                 .Where( r => r.IsPersonInRole( person.Guid ) )
                 .Select( r => r.Guid )
                 .ToList();
+
+            var alternateId = person.GetPersonSearchKeys()
+                .Where( a => a.SearchTypeValueId == alternateIdTypeId )
+                .FirstOrDefault()?.SearchValue;
 
             return new MobilePerson
             {
@@ -144,6 +151,7 @@ namespace Rock.Mobile
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
+                AlternateId = alternateId,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
@@ -250,6 +258,29 @@ namespace Rock.Mobile
                 .ToList();
 
             //
+            // Get all the defined values.
+            //
+            var definedTypeGuids = new[]
+            {
+                SystemGuid.DefinedType.LOCATION_COUNTRIES,
+                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE
+            };
+            var definedValues = new List<MobileDefinedValue>();
+            foreach ( var definedTypeGuid in definedTypeGuids )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeGuid );
+                definedValues.AddRange( definedType.DefinedValues
+                    .Select( a => new MobileDefinedValue
+                    {
+                        Guid = a.Guid,
+                        DefinedTypeGuid = a.DefinedType.Guid,
+                        Value = a.Value,
+                        Description = a.Description,
+                        Attributes = GetMobileAttributeValues( a, a.Attributes.Select( b => b.Value ) )
+                    } ) );
+            }
+
+            //
             // Build CSS Styles
             //
             var settings = additionalSettings.DownhillSettings;
@@ -273,6 +304,7 @@ namespace Rock.Mobile
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
+                DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
@@ -285,6 +317,13 @@ namespace Rock.Mobile
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
+            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
+            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
+            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
+            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
@@ -348,6 +387,7 @@ namespace Rock.Mobile
                         PreXaml = block.PreHtml,
                         PostXaml = block.PostHtml,
                         CssClasses = block.CssClass,
+                        CssStyles = additionalBlockSettings.CssStyles,
                         ShowOnTablet = additionalBlockSettings.ShowOnTablet,
                         ShowOnPhone = additionalBlockSettings.ShowOnPhone,
                         RequiresNetwork = additionalBlockSettings.RequiresNetwork,
@@ -418,6 +458,8 @@ namespace Rock.Mobile
                     IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
+                    CssClasses = page.BodyCssClass,
+                    CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
                 };
 
@@ -531,7 +573,7 @@ namespace Rock.Mobile
 
             if ( includeHeader )
             {
-                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"heading1\" />" );
+                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"h1\" />" );
                 sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
             }
 
@@ -601,9 +643,10 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="fieldXaml">The field.</param>
         /// <param name="wrapped">if set to <c>true</c> the SingleField wraps the field in a border.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0060:Remove unused parameter", Justification = "Public API, and it may come back to be used later. -dsh" )]
         public static string GetSingleFieldXaml( string fieldXaml, bool wrapped = true )
         {
-            return $"<Rock:SingleField Wrapped=\"{wrapped}\">{fieldXaml}</Rock:SingleField>";
+            return $"<Rock:FieldContainer>{fieldXaml}</Rock:FieldContainer>";
         }
 
         /// <summary>
@@ -615,7 +658,7 @@ namespace Rock.Mobile
         {
             text = text ?? string.Empty;
 
-            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
+            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />" );
         }
 
         /// <summary>

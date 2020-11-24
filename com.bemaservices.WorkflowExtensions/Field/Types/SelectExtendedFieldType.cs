@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using com.bemaservices.WorkflowExtensions.Web.UI.Controls;
 using Rock;
 using Rock.Data;
 using Rock.Field;
@@ -47,12 +48,6 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         private const string CHILD_VALUES_KEY = "child_values";
         private const string CHILD_FIELDTYPE_KEY = "child_fieldtype";
         private const string CHILD_REPEAT_COLUMNS = "child_repeatColumns";
-
-        private ListControl _parentEditControl;
-        private ListControl _childEditControl;
-
-        private Dictionary<string, ConfigurationValue> _configurationValues;
-
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -296,118 +291,34 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            Panel pnlRange = new Panel { ID = id, CssClass = "form-control-group" };
-
+            SelectExtendedPicker editControl = new SelectExtendedPicker { ID = id };
             if ( configurationValues != null )
             {
-                _parentEditControl = null;
-                _childEditControl = null;
-
                 string parentFieldType = configurationValues.ContainsKey( PARENT_FIELDTYPE_KEY ) ? configurationValues[PARENT_FIELDTYPE_KEY].Value : "ddl";
                 string childFieldType = configurationValues.ContainsKey( CHILD_FIELDTYPE_KEY ) ? configurationValues[CHILD_FIELDTYPE_KEY].Value : "ddl";
 
-                if ( parentFieldType == "rb" )
+                editControl.ParentFieldType = parentFieldType;
+                if ( configurationValues.ContainsKey( PARENT_REPEAT_COLUMNS ) )
                 {
-                    _parentEditControl = new RockRadioButtonList { ID = string.Format( "{0}_parent", id ) };
-                    ( ( RadioButtonList ) _parentEditControl ).RepeatDirection = RepeatDirection.Horizontal;
-
-                    if ( configurationValues.ContainsKey( PARENT_REPEAT_COLUMNS ) )
-                    {
-                        ( ( RadioButtonList ) _parentEditControl ).RepeatColumns = configurationValues[PARENT_REPEAT_COLUMNS].Value.AsInteger();
-                    }
+                    editControl.ParentRepeatColumns = configurationValues[PARENT_REPEAT_COLUMNS].Value;
                 }
-                else if ( parentFieldType == "cb" )
+                if ( configurationValues.ContainsKey( PARENT_VALUES_KEY ) )
                 {
-                    _parentEditControl = new RockCheckBoxList { ID = string.Format( "{0}_parent", id ) };
-                    ( ( RockCheckBoxList ) _parentEditControl ).RepeatDirection = RepeatDirection.Horizontal;
-
-                    if ( configurationValues.ContainsKey( PARENT_REPEAT_COLUMNS ) )
-                    {
-                        ( ( RockCheckBoxList ) _parentEditControl ).RepeatColumns = configurationValues[PARENT_REPEAT_COLUMNS].Value.AsInteger();
-                    }
-                }
-                else if ( parentFieldType == "ddl_multi_enhanced" )
-                {
-                    _parentEditControl = new RockListBox { ID = string.Format( "{0}_parent", id ) };
-                    ( ( RockListBox ) _parentEditControl ).DisplayDropAsAbsolute = true;
-                }
-                else
-                {
-                    _parentEditControl = new RockDropDownList { ID = string.Format( "{0}_parent", id ) };
-                    ( ( RockDropDownList ) _parentEditControl ).EnhanceForLongLists = parentFieldType == "ddl_single_enhanced";
-                    ( ( RockDropDownList ) _parentEditControl ).DisplayEnhancedAsAbsolute = true;
-                    _parentEditControl.Items.Add( new ListItem() );
+                    editControl.ParentValues = configurationValues[PARENT_VALUES_KEY].Value;
                 }
 
-                pnlRange.Controls.Add( _parentEditControl );
-
-                HtmlGenericControl lineBreak = new HtmlGenericControl( "br" );
-                pnlRange.Controls.Add( lineBreak );
-
-                if ( childFieldType == "rb" )
+                editControl.ChildFieldType = childFieldType;
+                if ( configurationValues.ContainsKey( CHILD_REPEAT_COLUMNS ) )
                 {
-                    _childEditControl = new RockRadioButtonList { ID = string.Format( "{0}_child", id ) };
-                    ( ( RadioButtonList ) _childEditControl ).RepeatDirection = RepeatDirection.Horizontal;
-
-                    if ( configurationValues.ContainsKey( CHILD_REPEAT_COLUMNS ) )
-                    {
-                        ( ( RadioButtonList ) _childEditControl ).RepeatColumns = configurationValues[CHILD_REPEAT_COLUMNS].Value.AsInteger();
-                    }
+                    editControl.ChildRepeatColumns = configurationValues[CHILD_REPEAT_COLUMNS].Value;
                 }
-                else if ( childFieldType == "cb" )
+                if ( configurationValues.ContainsKey( CHILD_VALUES_KEY ) )
                 {
-                    _childEditControl = new RockCheckBoxList { ID = string.Format( "{0}_child", id ) };
-                    ( ( RockCheckBoxList ) _childEditControl ).RepeatDirection = RepeatDirection.Horizontal;
-
-                    if ( configurationValues.ContainsKey( CHILD_REPEAT_COLUMNS ) )
-                    {
-                        ( ( RockCheckBoxList ) _childEditControl ).RepeatColumns = configurationValues[CHILD_REPEAT_COLUMNS].Value.AsInteger();
-                    }
-                }
-                else if ( childFieldType == "ddl_multi_enhanced" )
-                {
-                    _childEditControl = new RockListBox { ID = string.Format( "{0}_child", id ) };
-                    ( ( RockListBox ) _childEditControl ).DisplayDropAsAbsolute = true;
-                }
-                else
-                {
-                    _childEditControl = new RockDropDownList { ID = string.Format( "{0}_child", id ) };
-                    ( ( RockDropDownList ) _childEditControl ).EnhanceForLongLists = childFieldType == "ddl_single_enhanced";
-                    ( ( RockDropDownList ) _childEditControl ).DisplayEnhancedAsAbsolute = true;
-                    _childEditControl.Items.Add( new ListItem() );
-                }
-
-                pnlRange.Controls.Add( _childEditControl );
-
-                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues, PARENT_VALUES_KEY ) )
-                {
-                    _parentEditControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
-                }
-
-                //foreach ( var keyVal in GetConfiguredChildValues( configurationValues, CHILD_VALUES_KEY ) )
-                //{
-                //    _childEditControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
-                //}
-
-                _parentEditControl.AutoPostBack = true;
-                _parentEditControl.SelectedIndexChanged += EditParentControl_SelectedIndexChanged;
-                _configurationValues = configurationValues;
-            }
-
-            return pnlRange;
-
-        }
-
-        private void EditParentControl_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            _childEditControl.Items.Clear();
-            if ( _parentEditControl.SelectedValue.IsNotNullOrWhiteSpace() )
-            {
-                foreach ( var keyVal in GetConfiguredChildValues( _configurationValues, CHILD_VALUES_KEY, _parentEditControl.SelectedValue ) )
-                {
-                    _childEditControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
+                    editControl.ChildValues = configurationValues[CHILD_VALUES_KEY].Value;
                 }
             }
+
+            return editControl;
         }
 
         /// <summary>
@@ -418,31 +329,30 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            Panel pnlRange = control as Panel;
-            if ( pnlRange != null )
+            SelectExtendedPicker selectExtendedPicker = control as SelectExtendedPicker;
+            if ( selectExtendedPicker != null )
             {
-                List<string> parentValues = new List<string>();
-                List<string> childValues = new List<string>();
+                //ListControl parentControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_parent" ) );
+                //ListControl childControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_child" ) );
 
-                ListControl parentControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_parent" ) );
-                ListControl childControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_child" ) );
+                //foreach ( ListItem li in parentControl.Items )
+                //{
+                //    if ( li.Selected )
+                //    {
+                //        parentValues.Add( li.Value );
+                //    }
+                //}
 
-                foreach ( ListItem li in parentControl.Items )
-                {
-                    if ( li.Selected )
-                    {
-                        parentValues.Add( li.Value );
-                    }
-                }
+                //foreach ( ListItem li in childControl.Items )
+                //{
+                //    if ( li.Selected )
+                //    {
+                //        childValues.Add( li.Value );
+                //    }
+                //}
 
-                foreach ( ListItem li in childControl.Items )
-                {
-                    if ( li.Selected )
-                    {
-                        childValues.Add( li.Value );
-                    }
-                }
-                return string.Format( "{0}|{1}", parentValues.AsDelimited<string>( "," ), childValues.AsDelimited<string>( "," ) );
+                // return string.Format( "{0}|{1}", parentValues.AsDelimited<string>( "," ), childValues.AsDelimited<string>( "," ) );
+                return string.Format( "{0}|{1}", selectExtendedPicker.SelectedParentValue, selectExtendedPicker.SelectedChildValue );
             }
 
             return null;
@@ -456,40 +366,20 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Panel pnlRange = control as Panel;
-            if ( pnlRange != null )
+            SelectExtendedPicker selectExtendedPicker = control as SelectExtendedPicker;
+            if ( selectExtendedPicker != null )
             {
+                selectExtendedPicker.SelectedParentValue = null;
+                selectExtendedPicker.SelectedChildValue = null;
 
-                ListControl parentControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_parent" ) );
-                ListControl childControl = pnlRange.Controls.OfType<ListControl>().FirstOrDefault( a => a.ID.EndsWith( "_child" ) );
-
-                if ( value != null )
+                string[] parts = ( value ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.None );
+                if ( parts.Length >= 1 )
                 {
-                    string[] valuePair = value.Split( new char[] { '|' }, StringSplitOptions.None );
-                    if ( valuePair.Length == 2 )
+                    selectExtendedPicker.SelectedParentValue = parts[0];
+
+                    if ( parts.Length >= 2 )
                     {
-                        if ( valuePair[0] != null )
-                        {
-                            List<string> values = new List<string>();
-                            values.AddRange( valuePair[0].Split( ',' ) );
-
-                            foreach ( ListItem li in parentControl.Items )
-                            {
-                                li.Selected = values.Contains( li.Value );
-                            }
-
-                        }
-
-                        if ( valuePair[1] != null )
-                        {
-                            List<string> values = new List<string>();
-                            values.AddRange( valuePair[1].Split( ',' ) );
-
-                            foreach ( ListItem li in childControl.Items )
-                            {
-                                li.Selected = values.Contains( li.Value );
-                            }
-                        }
+                        selectExtendedPicker.SelectedChildValue = parts[1];
                     }
                 }
             }
@@ -541,46 +431,11 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         public static Dictionary<string, string> GetConfiguredChildValues( Dictionary<string, ConfigurationValue> configurationValues, string propertyName, string parentValue = null )
         {
             var items = new Dictionary<string, string>();
-
+            var selectExtendedPicker = new SelectExtendedPicker();
             if ( configurationValues.ContainsKey( propertyName ) )
             {
                 string listSource = configurationValues[propertyName].Value;
-
-                var options = new Rock.Lava.CommonMergeFieldsOptions();
-                options.GetLegacyGlobalMergeFields = false;
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, options );
-
-                listSource = listSource.ResolveMergeFields( mergeFields );
-
-                if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
-                {
-                    var tableValues = new List<string>();
-                    DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
-                    if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "ParentValue" ) && dataTable.Columns.Contains( "Text" ) )
-                    {
-                        foreach ( DataRow row in dataTable.Rows )
-                        {
-                            if ( parentValue.IsNullOrWhiteSpace() || row["parentvalue"].ToString() == parentValue )
-                            {
-                                items.AddOrIgnore( row["value"].ToString(), row["text"].ToString() );
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    foreach ( string keyvalue in listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
-                    {
-                        var keyValueArray = keyvalue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                        if ( keyValueArray.Length > 1 )
-                        {
-                            if ( parentValue.IsNullOrWhiteSpace() || keyValueArray[1].Trim() == parentValue )
-                            {
-                                items.AddOrIgnore( keyValueArray[0].Trim(), keyValueArray.Length > 2 ? keyValueArray[2].Trim() : keyValueArray[0].Trim() );
-                            }
-                        }
-                    }
-                }
+                items = selectExtendedPicker.GetFilteredChildValues( listSource, parentValue );
             }
 
             return items;

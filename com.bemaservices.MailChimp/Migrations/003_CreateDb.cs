@@ -22,8 +22,8 @@ namespace com.bemaservices.MailChimp.Migrations
 
                 CREATE TABLE [dbo].[_com_bemaservices_MailChimp_Member](
                     [Id] [int] IDENTITY(1,1) NOT NULL,
-                    [MemberId] [varchar(50)] NOT NULL,
-	                [ListId] [varchar(50)] NULL,
+                    [MemberId] [varchar](50) NOT NULL,
+	                [ListId] [varchar](50) NULL,
                     [PersonAliasId] [int] NULL,
 	                [LastUpdated] [datetime] NULL,
 	                [Guid] [uniqueidentifier] NOT NULL,
@@ -48,7 +48,7 @@ namespace com.bemaservices.MailChimp.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_MailChimp_Member]  WITH CHECK ADD  CONSTRAINT [FK_dbo.MailChimp_Member_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])
 
-                ALTER TABLE [dbo].[_com_bemaservices_MailChimp_Member] CHECK CONSTRAINT [FK_dbo.CareItem_dbo.PersonAlias_CreatedByPersonAliasId]
+                ALTER TABLE [dbo].[_com_bemaservices_MailChimp_Member] CHECK CONSTRAINT [FK_dbo.MailChimp_Member_dbo.PersonAlias_CreatedByPersonAliasId]
 
                 ALTER TABLE [dbo].[_com_bemaservices_MailChimp_Member]  WITH CHECK ADD  CONSTRAINT [FK_dbo.MailChimp_Member_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
                 REFERENCES [dbo].[PersonAlias] ([Id])

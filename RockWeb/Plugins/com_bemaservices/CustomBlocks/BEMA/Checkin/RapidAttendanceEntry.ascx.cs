@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,11 +33,13 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
  * - FE1) Added Ability to add the attendee to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin
+ * - FE2) Added Ability to list all descendants of a parent group instead of just the immediate children.
+ * - FE3) Added Ability to filter the list of groups by Group Type
  */
 
 namespace RockWeb.Plugins.com_bemaservices.CheckIn
@@ -108,6 +110,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         EntityTypeQualifierColumn = "GroupTypeId",
         EntityTypeQualifierValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
+        AllowMultiple = true,
         Order = 1 )]
     [CodeEditorField(
         "Header Lava Template",
@@ -117,8 +120,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Category = "Family",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 2,
-        IsRequired = true
-        )]
+        IsRequired = true )]
     #endregion Family Block Attribute Settings
     #region Individual Block Attribute Settings
     [CodeEditorField(
@@ -129,8 +131,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Category = "Individual",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 1,
-        IsRequired = true
-        )]
+        IsRequired = true )]
     [DefinedValueField(
         "Adult Phone Types",
         Key = AttributeKey.AdultPhoneTypes,
@@ -139,8 +140,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Category = "Individual",
         Order = 2,
         IsRequired = false,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
-        )]
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
     [AttributeField(
         "Adult Person Attributes",
         Key = AttributeKey.AdultPersonAttributes,
@@ -166,8 +166,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Category = "Individual",
         Order = 5,
         IsRequired = false,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
-        )]
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
     [AttributeField(
         "Child Person Attributes",
         Key = AttributeKey.ChildPersonAttributes,
@@ -254,8 +253,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Description = "The text to show above the workflow list. (For example: I'm Interested in.)",
         Category = "Workflow",
         Order = 0,
-        IsRequired = false
-        )]
+        IsRequired = false )]
     [WorkflowTypeField(
         "Workflow Types",
         AllowMultiple = true,
@@ -263,8 +261,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         Description = "A list of workflows to display as a checkbox that can be selected and fired on behalf of the selected person on save.",
         Category = "Workflow",
         IsRequired = false,
-        Order = 1
-        )]
+        Order = 1 )]
     #endregion Workflows Block Attribute Settings
     #region Notes Block Attribute Settings
     [NoteTypeField(
@@ -283,10 +280,30 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         "Is Attendee Saved to Group",
         Key = BemaAttributeKey.ShouldAttendeeBeSavedToGroup,
         Description = "Should the attendee be added to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin",
-        DefaultBooleanValue = true,
+        DefaultBooleanValue = false,
         Order = 2,
         Category = "BEMA Additional Features" )]
     /* BEMA.FE1.End */
+
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Show All Descendants",
+        Key = BemaAttributeKey.ShowAllDescendants,
+        Description = "Whether to list all descendants of a parent group instead of just the immediate children.",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE2.End */
+
+    /* BEMA.FE3.Start */
+    [GroupTypesField(
+        "Filtered Group Types",
+        Key = BemaAttributeKey.FilteredGroupTypes,
+        Description = "The Group Types to filter the group list by.",
+        IsRequired = false,
+        Order = 4,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE3.End */
     public partial class RapidAttendanceEntry : RockBlock
     {
         #region Fields
@@ -427,6 +444,8 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
         private static class BemaAttributeKey
         {
             public const string ShouldAttendeeBeSavedToGroup = "ShouldAttendeeBeSavedToGroup";
+            public const string ShowAllDescendants = "ShowAllDescendants";
+            public const string FilteredGroupTypes = "FilteredGroupTypes";
         }
 
         #endregion
@@ -1577,6 +1596,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
             ddlGroup.Visible = false;
             gpGroups.Visible = false;
 
+            var isDefaultSelected = false;
             if ( GetAttributeValue( AttributeKey.AttendanceGroup ).AsGuid() != default( Guid ) )
             {
                 ddlGroup.Items.Clear();
@@ -1585,19 +1605,39 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                 ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                 ddlGroup.Visible = true;
                 ddlGroup.SelectedIndex = 0;
+                isDefaultSelected = true;
             }
             else
             {
-
                 if ( GetAttributeValue( AttributeKey.ParentGroup ).AsGuid() != default( Guid ) )
                 {
-
+                    ddlGroup.Items.Clear();
                     var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuid();
                     var groups = new GroupService( rockContext )
                                 .Queryable()
                                 .Where( a => a.ParentGroup.Guid == parentGroupGuid && a.IsActive )
                                 .OrderBy( g => g.Order )
                                 .ToList();
+
+                    /* BEMA.FE2.Start */
+                    if ( GetAttributeValue( BemaAttributeKey.ShowAllDescendants ).AsBoolean() )
+                    {
+                        var groupService = new GroupService( rockContext );
+                        var parentGroup = groupService.Get( parentGroupGuid );
+                        groups = groupService.GetAllDescendentGroups( parentGroup.Id, false ).OrderBy( g => g.Order )
+                                .ToList();
+                    }
+                    /* BEMA.FE2.End */
+
+                    /* BEMA.FE3.Start */
+                    var groupTypeGuids = GetAttributeValue( BemaAttributeKey.FilteredGroupTypes ).SplitDelimitedValues().AsGuidList();
+                    if ( groupTypeGuids.Any() )
+                    {
+                        groups = groups.Where( g => groupTypeGuids.Contains( g.GroupType.Guid ) ).ToList().OrderBy( g => g.Order )
+                                .ToList();
+                    }
+                    /* BEMA.FE3.End */
+
                     if ( groups.Count != 1 )
                     {
                         pnlGroupPicker.Visible = true;
@@ -1609,12 +1649,12 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                         ddlGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                     }
 
+                    ddlGroup.Visible = true;
                     if ( groups.Count == 1 )
                     {
+                        isDefaultSelected = true;
                         ddlGroup.SelectedIndex = 0;
                     }
-
-                    ddlGroup.Visible = true;
                 }
                 else
                 {
@@ -1640,6 +1680,11 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
 
                 UpdateLocations( attendanceSetting.LocationId );
                 UpdateSchedules( attendanceSetting.ScheduleId );
+            }
+            else if ( isDefaultSelected )
+            {
+                UpdateLocations();
+                UpdateSchedules();
             }
         }
 

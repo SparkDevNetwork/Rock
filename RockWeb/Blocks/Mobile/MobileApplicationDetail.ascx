@@ -120,27 +120,39 @@
                                 <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
                                     <div class="row">
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="Override the default color provided by the mobile OS." />
-                                        </div>
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Override the default color provided by the mobile OS." />
-                                        </div>
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="The primary color to use for buttons and other controls." />
                                         </div>
 
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." />
-                                        </div>
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Override the default color provided by the mobile OS." />
-                                        </div>
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Secondary color to use for various controls." />
                                         </div>
 
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Color to use for various controls to show that something was successful." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpInfo" runat="server" Label="Info" Help="Color to use for various controls to show informational messages." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Color to use for various controls to show that an action is dangerous." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Color to use for various controls to show that caution is needed." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="A color to use for controls that need to be light." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="A color to use for controls that need to be dark." />
+                                        </div>
+
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpBrand" runat="server" Label="Brand" Help="Color to use for branding controls like the navigation header." />
                                         </div>
                                     </div>
                                 </Rock:RockControlWrapper>
@@ -162,9 +174,7 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
-                                        <div class="col-md-4">
-                                            <Rock:NumberBox ID="nbSpacingBase" runat="server" NumberType="Integer" Label="Spacing Base" Help="The default value to use for margins and padding."></Rock:NumberBox>
-                                        </div>
+                                        
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>

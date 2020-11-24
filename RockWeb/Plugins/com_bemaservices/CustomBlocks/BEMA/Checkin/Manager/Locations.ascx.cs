@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -64,6 +64,18 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn.Manager
         Order = 6,
         Category = "BEMA Additional Features" )]
     /* BEMA.FE1.End */
+
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Allow Parent Groups of Any Type",
+        Key = AttributeKey.AllowParentGroupsAnyType,
+        Description = "Allow any check-in group to be displayed, whether or not its parent group type is one of the selected group types. Groups can be placed in group viewer without reprocussions.",
+        DefaultValue = "False",
+        IsRequired = false,
+        Order = 7,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE2.END */
+
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
@@ -71,6 +83,8 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn.Manager
         private static class AttributeKey
         {
             public const string RootLocationOverride = "RootLocationOverride";
+
+            public const string AllowParentGroupsAnyType = "AllowParentGroupsAnyType";
         }
 
         #endregion
@@ -965,11 +979,15 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn.Manager
                             navGroup.ChildGroupIds = childGroupIds;
                             NavData.Groups.Add( navGroup );
 
-                            if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
+                            /*BEMA.FE2.Start */
+                            bool alwaysAllowGroups = GetAttributeValue( AttributeKey.AllowParentGroupsAnyType ).AsBoolean();
+
+                            if ( alwaysAllowGroups || !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
                             {
                                 NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
                                     .ForEach( t => t.ChildGroupIds.Add( group.Id ) );
                             }
+                            /*BEMA.FE2.End */
                         }
                     }
 

@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Technologies
+// Copyright by BEMA Software Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.2.1)
+ * BEMA Modified Core Block ( v10.3.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -68,7 +68,8 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
         Key = BemaAttributeKey.HideCancelButton,
         Description = "Should the cancel button be hidden?",
         DefaultValue = "False",
-        Category = "BEMA Additional Features" )]
+        Category = "BEMA Additional Features",
+        Order = 1 )]
     // UMC Value = true
     /* BEMA.UI1.End */
        
@@ -78,9 +79,40 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
         Key = BemaAttributeKey.HidePrintRosterButton,
         Description = "Should the print roster button be hidden?",
         DefaultValue = "False",
-        Category = "BEMA Additional Features" )]
+        Category = "BEMA Additional Features",
+        Order = 2 )]
     // UMC Value = true
     /* BEMA.UI1.End */
+
+    /* BEMA.FE1.Start */
+    [BooleanField(
+        "Allow Anonymous Attendance Counts",
+        Key = BemaAttributeKey.AllowAnonymousAttendanceCounts,
+        Description = "Select Yes to allow a headcount number that will add group counts in addition to selected individuals.",
+        DefaultValue = "False",
+        Category = "BEMA Additional Features",
+        Order = 3
+    )]
+
+    [GroupTypesField(
+        "Included Anonymous Attendance Group Types",
+        Key = BemaAttributeKey.AnonymousAttendanceGroupTypes,
+        Description = "Select which group types to allow anonymous attendance counts for. If none selected, all types will be allowed",
+        Category = "BEMA Additional Features",
+        IsRequired = false,
+        Order = 4
+        )]
+
+    [MetricField(
+        "Anonymous Count Metric",
+        Key = BemaAttributeKey.AnonymousAttendanceMetric,
+        Description = "Metric that stores the values entered for anonymous counts. MUST INCLUDE: Campus partition, Schedule partition, Group partition.",
+        Category = "BEMA Additional Features",
+        IsRequired = false,
+        Order = 5
+    )]
+
+    /* BEMA.FE1.End */
 	
 	public partial class GroupAttendanceDetail : RockBlock
     {
@@ -90,6 +122,9 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
         {
             public const string HideCancelButton = "HideCancelButton";
             public const string HidePrintRosterButton = "HidePrintRosterButton";
+            public const string AllowAnonymousAttendanceCounts = "AllowAnonymousAttendanceCounts";
+            public const string AnonymousAttendanceGroupTypes = "AnonymousAttendanceGroupTypes";
+            public const string AnonymousAttendanceMetric = "AnonymousAttendanceMetric";
         }
 
         #endregion
@@ -261,6 +296,89 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
             /* BEMA.UI2.Start */
             lbPrintAttendanceRoster.Visible = !GetAttributeValue( BemaAttributeKey.HidePrintRosterButton ).AsBoolean();
             /* BEMA.UI2.End */
+
+            /* BEMA.FE1.Start */
+            if ( !Page.IsPostBack )
+            {
+                if ( _group != null && GetAttributeValue( BemaAttributeKey.AllowAnonymousAttendanceCounts ).AsBoolean() )
+                {
+                    // If occurrence already has an attendance count or metric value, display edit field and populate.
+                    // If any group types selected, dont display if group's group type not in list.
+
+                    // Try Metric and MetricValue First
+                    if ( _occurrence != null && GetAttributeValue( BemaAttributeKey.AnonymousAttendanceMetric ).IsNotNullOrWhiteSpace() )
+                    {
+                        RockContext rockContext = new RockContext();
+                        MetricService metricService = new MetricService( rockContext );
+                        MetricValueService metricValueService = new MetricValueService( rockContext );
+                        LocationService locationService = new LocationService( rockContext );
+
+                        Metric metric = metricService.Get( GetAttributeValue( BemaAttributeKey.AnonymousAttendanceMetric ).AsGuid() );
+                        if ( metric != null )
+                        {
+                            int campusEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Campus ) ).Id;
+                            int scheduleEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Schedule ) ).Id;
+                            int groupEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Group ) ).Id;
+
+                            int campusPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+                            int schedulePartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+                            int groupPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == groupEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+
+                            // Find CampusId
+                            int? campusId = locationService.GetCampusIdForLocation( _occurrence.LocationId ) ?? _group.CampusId;
+                            if ( !campusId.HasValue && _allowCampusFilter )
+                            {
+                                var campus = CampusCache.Get( bddlCampus.SelectedValueAsInt() ?? 0 );
+                                if ( campus != null )
+                                {
+                                    campusId = campus.Id;
+                                }
+                            }
+
+                            var metricValue = metricValueService
+                                .Queryable()
+                                .Where( v =>
+                                    v.MetricId == metric.Id &&
+                                    v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value == _occurrence.OccurrenceDate &&
+                                    v.MetricValuePartitions.Count == 3 &&
+                                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == campusPartitionId && p.EntityId.HasValue && p.EntityId.Value == campusId ) &&
+                                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == schedulePartitionId && p.EntityId.HasValue && p.EntityId.Value == _occurrence.ScheduleId ) &&
+                                    v.MetricValuePartitions.Any( p => p.MetricPartitionId == groupPartitionId && p.EntityId.HasValue && p.EntityId.Value == _occurrence.GroupId ) )
+                                .FirstOrDefault();
+
+
+                            if ( metricValue != null && metricValue.YValue.HasValue )
+                            {
+                                nbAnonymousAttendanceCount.Text = metricValue.YValue.Value.ToString( "N0" );
+                            }
+
+                            pnlAnonymousAttendanceCount.Visible = true;
+                        }
+                    }
+                    // Second, Try Anonymous Attendance Count on occurrence
+                    else if ( _occurrence != null && _occurrence.AnonymousAttendanceCount.HasValue )
+                    {
+                        pnlAnonymousAttendanceCount.Visible = true;
+                        nbAnonymousAttendanceCount.Text = _occurrence.AnonymousAttendanceCount.Value.ToString();
+                    }
+                    //No current values, but see if we should allow a new entry via group type selector
+                    else if ( GetAttributeValue( BemaAttributeKey.AnonymousAttendanceGroupTypes ).IsNotNullOrWhiteSpace() )
+                    {
+                        GroupTypeCache gt = GroupTypeCache.Get( _group.GroupTypeId );
+                        if ( GetAttributeValue( BemaAttributeKey.AnonymousAttendanceGroupTypes ).SplitDelimitedValues().AsGuidList().Contains( gt.Guid ) )
+                        {
+                            pnlAnonymousAttendanceCount.Visible = true;
+                        }
+                    }
+                    // Yes, we can display anonymous count entry
+                    else
+                    {
+                        pnlAnonymousAttendanceCount.Visible = true;
+                    }
+                }
+            }
+                
+            /* BEMA.FE1.End */
         }
 
         /// <summary>
@@ -1117,6 +1235,75 @@ cbDidNotMeet.ClientID );
                                 attendance.DidAttend = attendee.Attended;
                             }
                         }
+
+                        /* BEMA.FE1.Start */
+
+                        // If Integer is Valid, add Anonymous Count
+                        if ( nbAnonymousAttendanceCount.Text.AsIntegerOrNull().HasValue )
+                        {
+                            // If Metric is Set, Create Value There, if Not, use occurrence anonymous attendance value
+                            if ( GetAttributeValue( BemaAttributeKey.AnonymousAttendanceMetric ).IsNotNullOrWhiteSpace() )
+                            {
+                                MetricService metricService = new MetricService( rockContext );
+                                MetricValueService metricValueService = new MetricValueService( rockContext );
+
+                                Metric metric = metricService.Get( GetAttributeValue( BemaAttributeKey.AnonymousAttendanceMetric ).AsGuid() );
+                                if ( metric != null )
+                                {
+                                    int campusEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Campus ) ).Id;
+                                    int scheduleEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Schedule ) ).Id;
+                                    int groupEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Group ) ).Id;
+
+                                    int campusPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == campusEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+                                    int schedulePartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == scheduleEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+                                    int groupPartitionId = metric.MetricPartitions.Where( p => p.EntityTypeId.HasValue && p.EntityTypeId.Value == groupEntityTypeId ).Select( p => p.Id ).FirstOrDefault();
+
+                                    MetricValue metricValue = metricValueService
+                                        .Queryable()
+                                        .Where( v =>
+                                            v.MetricId == metric.Id &&
+                                            v.MetricValueDateTime.HasValue && v.MetricValueDateTime.Value == _occurrence.OccurrenceDate &&
+                                            v.MetricValuePartitions.Count == 3 &&
+                                            v.MetricValuePartitions.Any( p => p.MetricPartitionId == campusPartitionId && p.EntityId.HasValue && p.EntityId.Value == campusId ) &&
+                                            v.MetricValuePartitions.Any( p => p.MetricPartitionId == schedulePartitionId && p.EntityId.HasValue && p.EntityId.Value == _occurrence.ScheduleId ) &&
+                                            v.MetricValuePartitions.Any( p => p.MetricPartitionId == groupPartitionId && p.EntityId.HasValue && p.EntityId.Value == _occurrence.GroupId ) )
+                                        .FirstOrDefault();
+
+                                    if ( metricValue == null )
+                                    {
+                                        metricValue = new MetricValue();
+                                        metricValue.MetricValueType = MetricValueType.Measure;
+                                        metricValue.MetricId = metric.Id;
+                                        metricValue.MetricValueDateTime = _occurrence.OccurrenceDate;
+                                        metricValueService.Add( metricValue );
+
+                                        var campusValuePartition = new MetricValuePartition();
+                                        campusValuePartition.MetricPartitionId = campusPartitionId;
+                                        campusValuePartition.EntityId = campusId.Value;
+                                        metricValue.MetricValuePartitions.Add( campusValuePartition );
+
+                                        var scheduleValuePartition = new MetricValuePartition();
+                                        scheduleValuePartition.MetricPartitionId = schedulePartitionId;
+                                        scheduleValuePartition.EntityId = _occurrence.ScheduleId;
+                                        metricValue.MetricValuePartitions.Add( scheduleValuePartition );
+
+                                        var groupValuePartition = new MetricValuePartition();
+                                        groupValuePartition.MetricPartitionId = groupPartitionId;
+                                        groupValuePartition.EntityId = _occurrence.GroupId;
+                                        metricValue.MetricValuePartitions.Add( groupValuePartition );
+                                    }
+
+                                    metricValue.YValue = nbAnonymousAttendanceCount.Text.AsInteger();
+                                }
+                            }
+                            else
+                            {
+                                occurrence.AnonymousAttendanceCount = nbAnonymousAttendanceCount.Text.AsInteger();
+                            }
+                            
+                        }
+
+                        /* BEMA.FE2.End */
                     }
                 }
 

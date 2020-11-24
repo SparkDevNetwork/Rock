@@ -550,6 +550,7 @@ namespace RockWeb.Plugins.com_bemaservices.ClientTools
                                     string html = reader.ReadToEnd();
                                     AddRegexMatches( fileNames, html, String.Format( ".plugin\">(?<name>ClientPackage-{0}-v........plugin)</A>", pluginFileAcronym ) );
                                     AddRegexMatches( fileNames, html, String.Format( ".plugin\">(?<name>ClientPackage-{0}-v.........plugin)</A>", pluginFileAcronym ) );
+                                    AddRegexMatches( fileNames, html, String.Format( ".plugin\">(?<name>ClientPackage-{0}-v..........plugin)</A>", pluginFileAcronym ) );
                                 }
                             }
 
