@@ -61,9 +61,13 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202011231521580_BusAndFarmPages.cs" />
-    <Compile Include="Migrations\202011231521580_BusAndFarmPages.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.Designer.cs">
       <DependentUpon>202011231521580_BusAndFarmPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.Designer.cs">
+      <DependentUpon>202011241949568_CheckinClientInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -1491,8 +1495,11 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202011231521580_BusAndFarmPages.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.resx">
       <DependentUpon>202011231521580_BusAndFarmPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.resx">
+      <DependentUpon>202011241949568_CheckinClientInstaller.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.resx">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
