@@ -211,5 +211,10 @@ namespace Rock.SystemKey
         /// The webfarm leadership polling interval upper limit seconds
         /// </summary>
         public const string WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS = "WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS";
+
+        /// <summary>
+        /// The RockCleanup Last Run DateTime
+        /// </summary>
+        public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
     }
 }
