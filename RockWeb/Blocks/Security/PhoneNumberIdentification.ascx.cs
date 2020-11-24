@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Security
 
                         self.val('');
 
-                        self.one('input.fromPaste', function () {
+                        self.one('input', function () {
                             var intRegex = /^\d+$/;
                             $currentInputBox = $(this);
 
@@ -359,26 +359,25 @@ namespace RockWeb.Blocks.Security
                         if (key === 8) {
                             var boxNumber = parseInt(self.attr('data-box-number'));
                             if (boxNumber && boxNumber > 1 && boxNumber <= 6) {
-                                var nextBox = $('.js-code-' + (boxNumber - 1));
-                                nextBox.val('');
-                                nextBox.focus();
+                                var prevBox = $('.js-code-' + (boxNumber - 1));
+                                prevBox.val('');
+                                prevBox.focus();
                             }
                             event.preventDefault();
                             return;
                         }
 
-                        if (value.length == 1 && !event.ctrlKey) {
+                        if (value.length > 1 && !event.ctrlKey) {
                             event.preventDefault();
                             return;
                         }
 
                         if (!event.ctrlKey) {
-                            self.one('keyup', function () {
+                            self.one('input', function () {
                                 var self = $(this);
                                 var boxNumber = parseInt(self.attr('data-box-number'));
                                 if (boxNumber && boxNumber < 6) {
-                                    var nextBox = $('.js-code-' + (boxNumber + 1));
-                                    nextBox.focus();
+                                    $('.js-code-' + (boxNumber + 1)).focus();
                                 }
                                 if (boxNumber === 6) {
                                     $('.js-verify-button').focus();
