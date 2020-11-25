@@ -1062,7 +1062,7 @@ namespace RockWeb.Blocks.Cms
                                 var familyGroup = new GroupService( rockContext )
                                     .Queryable()
                                     .Where( f =>
-                                        f.GroupType.Guid == familyGroupTypeGuid.Value &&
+                                        f.Id == groupId.Value &&
                                         f.Members.Any( m => m.PersonId == person.Id ) )
                                     .FirstOrDefault();
                                 if ( familyGroup != null )
@@ -1418,7 +1418,7 @@ namespace RockWeb.Blocks.Cms
                         var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
-                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                            .Where( l => l.GroupId == groupId.Value
                                                     && l.GroupLocationTypeValueId == addressTypeDv.Id
                                                     && l.Group.Members.Any( m => m.PersonId == person.Id ) )
                                             .FirstOrDefault();
