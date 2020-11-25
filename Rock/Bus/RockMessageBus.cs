@@ -105,19 +105,18 @@ namespace Rock.Bus
         {
             var components = TransportContainer.Instance.Components.Select( c => c.Value.Value );
             var inMemoryTransport = components.FirstOrDefault( c => c is InMemory );
+            var activeNonInMemoryTransports = components.Where( c => c != inMemoryTransport && c.IsActive );
 
-            // If the in-memory transport is active, then it will be the transport. Admins will need to
-            // explicitly deactivate in-memory for another transport to work. This is to ensure Rock
-            // instances without explicit config (most) will function with the in-memory transport.
-            if ( inMemoryTransport.IsActive )
+            // If something besides in-memory transport is active, then it will be the transport.
+            if ( activeNonInMemoryTransports.Any() )
             {
-                _transportComponent = inMemoryTransport;
+                _transportComponent = activeNonInMemoryTransports.First();
             }
             else
             {
-                // If there is no active transport, in-memory is used anyway. Effectively, in-memory cannot
+                // If there is no active transport, in-memory is used. Effectively, in-memory cannot
                 // be deactivated because it would cause Rock to not function.
-                _transportComponent = components.FirstOrDefault( c => c.IsActive ) ?? inMemoryTransport;
+                _transportComponent = inMemoryTransport;
             }
 
             try
@@ -126,7 +125,7 @@ namespace Rock.Bus
             }
             catch ( Exception e )
             {
-                // An error occured with the other transport so try one more time with in-memory to see if Rock
+                // An error occured with the chosen transport. Try one more time with in-memory to see if Rock
                 // can still start to allow UI based configuration
                 if ( _transportComponent == inMemoryTransport )
                 {
