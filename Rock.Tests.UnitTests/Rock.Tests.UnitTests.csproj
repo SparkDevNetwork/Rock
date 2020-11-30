@@ -105,7 +105,9 @@
     <Compile Include="Rock\Model\PageTests.cs" />
     <Compile Include="Rock\Model\BinaryFileTypeTests.cs" />
     <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\DateKeyExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableDictionaryTests.cs" />
