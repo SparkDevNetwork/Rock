@@ -130,7 +130,11 @@
                                         <Rock:NotificationBox ID="nbEventReg" runat="server" Visible="false" NotificationBoxType="Info" />
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="row">
+                                        <Rock:RockDropDownList ID="ddlNewOrExisting" runat="server" Label="Do you want to use a new or existing registration template?" AutoPostBack="true" OnSelectedIndexChanged="ddlNewOrExisting_SelectedIndexChanged">
+                                            <asp:ListItem Text="New Template" Value="New" Selected="true" />
+                                            <asp:ListItem Text="Existing Template" Value="Existing" />
+                                        </Rock:RockDropDownList>
+                                        <asp:Panel ID="pnlNewTemplate" runat="server" CssClass="row">
                                             <div class="col-md-6">
                                                 <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Registration Template" Required="true" />
                                             </div>
@@ -138,7 +142,12 @@
                                             <div class="col-md-6">
                                                 <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="true" EntityTypeId="234" />
                                             </div>
-                                        </div>
+                                        </asp:Panel>
+                                        <asp:Panel ID="pnlExistingTemplate" runat="server" CssClass="row" Visible="false">
+                                            <div class="col-md-12">
+                                                <Rock:RegistrationTemplatePicker ID="rtpTemplate" runat="server" Label="Template" />
+                                            </div>
+                                        </asp:Panel>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <Rock:DateTimePicker ID="dpEventRegStartDate" runat="server" Label="Registration Start Date" Required="true" />

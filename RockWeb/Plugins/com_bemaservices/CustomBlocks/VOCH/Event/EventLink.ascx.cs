@@ -881,327 +881,346 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
         {
             using ( var rockContext = new RockContext() )
             {
-
                 var registrationTemplateService = new RegistrationTemplateService( rockContext );
-                var registrationTemplate = registrationTemplateService.Get( ddlTemplate.SelectedValueAsId() ?? 0 );
 
-                LoadStateDetails( registrationTemplate, rockContext );
-
-                if ( registrationTemplate != null )
+                var templateType = ddlNewOrExisting.SelectedValue;
+                if ( templateType == "New" )
                 {
-                    RegistrationTemplate newRegistrationTemplate = registrationTemplate.Clone( false );
+                    var registrationTemplate = registrationTemplateService.Get( ddlTemplate.SelectedValueAsId() ?? 0 );
 
-                    // newRegistrationTemplate.CreatedByPersonAliasId = CurrentPerson.PrimaryAliasId;
-                    newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
-                    newRegistrationTemplate.ModifiedByPersonAlias = null;
-                    newRegistrationTemplate.ModifiedByPersonAliasId = null;
-                    newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
-                    newRegistrationTemplate.Id = 0;
-                    newRegistrationTemplate.Guid = Guid.NewGuid();
-                    newRegistrationTemplate.Name = tbEventName.Text;
-                    newRegistrationTemplate.CategoryId = cpCategory.SelectedValueAsId();
-                    newRegistrationTemplate.ForeignGuid = _workflow.Guid;
-                    newRegistrationTemplate.ForeignId = _workflow.Id;
+                    LoadStateDetails( registrationTemplate, rockContext );
 
-                    _registrationTemplate = newRegistrationTemplate;
+                    if ( registrationTemplate != null )
+                    {
+                        RegistrationTemplate newRegistrationTemplate = registrationTemplate.Clone( false );
+
+                        // newRegistrationTemplate.CreatedByPersonAliasId = CurrentPerson.PrimaryAliasId;
+                        newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
+                        newRegistrationTemplate.ModifiedByPersonAlias = null;
+                        newRegistrationTemplate.ModifiedByPersonAliasId = null;
+                        newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
+                        newRegistrationTemplate.Id = 0;
+                        newRegistrationTemplate.Guid = Guid.NewGuid();
+                        newRegistrationTemplate.Name = tbEventName.Text;
+                        newRegistrationTemplate.CategoryId = cpCategory.SelectedValueAsId();
+                        newRegistrationTemplate.ForeignGuid = _workflow.Guid;
+                        newRegistrationTemplate.ForeignId = _workflow.Id;
+
+                        _registrationTemplate = newRegistrationTemplate;
+
+                        rockContext.SaveChanges();
+                    }
+
+
+                    registrationTemplateService.Add( _registrationTemplate );
+                    rockContext.SaveChanges();
+
+
+                    // Create temporary state objects for the new registration template
+                    var newFormState = new List<RegistrationTemplateForm>();
+                    var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
+                    var newDiscountState = new List<RegistrationTemplateDiscount>();
+                    var newFeeState = new List<RegistrationTemplateFee>();
+                    var newAttributeState = new List<Attribute>();
+
+                    foreach ( var form in FormState )
+                    {
+                        var newForm = form.Clone( false );
+                        newForm.RegistrationTemplateId = 0;
+                        newForm.Id = 0;
+                        newForm.Guid = Guid.NewGuid();
+                        newFormState.Add( newForm );
+
+                        if ( FormFieldsState.ContainsKey( form.Guid ) )
+                        {
+                            newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
+                            foreach ( var formField in FormFieldsState[form.Guid] )
+                            {
+                                var newFormField = formField.Clone( false );
+                                newFormField.RegistrationTemplateFormId = 0;
+                                newFormField.Id = 0;
+                                newFormField.Guid = Guid.NewGuid();
+                                newFormFieldsState[newForm.Guid].Add( newFormField );
+
+                                if ( formField.FieldSource != RegistrationFieldSource.PersonField )
+                                {
+                                    newFormField.Attribute = formField.Attribute;
+                                }
+
+                                if ( formField.FieldSource == RegistrationFieldSource.RegistrantAttribute && formField.Attribute != null )
+                                {
+                                    var newAttribute = formField.Attribute.Clone( false );
+                                    newAttribute.Id = 0;
+                                    newAttribute.Guid = Guid.NewGuid();
+                                    newAttribute.IsSystem = false;
+
+                                    newFormField.AttributeId = null;
+                                    newFormField.Attribute = newAttribute;
+
+                                    foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
+                                    {
+                                        var newQualifier = qualifier.Clone( false );
+                                        newQualifier.Id = 0;
+                                        newQualifier.Guid = Guid.NewGuid();
+                                        newQualifier.IsSystem = false;
+                                        newAttribute.AttributeQualifiers.Add( newQualifier );
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    foreach ( var discount in DiscountState )
+                    {
+                        var newDiscount = discount.Clone( false );
+                        newDiscount.RegistrationTemplateId = 0;
+                        newDiscount.Id = 0;
+                        newDiscount.Guid = Guid.NewGuid();
+                        newDiscountState.Add( newDiscount );
+                    }
+
+                    foreach ( var fee in FeeState )
+                    {
+                        var newFee = fee.Clone( false );
+                        newFee.RegistrationTemplateId = 0;
+                        newFee.Id = 0;
+                        newFee.Guid = Guid.NewGuid();
+                        newFeeState.Add( newFee );
+                        foreach ( var item in fee.FeeItems )
+                        {
+                            var feeItem = item.Clone( false );
+                            feeItem.Id = 0;
+                            feeItem.Guid = Guid.NewGuid();
+                            newFee.FeeItems.Add( feeItem );
+                        }
+                    }
+
+                    foreach ( var attribute in RegistrationAttributesState )
+                    {
+                        var newAttribute = attribute.Clone( false );
+                        newAttribute.EntityTypeQualifierValue = null;
+                        newAttribute.Id = 0;
+                        newAttribute.Guid = Guid.NewGuid();
+                        newAttributeState.Add( newAttribute );
+                    }
+
+                    FormState = newFormState;
+                    FormFieldsState = newFormFieldsState;
+                    DiscountState = newDiscountState;
+                    FeeState = newFeeState;
+                    RegistrationAttributesState = newAttributeState;
+
+
+                    // add/updated forms/fields
+                    foreach ( var formUI in FormState )
+                    {
+                        var form = _registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUI.Guid ) );
+                        if ( form == null )
+                        {
+                            form = new RegistrationTemplateForm();
+                            form.Guid = formUI.Guid;
+                            _registrationTemplate.Forms.Add( form );
+                        }
+
+                        form.Name = formUI.Name;
+                        form.Order = formUI.Order;
+
+                        if ( FormFieldsState.ContainsKey( form.Guid ) )
+                        {
+                            foreach ( var formFieldUI in FormFieldsState[form.Guid] )
+                            {
+                                var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
+                                if ( formField == null )
+                                {
+                                    formField = new RegistrationTemplateFormField();
+                                    formField.Guid = formFieldUI.Guid;
+                                    form.Fields.Add( formField );
+                                }
+
+                                formField.AttributeId = formFieldUI.AttributeId;
+                                if ( !formField.AttributeId.HasValue &&
+                                    formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                                    formFieldUI.Attribute != null )
+                                {
+                                    var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
+                                    if ( attr != null )
+                                    {
+                                        formField.AttributeId = attr.Id;
+                                    }
+                                    else
+                                    {
+                                        formField.Attribute = formFieldUI.Attribute;
+                                    }
+                                }
+
+                                formField.FieldSource = formFieldUI.FieldSource;
+                                formField.PersonFieldType = formFieldUI.PersonFieldType;
+                                formField.IsInternal = formFieldUI.IsInternal;
+                                formField.IsSharedValue = formFieldUI.IsSharedValue;
+                                formField.ShowCurrentValue = formFieldUI.ShowCurrentValue;
+                                formField.PreText = formFieldUI.PreText;
+                                formField.PostText = formFieldUI.PostText;
+                                formField.IsGridField = formFieldUI.IsGridField;
+                                formField.IsRequired = formFieldUI.IsRequired;
+                                formField.Order = formFieldUI.Order;
+                                formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
+                                formField.FieldVisibilityRules = formFieldUI.FieldVisibilityRules;
+                            }
+                        }
+                    }
+
+                    // add/updated discounts
+                    foreach ( var discountUI in DiscountState )
+                    {
+                        var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
+                        if ( discount == null )
+                        {
+                            discount = new RegistrationTemplateDiscount();
+                            discount.Guid = discountUI.Guid;
+                            registrationTemplate.Discounts.Add( discount );
+                        }
+
+                        discount.Code = discountUI.Code;
+                        discount.DiscountPercentage = discountUI.DiscountPercentage;
+                        discount.DiscountAmount = discountUI.DiscountAmount;
+                        discount.Order = discountUI.Order;
+                        discount.MaxUsage = discountUI.MaxUsage;
+                        discount.MaxRegistrants = discountUI.MaxRegistrants;
+                        discount.MinRegistrants = discountUI.MinRegistrants;
+                        discount.StartDate = discountUI.StartDate;
+                        discount.EndDate = discountUI.EndDate;
+                        discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
+                    }
+
+                    // add/updated fees
+                    foreach ( var feeUI in FeeState )
+                    {
+                        var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
+                        var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+
+                        var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
+                        if ( fee == null )
+                        {
+                            fee = new RegistrationTemplateFee();
+                            fee.Guid = feeUI.Guid;
+                            registrationTemplate.Fees.Add( fee );
+                        }
+
+                        fee.Name = feeUI.Name;
+                        fee.FeeType = feeUI.FeeType;
+
+                        // delete any feeItems no longer defined
+                        foreach ( var deletedFeeItem in fee.FeeItems.ToList().Where( a => !feeUI.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                        {
+                            registrationTemplateFeeItemService.Delete( deletedFeeItem );
+                        }
+
+                        // add any new feeItems
+                        foreach ( var newFeeItem in feeUI.FeeItems.ToList().Where( a => !fee.FeeItems.Any( x => x.Guid == a.Guid ) ) )
+                        {
+                            newFeeItem.RegistrationTemplateFee = fee;
+                            newFeeItem.RegistrationTemplateFeeId = fee.Id;
+                            registrationTemplateFeeItemService.Add( newFeeItem );
+                        }
+
+                        // update feeItems to match
+                        foreach ( var feeItem in fee.FeeItems )
+                        {
+                            var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
+                            if ( feeItemUI != null )
+                            {
+                                feeItem.Order = feeItemUI.Order;
+                                feeItem.Name = feeItemUI.Name;
+                                feeItem.Cost = feeItemUI.Cost;
+                                feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
+                            }
+                        }
+
+                        fee.DiscountApplies = feeUI.DiscountApplies;
+                        fee.AllowMultiple = feeUI.AllowMultiple;
+                        fee.Order = feeUI.Order;
+                        fee.IsActive = feeUI.IsActive;
+                        fee.IsRequired = feeUI.IsRequired;
+                    }
+
+                    registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
+                    registrationTemplate.ModifiedDateTime = RockDateTime.Now;
 
                     rockContext.SaveChanges();
+
+                    //SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
                 }
-
-
-                registrationTemplateService.Add( _registrationTemplate );
-                rockContext.SaveChanges();
-
-
-                // Create temporary state objects for the new registration template
-                var newFormState = new List<RegistrationTemplateForm>();
-                var newFormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
-                var newDiscountState = new List<RegistrationTemplateDiscount>();
-                var newFeeState = new List<RegistrationTemplateFee>();
-                var newAttributeState = new List<Attribute>();
-
-                foreach ( var form in FormState )
+                else
                 {
-                    var newForm = form.Clone( false );
-                    newForm.RegistrationTemplateId = 0;
-                    newForm.Id = 0;
-                    newForm.Guid = Guid.NewGuid();
-                    newFormState.Add( newForm );
-
-                    if ( FormFieldsState.ContainsKey( form.Guid ) )
+                    if ( templateType == "Existing" )
                     {
-                        newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
-                        foreach ( var formField in FormFieldsState[form.Guid] )
+                        var registrationTemplateId = rtpTemplate.SelectedValueAsInt();
+                        var registrationTemplate = registrationTemplateService.Get( registrationTemplateId ?? 0 );
+                        if ( registrationTemplate != null )
                         {
-                            var newFormField = formField.Clone( false );
-                            newFormField.RegistrationTemplateFormId = 0;
-                            newFormField.Id = 0;
-                            newFormField.Guid = Guid.NewGuid();
-                            newFormFieldsState[newForm.Guid].Add( newFormField );
-
-                            if ( formField.FieldSource != RegistrationFieldSource.PersonField )
-                            {
-                                newFormField.Attribute = formField.Attribute;
-                            }
-
-                            if ( formField.FieldSource == RegistrationFieldSource.RegistrantAttribute && formField.Attribute != null )
-                            {
-                                var newAttribute = formField.Attribute.Clone( false );
-                                newAttribute.Id = 0;
-                                newAttribute.Guid = Guid.NewGuid();
-                                newAttribute.IsSystem = false;
-
-                                newFormField.AttributeId = null;
-                                newFormField.Attribute = newAttribute;
-
-                                foreach ( var qualifier in formField.Attribute.AttributeQualifiers )
-                                {
-                                    var newQualifier = qualifier.Clone( false );
-                                    newQualifier.Id = 0;
-                                    newQualifier.Guid = Guid.NewGuid();
-                                    newQualifier.IsSystem = false;
-                                    newAttribute.AttributeQualifiers.Add( newQualifier );
-                                }
-                            }
+                            _registrationTemplate = registrationTemplate;
                         }
                     }
                 }
-
-                foreach ( var discount in DiscountState )
-                {
-                    var newDiscount = discount.Clone( false );
-                    newDiscount.RegistrationTemplateId = 0;
-                    newDiscount.Id = 0;
-                    newDiscount.Guid = Guid.NewGuid();
-                    newDiscountState.Add( newDiscount );
-                }
-
-                foreach ( var fee in FeeState )
-                {
-                    var newFee = fee.Clone( false );
-                    newFee.RegistrationTemplateId = 0;
-                    newFee.Id = 0;
-                    newFee.Guid = Guid.NewGuid();
-                    newFeeState.Add( newFee );
-                    foreach ( var item in fee.FeeItems )
-                    {
-                        var feeItem = item.Clone( false );
-                        feeItem.Id = 0;
-                        feeItem.Guid = Guid.NewGuid();
-                        newFee.FeeItems.Add( feeItem );
-                    }
-                }
-
-                foreach ( var attribute in RegistrationAttributesState )
-                {
-                    var newAttribute = attribute.Clone( false );
-                    newAttribute.EntityTypeQualifierValue = null;
-                    newAttribute.Id = 0;
-                    newAttribute.Guid = Guid.NewGuid();
-                    newAttributeState.Add( newAttribute );
-                }
-
-                FormState = newFormState;
-                FormFieldsState = newFormFieldsState;
-                DiscountState = newDiscountState;
-                FeeState = newFeeState;
-                RegistrationAttributesState = newAttributeState;
-
-
-                // add/updated forms/fields
-                foreach ( var formUI in FormState )
-                {
-                    var form = _registrationTemplate.Forms.FirstOrDefault( f => f.Guid.Equals( formUI.Guid ) );
-                    if ( form == null )
-                    {
-                        form = new RegistrationTemplateForm();
-                        form.Guid = formUI.Guid;
-                        _registrationTemplate.Forms.Add( form );
-                    }
-
-                    form.Name = formUI.Name;
-                    form.Order = formUI.Order;
-
-                    if ( FormFieldsState.ContainsKey( form.Guid ) )
-                    {
-                        foreach ( var formFieldUI in FormFieldsState[form.Guid] )
-                        {
-                            var formField = form.Fields.FirstOrDefault( a => a.Guid.Equals( formFieldUI.Guid ) );
-                            if ( formField == null )
-                            {
-                                formField = new RegistrationTemplateFormField();
-                                formField.Guid = formFieldUI.Guid;
-                                form.Fields.Add( formField );
-                            }
-
-                            formField.AttributeId = formFieldUI.AttributeId;
-                            if ( !formField.AttributeId.HasValue &&
-                                formFieldUI.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                formFieldUI.Attribute != null )
-                            {
-                                var attr = AttributeCache.Get( formFieldUI.Attribute.Guid, rockContext );
-                                if ( attr != null )
-                                {
-                                    formField.AttributeId = attr.Id;
-                                }
-                                else
-                                {
-                                    formField.Attribute = formFieldUI.Attribute;
-                                }
-                            }
-
-                            formField.FieldSource = formFieldUI.FieldSource;
-                            formField.PersonFieldType = formFieldUI.PersonFieldType;
-                            formField.IsInternal = formFieldUI.IsInternal;
-                            formField.IsSharedValue = formFieldUI.IsSharedValue;
-                            formField.ShowCurrentValue = formFieldUI.ShowCurrentValue;
-                            formField.PreText = formFieldUI.PreText;
-                            formField.PostText = formFieldUI.PostText;
-                            formField.IsGridField = formFieldUI.IsGridField;
-                            formField.IsRequired = formFieldUI.IsRequired;
-                            formField.Order = formFieldUI.Order;
-                            formField.ShowOnWaitlist = formFieldUI.ShowOnWaitlist;
-                            formField.FieldVisibilityRules = formFieldUI.FieldVisibilityRules;
-                        }
-                    }
-                }
-
-                // add/updated discounts
-                foreach ( var discountUI in DiscountState )
-                {
-                    var discount = registrationTemplate.Discounts.FirstOrDefault( a => a.Guid.Equals( discountUI.Guid ) );
-                    if ( discount == null )
-                    {
-                        discount = new RegistrationTemplateDiscount();
-                        discount.Guid = discountUI.Guid;
-                        registrationTemplate.Discounts.Add( discount );
-                    }
-
-                    discount.Code = discountUI.Code;
-                    discount.DiscountPercentage = discountUI.DiscountPercentage;
-                    discount.DiscountAmount = discountUI.DiscountAmount;
-                    discount.Order = discountUI.Order;
-                    discount.MaxUsage = discountUI.MaxUsage;
-                    discount.MaxRegistrants = discountUI.MaxRegistrants;
-                    discount.MinRegistrants = discountUI.MinRegistrants;
-                    discount.StartDate = discountUI.StartDate;
-                    discount.EndDate = discountUI.EndDate;
-                    discount.AutoApplyDiscount = discountUI.AutoApplyDiscount;
-                }
-
-                // add/updated fees
-                foreach ( var feeUI in FeeState )
-                {
-                    var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
-                    var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
-
-                    var fee = registrationTemplate.Fees.FirstOrDefault( a => a.Guid.Equals( feeUI.Guid ) );
-                    if ( fee == null )
-                    {
-                        fee = new RegistrationTemplateFee();
-                        fee.Guid = feeUI.Guid;
-                        registrationTemplate.Fees.Add( fee );
-                    }
-
-                    fee.Name = feeUI.Name;
-                    fee.FeeType = feeUI.FeeType;
-
-                    // delete any feeItems no longer defined
-                    foreach ( var deletedFeeItem in fee.FeeItems.ToList().Where( a => !feeUI.FeeItems.Any( x => x.Guid == a.Guid ) ) )
-                    {
-                        registrationTemplateFeeItemService.Delete( deletedFeeItem );
-                    }
-
-                    // add any new feeItems
-                    foreach ( var newFeeItem in feeUI.FeeItems.ToList().Where( a => !fee.FeeItems.Any( x => x.Guid == a.Guid ) ) )
-                    {
-                        newFeeItem.RegistrationTemplateFee = fee;
-                        newFeeItem.RegistrationTemplateFeeId = fee.Id;
-                        registrationTemplateFeeItemService.Add( newFeeItem );
-                    }
-
-                    // update feeItems to match
-                    foreach ( var feeItem in fee.FeeItems )
-                    {
-                        var feeItemUI = feeUI.FeeItems.FirstOrDefault( x => x.Guid == feeItem.Guid );
-                        if ( feeItemUI != null )
-                        {
-                            feeItem.Order = feeItemUI.Order;
-                            feeItem.Name = feeItemUI.Name;
-                            feeItem.Cost = feeItemUI.Cost;
-                            feeItem.MaximumUsageCount = feeItemUI.MaximumUsageCount;
-                        }
-                    }
-
-                    fee.DiscountApplies = feeUI.DiscountApplies;
-                    fee.AllowMultiple = feeUI.AllowMultiple;
-                    fee.Order = feeUI.Order;
-                    fee.IsActive = feeUI.IsActive;
-                    fee.IsRequired = feeUI.IsRequired;
-                }
-
-                registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
-                registrationTemplate.ModifiedDateTime = RockDateTime.Now;
-
-                rockContext.SaveChanges();
-
-                //SaveAttributes( new Registration().TypeId, "RegistrationTemplateId", registrationTemplate.Id.ToString(), RegistrationAttributesState, rockContext );
-
             }
 
-            RegistrationInstance instance = null;
-
-            using ( var rockContext = new RockContext() )
+            if ( _registrationTemplate != null )
             {
-                var newService = new RegistrationInstanceService( rockContext );
+                RegistrationInstance instance = null;
 
-                if ( instance == null )
+                using ( var rockContext = new RockContext() )
                 {
-                    instance = new RegistrationInstance();
-                    instance.RegistrationTemplateId = _registrationTemplate.Id;
-                    instance.Name = tbEventName.Text;
-                    instance.ForeignGuid = _workflow.Guid;
-                    instance.ForeignId = _workflow.Id;
-                    instance.StartDateTime = dpEventRegStartDate.SelectedDateTime;
-                    instance.EndDateTime = dpEventRegEndDate.SelectedDateTime;
-                    instance.Cost = nbInstanceCost.Text.AsDecimalOrNull();
-                    instance.MaxAttendees = nbMaximumRegistrants.Text.AsInteger();
-                    instance.Details = tbEventDescription.Text;
-                    instance.RegistrationInstructions = htmlRegistrationInstructions.Text;
-                    instance.AdditionalConfirmationDetails = htmlAdditionalConfirmationDetails.Text;
-                    instance.AdditionalReminderDetails = htmlAdditionalReminderDetails.Text;
+                    var newService = new RegistrationInstanceService( rockContext );
 
-                    if ( _primaryContact != null )
+                    if ( instance == null )
                     {
-                        instance.ContactPersonAliasId = _primaryContact.PrimaryAliasId;
+                        instance = new RegistrationInstance();
+                        instance.RegistrationTemplateId = _registrationTemplate.Id;
+                        instance.Name = tbEventName.Text;
+                        instance.ForeignGuid = _workflow.Guid;
+                        instance.ForeignId = _workflow.Id;
+                        instance.StartDateTime = dpEventRegStartDate.SelectedDateTime;
+                        instance.EndDateTime = dpEventRegEndDate.SelectedDateTime;
+                        instance.Cost = nbInstanceCost.Text.AsDecimalOrNull();
+                        instance.MaxAttendees = nbMaximumRegistrants.Text.AsInteger();
+                        instance.Details = tbEventDescription.Text;
+                        instance.RegistrationInstructions = htmlRegistrationInstructions.Text;
+                        instance.AdditionalConfirmationDetails = htmlAdditionalConfirmationDetails.Text;
+                        instance.AdditionalReminderDetails = htmlAdditionalReminderDetails.Text;
 
-                        var phoneNumber = _primaryContact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
-                        string email = _primaryContact.Email;
-
-                        if ( email != "" )
+                        if ( _primaryContact != null )
                         {
-                            instance.ContactEmail = email;
-                        }
+                            instance.ContactPersonAliasId = _primaryContact.PrimaryAliasId;
 
-                        if ( phoneNumber != null )
-                        {
-                            instance.ContactPhone = phoneNumber.NumberFormatted;
+                            var phoneNumber = _primaryContact.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                            string email = _primaryContact.Email;
+
+                            if ( email != "" )
+                            {
+                                instance.ContactEmail = email;
+                            }
+
+                            if ( phoneNumber != null )
+                            {
+                                instance.ContactPhone = phoneNumber.NumberFormatted;
+                            }
                         }
+                        newService.Add( instance );
                     }
-                    newService.Add( instance );
+
+                    rockContext.SaveChanges();
+
+                    _registrationInstance = instance;
+
+                    _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.EventRegistrationWorkflow );
+                    if ( _eventRegistrationWorkflow != null )
+                    {
+                        _eventRegistrationWorkflow.SetAttributeValue( "RegistrationInstance", _registrationInstance.Guid );
+                        _eventRegistrationWorkflow.SetAttributeValue( "AdditionalOptions", htmlAdditionalNoteDetails.Text );
+                    }
+                    _eventRegistrationWorkflow.SaveAttributeValues( rockContext );
                 }
 
-                rockContext.SaveChanges();
-
-                _registrationInstance = instance;
-
-                _eventRegistrationWorkflow = ProcessEventLinkWorkflow( rockContext, BemaAttributeKey.EventRegistrationWorkflow );
-                if ( _eventRegistrationWorkflow != null )
-                {
-                    _eventRegistrationWorkflow.SetAttributeValue( "RegistrationInstance", _registrationInstance.Guid );
-                    _eventRegistrationWorkflow.SetAttributeValue( "AdditionalOptions", htmlAdditionalNoteDetails.Text );
-                }
-                _eventRegistrationWorkflow.SaveAttributeValues( rockContext );
             }
         }
 
@@ -1979,6 +1998,31 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.VOCH.Event
             else
             {
                 pnlProduction.Visible = false;
+            }
+        }
+
+
+        protected void ddlNewOrExisting_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var selectedValue = ddlNewOrExisting.SelectedValue;
+            if ( selectedValue == "New" )
+            {
+                pnlNewTemplate.Visible = true;
+                ddlTemplate.Required = true;
+                cpCategory.Required = true;
+
+                pnlExistingTemplate.Visible = false;
+                rtpTemplate.Required = false;
+            }
+
+            if ( selectedValue == "Existing" )
+            {
+                pnlNewTemplate.Visible = false;
+                ddlTemplate.Required = false;
+                cpCategory.Required = false;
+
+                pnlExistingTemplate.Visible = true;
+                rtpTemplate.Required = true;
             }
         }
 
