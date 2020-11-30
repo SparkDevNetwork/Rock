@@ -346,6 +346,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the date of the start of the month for the specified date/time.
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <returns></returns>
+        public static DateTime StartOfMonth( this DateTime dt )
+        {
+            return new DateTime( dt.Year, dt.Month, 1 );
+        }
+
+        /// <summary>
         /// Returns the date of the start of the week for the specified date/time.
         /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting
         /// </summary>
