@@ -257,15 +257,21 @@ namespace Rock.Model
                     && r.CreatedDateTime >= startDateTime
                     && r.Status == CommunicationRecipientStatus.Delivered );
 
-            if ( personId != null )
-            {
-                communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
-            }
+            //if ( personId != null )
+            //{
+            //    communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
+            //}
 
-            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientQuery
-                .GroupBy( r => r.PersonAlias.PersonId )
-                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.CreatedDateTime );
+            // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
+            var communicationRecipientJoinQuery =
+                from cr in communicationRecipientQuery
+                join pa in personAliasQuery on cr.PersonAliasId equals pa.Id
+                select new { cr, pa };
+
+            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
+                .GroupBy( r => r.pa.PersonId )
+                .Select( a => a.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.Include( a => a.FromPersonAlias.Person ).AsNoTracking().Take( maxCount ).ToList();
 
@@ -289,6 +295,7 @@ namespace Rock.Model
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
+            ( this.Context as RockContext ).SqlLogging( true );
             var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).Select( a => new
             {
                 a.CreatedDateTime,
@@ -297,7 +304,7 @@ namespace Rock.Model
                 a.Communication.SMSMessage,
                 a.SentMessage
             } ).ToList();
-
+            ( this.Context as RockContext ).SqlLogging( false );
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
