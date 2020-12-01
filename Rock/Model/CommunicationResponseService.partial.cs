@@ -257,11 +257,6 @@ namespace Rock.Model
                     && r.CreatedDateTime >= startDateTime
                     && r.Status == CommunicationRecipientStatus.Delivered );
 
-            //if ( personId != null )
-            //{
-            //    communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
-            //}
-
             // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
             var communicationRecipientJoinQuery =
                 from cr in communicationRecipientQuery
