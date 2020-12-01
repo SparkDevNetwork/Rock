@@ -20,10 +20,9 @@ using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.RockTests.Model
+namespace Rock.Tests.Integration.Model
 {
     [TestClass]
-    [Ignore( "Need a mock for Global Attributes" )]
     public class PersonTests
     {
         /// <summary>
@@ -32,6 +31,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
+            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
         }
 
         /// <summary>
@@ -45,61 +45,35 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void GraduatesThisYear()
         {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.That.IsTrue( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-
-        [TestMethod]
-        [Ignore( "Need a mock for Global Attributes" )]
-        public void OffsetGraduatesToday()
-        {
-            InitGlobalAttributesCache();
-            var person = new Person();
-            person.GraduationYear = RockDateTime.Now.Year; // the "year" the person graduates.
-
-            Assert.That.IsTrue( 0 == person.GradeOffset );
-        }
-
-        [TestMethod]
-        [Ignore( "Need a mock for Global Attributes" )]
-        public void OffsetGraduatesTomorrow()
-        {
-            InitGlobalAttributesCache();
-
             DateTime tomorrow = RockDateTime.Now.AddDays( 1 );
             SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
 
+            int thisYear = RockDateTime.Now.Year;
             var Person = new Person();
-            Person.GraduationYear = RockDateTime.Now.Year; // the "year" the person graduates.
 
-            Assert.That.IsTrue( 1 == Person.GradeOffset );
+            // set the GraduationYear to this year using GradeOffset
+            Person.GradeOffset = 0;
+
+            // Grade Transition isn't until tomorrow, so if their GradeOffset is 0,they should graduation day should be this year
+            Assert.That.IsTrue( Person.GraduationYear == thisYear );
         }
 
         [TestMethod]
-
         public void GraduatesNextYear()
         {
-            InitGlobalAttributesCache();
+            DateTime yesterday = RockDateTime.Now.AddDays( -1 );
+            SetGradeTransitionDateGlobalAttribute( yesterday.Month, yesterday.Day );
 
-            DateTime tomorrow = RockDateTime.Now.AddDays( 1 );
-            SetGradeTransitionDateGlobalAttribute( tomorrow.Month, tomorrow.Day );
-
+            int nextYear = RockDateTime.Now.Year + 1;
             var Person = new Person();
-            Person.GradeOffset = 1;
 
-            Assert.That.IsTrue( Person.GraduationYear == RockDateTime.Now.Year );
+            // set the GraduationYear to this year using GradeOffset
+            Person.GradeOffset = 0;
+
+            // Grade Transition was yesterday, so if their GradeOffset is 0, they should graduate next year
+            Assert.That.IsTrue( Person.GraduationYear == nextYear );
         }
-
-        private static void InitGlobalAttributesCache()
-        {
-            DateTime today = RockDateTime.Now;
-            GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();
-            globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), false );
-        }
-
+        
         private static void SetGradeTransitionDateGlobalAttribute( int month, int day )
         {
             GlobalAttributesCache globalAttributes = GlobalAttributesCache.Get();

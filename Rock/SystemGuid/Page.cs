@@ -198,6 +198,24 @@ namespace Rock.SystemGuid
         public const string BUSINESSES = "F4DF4899-2D44-4997-BA9B-9D2C64958A20";
 
         /// <summary>
+        /// Gets the bus page guid
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string BUS = "0FF43CC8-1C29-4882-B2F6-7B6F4C25FE41";
+
+        /// <summary>
+        /// Gets the Transport page guid
+        /// ParentPage: Bus
+        /// </summary>
+        public const string BUS_QUEUE = "45E865C0-CD2D-43CD-AA8A-BF5DBF537587";
+
+        /// <summary>
+        /// Gets the Transport page guid
+        /// ParentPage: Bus
+        /// </summary>
+        public const string BUS_TRANSPORT = "10E34A5D-D967-457D-9DF1-A1D33DA9D100";
+
+        /// <summary>
         /// Gets the Calendars page guid
         /// ParentPage: Website
         /// </summary>
@@ -965,6 +983,12 @@ namespace Rock.SystemGuid
         /// ParentPage: 
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
+
+        /// <summary>
+        /// The web farm
+        /// Parent page: System settings
+        /// </summary>
+        public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
 
         /// <summary>
         /// Gets the File Storage Providers page guid

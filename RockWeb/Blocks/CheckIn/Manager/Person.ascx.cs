@@ -495,7 +495,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Reprint Labels
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -733,7 +733,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lGrade.Text = grade;
 
                 lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
-                lEmail.Text = string.Format( @"<div class=""text-truncate"">{0}</div>", person.GetEmailTag( ResolveRockUrl( "/" ) ) );
+                lEmail.Text = string.Format( @"<div class=""text-truncate"">{0}</div>", person.GetEmailTag( ResolveRockUrl( "/" ), "text-color" ) );
 
                 BindAttribute( person );
 
@@ -765,7 +765,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .ThenBy( m => m.Person.BirthDate )
                     .Select( m => new PersonInfo
                     {
-                        PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
+                        PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 64, 64, className: "d-block mb-1" ),
                         Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
                         NickName = m.Person.NickName,
                         //FullName = m.Person.FullName,

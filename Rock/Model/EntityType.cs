@@ -137,6 +137,15 @@ namespace Rock.Model
         public bool IsAchievementsEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is message bus event publish enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is message bus event publish enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessageBusEventPublishEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
         /// </summary>
         /// <value>

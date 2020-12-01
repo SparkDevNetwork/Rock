@@ -16,19 +16,20 @@
     <ContentTemplate>
 
         <div class="row">
-            <div class="col-xs-12 col-sm-4 col-md-3">
+            <div class="col-xs-12 col-sm-4 col-lg-3">
 
                 <!-- Photo, Name & Campus, Phone & Email, Attributes -->
                 <div class="panel panel-block">
+                    <div class="profile-photo-container">
                     <asp:Literal ID="lPhoto" runat="server" />
-
-                    <div class="d-flex flex-column align-items-center p-2 pb-3">
-                        <h1 class="title name js-checkin-person-name mt-0 text-center">
+                    </div>
+                    <div class="d-flex flex-column align-items-center p-2 pb-3 py-lg-3 px-lg-4">
+                        <h1 class="h3 title name js-checkin-person-name mt-0 text-center">
                             <asp:Literal ID="lName" runat="server"></asp:Literal></h1>
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
 
-                    <asp:Panel ID="pnlContact" runat="server" CssClass="border-top border-gray-400 p-2 text-sm">
+                    <asp:Panel ID="pnlContact" runat="server" CssClass="border-top border-gray-400 p-2 p-lg-3">
                         <div class="pnlSms">
                             <!-- Shows the results of the message send -->
                             <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true" />
@@ -41,15 +42,17 @@
 
                         <asp:Repeater ID="rptrPhones" runat="server" OnItemDataBound="rptrPhones_ItemDataBound">
                             <ItemTemplate>
-                                <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
                                     <div>
                                         <%# Eval("NumberFormatted") %>
-                                        <a class="text-color" href="tel:<%# Eval("Number") %>"> <i class="fa fa-phone-square"></i></a>
-                                        <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" Text="<i class='fa fa-sms'></i>" />
+                                        <span class="d-block text-sm text-muted leading-snug">
+                                            <%# Eval("NumberTypeValue.Value") %>
+                                        </span>
                                     </div>
-                                    <span class="d-block text-xs text-muted">
-                                        <%# Eval("NumberTypeValue.Value") %>
-                                    </span>
+                                    <div class="text-right">
+                                        <asp:LinkButton ID="btnSms" runat="server" Visible="false" OnClick="btnSms_Click" CssClass="btn btn-sm btn-square btn-default my-1" Text="<i class='fa fa-sms'></i>" />
+                                        <a class="btn btn-sm btn-square btn-default my-1" href="tel:<%# Eval("Number") %>"> <i class="fa fa-phone"></i></a>
+                                    </div>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
@@ -57,45 +60,41 @@
                         <asp:Literal ID="lEmail" runat="server" />
                     </asp:Panel>
 
-                    <div id="pnlAdultFields" runat="server" class="adult-attributes border-top border-gray-400 p-2 text-sm">
+                    <div id="pnlAdultFields" runat="server" class="adult-attributes border-top border-gray-400 p-2">
                         <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" ShowCategoryLabel="false" />
                     </div>
-                    <div id="pnlChildFields" runat="server" class="child-attributes border-top border-gray-400 p-2 text-sm">
+                    <div id="pnlChildFields" runat="server" class="child-attributes border-top border-gray-400 p-2">
                         <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" ShowCategoryLabel="false" />
                     </div>
 
                 </div>
 
                 <!-- Family -->
-                <asp:Panel ID="pnlFamily" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-2">
+                <asp:Panel ID="pnlFamily" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-1">
                     <asp:Repeater ID="rptrFamily" runat="server" OnItemDataBound="rptrFamily_ItemDataBound">
                         <ItemTemplate>
-                            <a class="text-center text-color" href='<%# Eval("Url") %>'>
-                                <div class="border border-gray-400 rounded">
-                                    <asp:Literal ID="lFamilyPhoto" runat="server" />
-                                </div>
-                                <%# Eval("NickName") %>
+                            <a class="group-member text-sm text-center text-color rounded p-2" href='<%# Eval("Url") %>'>
+                                <asp:Literal ID="lFamilyPhoto" runat="server" />
+                                <span><%# Eval("NickName") %></span>
                             </a>
                         </ItemTemplate>
                     </asp:Repeater>
                 </asp:Panel>
 
                 <!-- Relationships -->
-                <asp:Panel ID="pnlRelationships" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-2">
+                <asp:Panel ID="pnlRelationships" runat="server" CssClass="panel panel-block flex-row flex-wrap justify-content-around p-1">
                     <asp:Repeater ID="rptrRelationships" runat="server" OnItemDataBound="rptrRelationships_ItemDataBound">
                         <ItemTemplate>
-                            <a class="text-center" href='<%# Eval("Url") %>'>
-                                <div class="border border-gray-400 rounded">
-                                    <asp:Literal ID="lRelationshipPhoto" runat="server" />
-                                </div>
-                                <%# Eval("NickName") %>
+                            <a class="group-member text-sm text-center text-color rounded p-2" href='<%# Eval("Url") %>'>
+                                <asp:Literal ID="lRelationshipPhoto" runat="server" />
+                                <span><%# Eval("NickName") %></span>
                             </a>
                         </ItemTemplate>
                     </asp:Repeater>
                 </asp:Panel>
 
             </div>
-            <div class="col-sm-8 col-md-9">
+            <div class="col-sm-8 col-lg-9">
 
                 <!-- Gender, Age & Reprint Labels -->
                 <div class="panel panel-block">
@@ -141,7 +140,7 @@
 
                 <!-- Check-in History -->
                 <asp:Panel ID="pnlCheckinHistory" runat="server" CssClass="panel panel-block">
-                    <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" UseFullStylesForLightGrid="true" AllowPaging="false" CssClass="table-condensed" OnRowDataBound="gHistory_RowDataBound">
+                    <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" UseFullStylesForLightGrid="true" AllowPaging="false" CssClass="table-condensed" OnRowDataBound="gHistory_RowDataBound" ShowActionRow="false">
                         <Columns>
                             <Rock:RockTemplateField HeaderText="When">
                                 <ItemTemplate>

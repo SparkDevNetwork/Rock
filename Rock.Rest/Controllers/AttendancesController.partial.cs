@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="occurrenceDate">The occurrence date.</param>
-        /// <param name="personId">The person identifier. If provided it is used to get the primary PersonAliasId and takes presidence over "personAliasId"</param>
+        /// <param name="personId">The person identifier. If provided it is used to get the primary PersonAliasId and takes precedence over "personAliasId"</param>
         /// <param name="personAliasId">The person alias identifier. Is not used if a "personId" is provided.</param>
         /// <returns>Attendance</returns>
         [Authenticate, Secured]
@@ -149,6 +149,75 @@ namespace Rock.Rest.Controllers
 
             attendanceService.ScheduledPersonRemove( attendanceId );
             rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Determines whether this the person can be scheduled for the specified occurrence
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="attendanceOccurrenceId">The attendance occurrence identifier.</param>
+        /// <param name="fromAttendanceOccurrenceId">From attendance occurrence identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/Attendances/CanSchedulePerson" )]
+        public virtual HttpResponseMessage CanSchedulePerson( int personId, int attendanceOccurrenceId, int? fromAttendanceOccurrenceId = null )
+        {
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+
+            var attendanceOccurrenceInfo = new AttendanceOccurrenceService( rockContext ).GetSelect( attendanceOccurrenceId, s => new
+            {
+                s.ScheduleId,
+                s.OccurrenceDate
+            } );
+
+            if ( attendanceOccurrenceInfo == null )
+            {
+                return new HttpResponseMessage( HttpStatusCode.NotFound );
+            }
+
+            var scheduleId = attendanceOccurrenceInfo.ScheduleId;
+            var occurrenceDate = attendanceOccurrenceInfo.OccurrenceDate;
+
+            // Only count occurrences with active locations and active schedules as conflicting.
+            var conflictingScheduledAttendancesQuery = attendanceService.Queryable().WhereDeducedIsActive();
+
+            if ( fromAttendanceOccurrenceId.HasValue )
+            {
+                // if person was dragged from one occurrence to another, we can exclude both source and target occurrences when detecting conflicts
+                conflictingScheduledAttendancesQuery = conflictingScheduledAttendancesQuery
+                .Where( c => ( c.OccurrenceId != attendanceOccurrenceId ) && ( c.OccurrenceId != fromAttendanceOccurrenceId.Value ) );
+            }
+            else
+            {
+                // if person was dragged from resources to an occurrence, we can exclude the target occurrences when detecting conflicts
+                conflictingScheduledAttendancesQuery = conflictingScheduledAttendancesQuery
+                .Where( c => c.OccurrenceId != attendanceOccurrenceId );
+            }
+
+            // a conflict would be if the same person is requested/scheduled for another attendance within the same ScheduleId/Date
+            conflictingScheduledAttendancesQuery = conflictingScheduledAttendancesQuery.Where( c =>
+                c.PersonAlias.PersonId == personId
+                && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
+                && c.Occurrence.ScheduleId == scheduleId
+                && c.Occurrence.OccurrenceDate == occurrenceDate );
+
+            if ( conflictingScheduledAttendancesQuery.Any() )
+            {
+                var person = new PersonService( rockContext ).Get( personId );
+                var firstConflict = conflictingScheduledAttendancesQuery.Select( s => new
+                {
+                    GroupName = s.Occurrence.Group.Name,
+                    LocationName = s.Occurrence.Location.Name
+                } ).FirstOrDefault();
+
+                return ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        $"{person} cannot be scheduled due a scheduling conflict with {firstConflict?.GroupName} in the {firstConflict?.LocationName}." );
+            }
+
+            return new HttpResponseMessage( HttpStatusCode.OK );
         }
 
         /// <summary>
@@ -254,6 +323,8 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/Attendances/ScheduledPersonSendConfirmationEmail" )]
         [HttpPut]
+        [Obsolete( "Use ScheduledPersonSendConfirmationCommunication instead." )]
+        [RockObsolete( "1.13" )]
         public void ScheduledPersonSendConfirmationEmail( int attendanceId )
         {
             var rockContext = new RockContext();
@@ -261,6 +332,24 @@ namespace Rock.Rest.Controllers
             var sendConfirmationAttendancesQuery = attendanceService.Queryable().Where( a => a.Id == attendanceId );
             List<string> errorMessages;
             attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Sends (or Re-sends) a confirmation email to the person in the specified scheduled attendance record
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        [Authenticate, Secured]
+        [System.Web.Http.Route( "api/Attendances/ScheduledPersonSendConfirmationCommunication" )]
+        [HttpPut]
+        public void ScheduledPersonSendConfirmationCommunication( int attendanceId )
+        {
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var sendConfirmationAttendancesQuery = attendanceService.Queryable().Where( a => a.Id == attendanceId );
+
+            attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
+
             rockContext.SaveChanges();
         }
 
@@ -300,7 +389,6 @@ namespace Rock.Rest.Controllers
                 .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 
-
         #endregion RSVP Related
 
         #region Import related
@@ -333,6 +421,5 @@ namespace Rock.Rest.Controllers
         }
 
         #endregion Import related
-
     }
 }

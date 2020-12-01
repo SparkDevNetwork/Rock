@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [BooleanField(
         "Search By Code",
         Description = "A flag indicating if security codes should also be evaluated in the search box results.",
+        DefaultBooleanValue = true,
         Order = 1,
         Key = AttributeKey.SearchByCode )]
 
@@ -129,6 +130,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( this.IsPostBack )
             {
                 HandleCustomPostback();
+            }
+            else
+            {
+                ShowDetails();
             }
 
             nbWarning.Visible = false;
@@ -223,6 +228,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Shows the details.
+        /// </summary>
+        private void ShowDetails()
+        {
+            if ( GetAttributeValue( AttributeKey.SearchByCode ).AsBoolean() )
+            {
+                tbSearch.Placeholder = "Search by name or tag code";
+            }
+            else
+            {
+                tbSearch.Placeholder = "Search by name";
+            }
+        }
 
         /// <summary>
         /// Shows the attendees.

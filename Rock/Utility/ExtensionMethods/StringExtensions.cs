@@ -23,6 +23,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
+/*
+ * 2020-11-16 ETD
+ * IMPORTANT!
+ * This class is used by the CheckScanner which does not have the Rock dll. This file cannot contain any dependencies on that assembly or NuGet packages.
+ */
+
 namespace Rock
 {
     /// <summary>
@@ -694,8 +700,7 @@ namespace Rock
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12.0" )]
-        [Obsolete( "Use SubstringSafe() instead." )]
+        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {
             return str.SubstringSafe( startIndex, maxLength );
