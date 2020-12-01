@@ -126,7 +126,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// If the person has a birthday within the next 6 days (including today),
-        /// returns the person's birthday (abbreviated day of week), 
+        /// returns the person's birthday (abbreviated day of week),
         /// </summary>
         public string Birthday
         {
@@ -270,7 +270,7 @@ namespace Rock.CheckIn
 
         #endregion Properties
 
-        #region HTML 
+        #region HTML
 
         /// <summary>
         /// Gets the person photo image tag.
@@ -329,7 +329,7 @@ namespace Rock.CheckIn
     <span class='js-checkin-person-name'>{this.FullName}</span>
      <span class='badges d-sm-none'>{this.GetBadgesHtml( true )}</span>
 </div>
-<div class='parent-name small text-muted'>{this.ParentNames}</div>";
+<div class='parent-name small text-muted text-wrap'>{this.ParentNames}</div>";
 
             return result;
         }
@@ -340,7 +340,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetMobileTagAndSchedulesHtml()
         {
-            return $"<div class='person-tag'>{this.Tag}</div><div class='small text-muted'>{this.ServiceTimes}</div>";
+            return $"<div class='person-tag'>{this.Tag}</div><div class='small text-muted text-wrap'>{this.ServiceTimes}</div>";
         }
 
         /// <summary>

@@ -383,7 +383,7 @@ btnCopyToClipboard.ClientID );
                         && a.GroupType.IsSchedulingEnabled
                         && !a.DisableScheduling );
 
-                if ( pickedGroupIds.Count() == 1)
+                if ( pickedGroupIds.Count() == 1 )
                 {
                     // if there is exactly one groupId we can avoid a 'Contains' (Contains has a small performance impact)
                     var pickedGroupId = pickedGroupIds[0];
@@ -939,13 +939,6 @@ btnCopyToClipboard.ClientID );
                 filterIsValid = true;
             }
 
-            var schedulingDisabledForSelectedGroup = selectedGroup != null && selectedGroup.DisableScheduling;
-            nbSchedulingDisabledWarning.Visible = schedulingDisabledForSelectedGroup;
-            if ( schedulingDisabledForSelectedGroup )
-            {
-                nbSchedulingDisabledWarning.Text = string.Format( "Scheduling is disabled for the {0} group.", selectedGroup.Name );
-            }
-
             nbFilterMessage.Visible = !filterIsValid;
             nbFilterMessage.Text = filterMessage;
             nbFilterMessage.NotificationBoxType = filterNotificationBoxType;
@@ -1158,7 +1151,7 @@ btnCopyToClipboard.ClientID );
 
             List<int> selectedGroupLocationIds = new List<int>();
 
-            var groupIdsWithLocations = groupGroupLocationIdsLookupByGroupId.Where(a => a.Value.Any()).Select( a => a.Key ).ToList();
+            var groupIdsWithLocations = groupGroupLocationIdsLookupByGroupId.Where( a => a.Value.Any() ).Select( a => a.Key ).ToList();
 
             foreach ( var groupId in groupIdsWithLocations )
             {
@@ -1316,6 +1309,9 @@ btnCopyToClipboard.ClientID );
             }
             else
             {
+                // single group mode. so the group will be the same for all items in occurrenceColumnDataList
+                var group = authorizedListedGroups.FirstOrDefault();
+
                 occurrenceColumnDataList = attendanceOccurrencesOrderedList
                     .GroupBy( a => new { ScheduleId = a.Schedule.Id, a.OccurrenceDate } )
                     .Select( a =>
@@ -1327,7 +1323,7 @@ btnCopyToClipboard.ClientID );
                         var item = new OccurrenceColumnItem
                         {
                             OccurrenceDisplayMode = occurrenceDisplayMode,
-                            Group = null,
+                            Group = group,
                             Schedule = schedule,
                             OccurrenceDate = a.Key.OccurrenceDate,
                             AttendanceOccurrenceItems = a.ToList()
@@ -1458,7 +1454,7 @@ btnCopyToClipboard.ClientID );
         /// <summary>
         ///
         /// </summary>
-        [System.Diagnostics.DebuggerDisplay( "{Schedule} {OccurrenceDate} {ScheduledDateTime}" )]
+        [System.Diagnostics.DebuggerDisplay( "{Schedule} {Group} {OccurrenceDate} {ScheduledDateTime}" )]
         private class AttendanceOccurrenceRowItem
         {
             public OccurrenceDisplayMode OccurrenceDisplayMode { get; set; }
@@ -1565,6 +1561,7 @@ btnCopyToClipboard.ClientID );
             var rptAttendanceOccurrences = e.Item.FindControl( "rptAttendanceOccurrences" ) as Repeater;
             var pnlMultiGroupModeColumnHeading = e.Item.FindControl( "pnlMultiGroupModeColumnHeading" ) as Panel;
             var pnlSingleGroupModeColumnHeading = e.Item.FindControl( "pnlSingleGroupModeColumnHeading" ) as Panel;
+            var pnlGroupHasSchedulingDisabled = e.Item.FindControl( "pnlGroupHasSchedulingDisabled" ) as Panel;
 
             OccurrenceColumnItem occurrenceColumnItem = e.Item.DataItem as OccurrenceColumnItem;
             pnlMultiGroupModeColumnHeading.Visible = occurrenceColumnItem.OccurrenceDisplayMode == OccurrenceDisplayMode.MultiGroup;
@@ -1614,7 +1611,7 @@ btnCopyToClipboard.ClientID );
             {
                 columnCssClasses.Add( "occurrence-column-schedule" );
 
-                // when in single-group mode, all columns can can have resources dragged in or out of it
+                // when in single-group mode, all columns can have resources dragged in or out of it
                 isSchedulerTargetColumn = true;
                 columnCssClasses.Add( "js-scheduler-target-column" );
 
@@ -1633,6 +1630,11 @@ btnCopyToClipboard.ClientID );
                 // shouldn't happen
             }
 
+            if ( occurrenceColumnItem.Group.DisableScheduling )
+            {
+                columnCssClasses.Add( "group-has-scheduling-disabled" );
+            }
+
             var pnlOccurrenceColumn = e.Item.FindControl( "pnlOccurrenceColumn" ) as Panel;
             pnlOccurrenceColumn.CssClass = columnCssClasses.AsDelimited( " " );
 
@@ -1640,8 +1642,18 @@ btnCopyToClipboard.ClientID );
             // which means that only this column can have resources dragged in or out of it
             pnlOccurrenceColumn.Attributes["data-is-scheduler-target-column"] = isSchedulerTargetColumn.ToJavaScriptValue();
 
-            rptAttendanceOccurrences.DataSource = occurrenceColumnItem.AttendanceOccurrenceItems;
-            rptAttendanceOccurrences.DataBind();
+            if ( occurrenceColumnItem.Group.DisableScheduling == true )
+            {
+                pnlGroupHasSchedulingDisabled.Visible = true;
+                rptAttendanceOccurrences.Visible = false;
+            }
+            else
+            {
+                pnlGroupHasSchedulingDisabled.Visible = false;
+                rptAttendanceOccurrences.Visible = true;
+                rptAttendanceOccurrences.DataSource = occurrenceColumnItem.AttendanceOccurrenceItems;
+                rptAttendanceOccurrences.DataBind();
+            }
         }
 
         /// <summary>
@@ -1971,7 +1983,7 @@ btnCopyToClipboard.ClientID );
         protected void btnSendNowAllGroups_Click( object sender, EventArgs e )
         {
             List<Group> sendToGroups = GetAuthorizedListedGroups();
-            SendConfirmationEmails( sendToGroups );
+            SendConfirmations( sendToGroups );
         }
 
         /// <summary>
@@ -1988,14 +2000,14 @@ btnCopyToClipboard.ClientID );
                 sendToGroups.Add( currentlySelectedGroup );
             }
 
-            SendConfirmationEmails( sendToGroups );
+            SendConfirmations( sendToGroups );
         }
 
         /// <summary>
         /// Sends the confirmation emails to the specified groups
         /// </summary>
         /// <param name="groups">The groups.</param>
-        protected void SendConfirmationEmails( List<Group> groups )
+        protected void SendConfirmations( List<Group> groups )
         {
             upnlContent.Update();
             var rockContext = new RockContext();
@@ -2017,19 +2029,18 @@ btnCopyToClipboard.ClientID );
                 .Where( a => attendanceOccurrenceIdList.Contains( a.OccurrenceId ) )
                 .Where( a => a.ScheduleConfirmationSent != true );
 
-            List<string> errorMessages;
-            var emailsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
-            bool isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
+            var sendMessageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
+            var isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
             rockContext.SaveChanges();
 
             StringBuilder summaryMessageBuilder = new StringBuilder();
             ModalAlertType alertType;
 
-            if ( errorMessages.Any() )
+            if ( sendMessageResult.Errors.Any() )
             {
                 alertType = ModalAlertType.Alert;
 
-                var logException = new Exception( "One or more errors occurred when sending confirmation emails: " + Environment.NewLine + errorMessages.AsDelimited( Environment.NewLine ) );
+                var logException = new Exception( "One or more errors occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Errors.AsDelimited( Environment.NewLine ) );
 
                 ExceptionLogService.LogException( logException );
 
@@ -2038,13 +2049,13 @@ btnCopyToClipboard.ClientID );
             else
             {
                 alertType = ModalAlertType.Information;
-                if ( emailsSent > 0 && isSendConfirmationAttendancesFound )
+                if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
                 {
-                    summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} confirmation {1}", emailsSent, "email".PluralizeIf( emailsSent != 1 ) ) );
+                    summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
                 }
                 else
                 {
-                    summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation email. No additional confirmation emails sent." );
+                    summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
                 }
             }
 
@@ -2238,7 +2249,7 @@ btnCopyToClipboard.ClientID );
             var rockContext = new RockContext();
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             AttendanceService attendanceService = new AttendanceService( rockContext );
-            var groupMemberPerson = groupMemberService.GetSelect( groupMemberId, s=> new
+            var groupMemberPerson = groupMemberService.GetSelect( groupMemberId, s => new
             {
                 s.Person,
                 s.Group

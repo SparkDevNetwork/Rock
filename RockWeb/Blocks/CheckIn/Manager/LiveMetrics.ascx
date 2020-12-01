@@ -43,8 +43,9 @@
             , scales: {
                 yAxes: [{
                     ticks: {
-                        min: 0,
-                        stepSize: 1
+                        beginAtZero: true,
+                        maxTicksLimit: 6,
+                        precision: 0
                     },
                 }]
             }
@@ -53,7 +54,6 @@
         var data = {
             labels: chartLabel,
             datasets: [{
-                label: 'People',
                 fill: false,
                 backgroundColor: '#059BFF',
                 borderColor: '#059BFF',
@@ -116,24 +116,24 @@
                 <asp:Panel ID="pnlCheckedIn" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="d-block small text-muted font-weight-bold">Checked-In People</span>
                             <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedInPeople" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold">Checked-In People</span>
                         </div>
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlPending" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="d-block small text-muted font-weight-bold">Pending People</span>
                             <span class="h3 font-weight-bolder"><asp:Literal ID="lPendingPeople" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold">Pending People</span>
                         </div>
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlCheckedOut" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="d-block small text-muted font-weight-bold">Checked-Out People</span>
                             <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedOutPeople" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold">Checked-Out People</span>
                         </div>
                     </div>
                 </asp:Panel>

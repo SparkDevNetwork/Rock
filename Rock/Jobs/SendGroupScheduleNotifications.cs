@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,23 +21,24 @@ using System.Linq;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Sends Group Scheduling Confirmation and Reminder emails to people that haven't been notified yet.
+    /// Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Send Group Schedule Confirmation and Reminder Emails" )]
-    [Description( "Sends Group Scheduling Confirmation and Reminder emails to people that haven't been notified yet." )]
+    [DisplayName( "Send Group Schedule Confirmations and Reminders" )]
+    [Description( "Sends Group Scheduling Confirmations and Reminders to people that haven't been notified yet. Only Email and SMS are supported. PUSH is not supported." )]
 
     [GroupField(
         "Group",
         Key = AttributeKey.RootGroup,
-        Description = "Only people in or under this group will receive the schedule notifications emails.",
+        Description = "Only people in or under this group will receive the schedule notifications.",
         IsRequired = false,
         Order = 0 )]
     public class SendGroupScheduleNotifications : IJob
@@ -56,13 +57,6 @@ namespace Rock.Jobs
         }
 
         #endregion Attribute Keys
-
-        #region Fields
-
-        private int _groupScheduleConfirmationsSent = 0;
-        private int _groupScheduleRemindersSent = 0;
-
-        #endregion Fields
 
         /// <summary>
         /// Empty constructor for job initialization
@@ -83,15 +77,34 @@ namespace Rock.Jobs
         {
             var rootGroupGuid = context.JobDetail.JobDataMap.GetString( AttributeKey.RootGroup ).AsGuidOrNull();
 
-            SendGroupScheduleConfirmationEmails( rootGroupGuid );
-            SendGroupScheduleReminderEmails( rootGroupGuid );
+            var confirmationSends = SendGroupScheduleConfirmationCommunications( rootGroupGuid );
+            var reminderSends = SendGroupScheduleReminderCommunications( rootGroupGuid );
+
+            var exceptionMessage = string.Empty;
+            if ( confirmationSends.Errors.Any() )
+            {
+                exceptionMessage = "One or more errors occurred when sending confirmations: " + Environment.NewLine + confirmationSends.Errors.AsDelimited( Environment.NewLine );
+            }
+
+            if ( reminderSends.Errors.Any() )
+            {
+                exceptionMessage += "One or more errors occurred when sending reminders: " + Environment.NewLine + reminderSends.Errors.AsDelimited( Environment.NewLine );
+            }
+
+            if ( exceptionMessage.IsNotNullOrWhiteSpace() )
+            {
+                throw new Exception( exceptionMessage );
+            }
+
+            context.Result = $@"{confirmationSends.MessagesSent} confirmation messages were sent.
+                                {reminderSends.MessagesSent} reminder messages were sent.";
         }
 
         /// <summary>
-        /// Sends the group schedule confirmation emails.
+        /// Sends the group schedule confirmations.
         /// </summary>
         /// <param name="rootGroupGuid">The root group unique identifier.</param>
-        private void SendGroupScheduleConfirmationEmails( System.Guid? rootGroupGuid )
+        private SendMessageResult SendGroupScheduleConfirmationCommunications( System.Guid? rootGroupGuid )
         {
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
@@ -122,22 +135,18 @@ namespace Rock.Jobs
                     .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.HasValue )
                     .Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate ) <= a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.Value );
 
-                List<string> errorMessages;
-                _groupScheduleConfirmationsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
+                var messageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
                 rockContext.SaveChanges();
 
-                if ( errorMessages.Any() )
-                {
-                    throw new Exception( "One or more errors occurred when sending confirmation emails: " + Environment.NewLine + errorMessages.AsDelimited( Environment.NewLine ) );
-                }
+                return messageResult;
             }
         }
 
         /// <summary>
-        /// Sends the group schedule reminder emails.
+        /// Sends the group schedule reminders.
         /// </summary>
         /// <param name="rootGroupGuid">The root group unique identifier.</param>
-        private void SendGroupScheduleReminderEmails( System.Guid? rootGroupGuid )
+        private SendMessageResult SendGroupScheduleReminderCommunications( System.Guid? rootGroupGuid )
         {
             List<Person> personsScheduled = new List<Person>();
             using ( var rockContext = new RockContext() )
@@ -166,15 +175,25 @@ namespace Rock.Jobs
 
                 // limit to ones that have an offset window for either the GroupType or for the Person in the group
                 sendReminderAttendancesQuery = sendReminderAttendancesQuery
-                 .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays.HasValue
-                     || ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy( r => r.GroupRole.IsLeader ).FirstOrDefault().ScheduleReminderEmailOffsetDays.HasValue ) );
+                    .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays.HasValue
+                        || a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId )
+                            .OrderBy( r => r.GroupRole.IsLeader )
+                            .FirstOrDefault()
+                            .ScheduleReminderEmailOffsetDays.HasValue );
 
                 // limit to ones within offset
-                sendReminderAttendancesQuery = sendReminderAttendancesQuery.Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate )
-                    <= ( ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId ).OrderBy( r => r.GroupRole.IsLeader ).FirstOrDefault().ScheduleReminderEmailOffsetDays ?? a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays ) ) );
+                sendReminderAttendancesQuery = sendReminderAttendancesQuery
+                    .Where( a =>
+                        System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate )
+                            <= ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId )
+                                .OrderBy( r => r.GroupRole.IsLeader )
+                                .FirstOrDefault()
+                                .ScheduleReminderEmailOffsetDays ?? a.Occurrence.Group.GroupType.ScheduleReminderEmailOffsetDays ) );
 
-                _groupScheduleRemindersSent = attendanceService.SendScheduleReminderSystemEmails( sendReminderAttendancesQuery );
+                var messageResult = attendanceService.SendScheduleReminderSystemCommunication( sendReminderAttendancesQuery );
                 rockContext.SaveChanges();
+
+                return messageResult;
             }
         }
     }

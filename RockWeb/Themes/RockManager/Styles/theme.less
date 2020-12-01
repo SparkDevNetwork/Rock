@@ -74,10 +74,6 @@ h4 {
   margin-bottom: 16px;
 }
 
-// .label {
-//   padding: .33333333em .66666666em;
-// }
-
 .text-sm {
   font-size: @font-size-sm;
 }
@@ -382,8 +378,9 @@ textarea,
 }
 
 .label {
-  font-weight: 400; // make the font light
-  // border-radius: 0; // labels always have curves
+  padding: 4px 12px;
+  font-weight: 600;
+  border-radius: 4px;
 }
 
 .grid-filter {
@@ -407,7 +404,6 @@ textarea,
   > thead > tr > td,
   > thead > tr > th {
     padding: 18px 0 18px 12px;
-    font-weight: @font-weight-bold;
     vertical-align: middle;
 
     // Remove padding offset on center
@@ -1037,10 +1033,11 @@ td.grid-actions {
   }
 }
 
-.nav-open-lg {
-  #cms-admin-footer {
-    left: @navbarside-width;
-    width: auto;
+@media (max-width: @screen-sm) {
+  .nav-open-lg {
+    #cms-admin-footer {
+      z-index: @zindex-navbar-fixed;
+    }
   }
 }
 

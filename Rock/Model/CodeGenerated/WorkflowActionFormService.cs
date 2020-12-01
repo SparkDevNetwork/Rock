@@ -114,6 +114,7 @@ namespace Rock.Model
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
             target.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
             target.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;

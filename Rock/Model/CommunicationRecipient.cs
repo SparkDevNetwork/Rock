@@ -48,7 +48,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the CommunicationId of the <see cref="Rock.Model.Communication"/>.
@@ -192,6 +192,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SentMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal device identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device identifier.
+        /// </value>
+        public int? PersonalDeviceId { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -302,6 +310,14 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the personal device.
+        /// </summary>
+        /// <value>
+        /// The personal device.
+        /// </value>
+        public virtual PersonalDevice PersonalDevice { get; set; }
 
         #endregion
 
@@ -451,9 +467,10 @@ namespace Rock.Model
         /// </summary>
         public CommunicationRecipientConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.MediumEntityType ).WithMany().HasForeignKey( r => r.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

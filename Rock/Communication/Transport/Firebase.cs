@@ -166,7 +166,7 @@ namespace Rock.Communication.Transport
                             {
                                 try
                                 {
-                                    int personAlias = recipient.PersonAliasId;
+                                    int personAlias = recipient.PersonAliasId.Value;
 
                                     var service = new PersonalDeviceService( recipientRockContext );
                                     List<string> devices = service.Queryable()

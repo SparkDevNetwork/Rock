@@ -1058,6 +1058,9 @@ namespace Rock.Client.SystemGuid
         public const string BLOG = "4857A6C9-F194-4B64-A9FB-6A8DC7A1A671";
         public const string BLOG_DETAILS = "2D0D0FB0-68C4-47E1-8BC6-98F931497F5E";
         public const string BULK_UPDATE = "B6BFDE54-0EFA-4499-847D-BE1259F83535";
+        public const string BUS = "0FF43CC8-1C29-4882-B2F6-7B6F4C25FE41";
+        public const string BUS_QUEUE = "45E865C0-CD2D-43CD-AA8A-BF5DBF537587";
+        public const string BUS_TRANSPORT = "10E34A5D-D967-457D-9DF1-A1D33DA9D100";
         public const string BUSINESS_DETAIL = "D2B43273-C64F-4F57-9AAE-9571E1982BAC";
         public const string BUSINESSES = "F4DF4899-2D44-4997-BA9B-9D2C64958A20";
         public const string CALENDARS = "63990874-0DFF-45FC-9F09-81B0B0D375B4";
@@ -1352,6 +1355,7 @@ namespace Rock.Client.SystemGuid
         public const string TRANSACTIONS = "7CA317B5-5C47-465D-B407-7D614F2A568F";
         public const string USER_ACCOUNTS = "306BFEF8-596C-482A-8DEC-34A7B622E688";
         public const string VERIFY_PHOTOS = "07E4BA19-614A-42D0-9D75-DFB31374844D";
+        public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
         public const string WEBSITE = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F";
         public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";
         public const string WORKFLOW = "CDB27DB2-977C-415A-AED5-D0751DFD5DF2";
