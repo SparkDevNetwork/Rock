@@ -2773,6 +2773,9 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             details.CCEmails = ebCCList.Text;
             details.BCCEmails = ebBCCList.Text;
 
+            details.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            details.SMSMessage = tbSMSTextMessage.Text;
+
             // Get Push notification settings.
             var pushNotificationControl = phPushControl.Controls[0] as PushNotification;
 
