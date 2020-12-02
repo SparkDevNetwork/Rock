@@ -17,7 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
+
+using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Web.Cache
 {
@@ -733,7 +736,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<Type> GetAllModelCacheTypes()
         {
-            return System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t =>
+            return System.Reflection.Assembly.GetExecutingAssembly().GetTypesSafe().Where( t =>
                 t.BaseType != null &&
                 t.BaseType.IsGenericType &&
                 t.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) ).ToList();
