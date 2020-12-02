@@ -61,9 +61,13 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202012011753406_Rollup_1201.cs" />
-    <Compile Include="Migrations\202012011753406_Rollup_1201.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.Designer.cs">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.Designer.cs">
@@ -1499,8 +1503,11 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202012011753406_Rollup_1201.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.resx">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.resx">
       <DependentUpon>202011231521580_BusAndFarmPages.cs</DependentUpon>
@@ -2685,6 +2692,9 @@
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.0\201908202115162_Rollup_0820_GroupRequirementsBadge.sql">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
