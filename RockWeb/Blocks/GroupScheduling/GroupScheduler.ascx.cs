@@ -2033,8 +2033,8 @@ btnCopyToClipboard.ClientID );
             var isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
             rockContext.SaveChanges();
 
-            StringBuilder summaryMessageBuilder = new StringBuilder();
-            ModalAlertType alertType;
+            var summaryMessageBuilder = new StringBuilder();
+            var alertType = ModalAlertType.Information;
 
             if ( sendMessageResult.Errors.Any() )
             {
@@ -2046,17 +2046,26 @@ btnCopyToClipboard.ClientID );
 
                 summaryMessageBuilder.AppendLine( logException.Message );
             }
-            else
+
+            if ( sendMessageResult.Warnings.Any() )
             {
-                alertType = ModalAlertType.Information;
-                if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
+                if( alertType != ModalAlertType.Alert )
                 {
-                    summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
+                    alertType = ModalAlertType.Warning;
                 }
-                else
-                {
-                    summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
-                }
+
+                var warningMessage = "One or more warnings occurred when sending confirmations: " + Environment.NewLine + sendMessageResult.Warnings.AsDelimited( Environment.NewLine );
+
+                summaryMessageBuilder.AppendLine( warningMessage );
+            }
+
+            if ( sendMessageResult.MessagesSent > 0 && isSendConfirmationAttendancesFound )
+            {
+                summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} {1}.", sendMessageResult.MessagesSent, "confirmation".PluralizeIf( sendMessageResult.MessagesSent != 1 ) ) );
+            }
+            else if ( !isSendConfirmationAttendancesFound )
+            {
+                summaryMessageBuilder.AppendLine( "Everybody has already been sent a confirmation. No additional confirmations sent." );
             }
 
             maSendNowResults.Show( summaryMessageBuilder.ToString().ConvertCrLfToHtmlBr(), alertType );
