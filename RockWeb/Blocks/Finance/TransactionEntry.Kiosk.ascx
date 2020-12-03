@@ -105,7 +105,7 @@
                                         if (!digits.test(e.key)) {
                                             e.preventDefault();
                                         } else {
-                                            $(this).attr('type','number').off('keypress.digits')
+                                            $(this).attr('type','number').off('keypress.digits');
                                         }
                                     });
                                 }
@@ -114,7 +114,9 @@
                                 if (typeof decimalSplit === 'undefined' || decimalSplit.length < 2 ) {
                                     $amount.val($amount.val() + $(this).text());
                                 }
-                                if ($amount.attr('type') === 'text') $amount.attr('type','number')
+                                if ($amount.attr('type') === 'text') {
+                                    $amount.attr('type','number');
+                                }
                             }
                             return false;
                         });
