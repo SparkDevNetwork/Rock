@@ -98,10 +98,10 @@ namespace RockWeb.Blocks.Finance
             set { ViewState["AnonymousGiverPersonAliasId"] = value; }
         }
 
-        private int CampusId 
+        private int CampusId
         {
-            get 
-            { 
+            get
+            {
                 if ( ViewState["CampusId"] == null )
                 {
                     return 1;
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     ShowSearchPanel();
                 }
-                 
+
                 // set max length of phone
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
                 tbPhone.MaxLength = maxLength;
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Finance
                         ProcessSwipe( hfSwipe.Value );
                     }
                 }
-                
+
                 if ( pnlGivingUnitSelect.Visible )
                 {
                     BuildGivingUnitControls();
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         #region Search Panel Events
-        
+
         //
         // Search Panel Events
         //
@@ -276,7 +276,7 @@ namespace RockWeb.Blocks.Finance
         protected void lbAccountEntryBack_Click( object sender, EventArgs e )
         {
             HidePanels();
-            
+
             switch ( lbAccountEntryBack.Attributes["back-to"] )
             {
                 case "search":
@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             accountFieldsValid = false;
                         }
-                        
+
                         fundAmount = 0;
                     }
                     fundAmount = Math.Round( fundAmount, 2 );
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Finance
                 HidePanels();
                 pnlSwipe.Visible = true;
             }
-            
+
         }
         #endregion
 
@@ -461,7 +461,7 @@ namespace RockWeb.Blocks.Finance
 
                             var batchService = new FinancialBatchService( rockContext );
 
-                            // Get the batch 
+                            // Get the batch
                             var batch = batchService.Get(
                                 GetAttributeValue( "BatchNamePrefix" ),
                                 swipeInfo.CurrencyTypeValue,
@@ -560,7 +560,7 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Receipt Panel Events
-        
+
         // done, go home ET
         protected void lbReceiptDone_Click( object sender, EventArgs e )
         {
@@ -690,7 +690,7 @@ namespace RockWeb.Blocks.Finance
                                                     .OrderBy( g => g.GroupRole.Order )
                                                     .ThenBy( g => g.Person.Gender )
                                                     .ThenBy( g => g.Person.Age );
-                        
+
                         if ( givingGroupMembers.ToList().Count == 1 )
                         {
                             // only one person in the giving group display as an individual
@@ -705,21 +705,21 @@ namespace RockWeb.Blocks.Finance
                             string firstNameList = string.Join( ", ", givingGroupMembers.Select( g => g.Person.NickName ) ).ReplaceLastOccurrence( ",", " &" );
                             int headOfHousePersonAliasId = givingGroupMembers.Select( g => g.Person.PrimaryAliasId.Value ).FirstOrDefault();
                             string lastName = givingGroupMembers.Select( g => g.Person.LastName ).FirstOrDefault();
-                            
+
                             // only add them if this giving unit is not already in collection
                             if ( searchResults.Where( s => s.PersonAliasId == headOfHousePersonAliasId ).Count() == 0 )
                             {
                                 searchResults.Add( new GivingUnit( headOfHousePersonAliasId, person.LastName, firstNameList ) );
                             }
                         }
-                        
+
                     }
                 }
 
                 this.GivingUnits = searchResults;
 
                 BuildGivingUnitControls();
-                
+
                 HidePanels();
                 pnlGivingUnitSelect.Visible = true;
             }
@@ -736,11 +736,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        // show accounts panel 
+        // show accounts panel
         private void ShowAccountPanel()
         {
             lblGivingAs.Text = String.Format( "Giving as {0} {1}", this.SelectedGivingUnit.FirstNames, this.SelectedGivingUnit.LastName );
-            
+
             // get accounts
             BuildAccountControls();
 
@@ -763,7 +763,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         private Dictionary<string, object> GetMergeFields(Person givingUnit)
-        {            
+        {
             // get giving unit
             RockContext rockContext = new RockContext();
 
@@ -828,11 +828,11 @@ namespace RockWeb.Blocks.Finance
         // displays accounts
         private void BuildAccountControls()
         {
-            
+
             if ( this.Accounts != null )
             {
                 bool firstAccount = true;
-                
+
                 foreach ( var account in this.Accounts )
                 {
                     HtmlGenericControl formGroup = new HtmlGenericControl( "div" );
@@ -844,6 +844,7 @@ namespace RockWeb.Blocks.Finance
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
                     tb.Attributes.Add( "min", "0" );
+                    //tb.Attributes.Add( "pattern", "//");
                     tb.Attributes.Add( "oninput", "validity.valid||(value='')" );
                     tb.CssClass = "input-account";
 
@@ -866,7 +867,7 @@ namespace RockWeb.Blocks.Finance
 
         // displays giving units
         private void BuildGivingUnitControls()
-        {           
+        {
             // display results
             if ( this.GivingUnits != null && this.GivingUnits.Count > 0 )
             {
@@ -963,8 +964,8 @@ namespace RockWeb.Blocks.Finance
             if ( Guid.TryParse( GetAttributeValue( "AnonymousPerson" ), out anonymousPersonAliasGuid ) )
             {
                 anonymousPerson = new PersonAliasService( rockContext ).Get( anonymousPersonAliasGuid ).Person;
-            } 
-            
+            }
+
             if ( anonymousPerson != null )
             {
                 this.AnonymousGiverPersonAliasId = anonymousPerson.PrimaryAliasId;
@@ -993,8 +994,8 @@ namespace RockWeb.Blocks.Finance
 
             return true;
         }
-        #endregion 
-        
+        #endregion
+
 }
 
     [Serializable]
