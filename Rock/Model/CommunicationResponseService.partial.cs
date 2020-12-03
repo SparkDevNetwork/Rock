@@ -290,7 +290,6 @@ namespace Rock.Model
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            ( this.Context as RockContext ).SqlLogging( true );
             var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).Select( a => new
             {
                 a.CreatedDateTime,
@@ -299,7 +298,7 @@ namespace Rock.Model
                 a.Communication.SMSMessage,
                 a.SentMessage
             } ).ToList();
-            ( this.Context as RockContext ).SqlLogging( false );
+            
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
