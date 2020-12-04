@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Edits a Rock Note.
     /// </summary>
     [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
-    public class NoteEditor : CompositeControl
+    public class NoteEditor : CompositeControl, IDoNotBlockValidate
     {
         #region Fields
 
