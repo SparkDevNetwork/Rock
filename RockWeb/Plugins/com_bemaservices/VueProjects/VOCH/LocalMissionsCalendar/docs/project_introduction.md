@@ -13,7 +13,7 @@ Create a place where people can see upcoming mission trips and sign up through e
   * [ ] Create Filter for Mission Categories
   * [ ] Create User selectable item views.
     * [ ] Create Calendar view using vuetify calendar component
-    * [ ] Create Card View
+    * [x] Create Card View
     * [ ] Create UI Control for selecting view
   * [ ] Create filter for start and end dates
 
