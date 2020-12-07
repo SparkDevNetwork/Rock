@@ -61,7 +61,10 @@ namespace Rock.Client
         public DateTime? OpenedDateTime { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public int? PersonalDeviceId { get; set; }
+
+        /// <summary />
+        public int? PersonAliasId { get; set; }
 
         /// <summary />
         public string ResponseCode { get; set; }
@@ -125,6 +128,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.OpenedClient = source.OpenedClient;
             this.OpenedDateTime = source.OpenedDateTime;
+            this.PersonalDeviceId = source.PersonalDeviceId;
             this.PersonAliasId = source.PersonAliasId;
             this.ResponseCode = source.ResponseCode;
             this.SendDateTime = source.SendDateTime;

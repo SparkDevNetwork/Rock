@@ -352,6 +352,7 @@ namespace Rock.Model
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;
+            target.IsMessageBusEventPublishEnabled = source.IsMessageBusEventPublishEnabled;
             target.IsSecured = source.IsSecured;
             target.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;

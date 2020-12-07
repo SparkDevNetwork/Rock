@@ -96,10 +96,13 @@ namespace Rock.Client
         public Guid? PersonEntryFamilyAttributeGuid { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryGenderEntryOption { get; set; } = Rock.Client.Enums.WorkflowActionFormPersonEntryOption.Required;
+
+        /// <summary />
         public int? PersonEntryGroupLocationTypeValueId { get; set; }
 
         /// <summary />
-        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = true;
+        public bool PersonEntryHideIfCurrentPersonKnown { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.WorkflowActionFormPersonEntryOption PersonEntryMaritalStatusEntryOption { get; set; }
@@ -182,6 +185,7 @@ namespace Rock.Client
             this.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             this.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             this.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            this.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             this.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
             this.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
             this.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;

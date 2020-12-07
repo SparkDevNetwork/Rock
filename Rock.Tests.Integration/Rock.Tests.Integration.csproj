@@ -140,8 +140,10 @@
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
     <Compile Include="Lava\CachingTests.cs" />
+    <Compile Include="Lava\MiscellaneousFilterTests.cs" />
     <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
     <Compile Include="Lava\CalendarEventsCommandTests.cs" />
+    <Compile Include="Lava\LavaCommentsTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
@@ -152,6 +154,7 @@
     <Compile Include="Model\IdentityVerificationTests.cs" />
     <Compile Include="Model\ConnectionRequestServiceTests.cs" />
     <Compile Include="Model\CommunicationServiceTests.cs" />
+    <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />

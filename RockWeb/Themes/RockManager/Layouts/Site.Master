@@ -112,9 +112,7 @@
 
     <script>
         Sys.Application.add_load(navs);
-        // Sys.Application.add_load(PreventNumberScroll);
         function navs(){
-        $( document ).ready(function() {
             $('.navbar-static-side').on('show.bs.collapse hide.bs.collapse', function(e) {
                 e.preventDefault();
             }),
@@ -131,7 +129,6 @@
                     docCookies.removeItem('navOpen', '/');
                 }
             })
-        });
         }
     </script>
 </body>

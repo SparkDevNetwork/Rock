@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -119,6 +119,7 @@ namespace RockWeb
         {
             RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
 
+            Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
 
             /* 2020-05-20 MDP
@@ -213,6 +214,8 @@ namespace RockWeb
             StartWorkflowActionUpdateAttributesThread();
 
             StartCompileThemesThread();
+
+            Rock.Bus.RockMessageBus.IsRockStarted = true;
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
@@ -495,6 +498,9 @@ namespace RockWeb
         {
             try
             {
+                Rock.Bus.RockMessageBus.IsRockStarted = false;
+                Rock.WebFarm.RockWebFarm.Shutdown();
+
                 // Tell our CompileThemesThread and BlockTypeCompilationThread to cancel if they aren't done when Rock shuts down
                 if ( _threadCancellationTokenSource != null )
                 {

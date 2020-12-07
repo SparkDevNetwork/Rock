@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System;
-
+using System.Text.RegularExpressions;
 using DotLiquid;
+using Rock.Lava;
 
 namespace Rock.Web.Cache
 {
@@ -108,6 +109,9 @@ namespace Rock.Web.Cache
 
         private static LavaTemplateCache Load( string content )
         {
+            // Strip out Lava comments before parsing the template because they are not recognized by standard Liquid syntax.
+            content = LavaHelper.RemoveLavaComments( content );
+
             var template = Template.Parse( content );
 
             /* 

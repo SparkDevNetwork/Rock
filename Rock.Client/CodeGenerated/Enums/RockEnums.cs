@@ -754,6 +754,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SeverityLevel
+    {
+        Info = 0x0,
+        Warning = 0x1,
+        Critical = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SignatureDocumentAction
     {
         Email = 0x0,

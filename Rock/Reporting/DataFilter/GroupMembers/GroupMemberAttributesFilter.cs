@@ -331,15 +331,6 @@ namespace Rock.Reporting.DataFilter.GroupMember
             FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
             var groupTypePicker = filterControl.ControlsOfTypeRecursive<GroupTypePicker>().Where( a => a.HasCssClass( "js-group-type-picker" ) ).FirstOrDefault();
 
-            int? entityTypeId = ddlProperty.Attributes["EntityTypeId"]?.AsIntegerOrNull();
-            if ( !entityTypeId.HasValue )
-            {
-                // shouldn't happen;
-                return;
-            }
-
-            var entityType = EntityTypeCache.Get( entityTypeId.Value ).GetEntityType();
-
             var entityFields = GetGroupMemberAttributes( groupTypePicker.SelectedGroupTypeId );
 
             var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );

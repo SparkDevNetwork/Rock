@@ -38,7 +38,13 @@ namespace Rock.Migrations
             // set SQL defaults for these 
             AddColumn( "dbo.WorkflowActionForm", "PersonEntryCampusIsVisible", c => c.Boolean( nullable: false, defaultValue: true ) );
             AddColumn( "dbo.WorkflowActionForm", "PersonEntryAutofillCurrentPerson", c => c.Boolean( nullable: false, defaultValue: true ) );
-            AddColumn( "dbo.WorkflowActionForm", "PersonEntryHideIfCurrentPersonKnown", c => c.Boolean( nullable: false, defaultValue: true ) );
+
+            /* 2020/11/12 MDP  
+             * this PersonEntryHideIfCurrentPersonKnown was changed to default to false. If this migration was already ran, the WorkflowActionFormChanges migration will take care of changing it
+             */ 
+            AddColumn( "dbo.WorkflowActionForm", "PersonEntryHideIfCurrentPersonKnown", c => c.Boolean( nullable: false, defaultValue: false ) );
+            
+            
             AddColumn( "dbo.WorkflowActionForm", "PersonEntrySpouseEntryOption", c => c.Int( nullable: false, defaultValue: ( int ) WorkflowActionFormPersonEntryOption.Hidden ) );
             AddColumn( "dbo.WorkflowActionForm", "PersonEntryEmailEntryOption", c => c.Int( nullable: false, defaultValue: ( int ) WorkflowActionFormPersonEntryOption.Required ) );
             AddColumn( "dbo.WorkflowActionForm", "PersonEntryMobilePhoneEntryOption", c => c.Int( nullable: false, defaultValue: ( int ) WorkflowActionFormPersonEntryOption.Hidden ) );

@@ -842,6 +842,16 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.Attributes["maxlength"] = "14";
 
             _nbAmountAccountSingle.Attributes["step"] = "0.01";
+
+            /* 2020-11-20 MDP
+               inputmode tells the browser what type of input to expect. If we 
+               see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
+
+               This fixes an issue where some browsers (especially mobile phones) would allow non-decimal characters to be allowed in the input box
+            */
+
+            _nbAmountAccountSingle.Attributes["inputmode"] = "decimal";
+
             _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
 
             var pnlSingleCampusDiv = new Panel() { CssClass = "campus-dropdown " };

@@ -22,14 +22,13 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Web;
-using DotLiquid;
+using Rock.Bus.Message;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
-using WebGrease.Css.Extensions;
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
@@ -409,6 +408,9 @@ namespace Rock.Data
             List<ITransaction> indexTransactions = new List<ITransaction>();
             foreach ( var item in updatedItems )
             {
+                // Publish on the message bus if the entity type is configured
+                EntityWasUpdatedMessage.PublishIfShould( item.Entity, item.PreSaveState );
+
                 if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                 {
                     TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
@@ -451,9 +453,9 @@ namespace Rock.Data
                     }
                 }
 
-                if ( item.Entity is ICacheable )
+                if ( item.Entity is ICacheable cacheable )
                 {
-                    ( item.Entity as ICacheable ).UpdateCache( item.PreSaveState, this );
+                    cacheable.UpdateCache( item.PreSaveState, this );
                 }
             }
 
@@ -519,8 +521,15 @@ namespace Rock.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="records">The records.</param>
-        public virtual void BulkInsert<T>( IEnumerable<T> records ) where T : class
+        /// <param name="canUseCache">if set to <c>true</c> [can use cache]. Set false for migrations.</param>
+        public virtual void BulkInsertWithConditionalCacheUse<T>( IEnumerable<T> records, bool canUseCache ) where T : class
         {
+            // This logic is normally handled in the SaveChanges method, but since the BulkInsert bypasses those
+            // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
+            // transaction can continue processing and exit.
+            var entitiesForAchievements = new List<IEntity>();
+            var isAchievementsEnabled = canUseCache && EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
+
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
             var currentPersonAliasId = this.GetCurrentPersonAlias()?.Id;
@@ -537,6 +546,11 @@ namespace Rock.Data
                     {
                         model.CreatedByPersonAliasId = model.CreatedByPersonAliasId ?? currentPersonAliasId;
                         model.ModifiedByPersonAliasId = model.ModifiedByPersonAliasId ?? currentPersonAliasId;
+                    }
+
+                    if ( isAchievementsEnabled )
+                    {
+                        entitiesForAchievements.Add( model );
                     }
                 }
             }
@@ -555,17 +569,30 @@ namespace Rock.Data
             EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
             EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
 
-            if ( typeof( T ).GetInterfaces().Contains( typeof( IEntity ) ) )
+            // Send the achievements messages
+            foreach ( var entityForAchievement in entitiesForAchievements )
             {
-                // This logic is normally handled in the SaveChanges method, but since the BulkInsert bypasses those
-                // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
-                // transaction can continue processing and exit.
-                new AchievementsProcessingTransaction( records as IEnumerable<IEntity> ).Enqueue();
+                new ProcessAchievements.Message
+                {
+                    EntityGuid = entityForAchievement.Guid,
+                    EntityTypeName = entityForAchievement.TypeName
+                }.Send();
             }
         }
 
         /// <summary>
-        /// Does a direct bulk UPDATE. 
+        /// Use SqlBulkInsert to quickly insert a large number records.
+        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="records">The records.</param>
+        public virtual void BulkInsert<T>( IEnumerable<T> records ) where T : class
+        {
+            BulkInsertWithConditionalCacheUse( records, true );
+        }
+
+        /// <summary>
+        /// Does a direct bulk UPDATE.
         /// Example: rockContext.BulkUpdate( personQuery, p => new Person { LastName = "Decker" } );
         /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
         /// </summary>
@@ -686,7 +713,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Determines whether the entity matches the current and/or previous qualifier values.
-        /// If 
+        /// If
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="properties">The properties.</param>
