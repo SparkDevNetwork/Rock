@@ -97,6 +97,13 @@ namespace Rock.Jobs
         Category = "General",
         Order = 7 )]
 
+    [BooleanField(
+        "Fix Attendance Records Never Marked Present",
+        Description = "If checked, any attendance records (since the last time the job ran) marked DidAttend=true for check-in areas that have 'Enable Presence' which were never marked present, will be changed to false.",
+        Order = 8,
+        Key = AttributeKey.FixAttendanceRecordsNeverMarkedPresent,
+        Category = "Check-in" )]
+
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -112,7 +119,20 @@ namespace Rock.Jobs
             public const string MaxMetaphoneNames = "MaxMetaphoneNames";
             public const string BatchCleanupAmount = "BatchCleanupAmount";
             public const string CommandTimeout = "CommandTimeout";
+            public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
         }
+
+        #region Entity Attribute Value Keys
+
+        /// <summary>
+        /// Keys to use for entity attribute values.
+        /// </summary>
+        private class EntityAttributeValueKey
+        {
+            public const string GroupType_EnablePresence = "core_checkin_EnablePresence";
+        }
+
+        #endregion Entity Attribute Value Keys
 
         /// <summary>
         /// Empty constructor for job initialization
@@ -130,6 +150,7 @@ namespace Rock.Jobs
 
         private int commandTimeout;
         private int batchAmount;
+        private DateTime lastRunDateTime;
 
         /// <summary>
         /// Job that executes routine Rock cleanup tasks
@@ -146,7 +167,7 @@ namespace Rock.Jobs
 
             batchAmount = dataMap.GetString( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
-
+            lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
             /* IMPORTANT!! MDP 2020-05-05
 
             1 ) Whenever you do a new RockContext() in RockCleanup make sure to set the commandtimeout, like this:
@@ -221,6 +242,14 @@ namespace Rock.Jobs
             RunCleanupTask( "set nameless SMS response", () => EnsureNamelessPersonForSMSResponses() );
 
             RunCleanupTask( "merge nameless to person", () => MatchNamelessPersonToRegularPerson() );
+
+            var fixAttendanceRecordsEnabled = dataMap.GetString( AttributeKey.FixAttendanceRecordsNeverMarkedPresent ).AsBoolean();
+            if ( fixAttendanceRecordsEnabled )
+            {
+                RunCleanupTask( "did attend attendance fix", () => FixDidAttendInAttendance() );
+            }
+
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
             //// ***********************
             ////  Final count and report
@@ -1754,6 +1783,43 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                         }
                     }
                 }
+            }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Fixed Attendance Records Never Marked Present.
+        /// </summary>
+        /// <returns></returns>
+        private int FixDidAttendInAttendance()
+        {
+            int rowsUpdated = 0;
+            var guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            var checkInAreas = new GroupTypeService( rockContext )
+                .Queryable()
+                .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid ) )
+                .OrderBy( g => g.Name )
+                .ToList();
+
+            checkInAreas.LoadAttributes();
+
+            foreach ( var checkInArea in checkInAreas.Where( a => a.GetAttributeValue( EntityAttributeValueKey.GroupType_EnablePresence ).AsBoolean() ) )
+            {
+                var groupTypeIds = new List<int>() { checkInArea.Id };
+                groupTypeIds.AddRange( checkInArea.ChildGroupTypes.Select( a => a.Id ) );
+                // Get all Attendance records for the current day and location
+                var attendanceQueryToUpdate = new AttendanceService( rockContext ).Queryable().Where( a =>
+                    !a.PresentDateTime.HasValue
+                    && a.CreatedDateTime >= lastRunDateTime
+                    && a.DidAttend.HasValue
+                    && a.DidAttend.Value
+                    && groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
+
+                rowsUpdated += rockContext.BulkUpdate( attendanceQueryToUpdate, a => new Attendance { DidAttend = false } );
             }
 
             return rowsUpdated;

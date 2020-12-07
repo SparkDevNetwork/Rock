@@ -81,7 +81,6 @@ namespace Rock.Jobs
                 Guid? groupRoleFilterGuid = dataMap.GetString( "GroupRoleFilter" ).AsGuidOrNull();
                 int? pendingAge = dataMap.GetString( "PendingAge" ).AsIntegerOrNull();
 
-
                 bool includePreviouslyNotificed = dataMap.GetString( "IncludePreviouslyNotified" ).AsBoolean();
 
                 // get system email
@@ -153,7 +152,12 @@ namespace Rock.Jobs
                     }
 
                     // get list of leaders
-                    var groupLeaders = group.Members.Where( m => m.GroupRole.IsLeader == true && m.Person != null && m.Person.Email != null && m.Person.Email != string.Empty );
+                    var groupLeaders = group.Members
+                        .Where( m => m.GroupRole.IsLeader == true &&
+                            m.Person != null &&
+                            m.Person.Email != null &&
+                            m.Person.Email != string.Empty &&
+                            m.GroupMemberStatus == GroupMemberStatus.Active );
 
                     if ( !groupLeaders.Any() )
                     {
@@ -172,7 +176,6 @@ namespace Rock.Jobs
                         mergeFields.Add( "Person", leader.Person );
                         recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
                     }
-
 
                     var errorMessages = new List<string>();
                     var emailMessage = new RockEmailMessage( systemEmail.Guid );
@@ -194,7 +197,7 @@ namespace Rock.Jobs
                     foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == group.Id && notifiedPersonIds.Contains( m.PersonId ) ) )
                     {
                         pendingGroupMember.IsNotified = true;
-                        pendingMembersCount ++;
+                        pendingMembersCount++;
                     }
 
                     rockContext.SaveChanges();

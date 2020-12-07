@@ -170,7 +170,7 @@ namespace Rock.Communication.Transport
                             {
                                 try
                                 {
-                                    int personAlias = recipient.PersonAliasId;
+                                    int personAlias = recipient.PersonAliasId.Value;
                                     var siteId = pushData?.MobileApplicationId;
 
                                     var service = new PersonalDeviceService( recipientRockContext );

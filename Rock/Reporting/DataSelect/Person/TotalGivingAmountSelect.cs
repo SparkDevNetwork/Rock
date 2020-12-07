@@ -300,6 +300,9 @@ namespace Rock.Reporting.DataSelect.Person
             bool skipComparison = ( comparisonType == ComparisonType.GreaterThanOrEqualTo && totalAmountCutoff == 0.00M );
 
             var callbackField = new CallbackField();
+            callbackField.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            callbackField.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+
             callbackField.OnFormatDataValue += ( sender, e ) =>
             {
                 decimal? totalGiving = e.DataValue as decimal?;
@@ -310,7 +313,7 @@ namespace Rock.Reporting.DataSelect.Person
                 else if ( skipComparison || ComparisonHelper.CompareNumericValues( comparisonType, totalGiving, totalAmountCutoff ) )
                 {
                     // it meets the comparison criteria, so display total amount
-                    e.FormattedValue = totalGiving?.ToString();
+                    e.FormattedValue = totalGiving?.FormatAsCurrency();
                 }
                 else
                 {

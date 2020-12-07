@@ -4977,6 +4977,39 @@ namespace Rock.Lava
             return url;
         }
 
+        /// <summary>
+        /// Returns a named configuration setting for the current Rock instance.
+        /// </summary>
+        /// <param name="input">The name of the configuration setting.</param>
+        /// <returns>A configuration value.</returns>
+        public static object RockInstanceConfig( object input )
+        {
+            var valueName = input.ToStringSafe().Trim().ToLower();
+
+            if ( valueName == "applicationdirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+            }
+            else if ( valueName == "isclustered" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+            }
+            else if ( valueName == "machinename" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+            }
+            else if ( valueName == "physicaldirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+            }
+            else if ( valueName == "systemdatetime" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+            }
+
+            return $"Configuration setting \"{ input }\" is not available.";
+        }
+
         #endregion Misc Filters
 
         #region Array Filters

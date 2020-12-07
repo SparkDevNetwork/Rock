@@ -16,7 +16,7 @@
             </li>
         {%- endfor -%}
         <li class="login">
-            <a href="/CheckinManager/logout"><img src="{{ CurrentPerson.PhotoUrl }}" class="avatar avatar-sm" alt=""> {{ CurrentPerson.FullName }}</a>
+            <a href="#"><img src="{{ CurrentPerson.PhotoUrl }}" class="avatar avatar-sm" alt=""> {{ CurrentPerson.FullName }}</a>
         </li>
     </ul>
 {%- endif -%}

@@ -163,7 +163,7 @@
                             <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server">
                                 <ContentTemplate>
                                     <div class="d-inline-block btn-group-mega js-btn-group-mega">
-                                        <button type="button" class="btn btn-xs dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fa fa-plug"></i>
                                             Opportunities
                                         </button>
@@ -204,7 +204,7 @@
                                             </asp:Repeater>
                                         </ul>
                                     </div>
-                                    <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs" OnClick="lbAddRequest_Click" CausesValidation="false">
+                                    <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbAddRequest_Click" CausesValidation="false">
                                         <i class="fa fa-plus"></i>
                                         Add Request
                                     </asp:LinkButton>
@@ -212,7 +212,7 @@
                             </asp:UpdatePanel>
                             <div class="d-block">
                                 <div class="btn-group">
-                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-user"></i>
                                         <asp:Literal runat="server" ID="lConnectorText" />
                                     </button>
@@ -242,7 +242,7 @@
                             </div>
                             <div class="d-block">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-sort"></i>
                                         <asp:Literal runat="server" ID="lSortText" />
                                     </button>
@@ -260,12 +260,12 @@
                                         </asp:Repeater>
                                     </ul>
                                 </div>
-                                <a ID="aFilterDrawerToggle" runat="server" href="javascript:toggleFilterDrawer()" class="btn btn-xs">
+                                <a ID="aFilterDrawerToggle" runat="server" href="javascript:toggleFilterDrawer()" class="btn btn-xs btn-tool">
                                     <i class="fa fa-filter"></i>
                                     Filters
                                 </a>
                                 <div runat="server" id="divCampusBtnGroup" class="btn-group">
-                                    <button type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-building"></i>
                                         <asp:Literal runat="server" ID="lCurrentCampusName" />
                                     </button>
@@ -284,7 +284,7 @@
                                         </asp:Repeater>
                                     </ul>
                                 </div>
-                                <asp:LinkButton ID="lbToggleViewMode" runat="server" CssClass="btn btn-xs" OnClick="lbToggleViewMode_Click" />
+                                <asp:LinkButton ID="lbToggleViewMode" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbToggleViewMode_Click" />
                             </div>
                         </div>
 
@@ -682,7 +682,7 @@
 <script id="js-template-column" type="text/template">
     <div class="board-column">
         <div class="board-heading mt-3 px-3">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>

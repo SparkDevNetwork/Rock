@@ -178,6 +178,15 @@ namespace Rock.Web.Cache
         public WorkflowActionFormPersonEntryOption PersonEntrySpouseEntryOption { get; private set; }
 
         /// <summary>
+        /// Gets the person entry gender entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry gender entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryGenderEntryOption { get; private set; }
+
+        /// <summary>
         /// Gets the person entry email entry option.
         /// </summary>
         /// <value>
@@ -380,6 +389,7 @@ namespace Rock.Web.Cache
             this.PersonEntryBirthdateEntryOption = workflowActionForm.PersonEntryBirthdateEntryOption;
             this.PersonEntryCampusIsVisible = workflowActionForm.PersonEntryCampusIsVisible;
             this.PersonEntryConnectionStatusValueId = workflowActionForm.PersonEntryConnectionStatusValueId;
+            this.PersonEntryGenderEntryOption = workflowActionForm.PersonEntryGenderEntryOption;
             this.PersonEntryEmailEntryOption = workflowActionForm.PersonEntryEmailEntryOption;
             this.PersonEntryFamilyAttributeGuid = workflowActionForm.PersonEntryFamilyAttributeGuid;
             this.PersonEntryHideIfCurrentPersonKnown = workflowActionForm.PersonEntryHideIfCurrentPersonKnown;

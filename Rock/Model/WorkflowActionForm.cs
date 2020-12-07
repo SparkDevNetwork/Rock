@@ -171,7 +171,7 @@ namespace Rock.Model
         ///   <c>true</c> if [person entry hide if current person known]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = true;
+        public bool PersonEntryHideIfCurrentPersonKnown { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the person entry spouse entry option.
@@ -181,6 +181,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public WorkflowActionFormPersonEntryOption PersonEntrySpouseEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Hidden;
+
+        /// <summary>
+        /// Gets or sets the person entry gender entry option.
+        /// </summary>
+        /// <value>
+        /// The person entry gender entry option.
+        /// </value>
+        [DataMember]
+        public WorkflowActionFormPersonEntryOption PersonEntryGenderEntryOption { get; set; } = WorkflowActionFormPersonEntryOption.Required;
 
         /// <summary>
         /// Gets or sets the person entry email entry option.
