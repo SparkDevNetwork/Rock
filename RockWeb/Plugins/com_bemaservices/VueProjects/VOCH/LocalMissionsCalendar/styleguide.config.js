@@ -77,7 +77,7 @@ module.exports = {
     },
 
   ],
-  // 
+  //
   defaultExample: true,
   // sections: [
   //   {

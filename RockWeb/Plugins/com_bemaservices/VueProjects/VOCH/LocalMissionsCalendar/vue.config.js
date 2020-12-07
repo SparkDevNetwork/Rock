@@ -1,18 +1,10 @@
-// vue.config.js
-const path = require('path');
-
-const newPath = path.resolve(__dirname).replace('VueProjects', 'CustomBlocks');
-
 module.exports = {
-  lintOnSave: process.env.NODE_ENV !== 'production',
-  publicPath:
-        process.env.NODE_ENV === 'production'
-          ? newPath.split('RockWeb')[1]
-          : '/',
-
-  outputDir: newPath,
+  lintOnSave: true,
+  publicPath: '/',
+  outputDir: '/Users/kevinmrutledge/Documents/GitHub/RockBemaDev/RockWeb/Plugins/com_bemaservices/CustomBlocks/VOCH/LocalMissionsCalendar',
   assetsDir: './assets/',
   filenameHashing: false,
-
-  transpileDependencies: ['vuetify'],
+  transpileDependencies: [
+    'vuetify',
+  ],
 };
