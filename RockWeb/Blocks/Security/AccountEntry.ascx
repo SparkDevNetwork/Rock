@@ -6,9 +6,9 @@
         var availabilityMessageRow = $('#availabilityMessageRow');
         var usernameUnavailable = $('#availabilityMessage');
         var usernameTextbox = $('#<%= tbUserName.ClientID %>');
-        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
-        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) %>";
-
+        var usernameRegExp = new RegExp("<%= ValidateUsernameAsEmail ? @"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
+        var usernameValidCaption = "<%= ValidateUsernameAsEmail ? "" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) %>";
+        
         availabilityMessageRow.hide();
 
         usernameTextbox.blur(function () {
