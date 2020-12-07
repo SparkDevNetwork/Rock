@@ -130,6 +130,13 @@ namespace RockWeb.Blocks.GroupScheduling
         {
             base.OnInit( e );
 
+            // Tell the browsers to not cache the page output.
+            // This will help prevent an issue where Firefox sometimes uses the browser cached version
+            // of the page when the 'Reload' button is clicked
+            Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Page.Response.Cache.SetNoStore();
+
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
 
