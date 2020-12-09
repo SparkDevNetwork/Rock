@@ -65,6 +65,10 @@
     <Compile Include="Migrations\202012091759168_Rollup_1209.Designer.cs">
       <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.cs" />
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.Designer.cs">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -1509,6 +1513,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202012091759168_Rollup_1209.resx">
       <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012092122418_KpiShortCodeEdit.resx">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>

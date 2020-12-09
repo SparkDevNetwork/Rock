@@ -1,0 +1,96 @@
+.kpi {
+  display: flex;
+  flex-basis: 100%;
+  flex-grow: 1;
+  align-items: center;
+  margin: 0 8px 16px;
+  background: #fff;
+  border: 1px solid #000;
+  border-color: currentColor;
+  border-radius: 4px;
+
+  .kpi-container & {
+    @media (min-width: @screen-sm) {
+      max-width: ~"calc(33.33333333% - 16px)";
+    }
+
+    @media (min-width: @screen-md) {
+      max-width: ~"calc(25% - 16px)";
+    }
+  }
+}
+
+.kpi-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 60px;
+  max-width: 35%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 32px;
+  vertical-align: top;
+
+  .svg-placeholder {
+    display: block;
+    width: auto;
+    height: 100%;
+    background: currentColor;
+    opacity: .2;
+  }
+
+  .kpi-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.kpi-stat {
+  flex: 1 1 auto;
+  align-self: center;
+  padding: 8px 16px;
+}
+
+.kpi-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.kpi-light {
+  padding: 16px;
+
+  .kpi-icon {
+    display: flex;
+    flex-grow: 1;
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    font-size: 24px;
+  }
+
+  .kpi-stat {
+    padding-right: 0;
+  }
+
+  .svg-placeholder {
+    width: 2em;
+    height: auto;
+    border-radius: 4px;
+  }
+}
