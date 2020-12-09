@@ -39,18 +39,17 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="valStepTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvStepType" runat="server" Display="None" />
+
                 <div id="pnlViewDetails" runat="server">
+                    <h3 class="mt-1">
+                        <asp:Literal ID="lStepTypeName" runat="server" />
+                        Step Type
+                    </h3>
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lStepTypeDescription" runat="server"></asp:Literal>
+                        <div class="col-sm-12 col-md-6 col-lg-7">
+                            <asp:Literal ID="lStepTypeDescription" runat="server" />
                         </div>
-                    </div>
-                    <%-- Steps Activity Summary --%>
-                    <div id="pnlActivitySummary" runat="server">
-                        <div class="d-flex flex-wrap">
-                            <div>
-                                <h5 class="mt-0">Steps Activity Summary</h5>
-                            </div>
+                        <div class="col-sm-12 col-md-6 col-lg-5">
                             <div class="flex-grow-1 d-flex justify-content-end">
                                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
                                             runat="server"
@@ -65,6 +64,10 @@
                                     OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
+                    </div>
+                    <asp:Literal ID="lKpi" runat="server" />
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
                         <div id="pnlActivityChart" runat="server" class="chart-banner">
