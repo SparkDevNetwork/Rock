@@ -94,7 +94,7 @@ BEGIN
         Email
         ,PersonAliasId
         )
-    SELECT [e].[Email] [Email]
+   SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT [a].[Email]
@@ -197,7 +197,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-                ,[p].[Gender]
+           ,[p].[Gender]
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [m]
