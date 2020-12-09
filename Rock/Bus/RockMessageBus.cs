@@ -21,6 +21,7 @@ using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Bus.Statistics;
 using Rock.Bus.Transport;
+using Rock.Data;
 using Rock.Model;
 using System;
 using System.Configuration;
@@ -142,6 +143,16 @@ namespace Rock.Bus
 
                 // Log that the original transport did not work
                 ExceptionLogService.LogException( new Exception( $"Could not start the message bus transport: {originalTransport.GetType().Name}", e ) );
+            }
+
+            if ( _transportComponent == inMemoryTransport && !inMemoryTransport.IsActive )
+            {
+                // Set the in memory transport as active for the UI since it is being used
+                using ( var rockContext = new RockContext() )
+                {
+                    inMemoryTransport.SetAttributeValue( InMemory.BaseAttributeKey.Active, true.ToString() );
+                    inMemoryTransport.SaveAttributeValue( InMemory.BaseAttributeKey.Active, rockContext );
+                }
             }
         }
 
