@@ -1,4 +1,4 @@
-﻿function initializeTokenizer(controlId) {
+function initializeTokenizer(controlId) {
     var $control = $('#' + controlId);
 
     if ($control.length == 0) {
@@ -104,7 +104,7 @@
         $creditCardContainer.data('gatewayTokenizer', creditCardGatewayTokenizer);
 
         $paymentButtonCreditCard.off().on('click', function () {
-            $(this).addClass("active").siblings().removeClass("active");
+            $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
             $selectedPaymentType.val('card');
             $creditCardContainer.show();
             $achContainer.hide();
@@ -123,9 +123,9 @@
         // Initiate creation on container element
         achGatewayTokenizer.create();
         $achContainer.data('gatewayTokenizer', achGatewayTokenizer);
-        
+
         $paymentButtonACH.off().on('click', function () {
-            $(this).addClass("active").siblings().removeClass("active");
+            $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
             $selectedPaymentType.val('ach');
             $creditCardContainer.hide();
             $achContainer.show();
@@ -144,7 +144,7 @@
     if (selectedPaymentTypeVal == '') {
         selectedPaymentTypeVal = 'card';
     }
-    
+
     if (selectedPaymentTypeVal == 'card' && enabledPaymentTypes.includes('card')) {
         $paymentButtonACH.removeClass('active');
         $paymentButtonCreditCard.addClass('active');
