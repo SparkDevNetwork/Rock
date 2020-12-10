@@ -139,6 +139,24 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the template list is empty.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the template list is empty; otherwise, <c>false</c>.
+        /// </value>
+        protected bool IsTemplateListEmpty
+        {
+            get
+            {
+                return ( bool? ) ViewState["IsTemplateListEmpty"] ?? false;
+            }
+            set
+            {
+                ViewState["IsTemplateListEmpty"] = value;
+            }
+        }
+
         #endregion
 
         #region Base Control Methods
@@ -424,6 +442,7 @@ namespace RockWeb.Blocks.Communication
             if ( !BindTemplatePicker() )
             {
                 pnlTemplateSelection.Visible = false;
+                IsTemplateListEmpty = true;
 
                 ShowPushEditor();
             }
@@ -579,6 +598,8 @@ namespace RockWeb.Blocks.Communication
         private void ShowPushEditor()
         {
             nbPushValidation.Visible = false;
+            lbPushEditorPrevious.Visible = !IsTemplateListEmpty;
+
             pnlPushEditor.Visible = true;
         }
 
@@ -600,7 +621,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( pushData == null || !pushData.MobileApplicationId.HasValue )
             {
-                nbPushValidation.Text = "Invalid push configuration.";
+                nbPushValidation.Text = "Please completely fill out the Open Action by selecting either a page or application.";
                 nbPushValidation.Visible = true;
 
                 return false;
@@ -610,11 +631,11 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPushEditorPrevious control.
+        /// Handles the Click event of the lbPushEditorPrevious control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPushEditorPrevious_Click( object sender, EventArgs e )
+        protected void lbPushEditorPrevious_Click( object sender, EventArgs e )
         {
             pnlPushEditor.Visible = false;
 
@@ -622,12 +643,12 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPushEditorSendTest control.
+        /// Handles the Click event of the lbPushEditorSendTest control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="NotImplementedException"></exception>
-        protected void btnPushEditorSendTest_Click( object sender, EventArgs e )
+        protected void lbPushEditorSendTest_Click( object sender, EventArgs e )
         {
             nbPushTestResult.Visible = false;
 
@@ -642,12 +663,12 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the Click event of the btnPushEditorSend control.
+        /// Handles the Click event of the lbPushEditorSend control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnPushEditorSend_Click( object sender, EventArgs e )
+        protected void lbPushEditorSend_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             var communicationService = new CommunicationService( rockContext );
