@@ -203,7 +203,7 @@
 
                                 <div class="col-md-6">
                                     <p><strong>Unscheduled Individuals Legend</strong></p>
-                                    <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow individuals can not be scheduled.</p>
+                                    <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow indicates a conflict for one or more schedules.</p>
                                     <div class="text-left mb-5"><img src="/Assets/Images/group-scheduler/unscheduled-legend.svg"></div>
                                 </div>
                             </div>

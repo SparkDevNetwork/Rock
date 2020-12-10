@@ -967,7 +967,7 @@ namespace RockWeb.Blocks.Groups
                         boundField.HeaderText = attribute.Name;
                         boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
-                        gGroupMembers.AddColumnBeforeControls( boundField );
+                        gGroupMembers.Columns.Add( boundField );
                     }
                 }
             }
@@ -978,7 +978,19 @@ namespace RockWeb.Blocks.Groups
         private void RemoveAttributeAndButtonColumns()
         {
             // Remove added button columns
-            DataControlField buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            DataControlField buttonColumn = gGroupMembers.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gGroupMembers.Columns.Remove( buttonColumn );
+            }
+
+            buttonColumn = gGroupMembers.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
             if ( buttonColumn != null )
             {
                 gGroupMembers.Columns.Remove( buttonColumn );
@@ -1002,8 +1014,15 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            // Add Link to Profile Page Column
+            var personProfileLinkField = new PersonProfileLinkField();
+            personProfileLinkField.LinkedPageAttributeKey = "PersonProfilePage";
+            gGroupMembers.Columns.Add( personProfileLinkField );
+
             // Hold a reference to the delete column
-            _deleteField = gGroupMembers.Columns.OfType<DeleteField>().First();
+            _deleteField = new DeleteField();
+            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gGroupMembers.Columns.Add( _deleteField );
         }
 
         /// <summary>

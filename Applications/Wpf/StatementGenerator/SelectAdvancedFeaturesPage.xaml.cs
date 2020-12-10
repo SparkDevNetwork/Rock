@@ -49,6 +49,7 @@ namespace Rock.Apps.StatementGenerator
         {
             InitializeComponent();
 
+            cbGroupByPageCount.IsChecked = ReportOptions.Current.GroupByPageCount;
             cbHideRefundedTransactions.IsChecked = ReportOptions.Current.HideRefundedTransactions;
             cbHideCorrectedTransactions.IsChecked = ReportOptions.Current.HideCorrectedTransactions;
             var orderByItems = Enum.GetValues( typeof( Rock.StatementGenerator.OrderBy ) ).OfType<Rock.StatementGenerator.OrderBy>().Select( a => a.ConvertToString( true ) ).ToList();
@@ -111,6 +112,7 @@ namespace Rock.Apps.StatementGenerator
             ReportOptions.Current.HideRefundedTransactions = cbHideRefundedTransactions.IsChecked == true;
             ReportOptions.Current.HideCorrectedTransactions = cbHideCorrectedTransactions.IsChecked == true;
             ReportOptions.Current.OrderBy = ( ddlOrderBy.SelectedValue as string ).ConvertToEnumOrNull<Rock.StatementGenerator.OrderBy>() ?? Rock.StatementGenerator.OrderBy.PostalCode;
+            ReportOptions.Current.GroupByPageCount = cbGroupByPageCount.IsChecked == true;
             ReportOptions.Current.TransactionTypeIds = lstTransactionTypes.Items.OfType<CheckBox>().Where( a => a.IsChecked == true ).Select( s => ( int ) s.Tag ).ToList();
 
             if (!ReportOptions.Current.TransactionTypeIds.Any() )
