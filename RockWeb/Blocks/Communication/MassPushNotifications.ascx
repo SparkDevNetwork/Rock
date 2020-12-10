@@ -67,12 +67,9 @@
                     <Rock:NotificationBox ID="nbPushValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnPushEditorSendTest" runat="server" Text="Send Test" CssClass="btn btn-default btn-sm" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorSendTest_Click" />
-                    </div>
-
-                    <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="btnPushEditorPrevious_Click" />
-                        <asp:LinkButton ID="btnPushEditorSend" runat="server" Text="Send" CssClass="btn btn-primary js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="btnPushEditorSend_Click" />
+                        <asp:LinkButton ID="lbPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="lbPushEditorSendTest" runat="server" Text="Send Test" CssClass="btn btn-default" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="lbPushEditorSendTest_Click" />
+                        <asp:LinkButton ID="lbPushEditorSend" runat="server" Text="Send" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="lbPushEditorSend_Click" />
                     </div>
 
                     <Rock:ModalDialog ID="mdPushSendTest" runat="server" Title="Send Test">
