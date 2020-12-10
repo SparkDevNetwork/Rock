@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
     window.Rock = window.Rock || {};
     Rock.NMI = Rock.NMI || {}
@@ -291,7 +291,7 @@
 
                 if (enabledPaymentTypes.includes('card')) {
                     self.$paymentButtonCreditCard.off().on('click', function () {
-                        $(this).addClass("active").siblings().removeClass("active");
+                        $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
 
                         // have CollectJS clear all the input fields when the PaymentType (ach vs cc) changes. This will prevent us sending both ACH and CC payment info at the same time
                         // CollectJS determines to use ACH vs CC by seeing which inputs have data in it. There isn't a explicit option to indicate which to use.
@@ -307,7 +307,7 @@
                 if (enabledPaymentTypes.includes('ach')) {
 
                     self.$paymentButtonACH.off().on('click', function () {
-                        $(this).addClass("active").siblings().removeClass("active");
+                        $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
 
                         // have CollectJS clear all the input fields when the PaymentType (ach vs cc) changes. This will prevent us sending both ACH and CC payment info at the same time
                         // CollectJS determines to use ACH vs CC by seeing which inputs have data in it. There isn't a explicit option to indicate which to use.

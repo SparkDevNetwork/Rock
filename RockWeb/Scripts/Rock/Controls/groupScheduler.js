@@ -80,7 +80,7 @@
                             if (!isSchedulerTargetColumn) {
                                 return false;
                             }
-                            
+
                             var blackoutDates = $resourceDiv.data('blackout-dates');
                             var allowedDate = $resourceDiv.data('occurrenceDate');
                             var singleScheduleMode = $resourceDiv.data('displayed-time-slot-count') == 1;
@@ -172,7 +172,7 @@
                             self.$additionalPersonIds.val(additionalPersonIds);
 
                             var $occurrence = $(source).closest('.js-scheduled-occurrence');
-                            self.removeResource($unscheduledResource, $occurrence);
+                            self.removeResource($unscheduledResource, $occurrence, false);
                         }
                         else {
                             // deal with the resource that was dragged into an scheduled occurrence (location)
@@ -185,7 +185,7 @@
 
                             var canSchedulePersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/CanSchedulePerson';
                             var canSchedulePersonParams = '?personId=' + personId + '&attendanceOccurrenceId=' + attendanceOccurrenceId;
-                            
+
                             // if they were dragged from another occurrence, we can exclude the source occurrence when checking CanSchedulePerson
                             if (source.classList.contains('js-scheduler-target-container')) {
                                 var fromAttendanceOccurrenceId = $(source).closest('.js-scheduled-occurrence').data('attendanceoccurrence-id');
@@ -210,7 +210,7 @@
                                         scheduledPersonAddUrl = scheduledPersonAddConfirmedUrl;
                                     }
                                     var $sourceOccurrence = $(source).closest('.js-scheduled-occurrence');
-                                    self.removeResource($scheduledResource, $sourceOccurrence);
+                                    self.removeResource($scheduledResource, $sourceOccurrence, false);
                                 }
                                 else {
                                     // if they weren't dragged from another occurrence, set the data-status to pending so it looks correct while waiting for $.ajax to return, but it'll get updated again after posting to scheduledPersonAddUrl
@@ -267,7 +267,7 @@
                 }
             },
             /** Removes the resource from an occurrence and repopulates the UI */
-            removeResource: function ($scheduledResource, $occurrence) {
+            removeResource: function ($scheduledResource, $occurrence, rebuildResourceList) {
                 var self = this;
 
                 var attendanceId = $scheduledResource.attr('data-attendance-id');
@@ -282,15 +282,22 @@
                 }).done(function (scheduledAttendance) {
 
                     // $scheduledResource is the div that is being dragged from an occurrence.
-                    // There are a couple of scenarios
+                    // There are a few scenarios
                     // 1) The Person is already in the list (they weren't removed when they were scheduled, but they could still be scheduled for other spots)
                     //   - in the case of #1, just find the existing div in $resourceList and update it (and delete the dragged resource div)
-                    // 2) The Person is not in the Resource List (they got scheduled for all possible visible time-slots)
-                    //  - in the case of #2, the dragged div will end in the resource list (in the position it was dragged to), and we'll update that
-
-                    // After un-scheduling resource they go back into the list
-                    // but resource info needs to be updated so the Assignments Section, conflict, etc is repopulated
-                    self.updateSchedulerResource(self.$resourceList, $scheduledResource);
+                    // 2) The Person was removed via Drag and is not in the Resource List (they got scheduled for all possible visible time-slots)
+                    //  - in the case of #2, the dragged div will end up in the resource list (in the position it was dragged to), and we'll update that
+                    // 3) The Person was removed via the js-remove button (not dragged) and is also not in the Resource List (they got scheduled for all possible visible time-slots)
+                    //  - in the case of #3, then we don't have a $scheduledResource div, so we don't have anything to update. In that case, we'll refresh the whole list
+                    if (rebuildResourceList) {
+                        // the scheduled person was removed via the js-remove button (case #3), so we can't easily populate the resource list without rebuilding the whole thing
+                        self.populateSchedulerResources(self.$resourceList);
+                    }
+                    else {
+                        // After un-scheduling resource they go back into the list (or get updated in the list)
+                        // but resource info needs to be updated so the Assignments Section, conflict, etc is repopulated
+                        self.updateSchedulerResource(self.$resourceList, $scheduledResource);
+                    }
 
                     // after removing a resource, repopulate the list of resources for the occurrence
                     // If there are multiple occurrences during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
@@ -780,8 +787,20 @@
                     else if ($(this).hasClass('js-remove')) {
                         var $occurrence = $resource.closest('.js-scheduled-occurrence');
 
-                        // remove the resource (which will also refresh the resource list)
-                        self.removeResource($resource, $occurrence);
+                        // In some cases, the removed person is still in the unscheduled list (because they only "partially" scheduled and could be scheduled for other schedules that might be listed)
+                        // Also, in the case of "dragging" to remove, we can use the dragged div for the unscheduled div.
+                        // In those cases, we only need to refresh the information on the unscheduled resource.
+                        // However, in the case of js-remove, we could be in a situation where there isn't a div that we can use to do a simple refresh. If so, we'll rebuild the whole list.
+                        var personId = $resource.attr('data-person-id');
+                        var rebuildResourceList = true;
+                        if (personId) {
+                            var unscheduledResourceDataSelector = '[data-person-id=' + personId + ']';
+                            rebuildResourceList = $(unscheduledResourceDataSelector, self.$resourceList).length == 0;
+                        }
+
+                        // remove (unschedule) the resource (which will also refresh/rebuild the resource list)
+                        self.removeResource($resource, $occurrence, rebuildResourceList);
+
                         return;
                     }
                     else {

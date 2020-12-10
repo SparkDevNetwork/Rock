@@ -30,12 +30,14 @@ using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.WebFarm;
 
 namespace Rock.WebStartup
 {
@@ -77,7 +79,7 @@ namespace Rock.WebStartup
 
             StartDateTime = RockDateTime.Now;
 
-            RockApplicationStartupHelper.LogStartupMessage( "Application Starting" );
+            LogStartupMessage( "Application Starting" );
 
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
 
@@ -133,6 +135,14 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Send Version Update Notifications" );
             }
 
+            // Start the message bus
+            RockMessageBus.StartAsync().Wait();
+            ShowDebugTimingMessage( $"Message Bus: ({RockMessageBus.GetTransportName()})" );
+
+            // Start stage 1 of the web farm
+            RockWebFarm.StartStage1();
+            ShowDebugTimingMessage( "Web Farm (stage 1)" );
+
             RegisterHttpModules();
 
             // Get Lava set up
@@ -147,6 +157,10 @@ namespace Rock.WebStartup
                 StartJobScheduler();
                 ShowDebugTimingMessage( "Start Job Scheduler" );
             }
+
+            // Start stage 2 of the web farm
+            RockWebFarm.StartStage2();
+            ShowDebugTimingMessage( "Web Farm (stage 2)" );
         }
 
         /// <summary>

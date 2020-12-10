@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Cms
         Description = "Controls whether or not the gender field is required.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        Order = 17)]
+        Order = 17 )]
 
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
@@ -219,11 +219,6 @@ namespace RockWeb.Blocks.Cms
             public const string CampusSelectorLabel = "CampusSelectorLabel";
             public const string RequireGender = "RequireGender";
             public const string ViewTemplate = "ViewTemplate";
-        }
-
-        private static class ViewStateKey
-        {
-            public const string RoleTypeId = "RoleTypeId";
         }
 
         private static class MergeFieldKey
@@ -325,11 +320,6 @@ namespace RockWeb.Blocks.Cms
 
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the Role Type. Used to help in loading Attribute panel
-        /// </summary>
-        protected int? RoleTypeId { get; set; }
-
         #endregion
 
         #region Base Control Methods
@@ -371,21 +361,6 @@ namespace RockWeb.Blocks.Cms
             ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
         }
 
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-            RoleTypeId = ViewState[ViewStateKey.RoleTypeId] as int?;
-
-            // create the dynamic edit controls so that PostBack values can be bound to the controls prior to OnLoad
-            UpdateDynamicControlsForRoleType( RoleTypeId );
-        }
-
-        protected override object SaveViewState()
-        {
-            ViewState[ViewStateKey.RoleTypeId] = rblRole.SelectedValueAsId();
-            return base.SaveViewState();
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -409,11 +384,6 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
-
-                if ( !UpdateEditControls() )
-                {
-                    return;
-                }
             }
         }
 
@@ -425,63 +395,6 @@ namespace RockWeb.Blocks.Cms
         private void PublicProfileEdit_BlockUpdated( object sender, EventArgs e )
         {
             ShowViewDetail();
-        }
-
-        /// <summary>
-        /// Makes sure the edit controls are correctly shown.
-        /// If this returns false, the edit controls couldn't be configured due to invalid postback parameters.
-        /// </summary>
-        /// <returns></returns>
-        public bool UpdateEditControls()
-        {
-            var rockContext = new RockContext();
-            var groupId = hfGroupId.Value.AsIntegerOrNull();
-            if ( !groupId.HasValue )
-            {
-                return false;
-            }
-
-            var group = new GroupService( rockContext ).Get( groupId.Value );
-            var person = new PersonService( rockContext ).Get( hfEditPersonGuid.Value.AsGuid() );
-
-            if ( group == null || person == null )
-            {
-                return false;
-            }
-
-            if ( !IsValidPersonForGroup( person, group ) )
-            {
-                return false;
-            }
-
-            // Person Attributes
-            var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-            if ( !displayedAttributeGuids.Any() || person.Id == 0 )
-            {
-                pnlPersonAttributes.Visible = false;
-            }
-            else
-            {
-                pnlPersonAttributes.Visible = true;
-                UpdateDynamicEditAttributeControls( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, false );
-            }
-
-            // Family Attributes
-            if ( person.Id == CurrentPerson.Id )
-            {
-                List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                if ( familyAttributeGuidList.Any() )
-                {
-                    pnlFamilyAttributes.Visible = true;
-                    UpdateDynamicEditAttributeControls( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, false );
-                }
-                else
-                {
-                    pnlFamilyAttributes.Visible = false;
-                }
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -612,6 +525,15 @@ namespace RockWeb.Blocks.Cms
             hfEditPersonGuid.Value = Guid.Empty.ToString();
             pnlEdit.Visible = false;
             pnlView.Visible = true;
+
+            rblRole.Items.Clear();
+            var familyRoles = selectedFamily.GroupType.Roles.OrderBy( r => r.Order ).ToList();
+            foreach ( var role in familyRoles )
+            {
+                rblRole.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
+            }
+
+            rblRole.SetValue( CurrentPerson.GetFamilyRole() );
         }
 
         /// <summary>
@@ -1009,7 +931,15 @@ namespace RockWeb.Blocks.Cms
                     person.CommunicationPreference = communicationPreference;
 
                     person.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phPersonAttributes, person );
+
+                    if ( avcPersonAttributesAdult.Visible )
+                    {
+                        avcPersonAttributesAdult.GetEditValues( person );
+                    }
+                    else
+                    {
+                        avcPersonAttributesChild.GetEditValues( person );
+                    }
 
                     if ( person.IsValid )
                     {
@@ -1058,7 +988,7 @@ namespace RockWeb.Blocks.Cms
                                 var familyGroup = new GroupService( rockContext )
                                     .Queryable()
                                     .Where( f =>
-                                        f.GroupType.Guid == familyGroupTypeGuid.Value &&
+                                        f.Id == groupId.Value &&
                                         f.Members.Any( m => m.PersonId == person.Id ) )
                                     .FirstOrDefault();
                                 if ( familyGroup != null )
@@ -1140,7 +1070,7 @@ namespace RockWeb.Blocks.Cms
                                     }
 
                                     familyGroup.LoadAttributes();
-                                    Rock.Attribute.Helper.GetEditValues( phFamilyAttributes, familyGroup );
+                                    avcFamilyAttributes.GetEditValues( familyGroup );
                                     familyGroup.SaveAttributeValues();
                                 }
                             }
@@ -1175,8 +1105,11 @@ namespace RockWeb.Blocks.Cms
         protected void rblRole_SelectedIndexChanged( object sender, EventArgs e )
         {
             var selectedId = rblRole.SelectedValueAsId();
-            UpdateDynamicControlsForRoleType( selectedId );
-            RoleTypeId = selectedId;
+
+            if ( selectedId.HasValue )
+            {
+                SetControlsForRoleType( selectedId.Value );
+            }
         }
 
         /// <summary>
@@ -1232,13 +1165,8 @@ namespace RockWeb.Blocks.Cms
                 // invalid situation; return and report nothing.
                 return;
             }
-
-            RoleTypeId = null;
             hfEditPersonGuid.Value = personGuid.ToString();
             var person = new Person();
-
-            rblRole.DataSource = group.GroupType.Roles.OrderBy( r => r.Order ).ToList();
-            rblRole.DataBind();
 
             if ( personGuid == Guid.Empty )
             {
@@ -1264,7 +1192,15 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            rblRole.SetValue( person.GetFamilyRole() );
+            if ( personGuid == Guid.Empty )
+            {
+                // make them pick the family role on a new person
+                rblRole.SelectedValue = null;
+            }
+            else
+            {
+                rblRole.SetValue( person.GetFamilyRole() );
+            }
 
             imgPhoto.BinaryFileId = person.PhotoId;
             imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
@@ -1357,15 +1293,31 @@ namespace RockWeb.Blocks.Cms
             rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
             // Person Attributes
-            var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-            if ( !displayedAttributeGuids.Any() || personGuid == Guid.Empty )
+            var personAttributeAdultGuidList = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
+            var personAttributeChildGuidList = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
+
+            avcPersonAttributesAdult.IncludedAttributes = personAttributeAdultGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+            avcPersonAttributesChild.IncludedAttributes = personAttributeChildGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+
+            avcPersonAttributesAdult.AddEditControls( person, true );
+            avcPersonAttributesChild.AddEditControls( person, true );
+
+            avcPersonAttributesAdult.Visible = false;
+            avcPersonAttributesChild.Visible = false;
+            pnlPersonAttributes.Visible = false;
+
+            if ( personGuid != Guid.Empty )
             {
-                pnlPersonAttributes.Visible = false;
-            }
-            else
-            {
-                pnlPersonAttributes.Visible = true;
-                UpdateDynamicEditAttributeControls( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, true );
+                if ( person.AgeClassification != AgeClassification.Child && personAttributeAdultGuidList.Any() )
+                {
+                    avcPersonAttributesAdult.Visible = true;
+                    pnlPersonAttributes.Visible = true;
+                }
+                else if ( person.AgeClassification == AgeClassification.Child && personAttributeChildGuidList.Any() )
+                {
+                    avcPersonAttributesChild.Visible = true;
+                    pnlPersonAttributes.Visible = true;
+                }
             }
 
             // Family Attributes
@@ -1375,7 +1327,8 @@ namespace RockWeb.Blocks.Cms
                 if ( familyAttributeGuidList.Any() )
                 {
                     pnlFamilyAttributes.Visible = true;
-                    UpdateDynamicEditAttributeControls( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, true );
+                    avcFamilyAttributes.IncludedAttributes = familyAttributeGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+                    avcFamilyAttributes.AddEditControls( group, true );
                 }
                 else
                 {
@@ -1414,7 +1367,7 @@ namespace RockWeb.Blocks.Cms
                         var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
-                                            .Where( l => l.Group.GroupTypeId == familyGroupType.Id
+                                            .Where( l => l.GroupId == groupId.Value
                                                     && l.GroupLocationTypeValueId == addressTypeDv.Id
                                                     && l.Group.Members.Any( m => m.PersonId == person.Id ) )
                                             .FirstOrDefault();
@@ -1444,7 +1397,7 @@ namespace RockWeb.Blocks.Cms
         /// Binds the phone numbers.
         /// </summary>
         /// <param name="person">The person.</param>
-        private void BindPhoneNumbers( Person person = null )
+        private void BindPhoneNumbers( Person person )
         {
             if ( person == null )
             {
@@ -1521,17 +1474,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Update the Dynamic Controls based on RoleType
+        /// Sets the visiblity of the controls for role.
         /// </summary>
         /// <param name="roleTypeId">The role type identifier.</param>
-        private void UpdateDynamicControlsForRoleType( int? roleTypeId )
+        public void SetControlsForRoleType( int roleTypeId )
         {
-            if ( !roleTypeId.HasValue )
-            {
-                return;
-            }
-
-            List<Guid> attributeGuidList = new List<Guid>();
             var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
 
@@ -1539,54 +1486,29 @@ namespace RockWeb.Blocks.Cms
                            gr.Guid == adultGuid &&
                            gr.Id == roleTypeId ).Any() )
             {
-                attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
                 ddlGradePicker.Visible = false;
                 tbEmail.Required = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
                 _isEditRecordAdult = true;
-                BindPhoneNumbers();
             }
             else
             {
-                attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
                 ddlGradePicker.Visible = true;
                 tbEmail.Required = false;
                 _isEditRecordAdult = false;
-                BindPhoneNumbers();
             }
+            
+            avcPersonAttributesAdult.Visible = _isEditRecordAdult;
+            avcPersonAttributesChild.Visible = !_isEditRecordAdult;
 
-            if ( attributeGuidList.Any() )
+            if ( _isEditRecordAdult )
             {
-                pnlPersonAttributes.Visible = true;
-                UpdateDynamicEditAttributeControls( new Person(), attributeGuidList, phPersonAttributes, pnlPersonAttributes, true );
+                var attributeGuidListAdult = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
+                pnlPersonAttributes.Visible = attributeGuidListAdult.Any();
             }
             else
             {
-                pnlPersonAttributes.Visible = false;
-            }
-        }
-
-        /// <summary>
-        /// Displays the edit attributes.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="displayedAttributeGuids">The displayed attribute guids.</param>
-        /// <param name="phAttributes">The place holder attributes.</param>
-        /// <param name="pnlAttributes">The PNL attributes.</param>
-        /// <param name="setValue">a boolean that determines if the value should be preset.</param>
-        private void UpdateDynamicEditAttributeControls( Rock.Attribute.IHasAttributes item, List<Guid> displayedAttributeGuids, PlaceHolder phAttributes, Panel pnlAttributes, bool setValue )
-        {
-            phAttributes.Controls.Clear();
-            item.LoadAttributes();
-            var excludedAttributeList = item.Attributes.Where( a => !displayedAttributeGuids.Contains( a.Value.Guid ) ).Select( a => a.Value.Key ).ToList();
-
-            if ( item.Attributes != null && item.Attributes.Any() && displayedAttributeGuids.Any() )
-            {
-                pnlAttributes.Visible = true;
-                Helper.AddEditControls( item, phAttributes, setValue, BlockValidationGroup, excludedAttributeList, false, 2 );
-            }
-            else
-            {
-                pnlAttributes.Visible = false;
+                var attributeGuidListChild = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
+                pnlPersonAttributes.Visible = attributeGuidListChild.Any();
             }
         }
 

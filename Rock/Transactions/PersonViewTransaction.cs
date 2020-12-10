@@ -23,6 +23,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a person is viewed.
     /// </summary>
+    [Obsolete( "Use AddPersonViewed Task instead." )]
+    [RockObsolete( "1.13" )]
     public class PersonViewTransaction : ITransaction
     {
 
@@ -65,7 +67,7 @@ namespace Rock.Transactions
         /// Date Viewed.
         /// </value>
         public DateTime DateTimeViewed { get; set; }
-        
+
         /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
