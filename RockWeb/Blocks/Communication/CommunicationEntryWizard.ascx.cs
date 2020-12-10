@@ -232,6 +232,8 @@ namespace RockWeb.Blocks.Communication
             fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupMobileAttachment.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
+            var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
+            lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
             hfSMSCharLimit.Value = ( this.GetAttributeValue( AttributeKey.CharacterLimit ).AsIntegerOrNull() ?? 160 ).ToString();
 
             gIndividualRecipients.DataKeyNames = new string[] { "Id" };
@@ -630,6 +632,7 @@ function onTaskCompleted( resultData )
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
+
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
