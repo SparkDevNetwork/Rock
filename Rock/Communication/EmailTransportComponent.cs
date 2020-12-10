@@ -413,6 +413,9 @@ namespace Rock.Communication
             templateRockEmailMessage.EnabledLavaCommands = emailMessage.EnabledLavaCommands;
             templateRockEmailMessage.CssInliningEnabled = emailMessage.CssInliningEnabled;
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
+            templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
+            templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
+            templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
 
             var fromAddress = GetFromAddress( emailMessage, mergeFields, globalAttributes );
             var fromName = GetFromName( emailMessage, mergeFields, globalAttributes );
@@ -504,6 +507,9 @@ namespace Rock.Communication
             recipientEmail.EnabledLavaCommands = emailMessage.EnabledLavaCommands;
             recipientEmail.AppRoot = emailMessage.AppRoot;
             recipientEmail.CssInliningEnabled = emailMessage.CssInliningEnabled;
+            recipientEmail.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
+            recipientEmail.ThemeRoot = emailMessage.ThemeRoot;
+
             // CC
             recipientEmail.CCEmails = emailMessage.CCEmails;
 
@@ -562,7 +568,10 @@ namespace Rock.Communication
 
             // Body (HTML)
             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, rockMessageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
-            body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+            if ( body.IsNotNullOrWhiteSpace() )
+            {
+                body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+            }
             recipientEmail.Message = body;
 
 
