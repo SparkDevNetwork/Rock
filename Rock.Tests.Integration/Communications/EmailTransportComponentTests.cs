@@ -665,7 +665,274 @@ namespace Rock.Tests.Integration.Communications
                 );
         }
 
+        [TestMethod]
+        public void SendRockMessageShouldHaveCorrectCreateCommunicationsRecordFlag()
+        {
+            AddSafeDomains();
 
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", "test@organization.com", false, null );
+
+            var actualEmail = new RockEmailMessage()
+            {
+                FromEmail = expectedFromEmail,
+                FromName = expectedFromName,
+                CreateCommunicationRecord = false,
+            };
+
+            actualEmail.AddRecipient( new RockEmailMessageRecipient( new Person
+            {
+                Email = "test@test.com",
+                FirstName = "Test",
+                LastName = "User"
+            }, new Dictionary<string, object>() ) );
+
+            var expectedEmail = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                CreateCommunicationRecord = false,
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedEmail.FromEmail &&
+                        rem.FromName == expectedEmail.FromName &&
+                        rem.CreateCommunicationRecord == expectedEmail.CreateCommunicationRecord
+                    )
+                );
+        }
+
+        [TestMethod]
+        public void SendRockMessageShouldHaveCorrectSendSeperatelyToEachRecipientFlag()
+        {
+            AddSafeDomains();
+
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", "test@organization.com", false, null );
+
+            var actualEmail = new RockEmailMessage()
+            {
+                FromEmail = expectedFromEmail,
+                FromName = expectedFromName,
+                SendSeperatelyToEachRecipient = false,
+            };
+
+            actualEmail.AddRecipient( new RockEmailMessageRecipient( new Person
+            {
+                Email = "test@test.com",
+                FirstName = "Test",
+                LastName = "User"
+            }, new Dictionary<string, object>() ) );
+
+            var expectedEmail = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                SendSeperatelyToEachRecipient = false,
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedEmail.FromEmail &&
+                        rem.FromName == expectedEmail.FromName &&
+                        rem.SendSeperatelyToEachRecipient == expectedEmail.SendSeperatelyToEachRecipient
+                    )
+                );
+        }
+
+        [TestMethod]
+        public void SendRockMessageShouldHaveCorrectThemeRootProperty()
+        {
+            AddSafeDomains();
+
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", "test@organization.com", false, null );
+
+            var actualEmail = new RockEmailMessage()
+            {
+                FromEmail = expectedFromEmail,
+                FromName = expectedFromName,
+                ThemeRoot = "/test/",
+            };
+
+            actualEmail.AddRecipient( new RockEmailMessageRecipient( new Person
+            {
+                Email = "test@test.com",
+                FirstName = "Test",
+                LastName = "User"
+            }, new Dictionary<string, object>() ) );
+
+            var expectedEmail = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                ThemeRoot = "/test/",
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedEmail.FromEmail &&
+                        rem.FromName == expectedEmail.FromName &&
+                        rem.ThemeRoot == expectedEmail.ThemeRoot
+                    )
+                );
+        }
+
+        [TestMethod]
+        public void SendRockMessageShouldHaveCorrectMergeFieldReplacement()
+        {
+            AddSafeDomains();
+
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", "test@organization.com", false, null );
+
+            var actualEmail = new RockEmailMessage()
+            {
+                FromEmail = expectedFromEmail,
+                FromName = expectedFromName,
+                Message = "{{ TestKey }}",
+                AdditionalMergeFields = { { "TestKey", "Test Value" } },
+            };
+
+            actualEmail.AddRecipient( new RockEmailMessageRecipient( new Person
+            {
+                Email = "test@test.com",
+                FirstName = "Test",
+                LastName = "User"
+            }, new Dictionary<string, object>() ) );
+
+            var expectedEmail = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                Message = "Test Value"
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings( ", " ) );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedEmail.FromEmail &&
+                        rem.FromName == expectedEmail.FromName &&
+                        rem.Message == expectedEmail.Message
+                    )
+                );
+        }
         #endregion
 
         #region Rock Communications Test
@@ -1048,7 +1315,7 @@ namespace Rock.Tests.Integration.Communications
             {
                 FromEmail = expectedEmail,
                 FromName = "Test Name",
-                AppRoot = "test/approot/",
+                AppRoot = "test/approot",
                 Attachments = new List<BinaryFile> { new BinaryFile { FileName = "test.txt" } },
                 BCCEmails = new List<string> { "bcc1@test.com", "bcc2@test.com" },
                 CCEmails = new List<string> { "cc1@test.com", "cc2@test.com" },
