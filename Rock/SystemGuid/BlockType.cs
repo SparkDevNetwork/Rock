@@ -68,6 +68,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_DETAIL = "8713F91A-8738-453D-AF13-3ED57F74137E";
 
+        /// <summary>
+        /// Mass Push Notifications Block Type Guid
+        /// </summary>
+        public const string MASS_PUSH_NOTIFICATIONS = "D886DB44-0D0F-46D3-86AE-C959C520B0FD";
+
         #endregion
 
         /// <summary>
