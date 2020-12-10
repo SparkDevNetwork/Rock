@@ -536,6 +536,10 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
+    <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
+    <Compile Include="Communication\VideoEmbed\YoutubeEmbed.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
     <Compile Include="Badge\Component\Achievement.cs" />
