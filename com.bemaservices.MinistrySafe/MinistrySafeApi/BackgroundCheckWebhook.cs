@@ -45,7 +45,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
         public int? UserId { get; set; }
 
         [JsonProperty( "external_id" )]
-        public int? ExternalId { get; set; }
+        public string ExternalId { get; set; }
 
         [JsonProperty( "level" )]
         public int? Level { get; set; }

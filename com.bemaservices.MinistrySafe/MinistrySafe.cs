@@ -320,7 +320,7 @@ namespace com.bemaservices.MinistrySafe
             using ( var rockContext = new RockContext() )
             {
                 string requestId = backgroundCheckWebhook.Id;
-                int? externalId = backgroundCheckWebhook.ExternalId;
+                int? externalId = backgroundCheckWebhook.ExternalId.RemoveAllNonNumericCharacters().AsIntegerOrNull();
                 var backgroundCheck = new BackgroundCheckService( rockContext )
                     .Queryable( "PersonAlias.Person" )
                     .Where( g => ( requestId != null && g.RequestId == requestId ) || ( requestId == null && g.PersonAliasId == externalId ) )
@@ -803,14 +803,21 @@ namespace com.bemaservices.MinistrySafe
         /// <returns>True/False value of whether the request was successfully sent or not.</returns>
         private static bool UpdateUserAndWorkFlow( TrainingWebhook trainingWebhook )
         {
-            var externalId = trainingWebhook.ExternalId.AsInteger();
+            var externalId = trainingWebhook.ExternalId;
+            var isExternalIdPersonAlias = externalId.Contains( "pa" );
+            var numericExternalId = externalId.RemoveAllNonNumericCharacters().AsIntegerOrNull();
             using ( var rockContext = new RockContext() )
             {
                 var ministrySafeUserService = new MinistrySafeUserService( rockContext );
 
                 var ministrySafeUsers = ministrySafeUserService
                     .Queryable( "PersonAlias.Person" )
-                    .Where( m => m.CompletedDateTime == null && ( m.WorkflowId == externalId && m.ForeignId == 3 ) || ( m.PersonAliasId == externalId && ( m.ForeignId == 2 || m.ForeignId == 4 ) ) )
+                    .Where( m => m.CompletedDateTime == null &&
+                            (
+                                ( !isExternalIdPersonAlias && m.WorkflowId == numericExternalId && m.ForeignId == 3 ) ||
+                                ( m.PersonAliasId == numericExternalId && ( m.ForeignId == 2 || m.ForeignId == 4 ) )
+                            )
+                        )
                     .ToList();
 
                 if ( ministrySafeUsers == null || ministrySafeUsers.Count <= 0 )
