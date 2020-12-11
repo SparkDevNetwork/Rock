@@ -231,7 +231,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
                     first_name = person.FirstName,
                     last_name = person.LastName,
                     email = person.Email,
-                    external_id = personAliasId.ToString(),
+                    external_id = "pa"+personAliasId.ToString(),
                     user_type = userType
                 }
             } );
@@ -266,7 +266,7 @@ namespace com.bemaservices.MinistrySafe.MinistrySafeApi
             List<UserResponse> usersResponse = null;
             RestClient restClient = RestClient();
             RestRequest restRequest = new RestRequest( MinistrySafeConstants.MINISTRYSAFE_USERS_URL );
-            restRequest.AddParameter( "external_id", personAliasId );
+            restRequest.AddParameter( "external_id", "pa"+personAliasId );
 
             IRestResponse restResponse = restClient.Execute( restRequest );
 
