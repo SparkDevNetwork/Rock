@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Data;
@@ -324,6 +325,52 @@ namespace Rock.Communication
                 ExceptionLogService.LogException( ex, HttpContext.Current );
                 errorMessages.Add( ex.Message );
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <returns></returns>
+        public virtual async Task<SendMessageResult> SendAsync()
+        {
+            var sendEmailResult = new SendMessageResult();
+
+            try
+            {
+                if ( this.Recipients.Any() )
+                {
+                    var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
+                    if ( mediumEntity != null )
+                    {
+                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        if ( medium != null )
+                        {
+                            var iAsyncMedium = medium as IAsyncMediumComponent;
+                            if ( iAsyncMedium == null )
+                            {
+                                medium.Send( this, out var errorMessages );
+                                sendEmailResult.Errors.AddRange( errorMessages );
+                            }
+                            else
+                            {
+                                sendEmailResult = await iAsyncMedium.SendAsync( this ).ConfigureAwait( false );
+                            }
+                            return sendEmailResult;
+                        }
+                    }
+
+                    sendEmailResult.Errors.Add( "Could not find valid Medium" );
+                    return sendEmailResult;
+                }
+
+                return sendEmailResult;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+                sendEmailResult.Errors.Add( ex.Message );
+                return sendEmailResult;
             }
         }
     }

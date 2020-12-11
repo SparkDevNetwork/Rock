@@ -595,11 +595,15 @@
     <Compile Include="CheckIn\LocalDeviceConfiguration.cs" />
     <Compile Include="CheckIn\RosterAttendee.cs" />
     <Compile Include="Communication\CommunicationHelper.cs" />
+    <Compile Include="Communication\IAsyncTransport.cs" />
+    <Compile Include="Communication\IAsyncMediumComponent.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
     <Compile Include="Communication\PushData.cs" />
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
@@ -685,6 +689,7 @@
     <Compile Include="Tasks\AddPersonViewed.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Tasks\BusStartedTask.cs" />
+    <Compile Include="Utility\AsyncHelper.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\ExtensionMethods\DateKeyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\AssemblyExtensions.cs" />

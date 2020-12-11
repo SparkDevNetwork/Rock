@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Net.Mail;
 using System.Linq;
 
 using Rock.Extension;
@@ -80,7 +78,6 @@ namespace Rock.Communication
                     recipient.StatusNote = "Person is deceased";
                     valid = false;
                 }
-
                 else if ( recipient.Communication.ListGroupId.HasValue )
                 {
                     // if this communication is being sent to a list, make sure the recipient is still an active member of the list
@@ -174,5 +171,4 @@ namespace Rock.Communication
             return value;
         }
     }
-
 }
