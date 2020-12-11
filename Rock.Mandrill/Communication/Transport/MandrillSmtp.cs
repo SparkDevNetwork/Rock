@@ -14,13 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net.Mail;
 using Rock.Attribute;
-using Rock.Model;
 
 namespace Rock.Communication.Transport
 {
@@ -37,6 +35,7 @@ namespace Rock.Communication.Transport
     [IntegerField( "Port", "", false, 25, "", 3 )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
     [BooleanField( "Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 5 )]
+    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 5, key: "MaxParallelization" )]
     public class MandrillSmtp : SMTPComponent
     {
         /// <summary>
@@ -63,7 +62,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return String.Format( "Email was received for delivery by Mandrill ({0})", RockDateTime.Now );
+                return string.Format( "Email was received for delivery by Mandrill ({0})", RockDateTime.Now );
             }
         }
 
@@ -85,9 +84,10 @@ namespace Rock.Communication.Transport
                 var metaValues = new List<string>();
                 foreach ( var param in headers )
                 {
-                    metaValues.Add( String.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
+                    metaValues.Add( string.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
                 }
-                message.Headers.Add( "X-MC-Metadata", String.Format( @"{{{0}}}", metaValues.AsDelimited( "," ) ) );
+
+                message.Headers.Add( "X-MC-Metadata", string.Format( @"{{{0}}}", metaValues.AsDelimited( "," ) ) );
             }
         }
     }

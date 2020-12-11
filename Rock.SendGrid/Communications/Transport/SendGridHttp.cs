@@ -15,13 +15,16 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Utility;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -51,7 +54,12 @@ namespace Rock.Communication.Transport
         DefaultValue = "true",
         Order = 4,
         Key = AttributeKey.TrackOpens )]
-    public class SendGridHttp : EmailTransportComponent
+    [IntegerField( "Concurrent Send Workers",
+        IsRequired = false,
+        DefaultIntegerValue = 10,
+        Order = 5,
+        Key = AttributeKey.MaxParallelization )]
+    public class SendGridHttp : EmailTransportComponent, IAsyncTransport
     {
         /// <summary>
         /// Class for storing attribute keys.
@@ -62,14 +70,32 @@ namespace Rock.Communication.Transport
             /// The track opens
             /// </summary>
             public const string TrackOpens = "TrackOpens";
+
             /// <summary>
             /// The API key
             /// </summary>
             public const string ApiKey = "APIKey";
+
             /// <summary>
             /// The base URL
             /// </summary>
             public const string BaseUrl = "BaseURL";
+
+            /// <summary>
+            /// The maximum parallelization
+            /// </summary>
+            public const string MaxParallelization = "MaxParallelization";
+        }
+
+        /// <summary>
+        /// Gets the maximum parallelization.
+        /// </summary>
+        /// <value>
+        /// The maximum parallelization.
+        /// </value>
+        public virtual int MaxParallelization
+        {
+            get => GetAttributeValue( AttributeKey.MaxParallelization ).AsIntegerOrNull() ?? 10;
         }
 
         /// <summary>
@@ -81,7 +107,7 @@ namespace Rock.Communication.Transport
         /// </value>
         public override bool CanTrackOpens
         {
-            get { return GetAttributeValue( AttributeKey.TrackOpens ).AsBoolean( true ); }
+            get => GetAttributeValue( AttributeKey.TrackOpens ).AsBoolean( true );
         }
 
         /// <summary>
@@ -92,15 +118,39 @@ namespace Rock.Communication.Transport
         /// <returns></returns>
         protected override EmailSendResponse SendEmail( RockEmailMessage rockEmailMessage )
         {
+            return AsyncHelpers.RunSync( () => SendEmailAsync( rockEmailMessage ) );
+        }
+
+        /// <summary>
+        /// Sends the email asynchronous.
+        /// </summary>
+        /// <param name="rockEmailMessage">The rock email message.</param>
+        /// <returns></returns>
+        protected override async Task<EmailSendResponse> SendEmailAsync( RockEmailMessage rockEmailMessage )
+        {
             var client = new SendGridClient( GetAttributeValue( AttributeKey.ApiKey ), host: GetAttributeValue( AttributeKey.BaseUrl ) );
             var sendGridMessage = GetSendGridMessageFromRockEmailMessage( rockEmailMessage );
 
             // Send it
-            var response = client.SendEmailAsync( sendGridMessage ).GetAwaiter().GetResult();
+            var retriableStatusCode = new List<HttpStatusCode>()
+            {
+                HttpStatusCode.InternalServerError,
+                HttpStatusCode.BadGateway,
+                HttpStatusCode.ServiceUnavailable,
+                HttpStatusCode.GatewayTimeout,
+                (HttpStatusCode) 429
+            };
+
+            var sendWithRetry = new MethodRetry();
+            var response = await sendWithRetry.ExecuteAsync<Response>(
+                async () => await client.SendEmailAsync( sendGridMessage ).ConfigureAwait( false ),
+                ( sendGridResponse ) => !retriableStatusCode.Contains( sendGridResponse.StatusCode ) )
+                .ConfigureAwait( false );
+
             return new EmailSendResponse
             {
                 Status = response.StatusCode == HttpStatusCode.Accepted ? CommunicationRecipientStatus.Delivered : CommunicationRecipientStatus.Failed,
-                StatusNote = response.Body.ReadAsStringAsync().GetAwaiter().GetResult()
+                StatusNote = $"HTTP Status Code: {response.StatusCode} \r\n Response Body: {await response.Body.ReadAsStringAsync().ConfigureAwait( false )}"
             };
         }
 
@@ -150,7 +200,10 @@ namespace Rock.Communication.Transport
             sendGridMessage.HtmlContent = rockEmailMessage.Message;
 
             // Communication record for tracking opens & clicks
-            sendGridMessage.CustomArgs = rockEmailMessage.MessageMetaData;
+            if ( rockEmailMessage.MessageMetaData != null && rockEmailMessage.MessageMetaData.Count > 0 )
+            {
+                sendGridMessage.CustomArgs = rockEmailMessage.MessageMetaData;
+            }
 
             if ( CanTrackOpens )
             {
