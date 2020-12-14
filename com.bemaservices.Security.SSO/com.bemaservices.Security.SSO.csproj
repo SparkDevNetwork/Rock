@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="Authenticators\Okta.cs" />
     <Compile Include="Authenticators\Office365.cs" />
+    <Compile Include="Authenticators\Vision2.cs" />
     <Compile Include="Migrations\001_AddPage.cs" />
     <Compile Include="Migrations\002_AddBlockType.cs" />
     <Compile Include="Migrations\003_AddBlock.cs" />
