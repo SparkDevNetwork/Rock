@@ -47,12 +47,20 @@ namespace RockWeb.Blocks.Security
         DefaultBooleanValue = false,
         Order = 0 )]
 
+    [TextField(
+        "Username Field Label",
+        Key = AttributeKey.UsernameFieldLabel,
+        Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
+        IsRequired =false,
+        DefaultValue = "Username",
+        Order = 1 )]
+
     [BooleanField(
         "Check For Duplicates",
         Key = AttributeKey.Duplicates,
         Description = "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.",
         DefaultBooleanValue = true,
-        Order = 1 )]
+        Order = 2 )]
 
     [TextField(
         "Found Duplicate Caption",
@@ -60,7 +68,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?",
         Category = "Captions",
-        Order = 2 )]
+        Order = 3 )]
 
     [TextField(
         "Existing Account Caption",
@@ -68,14 +76,14 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = "{0}, you already have an existing account.  Would you like us to email you the username?",
         Category = "Captions",
-        Order = 3 )]
+        Order = 4 )]
 
     [TextField(
         "Sent Login Caption",
         IsRequired = false,
         DefaultValue = "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.",
         Category = "Captions",
-        Order = 4,
+        Order = 5,
         Key = AttributeKey.SentLoginCaption )]
 
     [TextField(
@@ -84,7 +92,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.",
         Category = "Captions",
-        Order = 5 )]
+        Order = 6 )]
 
     [TextField(
         "Success Caption",
@@ -92,7 +100,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = "{0}, Your account has been created",
         Category = "Captions",
-        Order = 6 )]
+        Order = 7 )]
 
     [LinkedPage(
         "Confirmation Page",
@@ -100,7 +108,7 @@ namespace RockWeb.Blocks.Security
         Description = "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)",
         IsRequired = false,
         Category = "Pages",
-        Order = 7 )]
+        Order = 8 )]
 
     [LinkedPage(
         "Login Page",
@@ -108,7 +116,7 @@ namespace RockWeb.Blocks.Security
         Description = "Page to navigate to when user elects to login (if blank will use 'Login' page route)",
         IsRequired = false,
         Category = "Pages",
-        Order = 8 )]
+        Order = 9 )]
 
     [SystemCommunicationField(
         "Forgot Username",
@@ -117,7 +125,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME,
         Category = "Email Templates",
-        Order = 9 )]
+        Order = 10 )]
 
     [SystemCommunicationField(
         "Confirm Account",
@@ -126,7 +134,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Category = "Email Templates",
-        Order = 10 )]
+        Order = 11 )]
 
     [SystemCommunicationField(
         "Account Created",
@@ -135,7 +143,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_ACCOUNT_CREATED,
         Category = "Email Templates",
-        Order = 11 )]
+        Order = 12 )]
 
     [DefinedValueField(
         "Connection Status",
@@ -145,7 +153,7 @@ namespace RockWeb.Blocks.Security
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2",
-        Order = 12 )]
+        Order = 13 )]
 
     [DefinedValueField(
         "Record Status",
@@ -155,14 +163,14 @@ namespace RockWeb.Blocks.Security
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
-        Order = 13 )]
+        Order = 14 )]
 
     [BooleanField(
         "Show Address",
         Key = AttributeKey.ShowAddress,
         Description = "Allows hiding the address field.",
         DefaultBooleanValue = false,
-        Order = 14 )]
+        Order = 15 )]
 
     [GroupLocationTypeField(
         "Location Type",
@@ -171,21 +179,21 @@ namespace RockWeb.Blocks.Security
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        Order = 15 )]
+        Order = 16 )]
 
     [BooleanField(
         "Address Required",
         Key = AttributeKey.AddressRequired,
         Description = "Whether the address is required.",
         DefaultBooleanValue = false,
-        Order = 16 )]
+        Order = 17 )]
 
     [BooleanField(
         "Show Phone Numbers",
         Key = AttributeKey.ShowPhoneNumbers,
         Description = "Allows hiding the phone numbers.",
         DefaultBooleanValue = false,
-        Order = 17 )]
+        Order = 18 )]
 
     [IntegerField(
         "Minimum Age",
@@ -193,7 +201,7 @@ namespace RockWeb.Blocks.Security
         Description = "The minimum age allowed to create an account. Warning = The Children's Online Privacy Protection Act disallows children under the age of 13 from giving out personal information without their parents' permission.",
         IsRequired = false,
         DefaultIntegerValue = 13,
-        Order = 18 )]
+        Order = 19 )]
 
     [DefinedValueField(
         "Phone Types",
@@ -202,7 +210,7 @@ namespace RockWeb.Blocks.Security
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 19 )]
+        Order = 20 )]
 
     [DefinedValueField(
         "Phone Types Required",
@@ -211,14 +219,14 @@ namespace RockWeb.Blocks.Security
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 20 )]
+        Order = 21 )]
 
     [BooleanField(
         "Show Campus",
         Key = AttributeKey.ShowCampusSelector,
         Description = "Allows selection of primary a campus. If there is only one active campus then the campus field will not show.",
         DefaultBooleanValue = false,
-        Order = 21 )]
+        Order = 22 )]
 
     [TextField(
         "Campus Selector Label",
@@ -226,7 +234,7 @@ namespace RockWeb.Blocks.Security
         Description = "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
         IsRequired = false,
         DefaultValue = "Campus",
-        Order = 22 )]
+        Order = 23 )]
     #endregion
 
     public partial class AccountEntry : Rock.Web.UI.RockBlock
@@ -234,6 +242,7 @@ namespace RockWeb.Blocks.Security
         private static class AttributeKey
         {
             public const string RequireEmailForUsername = "RequireEmailForUsername";
+            public const string UsernameFieldLabel = "UsernameFieldLabel";
             public const string Duplicates = "Duplicates";
             public const string FoundDuplicateCaption = "FoundDuplicateCaption";
             public const string ExistingAccountCaption = "ExistingAccountCaption";
@@ -294,15 +303,77 @@ namespace RockWeb.Blocks.Security
             base.OnInit( e );
 
             ValidateUsernameAsEmail = GetAttributeValue( AttributeKey.RequireEmailForUsername ).AsBoolean();
-            tbUserName.Label = ValidateUsernameAsEmail ? "Email" : "Username";
-            tbEmail.Visible = !ValidateUsernameAsEmail;
 
+            tbUserName.Label = GetAttributeValue( AttributeKey.UsernameFieldLabel );
+            tbEmail.Visible = !ValidateUsernameAsEmail;
             lFoundDuplicateCaption.Text = GetAttributeValue( AttributeKey.FoundDuplicateCaption );
             lSentLoginCaption.Text = GetAttributeValue( AttributeKey.SentLoginCaption );
             lConfirmCaption.Text = GetAttributeValue( AttributeKey.ConfirmCaption );
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
 
             rPhoneNumbers.ItemDataBound += rPhoneNumbers_ItemDataBound;
+
+            var regexString = ValidateUsernameAsEmail ? @"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+            var usernameValidCaption = ValidateUsernameAsEmail ? "" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" );
+
+            var script = string.Format( @" Sys.Application.add_load(function () {{
+var availabilityMessageRow = $('#availabilityMessageRow');
+var usernameUnavailable = $('#availabilityMessage');
+var usernameTextbox = $('#{0}');
+var usernameRegExp = new RegExp('{1}');
+var usernameValidCaption = '{2}';
+var usernameFieldLabel = '{3}';
+        
+availabilityMessageRow.hide();
+
+usernameTextbox.blur(function () {{
+    if ($(this).val() && $.trim($(this).val()) != '') {{
+
+        if (!usernameRegExp.test($(this).val())) {{
+            usernameUnavailable.html(usernameFieldLabel + ' is not valid. ' + usernameValidCaption);
+            usernameUnavailable.addClass('alert-warning');
+            usernameUnavailable.removeClass('alert-success');
+        }} else {{
+            $.ajax({{
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
+                success: function (getData, status, xhr) {{
+
+                    if (getData) {{
+                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is available.');
+                        usernameUnavailable.addClass('alert-success');
+                        usernameUnavailable.removeClass('alert-warning');
+                    }} else {{
+                        availabilityMessageRow.show();
+                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken!');
+                        usernameUnavailable.addClass('alert-warning');
+                        usernameUnavailable.removeClass('alert-success');
+                    }}
+                }},
+                error: function (xhr, status, error) {{
+                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                }}
+            }});
+        }}
+    }} else {{
+        usernameUnavailable.html(usernameFieldLabel + ' is required!');
+        usernameUnavailable.addClass('alert-warning');
+        usernameUnavailable.removeClass('alert-success');
+    }}
+
+    availabilityMessageRow.show();
+    }});
+}});
+",
+                tbUserName.ClientID, //0
+                regexString, //1
+                usernameValidCaption, //2
+                tbUserName.Label //3 
+                );
+
+            ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
         }
 
         /// <summary>

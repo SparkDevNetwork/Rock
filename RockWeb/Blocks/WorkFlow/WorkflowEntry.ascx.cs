@@ -786,7 +786,7 @@ namespace RockWeb.Blocks.WorkFlow
                     buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
                 }
 
-                if ( buttonHtml.IsNotNullOrWhiteSpace() )
+                if ( buttonHtml.IsNullOrWhiteSpace() )
                 {
                     buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                 }
