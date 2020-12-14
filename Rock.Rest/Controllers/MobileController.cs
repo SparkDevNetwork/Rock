@@ -243,39 +243,14 @@ namespace Rock.Rest.Controllers
                         //
                         // Try to find an existing interaction channel.
                         //
-                        var interactionChannelId = interactionChannelService.Queryable()
-                            .Where( a =>
-                                a.ChannelTypeMediumValueId == channelMediumTypeValue.Id &&
-                                a.ChannelEntityId == site.Id )
-                            .Select( a => ( int? ) a.Id )
-                            .FirstOrDefault();
-
-                        //
-                        // If not found, create one.
-                        //
-                        if ( !interactionChannelId.HasValue )
-                        {
-                            var interactionChannel = new InteractionChannel
-                            {
-                                Name = site.Name,
-                                ChannelTypeMediumValueId = channelMediumTypeValue.Id,
-                                ChannelEntityId = site.Id,
-                                ComponentEntityTypeId = pageEntityTypeId
-                            };
-
-                            interactionChannelService.Add( interactionChannel );
-                            rockContext.SaveChanges();
-
-                            interactionChannelId = interactionChannel.Id;
-                        }
+                        var interactionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( channelMediumTypeValue.Id, site.Id, site.Name, pageEntityTypeId, null );
 
                         //
                         // Get an existing or create a new component.
                         //
-                        var interactionComponent = interactionComponentService.GetComponentByChannelIdAndEntityId( interactionChannelId.Value, page.Id, page.InternalName );
-                        rockContext.SaveChanges();
+                        var interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId, page.Id, page.InternalName );
 
-                        interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponent.Id );
+                        interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
                     }
                     else if ( mobileInteraction.ChannelId.HasValue )
                     {
@@ -301,7 +276,8 @@ namespace Rock.Rest.Controllers
                 //
                 // Now wrap the actual interaction creation inside a transaction. We should
                 // probably move this so it uses the InteractionTransaction class for better
-                // performance.
+                // performance. This is so we can inform the client that either everything
+                // saved or that nothing saved. No partial saves here.
                 //
                 rockContext.WrapTransaction( () =>
                 {
