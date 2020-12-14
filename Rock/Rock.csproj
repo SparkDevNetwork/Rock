@@ -693,7 +693,6 @@
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\ExtensionMethods\DateKeyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\AssemblyExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DateKeyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
