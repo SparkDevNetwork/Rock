@@ -88,6 +88,11 @@ namespace Rock.Jobs
 
             if ( reminderSends.Errors.Any() )
             {
+                if ( exceptionMessage.IsNotNullOrWhiteSpace() )
+                {
+                    exceptionMessage += Environment.NewLine;
+                }
+
                 exceptionMessage += "One or more errors occurred when sending reminders: " + Environment.NewLine + reminderSends.Errors.AsDelimited( Environment.NewLine );
             }
 

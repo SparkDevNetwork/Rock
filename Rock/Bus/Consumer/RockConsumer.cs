@@ -19,9 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using MassTransit;
+
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Bus.Consumer
 {
@@ -140,8 +143,9 @@ namespace Rock.Bus.Consumer
         {
             var consumerTypes = new Dictionary<string, Type>();
             var assemblies = Reflection.GetRockAndPluginAssemblies();
+
             var types = assemblies
-                .SelectMany( a => a.GetTypes()
+                .SelectMany( a => a.GetTypesSafe()
                 .Where( t => t.IsClass && !t.IsNestedPrivate && !t.IsAbstract ) );
 
             foreach ( var type in types )

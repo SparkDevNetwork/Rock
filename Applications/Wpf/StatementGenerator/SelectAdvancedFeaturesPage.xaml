@@ -57,6 +57,13 @@
                         Margin="0,0,0,8"
                         Style="{StaticResource comboBoxStyleXL}" />
                 </StackPanel>
+                <CheckBox
+                    Name="cbGroupByPageCount"
+                    Height="40"
+                    IsChecked="False"
+                    Style="{StaticResource checkboxStyle}">
+                    <TextBlock Text="Group statements by their page count. Statements will be added to separate files according to their common page count." TextWrapping="Wrap" />
+                </CheckBox>
                 <Label Margin="-4,0,0,0" Content="Transaction Types" />
                 <ListBox
                     x:Name="lstTransactionTypes"

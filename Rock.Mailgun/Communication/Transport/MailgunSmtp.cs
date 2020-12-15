@@ -14,13 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net.Mail;
 using Rock.Attribute;
-using Rock.Model;
 
 namespace Rock.Communication.Transport
 {
@@ -38,6 +36,7 @@ namespace Rock.Communication.Transport
     [IntegerField( "Port", "", false, 587, "", 3 )]
     [BooleanField( "Use SSL", "", true, "", 4 )]
     [BooleanField( "Track Clicks", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 5 )]
+    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 6, key: "MaxParallelization" )]
     public class MailgunSmtp : SMTPComponent
     {
         /// <summary>
@@ -64,7 +63,7 @@ namespace Rock.Communication.Transport
         {
             get
             {
-                return String.Format( "Email was received for delivery by Mailgun ({0})", RockDateTime.Now );
+                return string.Format( "Email was received for delivery by Mailgun ({0})", RockDateTime.Now );
             }
         }
 
@@ -87,9 +86,10 @@ namespace Rock.Communication.Transport
                 var variables = new List<string>();
                 foreach ( var param in headers )
                 {
-                    variables.Add( String.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
+                    variables.Add( string.Format( "\"{0}\":\"{1}\"", param.Key, param.Value ) );
                 }
-                message.Headers.Add( "X-Mailgun-Variables", String.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
+
+                message.Headers.Add( "X-Mailgun-Variables", string.Format( @"{{{0}}}", variables.AsDelimited( "," ) ) );
             }
         }
     }
