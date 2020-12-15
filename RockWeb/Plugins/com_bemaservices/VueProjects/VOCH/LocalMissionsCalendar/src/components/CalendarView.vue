@@ -34,13 +34,13 @@
               </v-btn>
             </template>
             <v-list>
-              <v-list-item @click="type = 'day'">
+              <v-list-item @click="changeType('day')">
                 <v-list-item-title>Day</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="type = 'week'">
+              <v-list-item @click="changeType('week')">
                 <v-list-item-title>Week</v-list-item-title>
               </v-list-item>
-              <v-list-item @click="type = 'month'">
+              <v-list-item @click="changeType('month')">
                 <v-list-item-title>Month</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -58,7 +58,7 @@
           @click:event="showEvent"
           @click:more="viewDay"
           @click:date="viewDay"
-          @change="updateRange"
+          
         ></v-calendar>
         <v-menu
           v-model="selectedOpen"
@@ -114,11 +114,12 @@ export default {
       },
       focus: {
         type: Date
+      },
+      type:{
+        type: String
       }
     },
     data: () => ({
-   
-      type: 'month',
       typeToLabel: {
         month: 'Month',
         week: 'Week',
@@ -127,9 +128,7 @@ export default {
       selectedEvent: {},
       selectedElement: null,
       selectedOpen: false,
-      events: [],
       colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
-      names: ['Meeting', 'Holiday', 'PTO', 'Travel', 'Event', 'Birthday', 'Conference', 'Party'],
     }),
     watch:{
       type: function(val) {
@@ -140,15 +139,19 @@ export default {
       this.$refs.calendar.checkChange()
     },
     methods: {
+      changeType(val){
+        this.$emit('CalendarType',{type: val})
+      },
       viewDay ({ date }) {
-        this.focus = date
-        this.type = 'day'
+        let newDatee = date + 'T00:00:00.0000'
+        this.$emit('setFocus',newDatee)
+        this.$emit('CalendarType',{type: 'day'})
       },
       getEventColor (event) {
         return event.color
       },
       setToday () {
-        this.$emit('setToday')
+        this.$emit('setFocus',null)
       },
       
       showEvent ({ nativeEvent, event }) {
@@ -158,32 +161,32 @@ export default {
        
         nativeEvent.stopPropagation()
       },
-      updateRange ({ start, end }) {
-        const events = []
+      // updateRange ({ start, end }) {
+      //   const events = []
 
-        const min = new Date(`${start.date}T00:00:00`)
-        const max = new Date(`${end.date}T23:59:59`)
-        const days = (max.getTime() - min.getTime()) / 86400000
-        const eventCount = this.rnd(days, days + 20)
+      //   const min = new Date(`${start.date}T00:00:00`)
+      //   const max = new Date(`${end.date}T23:59:59`)
+      //   const days = (max.getTime() - min.getTime()) / 86400000
+      //   const eventCount = this.rnd(days, days + 20)
 
-        for (let i = 0; i < eventCount; i++) {
-          const allDay = this.rnd(0, 3) === 0
-          const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-          const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-          const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-          const second = new Date(first.getTime() + secondTimestamp)
+      //   for (let i = 0; i < eventCount; i++) {
+      //     const allDay = this.rnd(0, 3) === 0
+      //     const firstTimestamp = this.rnd(min.getTime(), max.getTime())
+      //     const first = new Date(firstTimestamp - (firstTimestamp % 900000))
+      //     const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
+      //     const second = new Date(first.getTime() + secondTimestamp)
 
-          events.push({
-            name: this.names[this.rnd(0, this.names.length - 1)],
-            start: first,
-            end: second,
-            color: this.colors[this.rnd(0, this.colors.length - 1)],
-            timed: !allDay,
-          })
-        }
+      //     events.push({
+      //       name: this.names[this.rnd(0, this.names.length - 1)],
+      //       start: first,
+      //       end: second,
+      //       color: this.colors[this.rnd(0, this.colors.length - 1)],
+      //       timed: !allDay,
+      //     })
+      //   }
 
-        this.events = events
-      },
+      //   this.events = events
+      // },
       rnd (a, b) {
         return Math.floor((b - a + 1) * Math.random()) + a
       },

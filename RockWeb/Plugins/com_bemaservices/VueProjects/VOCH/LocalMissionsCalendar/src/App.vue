@@ -47,7 +47,7 @@
             <div class="btn btn-primary" @click="clearFilters">Clear Filters</div>
             </div>
           </div>
-        <CalendarView v-if="SelectedView == 'calendar'" :Events="filteredEvents" :focus="focus" @setToday="setFocus" @ShowModal="showModal" @CalendarType="SetType" />
+        <CalendarView v-if="SelectedView == 'calendar'" :Events="filteredEvents" :focus="focus" :type="calendarType" @setFocus="setFocus" @ShowModal="showModal" @CalendarType="SetType" />
         <EventList 
           v-else
           :Events="filteredEvents"
@@ -3613,8 +3613,14 @@ export default {
           }    // code block
       }
     },
-    setFocus(){
-      this.focus = null;
+    setFocus(val){
+      console.log(val)
+      if(val && val != null ) {
+        console.log(new Date(val))
+        this.focus = new Date(val);
+      } else {
+        this.focus = null;
+      }
     }
   
   },
