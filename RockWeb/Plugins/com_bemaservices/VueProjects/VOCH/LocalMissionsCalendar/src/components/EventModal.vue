@@ -1,18 +1,18 @@
 <template>
-    <div
-
-      :class="ShowDetails ? 'col-md-12 col-lg-12 removeItem' : 'col-md-4'"
-      v-if="!calculateSpotsRemaining.LimitedSpots || calculateSpotsRemaining.SpotsRemaining > 0 "
-    >
-    <v-card
+  <div id="Modal">
+    <div class="card">
+        <div class="top">
+          <i class="fa fa-times fa-2x" @click="closeModal"></i>
+        </div>
+      <v-card
     class="mx-auto flex-Card"
-    height="100%"
+    elevation="0"
     max-width="100%"
   >
   <div>
     <v-img
       class="white--text align-end gradient"
-      :height="ShowDetails ? '400px' : '200px'"
+      height="275px"
       
       width="100%"
      :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
@@ -35,13 +35,7 @@
     </div>
   <div class="flex-Card">
     <v-card-text class="text--primary">
-      <div v-if="!ShowDetails">
-        <div v-if="Event.EventSummary">
-          <span class="font-weight-bold">Summary:</span>
-          <div>{{ Event.EventSummary}}</div>
-        </div>
-      </div>
-      <div v-else >
+      <div>
          <div class="font-weight-bold">Description:</div>
         <div v-html="Event.EventDescription"></div>
         <div class="font-weight-bold">Upcoming Dates:</div>
@@ -54,7 +48,7 @@
               <li v-for="registration in Event.RegistrationInformation" :key="registration.RegistrationInstanceId">
                 <span>{{registration.RegistrationPublicName}} - Register Between {{formatDate(registration.RegistrationStartDate) }} and {{formatDate(registration.RegistrationEndDate) }}</span><br />
                 <span vif="!registrationSpotsRemaining(registration).LimitedSpots || registrationSpotsRemaining(registration).SpotsRemaining > 0">
-                  <a :href="registration.RegistrationPublicSlug != '' ? `https://voxchurch.org/registration/${registration.RegistrationPublicSlug}` : `https://voxchurch.org/registration?RegistrationInstance=${registration.RegistrationInstanceId}`" class="btn btn-primary">Register</a>
+                  <a :href="registration.RegistrationPublicSlug != '' ? `https://voxchurch.org/registration/${registration.RegistrationPublicSlug}` : `https://voxchurch.org/registration?RegistrationInstance=${registration.RegistrationInstanceId}`" class="btn btn-primary" style="color:white;">Register</a>
                 </span>
               </li>
             </ul>
@@ -65,10 +59,9 @@
       <v-btn
         color="orange"
         text
-        @click="$emit('ShowModal',Event)"
+        @click="closeModal"
       >
-        <span v-if="!ShowDetails">View Details</span>
-       
+        <span>Hide Details</span>
       </v-btn>
 
       <v-btn
@@ -81,23 +74,22 @@
     </v-card-actions>
     </div>
   </v-card>
-
+    </div>
   </div>
 </template>
 
 <script>
-
 export default {
-  props: {
-    Event: {
-      type: Object,
-      required: true
+  props:{
+    Event:{
+      type:Object,
+      required:true,
     }
   },
-  data: () => ({
-    ShowDetails: false,
-      }),
-  methods: {
+  methods:{
+    closeModal(){
+      this.$emit('CloseModal');
+    },
     formatDate(dateItem) {
       const options = {
         year: 'numeric', month: 'long', day: 'numeric',
@@ -143,21 +135,55 @@ export default {
       };
     },
   },
-};
+}
 </script>
+
 <style scoped>
- .removeItem {
-   position:absolute;
-   width:100%;
-   z-index:2;
- }
- .flex-Card {
-   display:flex;
-   flex-direction:column;
-   justify-content:space-between;
-    flex-grow:1;
- }
- .gradient {
-   background-color:black;  
- }
+#Modal{
+  background-color:rgba(0,0,0,.8);
+  position: fixed;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around; 
+  align-items:center;
+  top:0;
+  left:0;
+  bottom:0;
+  right:0;
+  z-index:20;
+}
+.card {
+  background-color:white;
+  width:90vw;
+  overflow-y:scroll;
+  height:90vh;
+ 
+  /* left:50%;
+  top:50%;
+   right:50%;
+  bottom:50%;
+  position:absolute;
+  transform:translate(-50%, -50%) */
+}
+.top {
+  width:100%;
+  background-color:teal;
+  color:white;
+  padding:1vh 2vw;
+  display:flex;
+  flex-direction:row-reverse;
+  position: fixed;
+    z-index: 101;
+    top: 0;
+    width: 90vw;
+
+}
+
+
+</style>
+<style>
+.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
 </style>

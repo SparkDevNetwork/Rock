@@ -1,71 +1,88 @@
 <template>
   <v-app>
       <v-main>
-        <v-container fluid>
-          <v-row class="flex-md-row flex-column d-flex flex-wrap">
-            <v-col
-              col="12"
-              md="5"
-            >
-              <v-select
-
-                v-model="SelectedCampus"
-                :hint="`${SelectedCampus.CampusName ? SelectedCampus.CampusName : 'Select a Campus'}`"
-                :items="Campuses"
-                item-text="CampusName"
-                item-value="CampusId"
-                label="Campus"
-                persistent-hint
-                return-object
-                single-line
-              ></v-select>
-          </v-col>
-           <v-col
-
-              col="12"
-              md="5"
-            >
-            <v-select
-                  col="12"
-                  md="5"
-                  v-model="SelectedCategory"
-                  :hint="`${SelectedCategory.Value ? SelectedCategory.Value : 'Select a Category'}`"
-                  :items="Categories"
-                  item-text="Value"
-                  item-value="Name"
-                  label="Category"
-                  persistent-hint
-                  return-object
-                  single-line
-                ></v-select>
-            </v-col>
-            <v-col
-            col="2">
-
-              <a @click="clearFilters" class="btn btn-primary">Clear Filters</a>
-            </v-col>
-          </v-row>
-        </v-container>
-        <EventCard>
-
-        </EventCard>
+        <div class="container">
+          <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:space-between;">
+             <div class="col-md-3">
+             <div style="display:flex; flex-direction:row; flex-wrap:no-wrap; justify-content:space-around; align-items:baseline;">
+               <i class="fa fa-chevron-left"
+                @click='prev'
+               ></i>
+                <h4>{{getDate }} </h4>
+                <i class="fa fa-chevron-right"
+                @click="next"></i>
+              </div>
+          </div>
+            <div class="col-md-3">
+              <multiselect v-model="SelectedCampus" :options="Campuses" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Filter By Campus" label="CampusName" track-by="CampusName" :preselect-first="false">
+                <template slot="selection" slot-scope="{ values, search, isOpen }"><span class="multiselect__single" v-if="values.length &amp;&amp; !isOpen">{{ values.length }} options selected</span></template>
+              </multiselect>
+            </div>
+          <div class="col-md-3">
+            <multiselect 
+              v-model="SelectedCategory" 
+              :options="Categories" 
+              :multiple="true" 
+              :close-on-select="false" 
+              :clear-on-select="false" 
+              :preserve-search="true"
+              placeholder="Filter By Category" 
+              label="Value" 
+              track-by="Id" 
+              :preselect-first="false"
+              :allowEmpty="true"
+              >
+                <template slot="selection" slot-scope="{ values, search, isOpen }"><span class="multiselect__single" v-if="values.length &amp;&amp; !isOpen">{{ values.length }} options selected</span>
+                </template>
+            </multiselect>
+            </div>
+         <div class="col-md-2">
+           <h4>View: 
+             <i class="fa fa-calendar" v-if="SelectedView == 'card'" style="padding:20px" @click="SelectedView = 'calendar'"></i>
+             <i class="fa fa-th" v-if="SelectedView == 'calendar'" style="padding:20px" @click="SelectedView = 'card'"></i>
+          </h4>
+           
+          </div>
+          <div class="col-md-1">
+            <div class="btn btn-primary" @click="clearFilters">Clear Filters</div>
+            </div>
+          </div>
+        <CalendarView v-if="SelectedView == 'calendar'" :Events="filteredEvents" :focus="focus" @setToday="setFocus" @ShowModal="showModal" @CalendarType="SetType" />
+        <EventList 
+          v-else
+          :Events="filteredEvents"
+          @ShowModal="showModal"/>
+         <transition name="fade">
+          <EventModal v-if="focusEvent" @CloseModal="closeModal" :Event="focusEvent"/>
+        </transition>
+        </div>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import EventCard from './components/EventCard'
+import Multiselect from 'vue-multiselect'
+import EventList from './components/EventList'
+import CalendarView from './components/CalendarView'
+import EventModal from './components/EventModal'
 export default {
   name: 'App',
 
   components: {
-    EventCard,
+    Multiselect,
+    EventList,
+    CalendarView,
+    EventModal
   },
 
   data: () => ({
     CurrentPerson: {}, //
-    SelectedCampus: {},
-    SelectedCategory: {},
+    SelectedCampus: null,
+    SelectedCategory: null,
+    SelectedView:'calendar',
+    focus:null,
+    focusEvent: null,
+    calendarType:'month',
     Events: [
       {
         OccurrenceId: 54,
@@ -3515,12 +3532,134 @@ export default {
     // }
   },
   methods: {
-    clearFilters() {
-      this.SelectedCampus = {};
-      this.SelectedCategory = {};
+    SetType(payload) {
+      this.calendarType = payload.type
     },
+    showModal(payload){
+      document.getElementById('app').classList.add("modal-open");
+      this.focusEvent = payload;
+    },
+    closeModal(){
+      document.getElementById('app').classList.remove("modal-open");
+      this.focusEvent = null;
+    },
+    clearFilters() {
+      this.SelectedCampus = null
+      this.SelectedCategory = null;
+    },
+    prev(){
+      switch(this.calendarType) {
+        case 'day':
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            let newDate = currentfocus.setDate(currentfocus.getDate()-1);
+             this.focus = new Date(newDate);
+          } else {
+            let currentfocus = new Date()
+            this.focus =  new Date(currentfocus.setDate(currentfocus.getDate()-1));
+          }    // code block
+          break;
+        case 'week':
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            let newDate = currentfocus.setDate(currentfocus.getDate()-7);
+             this.focus = new Date(newDate);;
+          } else {
+            let currentfocus = new Date()
+            let newDate = currentfocus.setDate(currentfocus.getDate()-7);
+             this.focus = new Date(newDate);;
+          }    // code block
+          break;
+        default:
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            this.focus = new Date(currentfocus.getFullYear(), currentfocus.getMonth() - 1, 1);
+          } else {
+            let today = new Date()
+            this.focus = new Date( today.getFullYear(), today.getMonth() - 1, 1)
+          }    // code block
+      }
+    },
+    next(){
+      switch(this.calendarType) {
+        case 'day':
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            let newDate = currentfocus.setDate(currentfocus.getDate()+1);
+             this.focus = new Date(newDate);
+          } else {
+            let currentfocus = new Date()
+            this.focus =  new Date(currentfocus.setDate(currentfocus.getDate()+1));
+          }    // code block
+          break;
+        case 'week':
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            let newDate = currentfocus.setDate(currentfocus.getDate()+7);
+             this.focus = new Date(newDate);;
+          } else {
+            let currentfocus = new Date()
+            let newDate = currentfocus.setDate(currentfocus.getDate()+7);
+             this.focus = new Date(newDate);;
+          }    // code block
+          break;
+        default:
+          if(this.focus){
+            let currentfocus = new Date(this.focus)
+            this.focus = new Date(currentfocus.getFullYear(), currentfocus.getMonth() + 1, 1);
+          } else {
+            let today = new Date()
+            this.focus = new Date( today.getFullYear(), today.getMonth() + 1, 1)
+          }    // code block
+      }
+    },
+    setFocus(){
+      this.focus = null;
+    }
+  
   },
   computed: {
+      getDate(){
+      if(this.focus && this.focus != '' ){
+        return `${new Date(this.focus).toLocaleString('en-us', { month: 'long' }) } ${new Date(this.focus).getFullYear()}`
+      } else {
+        return `${new Date().toLocaleString('en-us', { month: 'long' }) } ${new Date().getFullYear()}`
+      }
+    },
+    filteredEvents(){
+      
+      let selectedCategories = this.SelectedCategory
+      let filteredEvents = this.Events
+      let startDate = new Date();
+      var endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+      
+      if(this.SelectedCampus && this.SelectedCampus.length > 0 ){
+        let selectedCampuses = this.SelectedCampus.map((e) => { return e.CampusId })
+        filteredEvents = filteredEvents.filter( tag => selectedCampuses.includes(tag.CampusId) == true)
+
+      }
+
+      if(this.SelectedCategory && this.SelectedCategory.length > 0 ){
+        let selectedCategories = this.SelectedCategory.map((e) => { return e.Id })
+        
+        filteredEvents = filteredEvents.filter( e => {
+          let itemCategoriesList = e.Categories.map(category => { return category.Id })
+          return itemCategoriesList.some(r=> selectedCategories.indexOf(r) >= 0)
+        })
+      }
+      if(this.focus ) {
+        startDate = this.focus
+        endDate = new Date (startDate.getFullYear(), startDate.getMonth() + 1, 1)
+      }
+      
+      filteredEvents = filteredEvents.filter ( e => {
+          let nextStartDate = new Date(e.EventNextStartDate.StartDateTime).getTime()
+          
+          return nextStartDate >= startDate.getTime() && nextStartDate < endDate.getTime()
+          
+          })
+      return filteredEvents.sort((a,b) => ((a.EventNextStartDate.StartDateTime > b.EventNextStartDate.StartDateTime ) ? 1 : -1));
+    },
     Campuses() {
       const result = [];
       const map = new Map();
@@ -3570,3 +3709,11 @@ export default {
   },
 };
 </script>
+<style>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+</style>
