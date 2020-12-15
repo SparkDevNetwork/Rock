@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\Crm\AttributeValues.cs" />
+    <Compile Include="Blocks\Groups\GroupMemberList.cs" />
     <Compile Include="Blocks\PluginObsidianBlockType.cs" />
     <Compile Include="Blocks\ObsidianBlockType.cs" />
     <Compile Include="Blocks\Security\Login.cs" />
