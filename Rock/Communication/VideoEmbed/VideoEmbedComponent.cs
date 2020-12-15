@@ -25,6 +25,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Communication.VideoEmbed
 {
+    /// <summary>
+    /// Used for embeded video links in communications.
+    /// </summary>
+    /// <seealso cref="Rock.Extension.Component" />
     public abstract class VideoEmbedComponent : Component
     {
         private const int _scaleWidth = 1280; // 640 x2 for retina
