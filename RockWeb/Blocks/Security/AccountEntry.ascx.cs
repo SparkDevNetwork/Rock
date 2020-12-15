@@ -313,14 +313,14 @@ namespace RockWeb.Blocks.Security
 
             rPhoneNumbers.ItemDataBound += rPhoneNumbers_ItemDataBound;
 
-            var regexString = ValidateUsernameAsEmail ? @"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+            var regexString = ValidateUsernameAsEmail ? @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
             var usernameValidCaption = ValidateUsernameAsEmail ? "" : Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" );
 
             var script = string.Format( @" Sys.Application.add_load(function () {{
 var availabilityMessageRow = $('#availabilityMessageRow');
 var usernameUnavailable = $('#availabilityMessage');
 var usernameTextbox = $('#{0}');
-var usernameRegExp = new RegExp('{1}');
+var usernameRegExp = /{1}/;
 var usernameValidCaption = '{2}';
 var usernameFieldLabel = '{3}';
         
