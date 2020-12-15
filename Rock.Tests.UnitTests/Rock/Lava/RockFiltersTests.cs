@@ -16,6 +16,7 @@ using Newtonsoft.Json.Converters;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Http.TestLibrary;
 
 namespace Rock.Tests.Rock.Lava
 {

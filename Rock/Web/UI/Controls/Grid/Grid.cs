@@ -2881,37 +2881,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         #region Methods
 
         /// <summary>
-        /// Adds the column before the row controls (profile link, delete button).
-        /// </summary>
-        /// <param name="field">The field.</param>
-        public void AddColumnBeforeControls( DataControlField field )
-        {
-            // Make a list of columns that should be at the end of the row
-            // These are the cols that should appear before the col being added
-            var endFields = new DataControlField[] {
-                Columns.OfType<DeleteField>().FirstOrDefault(),
-                Columns.OfType<PersonProfileLinkField>().FirstOrDefault()
-            }.Where( f => f != null );
-
-            // Default to inserting at the end of the row
-            var indexToInsert = Columns.Count;
-
-            // Find the minimum index of any of the end fields
-            foreach ( var endField in endFields )
-            {
-                var endFieldIndex = GetColumnIndex( endField );
-
-                if ( endFieldIndex < indexToInsert )
-                {
-                    indexToInsert = endFieldIndex;
-                }
-            }
-
-            // Insert at the last position before any buttons
-            Columns.Insert( indexToInsert, field );
-        }
-
-        /// <summary>
         /// Gets the route from event arguments.
         /// </summary>
         /// <param name="eventArgs">The <see cref="EventArgs"/> instance containing the event data.</param>
