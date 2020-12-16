@@ -78,6 +78,8 @@ namespace RockWeb.Blocks.Farm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.min.js", true );
+
             InitializeSettingsNotification();
         }
 
@@ -258,9 +260,6 @@ namespace RockWeb.Blocks.Farm
             var maxPolling = RockWebFarm.GetUpperPollingLimitSeconds();
 
             var maskedKey = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY ).Masked();
-            var keyIcon = RockWebFarm.HasValidKey() ?
-                "<i class='text-success fa fa-check-circle'></i>" :
-                "<i class='text-danger fa fa-times-circle'></i>";
 
             if ( maskedKey.IsNullOrWhiteSpace() )
             {
@@ -269,7 +268,7 @@ namespace RockWeb.Blocks.Farm
 
             // Build the description list with the values
             var descriptionList = new DescriptionList();
-            descriptionList.Add( "Key", string.Format( "{0} {1}", maskedKey, keyIcon ) );
+            descriptionList.Add( "Key", string.Format( "{0}", maskedKey ) );
             descriptionList.Add( "Min Polling Limit", string.Format( "{0} seconds", minPolling ) );
             descriptionList.Add( "Max Polling Limit", string.Format( "{0} seconds", maxPolling ) );
 

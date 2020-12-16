@@ -1,5 +1,67 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WebFarmSettings.ascx.cs" Inherits="RockWeb.Blocks.Farm.WebFarmSettings" %>
 
+<style>
+    .card .indicator {
+        height: 4px;
+    }
+
+    .server-meta {
+        font-size: 20px;
+    }
+
+    .bg-disabled {
+        background: #F5F5F5;
+        color: #AEAEAE;
+    }
+
+    .bg-disabled .indicator {
+        background: #A3A3A3;
+    }
+</style>
+<script>
+var options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    legend: {
+        display: false
+    },
+    scales: {
+        yAxes: [{
+            display: false
+        }],
+        xAxes: [{
+            display: false
+        }]
+    },
+    hover: {
+        mode: 'nearest',
+        intersect: false
+    },
+    tooltips: {
+        hasIndicator: true,
+        intersect: false,
+        callbacks: {
+            label: function (tooltipItem, data) {
+                var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+                if (label) {
+                    label = 'CPU: ' + label + '%';
+                }
+
+                return label;
+            }
+        }
+    }
+};
+
+$(document).ready(function () {
+    $('.js-chart').each(function () {
+        var el = $(this);
+        var data = el.attr('data-chart') ? JSON.parse(el.attr('data-chart')) : {};
+        var chart = new Chart(el, { type: 'line', data: data, options: options });
+    });
+});
+</script>
+
 <asp:UpdatePanel ID="upUpdatePanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
@@ -23,23 +85,99 @@
                         </div>
                         <div class="col-md-8">
                             <h5>Nodes</h5>
-                            <div class="row">
+
+                            <!-- Temporary Examples -->
+                            <div class="row d-flex flex-wrap">
+                                <div class="col-sm-12 col-md-6 col-lg-4">
+                                    <div class="card border-top-0 mb-4">
+                                        <div class="indicator bg-success"></div>
+                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
+                                                <i class="fa fa-server"></i>
+                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-1</span>
+                                            </span>
+                                            <span class="ml-2 flex-shrink-0" title="Leader"><i class="fa fa-user-tie"></i></span>
+                                        </div>
+                                        <div class="card-body p-0" style="height:88px;">
+                                            <canvas class="js-chart"
+                                                    data-chart='{
+                                                        "labels": ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
+                                                        "datasets": [{
+                                                        "data": [21,20,24,20,18,17,15,17,30,30,35,25,18,30,31,35,35,90,90,90,85,100,120,120,120,100,90,75,75,75,90],
+                                                        "backgroundColor": "rgba(128, 205, 241, 0.25)",
+                                                        "borderColor": "#009CE3",
+                                                        "borderWidth": 2,
+                                                        "pointRadius": 0,
+                                                        "pointHoverRadius": 0
+                                                        }]
+                                                    }'>
+                                            </canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 col-md-6 col-lg-4">
+                                    <div class="card border-top-0 mb-4">
+                                        <div class="indicator bg-danger"></div>
+                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
+                                                <i class="fa fa-exclamation-triangle"></i>
+                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-5</span>
+                                            </span>
+                                        </div>
+                                        <div class="card-body p-0" style="height:88px;">
+                                            <span class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">Last Seen 1hr Ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-6 col-lg-4">
+                                    <div class="card border-top-0 mb-4 bg-disabled">
+                                        <div class="indicator"></div>
+                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                            <span class="server-meta server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
+                                                <i class="fa fa-server"></i>
+                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-4</span>
+                                            </span>
+                                        </div>
+                                        <div class="card-body p-0" style="height:88px;">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- End Examples -->
+
                                 <asp:Repeater ID="rNodes" runat="server">
                                     <ItemTemplate>
-                                        <div class="col-sm-6 col-md-4 col-lg-3">
-                                            <h6><%# Eval("NodeName") %></h6>
-                                            <dl>
-                                                <dt>Active</dt>
-                                                <dd><%# Eval("IsActive") %></dd>
-                                                <dt>Leader</dt>
-                                                <dd><%# Eval("IsLeader") %></dd>
-                                                <dt>Job Runner</dt>
-                                                <dd><%# Eval("IsJobRunner") %></dd>
-                                                <dt>Last Seen</dt>
-                                                <dd><%# Eval("LastSeen") %></dd>
-                                                <dt>Polling Interval Seconds</dt>
-                                                <dd><%# Eval("PollingIntervalSeconds") %></dd>
-                                            </dl>
+                                        <div class="col-sm-12 col-md-6 col-lg-4">
+                                            <div class="card border-top-0 mb-4">
+                                                <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" :"" %>"></div>
+                                                <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                                    <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
+                                                        <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" :"exclamation-triangle" %>"></i>
+                                                        <span class="ml-1 font-weight-bold text-truncate"><%# Eval("NodeName") %></span>
+                                                    </span>
+                                                    <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
+                                                    <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                    <!-- <%# Eval("LastSeen") %> -->
+                                                </div>
+                                                <div class="card-body p-0" style="height:88px;">
+
+                                                    <canvas class="js-chart"
+                                                            data-chart='{
+                                                                "labels": ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
+                                                                "datasets": [{
+                                                                "data": [21,20,24,20,18,17,15,17,30,30,35,25,18,30,31,35,35,90,90,90,85,100,120,120,120,100,90,75,75,75,90],
+                                                                "backgroundColor": "rgba(128, 205, 241, 0.25)",
+                                                                "borderColor": "#009CE3",
+                                                                "borderWidth": 2,
+                                                                "pointRadius": 0,
+                                                                "pointHoverRadius": 0
+                                                                }]
+                                                            }'>
+                                                    </canvas>
+
+                                                </div>
+                                            </div>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -54,7 +192,7 @@
 
                 <div id="pnlEditDetails" runat="server">
                     <div class="alert alert-info">
-                        In order to respect any new setting changes made here, please restart Rock on each node after saving. 
+                        In order to respect any new setting changes made here, please restart Rock on each node after saving.
                     </div>
 
                     <div class="row">
