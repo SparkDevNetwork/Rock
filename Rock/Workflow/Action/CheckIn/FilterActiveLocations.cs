@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Active Locations" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if locations should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove", "Select 'Yes' if locations should be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterActiveLocations : CheckInActionComponent
     {
         /// <summary>
