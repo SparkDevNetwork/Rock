@@ -143,8 +143,7 @@ namespace Rock.Jobs
                                 {
                                     components.Add( suggestionType.Id, suggestionComponent );
 
-                                    var suggestionTypeComponent = new SuggestionTypeComponent();
-                                    suggestionTypeComponent.FollowingSuggestionType = suggestionType;
+                                    var suggestionTypeComponent = new SuggestionTypeComponent( suggestionType );
 
                                     // Get the entitytype for this suggestion type
                                     var suggestionEntityType = EntityTypeCache.Get( suggestionComponent.FollowedType );
@@ -347,7 +346,8 @@ namespace Rock.Jobs
                             // If not found add it if needed
                             if ( suggestion == null )
                             {
-                                var addSuggestion = ShouldAddMissingEntityToFollowingSuggestion( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId );
+                                bool addSuggestion;
+                                ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
 
                                 if ( addSuggestion )
                                 {
@@ -367,7 +367,7 @@ namespace Rock.Jobs
                             }
                             else
                             {
-                                ShouldAddMissingEntityToFollowingSuggestion( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId );
+                                ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId );
 
                                 // If found, and it has not been ignored, and it's time to promote again, update the promote date
                                 if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
@@ -394,9 +394,27 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Checks to see if the entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias then it will return true.
+        /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias no action is taken.
         /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.
-        /// If there is another PersonAlias being followed then the Following and Following Suggestion are updated with this EntityId (PersonAliasId)
+        /// If there is another PersonAlias being followed then the Following and FollowingSuggestion are updated with this EntityId (PersonAliasId)
+        /// which is the PrimaryPersonAliasId.
+        /// </summary>
+        /// <param name="followerPersonId">The follower person identifier.</param>
+        /// <param name="suggestionTypeComponent">The suggestion type component.</param>
+        /// <param name="entityIdToBeSavedAsSuggestions">The entity identifier to be saved as suggestions.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="suggestionContext">The suggestion context.</param>
+        /// <param name="followedEntityId">The followed entity identifier.</param>
+        private void ProcessFollowingSuggestionAndPersonAliasEntity( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, List<int> entityIdToBeSavedAsSuggestions, int entityTypeId, RockContext suggestionContext, int followedEntityId )
+        {
+            bool addSuggestion;
+            ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIdToBeSavedAsSuggestions, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
+        }
+        
+        /// <summary>
+        /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias then addSuggestion will be true.
+        /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.
+        /// If there is another PersonAlias being followed then the Following and FollowingSuggestion are updated with this EntityId (PersonAliasId)
         /// which is the PrimaryPersonAliasId.
         /// </summary>
         /// <param name="followerPersonId">The follower person identifier.</param>
@@ -405,18 +423,18 @@ namespace Rock.Jobs
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="suggestionContext">The suggestion context.</param>
         /// <param name="followedEntityId">The followed entity identifier.</param>
-        /// <returns></returns>
-        private bool ShouldAddMissingEntityToFollowingSuggestion( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, List<int> entityIdToBeSavedAsSuggestions, int entityTypeId, RockContext suggestionContext, int followedEntityId )
+        /// <param name="addSuggestion">if set to <c>true</c> then the suggestion should be inserted.</param>
+        /// <returns>
+        /// True if the PersonAlias following suggestion should be inserted or if the EntityType is not a PersonAlias.
+        /// </returns>
+        private void ProcessFollowingSuggestionAndPersonAliasEntity( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, List<int> entityIdToBeSavedAsSuggestions, int entityTypeId, RockContext suggestionContext, int followedEntityId, out bool addSuggestion )
         {
-            var addSuggestion = true;
+            addSuggestion = true;
 
-            // if this is a personAlias then check if the associated person is followed under a different personAlias
-            var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ) ?? 0;
-
-            // If the Entity is not a PersonAlias no other checks are needed just return true
-            if ( entityTypeId != personAliasEntityTypeId )
+            // If the Entity is not a PersonAlias no other checks are needed just return with addSuggestion = true
+            if ( !IsEntityTypePersonAlias( entityTypeId ) )
             {
-                return addSuggestion;
+                return;
             }
 
             // since this is a person alias see if a different alias is being used to follow
@@ -429,8 +447,8 @@ namespace Rock.Jobs
 
             if ( !followedPersonAliases.Any() )
             {
-                // There are no alternate person alias' so just return true
-                return addSuggestion;
+                // There are no alternate person alias' there is nothing else to check so just return with addSuggestion = true
+                return;
             }
 
             int existingFollowingPersonAliasId = suggestionTypeComponent.ExistingFollowings
@@ -441,25 +459,20 @@ namespace Rock.Jobs
             // Update the existing following record to use the primary PersonAlias ID and remove it from the list.
             if ( existingFollowingPersonAliasId != 0 )
             {
+                var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ) ?? 0;
                 addSuggestion = false;
                 entityIdToBeSavedAsSuggestions.Remove( followedEntityId );
 
                 using ( var followingContext = new RockContext() )
                 {
                     var following = new FollowingService( followingContext )
-                        .Queryable()
-                        .Where( f => f.EntityTypeId == personAliasEntityTypeId
-                            && f.PersonAlias.PersonId == followerPersonId
-                            && f.EntityId == existingFollowingPersonAliasId )
+                        .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )
                         .FirstOrDefault();
 
                     following.EntityId = followedEntityId;
 
                     var suggested = new FollowingSuggestedService( followingContext )
-                        .Queryable()
-                        .Where( f => f.EntityTypeId == personAliasEntityTypeId
-                            && f.PersonAlias.PersonId == followerPersonId
-                            && f.EntityId == existingFollowingPersonAliasId )
+                        .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )
                         .FirstOrDefault();
 
                     if ( suggested != null )
@@ -485,14 +498,23 @@ namespace Rock.Jobs
                     followingContext.SaveChanges();
                 }
             }
+        }
 
-            return addSuggestion;
+        private bool IsEntityTypePersonAlias( int entityTypeId )
+        {
+            var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ) ?? 0;
+            return entityTypeId == personAliasEntityTypeId;
         }
 
         private class SuggestionTypeComponent
         {
             public SuggestionTypeComponent()
             {
+            }
+
+            public SuggestionTypeComponent( FollowingSuggestionType followingSuggestionType )
+            {
+                FollowingSuggestionType = followingSuggestionType;
             }
 
             public List<PersonEntitySuggestion> PersonEntitySuggestions { get; set; }
