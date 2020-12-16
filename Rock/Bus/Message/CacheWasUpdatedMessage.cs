@@ -33,6 +33,14 @@ namespace Rock.Bus.Message
         string Key { get; set; }
 
         /// <summary>
+        /// Gets or sets the region.
+        /// </summary>
+        /// <value>
+        /// The region.
+        /// </value>
+        string Region { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the cache type.
         /// </summary>
         /// <value>
@@ -55,6 +63,14 @@ namespace Rock.Bus.Message
         public string Key { get; set; }
 
         /// <summary>
+        /// Gets or sets the region.
+        /// </summary>
+        /// <value>
+        /// The region.
+        /// </value>
+        public string Region { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the cache type.
         /// </summary>
         /// <value>
@@ -73,8 +89,10 @@ namespace Rock.Bus.Message
         /// <summary>
         /// Publishes the specified entity.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="key">The key.</param>
-        public static void Publish<T>( string key = null )
+        /// <param name="region">The region.</param>
+        public static void Publish<T>( string key = null, string region = null )
         {
             if ( !RockMessageBus.IsRockStarted )
             {
@@ -85,6 +103,7 @@ namespace Rock.Bus.Message
             var message = new CacheWasUpdatedMessage
             {
                 Key = key,
+                Region = region,
                 CacheTypeName = typeof( T ).AssemblyQualifiedName
             };
 
