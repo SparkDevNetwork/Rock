@@ -30,7 +30,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a a configurable and functional component or module that extends the base functionality of the Rock system/framework. A
+    /// Represents a configurable and functional component or module that extends the base functionality of the Rock system/framework. A
     /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Layout">Layouts</see>.
     /// </summary>
     [RockDomain( "CMS" )]
