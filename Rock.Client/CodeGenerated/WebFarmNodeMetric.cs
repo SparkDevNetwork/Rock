@@ -27,21 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for WebFarmNode that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for WebFarmNodeMetric that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WebFarmNodeEntity
+    public partial class WebFarmNodeMetricEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public DateTime AddedDateTime { get; set; }
-
-        /// <summary />
-        public int? ConfiguredLeadershipPollingIntervalSeconds { get; set; }
-
-        /// <summary />
-        public decimal CurrentLeadershipPollingIntervalSeconds { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,22 +41,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
+        public Rock.Client.Enums.TypeOfMetric MetricType { get; set; }
 
         /// <summary />
-        public bool IsCurrentJobRunner { get; set; }
+        public decimal MetricValue { get; set; }
 
         /// <summary />
-        public bool IsLeader { get; set; }
-
-        /// <summary />
-        public bool JobsAllowed { get; set; }
-
-        /// <summary />
-        public DateTime LastRestartDateTime { get; set; }
-
-        /// <summary />
-        public DateTime LastSeenDateTime { get; set; }
+        public DateTime MetricValueDateTime { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -73,10 +55,10 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string NodeName { get; set; }
+        public string Note { get; set; }
 
         /// <summary />
-        public DateTime? StoppedDateTime { get; set; }
+        public int WebFarmNodeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -105,26 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source WebFarmNode object
+        /// Copies the base properties from a source WebFarmNodeMetric object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( WebFarmNode source )
+        public void CopyPropertiesFrom( WebFarmNodeMetric source )
         {
             this.Id = source.Id;
-            this.AddedDateTime = source.AddedDateTime;
-            this.ConfiguredLeadershipPollingIntervalSeconds = source.ConfiguredLeadershipPollingIntervalSeconds;
-            this.CurrentLeadershipPollingIntervalSeconds = source.CurrentLeadershipPollingIntervalSeconds;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsActive = source.IsActive;
-            this.IsCurrentJobRunner = source.IsCurrentJobRunner;
-            this.IsLeader = source.IsLeader;
-            this.JobsAllowed = source.JobsAllowed;
-            this.LastRestartDateTime = source.LastRestartDateTime;
-            this.LastSeenDateTime = source.LastSeenDateTime;
+            this.MetricType = source.MetricType;
+            this.MetricValue = source.MetricValue;
+            this.MetricValueDateTime = source.MetricValueDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.NodeName = source.NodeName;
-            this.StoppedDateTime = source.StoppedDateTime;
+            this.Note = source.Note;
+            this.WebFarmNodeId = source.WebFarmNodeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -136,18 +112,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for WebFarmNode that includes all the fields that are available for GETs. Use this for GETs (use WebFarmNodeEntity for POST/PUTs)
+    /// Client model for WebFarmNodeMetric that includes all the fields that are available for GETs. Use this for GETs (use WebFarmNodeMetricEntity for POST/PUTs)
     /// </summary>
-    public partial class WebFarmNode : WebFarmNodeEntity
+    public partial class WebFarmNodeMetric : WebFarmNodeMetricEntity
     {
         /// <summary />
-        public ICollection<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
+        public int MetricValueDateKey { get; set; }
 
         /// <summary />
-        public ICollection<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
-
-        /// <summary />
-        public ICollection<WebFarmNodeLog> WrittenWebFarmNodeLogs { get; set; }
+        public WebFarmNode WebFarmNode { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
