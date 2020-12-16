@@ -15,7 +15,6 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -43,9 +42,18 @@ namespace RockWeb.Blocks.Farm
         {
             public const string DateRange = "DateRange";
             public const string NodeName = "NodeName";
+            public const string WriterNodeName = "WriterNodeName";
             public const string Severity = "Severity";
             public const string EventType = "EventType";
             public const string Text = "Text";
+        }
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string WebFarmNodeId = "WebFarmNodeId";
         }
 
         #endregion Keys
@@ -144,6 +152,7 @@ namespace RockWeb.Blocks.Farm
         {
             rFilter.SaveUserPreference( FilterKey.DateRange, "Date Range", sdrpDateRange.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.NodeName, "Node Name", tbNodeName.Text );
+            rFilter.SaveUserPreference( FilterKey.WriterNodeName, "Writer Node Name", tbWriterNodeName.Text );
             rFilter.SaveUserPreference( FilterKey.Severity, "Severity", ddlSeverity.SelectedValue );
             rFilter.SaveUserPreference( FilterKey.EventType, "Event Type", ddlEventType.SelectedValue );
             rFilter.SaveUserPreference( FilterKey.Text, "Text", tbText.Text );
@@ -182,6 +191,7 @@ namespace RockWeb.Blocks.Farm
                 case FilterKey.EventType:
                 case FilterKey.Text:
                 case FilterKey.NodeName:
+                case FilterKey.WriterNodeName:
                     break;
                 default:
                     e.Value = string.Empty;
@@ -205,6 +215,7 @@ namespace RockWeb.Blocks.Farm
 
             sdrpDateRange.DelimitedValues = rFilter.GetUserPreference( FilterKey.DateRange );
             tbNodeName.Text = rFilter.GetUserPreference( FilterKey.NodeName );
+            tbWriterNodeName.Text = rFilter.GetUserPreference( FilterKey.WriterNodeName );
             ddlSeverity.SelectedValue = rFilter.GetUserPreference( FilterKey.Severity );
             ddlEventType.SelectedValue = rFilter.GetUserPreference( FilterKey.EventType );
             tbText.Text = rFilter.GetUserPreference( FilterKey.Text );
@@ -220,6 +231,14 @@ namespace RockWeb.Blocks.Farm
                 gLog.DataKeyNames = new string[] { "Id" };
                 var service = new WebFarmNodeLogService( rockContext );
                 var query = service.Queryable().AsNoTracking();
+
+                // Filter by the page parameter
+                var nodeId = PageParameter( PageParameterKey.WebFarmNodeId ).AsIntegerOrNull();
+
+                if ( nodeId.HasValue )
+                {
+                    query = query.Where( l => l.WebFarmNodeId == nodeId.Value );
+                }
 
                 // Filter the results by the date range
                 var startDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
@@ -258,6 +277,14 @@ namespace RockWeb.Blocks.Farm
                     query = query.Where( l => l.WebFarmNode.NodeName.Contains( nodeName ) );
                 }
 
+                // Filter the results by the writer node
+                var writerNodeName = tbWriterNodeName.Text;
+
+                if ( !writerNodeName.IsNullOrWhiteSpace() )
+                {
+                    query = query.Where( l => l.WriterWebFarmNode.NodeName.Contains( writerNodeName ) );
+                }
+
                 // Filter the results by the text
                 var text = tbText.Text;
 
@@ -274,6 +301,7 @@ namespace RockWeb.Blocks.Farm
                     Severity = wfnl.Severity.ToString(),
                     Text = wfnl.Message,
                     NodeName = wfnl.WebFarmNode.NodeName,
+                    WriterNodeName = wfnl.WriterWebFarmNode.NodeName,
                     DateTime = wfnl.EventDateTime
                 } );
 
@@ -328,6 +356,14 @@ namespace RockWeb.Blocks.Farm
             /// The name of the node.
             /// </value>
             public string NodeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the writer node.
+            /// </summary>
+            /// <value>
+            /// The name of the writer node.
+            /// </value>
+            public string WriterNodeName { get; set; }
 
             /// <summary>
             /// Gets or sets the type of the event.

@@ -94,7 +94,7 @@ $(document).ready(function () {
                                         <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
                                             <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
                                                 <i class="fa fa-server"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-1</span>
+                                                <span class="ml-1 font-weight-bold text-truncate">Example 1</span>
                                             </span>
                                             <span class="ml-2 flex-shrink-0" title="Leader"><i class="fa fa-user-tie"></i></span>
                                         </div>
@@ -122,7 +122,7 @@ $(document).ready(function () {
                                         <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
                                             <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
                                                 <i class="fa fa-exclamation-triangle"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-5</span>
+                                                <span class="ml-1 font-weight-bold text-truncate">Example 2</span>
                                             </span>
                                         </div>
                                         <div class="card-body p-0" style="height:88px;">
@@ -136,7 +136,7 @@ $(document).ready(function () {
                                         <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
                                             <span class="server-meta server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
                                                 <i class="fa fa-server"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">rock-prod-4</span>
+                                                <span class="ml-1 font-weight-bold text-truncate">Example 3</span>
                                             </span>
                                         </div>
                                         <div class="card-body p-0" style="height:88px;">
@@ -146,7 +146,7 @@ $(document).ready(function () {
                                 </div>
                                 <!-- End Examples -->
 
-                                <asp:Repeater ID="rNodes" runat="server">
+                                <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand">
                                     <ItemTemplate>
                                         <div class="col-sm-12 col-md-6 col-lg-4">
                                             <div class="card border-top-0 mb-4">
@@ -154,7 +154,9 @@ $(document).ready(function () {
                                                 <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
                                                     <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
                                                         <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" :"exclamation-triangle" %>"></i>
-                                                        <span class="ml-1 font-weight-bold text-truncate"><%# Eval("NodeName") %></span>
+                                                        <asp:LinkButton runat="server" class="ml-1 font-weight-bold text-truncate text-black" CommandArgument='<%# Eval("Id") %>'>
+                                                            <%# Eval("NodeName") %>
+                                                        </asp:LinkButton>
                                                     </span>
                                                     <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
                                                     <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
