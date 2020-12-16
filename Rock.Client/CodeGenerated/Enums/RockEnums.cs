@@ -839,6 +839,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum TypeOfMetric
+    {
+        CpuUsagePercent = 0x0,
+        MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum UpdatedAddressType
     {
         None = 0x0,

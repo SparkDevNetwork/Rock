@@ -21,38 +21,23 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using Rock;
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 using Rock.WebFarm;
 
 namespace RockWeb.Blocks.Farm
 {
-    [DisplayName( "Web Farm Settings" )]
+    [DisplayName( "Web Farm Node Detail" )]
     [Category( "Farm" )]
-    [Description( "Displays the details of the Web Farm." )]
+    [Description( "Displays the details of the Web Farm Node." )]
 
-    [LinkedPage(
-        "Farm Node Detail Page",
-        Key = AttributeKey.NodeDetailPage,
-        Description = "The page where the node details can be seen",
-        DefaultValue = Rock.SystemGuid.Page.WEB_FARM_NODE,
-        Order = 1 )]
-
-    public partial class WebFarmSettings : RockBlock, IDetailBlock
+    public partial class NodeDetail : RockBlock, IDetailBlock
     {
         #region Keys
-
-        /// <summary>
-        /// Attribute Keys
-        /// </summary>
-        private static class AttributeKey
-        {
-            public const string NodeDetailPage = "NodeDetailPage";
-        }
 
         /// <summary>
         /// Keys to use for Page Parameters
@@ -86,6 +71,51 @@ namespace RockWeb.Blocks.Farm
 
         #endregion View State
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the rock context.
+        /// </summary>
+        /// <value>
+        /// The rock context.
+        /// </value>
+        private RockContext RockContext
+        {
+            get
+            {
+                if ( _rockContext == null )
+                {
+                    _rockContext = new RockContext();
+                }
+
+                return _rockContext;
+            }
+        }
+        private RockContext _rockContext = null;
+
+        /// <summary>
+        /// Gets the web farm node.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private WebFarmNode WebFarmNode
+        {
+            get
+            {
+                if ( _node == null )
+                {
+                    var nodeId = GetWebFarmNodeId();
+                    var service = new WebFarmNodeService( RockContext );
+                    _node = service.Get( nodeId );
+                }
+
+                return _node;
+            }
+        }
+        private WebFarmNode _node = null;
+
+        #endregion Properties
+
         #region Control Methods
 
         /// <summary>
@@ -95,8 +125,6 @@ namespace RockWeb.Blocks.Farm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.min.js", true );
-
             InitializeSettingsNotification();
         }
 
@@ -127,25 +155,6 @@ namespace RockWeb.Blocks.Farm
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rNodes control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rNodes_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
-        {
-            var nodeId = e.CommandArgument.ToStringSafe().AsIntegerOrNull();
-
-            if ( !nodeId.HasValue )
-            {
-                return;
-            }
-
-            NavigateToLinkedPage( AttributeKey.NodeDetailPage, new Dictionary<string, string> {
-                { PageParameterKey.WebFarmNodeId, nodeId.Value.ToString() }
-            } );
-        }
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -199,16 +208,7 @@ namespace RockWeb.Blocks.Farm
         /// <returns></returns>
         private void SaveRecord()
         {
-            SystemSettings.SetValue( SystemSetting.WEBFARM_IS_ENABLED, cbIsActive.Checked.ToString() );
-            SystemSettings.SetValue( SystemSetting.WEBFARM_KEY, tbWebFarmKey.Text );
-
-            SystemSettings.SetValue(
-                SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_LOWER_LIMIT_SECONDS,
-                ( nbPollingMin.IntegerValue ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalLowerLimitSeconds ).ToString() );
-
-            SystemSettings.SetValue(
-                SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS,
-                ( nbPollingMax.IntegerValue ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds ).ToString() );
+            // Save settings here
 
             IsEditMode = false;
             RenderState();
@@ -228,21 +228,17 @@ namespace RockWeb.Blocks.Farm
         /// </summary>
         public void RenderState()
         {
-            nbEditModeMessage.Text = string.Empty;
+            var node = WebFarmNode;
 
-            var isEnabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.WEBFARM_IS_ENABLED ).AsBoolean();
-            var hasValidKey = Rock.WebFarm.RockWebFarm.HasValidKey();
+            if ( node == null )
+            {
+                nbMessage.Text = string.Format( "The node with id {0} was not found.", GetWebFarmNodeId() );
+                nbMessage.Title = "Error";
+                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                return;
+            }
 
-            if ( isEnabled && hasValidKey )
-            {
-                hlActive.Text = "Active";
-                hlActive.LabelType = Rock.Web.UI.Controls.LabelType.Success;
-            }
-            else
-            {
-                hlActive.Text = "Inactive";
-                hlActive.LabelType = Rock.Web.UI.Controls.LabelType.Danger;
-            }
+            lNodeName.Text = node.NodeName;
 
             if ( IsEditMode )
             {
@@ -268,10 +264,7 @@ namespace RockWeb.Blocks.Farm
             pnlViewDetails.Visible = false;
             HideSecondaryBlocks( true );
 
-            cbIsActive.Checked = SystemSettings.GetValue( SystemSetting.WEBFARM_IS_ENABLED ).AsBoolean();
-            tbWebFarmKey.Text = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY );
-            nbPollingMin.IntegerValue = RockWebFarm.GetLowerPollingLimitSeconds();
-            nbPollingMax.IntegerValue = RockWebFarm.GetUpperPollingLimitSeconds();
+            // Set edit control values
         }
 
         /// <summary>
@@ -291,45 +284,16 @@ namespace RockWeb.Blocks.Farm
             pnlViewDetails.Visible = true;
             HideSecondaryBlocks( false );
 
-            // Load values from system settings
-            var minPolling = RockWebFarm.GetLowerPollingLimitSeconds();
-            var maxPolling = RockWebFarm.GetUpperPollingLimitSeconds();
+            // Bind view controls
+        }
 
-            var maskedKey = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY ).Masked();
-
-            if ( maskedKey.IsNullOrWhiteSpace() )
-            {
-                maskedKey = "None";
-            }
-
-            // Build the description list with the values
-            var descriptionList = new DescriptionList();
-            descriptionList.Add( "Key", string.Format( "{0}", maskedKey ) );
-            descriptionList.Add( "Min Polling Limit", string.Format( "{0} seconds", minPolling ) );
-            descriptionList.Add( "Max Polling Limit", string.Format( "{0} seconds", maxPolling ) );
-
-            // Bind the grid data view models
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new WebFarmNodeService( rockContext );
-                var query = service.Queryable()
-                    .AsNoTracking()
-                    .Select( wfn => new
-                    {
-                        PollingIntervalSeconds = wfn.CurrentLeadershipPollingIntervalSeconds,
-                        IsJobRunner = wfn.IsCurrentJobRunner,
-                        IsActive = wfn.IsActive,
-                        IsLeader = wfn.IsLeader,
-                        NodeName = wfn.NodeName,
-                        LastSeen = wfn.LastSeenDateTime,
-                        Id = wfn.Id
-                    } );
-
-                rNodes.DataSource = query.ToList();
-                rNodes.DataBind();
-            }
-
-            lDescription.Text = descriptionList.Html;
+        /// <summary>
+        /// Gets the web farm node identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetWebFarmNodeId()
+        {
+            return PageParameter( PageParameterKey.WebFarmNodeId ).AsInteger();
         }
 
         #endregion Internal Methods

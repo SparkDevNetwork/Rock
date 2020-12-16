@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using CacheManager.Core;
 using CacheManager.Core.Internal;
+using Rock.Bus.Message;
 
 namespace Rock.Web.Cache
 {
@@ -77,7 +78,17 @@ namespace Rock.Web.Cache
         /// <value>
         /// The cache.
         /// </value>
-        public BaseCacheManager<T> Cache
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Do not access the cache manager directly. Instead use the method available on this class." )]
+        public BaseCacheManager<T> Cache => CacheManager;
+
+        /// <summary>
+        /// Gets the cache.
+        /// </summary>
+        /// <value>
+        /// The cache.
+        /// </value>
+        private BaseCacheManager<T> CacheManager
         {
             get
             {
@@ -209,30 +220,51 @@ namespace Rock.Web.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? CacheManager.GetCacheItem( key, region ) : CacheManager.GetCacheItem( key );
                 if ( cacheItem != null )
                 {
-                    Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
+                    CacheManager.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
                 }
                 else
                 {
                     cacheItem = region.IsNotNullOrWhiteSpace() ?
                         new CacheItem<T>( key, region, updateValue, ExpirationMode.Absolute, expiration ) :
                         new CacheItem<T>( key, updateValue, ExpirationMode.Absolute, expiration );
-                    Cache.Add( cacheItem );
+                    CacheManager.Add( cacheItem );
                 }
             }
 
             if ( region.IsNotNullOrWhiteSpace() )
             {
-                Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, region, updateValue, v => updateValue );
                 UpdateCacheReferences( key, region, updateValue );
             }
             else
             {
-                Cache.AddOrUpdate( key, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, updateValue, v => updateValue );
                 UpdateCacheReferences( key, region, updateValue );
-            }            
+            }
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T Get( string key )
+        {
+            return CacheManager.Get<T>( key );
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and region and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public T Get( string key, string region )
+        {
+            return CacheManager.Get<T>( key, region );
         }
 
         /// <summary>
@@ -240,7 +272,58 @@ namespace Rock.Web.Cache
         /// </summary>
         public void Clear()
         {
-            Cache.Clear();
+            CacheWasUpdatedMessage.Publish<T>();
+        }
+
+        /// <summary>
+        /// Receives the clear message from the message bus.
+        /// </summary>
+        internal void ReceiveClearMessage()
+        {
+            CacheManager.Clear();
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool Remove( string key )
+        {
+            CacheWasUpdatedMessage.Publish<T>( key );
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key and region.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public bool Remove( string key, string region )
+        {
+            CacheWasUpdatedMessage.Publish<T>( key, region );
+            return true;
+        }
+
+        /// <summary>
+        /// Receives the remove message from the bus.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        internal void ReceiveRemoveMessage( string key )
+        {
+            CacheManager.Remove( key );
+        }
+
+        /// <summary>
+        /// Receives the remove message from the bus.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        internal void ReceiveRemoveMessage( string key, string region )
+        {
+            CacheManager.Remove( key, region );
         }
 
         /// <summary>
@@ -262,7 +345,7 @@ namespace Rock.Web.Cache
 
             //var cacheStatistics = new CacheItemStatistics( typeof( T ).Name );
 
-            foreach ( var handle in Cache.CacheHandles )
+            foreach ( var handle in CacheManager.CacheHandles )
             {
                 var handleStatistics = new CacheHandleStatistics( handle.Configuration.HandleType.Name );
                 cacheStatistics.HandleStats.Add( handleStatistics );

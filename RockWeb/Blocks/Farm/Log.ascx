@@ -18,11 +18,12 @@
                         <div class="row">
                             <div class="col-lg-6">
                                 <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" Label="Date" />
-                                <Rock:RockTextBox ID="tbNodeName" runat="server" Label="Name" />
+                                <Rock:RockTextBox ID="tbNodeName" runat="server" Label="Node Name" />
                                 <Rock:RockDropDownList ID="ddlSeverity" runat="server" Label="Severity" />
                             </div>
                             <div class="col-lg-6">
                                 <Rock:RockDropDownList ID="ddlEventType" runat="server" Label="Event Type" />
+                                <Rock:RockTextBox ID="tbWriterNodeName" runat="server" Label="Writer Node Name" />
                                 <Rock:RockTextBox ID="tbText" runat="server" Label="Text" />
                             </div>
                         </div>
@@ -30,7 +31,8 @@
                     <Rock:Grid ID="gLog" runat="server" AllowSorting="true">
                         <Columns>
                             <Rock:RockBoundField DataField="DateTime" HeaderText="Date" SortExpression="DateTime" />
-                            <Rock:RockBoundField DataField="NodeName" HeaderText="Node" SortExpression="NodeName" />
+                            <Rock:RockBoundField DataField="WriterNodeName" HeaderText="Writer Node Name" SortExpression="WriterNodeName" />
+                            <Rock:RockBoundField DataField="NodeName" HeaderText="Node Name" SortExpression="NodeName" />
                             <Rock:RockBoundField DataField="Severity" HeaderText="Severity" SortExpression="Severity" />
                             <Rock:RockBoundField DataField="EventType" HeaderText="Type" SortExpression="EventType" />
                             <Rock:RockBoundField DataField="Text" HeaderText="Text" SortExpression="Text" />

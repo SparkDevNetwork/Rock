@@ -163,6 +163,20 @@ namespace Rock.Model
         private ICollection<WebFarmNodeLog> _webFarmNodeLogs;
 
         /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<WebFarmNodeMetric> WebFarmNodeMetrics
+        {
+            get => _webFarmNodeMetrics ?? ( _webFarmNodeMetrics = new Collection<WebFarmNodeMetric>() );
+            set => _webFarmNodeMetrics = value;
+        }
+        private ICollection<WebFarmNodeMetric> _webFarmNodeMetrics;
+
+        /// <summary>
         /// Gets or sets the written web farm node logs.
         /// </summary>
         /// <value>
