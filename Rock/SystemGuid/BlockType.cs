@@ -29,7 +29,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Plugin Manager guid
         /// </summary>
-        public const string PLUGIN_MANAGER  = "F80268E6-2625-4565-AA2E-790C5E40A119";
+        public const string PLUGIN_MANAGER = "F80268E6-2625-4565-AA2E-790C5E40A119";
 
         /// <summary>
         /// HTML Content Block Type Guid
@@ -209,30 +209,37 @@ namespace Rock.SystemGuid
         /// The oidc authorize
         /// </summary>
         public const string OIDC_AUTHORIZE = "D9E2BE51-6AC2-43D6-BE63-9E5EC571BD95";
+
         /// <summary>
         /// The oidc logout
         /// </summary>
         public const string OIDC_LOGOUT = "32F2171C-4CD2-48A0-AAD0-AE681CB0D2DD";
+
         /// <summary>
         /// The oidc scope list
         /// </summary>
         public const string OIDC_SCOPE_LIST = "0E407FC8-B5B9-488E-81E4-8EA5F7CFCAB3";
+
         /// <summary>
         /// The oidc scope detail
         /// </summary>
         public const string OIDC_SCOPE_DETAIL = "AA4368BD-00FA-4AB9-9591-CFD64BE6C9EA";
+
         /// <summary>
         /// The oidc claims
         /// </summary>
         public const string OIDC_CLAIMS = "142BE80B-5FB2-459D-AE5C-E371C79538F6";
+
         /// <summary>
         /// The oidc client list
         /// </summary>
         public const string OIDC_CLIENT_LIST = "616D1A98-067D-43B8-B7F5-41FB12FB894E";
+
         /// <summary>
         /// The oidc client detail
         /// </summary>
         public const string OIDC_CLIENT_DETAIL = "312EAD0E-4068-4211-8410-2EB45B7D8BAB";
+
         /// <summary>
         /// The notes
         /// </summary>
@@ -242,15 +249,20 @@ namespace Rock.SystemGuid
         /// The group attendance detail
         /// </summary>
         public const string GROUP_ATTENDANCE_DETAIL = "FC6B5DC8-3A90-4D78-8DC2-7F7698A6E73B";
+
         /// <summary>
         /// The group attendance list
         /// </summary>
         public const string GROUP_ATTENDANCE_LIST = "5C547728-38C2-420A-8602-3CDAAC369247";
+
         /// <summary>
         /// The attendance self entry
         /// </summary>
         public const string ATTENDANCE_SELF_ENTRY = "A5ECE422-D473-4B8F-BEE9-5651AFCB2AB3";
 
-
+        /// <summary>
+        /// Workflow Entry
+        /// </summary>
+        public const string WORKFLOW_ENTRY = "A8BD05C8-6F89-4628-845B-059E686F089A";
     }
 }
