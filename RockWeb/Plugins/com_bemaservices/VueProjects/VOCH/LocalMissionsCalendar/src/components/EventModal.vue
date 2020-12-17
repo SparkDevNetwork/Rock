@@ -12,7 +12,7 @@
   <div>
     <v-img
       class="white--text align-end gradient"
-      height="275px"
+      height="350px"
       
       width="100%"
      :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
@@ -40,7 +40,7 @@
         <div v-html="Event.EventDescription"></div>
         <div class="font-weight-bold">Upcoming Dates:</div>
         <ul>
-          <li v-for="date in Event.UpcomingDates" :key="date">{{formatDate(date.StartDateTime) }} at {{ formatTime(date.StartDateTime) }} to {{formatDate(date.EndDateTime) != formatDate(date.StartDateTime) ? `${formatDate(date.EndDateTime)} at` : ''}} {{ formatTime(date.EndDateTime) }}</li>
+          <li v-for="date in Event.UpcomingDates" :key="date.StartDateTime.toString()">{{formatDate(date.StartDateTime) }} at {{ formatTime(date.StartDateTime) }} to {{formatDate(date.EndDateTime) != formatDate(date.StartDateTime) ? `${formatDate(date.EndDateTime)} at` : ''}} {{ formatTime(date.EndDateTime) }}</li>
         </ul>
         <div v-if="Event.RegistrationInformation.length > 0">
             <div class="font-weight-bold">Registration Information:</div>
