@@ -17,7 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
+using System.Web;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
@@ -30,7 +31,7 @@ namespace Rock.Communication
     /// Base class for components communication mediums (i.e. email, sms, twitter, etc) 
     /// </summary>
     [ComponentField( "Rock.Communication.TransportContainer, Rock", "Transport Container", "", false, "", "", 1 )]
-    public abstract class MediumComponent : Component
+    public abstract class MediumComponent : Component, IAsyncMediumComponent
     {
         /// <summary>
         /// Gets the transport.
@@ -55,6 +56,7 @@ namespace Rock.Communication
                         }
                     }
                 }
+
                 return null;
             }
         }
@@ -95,20 +97,17 @@ namespace Rock.Communication
                 int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
-                var mediumAttributes = new Dictionary<string, string>();
-                foreach ( var attr in this.Attributes.Select( a => a.Value ) )
-                {
-                    string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhiteSpace() )
-                    {
-                        mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
-                    }
-                }
+                var mediumAttributes = GetMediumAttributes();
 
                 // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( rockMessage.EnabledLavaCommands == null )
                 {
                     rockMessage.EnabledLavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
+                }
+
+                if ( rockMessage.CurrentPerson == null )
+                {
+                    rockMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
                 }
 
                 // Use the transport to send communication
@@ -127,7 +126,64 @@ namespace Rock.Communication
                 errorMessages = new List<string> { "Inactive Medium." };
             }
         }
-        
+
+        /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <returns></returns>
+        public virtual async Task<SendMessageResult> SendAsync( RockMessage rockMessage )
+        {
+            if ( this.IsActive )
+            {
+                // Get the Medium's Entity Type Id
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
+
+                // Add the Medium's settings as attributes for the Transport to use.
+                var mediumAttributes = GetMediumAttributes();
+
+                // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
+                if ( rockMessage.EnabledLavaCommands == null )
+                {
+                    rockMessage.EnabledLavaCommands = GlobalAttributesCache.Get().GetValue( "DefaultEnabledLavaCommands" );
+                }
+
+                // Use the transport to send communication
+                var transport = Transport;
+                if ( transport != null && transport.IsActive )
+                {
+                    var asyncTransport = transport as IAsyncTransport;
+
+                    if ( asyncTransport == null )
+                    {
+                        var messageResult = new SendMessageResult
+                        {
+                            MessagesSent = transport.Send( rockMessage, mediumEntityTypeId, mediumAttributes, out var errorMessage ) ? rockMessage.GetRecipients().Count : 0
+                        };
+                        return await Task.FromResult( messageResult );
+                    }
+                    else
+                    {
+                        return await asyncTransport.SendAsync( rockMessage, mediumEntityTypeId, mediumAttributes ).ConfigureAwait( false );
+                    }
+                }
+                else
+                {
+                    return new SendMessageResult
+                    {
+                        Errors = new List<string> { "Invalid or Inactive Transport." }
+                    };
+                }
+            }
+            else
+            {
+                return new SendMessageResult
+                {
+                    Errors = new List<string> { "Inactive Medium." }
+                };
+            }
+        }
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
@@ -140,23 +196,61 @@ namespace Rock.Communication
                 int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
 
                 // Add the Medium's settings as attributes for the Transport to use.
-                var mediumAttributes = new Dictionary<string, string>();
-                foreach ( var attr in this.Attributes.Select( a => a.Value ) )
+                var mediumAttributes = GetMediumAttributes();
+
+                // Use the transport to send communication
+                if ( Transport != null && Transport.IsActive )
                 {
-                    string value = this.GetAttributeValue( attr.Key );
-                    if ( value.IsNotNullOrWhiteSpace() )
-                    {
-                        mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
-                    }
+                    Transport.Send( communication, mediumEntityTypeId, mediumAttributes );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sends the asynchronous.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public virtual async Task SendAsync( Model.Communication communication )
+        {
+            if ( this.IsActive )
+            {
+                // Get the Medium's Entity Type Id
+                int mediumEntityTypeId = EntityTypeCache.Get( this.GetType() ).Id;
+
+                // Add the Medium's settings as attributes for the Transport to use.
+                var mediumAttributes = GetMediumAttributes();
 
                 // Use the transport to send communication
                 var transport = Transport;
                 if ( transport != null && transport.IsActive )
                 {
-                    transport.Send( communication, mediumEntityTypeId, mediumAttributes );
+                    var asyncTransport = transport as IAsyncTransport;
+
+                    if ( asyncTransport == null )
+                    {
+                        transport.Send( communication, mediumEntityTypeId, mediumAttributes );
+                    }
+                    else
+                    {
+                        await asyncTransport.SendAsync( communication, mediumEntityTypeId, mediumAttributes ).ConfigureAwait( false );
+                    }
                 }
             }
+        }
+
+        private Dictionary<string, string> GetMediumAttributes()
+        {
+            var mediumAttributes = new Dictionary<string, string>();
+            foreach ( var attr in this.Attributes.Select( a => a.Value ) )
+            {
+                string value = this.GetAttributeValue( attr.Key );
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    mediumAttributes.Add( attr.Key, GetAttributeValue( attr.Key ) );
+                }
+            }
+
+            return mediumAttributes;
         }
     }
 }

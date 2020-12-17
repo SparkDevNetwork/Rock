@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Bus.Statistics;
+using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Bus.Queue
 {
@@ -178,7 +180,7 @@ namespace Rock.Bus.Queue
             var queueTypes = new Dictionary<string, Type>();
             var assemblies = Reflection.GetRockAndPluginAssemblies();
             var types = assemblies
-                .SelectMany( a => a.GetTypes()
+                .SelectMany( a => a.GetTypesSafe()
                 .Where( t => t.IsClass && !t.IsNestedPrivate && !t.IsAbstract ) );
 
             foreach ( var type in types )

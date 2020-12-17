@@ -17,6 +17,7 @@
         AND gm.GroupRoleId = 25
     )
     AND gm2.PersonId != {{ CurrentPerson.Id }}
+    AND gm2.GroupRoleId = 5
 {% endsql %}
 
 {% assign businessesCount = businessIds | Size %}

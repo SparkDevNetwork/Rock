@@ -21,7 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
 using Rock.Data;
+using Rock.Utility.ExtensionMethods;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -81,7 +83,7 @@ namespace Rock
 
             try
             {
-                foreach ( Type type in assembly.GetTypes() )
+                foreach ( Type type in assembly.GetTypesSafe() )
                 {
                     if ( !type.IsAbstract )
                     {
@@ -112,9 +114,9 @@ namespace Rock
                     }
                 }
             }
-            catch ( ReflectionTypeLoadException ex )
+            catch ( ReflectionTypeLoadException )
             {
-                string dd = ex.Message;
+                // Just continue on
             }
 
             return types;

@@ -96,7 +96,28 @@
                         // setup digits buttons
                         $('.js-pnlaccountentry .tenkey a.digit').on('click', function () {
                             $amount = $(".input-group.active .form-control");
-                            $amount.val($amount.val() + $(this).html());
+                            if ($(this).text() == '.') {
+                                var allowDecimal = new RegExp('^[0-9]*$');
+                                if (allowDecimal.test($amount.val())) {
+                                    $amount.attr('type','text').val($amount.val() + $(this).text());
+                                    var digits = /[0-9\/]+/;
+                                    $amount.on('keypress.digits', function (e) {
+                                        if (!digits.test(e.key)) {
+                                            e.preventDefault();
+                                        } else {
+                                            $(this).attr('type','number').off('keypress.digits');
+                                        }
+                                    });
+                                }
+                            } else {
+                                var decimalSplit = $amount.val().split('.')[1];
+                                if (typeof decimalSplit === 'undefined' || decimalSplit.length < 2 ) {
+                                    $amount.val($amount.val() + $(this).text());
+                                }
+                                if ($amount.attr('type') === 'text') {
+                                    $amount.attr('type','number');
+                                }
+                            }
                             return false;
                         });
                         $('.js-pnlaccountentry .tenkey a.clear').on('click', function () {
@@ -119,7 +140,6 @@
                     }
                 });
             });
-
         </script>
 
         <Rock:NotificationBox ID="nbBlockConfigErrors" runat="server" NotificationBoxType="Danger" />
