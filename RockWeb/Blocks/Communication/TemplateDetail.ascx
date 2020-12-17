@@ -52,7 +52,7 @@
                             <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:EmailBox ID="tbFromAddress" runat="server" Label="From Address" AllowMultiple="false" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
+                            <Rock:RockTextBox ID="tbFromAddress" runat="server" Label="From Address" AllowMultiple="false" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
@@ -63,17 +63,17 @@
                     <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
+                                <Rock:RockTextBox ID="tbReplyToAddress" runat="server" Label="Reply To Address" />
                             </div>
                             <div class="col-md-6">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbCCList" runat="server" Label="CC List" AllowMultiple="true" />
+                                <Rock:RockTextBox ID="tbCCList" runat="server" Label="CC List" AllowMultiple="true" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbBCCList" runat="server" Label="BCC List" AllowMultiple="true" />
+                                <Rock:RockTextBox ID="tbBCCList" runat="server" Label="BCC List" AllowMultiple="true" />
                             </div>
                         </div>
                     </asp:Panel>

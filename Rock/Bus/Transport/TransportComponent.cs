@@ -23,7 +23,7 @@ namespace Rock.Bus.Transport
     /// <summary>
     /// Base class for transport components
     /// </summary>
-    public abstract class TransportComponent : Rock.Extension.Component
+    public abstract class TransportComponent : Extension.Component
     {
         #region Attributes
 
@@ -37,8 +37,8 @@ namespace Rock.Bus.Transport
         {
             get => new Dictionary<string, string>
             {
-                { "Active", "False" },
-                { "Order", "0" }
+                { BaseAttributeKey.Active, false.ToString() },
+                { BaseAttributeKey.Order, 0.ToString() }
             };
         }
 

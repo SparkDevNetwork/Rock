@@ -166,15 +166,20 @@ namespace Rock.Communication.Transport
                             {
                                 try
                                 {
-                                    int personAlias = recipient.PersonAliasId.Value;
+                                    List<string> devices = null;
 
-                                    var service = new PersonalDeviceService( recipientRockContext );
-                                    List<string> devices = service.Queryable()
-                                        .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
-                                        .Select( p => p.DeviceRegistrationId )
-                                        .ToList();
+                                    if ( recipient.PersonAliasId.HasValue )
+                                    {
+                                        int personAlias = recipient.PersonAliasId.Value;
+                                        var service = new PersonalDeviceService( recipientRockContext );
 
-                                    if ( devices.Any() )
+                                        devices = service.Queryable()
+                                            .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
+                                            .Select( p => p.DeviceRegistrationId )
+                                            .ToList();
+                                    }
+
+                                    if ( devices != null && devices.Any() )
                                     {
                                         // Create merge field dictionary
                                         var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
@@ -212,29 +217,30 @@ namespace Rock.Communication.Transport
                                         recipient.TransportEntityTypeName = this.GetType().FullName;
                                         recipient.UniqueMessageId = response.MessageResponse.MulticastId;
 
-                                        try
+                                        if ( recipient.PersonAlias != null )
                                         {
-                                            var historyService = new HistoryService( recipientRockContext );
-                                            historyService.Add( new History
+                                            try
                                             {
-                                                CreatedByPersonAliasId = communication.SenderPersonAliasId,
-                                                EntityTypeId = personEntityTypeId,
-                                                CategoryId = communicationCategoryId,
-                                                EntityId = recipient.PersonAlias.PersonId,
-                                                Verb = History.HistoryVerb.Sent.ConvertToString().ToUpper(),
-                                                ChangeType = History.HistoryChangeType.Record.ToString(),
-                                                ValueName = "Push Notification",
-                                                Caption = message.Truncate( 200 ),
-                                                RelatedEntityTypeId = communicationEntityTypeId,
-                                                RelatedEntityId = communication.Id
-                                            } );
+                                                var historyService = new HistoryService( recipientRockContext );
+                                                historyService.Add( new History
+                                                {
+                                                    CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                                    EntityTypeId = personEntityTypeId,
+                                                    CategoryId = communicationCategoryId,
+                                                    EntityId = recipient.PersonAlias.PersonId,
+                                                    Verb = History.HistoryVerb.Sent.ConvertToString().ToUpper(),
+                                                    ChangeType = History.HistoryChangeType.Record.ToString(),
+                                                    ValueName = "Push Notification",
+                                                    Caption = message.Truncate( 200 ),
+                                                    RelatedEntityTypeId = communicationEntityTypeId,
+                                                    RelatedEntityId = communication.Id
+                                                } );
+                                            }
+                                            catch ( Exception ex )
+                                            {
+                                                ExceptionLogService.LogException( ex, null );
+                                            }
                                         }
-                                        catch ( Exception ex )
-                                        {
-                                            ExceptionLogService.LogException( ex, null );
-                                        }
-
-
                                     }
                                     else
                                     {

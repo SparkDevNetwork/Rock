@@ -2193,5 +2193,46 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202011102025121_Rollup_1110_kpisortcode", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///  EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding parallax effects (when the background image of a section scrolls at a different speed than the rest of the page) can greatly enhance the 
+        ///    aesthetics of the page. Until now, this effect has taken quite a bit of CSS know how to achieve. Now it’s as simple as:
+        ///&lt;/p&gt;
+        ///&lt;pre&gt;{[ parallax image:&apos;&apos;https://source.unsplash.com/phIFdC6lA4E/1920x1080&apos;&apos; contentpadding:&apos;&apos;20px&apos;&apos; ]}
+        ///    &amp;lt;h1&amp;gt;Hello World&amp;lt;/h1&amp;gt;
+        ///{[ endparallax ]}&lt;/pre&gt;
+        ///
+        ///&lt;p&gt;  
+        ///    This shor [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202012151955324_Rollup_1215_parallaxupdate {
+            get {
+                return ResourceManager.GetString("_202012151955324_Rollup_1215_parallaxupdate", resourceCulture);
+            }
+        }
     }
 }
