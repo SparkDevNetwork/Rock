@@ -1,0 +1,25 @@
+<div class="panel panel-{{ cardtype }}">
+  <div class="panel-body soft-half">
+      <div class="row floating floating-left flush">
+        <div class="col-xs-4 floating-item hard">
+            {% if linkurl and linkurl != empty %}<a href="{{ linkurl }}" class="text-decoration-none">{% endif %}
+              <div class="ratio ratio-square background-cover background-center rounded" style="background-image:url('{{ imageurl }}');"></div>
+            {% if linkurl and linkurl != empty %}</a>{% endif %}
+        </div><div class="col-xs-8 floating-item hard">
+            <div class="soft-half-sides">
+              <div class="soft-quarter-sides">
+                {% if linkurl and linkurl != empty %}<a href="{{ linkurl }}" class="text-decoration-none">{% endif %}
+                  <h2 class="h5 text-gray-darker flush">{{ title }}</h2>
+                  {{ blockContent }}
+                {% if linkurl and linkurl != empty %}</a>{% endif %}
+              </div>
+            </div>
+        </div>
+      </div>
+  </div>
+  <div class="panel-footer btn-group btn-group-justified hard">
+    {% for action in cardactions %}
+      <a href="{{ action.Url | Fallback:'','#' }}" {% if action.OnClick != empty %}onclick="{{ action.OnClick }}"{% endif %} {% if action.NewWindow %}target="_blank"{% endif %} class="btn btn-gray {% if action.ButtonClass and action.ButtonClass != empty %}{{ action.ButtonClass }}{% endif %} {% if action.Url == empty and action.OnClick == empty %}text-gray-light{% endif %}" {% if action.Url == empty and action.OnClick == empty %}disabled{% endif %} {% if action.Title != empty %}title="{{ action.Title }}"{% endif %}>{% if action.IconCSSClass %}<i class="fa-fw {{ action.IconCSSClass }}"></i>{% endif %}</a>
+    {% endfor %}
+  </div>
+</div>

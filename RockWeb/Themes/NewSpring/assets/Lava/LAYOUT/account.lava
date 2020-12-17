@@ -1,0 +1,36 @@
+{% assign personCampus = CurrentPerson | Campus %}
+<section class="soft xs-soft-half hard-bottom clearfix push-bottom xs-push-half-bottom bg-white rounded shadowed">
+    <div class="row soft-ends xs-hard-ends floating">
+        <div class="col-xs-12 col-sm-12 col-md-4 floating-item">
+        	<div class="ratio-square circular mx-auto push-half-bottom xs-push-top background-center background-cover" style="background-image:url('{{ CurrentPerson.PhotoUrl }}'); max-width: 160px;"></div>
+            <div class="display-inline-block label label-default sans-serif stronger letter-spacing-condensed push-bottom">{{ personCampus.Name }}</div>
+        </div><div class="col-xs-12 col-sm-12 col-md-8 floating-item text-left sm-text-center xs-text-center">
+            <h2 class="h1">{{ CurrentPerson.NickName }} {{ CurrentPerson.LastName }}</h2>
+            <div class="row">
+                <div class="col-md-6 col-sm-12 col-xs-12">
+                    <h3 class="h4 flush">Birth Date</h3>
+                    <p>{{ CurrentPerson.BirthDate | Date:'M/d/yyyy' }}</p>
+                </div><div class="col-md-6 col-sm-12 col-xs-12">
+                    <h3 class="h4 flush">Address</h3>
+                    <p>{{ CurrentPerson | Address:'Home','[[Street1]]<br>[[City]], [[State]] [[ PostalCode ]]' }}</p>
+                </div><div class="col-md-6 col-sm-12 col-xs-12">
+                    <h3 class="h4 flush">Phone</h3>
+                    {% assign home = CurrentPerson | PhoneNumber:'Home' %}
+                    {% assign work = CurrentPerson | PhoneNumber:'Work' %}
+                    {% assign mobile = CurrentPerson | PhoneNumber:'Mobile' %}
+                    <p>
+                        {% if mobile %}{{ CurrentPerson | PhoneNumber:'Mobile' }} <small class="italic text-gray-light">mobile</small><br>{% endif %}
+                        {% if home %}{{ CurrentPerson | PhoneNumber:'Home' }} <small class="italic text-gray-light">home</small><br>{% endif %}
+                        {% if work %}{{ CurrentPerson | PhoneNumber:'Work' }} <small class="italic text-gray-light">work</small>{% endif %}
+                    </p>
+                </div><div class="col-md-6 col-sm-12 col-xs-12">
+                    <h3 class="h4 flush">Email</h3>
+                    <p>{{ CurrentPerson.Email }}</p>
+                </div>
+            </div>
+            <p><a href="/workflows/522" class="btn btn-sm btn-primary">Update Profile</a></p>
+        </div>
+    </div>
+
+
+</section>

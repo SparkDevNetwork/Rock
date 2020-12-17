@@ -1,0 +1,13 @@
+{% capture url %}{{ 'Global' | Page:'Url' }}{% endcapture %}
+{%- assign dataset = 'pagemetadata' | PersistedDataset -%}
+{% assign pagemetadata = dataset | Where:'Id', CurrentPage.Id | First %}
+
+{% comment %}
+    If this page has a hero block on it, or has been designated as it receiving metadata from a content channel item, we don't want to do anything as the metadata tag generation will be handled in either the UI > Hero, Layout > Editorial, Layout > Collection Detail, or Layout > Sermon Detail lava templates.
+{% endcomment %}
+
+{% if pagemetadata.PageHasHero == 'False' and pagemetadata.MetadataFromContentChannelItem == 'False' %}
+
+    {[ metaTags url:'{{ url }}' title:'{{ pagemetadata.MetaTitle }}' description:'{{ pagemetadata.MetaDescription }}' image:'{{ pagemetadata.MetaImage }}' ]}
+
+{% endif %}

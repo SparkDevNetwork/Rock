@@ -1,0 +1,6 @@
+{% assign percent = percent | AsInteger %}
+<div class="progress">
+  <div class="progress-bar {% if striped == 'true' %}progress-bar-striped{% endif %} {% if animated == 'true' %}active{% endif %} {% if colorstatus and colorstatus == 'true' %}{% if percent <= 20 %}bg-danger{% elseif percent <= 70 %}bg-warning{% else %}bg-primary{% endif %}{% else %}bg-primary{% endif %}" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ percent }}%;">
+    <span class="sr-only">{{ percent }}% Complete</span>
+  </div>
+</div>
