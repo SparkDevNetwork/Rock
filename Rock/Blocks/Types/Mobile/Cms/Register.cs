@@ -129,6 +129,15 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Category = "custommobile",
         Order = 7 )]
 
+    [CustomDropdownListField( "Gender",
+        Key = AttributeKeys.Gender,
+        Description = "Determines the visibility and requirement of the Gender field.",
+        IsRequired = true,
+        DefaultValue = "2",
+        ListSource = "0^Hide,1^Optional,2^Required",
+        Category = "custommobile",
+        Order = 8 )]
+
     #endregion
 
     public class Register : RockMobileBlockType
@@ -177,6 +186,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The email required key
             /// </summary>
             public const string EmailRequired = "EmailRequired";
+
+            /// <summary>
+            /// The gender key
+            /// </summary>
+            public const string Gender = "Gender";
 
             /// <summary>
             /// The mobile phone show key

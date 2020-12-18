@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
@@ -30,6 +31,21 @@ namespace Rock.Bus.Transport
 
     public class InMemory : TransportComponent
     {
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults
+        {
+            get => new Dictionary<string, string>
+            {
+                { BaseAttributeKey.Active, true.ToString() },
+                { BaseAttributeKey.Order, 0.ToString() }
+            };
+        }
+
         /// <summary>
         /// Gets the bus control.
         /// </summary>

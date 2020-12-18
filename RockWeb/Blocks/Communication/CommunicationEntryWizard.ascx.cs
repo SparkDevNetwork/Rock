@@ -232,6 +232,8 @@ namespace RockWeb.Blocks.Communication
             fupEmailAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             fupMobileAttachment.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
+            var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
+            lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
             hfSMSCharLimit.Value = ( this.GetAttributeValue( AttributeKey.CharacterLimit ).AsIntegerOrNull() ?? 160 ).ToString();
 
             gIndividualRecipients.DataKeyNames = new string[] { "Id" };
@@ -630,6 +632,7 @@ function onTaskCompleted( resultData )
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
+
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
@@ -1866,9 +1869,8 @@ function onTaskCompleted( resultData )
 
             var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
-            var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );            
-            sampleCommunicationRecipient.Communication = communication;
-            sampleCommunicationRecipient.PersonAlias = sampleCommunicationRecipient.PersonAlias ?? new PersonAliasService( rockContext ).Get( sampleCommunicationRecipient.PersonAliasId.Value );
+            var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );
+
             var mergeFields = sampleCommunicationRecipient.CommunicationMergeValues( commonMergeFields );
 
             Rock.Communication.MediumComponent emailMediumWithActiveTransport = MediumContainer.GetActiveMediumComponentsWithActiveTransports()
@@ -2773,6 +2775,9 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             details.CCEmails = ebCCList.Text;
             details.BCCEmails = ebBCCList.Text;
 
+            details.SMSFromDefinedValueId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
+            details.SMSMessage = tbSMSTextMessage.Text;
+
             // Get Push notification settings.
             var pushNotificationControl = phPushControl.Controls[0] as PushNotification;
 
@@ -2833,9 +2838,17 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
                 recipientPersonId = this.IndividualRecipientPersonIds.FirstOrDefault();
             }
 
-            // Get the recipient with a specific query rather than using the Recipients navigation collection,
-            // because this would trigger lazy-loading to populate the entire collection, which may be very large.
-            var recipient = communication.GetRecipientsQry( rockContext ).FirstOrDefault();
+            if ( recipientPersonId == 0 )
+            {
+                // If we can't find a recipient, try the current user.
+                recipientPersonId = this.CurrentPersonId.GetValueOrDefault();
+            }
+
+            // Create and return a temporary Recipient record.
+            var recipient = new CommunicationRecipient();
+
+            recipient.Communication = communication;
+            recipient.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( recipientPersonId );
 
             return recipient;
         }

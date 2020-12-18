@@ -257,15 +257,16 @@ namespace Rock.Model
                     && r.CreatedDateTime >= startDateTime
                     && r.Status == CommunicationRecipientStatus.Delivered );
 
-            if ( personId != null )
-            {
-                communicationRecipientQuery = communicationRecipientQuery.Where( r => r.PersonAlias.PersonId == personId );
-            }
+            // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
+            var communicationRecipientJoinQuery =
+                from cr in communicationRecipientQuery
+                join pa in personAliasQuery on cr.PersonAliasId equals pa.Id
+                select new { cr, pa };
 
-            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientQuery
-                .GroupBy( r => r.PersonAlias.PersonId )
-                .Select( a => a.OrderByDescending( x => x.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.CreatedDateTime );
+            IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientJoinQuery
+                .GroupBy( r => r.pa.PersonId )
+                .Select( a => a.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault() )
+                .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery.Include( a => a.FromPersonAlias.Person ).AsNoTracking().Take( maxCount ).ToList();
 
@@ -297,7 +298,7 @@ namespace Rock.Model
                 a.Communication.SMSMessage,
                 a.SentMessage
             } ).ToList();
-
+            
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse

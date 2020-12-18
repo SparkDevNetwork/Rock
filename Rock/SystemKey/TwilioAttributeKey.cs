@@ -25,17 +25,25 @@ namespace Rock.SystemKey
         /// The authentication token
         /// </summary>
         public const string AuthToken = "Token";
+
         /// <summary>
         /// The sid
         /// </summary>
         public const string Sid = "SID";
+
         /// <summary>
         /// The long code throttling
         /// </summary>
         public const string LongCodeThrottling = "Long-CodeThrottling";
+
         /// <summary>
         /// The enable validation
         /// </summary>
         public const string EnableValidation = "EnableValidation";
+
+        /// <summary>
+        /// The maximum parallelization
+        /// </summary>
+        public const string MaxParallelization = "MaxParallelization";
     }
 }

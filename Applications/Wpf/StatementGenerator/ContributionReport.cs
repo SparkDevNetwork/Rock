@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,7 +30,7 @@ using Rock.Net;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ContributionReport
     {
@@ -71,11 +72,19 @@ namespace Rock.Apps.StatementGenerator
         private int RecordIndex { get; set; }
 
         /// <summary>
+        /// Show debug outout in the debug console?
+        /// </summary>
+        private const bool DEBUG = false;
+
+        /// <summary>
         /// Runs the report returning the number of statements that were generated
         /// </summary>
         /// <returns></returns>
         public int RunReport()
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             UpdateProgress( "Connecting..." );
 
             // Login and setup options for REST calls
@@ -216,33 +225,67 @@ namespace Rock.Apps.StatementGenerator
             // remove any statements that didn't get generated due to OptedOut
             pdfDataStreams = pdfDataStreams.Where( a => a != null ).ToList();
             this.RecordCount = pdfDataStreams.Count();
-
-            int maxStatementsPerChapter = RecordCount;
-
-            bool useChapters = this.Options.StatementsPerChapter.HasValue;
+            int? maxStatementsPerChapter = null;
 
             if ( this.Options.StatementsPerChapter.HasValue )
             {
                 maxStatementsPerChapter = this.Options.StatementsPerChapter.Value;
             }
 
-            if ( maxStatementsPerChapter < 1 )
+            if ( maxStatementsPerChapter.HasValue && maxStatementsPerChapter < 1 )
             {
                 // just in case they entered 0 or a negative number
-                useChapters = false;
-                maxStatementsPerChapter = RecordCount;
+                maxStatementsPerChapter = null;
             }
 
-            int statementsInChapter = 0;
-            int chapterIndex = 1;
-
             var pdfDocumentList = pdfDataStreams.Select( a => PdfReader.Open( a, PdfDocumentOpenMode.Import ) ).ToList();
+
             if ( this.Options.OrderBy == Rock.StatementGenerator.OrderBy.PageCount )
             {
                 pdfDocumentList = pdfDocumentList.OrderBy( a => a.PageCount ).ToList();
             }
 
-            PdfDocument resultPdf = new PdfDocument();
+            var groupByPageCount = Options.GroupByPageCount;
+
+            if ( !groupByPageCount )
+            {
+                WriteGroupOfStatementsToDocument( string.Empty, pdfDocumentList, maxStatementsPerChapter );
+            }
+            else
+            {
+                var groups = pdfDocumentList.GroupBy( a => a.PageCount );
+
+                foreach ( var group in groups )
+                {
+                    var groupName = $"PageCount{group.Key}-";
+                    WriteGroupOfStatementsToDocument( groupName, group.ToList(), maxStatementsPerChapter );
+                }
+            }
+
+            UpdateProgress( "Complete" );
+
+            stopWatch.Stop();
+            var elapsedSeconds = stopWatch.ElapsedMilliseconds / 1000;
+            Debug( $"{elapsedSeconds:n0} seconds" );
+            Debug( $"{RecordCount:n0} statements" );
+            Debug( $"{( stopWatch.ElapsedMilliseconds / RecordCount ):n0}ms per statement" );
+
+            return this.RecordCount;
+        }
+
+        /// <summary>
+        /// Writes the group of statements to document.
+        /// </summary>
+        /// <param name="fileNamePrefix">The file name prefix.</param>
+        /// <param name="pdfDocumentList">The PDF document list.</param>
+        /// <param name="maxStatementsPerChapter">The maximum statements per chapter.</param>
+        private void WriteGroupOfStatementsToDocument( string fileNamePrefix, List<PdfDocument> pdfDocumentList, int? maxStatementsPerChapter )
+        {
+            var useChapters = maxStatementsPerChapter.HasValue;
+            var statementsInChapter = 0;
+            var chapterIndex = 1;
+            var resultPdf = new PdfDocument();
+
             try
             {
                 if ( pdfDocumentList.Any() )
@@ -262,7 +305,7 @@ namespace Rock.Apps.StatementGenerator
 
                         if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfDocument == lastPdfDocument ) )
                         {
-                            string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                            var filePath = GetFileName( Options.SaveDirectory, fileNamePrefix, Options.BaseFileName, chapterIndex );
                             SavePdfFile( resultPdf, filePath );
                             resultPdf.Dispose();
                             resultPdf = new PdfDocument();
@@ -276,13 +319,13 @@ namespace Rock.Apps.StatementGenerator
                         // just in case we still have statements that haven't been written to a pdf
                         if ( statementsInChapter > 0 )
                         {
-                            string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
+                            var filePath = GetFileName( Options.SaveDirectory, fileNamePrefix, Options.BaseFileName, chapterIndex );
                             SavePdfFile( resultPdf, filePath );
                         }
                     }
                     else
                     {
-                        string filePath = string.Format( @"{0}\{1}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName );
+                        var filePath = GetFileName( Options.SaveDirectory, fileNamePrefix, Options.BaseFileName, null );
                         SavePdfFile( resultPdf, filePath );
                     }
                 }
@@ -291,10 +334,38 @@ namespace Rock.Apps.StatementGenerator
             {
                 resultPdf.Dispose();
             }
+        }
 
-            UpdateProgress( "Complete" );
+        /// <summary>
+        /// Gets the name of the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="prefix">The prefix.</param>
+        /// <param name="baseName">Name of the base.</param>
+        /// <param name="chapterIndex">Index of the chapter.</param>
+        /// <returns></returns>
+        private string GetFileName( string path, string prefix, string baseName, int? chapterIndex )
+        {
+            var useChapters = chapterIndex.HasValue;
 
-            return this.RecordCount;
+            if ( !useChapters )
+            {
+                return $@"{path}\{prefix}{baseName}.pdf";
+            }
+
+            return $@"{path}\{prefix}{baseName}-chapter{chapterIndex.Value}.pdf";
+        }
+
+        /// <summary>
+        /// Debugs the specified message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private static void Debug( string message )
+        {
+            if ( DEBUG )
+            {
+                System.Diagnostics.Debug.WriteLine( $"{DateTime.Now:mm.ss.f} - {message}" );
+            }
         }
 
         /// <summary>
@@ -335,7 +406,7 @@ namespace Rock.Apps.StatementGenerator
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ProgressEventArgs : EventArgs
     {

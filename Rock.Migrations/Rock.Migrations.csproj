@@ -61,9 +61,41 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202011231521580_BusAndFarmPages.cs" />
-    <Compile Include="Migrations\202011231521580_BusAndFarmPages.Designer.cs">
+    <Compile Include="Migrations\202012091759168_Rollup_1209.cs" />
+    <Compile Include="Migrations\202012091759168_Rollup_1209.Designer.cs">
+      <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.cs" />
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.Designer.cs">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012151955324_Rollup_1215.cs" />
+    <Compile Include="Migrations\202012151955324_Rollup_1215.Designer.cs">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.cs" />
+    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.Designer.cs">
+      <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.cs" />
+    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.Designer.cs">
+      <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
+      <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.Designer.cs">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.Designer.cs">
       <DependentUpon>202011231521580_BusAndFarmPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.Designer.cs">
+      <DependentUpon>202011241949568_CheckinClientInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -1491,8 +1523,32 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202011231521580_BusAndFarmPages.resx">
+    <EmbeddedResource Include="Migrations\202012091759168_Rollup_1209.resx">
+      <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012092122418_KpiShortCodeEdit.resx">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012151955324_Rollup_1215.resx">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012161922246_WebFarmNodeMetric.resx">
+      <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.resx">
+      <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
+      <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder.resx">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011231521580_BusAndFarmPages.resx">
       <DependentUpon>202011231521580_BusAndFarmPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.resx">
+      <DependentUpon>202011241949568_CheckinClientInstaller.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.resx">
       <DependentUpon>202007211806064_Rollup_0721.cs</DependentUpon>
@@ -2576,6 +2632,9 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\202012151955324_Rollup_1215_parallaxupdate.sql">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
@@ -2671,6 +2730,9 @@
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.0\201908202115162_Rollup_0820_GroupRequirementsBadge.sql">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder.sql">
+      <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
