@@ -41,19 +41,27 @@ namespace RockWeb.Blocks.Security
     [Description( "Prompts user for login credentials." )]
 
     #region "Block Attributes"
+    [TextField(
+        "Username Field Label",
+        Key = AttributeKey.UsernameFieldLabel,
+        Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
+        IsRequired = false,
+        DefaultValue = "Username",
+        Order = 0 )]
+
     [LinkedPage(
         "New Account Page",
         Key = AttributeKey.NewAccountPage,
         Description = "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)",
         IsRequired = false,
-        Order = 0 )]
+        Order = 1 )]
 
     [LinkedPage(
         "Help Page",
         Key = AttributeKey.HelpPage,
         Description = "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)",
         IsRequired = false,
-        Order = 1 )]
+        Order = 2 )]
 
     [CodeEditorField(
         "Confirm Caption",
@@ -64,14 +72,14 @@ namespace RockWeb.Blocks.Security
         EditorHeight = 100,
         IsRequired =  false,
         DefaultValue = ConfirmCaptionDefaultValue,
-        Order = 2 )]
+        Order = 3 )]
 
     [LinkedPage(
         "Confirmation Page",
         Key = AttributeKey.ConfirmationPage,
         Description = "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)",
         IsRequired = false,
-        Order = 3 )]
+        Order = 4 )]
 
     [SystemCommunicationField(
         "Confirm Account Template",
@@ -79,7 +87,7 @@ namespace RockWeb.Blocks.Security
         Description = "Confirm Account Email Template",
         IsRequired = false,
         DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
-        Order = 4 )]
+        Order = 5 )]
 
     [CodeEditorField(
         "Locked Out Caption",
@@ -90,14 +98,14 @@ namespace RockWeb.Blocks.Security
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = LockedOutCaptionDefaultValue,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField(
         "Hide New Account Option",
         Key = AttributeKey.HideNewAccount,
         Description = "Should 'New Account' option be hidden? For sites that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.",
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 7 )]
 
     [TextField(
         "New Account Text",
@@ -105,7 +113,7 @@ namespace RockWeb.Blocks.Security
         Description = "The text to show on the New Account button.",
         IsRequired = false,
         DefaultValue = "Register",
-        Order = 7 )]
+        Order = 8 )]
 
     [CodeEditorField(
         "No Account Text",
@@ -116,7 +124,7 @@ namespace RockWeb.Blocks.Security
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
-        Order = 8 )]
+        Order = 9 )]
 
     [CodeEditorField(
         "Remote Authorization Prompt Message",
@@ -127,28 +135,28 @@ namespace RockWeb.Blocks.Security
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = "Login with social account",
-        Order = 9 )]
+        Order = 10 )]
 
     [RemoteAuthsField(
         "Remote Authorization Types",
         Key = AttributeKey.RemoteAuthorizationTypes,
         Description = "Which of the active remote authorization types should be displayed as an option for user to use for authentication.",
         IsRequired = false,
-        Order = 10 )]
+        Order = 11 )]
 
     [BooleanField(
         "Show Internal Login",
         Key = AttributeKey.ShowInternalLogin,
         Description = "Show the default (non-remote) login",
         DefaultBooleanValue = true,
-        Order = 11 )]
+        Order = 12 )]
 
     [BooleanField(
         "Redirect to Single External Auth Provider",
         Key = AttributeKey.RedirecttoSingleExternalAuthProvider,
         Description ="Redirect straight to the external authentication provider if only one is configured and the internal login is disabled.",
         DefaultBooleanValue = false,
-        Order = 12 )]
+        Order = 13 )]
 
     [CodeEditorField(
         "Prompt Message",
@@ -158,14 +166,14 @@ namespace RockWeb.Blocks.Security
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = false,
-        Order = 13 )]
+        Order = 14 )]
 
     [LinkedPage(
         "Redirect Page",
         Key = AttributeKey.RedirectPage,
         Description = "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.",
         IsRequired = false,
-        Order = 14 )]
+        Order = 15 )]
 
     [CodeEditorField(
         "Invalid PersonToken Text",
@@ -176,7 +184,7 @@ namespace RockWeb.Blocks.Security
         EditorHeight = 100,
         IsRequired = false,
         DefaultValue = @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>",
-        Order = 15 )]
+        Order = 16 )]
 
     #endregion "Block Attributes"
 
@@ -184,6 +192,7 @@ namespace RockWeb.Blocks.Security
     {
         private static class AttributeKey
         {
+            public const string UsernameFieldLabel = "UsernameFieldLabel";
             public const string NewAccountPage = "NewAccountPage";
             public const string HelpPage = "HelpPage";
             public const string ConfirmCaption = "ConfirmCaption";
@@ -234,6 +243,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// </summary>
         private void ApplyBlockSettings()
         {
+            tbUserName.Label = GetAttributeValue( AttributeKey.UsernameFieldLabel );
             btnNewAccount.Visible = !GetAttributeValue( AttributeKey.HideNewAccount ).AsBoolean();
             btnNewAccount.Text = this.GetAttributeValue( AttributeKey.NewAccountButtonText ) ?? "Register";
 
