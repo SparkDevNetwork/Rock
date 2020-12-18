@@ -136,7 +136,6 @@
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
-    <Compile Include="Follow\InFollowedGroupTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />

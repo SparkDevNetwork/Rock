@@ -162,10 +162,10 @@ namespace Rock.Jobs
 
                                             // Get the existing followings for any of the followers 
                                             suggestionTypeComponent.ExistingFollowings = new Dictionary<int, List<int>>();
-                                            foreach( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
+                                            foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
                                             {
                                                 suggestionTypeComponent.ExistingFollowings.AddOrIgnore( following.PersonAlias.PersonId, new List<int>() );
-                                                suggestionTypeComponent.ExistingFollowings[ following.PersonAlias.PersonId].Add( following.EntityId );
+                                                suggestionTypeComponent.ExistingFollowings[following.PersonAlias.PersonId].Add( following.EntityId );
                                             }
 
                                             // Loop through each follower
@@ -236,7 +236,6 @@ namespace Rock.Jobs
                                     var component = components.ContainsKey( suggestionType.Id ) ? components[suggestionType.Id] : null;
                                     if ( component != null && suggestedEntities.ContainsKey( suggestionType.Id ) )
                                     {
-
                                         var entities = new List<IEntity>();
                                         foreach ( var suggestion in allSuggestions
                                             .Where( s =>
@@ -300,7 +299,6 @@ namespace Rock.Jobs
             {
                 throw new Exception( "One or more exceptions occurred calculating suggestions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
-
         }
 
         /// <summary>
@@ -518,7 +516,9 @@ namespace Rock.Jobs
             }
 
             public List<PersonEntitySuggestion> PersonEntitySuggestions { get; set; }
+
             public FollowingSuggestionType FollowingSuggestionType { get; set; }
+
             public Dictionary<int, List<int>> ExistingFollowings { get; set; }
         }
     }
@@ -529,7 +529,6 @@ namespace Rock.Jobs
     [DotLiquid.LiquidType( "SuggestionType", "Notices" )]
     public class FollowingSuggestionNotices
     {
-
         /// <summary>
         /// Gets or sets the type of the suggestion.
         /// </summary>
@@ -556,6 +555,5 @@ namespace Rock.Jobs
             SuggestionType = suggestionType;
             Notices = notices;
         }
-
     }
 }
