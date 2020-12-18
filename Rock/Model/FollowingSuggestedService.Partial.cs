@@ -20,7 +20,6 @@ using System.Linq;
 using Rock.Data;
 using Rock.Web.Cache;
 
-
 namespace Rock.Model
 {
     /// <summary>
