@@ -34,7 +34,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Grade and Age" )]
 
-    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true , "", 0)]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true , "", 0)]
     [BooleanField( "Prioritize Grade", "Exclude groups that do not match by grade if one (or more) groups are found that do match by grade.", false, "", 1 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Group Age Range Attribute", "Select the attribute used to define the age range of the group", true, false,
         Rock.SystemGuid.Attribute.GROUP_AGE_RANGE, order: 2 )]

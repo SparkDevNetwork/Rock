@@ -42,7 +42,7 @@ namespace Rock.Workflow.Action
     [WorkflowAttribute( "Group", "Workflow Attribute that contains the group the person is in.", true, "", "", 1, null,
         new string[] { "Rock.Field.Types.GroupFieldType" } )]
 
-    [EnumField("New Group Member Status", "The new status to set the user to to in the group.", typeof( GroupMemberStatus ), true, "Active", order: 2 )]
+    [EnumField("New Group Member Status", "The new status to set the user to in the group.", typeof( GroupMemberStatus ), true, "Active", order: 2 )]
     public class UpdateGroupMemberStatus : ActionComponent
     {
         /// <summary>
