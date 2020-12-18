@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     {
         /// <summary>
         /// Gets or sets the custom label suffix to use when generating the css class name.
-        /// The value specified here will be be added to 'label-' when the label type is Custom.
+        /// The value specified here will be added to 'label-' when the label type is Custom.
         /// </summary>
         /// <value>
         /// The text CSS class.

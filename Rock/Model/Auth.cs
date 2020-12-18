@@ -144,7 +144,7 @@ namespace Rock.Model
         public virtual Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the the <see cref="Rock.Model.EntityType"/> of the entity that is being secured.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entity that is being secured.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> of of the entity that is being secured.
