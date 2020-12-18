@@ -16,6 +16,7 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Transactions
 {
@@ -48,7 +49,7 @@ namespace Rock.Transactions
             using ( var rockContext = new RockContext() )
             {
                 var communication = new CommunicationService( rockContext ).Get( CommunicationId );
-                Rock.Model.Communication.Send( communication );
+                AsyncHelper.RunSync( () => Model.Communication.SendAsync( communication ) );
             }
         }
     }

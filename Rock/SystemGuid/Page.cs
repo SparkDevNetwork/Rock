@@ -816,6 +816,12 @@ namespace Rock.SystemGuid
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
+        /// Gets the Mass Push Notifications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
+
+        /// <summary>
         /// Gets the Email Preference page guid
         /// ParentPage: Support Pages
         /// </summary>
@@ -989,6 +995,12 @@ namespace Rock.SystemGuid
         /// Parent page: System settings
         /// </summary>
         public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
+
+        /// <summary>
+        /// The web farm node
+        /// Parent page: Web Farm
+        /// </summary>
+        public const string WEB_FARM_NODE = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2";
 
         /// <summary>
         /// Gets the File Storage Providers page guid

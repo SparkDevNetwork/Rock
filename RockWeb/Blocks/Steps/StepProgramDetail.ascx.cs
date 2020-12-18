@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
@@ -48,12 +49,22 @@ namespace RockWeb.Blocks.Steps
           Key = AttributeKey.ShowChart,
           DefaultValue = "true",
           Order = 0 )]
+
     [SlidingDateRangeField
         ( "Default Chart Date Range",
           Key = AttributeKey.SlidingDateRange,
           DefaultValue = "Current||Year||",
           EnabledSlidingDateRangeTypes = "Last,Previous,Current,DateRange",
           Order = 1 )]
+
+    [CodeEditorField(
+        "Key Performance Indicator Lava",
+        IsRequired = false,
+        DefaultValue = DefaultValue.KpiLava,
+        Key = AttributeKey.KpiLava,
+        EditorMode = CodeEditorMode.Lava,
+        Description = "The Lava used to render the Key Performance Indicators bar. <span class='tip tip-lava'></span>",
+        Order = 2 )]
 
     #endregion Block Attributes
 
@@ -68,6 +79,24 @@ namespace RockWeb.Blocks.Steps
         {
             public const string ShowChart = "Show Chart";
             public const string SlidingDateRange = "SlidingDateRange";
+            public const string KpiLava = "KpiLava";
+        }
+
+        /// <summary>
+        /// Default Attribute Values
+        /// </summary>
+        private static class DefaultValue
+        {
+            /// <summary>
+            /// The kpi lava
+            /// </summary>
+            public const string KpiLava =
+@"{[kpis]}
+  [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
+  [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
+  [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
+  [[ kpi icon:'fa-check-square' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+{[endkpis]}";
         }
 
         #endregion
@@ -173,6 +202,7 @@ namespace RockWeb.Blocks.Steps
             else
             {
                 RefreshChart();
+                RefreshKpi();
             }
         }
 
@@ -274,6 +304,7 @@ namespace RockWeb.Blocks.Steps
         protected void btnRefreshChart_Click( object sender, EventArgs e )
         {
             RefreshChart();
+            RefreshKpi();
         }
 
         /// <summary>
@@ -1171,6 +1202,7 @@ namespace RockWeb.Blocks.Steps
             StatusesState = null;
 
             lReadOnlyTitle.Text = stepProgram.Name.FormatAsHtmlTitle();
+            lStepProgramName.Text = stepProgram.Name;
 
             // Create the read-only description text.
             var descriptionListMain = new DescriptionList();
@@ -1189,6 +1221,133 @@ namespace RockWeb.Blocks.Steps
             }
 
             RefreshChart();
+            RefreshKpi();
+        }
+
+        /// <summary>
+        /// Refreshes the kpi.
+        /// </summary>
+        private void RefreshKpi()
+        {
+            var stepProgram = GetStepProgram();
+            var template = GetAttributeValue( AttributeKey.KpiLava );
+
+            if ( template.IsNullOrWhiteSpace() || stepProgram == null )
+            {
+                return;
+            }
+
+            var startedQuery = GetStartedStepQuery();
+            var completedQuery = GetCompletedStepQuery();
+
+            var individualsCompleting = completedQuery.Select( s => s.PersonAlias.PersonId ).Distinct().Count();
+            var stepsStarted = startedQuery.Count();
+            var stepsCompleted = completedQuery.Count();
+
+            var daysToCompleteList = completedQuery
+                .Select( s => SqlFunctions.DateDiff( "DAY", s.StartDateTime, s.CompletedDateTime ) )
+                .Where( i => i.HasValue )
+                .Select(i => i.Value)
+                .ToList();
+
+            var avgDaysToComplete = daysToCompleteList.Any() ? ( int ) daysToCompleteList.Average() : 0;
+
+            lKpi.Text = template.ResolveMergeFields( new Dictionary<string, object>
+            {
+                { "IndividualsCompleting", individualsCompleting },
+                { "AvgDaysToComplete", avgDaysToComplete },
+                { "StepsStarted", stepsStarted },
+                { "StepsCompleted", stepsCompleted },
+                { "StepProgram", stepProgram }
+            } );
+        }
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetCompletedStepQuery()
+        {
+            var stepProgram = GetStepProgram();
+
+            if ( stepProgram == null )
+            {
+                return null;
+            }
+
+            var dataContext = GetDataContext();
+            var stepService = new StepService( dataContext );
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepType.StepProgramId == stepProgram.Id &&
+                    x.StepType.IsActive &&
+                    x.CompletedDateKey != null );
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetStartedStepQuery()
+        {
+            var stepProgram = GetStepProgram();
+
+            if ( stepProgram == null )
+            {
+                return null;
+            }
+
+            var dataContext = GetDataContext();
+            var stepService = new StepService( dataContext );
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepType.StepProgramId == stepProgram.Id &&
+                    x.StepType.IsActive &&
+                    x.StartDateKey != null );
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey <= compareDateKey );
+            }
+
+            return query;
         }
 
         /// <summary>
@@ -1339,8 +1498,7 @@ namespace RockWeb.Blocks.Steps
             {
                 // If the Program does not have any Step activity, hide the Activity Summary.
                 var dataContext = GetDataContext();
-
-                showActivitySummary = GetStepsCompletedQuery( stepProgram.Id, dataContext ).Any();
+                showActivitySummary = GetStepsCompletedQuery( dataContext ).Any();
             }
 
             pnlActivitySummary.Visible = showActivitySummary;
@@ -1368,7 +1526,13 @@ namespace RockWeb.Blocks.Steps
             RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
 
-            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
+            // Add client script to construct the chart.
+            var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                SizeToFitContainerWidth = true,
+                MaintainAspectRatio = false,
+                LineTension = 0.4m
+            } );
 
             string script = string.Format( @"
             var barCtx = $('#{0}')[0].getContext('2d');
@@ -1385,12 +1549,11 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( StepProgram program, TimePeriod reportPeriod )
         {
-            var dataContext = new RockContext();
-
+            var rockContext = new RockContext();
             var programId = GetActiveStepProgramId();
 
             // Get all of the completed Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = GetStepsCompletedQuery( programId, dataContext );
+            var stepsCompletedQuery = GetStepsCompletedQuery( rockContext );
 
             var dateRange = reportPeriod.GetDateRange();
 
@@ -1400,15 +1563,14 @@ namespace RockWeb.Blocks.Steps
             if ( startDate != null )
             {
                 startDate = startDate.Value.Date;
-
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime >= startDate );
+                var startDateKey = startDate.ToDateKey();
+                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value >= startDateKey );
             }
 
             if ( endDate != null )
             {
-                var compareDate = endDate.Value.Date.AddDays( 1 );
-
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime < compareDate );
+                var compareDateKey = endDate.Value.ToDateKey();
+                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value <= compareDateKey );
             }
 
             List<StepTypeActivityDataPoint> stepTypeDataPoints;
@@ -1424,20 +1586,29 @@ namespace RockWeb.Blocks.Steps
                 stepTypeDataPoints = stepsCompletedQuery
                     .GroupBy( x => new
                     {
-                        Year = x.CompletedDateTime.Value.Year,
-                        Month = x.CompletedDateTime.Value.Month,
+                        MonthKey = x.CompletedDateKey.Value / 100,
                         DatasetName = x.StepType.Name,
                         SortKey1 = x.StepType.Order,
                         SortKey2 = x.StepTypeId
                     } )
+                    .Select( x => new {
+                        x.Key,
+                        Count = x.Count()
+                    } )
                     .ToList()
-                    .Select( x => new StepTypeActivityDataPoint
+                    .Select( x =>
                     {
-                        StepTypeName = x.Key.DatasetName,
-                        DateTime = new DateTime( x.Key.Year, x.Key.Month, 1 ),
-                        SortKey1 = x.Key.SortKey1,
-                        SortKey2 = x.Key.SortKey2,
-                        CompletedCount = x.Count()
+                        // Add 1 for the first day of the month
+                        var dateKey = x.Key.MonthKey * 100 + 1;
+
+                        return new StepTypeActivityDataPoint
+                        {
+                            StepTypeName = x.Key.DatasetName,
+                            DateTime = dateKey.GetDateKeyDate(),
+                            SortKey1 = x.Key.SortKey1,
+                            SortKey2 = x.Key.SortKey2,
+                            CompletedCount = x.Count
+                        };
                     } )
                     .OrderBy( x => x.SortKey1 )
                     .ThenBy( x => x.SortKey2 )
@@ -1451,22 +1622,25 @@ namespace RockWeb.Blocks.Steps
                 stepTypeDataPoints = stepsCompletedQuery
                     .GroupBy( x => new
                     {
-                        Year = x.CompletedDateTime.Value.Year,
-                        Month = x.CompletedDateTime.Value.Month,
-                        Day = x.CompletedDateTime.Value.Day,
+                        DateKey = x.CompletedDateKey.Value,
                         DatasetName = x.StepType.Name,
                         SortKey1 = x.StepType.Order,
                         SortKey2 = x.StepTypeId
                     } )
-                    .ToList()
-                    .Select( x => new StepTypeActivityDataPoint
-                    {
-                        StepTypeName = x.Key.DatasetName,
-                        DateTime = new DateTime( x.Key.Year, x.Key.Month, x.Key.Day ),
-                        SortKey1 = x.Key.SortKey1,
-                        SortKey2 = x.Key.SortKey2,
-                        CompletedCount = x.Count()
+                    .Select( x => new {
+                        x.Key,
+                        Count = x.Count()
                     } )
+                    .ToList()
+                    .Select( x =>new StepTypeActivityDataPoint
+                        {
+                            StepTypeName = x.Key.DatasetName,
+                            DateTime = x.Key.DateKey.GetDateKeyDate(),
+                            SortKey1 = x.Key.SortKey1,
+                            SortKey2 = x.Key.SortKey2,
+                            CompletedCount = x.Count
+                        }
+                     )
                     .OrderBy( x => x.SortKey1 )
                     .ThenBy( x => x.SortKey2 )
                     .ToList();
@@ -1514,10 +1688,9 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Returns a Step query filtered for active steps completed for the specified Program.
         /// </summary>
-        /// <param name="stepProgramId"></param>
         /// <param name="dataContext"></param>
         /// <returns></returns>
-        private IQueryable<Step> GetStepsCompletedQuery( int stepProgramId, RockContext dataContext )
+        private IQueryable<Step> GetStepsCompletedQuery( RockContext dataContext )
         {
             var stepService = new StepService( dataContext );
 
@@ -1525,9 +1698,11 @@ namespace RockWeb.Blocks.Steps
 
             // Get all of the completed Steps associated with the current program, grouped by Step Type.
             var stepsCompletedQuery = stepService.Queryable().AsNoTracking()
-                .Where( x => x.StepType.StepProgramId == programId
-                                && x.StepType.IsActive
-                                && x.CompletedDateTime != null );
+                .Where( x =>
+                    x.StepType.StepProgramId == programId
+                    && x.StepType.IsActive
+                    && x.CompletedDateKey.HasValue );
+            ;
 
             return stepsCompletedQuery;
         }

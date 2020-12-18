@@ -38,7 +38,7 @@
                             <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" />
                             <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />
                             <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
-                            <Rock:RockRadioButtonList ID="rblRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" />
+                            <Rock:RockRadioButtonList ID="rblRole" runat="server" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" />
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" FormGroupCssClass="gender-picker" Required="true">
@@ -61,14 +61,15 @@
                     <hr />
 
                     <asp:Panel ID="pnlPersonAttributes" runat="server">
-                            <h3>Additional Information</h3>
-                            <Rock:DynamicPlaceholder ID="phPersonAttributes" runat="server" />
+                        <h3>Additional Information</h3>
+                        <Rock:AttributeValuesContainer ID="avcPersonAttributesAdult" runat="server" />
+                        <Rock:AttributeValuesContainer ID="avcPersonAttributesChild" runat="server" />
                         <hr />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlFamilyAttributes" runat="server">
-                            <h3>Family Information</h3>
-                            <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
+                        <h3>Family Information</h3>
+                        <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" />
                         <hr />
                     </asp:Panel>
 
