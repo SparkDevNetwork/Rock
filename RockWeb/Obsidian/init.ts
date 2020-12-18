@@ -1,12 +1,37 @@
-﻿(function () {
-    window.Obsidian = window.Obsidian || {};
+﻿interface VueComponent {
+    name: string;
+    props: object;
+}
 
+type ComponentMap = { [key: string]: VueComponent }
+
+interface Obsidian {
+    registerTemplate: (template: VueComponent) => void;
+    Templates: ComponentMap;
+    registerElement: (element: VueComponent) => void;
+    Elements: ComponentMap;
+    registerControl: (control: VueComponent) => void;
+    registerCommonEntityPicker: (entityName: string, getOptionsFunc: (store) => object[]) => void;
+    Controls: ComponentMap;
+    registerField: (fieldTypeGuid: string, field: VueComponent) => void;
+    Fields: ComponentMap;
+    registerBlock: (block: VueComponent) => void;
+    Blocks: ComponentMap;
+}
+
+interface Window {
+    Obsidian: Obsidian;
+}
+
+declare const Obsidian: Obsidian;
+
+(function () {
     /**
      * If there is already a component with the given name, then an error is thrown.
      * @param {string} name
      * @param {object} namespaceObject
      */
-    const confirmNameAvailability = (name, namespaceObject) => {
+    const confirmNameAvailability = (name: string, namespaceObject: object) => {
         if (!name) {
             throw `A component without a name cannot be registered`;
         }
@@ -18,29 +43,31 @@
         return;
     };
 
-    /**
-     * Templates are Vue components that have no (or extrememly limited) local state. Their purpose is to provide HTML
-     * patterns. Templates are a base layer dependency and should not use other components except for other templates.
-     * An example would be a paneled block or an alert (HTML pattern only).
-     */
-    Obsidian.Templates = {
+    window.Obsidian = {
+        /**
+         * Templates are Vue components that have no (or extrememly limited) local state. Their purpose is to provide HTML
+         * patterns. Templates are a base layer dependency and should not use other components except for other templates.
+         * An example would be a paneled block or an alert (HTML pattern only).
+         */
+        Templates: {},
+
         /**
          * Add a template to the Obsidian template collection
          * @param {object} template
          */
-        registerTemplate(template) {
+        registerTemplate(template: VueComponent) {
             confirmNameAvailability(template.name, Obsidian.Templates);
             Obsidian.Templates[template.name] = template;
         },
-    };
 
-    /**
-     * Elements are Vue components that are self contained except perhaps to use a template. They should not use APIs,
-     * or other functionality. Consider elements to be one step above raw HTML inputs: adding a label, emiting events,
-     * and very fundamental logic. An example would be a DropDownList (a select element with label and option tag
-     * rendering).
-     */
-    Obsidian.Elements = {
+        /**
+         * Elements are Vue components that are self contained except perhaps to use a template. They should not use APIs,
+         * or other functionality. Consider elements to be one step above raw HTML inputs: adding a label, emiting events,
+         * and very fundamental logic. An example would be a DropDownList (a select element with label and option tag
+         * rendering).
+         */
+        Elements: {},
+
         /**
          * Add an element to the Obsidian element collection
          * @param {object} element
@@ -49,13 +76,13 @@
             confirmNameAvailability(element.name, Obsidian.Elements);
             Obsidian.Elements[element.name] = element;
         },
-    };
 
-    /**
-     * Controls are Vue components that can use templates and elements. Controls are a step above elements and may contain
-     * business logic and make API calls.
-     */
-    Obsidian.Controls = {
+        /**
+         * Controls are Vue components that can use templates and elements. Controls are a step above elements and may contain
+         * business logic and make API calls.
+         */
+        Controls: {},
+
         /**
          * Add a control to the Obsidian control collection
          * @param {object} control
@@ -71,8 +98,8 @@
          * @param {any} getOptionsFunc A function called with the store as a parameter that should return the
          * options object list for the drop down list.
          */
-        registerCommonEntityPicker(entityName, getOptionsFunc) {
-            Obsidian.Controls.registerControl({
+        registerCommonEntityPicker(entityName: string, getOptionsFunc: (store) => object[]) {
+            Obsidian.registerControl({
                 name: `${entityName}Picker`,
                 components: {
                     DropDownList: Obsidian.Elements.DropDownList
@@ -117,39 +144,39 @@
                 },
                 template:
                     `<DropDownList v-model="internalValue" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
-            });
-        }
-    };
+            } as VueComponent);
+        },
 
-    /**
-     * Fields are controls, but more dynamically sourced, for the purpose of automatic form generation from server side FieldTypes. For example: Fields
-     * are commonly used for generating a block attribute settings form.
-     */
-    Obsidian.Fields = {
+        /**
+         * Fields are controls, but more dynamically sourced, for the purpose of automatic form generation from server side FieldTypes. For example: Fields
+         * are commonly used for generating a block attribute settings form.
+         */
+        Fields: {},
+
         /**
          * Add a field to the Obsidian field collection
          * @param {string} fieldTypeGuid
          * @param {object} field
          */
-        registerField(fieldTypeGuid, field) {
+        registerField(fieldTypeGuid: string, field: VueComponent) {
             confirmNameAvailability(field.name, Obsidian.Fields);
             confirmNameAvailability(fieldTypeGuid, Obsidian.Fields);
 
             Obsidian.Fields[field.name] = field;
             Obsidian.Fields[fieldTypeGuid] = field;
         },
-    };
 
-    /**
-     * Block components are the front end objects responsible for interfacing with server side blocks. These serve the same purpose as
-     * traditional DotNet Framework RockBlocks and can contain business logic, controls, elements, templates, etc.
-     */
-    Obsidian.Blocks = {
+        /**
+         * Block components are the front end objects responsible for interfacing with server side blocks. These serve the same purpose as
+         * traditional DotNet Framework RockBlocks and can contain business logic, controls, elements, templates, etc.
+         */
+        Blocks: {},
+
         /**
          * Add a block to the Obsidian block collection
          * @param {object} block 
          */
-        registerBlock(block) {
+        registerBlock(block: VueComponent) {
             confirmNameAvailability(block.name, Obsidian.Blocks);
 
             if (block.props) {
@@ -157,7 +184,7 @@
             }
 
             Obsidian.Blocks[block.name] = block;
-        },
+        }
     };
 
     /**
