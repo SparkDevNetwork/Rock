@@ -41,13 +41,68 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Simplifies the registration process for a given person and event calendar item." )]
 
-    [BooleanField("Include Family Members", "Lists family members of the individual to select for registration.", true, "", 0)]
-    [IntegerField("Days In Range", "The number of days in the future to show events for.", true, 60, "", 1)]
-    [IntegerField("Max Display Events", "The maximum number of events to display.", true, 4, "", 2)]
-    [LinkedPage("Registration Page", "The registration page to redirect to.", true, "", "", 3)]
-    [BooleanField("Start Registration At Beginning", "Should the registration start at the beginning (true) or start at the confirmation page (false). This will depend on whether you would like the registrar to have to walk through the registration process to complete any required items.", true, order: 4)]
+    [BooleanField( "Include Family Members",
+        Description = "Lists family members of the individual to select for registration.",
+        DefaultBooleanValue = true,
+        Key = AttributeKeys.IncludeFamilyMembers,
+        Order = 0 )]
+
+    [IntegerField( "Days In Range",
+        Description = "The number of days in the future to show events for.",
+        IsRequired = true,
+        DefaultIntegerValue = 60,
+        Key = AttributeKeys.DaysInRange,
+        Order = 1)]
+
+    [IntegerField( "Max Display Events",
+        Description = "The maximum number of events to display.",
+        IsRequired = true,
+        DefaultIntegerValue = 4,
+        Key = AttributeKeys.MaxDisplayEvents,
+        Order = 2)]
+
+    [LinkedPage( "Registration Page",
+        Description = "The registration page to redirect to.",
+        IsRequired = true,
+        Key = AttributeKeys.RegistrationPage,
+        Order = 3)]
+
+    [BooleanField(  "Start Registration At Beginning",
+        Description = "Should the registration start at the beginning (true) or start at the confirmation page (false). This will depend on whether you would like the registrar to have to walk through the registration process to complete any required items.",
+        DefaultBooleanValue = true,
+        Key = AttributeKeys.StartRegistrationAtBeginning,
+        Order = 4)]
+
+    [CodeEditorField( "Registrant List Lava Template",
+        Description = "This template will be used in creating the text the displays for the checkbox. If the template returns no text the family member will not be displayed.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        Key = AttributeKeys.RegistrantListLavaTemplate,
+        DefaultValue = defaultRegistrantListLavaTemplate,
+        Order = 4 )]
     public partial class EventCalendarItemPersonalizedRegistration : Rock.Web.UI.RockBlock
     {
+        /// <summary>
+        /// The block setting attribute keys
+        /// </summary>
+        public static class AttributeKeys
+        {
+            public const string IncludeFamilyMembers = "IncludeFamilyMembers";
+
+            public const string DaysInRange = "DaysInRange";
+
+            public const string MaxDisplayEvents = "MaxDisplayEvents";
+
+            public const string RegistrationPage = "Registration Page";
+
+            public const string StartRegistrationAtBeginning = "StartRegistrationAtBeginning";
+
+            public const string RegistrantListLavaTemplate = "RegistrantListLavaTemplate";
+        }
+
+        // Default value for the RegistrantListLavaTemplate attribute
+        private const string defaultRegistrantListLavaTemplate = @"{{ Person.FullName }} <small>({{ Person.AgeClassification }})</small>";
+
+
         #region Fields
 
         // used for private variables
@@ -90,16 +145,10 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
-            int.TryParse( GetAttributeValue( "DaysInRange" ), out _daysInRange );
+            int.TryParse( GetAttributeValue( AttributeKeys.DaysInRange ), out _daysInRange );
 
             if ( !Page.IsPostBack )
             {
-                //// load campuses
-                //cpCampus.DataSource = CampusCache.All();
-                //cpCampus.DataValueField = "Id";
-                //cpCampus.DataTextField = "Name";
-                //cpCampus.DataBind();
-
                 LoadContent();
             }
         }
@@ -128,9 +177,9 @@ namespace RockWeb.Blocks.Event
             Person person = null;
 
             Guid personGuid = Guid.Empty;
-            if ( Request["PersonGuid"] != null )
+            if ( PageParameter( "PersonGuid" ) != null )
             {
-                personGuid = Request["PersonGuid"].AsGuid();
+                personGuid = PageParameter( "PersonGuid" ).AsGuid();
 
                 person = new PersonService( _rockContext ).Get( personGuid );
             }
@@ -147,7 +196,7 @@ namespace RockWeb.Blocks.Event
             // find registration
             var eventGroup = new EventItemOccurrenceGroupMapService( _rockContext ).Queryable()
                                 .Where( m => m.EventItemOccurrenceId == eventItemOccurrenceId )
-                                .Select( m => m.Group )
+                                .Select( m => m.EventItemOccurrence )
                                 .FirstOrDefault();
 
             var registrationLinkages = eventGroup.Linkages.ToList();
@@ -188,7 +237,7 @@ namespace RockWeb.Blocks.Event
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "RegistrationInstanceId", registrationLinkage.RegistrationInstanceId.ToString());
             queryParams.Add( "RegistrationId", registration.Id.ToString() );
-            queryParams.Add( "StartAtBeginning", GetAttributeValue( "StartRegistrationAtBeginning" ) );
+            queryParams.Add( "StartAtBeginning", GetAttributeValue( AttributeKeys.StartRegistrationAtBeginning ) );
 
             if ( !string.IsNullOrWhiteSpace( registrationLinkage.UrlSlug ) )
             {
@@ -200,7 +249,7 @@ namespace RockWeb.Blocks.Event
                 queryParams.Add( "GroupId", registrationLinkage.GroupId.ToString() );
             }
 
-            NavigateToLinkedPage( "RegistrationPage", queryParams );
+            NavigateToLinkedPage( AttributeKeys.RegistrationPage, queryParams );
             
         }
         protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
@@ -223,9 +272,9 @@ namespace RockWeb.Blocks.Event
 
             // get person
             Guid personGuid = Guid.Empty;
-            if ( Request["PersonGuid"] != null )
+            if ( PageParameter( "PersonGuid" ) != null )
             {
-                personGuid = Request["PersonGuid"].AsGuid();
+                personGuid = PageParameter( "PersonGuid" ).AsGuid();
 
                 person = new PersonService( _rockContext ).Get( personGuid );
             }
@@ -238,10 +287,10 @@ namespace RockWeb.Blocks.Event
 
             // get calendar item id
 
-            if ( Request["EventItemId"] != null )
+            if ( PageParameter( "EventItemId" ) != null )
             {
                 int calendarItemId = 0;
-                int.TryParse( Request["EventItemId"], out calendarItemId );
+                int.TryParse( PageParameter( "EventItemId" ), out calendarItemId );
 
                 eventItem = new EventItemService( _rockContext ).Get( calendarItemId );
             }
@@ -259,41 +308,24 @@ namespace RockWeb.Blocks.Event
             var families = person.GetFamilies();
             var familyMembers = person.GetFamilyMembers().ToList();
 
-            // sort family members
-            familyMembers = familyMembers.OrderBy( f => f.GroupRole.Order )
-                                    .OrderBy( f => f.Person.Gender ).ToList();
+            // Load the registrant list checkboxes
+            LoadRegistrantList( person, familyMembers );
 
+            // Get the campus from the family if we don't have it from the dropdown
             if ( _campusId == 0 )
             {
-                _campusId = families.FirstOrDefault().CampusId ?? 1;
+                _campusId = families.FirstOrDefault().CampusId ?? 1 ;
                 cpCampus.SelectedCampusId = _campusId;
             }
 
-            // enter reminder email
+            // Enter reminder email
             if (! string.IsNullOrWhiteSpace(person.Email))
             {
                 ebEmailReminder.Text = person.Email;
             } else
             {
-                // find email from one of the family members
+                // Find email from one of the family members
                 ebEmailReminder.Text = familyMembers.Where( f => f.Person.Email != "" ).Select( f => f.Person.Email ).FirstOrDefault();     
-            }
-
-            // add family registrants
-            if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
-            {
-                cblRegistrants.DataSource = familyMembers.Select( f => f.Person );
-                cblRegistrants.DataValueField = "PrimaryAliasId";
-                cblRegistrants.DataTextField = "FullName";
-                cblRegistrants.DataBind();
-            }
-
-            cblRegistrants.Items.Insert( 0, new ListItem( person.FullName, person.PrimaryAliasId.ToString() ) );
-            cblRegistrants.SelectedIndex = 0;
-
-            if ( cblRegistrants.Items.Count == 1 )
-            {
-                cblRegistrants.Visible = false;
             }
 
             // get list of upcoming events for the current campus
@@ -343,7 +375,7 @@ namespace RockWeb.Blocks.Event
                 
             }
 
-            int maxDisplayItems = GetAttributeValue( "MaxDisplayEvents" ).AsInteger();
+            int maxDisplayItems = GetAttributeValue( AttributeKeys.MaxDisplayEvents ).AsInteger();
 
             eventSummaries = eventSummaries.OrderBy( e => e.StartDate ).Take( maxDisplayItems ).ToList();
             rptEvents.DataSource = eventSummaries;
@@ -371,6 +403,63 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Adds a registrant list item from a person object.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        private void AddRegistrantListItem( List<RegistrantListItem> registrantList, Person person )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, person );
+            mergeFields.Add( "Person", person );
+
+            var registrantMarkup = GetAttributeValue( AttributeKeys.RegistrantListLavaTemplate ).ResolveMergeFields( mergeFields );
+
+            if ( registrantMarkup.IsNotNullOrWhiteSpace() )
+            {
+                registrantList.Add( new RegistrantListItem { PersonAliasId = person.PrimaryAliasId, RegistrantMarkup = registrantMarkup } );
+            }
+        }
+
+        /// <summary>
+        /// Loads the registrant list checkboxes.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="familyMembers">The family members.</param>
+        private void LoadRegistrantList( Person person, List<GroupMember> familyMembers )
+        {
+            // Sort family members
+            familyMembers = familyMembers.OrderBy( f => f.GroupRole.Order )
+                                    .OrderByDescending( f => f.Person.Age ).ToList();
+
+            // Create Registrant List
+            var registantList = new List<RegistrantListItem>();
+
+            // Add the selected person
+            AddRegistrantListItem( registantList, person );
+
+            // Add their family members
+            if ( GetAttributeValue( AttributeKeys.IncludeFamilyMembers ).AsBoolean() )
+            {
+                foreach ( var familyMember in familyMembers )
+                {
+                    AddRegistrantListItem( registantList, familyMember.Person );
+                }
+            }
+
+            cblRegistrants.DataSource = registantList;
+            cblRegistrants.DataValueField = "PersonAliasId";
+            cblRegistrants.DataTextField = "RegistrantMarkup";
+            cblRegistrants.DataBind();
+
+            cblRegistrants.SelectedIndex = 0;
+
+            if ( cblRegistrants.Items.Count == 1 )
+            {
+                cblRegistrants.Visible = false;
+            }
+        }
+
         #endregion
 
         protected void rptEvents_ItemDataBound( object sender, RepeaterItemEventArgs e )
@@ -385,6 +474,28 @@ namespace RockWeb.Blocks.Event
             campusDiv.Visible = cpCampus.Visible;
 
         }
+    }
+
+    /// <summary>
+    /// Registrant list for displaying in the checkbox list
+    /// </summary>
+    public class RegistrantListItem
+    {
+        /// <summary>
+        /// Gets or sets the person alias unique identifier.
+        /// </summary>
+        /// <value>
+        /// The person alias unique identifier.
+        /// </value>
+        public int? PersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant markup.
+        /// </summary>
+        /// <value>
+        /// The registrant markup.
+        /// </value>
+        public string RegistrantMarkup { get; set; }
     }
 
     public class EventSummary

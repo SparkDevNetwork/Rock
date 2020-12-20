@@ -64,7 +64,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" />
+                            <Rock:RockCheckBoxList ID="cblRegistrants" runat="server" Label="Register" RepeatDirection="Horizontal" RepeatColumns="2" />
                         </div>
                         <div class="col-md-6">
                             <Rock:EmailBox ID="ebEmailReminder" runat="server" Label="Email Reminder Address" />
