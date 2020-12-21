@@ -27,7 +27,11 @@ var options = {
     },
     scales: {
         yAxes: [{
-            display: false
+            display: false,
+            ticks: {
+                min: 0,
+                max: 100
+            }
         }],
         xAxes: [{
             display: false
@@ -86,98 +90,26 @@ $(document).ready(function () {
                         <div class="col-md-8">
                             <h5>Nodes</h5>
 
-                            <!-- Temporary Examples -->
-                            <div class="row d-flex flex-wrap">
-                                <div class="col-sm-12 col-md-6 col-lg-4">
-                                    <div class="card border-top-0 mb-4">
-                                        <div class="indicator bg-success"></div>
-                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
-                                                <i class="fa fa-server"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">Example 1</span>
-                                            </span>
-                                            <span class="ml-2 flex-shrink-0" title="Leader"><i class="fa fa-user-tie"></i></span>
-                                        </div>
-                                        <div class="card-body p-0" style="height:88px;">
-                                            <canvas class="js-chart"
-                                                    data-chart='{
-                                                        "labels": ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
-                                                        "datasets": [{
-                                                        "data": [21,20,24,20,18,17,15,17,30,30,35,25,18,30,31,35,35,90,90,90,85,100,120,120,120,100,90,75,75,75,90],
-                                                        "backgroundColor": "rgba(128, 205, 241, 0.25)",
-                                                        "borderColor": "#009CE3",
-                                                        "borderWidth": 2,
-                                                        "pointRadius": 0,
-                                                        "pointHoverRadius": 0
-                                                        }]
-                                                    }'>
-                                            </canvas>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-sm-12 col-md-6 col-lg-4">
-                                    <div class="card border-top-0 mb-4">
-                                        <div class="indicator bg-danger"></div>
-                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
-                                                <i class="fa fa-exclamation-triangle"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">Example 2</span>
-                                            </span>
-                                        </div>
-                                        <div class="card-body p-0" style="height:88px;">
-                                            <span class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">Last Seen 1hr Ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-12 col-md-6 col-lg-4">
-                                    <div class="card border-top-0 mb-4 bg-disabled">
-                                        <div class="indicator"></div>
-                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                            <span class="server-meta server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden">
-                                                <i class="fa fa-server"></i>
-                                                <span class="ml-1 font-weight-bold text-truncate">Example 3</span>
-                                            </span>
-                                        </div>
-                                        <div class="card-body p-0" style="height:88px;">
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- End Examples -->
-
-                                <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand">
+                                <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand" OnItemDataBound="rNodes_ItemDataBound">
                                     <ItemTemplate>
-                                        <div class="col-sm-12 col-md-6 col-lg-4">
-                                            <div class="card border-top-0 mb-4">
-                                                <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" :"" %>"></div>
+                                        <div class="col-sm-6 col-md-6 col-lg-4">
+                                            <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
+                                                <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
                                                 <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
                                                     <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
-                                                        <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" :"exclamation-triangle" %>"></i>
+                                                        <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
                                                         <asp:LinkButton runat="server" class="ml-1 font-weight-bold text-truncate text-black" CommandArgument='<%# Eval("Id") %>'>
                                                             <%# Eval("NodeName") %>
                                                         </asp:LinkButton>
                                                     </span>
                                                     <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
                                                     <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
-                                                    <!-- <%# Eval("LastSeen") %> -->
                                                 </div>
                                                 <div class="card-body p-0" style="height:88px;">
-
-                                                    <canvas class="js-chart"
-                                                            data-chart='{
-                                                                "labels": ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
-                                                                "datasets": [{
-                                                                "data": [21,20,24,20,18,17,15,17,30,30,35,25,18,30,31,35,35,90,90,90,85,100,120,120,120,100,90,75,75,75,90],
-                                                                "backgroundColor": "rgba(128, 205, 241, 0.25)",
-                                                                "borderColor": "#009CE3",
-                                                                "borderWidth": 2,
-                                                                "pointRadius": 0,
-                                                                "pointHoverRadius": 0
-                                                                }]
-                                                            }'>
-                                                    </canvas>
-
+                                                    <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
+                                                        <asp:Literal ID="lLastSeen" runat="server" />
+                                                    </span>
+                                                    <asp:Literal ID="lChart" runat="server" />
                                                 </div>
                                             </div>
                                         </div>
