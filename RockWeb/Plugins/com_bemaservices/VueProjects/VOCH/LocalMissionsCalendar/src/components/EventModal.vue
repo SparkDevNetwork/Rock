@@ -2,27 +2,29 @@
   <div id="Modal">
     <div class="card">
         <div class="top">
-          <i class="fa fa-times fa-2x" @click="closeModal"></i>
+          <i class="fal fa-times fa-2x" style="font-weight:normal." @click="closeModal"></i>
         </div>
-      <v-card
+  <v-card
     class="mx-auto flex-Card"
     elevation="0"
     max-width="100%"
   >
   <div>
     <v-img
-      class="white--text align-end gradient"
-      height="350px"
-      
       width="100%"
-     :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
+      class="white--text align-end gradient"
+      :aspect-ratio="Event.EventPhoto ? '1.7778': ''"
+      @load="showTitle = false"
+      @error="showTitle = true"
+      :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
     >
-      <v-card-title :color="Event.EventPhoto ? 'White' : 'Black'">{{Event.EventName}}</v-card-title>
+       <v-card-title v-if="!Event.EventPhoto && showTitle" color="Black" class="titleFont">{{Event.EventName}}</v-card-title>
     </v-img>
   
     <v-card-subtitle class="pb-0" style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:space-between; align-items:top; flex-shirnk:1">
-
+        
         <div style="flex-shrink:1;">
+          <span v-if="Event.EventPhoto || !showTitle" class="titleFont">{{Event.EventName}}</span>
           {{ formatDate(Event.EventNextStartDate.StartDateTime) }} at {{ formatTime(Event.EventNextStartDate.StartDateTime) }}
           <div>{{ Event.OccurrenceLocation }}</div>
           <div v-if="calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0 ">Spots Remaining: {{ calculateSpotsRemaining.SpotsRemaining }}</div><br/>
@@ -64,13 +66,7 @@
         <span>Hide Details</span>
       </v-btn>
 
-      <v-btn
-        color="orange"
-        text
-        v-if="Event.RegistrationInformation.length > 0 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
-      >
-        Register
-      </v-btn>
+      
     </v-card-actions>
     </div>
   </v-card>
@@ -79,13 +75,20 @@
 </template>
 
 <script>
+import Eventcard from './EventCard'
 export default {
+  components: {
+    Eventcard
+  },
   props:{
     Event:{
       type:Object,
       required:true,
     }
   },
+  data: () => ({
+    showTitle:false,
+      }),
   methods:{
     closeModal(){
       this.$emit('CloseModal');
@@ -154,9 +157,11 @@ export default {
 }
 .card {
   background-color:white;
-  width:90vw;
+  width: clamp(280px, 100vw, 600px);
   overflow-y:scroll;
-  height:90vh;
+  height:100vh;
+  position:relative;
+  
  
   /* left:50%;
   top:50%;
@@ -166,19 +171,27 @@ export default {
   transform:translate(-50%, -50%) */
 }
 .top {
-  width:100%;
+  
   background-color:teal;
   color:white;
   padding:1vh 2vw;
   display:flex;
   flex-direction:row-reverse;
-  position: fixed;
+  position: absolute;
     z-index: 101;
     top: 0;
-    width: 90vw;
+    right:0;
+    left:0;
+    width:inherit
 
 }
-
+.gradient {
+   background-color:black;  
+ }
+ .titleFont {
+   font-size:clamp(1.5rem, 2vw, 3rem);
+   padding-left:0;
+ }
 
 </style>
 <style>
@@ -186,4 +199,5 @@ export default {
   overflow: hidden;
   height: 100vh;
 }
+
 </style>

@@ -1,43 +1,50 @@
 <template>
     <div
 
-      :class="ShowDetails ? 'col-md-12 col-lg-12 removeItem' : 'col-md-4'"
+      class="col-md-4"
+      style="oveflow:hidden;"
       v-if="!calculateSpotsRemaining.LimitedSpots || calculateSpotsRemaining.SpotsRemaining > 0 "
     >
     <v-card
     class="mx-auto flex-Card"
     height="100%"
     max-width="100%"
+    rounded
+    elevation="2"
   >
   <div>
-    <v-img
-      class="white--text align-end gradient"
-      :height="ShowDetails ? '400px' : '200px'"
+    <div style="position:relative">
+      <v-img
+        class="white--text align-end gradient"
+        aspect-ratio="1.7778"
+        
+        @load="showTitle = false"
+        @error="showTitle = true"
+        width="100%"
+      :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
+      >
       
-      width="100%"
-     :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
-    >
-      <v-card-title :color="Event.EventPhoto ? 'White' : 'Black'">{{Event.EventName}}</v-card-title>
-    </v-img>
-  
+      </v-img>
+      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>   
+    </div>
+  <v-card-title class="titleFont">{{Event.EventName}}</v-card-title>
     <v-card-subtitle class="pb-0" style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:space-between; align-items:top; flex-shirnk:1">
-
+        
         <div style="flex-shrink:1;">
           {{ formatDate(Event.EventNextStartDate.StartDateTime) }} at {{ formatTime(Event.EventNextStartDate.StartDateTime) }}
           <div>{{ Event.OccurrenceLocation }}</div>
           <div v-if="calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0 ">Spots Remaining: {{ calculateSpotsRemaining.SpotsRemaining }}</div><br/>
         </div>
-        <div style="flex-grow:1; align-content:flex-end;  break-inside: avoid;" class="text-right">
+        <!-- <div style="flex-grow:1; align-content:flex-end;  break-inside: avoid;" class="text-right">
             {{Event.CampusName}}
-        </div>
+        </div> -->
 
     </v-card-subtitle>
     </div>
   <div class="flex-Card">
     <v-card-text class="text--primary">
       <div v-if="!ShowDetails">
-        <div v-if="Event.EventSummary">
-          <span class="font-weight-bold">Summary:</span>
+        <div>
           <div>{{ Event.EventSummary}}</div>
         </div>
       </div>
@@ -74,9 +81,17 @@
       <v-btn
         color="orange"
         text
-        v-if="Event.RegistrationInformation.length > 0 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
+        v-if="Event.RegistrationInformation.length = 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
       >
         Register
+      </v-btn>
+      <v-btn
+        color="Gray"
+        disabled
+        text
+        v-else-if="Event.RegistrationInformation.length = 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining <= 0"
+      >
+        Registration Full
       </v-btn>
     </v-card-actions>
     </div>
@@ -86,8 +101,9 @@
 </template>
 
 <script>
-
+ 
 export default {
+ 
   props: {
     Event: {
       type: Object,
@@ -96,6 +112,7 @@ export default {
   },
   data: () => ({
     ShowDetails: false,
+    showTitle:false,
       }),
   methods: {
     formatDate(dateItem) {
@@ -158,6 +175,26 @@ export default {
     flex-grow:1;
  }
  .gradient {
-   background-color:black;  
+   background: rgb(255,255,255);
+   background: linear-gradient(0deg, rgba(255,255,255,.9) 46%, rgba(34,193,195,.8) 90%);
+ }
+ .titleFont {
+   font-size:1.15rem;
+   line-height:1.15rem;
+   width:80%;
+   /* font-size:30ch; */
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+   
+ }
+ .campusBox {
+    position:absolute; 
+    right:0; 
+    bottom:0; 
+    background-color:rgba(0,0,0,.75); 
+    color:white; 
+    padding:5px 10px 5px 20px;
+    
  }
 </style>

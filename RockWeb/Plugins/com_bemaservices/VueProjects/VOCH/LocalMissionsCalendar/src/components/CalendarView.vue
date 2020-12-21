@@ -13,8 +13,8 @@
           >
             Today
           </v-btn>
-         
-            
+         <v-spacer></v-spacer>
+            <h4>{{focus.toLocaleString('en-us', { month: 'long' })}} {{focus.getFullYear()}}</h4>
           <v-spacer></v-spacer>
           <v-menu
             bottom
@@ -143,8 +143,8 @@ export default {
         this.$emit('CalendarType',{type: val})
       },
       viewDay ({ date }) {
-        let newDatee = date + 'T00:00:00.0000'
-        this.$emit('setFocus',newDatee)
+        let newDate = date + 'T00:00:00.0000'
+        this.$emit('setFocus',newDate)
         this.$emit('CalendarType',{type: 'day'})
       },
       getEventColor (event) {
