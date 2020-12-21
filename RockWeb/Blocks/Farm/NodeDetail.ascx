@@ -1,5 +1,71 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NodeDetail.ascx.cs" Inherits="RockWeb.Blocks.Farm.NodeDetail" %>
 
+<style>
+    .card .indicator {
+        height: 4px;
+    }
+
+    .server-meta {
+        font-size: 20px;
+    }
+
+    .bg-disabled {
+        background: #F5F5F5;
+        color: #AEAEAE;
+    }
+
+    .bg-disabled .indicator {
+        background: #A3A3A3;
+    }
+</style>
+<script>
+var options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    legend: {
+        display: false
+    },
+    scales: {
+        yAxes: [{
+            display: false,
+            ticks: {
+                min: 0,
+                max: 100
+            }
+        }],
+        xAxes: [{
+            display: false
+        }]
+    },
+    hover: {
+        mode: 'nearest',
+        intersect: false
+    },
+    tooltips: {
+        hasIndicator: true,
+        intersect: false,
+        callbacks: {
+            label: function (tooltipItem, data) {
+                var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+                if (label) {
+                    label = 'CPU: ' + label + '%';
+                }
+
+                return label;
+            }
+        }
+    }
+};
+
+$(document).ready(function () {
+    $('.js-chart').each(function () {
+        var el = $(this);
+        var data = el.attr('data-chart') ? JSON.parse(el.attr('data-chart')) : {};
+        var chart = new Chart(el, { type: 'line', data: data, options: options });
+    });
+});
+</script>
+
 <asp:UpdatePanel ID="upUpdatePanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
@@ -18,15 +84,19 @@
                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
+                    
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-5">
                             <asp:Literal ID="lDescription" runat="server" />
+                        </div>
+                        <div class="col-md-7" style="height:250px;">
+                            <asp:Literal ID="lChart" runat="server" />
                         </div>
                     </div>
 
-                    <div class="actions">
+                    <!-- div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
-                    </div>
+                    </div -->
                 </div>
 
                 <div id="pnlEditDetails" runat="server">
