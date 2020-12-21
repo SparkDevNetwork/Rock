@@ -185,11 +185,7 @@ namespace Rock.WebFarm
             using ( var rockContext = new RockContext() )
             {
                 // Check that the WebFarmEnable = true.If yes, continue
-                var isWebFarmEnabled =
-                    SystemSettings.GetValue( SystemSetting.WEBFARM_IS_ENABLED ).AsBooleanOrNull() ??
-                    DefaultValue.IsWebFarmEnabled;
-
-                if ( !isWebFarmEnabled )
+                if ( !IsEnabled() )
                 {
                     return;
                 }
@@ -435,6 +431,11 @@ namespace Rock.WebFarm
         /// </summary>
         internal static async Task DoIntervalProcessingAsync()
         {
+            if ( !IsEnabled() )
+            {
+                return;
+            }
+
             await DoLeadershipPollAsync();
 
             using ( var rockContext = new RockContext() )
@@ -655,6 +656,56 @@ namespace Rock.WebFarm
 
             var doesKeyFitLock = ( ( keyInt & doorLock ) == doorLock ) && ( ( keyInt | doorLock ) == keyInt );
             return doesKeyFitLock;
+        }
+
+        /// <summary>
+        /// Determines whether this instance is running.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is running; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsRunning()
+        {
+            return _startStage == 2;
+        }
+
+        /// <summary>
+        /// Determines whether this instance is enabled.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsEnabled()
+        {
+            return
+                SystemSettings.GetValue( SystemSetting.WEBFARM_IS_ENABLED ).AsBooleanOrNull() ??
+                DefaultValue.IsWebFarmEnabled;
+        }
+
+        /// <summary>
+        /// Sets the is enabled.
+        /// </summary>
+        /// <param name="isEnabled">if set to <c>true</c> [is enabled].</param>
+        /// <returns></returns>
+        public static void SetIsEnabled( bool isEnabled )
+        {
+            if ( isEnabled == IsEnabled() )
+            {
+                return;
+            }
+
+            SystemSettings.SetValue( SystemSetting.WEBFARM_IS_ENABLED, isEnabled.ToString() );
+
+            if ( IsRunning() )
+            {
+                var text = isEnabled ? "enabled" : "disabled";
+
+                using ( var rockContext = new RockContext() )
+                {
+                    AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Availability, $"The farm has been {text}" );
+                    rockContext.SaveChanges();
+                }
+            }
         }
 
         /// <summary>
