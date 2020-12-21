@@ -117,6 +117,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public string MergeTemplateDescriptor { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsActive { get; private set; }
+
         #endregion Properties
 
         #region Related Caches
@@ -158,6 +166,7 @@ namespace Rock.Web.Cache
             CardLavaTemplate = sourceModel.CardLavaTemplate;
             MergeTemplateId = sourceModel.MergeTemplateId;
             MergeTemplateDescriptor = sourceModel.MergeTemplateDescriptor;
+            IsActive = sourceModel.IsActive;
         }
 
         /// <summary>
