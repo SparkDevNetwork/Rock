@@ -4,7 +4,9 @@
       <v-sheet height="64">
         <v-toolbar
           flat
+          
         >
+        <v-spacer></v-spacer>
           <v-btn
             outlined
             class="mr-4"
@@ -13,12 +15,13 @@
           >
             Today
           </v-btn>
-         <v-spacer></v-spacer>
+         <!-- <v-spacer></v-spacer>
             <h4>{{focus.toLocaleString('en-us', { month: 'long' })}} {{focus.getFullYear()}}</h4>
-          <v-spacer></v-spacer>
+           -->
           <v-menu
             bottom
             right
+             v-if="false"
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -106,7 +109,9 @@
   </v-row>
 </template>
 <script>
+import multiselect from 'vue-multiselect'
 export default {
+    components:{ multiselect },
     props: {
       Events: {
         type:Array,
@@ -125,6 +130,8 @@ export default {
         week: 'Week',
         day: 'Day',
       },
+      CalendarTypes: ['Month', 'Week', 'Day'],
+      selectedType:null,
       selectedEvent: {},
       selectedElement: null,
       selectedOpen: false,

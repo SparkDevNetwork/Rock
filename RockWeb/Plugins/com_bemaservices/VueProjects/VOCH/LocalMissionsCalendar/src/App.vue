@@ -43,21 +43,24 @@
             <div class="btn btn-primary" @click="clearFilters">Clear Filters</div>
           
             </div>
-                    <div class="col-md-1">
+          </div>
+          <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:flex-end; margin-bottom:10px; width:100%;">
+            <v-spacer></v-spacer>
+                    <div class="col-md-2" style="text-align:right;">
           
               <v-btn-toggle v-model="SelectedView">
-              <v-btn>
+              <v-btn small>
                 <i class="fa fa-th"></i>
               </v-btn>
-              <v-btn>
+              <v-btn small>
                 <i class="fa fa-calendar"></i>
               </v-btn>
             </v-btn-toggle>
             </div>
-          
+          </div>
         
           
-        </div>
+        
         <CalendarView v-if="SelectedView == '1'" :Events="filteredEvents" :focus="focus" :type="calendarType" @setFocus="setFocus" @ShowModal="showModal" @CalendarType="SetType" />
 
         <EventList 
