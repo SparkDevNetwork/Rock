@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -63,6 +64,14 @@ namespace RockWeb.Blocks.Farm
         }
 
         #endregion Keys
+
+        #region Properties
+
+        private static readonly int _cpuMetricSampleCount = 30;
+        private static readonly DateTime _chartMaxDate = RockDateTime.Now;
+        private static readonly DateTime _chartMinDate = _chartMaxDate.AddMinutes( -60 );
+
+        #endregion Properties
 
         #region View State
 
@@ -189,6 +198,35 @@ namespace RockWeb.Blocks.Farm
             RenderState();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rNodes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rNodes_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        {
+            var viewModel = e.Item.DataItem as WebFarmNodeService.NodeViewModel;
+
+            if ( viewModel == null )
+            {
+                return;
+            }
+
+            var spanLastSeen = e.Item.FindControl( "spanLastSeen" );
+            var lChart = e.Item.FindControl( "lChart" ) as Literal;
+            var lLastSeen = e.Item.FindControl( "lLastSeen" ) as Literal;
+            spanLastSeen.Visible = viewModel.IsUnresponsive;
+            lLastSeen.Text = WebFarmNodeService.GetHumanReadablePastTimeDifference( viewModel.LastSeen );
+
+            // Show chart for responsive nodes
+            if ( viewModel.IsActive && !viewModel.IsUnresponsive && viewModel.Metrics.Count() > 1 )
+            {
+                var samples = WebFarmNodeMetricService.CalculateMetricSamples( viewModel.Metrics, _cpuMetricSampleCount, _chartMinDate, _chartMaxDate );
+                var html = GetChartHtml( samples );
+                lChart.Text = html;
+            }
+        }
+
         #endregion Events
 
         #region Internal Methods
@@ -199,7 +237,7 @@ namespace RockWeb.Blocks.Farm
         /// <returns></returns>
         private void SaveRecord()
         {
-            SystemSettings.SetValue( SystemSetting.WEBFARM_IS_ENABLED, cbIsActive.Checked.ToString() );
+            RockWebFarm.SetIsEnabled( cbIsActive.Checked );
             SystemSettings.SetValue( SystemSetting.WEBFARM_KEY, tbWebFarmKey.Text );
 
             SystemSettings.SetValue(
@@ -230,10 +268,21 @@ namespace RockWeb.Blocks.Farm
         {
             nbEditModeMessage.Text = string.Empty;
 
-            var isEnabled = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.WEBFARM_IS_ENABLED ).AsBoolean();
-            var hasValidKey = Rock.WebFarm.RockWebFarm.HasValidKey();
+            var isEnabled = RockWebFarm.IsEnabled();
+            var hasValidKey = RockWebFarm.HasValidKey();
+            var isRunning = RockWebFarm.IsRunning();
 
-            if ( isEnabled && hasValidKey )
+            if ( !isEnabled && hasValidKey && isRunning )
+            {
+                hlActive.Text = "Ready (Re-enable)";
+                hlActive.LabelType = Rock.Web.UI.Controls.LabelType.Warning;
+            }
+            else if ( isEnabled && hasValidKey && !isRunning )
+            {
+                hlActive.Text = "Ready (Restart Rock)";
+                hlActive.LabelType = Rock.Web.UI.Controls.LabelType.Warning;
+            }
+            else if ( isEnabled && hasValidKey )
             {
                 hlActive.Text = "Active";
                 hlActive.LabelType = Rock.Web.UI.Controls.LabelType.Success;
@@ -268,7 +317,7 @@ namespace RockWeb.Blocks.Farm
             pnlViewDetails.Visible = false;
             HideSecondaryBlocks( true );
 
-            cbIsActive.Checked = SystemSettings.GetValue( SystemSetting.WEBFARM_IS_ENABLED ).AsBoolean();
+            cbIsActive.Checked = RockWebFarm.IsEnabled();
             tbWebFarmKey.Text = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY );
             nbPollingMin.IntegerValue = RockWebFarm.GetLowerPollingLimitSeconds();
             nbPollingMax.IntegerValue = RockWebFarm.GetUpperPollingLimitSeconds();
@@ -308,28 +357,78 @@ namespace RockWeb.Blocks.Farm
             descriptionList.Add( "Min Polling Limit", string.Format( "{0} seconds", minPolling ) );
             descriptionList.Add( "Max Polling Limit", string.Format( "{0} seconds", maxPolling ) );
 
+            var unresponsiveMinutes = 10;
+            var unresponsiveDateTime = RockDateTime.Now.AddMinutes( 0 - unresponsiveMinutes );
+
             // Bind the grid data view models
             using ( var rockContext = new RockContext() )
             {
-                var service = new WebFarmNodeService( rockContext );
-                var query = service.Queryable()
+                rockContext.SqlLogging( true );
+                var webFarmNodeService = new WebFarmNodeService( rockContext );
+                var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
+
+                var viewModels = webFarmNodeService.Queryable()
                     .AsNoTracking()
-                    .Select( wfn => new
+                    .Select( wfn => new WebFarmNodeService.NodeViewModel
                     {
                         PollingIntervalSeconds = wfn.CurrentLeadershipPollingIntervalSeconds,
                         IsJobRunner = wfn.IsCurrentJobRunner,
                         IsActive = wfn.IsActive,
+                        IsUnresponsive = wfn.IsActive && !wfn.StoppedDateTime.HasValue && wfn.LastSeenDateTime < unresponsiveDateTime,
                         IsLeader = wfn.IsLeader,
                         NodeName = wfn.NodeName,
                         LastSeen = wfn.LastSeenDateTime,
-                        Id = wfn.Id
-                    } );
+                        Id = wfn.Id,
+                        Metrics = wfn.WebFarmNodeMetrics
+                            .Where( wfnm =>
+                                wfnm.MetricType == WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent &&
+                                wfnm.MetricValueDateTime >= _chartMinDate &&
+                                wfnm.MetricValueDateTime <= _chartMaxDate )
+                            .Select( wfnm => new WebFarmNodeMetricService.MetricViewModel
+                            {
+                                MetricValueDateTime = wfnm.MetricValueDateTime,
+                                MetricValue = wfnm.MetricValue
+                            } )
+                            .ToList()
+                    } )
+                    .ToList();
 
-                rNodes.DataSource = query.ToList();
+                rNodes.DataSource = viewModels;
                 rNodes.DataBind();
             }
 
             lDescription.Text = descriptionList.Html;
+        }
+
+        /// <summary>
+        /// Gets the chart HTML.
+        /// </summary>
+        /// <returns></returns>
+        private string GetChartHtml( decimal[] samples )
+        {
+            if ( samples == null || samples.Length <= 1 )
+            {
+                return string.Empty;
+            }
+
+            return string.Format(
+@"<canvas
+    class='js-chart''
+    data-chart='{{
+        ""labels"": [{0}],
+        ""datasets"": [{{
+            ""data"": [{1}],
+            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+            ""borderColor"": ""#009CE3"",
+            ""borderWidth"": 2,
+            ""pointRadius"": 0,
+            ""pointHoverRadius"": 0
+        }}]
+    }}'>
+</canvas>",
+                samples.Select( s => "\"\"" ).JoinStrings( "," ),
+                samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
+            );
         }
 
         #endregion Internal Methods
