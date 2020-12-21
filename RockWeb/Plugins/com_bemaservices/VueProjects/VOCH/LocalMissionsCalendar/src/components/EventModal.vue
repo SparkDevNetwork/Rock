@@ -4,34 +4,39 @@
         <div class="top">
           <i class="fal fa-times fa-2x" style="font-weight:normal." @click="closeModal"></i>
         </div>
-  <v-card
+ <v-card
     class="mx-auto flex-Card"
-    elevation="0"
+    height="100%"
     max-width="100%"
+    rounded
+    elevation="2"
   >
   <div>
-    <v-img
-      width="100%"
-      class="white--text align-end gradient"
-      :aspect-ratio="Event.EventPhoto ? '1.7778': ''"
-      @load="showTitle = false"
-      @error="showTitle = true"
+    <div style="position:relative">
+      <v-img
+        class="white--text align-end gradient"
+        aspect-ratio="1.7778"
+        
+        @load="showTitle = false"
+        @error="showTitle = true"
+        width="100%"
       :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
-    >
-       <v-card-title v-if="!Event.EventPhoto && showTitle" color="Black" class="titleFont">{{Event.EventName}}</v-card-title>
-    </v-img>
-  
+      >
+      
+      </v-img>
+      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>   
+    </div>
+  <v-card-title class="titleFont">{{Event.EventName}}</v-card-title>
     <v-card-subtitle class="pb-0" style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:space-between; align-items:top; flex-shirnk:1">
         
         <div style="flex-shrink:1;">
-          <span v-if="Event.EventPhoto || !showTitle" class="titleFont">{{Event.EventName}}</span>
           {{ formatDate(Event.EventNextStartDate.StartDateTime) }} at {{ formatTime(Event.EventNextStartDate.StartDateTime) }}
           <div>{{ Event.OccurrenceLocation }}</div>
           <div v-if="calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0 ">Spots Remaining: {{ calculateSpotsRemaining.SpotsRemaining }}</div><br/>
         </div>
-        <div style="flex-grow:1; align-content:flex-end;  break-inside: avoid;" class="text-right">
+        <!-- <div style="flex-grow:1; align-content:flex-end;  break-inside: avoid;" class="text-right">
             {{Event.CampusName}}
-        </div>
+        </div> -->
 
     </v-card-subtitle>
     </div>
@@ -157,11 +162,11 @@ export default {
 }
 .card {
   background-color:white;
-  width: clamp(280px, 100vw, 600px);
+  width: clamp(280px, 55vw, 600px);
   overflow-y:scroll;
-  height:100vh;
+  max-height:90vh;
   position:relative;
-  
+  padding-top:45px;
  
   /* left:50%;
   top:50%;
@@ -174,25 +179,43 @@ export default {
   
   background-color:teal;
   color:white;
-  padding:1vh 2vw;
+  padding:1vh 1vw;
   display:flex;
   flex-direction:row-reverse;
+  align-items:center;
   position: absolute;
     z-index: 101;
     top: 0;
     right:0;
     left:0;
-    width:inherit
+    width:inherit;
+    height:45px;
 
+}
+.top i {
+  cursor:pointer;
 }
 .gradient {
    background-color:black;  
  }
  .titleFont {
    font-size:clamp(1.5rem, 2vw, 3rem);
-   padding-left:0;
+   /* padding-left:0; */
  }
-
+ .gradient {
+   background: rgb(255,255,255);
+   background: linear-gradient(0deg, rgba(255,255,255,.9) 46%, rgba(34,193,195,1) 90%);
+ }
+ 
+ .campusBox {
+    position:absolute; 
+    right:0; 
+    bottom:0; 
+    background-color:rgba(0,0,0,.75); 
+    color:white; 
+    padding:5px 10px 5px 20px;
+    
+ }
 </style>
 <style>
 .modal-open {
