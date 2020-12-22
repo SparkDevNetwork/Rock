@@ -123,10 +123,12 @@ export default {
     try {
       let startDate = new Date();
       let endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1).toISOString();
+      console.log(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`)
       const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
         credentials: 'include',
       });
       const events = await response.json();
+      console.log(events)
       this.Events = events;
     } catch (err) {
       console.log('Error Downloading Events: ', err);
@@ -146,7 +148,7 @@ export default {
           break;
       }
       try {
-        
+       
       const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
         credentials: 'include',
       });

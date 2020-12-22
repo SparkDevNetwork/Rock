@@ -160,13 +160,15 @@ export default {
   right:0;
   z-index:20;
 }
-.card {
+#Modal .card {
   background-color:white;
   width: clamp(280px, 55vw, 600px);
   overflow-y:scroll;
   max-height:90vh;
   position:relative;
+  padding: 0;
   padding-top:45px;
+  
  
   /* left:50%;
   top:50%;
