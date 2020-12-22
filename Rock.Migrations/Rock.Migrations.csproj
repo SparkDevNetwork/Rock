@@ -81,6 +81,10 @@
     <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.Designer.cs">
       <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202012222016408_Rollup_1222.cs" />
+    <Compile Include="Migrations\202012222016408_Rollup_1222.Designer.cs">
+      <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -1537,6 +1541,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.resx">
       <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012222016408_Rollup_1222.resx">
+      <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
