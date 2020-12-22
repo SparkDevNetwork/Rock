@@ -310,7 +310,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Then Orders the list by a a property in descending order.
+        /// Then Orders the list by a property in descending order.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The type of object.</param>

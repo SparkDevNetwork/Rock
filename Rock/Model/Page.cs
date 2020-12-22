@@ -193,7 +193,7 @@ namespace Rock.Model
         private bool _pageDisplayDescription = true;
 
         /// <summary>
-        /// Gets or sets a a value indicating when the Page should be displayed in the navigation.
+        /// Gets or sets a value indicating when the Page should be displayed in the navigation.
         /// </summary>
         /// <value>
         /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation 
