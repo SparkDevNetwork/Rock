@@ -145,7 +145,7 @@ namespace Rock.Model
         /// Gets or sets the GovernmentId of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the GovernmentId of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the GovernmentId of the person who requested benevolence.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
