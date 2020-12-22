@@ -105,33 +105,41 @@ export default {
     focusEvent: null,
     calendarType:'month',
     loadStartDate: new Date(),
-    Events: []
+    Events: [],
+    calendar:null,
   }),
-  async created() {
-    this.focus = new Date();
+  
+  async mounted() {
+    let today = new Date();
+    this.focus = new Date( today.getFullYear(), today.getMonth() - 1, 1);
+    if(typeof calendar !== 'undefined'){
+      this.calendar = calendar;
+    } else {
+      this.calendar = 5;
+    }
     try {
-      const response = await fetch('rock.voxchurch.org/api/People/GetCurrentPerson', {
+      const response = await fetch('/api/People/GetCurrentPerson', {
         credentials: 'include', // include, *same-origin, omit
       });
       const user = await response.json();
       this.CurrentPerson = user;
     } catch (err) {
       //
-      console.log('User Not Logged In');
+
     }
 
     try {
       let startDate = new Date();
       let endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1).toISOString();
-      console.log(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`)
-      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
+      
+      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
         credentials: 'include',
       });
       const events = await response.json();
-      console.log(events)
+      
       this.Events = events;
     } catch (err) {
-      console.log('Error Downloading Events: ', err);
+      
     }
   },
   watch: {
@@ -149,7 +157,7 @@ export default {
       }
       try {
        
-      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=5&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
+      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
         credentials: 'include',
       });
       const events = await response.json();
@@ -162,7 +170,7 @@ export default {
         }
 
       )
-      console.log(this.Events, newEvents)
+      
       this.Events = this.Events.concat(newEvents)
 
 
@@ -170,7 +178,7 @@ export default {
       
       
     } catch (err) {
-      console.log('Error Downloading Events: ', err);
+      
     }
     },
   },
@@ -259,7 +267,7 @@ export default {
     },
     setFocus(val){
       
-      if(val && val != null ) {
+      if(!!val) {
        
         this.focus = new Date(val);
       } else {

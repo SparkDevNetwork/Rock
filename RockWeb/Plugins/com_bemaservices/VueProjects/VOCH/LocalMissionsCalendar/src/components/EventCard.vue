@@ -43,34 +43,13 @@
     </div>
   <div class="flex-Card">
     <v-card-text class="text--primary">
-      <div v-if="!ShowDetails">
         <div>
           <div>{{ Event.EventSummary}}</div>
         </div>
-      </div>
-      <div v-else >
-         <div class="font-weight-bold">Description:</div>
-        <div v-html="Event.EventDescription"></div>
-        <div class="font-weight-bold">Upcoming Dates:</div>
-        <ul>
-          <li v-for="date in Event.UpcomingDates" :key="date">{{formatDate(date.StartDateTime) }} at {{ formatTime(date.StartDateTime) }} to {{formatDate(date.EndDateTime) != formatDate(date.StartDateTime) ? `${formatDate(date.EndDateTime)} at` : ''}} {{ formatTime(date.EndDateTime) }}</li>
-        </ul>
-        <div v-if="Event.RegistrationInformation.length > 0">
-            <div class="font-weight-bold">Registration Information:</div>
-            <ul>
-              <li v-for="registration in Event.RegistrationInformation" :key="registration.RegistrationInstanceId">
-                <span>{{registration.RegistrationPublicName}} - Register Between {{formatDate(registration.RegistrationStartDate) }} and {{formatDate(registration.RegistrationEndDate) }}</span><br />
-                <span vif="!registrationSpotsRemaining(registration).LimitedSpots || registrationSpotsRemaining(registration).SpotsRemaining > 0">
-                  <a :href="registration.RegistrationPublicSlug != '' ? `https://voxchurch.org/registration/${registration.RegistrationPublicSlug}` : `https://voxchurch.org/registration?RegistrationInstance=${registration.RegistrationInstanceId}`" class="btn btn-primary">Register</a>
-                </span>
-              </li>
-            </ul>
-         </div>
-      </div>
     </v-card-text>
     <v-card-actions>
       <v-btn
-        color="orange"
+        color="#34aeb7"
         text
         @click="$emit('ShowModal',Event)"
       >
@@ -79,9 +58,10 @@
       </v-btn>
 
       <v-btn
-        color="orange"
+        color="#34aeb7"
         text
-        v-if="Event.RegistrationInformation.length = 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
+        v-if="!!Event.RegistrationInformation && Event.RegistrationInformation.length == 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
+        :href="!!registration.RegistrationPublicSlug ? 'https://voxchurch.org/registration/' + registration.RegistrationPublicSlug : 'https://voxchurch.org/registration?RegistrationInstance=' + registration.RegistrationInstanceId"
       >
         Register
       </v-btn>
@@ -89,7 +69,7 @@
         color="Gray"
         disabled
         text
-        v-else-if="Event.RegistrationInformation.length = 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining <= 0"
+        v-else-if="!!Event.RegistrationInformation && Event.RegistrationInformation.length == 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining <= 0"
       >
         Registration Full
       </v-btn>
@@ -114,6 +94,7 @@ export default {
     ShowDetails: false,
     showTitle:false,
       }),
+
   methods: {
     formatDate(dateItem) {
       const options = {
@@ -150,7 +131,7 @@ export default {
       let SpotsRemaining = null;
       let LimitedSpots = false;
 
-      if (this.Event.RegistrationInformation[0]) {
+      if (!!this.Event.REgistrationInformtion && this.Event.RegistrationInformation[0]) {
         SpotsRemaining = this.Event.RegistrationInformation[0].RegistrationMaxAttendees - this.Event.RegistrationInformation[0].RegistrationTotalRegistrants;
         LimitedSpots = this.Event.RegistrationInformation[0].RegistrationMaxAttendees > 0 ? this.Event.RegistrationInformation[0].RegistrationMaxAttendees : false;
       }

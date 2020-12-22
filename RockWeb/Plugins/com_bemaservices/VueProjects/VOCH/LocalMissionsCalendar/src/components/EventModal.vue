@@ -64,7 +64,7 @@
     </v-card-text>
     <v-card-actions>
       <v-btn
-        color="orange"
+        color="#34aeb7"
         text
         @click="closeModal"
       >
@@ -179,7 +179,7 @@ export default {
 }
 .top {
   
-  background-color:teal;
+  background-color:#34aeb7;
   color:white;
   padding:1vh 1vw;
   display:flex;
@@ -206,7 +206,7 @@ export default {
  }
  .gradient {
    background: rgb(255,255,255);
-   background: linear-gradient(0deg, rgba(255,255,255,.9) 46%, rgba(34,193,195,1) 90%);
+   background: linear-gradient(0deg, rgba(255,255,255,.9) 46%, rgba(52, 174, 183, 1)90%);
  }
  
  .campusBox {
