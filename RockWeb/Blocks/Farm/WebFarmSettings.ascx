@@ -89,32 +89,33 @@ $(document).ready(function () {
                         </div>
                         <div class="col-md-8">
                             <h5>Nodes</h5>
-
-                                <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand" OnItemDataBound="rNodes_ItemDataBound">
-                                    <ItemTemplate>
-                                        <div class="col-sm-6 col-md-6 col-lg-4">
-                                            <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
-                                                <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
-                                                <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                                    <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
-                                                        <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
-                                                        <asp:LinkButton runat="server" class="ml-1 font-weight-bold text-truncate text-black" CommandArgument='<%# Eval("Id") %>'>
-                                                            <%# Eval("NodeName") %>
-                                                        </asp:LinkButton>
-                                                    </span>
-                                                    <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
-                                                    <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
-                                                </div>
-                                                <div class="card-body p-0" style="height:88px;">
-                                                    <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
-                                                        <asp:Literal ID="lLastSeen" runat="server" />
-                                                    </span>
-                                                    <asp:Literal ID="lChart" runat="server" />
+                                <div class="row">
+                                    <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand" OnItemDataBound="rNodes_ItemDataBound">
+                                        <ItemTemplate>
+                                            <div class="col-sm-6 col-md-6 col-lg-4">
+                                                <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
+                                                    <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
+                                                    <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                                        <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
+                                                            <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
+                                                            <asp:LinkButton runat="server" class="ml-1 font-weight-bold text-truncate text-black" CommandArgument='<%# Eval("Id") %>'>
+                                                                <%# Eval("NodeName") %>
+                                                            </asp:LinkButton>
+                                                        </span>
+                                                        <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
+                                                        <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                    </div>
+                                                    <div class="card-body p-0" style="height:88px;">
+                                                        <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
+                                                            <asp:Literal ID="lLastSeen" runat="server" />
+                                                        </span>
+                                                        <asp:Literal ID="lChart" runat="server" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                             </div>
                         </div>
                     </div>
