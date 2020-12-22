@@ -1,4 +1,6 @@
-﻿Obsidian.Blocks.registerBlock({
+﻿import bus from "../../Util/bus.js";
+
+export default {
     name: 'Test.PersonDetail',
     components: {
         PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
@@ -42,7 +44,7 @@
             this.setIsEditMode(false);
         },
         doPublish() {
-            Obsidian.Bus.publish('PersonDetail:Message', this.messageToPublish);
+            bus.publish('PersonDetail:Message', this.messageToPublish);
             this.messageToPublish = '';
         },
         receiveMessage(message) {
@@ -55,7 +57,7 @@
         }
     },
     created() {
-        Obsidian.Bus.subscribe('PersonSecondary:Message', this.receiveMessage);
+        bus.subscribe('PersonSecondary:Message', this.receiveMessage);
     },
     template:
 `<PaneledBlockTemplate>
@@ -106,4 +108,4 @@
         </div>
     </template>
 </PaneledBlockTemplate>`
-});
+}

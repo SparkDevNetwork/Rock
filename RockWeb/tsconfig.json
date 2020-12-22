@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "outDir": "ObsidianDist/Rock/",
+    "module": "System"
+  },
+  "include": [
+    "Obsidian/**/*"
+  ],
+  "compileOnSave": true
+}

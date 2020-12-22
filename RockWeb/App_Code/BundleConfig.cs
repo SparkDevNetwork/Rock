@@ -95,21 +95,8 @@ public class BundleConfig
 
         // Add Obsidian scripts
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" )
-            .Include(
-                "~/Obsidian/Vendor/mitt.js",
-                "~/Obsidian/Vendor/axios.js",
-                "~/Obsidian/Vendor/vue.js",
-                "~/Obsidian/Vendor/vuex.js",
-                "~/Obsidian/init.js",
-                "~/Obsidian/Util/*.js",
-                "~/Obsidian/Bus/*.js",
-                "~/Obsidian/Templates/*.js",
-                "~/Obsidian/Elements/*.js",
-                "~/Obsidian/Controls/*.js",
-                "~/Obsidian/Fields/*.js",
-                "~/Obsidian/Store/*.js" )
-            .IncludeDirectory( "~/Obsidian/Blocks/", "*.js", true )
-            .IncludeDirectory( "~/ObsidianPlugins/", "*.js", true ) );
+            .IncludeDirectory( "~/ObsidianDist/Vendor", "*.js", true )
+            .Include( "~/ObsidianDist/start.js" ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occasionally was an empty string.
         foreach ( var bundle in bundles )

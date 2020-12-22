@@ -1,9 +1,15 @@
-﻿Obsidian.Controls.registerControl({
+﻿import { doApiCall } from '../Util/http.js';
+
+export default {
     name: 'RockBlock',
     props: {
         config: {
             type: Object,
             required: true
+        },
+        blockComponent: {
+            type: Object,
+            default: null
         }
     },
     provide() {
@@ -19,8 +25,7 @@
     data() {
         return {
             blockGuid: this.config.blockGuid,
-            log: [],
-            blockComponent: Vue.markRaw(Obsidian.Blocks[this.config.blockFileIdentifier])
+            log: []
         };
     },
     computed: {
@@ -36,7 +41,7 @@
                 url
             });
 
-            return Obsidian.Http.doApiCall(method, url, params, data);
+            return doApiCall(method, url, params, data);
         },
         httpGet(url, params) {
             return this.httpCall('GET', url, params);
@@ -61,7 +66,7 @@
 `<div class="obsidian-block">
     <component :is="blockComponent" />
     <div v-if="!blockComponent" class="alert alert-danger">
-        Could not find JS block component: "{{this.config.blockFileIdentifier}}"
+        Could not find block component: "{{this.config.blockFileIdentifier}}"
     </div>
 </div>`
-});
+};

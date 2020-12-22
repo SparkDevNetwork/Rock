@@ -1,9 +1,13 @@
-﻿Obsidian.Blocks.registerBlock({
+﻿import TextBox from '../../Elements/TextBox.js'
+import CheckBox from '../../Elements/CheckBox.js'
+import RockButton from '../../Elements/RockButton.js'
+
+export default {
     name: 'Security.Login',
     components: {
-        TextBox: Obsidian.Elements.TextBox,
-        CheckBox: Obsidian.Elements.CheckBox,
-        RockButton: Obsidian.Elements.RockButton,
+        TextBox,
+        CheckBox,
+        RockButton
     },
     inject: [
         'blockAction'
@@ -28,7 +32,7 @@
                     expires = '';
                 }
                 else {
-                    expires = `; expires=${date.toGMTString()}`;
+                    expires = `; expires=${date.toUTCString()}`;
                 }
             }
             else {
@@ -125,4 +129,4 @@
 
     </fieldset>
 </div>`
-});
+};

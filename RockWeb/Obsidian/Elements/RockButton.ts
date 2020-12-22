@@ -1,4 +1,4 @@
-﻿Obsidian.Elements.registerElement({
+﻿export default {
     name: 'RockButton',
     props: {
         isLoading: {
@@ -25,4 +25,4 @@
     </template>
     <slot v-else />
 </button>`
-});
+}

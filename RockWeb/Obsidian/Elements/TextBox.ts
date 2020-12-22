@@ -1,4 +1,6 @@
-﻿Obsidian.Elements.registerElement({
+﻿import { newGuid } from "../Util/guid.js";
+
+export default {
     name: 'TextBox',
     props: {
         modelValue: {
@@ -19,7 +21,7 @@
     ],
     data: function() {
         return {
-            uniqueId: `rock-textbox-${Obsidian.Util.newGuid()}`,
+            uniqueId: `rock-textbox-${newGuid()}`,
             internalValue: this.modelValue
         };
     },
@@ -42,4 +44,4 @@
         <input :id="uniqueId" :type="type" class="form-control" v-model="internalValue" @input="handleInput" />
     </div>
 </div>`
-});
+}

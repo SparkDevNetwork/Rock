@@ -1,4 +1,6 @@
-﻿Obsidian.Elements.registerElement({
+﻿import { newGuid } from "../Util/guid.js";
+
+export default {
     name: 'CheckBox',
     props: {
         modelValue: {
@@ -15,7 +17,7 @@
     ],
     data: function () {
         return {
-            uniqueId: `rock-checkbox-${Obsidian.Util.newGuid()}`,
+            uniqueId: `rock-checkbox-${newGuid()}`,
             internalValue: this.modelValue
         };
     },
@@ -36,4 +38,4 @@
         <span class="label-text ">{{label}}</span>
     </label>
 </div>`
-});
+}

@@ -63,7 +63,7 @@ namespace Rock.Obsidian.Blocks
             {
                 var type = GetType();
                 var lastNamespace = type.Namespace.Split( '.' ).Last();
-                return $"{lastNamespace}.{type.Name}";
+                return $"{lastNamespace}/{type.Name}";
             }
         }
 
