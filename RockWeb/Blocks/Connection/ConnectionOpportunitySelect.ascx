@@ -27,6 +27,14 @@
         right: 15px; /* padding of the list-as-block li */
     }
 
+    .list-as-blocks ul li .follow-toggle:hover {
+        background: transparent;
+    }
+
+    .list-as-blocks ul li .follow-toggle:hover i {
+        color: #626262;
+    }
+
     .list-as-blocks ul li .follow-toggle i {
         font-size: 20px;
     }
