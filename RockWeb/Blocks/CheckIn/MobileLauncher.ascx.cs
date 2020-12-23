@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.CheckIn
         "Identify you Prompt Template <span class='tip tip-lava'></span>",
         Key = AttributeKey.IdentifyYouPromptTemplate,
         Category = "Text",
-        DefaultValue = "Before we proceed we'll need you to identify you for check-in.",
+        DefaultValue = "Before we proceed we'll need to identify you for check-in.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -395,7 +395,12 @@ namespace RockWeb.Blocks.CheckIn
             {
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
-                bbtnPhoneLookup.Visible = true;
+
+                if ( GetAttributeValue( AttributeKey.PhoneIdentificationPage ).IsNotNullOrWhiteSpace() )
+                {
+                    bbtnPhoneLookup.Visible = true;
+                }
+
                 if ( GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace() )
                 {
                     bbtnLogin.Visible = true;
