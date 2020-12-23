@@ -1,4 +1,6 @@
-﻿Obsidian.Elements.registerElement({
+﻿import { newGuid } from "../Util/guid.js";
+
+export default {
     name: 'DropDownList',
     props: {
         modelValue: {
@@ -27,7 +29,7 @@
     ],
     data: function () {
         return {
-            uniqueId: `rock-dropdownlist-${Obsidian.Util.newGuid()}`,
+            uniqueId: `rock-dropdownlist-${newGuid()}`,
             internalValue: this.modelValue
         };
     },
@@ -51,4 +53,4 @@
         </select>
     </div>
 </div>`
-});
+};

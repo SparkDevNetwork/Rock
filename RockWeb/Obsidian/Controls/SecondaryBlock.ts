@@ -1,4 +1,4 @@
-﻿Obsidian.Controls.registerControl({
+﻿export default {
     name: 'SecondaryBlock',
     computed: {
         isVisible() {
@@ -9,4 +9,4 @@
 `<div class="secondary-block">
     <slot v-if="isVisible" />
 </div>`
-});
+}

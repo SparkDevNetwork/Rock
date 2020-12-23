@@ -1,5 +1,5 @@
 ﻿// Provides a generic Rock Block structure
-Obsidian.Templates.registerTemplate({
+export default {
     name: 'PaneledBlockTemplate',
     template:
 `<div class="panel panel-block">
@@ -14,4 +14,4 @@ Obsidian.Templates.registerTemplate({
         </div>
     </div>
 </div>`
-});
+}

@@ -1,10 +1,15 @@
-﻿Obsidian.Blocks.registerBlock({
+﻿import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
+import DefinedTypePicker from "../../Controls/DefinedTypePicker.js";
+import DefinedValuePicker from "../../Controls/DefinedValuePicker.js";
+import CampusPicker from "../../Controls/CampusPicker.js";
+
+export default {
     name: 'Test.ControlGallery',
     components: {
-        PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        DefinedTypePicker: Obsidian.Controls.DefinedTypePicker,
-        DefinedValuePicker: Obsidian.Controls.DefinedValuePicker,
-        CampusPicker: Obsidian.Controls.CampusPicker
+        PaneledBlockTemplate,
+        DefinedTypePicker,
+        DefinedValuePicker,
+        CampusPicker
     },
     data() {
         return {
@@ -55,4 +60,4 @@
         </div>
     </template>
 </PaneledBlockTemplate>`
-});
+}

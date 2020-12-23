@@ -1,10 +1,16 @@
-﻿Obsidian.Blocks.registerBlock({
+﻿import bus from "../../Util/bus.js";
+import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
+import SecondaryBlock from "../../Controls/SecondaryBlock.js";
+import RockButton from "../../Elements/RockButton.js";
+import TextBox from "../../Elements/TextBox.js";
+
+export default {
     name: 'Test.PersonSecondary',
     components: {
-        PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        SecondaryBlock: Obsidian.Controls.SecondaryBlock,
-        TextBox: Obsidian.Elements.TextBox,
-        RockButton: Obsidian.Elements.RockButton
+        PaneledBlockTemplate,
+        SecondaryBlock,
+        TextBox,
+        RockButton
     },
     data() {
         return {
@@ -17,7 +23,7 @@
             this.receivedMessage = message;
         },
         doPublish() {
-            Obsidian.Bus.publish('PersonSecondary:Message', this.messageToPublish);
+            bus.publish('PersonSecondary:Message', this.messageToPublish);
             this.messageToPublish = '';
         }
     },
@@ -40,7 +46,7 @@
         }
     },
     created() {
-        Obsidian.Bus.subscribe('PersonDetail:Message', this.receiveMessage);
+        bus.subscribe('PersonDetail:Message', this.receiveMessage);
     },
     template:
 `<SecondaryBlock>
@@ -72,4 +78,4 @@
         </template>
     </PaneledBlockTemplate>
 </SecondaryBlock>`
-});
+}

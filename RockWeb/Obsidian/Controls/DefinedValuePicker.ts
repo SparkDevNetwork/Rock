@@ -1,7 +1,9 @@
-﻿Obsidian.Controls.registerControl({
+﻿import DropDownList from "../Elements/DropDownList.js";
+
+export default {
     name: 'DefinedValuePicker',
     components: {
-        DropDownList: Obsidian.Elements.DropDownList
+        DropDownList
     },
     inject: [
         'http'
@@ -79,4 +81,4 @@
     },
     template:
 `<DropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
-});
+};

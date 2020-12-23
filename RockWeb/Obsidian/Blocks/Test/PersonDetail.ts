@@ -1,11 +1,14 @@
 ﻿import bus from "../../Util/bus.js";
+import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
+import RockButton from "../../Elements/RockButton.js";
+import TextBox from "../../Elements/TextBox.js";
 
 export default {
     name: 'Test.PersonDetail',
     components: {
-        PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        RockButton: Obsidian.Elements.RockButton,
-        TextBox: Obsidian.Elements.TextBox
+        PaneledBlockTemplate,
+        RockButton,
+        TextBox
     },
     data() {
         const person = {
@@ -34,6 +37,7 @@ export default {
             this.setIsEditMode(true);
         },
         doDelete() {
+            console.log('delete here');
         },
         doCancel() {
             this.personForEditing = { ...this.person };
