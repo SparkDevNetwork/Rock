@@ -99,35 +99,59 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 rockContext.Database.CommandTimeout = commandTimeout;
-                rockContext.Database.ExecuteSqlCommand( @"
+                rockContext.Database.ExecuteSqlCommand( "DELETE FROM IdentityVerificationCode" );
+
+                InsertIdentityVerificationCodeDataChunk( rockContext, 1001, 250000 );
+                InsertIdentityVerificationCodeDataChunk( rockContext, 250000, 500000 );
+                InsertIdentityVerificationCodeDataChunk( rockContext, 500000, 750000 );
+                InsertIdentityVerificationCodeDataChunk( rockContext, 750000, 998998 );
+            }
+        }
+
+        /// <summary>
+        /// Inserts the identity verification code data chunk. This is to avoid filling the transaction log on servers with limited resources (e.g. winhost)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="finish">The finish.</param>
+        private void InsertIdentityVerificationCodeDataChunk( RockContext rockContext, int start, int finish )
+        {
+            try
+            {
+                rockContext.Database.ExecuteSqlCommand( $@"
                     WITH x AS (SELECT n FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) v(n))
                     SELECT RIGHT('000000' + CAST([ones].n + 10*[tens].n + 100*[hundreds].n + 1000*[thousands].n + 10000*[tenthousand].n  + 100000*[hundredthousand].n AS NVARCHAR(10)), 6) AS [Code]
                     INTO #Codes
                     FROM x [ones]
-	                    , x [tens]
-	                    , x [hundreds]
-	                    , x [thousands]
-	                    , x [tenthousand]
-	                    , x [hundredthousand]
+                        , x [tens]
+                        , x [hundreds]
+                        , x [thousands]
+                        , x [tenthousand]
+                        , x [hundredthousand]
                     ORDER BY 1
-
+                    
                     INSERT INTO [IdentityVerificationCode] ([Code], [GUID], [CreatedDateTime], [ModifiedDateTime])
                     SELECT DISTINCT [Code], NEWID(), GETDATE(), GETDATE()
                     FROM #Codes
                     WHERE [Code] NOT LIKE '%000%'
-		                    AND [Code] NOT LIKE '%111%'
-		                    AND [Code] NOT LIKE '%222%'
-		                    AND [Code] NOT LIKE '%333%'
-		                    AND [Code] NOT LIKE '%444%'
-		                    AND [Code] NOT LIKE '%555%'
-		                    AND [Code] NOT LIKE '%666%'
-		                    AND [Code] NOT LIKE '%777%'
-		                    AND [Code] NOT LIKE '%888%'
-		                    AND [Code] NOT LIKE '%999%'
+		                AND [Code] NOT LIKE '%111%'
+		                AND [Code] NOT LIKE '%222%'
+		                AND [Code] NOT LIKE '%333%'
+		                AND [Code] NOT LIKE '%444%'
+		                AND [Code] NOT LIKE '%555%'
+		                AND [Code] NOT LIKE '%666%'
+		                AND [Code] NOT LIKE '%777%'
+		                AND [Code] NOT LIKE '%888%'
+		                AND [Code] NOT LIKE '%999%'
+                        AND CAST([Code] AS INT) BETWEEN {start} AND {finish}
 
                     DROP TABLE #Codes" );
             }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( new Exception( $"Error inserting IdentityVerificationCodes {start} to {finish}.", ex )  );
+                throw;
+            }
         }
-
     }
 }
