@@ -1,4 +1,5 @@
-﻿import cache from "../Util/cache.js";
+﻿import { createStore } from '../Vendor/Vuex/index.js';
+import cache from "../Util/cache.js";
 import http from "../Util/http.js";
 
 /**
@@ -56,9 +57,7 @@ for (const commonEntity of commonEntities) {
 }
 
 // Declare the Vuex store
-// eslint-disable-next-line
-// @ts-ignore
-export default Vuex.createStore({
+export default createStore({
     state: {
         areSecondaryBlocksShown: true,
         currentPerson: null,
@@ -82,9 +81,6 @@ export default Vuex.createStore({
         }
     },
     mutations: {
-        setIsAuthenticated(state, { isAuthenticated }) {
-            state.isAuthenticated = isAuthenticated;
-        },
         setAreSecondaryBlocksShown(state, { areSecondaryBlocksShown }) {
             state.areSecondaryBlocksShown = areSecondaryBlocksShown;
         },

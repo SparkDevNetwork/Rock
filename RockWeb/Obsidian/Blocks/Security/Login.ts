@@ -1,17 +1,21 @@
 ﻿import TextBox from '../../Elements/TextBox.js'
 import CheckBox from '../../Elements/CheckBox.js'
 import RockButton from '../../Elements/RockButton.js'
+import { defineComponent, inject } from 'vue'
+import { BlockAction } from '../../Controls/RockBlock.js';
 
-export default {
+export default defineComponent({
     name: 'Security.Login',
     components: {
         TextBox,
         CheckBox,
         RockButton
     },
-    inject: [
-        'blockAction'
-    ],
+    setup() {
+        return {
+            blockAction: inject('blockAction') as BlockAction
+        }
+    },
     data() {
         return {
             username: '',
@@ -45,15 +49,17 @@ export default {
             const urlParams = new URLSearchParams(window.location.search);
             const returnUrl = urlParams.get('returnurl');
 
-            // TODO make this force relative URLs (no absolute URLs)
-            window.location.href = decodeURIComponent(returnUrl);
+            if (returnUrl) {
+                // TODO make this force relative URLs (no absolute URLs)
+                window.location.href = decodeURIComponent(returnUrl);
+            }
         },
         async onHelpClick() {
             this.isLoading = true;
             this.errorMessage = '';
 
             try {
-                const result = await this.blockAction('help');
+                const result = await this.blockAction('help', undefined);
                 const url = result.data;
 
                 if (!url) {
@@ -108,7 +114,7 @@ export default {
         }
     },
     template:
-`<div class="login-block">
+        `<div class="login-block">
     <fieldset>
         <legend>Login</legend>
 
@@ -129,4 +135,4 @@ export default {
 
     </fieldset>
 </div>`
-};
+});

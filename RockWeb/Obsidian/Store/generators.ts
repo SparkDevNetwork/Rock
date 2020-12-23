@@ -1,4 +1,11 @@
-﻿import DropDownList from "../Elements/DropDownList.js";
+﻿import { defineComponent } from "vue";
+import DropDownList from "../Elements/DropDownList.js";
+
+export type CommonEntityOption = {
+    key: string;
+    value: string;
+    text: string;
+};
 
 /**
 * Generate and add a common entity picker. Common entities are those stored in the Obsidian store.
@@ -6,8 +13,8 @@
 * @param {any} getOptionsFunc A function called with the store as a parameter that should return the
 * options object list for the drop down list.
 */
-export function createCommonEntityPicker(entityName: string, getOptionsFunc: (store) => object[]) {
-    return {
+export function createCommonEntityPicker(entityName: string, getOptionsFunc: () => CommonEntityOption[]) {
+    return defineComponent({
         name: `${entityName}Picker`,
         components: {
             DropDownList
@@ -37,7 +44,7 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: (st
         },
         computed: {
             options() {
-                return getOptionsFunc(this.$store);
+                return getOptionsFunc();
             }
         },
         methods: {
@@ -52,5 +59,5 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: (st
         },
         template:
             `<DropDownList v-model="internalValue" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
-    };
+    });
 }

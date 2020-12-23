@@ -2,8 +2,10 @@
 import DefinedTypePicker from "../../Controls/DefinedTypePicker.js";
 import DefinedValuePicker from "../../Controls/DefinedValuePicker.js";
 import CampusPicker from "../../Controls/CampusPicker.js";
+import { defineComponent } from 'vue'
+import store from '../../Store/index.js';
 
-export default {
+export default defineComponent({
     name: 'Test.ControlGallery',
     components: {
         PaneledBlockTemplate,
@@ -20,16 +22,16 @@ export default {
     },
     computed: {
         campusName() {
-            const campus = this.$store.getters['campuses/getByGuid'](this.campusGuid);
+            const campus = store.getters['campuses/getByGuid'](this.campusGuid);
             return campus ? campus.Name : '';
         },
         definedTypeName() {
-            const definedType = this.$store.getters['definedTypes/getByGuid'](this.definedTypeGuid);
+            const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid);
             return definedType ? definedType.Name : '';
         }
     },
     template:
-`<PaneledBlockTemplate>
+        `<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Obsidian Control Gallery
@@ -60,4 +62,4 @@ export default {
         </div>
     </template>
 </PaneledBlockTemplate>`
-}
+})

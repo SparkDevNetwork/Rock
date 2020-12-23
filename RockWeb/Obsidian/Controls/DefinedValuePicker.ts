@@ -1,13 +1,12 @@
-﻿import DropDownList from "../Elements/DropDownList.js";
+﻿import { defineComponent, inject } from "vue";
+import DropDownList from "../Elements/DropDownList.js";
+import { BlockHttp } from "./RockBlock.js";
 
-export default {
+export default defineComponent({
     name: 'DefinedValuePicker',
     components: {
         DropDownList
     },
-    inject: [
-        'http'
-    ],
     props: {
         modelValue: {
             type: String,
@@ -24,6 +23,11 @@ export default {
         required: {
             type: Boolean,
             default: false
+        }
+    },
+    setup() {
+        return {
+            http: inject('http') as BlockHttp
         }
     },
     emits: [
@@ -80,5 +84,5 @@ export default {
         }
     },
     template:
-`<DropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
-};
+        `<DropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
+});

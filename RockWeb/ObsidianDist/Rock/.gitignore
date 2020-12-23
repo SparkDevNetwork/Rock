@@ -1,2 +1,5 @@
 ﻿*.js
 *.js.map
+
+!Vendor/Vue/vue.js
+!Vendor/Vuex/index.js

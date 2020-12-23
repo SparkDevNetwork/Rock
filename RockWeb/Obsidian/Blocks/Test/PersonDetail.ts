@@ -2,8 +2,10 @@
 import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
 import RockButton from "../../Elements/RockButton.js";
 import TextBox from "../../Elements/TextBox.js";
+import { defineComponent } from "vue";
+import store from '../../Store/index.js';
 
-export default {
+export default defineComponent({
     name: 'Test.PersonDetail',
     components: {
         PaneledBlockTemplate,
@@ -26,7 +28,7 @@ export default {
     },
     methods: {
         setAreSecondaryBlocksShown(isVisible) {
-            this.$store.commit('setAreSecondaryBlocksShown', { areSecondaryBlocksShown: isVisible });
+            store.commit('setAreSecondaryBlocksShown', { areSecondaryBlocksShown: isVisible });
         },
         setIsEditMode(isEditMode) {
             this.isEditMode = isEditMode;
@@ -64,7 +66,7 @@ export default {
         bus.subscribe('PersonSecondary:Message', this.receiveMessage);
     },
     template:
-`<PaneledBlockTemplate>
+        `<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Detail Block: {{blockTitle}}
@@ -112,4 +114,4 @@ export default {
         </div>
     </template>
 </PaneledBlockTemplate>`
-}
+});

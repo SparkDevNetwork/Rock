@@ -1,4 +1,5 @@
-﻿import RockBlock from './Controls/RockBlock.js'
+﻿import { createApp, markRaw } from './Vendor/Vue/vue.js';
+import RockBlock from './Controls/RockBlock.js'
 import store from './Store/index.js'
 
 export type VueComponent = {
@@ -20,9 +21,7 @@ export type BlockConfig = {
 * @param blockComponent
 */
 export function initializeBlock(config: BlockConfig, blockComponent: VueComponent | null) {
-    // eslint-disable-next-line
-    // @ts-ignore
-    Vue.createApp({
+    const app = createApp({
         name: `Root.${config.blockFileIdentifier}`,
         components: {
             RockBlock
@@ -30,15 +29,15 @@ export function initializeBlock(config: BlockConfig, blockComponent: VueComponen
         data() {
             return {
                 config: config,
-                // eslint-disable-next-line
-                // @ts-ignore
-                blockComponent: blockComponent ? Vue.markRaw(blockComponent) : null
+                blockComponent: blockComponent ? markRaw(blockComponent) : null
             };
         },
         template: `<RockBlock :config="config" :blockComponent="blockComponent" />`
-    })
-    .use(store)
-    .mount(config.rootElement);
+    });
+    app.use(store);
+    app.mount(config.rootElement);
+
+    return app;
 }
 
 /**

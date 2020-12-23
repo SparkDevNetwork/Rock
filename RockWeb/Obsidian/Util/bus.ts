@@ -1,10 +1,15 @@
-﻿/**
+﻿import mitt from "mitt";
+
+/**
  * The bus allows page components to send and receive arbitrary data from other page components.
  */
-// eslint-disable-next-line
-// @ts-ignore
+type LogItem = {
+    date: Date;
+    message: string;
+};
+
 const bus = mitt();
-const log = [];
+const log: LogItem[] = [];
 
 /**
 * Write a log entry that a payload was sent or received.
@@ -30,7 +35,9 @@ function publish<T>(eventName: string, payload: T) {
 */
 function subscribe<T>(eventName: string, callback: (payload: T) => void) {
     writeLog(`Subscribed to ${eventName}`);
-    bus.on(eventName, callback);
+    bus.on(eventName, T => {
+        callback(T);
+    });
 };
 
 export default {

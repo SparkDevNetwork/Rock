@@ -1,57 +1,60 @@
 ﻿import { doApiCall } from '../Util/http.js';
+import { defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
+import { BlockConfig, VueComponent } from '../index.js';
+import store from '../Store/index.js';
 
-export default {
+export type HttpResult = { data: unknown };
+export type BlockAction = (actionName: string, data: object | undefined) => HttpResult;
+export type BlockHttp = {
+    get: (url: string, params: object | undefined) => HttpResult;
+    post: (url: string, params: object | undefined, data: object | undefined) => HttpResult;
+};
+
+type LogItem = {
+    date: Date;
+    method: string;
+    url: string;
+};
+
+export default defineComponent({
     name: 'RockBlock',
     props: {
         config: {
-            type: Object,
+            type: Object as PropType<BlockConfig>,
             required: true
         },
         blockComponent: {
-            type: Object,
+            type: Object as PropType<VueComponent>,
             default: null
         }
     },
-    provide() {
-        return {
-            http: {
-                get: this.httpGet,
-                post: this.httpPost
-            },
-            blockAction: this.blockAction,
-            configurationValues: this.config.configurationValues
-        };
-    },
-    data() {
-        return {
-            blockGuid: this.config.blockGuid,
-            log: []
-        };
-    },
-    computed: {
-        pageGuid() {
-            return this.$store.state.pageGuid;
-        }
-    },
-    methods: {
-        httpCall(method, url, params, data) {
-            this.log.push({
+    setup(props) {
+        const log: LogItem[] = reactive([]);
+
+        const writeLog = (method: string, url: string) => {
+            log.push({
+                date: new Date(),
                 method,
-                timestamp: new Date(),
                 url
             });
+        };
 
+        const httpCall = (method: string, url: string, params: object | undefined = undefined, data: object | undefined = undefined) => {
+            writeLog(method, url);
             return doApiCall(method, url, params, data);
-        },
-        httpGet(url, params) {
-            return this.httpCall('GET', url, params);
-        },
-        httpPost(url, params, data) {
-            return this.httpCall('POST', url, params, data);
-        },
-        blockAction(actionName, data) {
+        };
+
+        const get = (url: string, params: object | undefined = undefined) => {
+            return httpCall('GET', url, params);
+        };
+
+        const post = (url: string, params: object | undefined = undefined, data: object | undefined = undefined) => {
+            return httpCall('POST', url, params, data);
+        };
+
+        const blockAction: BlockAction = (actionName: string, data: object | undefined = undefined) => {
             try {
-                return this.httpPost(`/api/blocks/action/${this.blockGuid}/${actionName}`, undefined, data);
+                return post(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, data);
             }
             catch (e) {
                 if (e.response && e.response.data && e.response.data.Message) {
@@ -60,6 +63,23 @@ export default {
 
                 throw e;
             }
+        };
+
+        const blockHttp: BlockHttp = { get, post };
+
+        provide('http', blockHttp);
+        provide('blockAction', blockAction);
+        provide('configurationValues', props.config.configurationValues);
+    },
+    data() {
+        return {
+            blockGuid: this.config.blockGuid,
+            log: [] as LogItem[]
+        };
+    },
+    computed: {
+        pageGuid() {
+            return store.state.pageGuid;
         }
     },
     template:
@@ -69,4 +89,4 @@ export default {
         Could not find block component: "{{this.config.blockFileIdentifier}}"
     </div>
 </div>`
-};
+});

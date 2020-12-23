@@ -1,6 +1,7 @@
-﻿import { newGuid } from "../Util/guid.js";
+﻿import { defineComponent } from "vue";
+import { newGuid } from "../Util/guid.js";
 
-export default {
+export default defineComponent({
     name: 'TextBox',
     props: {
         modelValue: {
@@ -44,4 +45,4 @@ export default {
         <input :id="uniqueId" :type="type" class="form-control" v-model="internalValue" @input="handleInput" />
     </div>
 </div>`
-}
+})

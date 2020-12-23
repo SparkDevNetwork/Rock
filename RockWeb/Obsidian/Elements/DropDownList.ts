@@ -1,6 +1,7 @@
-﻿import { newGuid } from "../Util/guid.js";
+﻿import { defineComponent } from "vue";
+import { newGuid } from "../Util/guid.js";
 
-export default {
+export default defineComponent({
     name: 'DropDownList',
     props: {
         modelValue: {
@@ -44,7 +45,7 @@ export default {
         }
     },
     template:
-`<div class="form-group rock-drop-down-list" :class="{required: required}">
+        `<div class="form-group rock-drop-down-list" :class="{required: required}">
     <label class="control-label" :for="uniqueId">{{label}}</label>
     <div class="control-wrapper">
         <select :id="uniqueId" class="form-control" v-model="internalValue" @change="onChange" :disabled="disabled">
@@ -53,4 +54,4 @@ export default {
         </select>
     </div>
 </div>`
-};
+});

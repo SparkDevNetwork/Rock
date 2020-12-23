@@ -6,7 +6,18 @@
     "sourceMap": true,
     "target": "es5",
     "outDir": "ObsidianDist/Rock/",
-    "module": "AMD"
+    "module": "AMD",
+    "moduleResolution": "Node",
+    "strict": true,
+    "lib": [
+      "DOM",
+      "ES2020",
+      "ES2020.Symbol.WellKnown"
+    ],
+    "baseUrl": "",
+    "paths": {
+      "vue": [ "ObsidianDist/Vendor/Vue/vue" ]
+    }
   },
   "include": [
     "Obsidian/**/*"
