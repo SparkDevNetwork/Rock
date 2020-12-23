@@ -1091,7 +1091,10 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                 if ( groupType.AttendanceCountsAsWeekendService )
                 {
                     personDataRow.Attendance = attendanceRows.Where( a => a.PersonId == personDataRow.Id ).Select( a => a.Date ).Distinct().Count();
-                    personDataRow.AttendancePercent = personDataRow.Attendance / Convert.ToDecimal( personDataRow.Week ) * 100;
+                    if ( personDataRow.Week != default( int ) )
+                    {
+                        personDataRow.AttendancePercent = personDataRow.Attendance / Convert.ToDecimal( personDataRow.Week ) * 100;
+                    }
                 }
                 else
                 {
