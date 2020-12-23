@@ -259,7 +259,7 @@ namespace Rock.Field
         /// </returns>
         public virtual bool HasChangeHandler( Control editControl )
         {
-            return editControl is TextBox || editControl is ListControl;
+            return editControl is TextBox || editControl is ListControl || editControl is CheckBox || editControl is IRockChangeHandlerControl;
         }
 
         /// <summary>
@@ -290,6 +290,15 @@ namespace Rock.Field
             else if ( editControl is ItemPicker itemPicker )
             {
                 itemPicker.SelectItem += ( object sender, EventArgs e ) =>
+                {
+                    action.Invoke();
+                };
+            }
+            else if ( editControl is CheckBox checkBox )
+            {
+                checkBox.AutoPostBack = true;
+                checkBox.AddCssClass( "js-prevent-double-postback" );
+                checkBox.CheckedChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
                 };

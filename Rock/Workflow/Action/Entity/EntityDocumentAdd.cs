@@ -146,10 +146,18 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, false );
             var attributeFilteredDocumentType = GetAttributeValue( action, AttributeKey.DocumentType ).Split( ',' ).Select( int.Parse ).FirstOrDefault();
-            var documentype = documentypesForContextEntityType.FirstOrDefault( d => attributeFilteredDocumentType == d.Id );
-            if ( documentype == null )
+            var documentType = DocumentTypeCache.Get( attributeFilteredDocumentType );
+            if ( documentType == null )
+            {
+                var message = $"Document Type could not be found for selected value ('{attributeFilteredDocumentType}')!";
+                errorMessages.Add( message );
+                action.AddLogEntry( message, true );
+                return false;
+            }
+
+            var documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityType.Id, true );
+            if ( !documentypesForContextEntityType.Any( d => attributeFilteredDocumentType == d.Id ) )
             {
                 var message = "The Document Type does not match the selected entity type.";
                 errorMessages.Add( message );
@@ -178,7 +186,7 @@ namespace Rock.Workflow.Action
             document.Name = documentName;
             document.Description = GetAttributeValue( action, AttributeKey.DocumentDescription ).ResolveMergeFields( mergeFields );
             document.EntityId = entityObject.Id;
-            document.DocumentTypeId = documentype.Id;
+            document.DocumentTypeId = documentType.Id;
             document.SetBinaryFile( binaryFile.Id, rockContext );
 
             var documentService = new DocumentService( rockContext );

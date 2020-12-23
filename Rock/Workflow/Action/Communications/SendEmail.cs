@@ -170,9 +170,27 @@ namespace Rock.Workflow.Action
             string body = GetAttributeValue( action, AttributeKey.Body );
             string cc = GetActionAttributeValue( action, AttributeKey.Cc );
             string bcc = GetActionAttributeValue( action, AttributeKey.Bcc );
-            BinaryFile[] attachments = { new BinaryFileService( rockContext ).Get( GetAttributeValue( action, AttributeKey.AttachmentOne, true ).AsGuid() ),
-                new BinaryFileService( rockContext ).Get( GetAttributeValue( action, AttributeKey.AttachmentTwo, true ).AsGuid() ),
-                new BinaryFileService( rockContext ).Get( GetAttributeValue( action, AttributeKey.AttachmentThree, true ).AsGuid() ) };
+            var attachmentOneGuid = GetAttributeValue( action, AttributeKey.AttachmentOne, true ).AsGuid();
+            var attachmentTwoGuid = GetAttributeValue( action, AttributeKey.AttachmentTwo, true ).AsGuid();
+            var attachmentThreeGuid = GetAttributeValue( action, AttributeKey.AttachmentThree, true ).AsGuid();
+
+            var attachmentList = new List<BinaryFile>();
+            if (!attachmentOneGuid.IsEmpty())
+            {
+                attachmentList.Add( new BinaryFileService( rockContext ).Get( attachmentOneGuid ) );
+            }
+
+            if ( !attachmentTwoGuid.IsEmpty() )
+            {
+                attachmentList.Add( new BinaryFileService( rockContext ).Get( attachmentTwoGuid ) );
+            }
+
+            if ( !attachmentThreeGuid.IsEmpty() )
+            {
+                attachmentList.Add( new BinaryFileService( rockContext ).Get( attachmentThreeGuid ) );
+            }
+
+            var attachments = attachmentList.ToArray();
 
             bool createCommunicationRecord = GetAttributeValue( action, AttributeKey.SaveCommunicationHistory ).AsBoolean();
 

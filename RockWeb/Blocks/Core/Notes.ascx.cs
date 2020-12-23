@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DisplayNoteTypeHeading )]
 
     [BooleanField( "Expand Replies",
-        Description = "Should replies to automatically expanded?",
+        Description = "Should replies be automatically expanded?",
         DefaultValue = "false",
         Order = 14,
         Key = AttributeKey.ExpandReplies )]

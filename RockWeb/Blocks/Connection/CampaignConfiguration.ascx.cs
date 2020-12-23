@@ -276,7 +276,6 @@ namespace RockWeb.Blocks.Connection
                 ceCommentLavaTemplate.Text = connectionCampaignItem.RequestCommentsLavaTemplate;
                 rblFamilyLimits.SetValue( ( int ) connectionCampaignItem.FamilyLimits );
                 rblCreateConnectionRequests.SetValue( ( int ) connectionCampaignItem.CreateConnectionRequestOption );
-                ShowHideDailyLimit( connectionCampaignItem.CreateConnectionRequestOption );
                 nbNumberOfDays.Text = connectionCampaignItem.DaysBetweenConnection.ToStringSafe();
             }
 
@@ -314,34 +313,6 @@ namespace RockWeb.Blocks.Connection
             var connectionTypeService = new ConnectionTypeService( new RockContext() );
             ddlConnectionType.Items.Add( new ListItem() );
             ddlConnectionType.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Guid.ToString() } ).ToArray() );
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the rblCreateConnectionRequests control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rblCreateConnectionRequests_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            RadioButtonList rblCreateConnectionRequests = ( RadioButtonList ) sender;
-
-            ShowHideDailyLimit( rblCreateConnectionRequests.SelectedValueAsEnumOrNull<CreateConnectionRequestOptions>() );
-        }
-
-        /// <summary>
-        /// Shows the daily limit number box field as needed.
-        /// </summary>
-        /// <param name="option">The option.</param>
-        private void ShowHideDailyLimit( CreateConnectionRequestOptions? option )
-        {
-            if ( option == CreateConnectionRequestOptions.AllAtOnce )
-            {
-                nbDailyLimit.Visible = false;
-            }
-            else
-            {
-                nbDailyLimit.Visible = true;
-            }
         }
 
         #endregion

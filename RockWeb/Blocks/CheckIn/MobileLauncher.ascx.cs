@@ -396,7 +396,10 @@ namespace RockWeb.Blocks.CheckIn
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
                 bbtnPhoneLookup.Visible = true;
-                bbtnLogin.Visible = true;
+                if ( GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace() )
+                {
+                    bbtnLogin.Visible = true;
+                }
                 return;
             }
 

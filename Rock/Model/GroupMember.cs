@@ -896,7 +896,7 @@ namespace Rock.Model
                 {
                     // no change detected by comparing to the database record, so check if the ChangeTracker detects that these fields were modified
                     var entry = rockContext.Entry( this );
-                    if ( entry != null )
+                    if ( entry != null && entry.State != EntityState.Detached )
                     {
                         var originalStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
                         var newStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );

@@ -434,7 +434,7 @@
                             <asp:LinkButton ID="btnPlacements" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnPlacements_Click">
                                 <i class="fa fa-random"></i>
                             </asp:LinkButton>
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
                     </div>

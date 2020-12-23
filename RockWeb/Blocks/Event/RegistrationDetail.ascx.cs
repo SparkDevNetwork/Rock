@@ -837,8 +837,8 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationId.HasValue )
             {
-                string appRoot = ResolveRockUrl( "~/" );
-                string themeRoot = ResolveRockUrl( "~~/" );
+                string appRoot = ResolveRockUrlIncludeRoot(  "~/" );
+                string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
                 var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
                 confirmation.RegistrationId = RegistrationId.Value;

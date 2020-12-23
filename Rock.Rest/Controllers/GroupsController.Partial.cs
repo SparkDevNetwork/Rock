@@ -164,7 +164,12 @@ namespace Rock.Rest.Controllers
                         }
                         else if ( countsType == TreeViewItem.GetCountsType.ChildGroups )
                         {
-                            treeViewItem.CountInfo = groupService.Queryable().Where( a => a.ParentGroupId.HasValue && a.ParentGroupId == group.Id ).Count();
+                            treeViewItem.CountInfo = groupService
+                                .Queryable()
+                                .Where( a => a.ParentGroupId.HasValue &&
+                                    a.ParentGroupId == group.Id &&
+                                    ( a.IsActive || includeInactiveGroups ) )
+                                .Count();
                         }
 
                         groupNameList.Add( treeViewItem );

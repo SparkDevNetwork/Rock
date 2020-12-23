@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Model;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -34,6 +35,8 @@ namespace Rock.Logging
         private DateTime _ConfigurationLastLoaded;
         private ILogger _logger;
         private HashSet<string> _domains;
+        private readonly string _rockLogDirectory;
+        private readonly string _searchPattern;
 
         /// <summary>
         /// Gets the log configuration.
@@ -51,6 +54,31 @@ namespace Rock.Logging
         {
             LogConfiguration = rockLogConfiguration;
             LoadConfiguration( LogConfiguration );
+
+            _rockLogDirectory = System.IO.Path.GetFullPath( System.IO.Path.GetDirectoryName( LogConfiguration.LogPath ) );
+
+            _searchPattern = System.IO.Path.GetFileNameWithoutExtension( LogConfiguration.LogPath ) +
+                                "*" +
+                                System.IO.Path.GetExtension( LogConfiguration.LogPath );
+        }
+
+        /// <summary>
+        /// Gets the log files.
+        /// </summary>
+        /// <value>
+        /// The log files.
+        /// </value>
+        public List<string> LogFiles
+        {
+            get
+            {
+                if ( !System.IO.Directory.Exists( _rockLogDirectory ) )
+                {
+                    return new List<string>();
+                }
+
+                return System.IO.Directory.GetFiles( _rockLogDirectory, _searchPattern ).OrderByDescending( s => s ).ToList();
+            }
         }
 
         /// <summary>
@@ -62,6 +90,31 @@ namespace Rock.Logging
             {
                 ( ( IDisposable ) _logger ).Dispose();
                 _logger = null;
+            }
+        }
+
+        /// <summary>
+        /// Deletes all of the log files.
+        /// </summary>
+        public void Delete()
+        {
+            if ( !System.IO.Directory.Exists( _rockLogDirectory ) )
+            {
+                return;
+            }
+
+            foreach ( var file in LogFiles )
+            {
+                try
+                {
+                    System.IO.File.Delete( file );
+                }
+                catch ( Exception ex )
+                {
+                    // If you get an exception it is probably because the file is in use
+                    // and we can't delete it. So just move on.
+                    ExceptionLogService.LogException( ex );
+                }
             }
         }
 

@@ -1333,17 +1333,25 @@ namespace RockWeb.Blocks.CheckIn
         #region Private Methods
 
         /// <summary>
+        /// Get the Unique Rapid Attendance Entry Cookie Key
+        /// </summary>
+        private string GetUniqueRapidAttendanceEntryCookieKey()
+        {
+            return string.Format( "{0}-{1}", ROCK_RAPIDATTENDANCEENTRY, this.BlockId );
+        }
+
+        /// <summary>
         /// Creates the rapid attendance cookie.
         /// </summary>
         private void CreateRapidAttendanceCookie( AttendanceSetting attendanceSetting )
         {
-            HttpCookie httpcookie = new HttpCookie( ROCK_RAPIDATTENDANCEENTRY );
-            httpcookie.Expires = RockDateTime.Now.AddMinutes( 480 );
-            httpcookie.Values.Add( GROUP_ID, attendanceSetting.GroupId.ToString() );
-            httpcookie.Values.Add( LOCATION_ID, attendanceSetting.GroupLocationId.ToString() );
-            httpcookie.Values.Add( SCHEDULE_ID, attendanceSetting.ScheduleId.ToString() );
-            httpcookie.Values.Add( ATTENDANCE_DATE, attendanceSetting.AttendanceDate.ToString() );
-            Response.Cookies.Add( httpcookie );
+            HttpCookie httpCookie = new HttpCookie( GetUniqueRapidAttendanceEntryCookieKey() );
+            httpCookie.Expires = RockDateTime.Now.AddMinutes( 480 );
+            httpCookie.Values.Add( GROUP_ID, attendanceSetting.GroupId.ToString() );
+            httpCookie.Values.Add( LOCATION_ID, attendanceSetting.GroupLocationId.ToString() );
+            httpCookie.Values.Add( SCHEDULE_ID, attendanceSetting.ScheduleId.ToString() );
+            httpCookie.Values.Add( ATTENDANCE_DATE, attendanceSetting.AttendanceDate.ToString() );
+            Response.Cookies.Add( httpCookie );
         }
 
         /// <summary>
@@ -1351,7 +1359,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private AttendanceSetting GetRapidAttendanceCookie()
         {
-            HttpCookie rapidAttendanceEntryCookie = Request.Cookies[ROCK_RAPIDATTENDANCEENTRY];
+            HttpCookie rapidAttendanceEntryCookie = Request.Cookies[GetUniqueRapidAttendanceEntryCookieKey()];
             if ( rapidAttendanceEntryCookie != null )
             {
                 AttendanceSetting attendanceSetting = new AttendanceSetting();
@@ -1527,6 +1535,29 @@ namespace RockWeb.Blocks.CheckIn
             if ( schedule == null || !schedule.IsActive )
             {
                 return false;
+            }
+
+            var attendanceGroupGuid = GetAttributeValue( AttributeKey.AttendanceGroup ).AsGuid();
+            if ( attendanceGroupGuid != default( Guid ) )
+            {
+                var groupId = new GroupService( rockContext ).GetId( attendanceGroupGuid );
+                if ( !groupId.HasValue || groupId.Value != _attendanceSettingState.GroupId )
+                {
+                    return false;
+                }
+            }
+            else if ( GetAttributeValue( AttributeKey.ParentGroup ).AsGuid() != default( Guid ) )
+            {
+                var parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuid();
+
+                var group = new GroupService( rockContext )
+                                .Queryable()
+                                .Where( a => a.ParentGroup.Guid == parentGroupGuid && a.IsActive && a.Id == _attendanceSettingState.GroupId )
+                                .FirstOrDefault();
+                if ( group == null )
+                {
+                    return false;
+                }
             }
 
             return true;

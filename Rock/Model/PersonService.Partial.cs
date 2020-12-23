@@ -454,9 +454,12 @@ namespace Rock.Model
             // Find people who have a good confidence score
             var goodMatches = foundPeople.Values
                 .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
-                .OrderByDescending( match => match.ConfidenceScore );
+                .OrderByDescending( match => match.ConfidenceScore )
+                .Select( match => match.PersonId )
+                .ToList();
 
-            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
+            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
         }
 
         #region FindPersonClasses

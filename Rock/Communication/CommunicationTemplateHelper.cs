@@ -47,27 +47,24 @@ namespace Rock.Communication
                 helpTextBuilder.Append(
             @"
 <p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
-<br/>
+<br>
 <p>The template needs to have at least one div with a 'dropzone' class in the BODY</p>
-<br/>
 <pre>
 &lt;div class=""dropzone""&gt;
 &lt;/div&gt;
 </pre>
-<br/>
+<br>
 
-<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p>
-<br/>
+<p>The template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
     &lt;div class=""dropzone""&gt;
     &lt;/div&gt;
 &lt;/div&gt;
 </pre>
-<br/>
+<br>
 
 <p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p>
-<br/>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
     &lt;div class=""dropzone""&gt;
@@ -77,10 +74,9 @@ namespace Rock.Communication
     &lt;/div&gt;
 &lt;/div&gt;
 </pre>
-<br/>
+<br>
 
 <p>To enable the PREHEADER text, a div with an id of 'preheader-text' needs to be the first div in the BODY</p>
-<br/>
 <pre>
 &lt;!-- HIDDEN PREHEADER TEXT --&gt;
 &lt;div id=""preheader-text"" style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;""&gt;
@@ -91,14 +87,12 @@ namespace Rock.Communication
             }
 
             helpTextBuilder.Append( @"
-<p>To include a logo, an img div with an id of 'template-logo' can be placed anywhere in the template, which will then show the 'Logo' image uploader under the template editor which will be used to set the src of the template-logo</p>
-<br/>
+<br>
+<p>To include a logo, an img div with an id of 'template-logo' can be placed anywhere in the template. The template editor will then show the 'Logo' image uploader. The src of the 'template-logo' will be set from the template-editor.</p>
 <pre>
 &lt;!-- LOGO --&gt;
 &lt;img id='template-logo' src='/Content/EmailTemplates/placeholder-logo.png' width='200' height='50' data-instructions='Provide a PNG with a transparent background or JPG with the background color of #ee7725.' /&gt;
 </pre>
-
-<br/>
 " );
             return helpTextBuilder.ToString();
         }

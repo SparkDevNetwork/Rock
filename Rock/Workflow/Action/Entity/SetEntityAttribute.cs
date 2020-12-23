@@ -34,12 +34,48 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Entity Attribute Set" )]
 
-    [EntityTypeField( "Entity Type", false, "The type of Entity.", true, "", 0, "EntityType" )]
-    [WorkflowTextOrAttribute( "Entity Id or Guid", "Entity Attribute", "The id or guid of the entity. <span class='tip tip-lava'></span>", true, "", "", 1, "EntityIdGuid" )]
-    [WorkflowTextOrAttribute( "Attribute Key", "Attribute Key Attribute", "The key of the attribute to set. <span class='tip tip-lava'></span>", true, "", "", 2, "AttributeKey" )]
-    [WorkflowTextOrAttribute( "Attribute Value", "Attribute Value Attribute", "The value to set. <span class='tip tip-lava'></span>", false, "", "", 3, "AttributeValue" )]
+    [EntityTypeField(
+        "Entity Type",
+        IncludeGlobalAttributeOption = false,
+        Description = "The type of Entity.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKeys.EntityType )]
+    [WorkflowTextOrAttribute(
+        "Entity Id or Guid",
+        "Entity Attribute",
+        Description = "The id or guid of the entity. <span class='tip tip-lava'></span>.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKeys.EntityIdGuid )]
+    [WorkflowTextOrAttribute(
+        "Attribute Key",
+        "Attribute Key Attribute",
+        Description = "The key of the attribute to set. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 2,
+        Key = AttributeKeys.AttributeKey )]
+    [WorkflowTextOrAttribute(
+        "Attribute Value",
+        "Attribute Value Attribute",
+        Description = "The value to set. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKeys.AttributeValue )]
     public class SetEntityAttribute : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKeys
+        {
+            public const string EntityType = "EntityType";
+            public const string EntityIdGuid = "EntityIdGuid";
+            public const string AttributeKey = "AttributeKey";
+            public const string AttributeValue = "AttributeValue";
+        }
+
+        #endregion
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -54,7 +90,7 @@ namespace Rock.Workflow.Action
 
             // Get the entity type
             EntityTypeCache entityType = null;
-            var entityTypeGuid = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
+            var entityTypeGuid = GetAttributeValue( action, AttributeKeys.EntityType ).AsGuidOrNull();
             if ( entityTypeGuid.HasValue )
             {
                 entityType = EntityTypeCache.Get( entityTypeGuid.Value );
@@ -71,19 +107,25 @@ namespace Rock.Workflow.Action
             // Get the entity
             EntityTypeService entityTypeService = new EntityTypeService( _rockContext );
             IEntity entityObject = null;
-            string entityIdGuidString = GetAttributeValue( action, "EntityIdGuid", true ).ResolveMergeFields( mergeFields ).Trim();
-            var entityGuid = entityIdGuidString.AsGuidOrNull();
-            if ( entityGuid.HasValue )
+            string entityIdGuidString = GetAttributeValue( action, AttributeKeys.EntityIdGuid, true ).ResolveMergeFields( mergeFields ).Trim();
+            var entityId = entityIdGuidString.AsIntegerOrNull();
+            if ( entityId.HasValue )
             {
-                entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
+                entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
             }
             else
             {
-                var entityId = entityIdGuidString.AsIntegerOrNull();
-                if ( entityId.HasValue )
+                var entityGuid = entityIdGuidString.AsGuidOrNull();
+                if ( entityGuid.HasValue )
                 {
-                    entityObject = entityTypeService.GetEntity( entityType.Id, entityId.Value );
+                    entityObject = entityTypeService.GetEntity( entityType.Id, entityGuid.Value );
                 }
+            }
+
+            if ( entityObject == null )
+            {
+                var value = GetActionAttributeValue( action, AttributeKeys.EntityIdGuid );
+                entityObject = action.GetEntityFromAttributeValue( value, rockContext );
             }
 
             if ( entityObject == null )
@@ -100,8 +142,8 @@ namespace Rock.Workflow.Action
             }
 
             // Get the property settings
-            string attributeKey = GetAttributeValue( action, "AttributeKey", true ).ResolveMergeFields( mergeFields );
-            string attributeValue = GetAttributeValue( action, "AttributeValue", true ).ResolveMergeFields( mergeFields );
+            string attributeKey = GetAttributeValue( action, AttributeKeys.AttributeKey, true ).ResolveMergeFields( mergeFields );
+            string attributeValue = GetAttributeValue( action, AttributeKeys.AttributeValue, true ).ResolveMergeFields( mergeFields );
 
             entityWithAttributes.LoadAttributes(_rockContext);
             entityWithAttributes.SetAttributeValue( attributeKey, attributeValue );

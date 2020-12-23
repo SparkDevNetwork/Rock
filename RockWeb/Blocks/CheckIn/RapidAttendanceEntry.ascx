@@ -14,6 +14,10 @@
                     $('#<%= hfPersonDirty.ClientID %>').val('true')
                 });
 
+                 $('.js-person-item-checkbox').find('input').change(function () {
+                    $('#<%= hfPersonDirty.ClientID %>').val('true')
+                });
+
                 $('textarea.js-person-item').blur(function () {
                     if ($('textarea.js-person-item').val() !== '') {
                         $('#<%= hfPersonDirty.ClientID %>').val('true')
@@ -185,7 +189,7 @@
                                 <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right margin-t-lg js-main-event" CausesValidation="false" OnClick="lbEditPerson_Click"> <i title="Edit Person" class="fa fa-pencil"></i></asp:LinkButton>
                                 <asp:Literal ID="lPersonDetail" runat="server" />
 
-                                <Rock:RockCheckBoxList ID="rcbWorkFlowTypes" runat="server" RepeatDirection="Horizontal" RepeatColumns="3" FormGroupCssClass="margin-b-lg" CssClass="js-person-item" />
+                                <Rock:RockCheckBoxList ID="rcbWorkFlowTypes" runat="server" RepeatDirection="Horizontal" RepeatColumns="3" FormGroupCssClass="margin-b-lg" CssClass="js-person-item-checkbox" />
                                 <Rock:RockControlWrapper ID="rcwNotes" runat="server" CssClass="margin-b-lg">
                                     <Rock:RockDropDownList ID="ddlNoteType" runat="server" CssClass="input-width-xl input-xs pull-right" OnSelectedIndexChanged="ddlNoteType_SelectedIndexChanged" AutoPostBack="true" />
                                     <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" CssClass="js-person-item" />

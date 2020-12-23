@@ -493,17 +493,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindEditRegistrationsRepeater()
         {
-            if ( this.LinkedRegistrationsState == null || !this.LinkedRegistrationsState.Any() )
-            {
-                // if there is no data here then try to populate it
-                var eventItemOccurrence = new EventItemOccurrenceService( new RockContext() ).Get( hfEventItemOccurrenceId.Value.AsInteger() ) ?? new EventItemOccurrence();
-
-                if ( eventItemOccurrence != null )
-                {
-                    LinkedRegistrationsState = eventItemOccurrence.Linkages.ToList();
-                }
-            }
-
             var registrations = LinkedRegistrationsState
                 .Select( r => new
                 {
@@ -607,7 +596,8 @@ namespace RockWeb.Blocks.Event
             SetEditMode( true );
 
             hfEventItemOccurrenceId.Value = eventItemOccurrence.Id.ToString();
-
+            eventItemOccurrence.Linkages = eventItemOccurrence.Linkages ?? new List<EventItemOccurrenceGroupMap>();
+            LinkedRegistrationsState = eventItemOccurrence.Linkages.ToList();
             ddlCampus.SetValue( eventItemOccurrence.CampusId ?? -1 );
             tbLocation.Text = eventItemOccurrence.Location;
 
@@ -693,7 +683,6 @@ namespace RockWeb.Blocks.Event
         {
             var rockContext = new RockContext();
             var eventItemOccurrence = new EventItemOccurrenceService( rockContext ).Get( hfEventItemOccurrenceId.Value.AsInteger() );
-
             ShowEditDetails( eventItemOccurrence );
         }
 

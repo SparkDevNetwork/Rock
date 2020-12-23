@@ -58,12 +58,12 @@
                             OnClick="btnLoggingSave_Click" />
 
                         <Rock:BootstrapButton
-                            ID="btnFlushLog"
+                            ID="btnDeleteLog"
                             runat="server"
                             CssClass="btn btn-link"
-                            Text="Flush Log"
-                            DataLoadingText="Flushing Log ..."
-                            OnClick="btnLoggingFlush_Click" />
+                            Text="Delete Log"
+                            DataLoadingText="Deleting Log ..."
+                            OnClick="btnDeleteLog_Click" />
                     </div>
                 </Rock:PanelWidget>
 

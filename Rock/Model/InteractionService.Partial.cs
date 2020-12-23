@@ -189,7 +189,7 @@ namespace Rock.Model
             int? deviceTypeId = _deviceTypeIdLookup.GetValueOrNull( lookupKey );
             if ( deviceTypeId == null )
             {
-                deviceTypeId = GetInteractionDeviceType( application, operatingSystem, clientType, deviceTypeData ).Id;
+                deviceTypeId = GetOrCreateInteractionDeviceTypeId( application, operatingSystem, clientType, deviceTypeData );
                 _deviceTypeIdLookup.AddOrReplace( lookupKey, deviceTypeId.Value );
             }
 
@@ -204,28 +204,64 @@ namespace Rock.Model
         /// <param name="clientType">Type of the client.</param>
         /// <param name="deviceTypeData">The device type data (either a plain DeviceType name or the whole useragent string).</param>
         /// <returns></returns>
+        [Obsolete]
+        [RockObsolete( "1.12" )]
         public InteractionDeviceType GetInteractionDeviceType( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
-            using ( var rockContext = new RockContext() )
+            var rockContext = new RockContext();
+            InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
+            InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
+                .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
+                .FirstOrDefault();
+
+            if ( interactionDeviceType == null )
             {
-                InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
-                InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable().Where( a => a.Application == application
-                                                    && a.OperatingSystem == operatingSystem && a.ClientType == clientType ).FirstOrDefault();
-
-                if ( interactionDeviceType == null )
-                {
-                    interactionDeviceType = new InteractionDeviceType();
-                    interactionDeviceType.DeviceTypeData = deviceTypeData;
-                    interactionDeviceType.ClientType = clientType;
-                    interactionDeviceType.OperatingSystem = operatingSystem;
-                    interactionDeviceType.Application = application;
-                    interactionDeviceType.Name = string.Format( "{0} - {1}", operatingSystem, application );
-                    interactionDeviceTypeService.Add( interactionDeviceType );
-                    rockContext.SaveChanges();
-                }
-
-                return interactionDeviceType;
+                interactionDeviceType = new InteractionDeviceType();
+                interactionDeviceType.DeviceTypeData = deviceTypeData;
+                interactionDeviceType.ClientType = clientType;
+                interactionDeviceType.OperatingSystem = operatingSystem;
+                interactionDeviceType.Application = application;
+                interactionDeviceType.Name = string.Format( "{0} - {1}", operatingSystem, application );
+                interactionDeviceTypeService.Add( interactionDeviceType );
+                rockContext.SaveChanges();
             }
+
+            return interactionDeviceType;
+        }
+
+        /// <summary>
+        /// Gets the InteractionDeveiceTypeId or creates one if it does not exist.
+        /// This method uses its own RockContext so it doesn't interfere with the Interaction.
+        /// </summary>
+        /// <param name="application">The application.</param>
+        /// <param name="operatingSystem">The operating system.</param>
+        /// <param name="clientType">Type of the client.</param>
+        /// <param name="deviceTypeData">The device type data.</param>
+        /// <returns>InteractionDeveiceType.Id</returns>
+        private int GetOrCreateInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
+        {
+            var rockContext = new RockContext();
+                InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
+                InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
+                    .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
+                    .FirstOrDefault();
+
+            if ( interactionDeviceType == null )
+            {
+                interactionDeviceType = new InteractionDeviceType
+                {
+                    DeviceTypeData = deviceTypeData,
+                    ClientType = clientType,
+                    OperatingSystem = operatingSystem,
+                    Application = application,
+                    Name = string.Format( "{0} - {1}", operatingSystem, application )
+                };
+
+                interactionDeviceTypeService.Add( interactionDeviceType );
+                rockContext.SaveChanges();
+            }
+
+            return interactionDeviceType.Id;
         }
 
         /// <summary>
@@ -250,48 +286,52 @@ namespace Rock.Model
         /// <returns></returns>
         private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
+            object deviceTypeId = DBNull.Value;
+            if ( interactionDeviceTypeId != null )
+            {
+                deviceTypeId = interactionDeviceTypeId;
+            }
+
             var currentDateTime = RockDateTime.Now;
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
-            int interactionSessionId = this.Context.Database.SqlQuery<int>( @"
-BEGIN
-	DECLARE @InteractionSessionId INT;
+            int interactionSessionId = this.Context.Database.SqlQuery<int>(
+                @"BEGIN
+                    DECLARE @InteractionSessionId INT;
 
-	SELECT @InteractionSessionId = Id
-	FROM InteractionSession
-	WHERE [Guid] = @browserSessionId
+                    SELECT @InteractionSessionId = Id
+                    FROM InteractionSession
+                    WHERE [Guid] = @browserSessionId
 
-	IF (@InteractionSessionId IS NULL)
-	BEGIN
-		INSERT [dbo].[InteractionSession] (
-			[DeviceTypeId]
-			,[IpAddress]
-			,[Guid]
-            ,[CreatedDateTime]
-            ,[ModifiedDateTime]
-			)
-        OUTPUT inserted.Id
-		VALUES (
-			@interactionDeviceTypeId
-			,@ipAddress
-			,@browserSessionId
-            ,@currentDateTime
-            ,@currentDateTime
-			)
-	END
-	ELSE
-	BEGIN
-		SELECT @InteractionSessionId
-	END
-END
-",
-new SqlParameter( "@browserSessionId", browserSessionId ),
-new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
-new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId ),
-new SqlParameter( "@currentDateTime", currentDateTime )
-).FirstOrDefault();
+                    IF (@InteractionSessionId IS NULL)
+                    BEGIN
+                        INSERT [dbo].[InteractionSession] (
+                            [DeviceTypeId]
+                            ,[IpAddress]
+                            ,[Guid]
+                            ,[CreatedDateTime]
+                            ,[ModifiedDateTime]
+                            )
+                        OUTPUT inserted.Id
+                        VALUES (
+                            @interactionDeviceTypeId
+                            ,@ipAddress
+                            ,@browserSessionId
+                            ,@currentDateTime
+                            ,@currentDateTime
+                            )
+                    END
+                    ELSE
+                    BEGIN
+                        SELECT @InteractionSessionId
+                    END
+                END",
+                new SqlParameter( "@browserSessionId", browserSessionId ),
+                new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
+                new SqlParameter( "@interactionDeviceTypeId", deviceTypeId ),
+                new SqlParameter( "@currentDateTime", currentDateTime )
+                ).FirstOrDefault();
 
             return interactionSessionId;
-
         }
 
         /// <summary>
