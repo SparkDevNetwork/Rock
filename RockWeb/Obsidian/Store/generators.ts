@@ -1,4 +1,4 @@
-﻿import { defineComponent } from "vue";
+﻿import { defineComponent } from "../Vendor/Vue/vue.js";
 import DropDownList from "../Elements/DropDownList.js";
 
 export type CommonEntityOption = {

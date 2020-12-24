@@ -1,4 +1,6 @@
-﻿export default {
+﻿import { defineComponent } from "../Vendor/Vue/vue.js"
+
+export default defineComponent({
     name: 'RockButton',
     props: {
         isLoading: {
@@ -25,4 +27,4 @@
     </template>
     <slot v-else />
 </button>`
-}
+});

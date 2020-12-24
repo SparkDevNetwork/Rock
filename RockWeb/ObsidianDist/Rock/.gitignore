@@ -3,3 +3,5 @@
 
 !Vendor/Vue/vue.js
 !Vendor/Vuex/index.js
+!Vendor/Axios/index.js
+!Vendor/Mitt/index.js

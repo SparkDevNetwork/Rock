@@ -2,7 +2,7 @@
 import DefinedTypePicker from "../../Controls/DefinedTypePicker.js";
 import DefinedValuePicker from "../../Controls/DefinedValuePicker.js";
 import CampusPicker from "../../Controls/CampusPicker.js";
-import { defineComponent } from 'vue'
+import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/index.js';
 
 export default defineComponent({

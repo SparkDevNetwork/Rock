@@ -1,8 +1,18 @@
-﻿import TextBox from '../../Elements/TextBox.js'
-import CheckBox from '../../Elements/CheckBox.js'
-import RockButton from '../../Elements/RockButton.js'
-import { defineComponent, inject } from 'vue'
+﻿import TextBox from '../../Elements/TextBox.js';
+import CheckBox from '../../Elements/CheckBox.js';
+import RockButton from '../../Elements/RockButton.js';
+import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
 import { BlockAction } from '../../Controls/RockBlock.js';
+
+type AuthCookie = {
+    Expires: string;
+    Name: string;
+    Value: string;
+};
+
+type LoginResponse = {
+    AuthCookie: AuthCookie | null;
+};
 
 export default defineComponent({
     name: 'Security.Login',
@@ -26,7 +36,7 @@ export default defineComponent({
         };
     },
     methods: {
-        setCookie(cookie) {
+        setCookie(cookie: AuthCookie) {
             let expires = '';
 
             if (cookie.Expires) {
@@ -59,15 +69,14 @@ export default defineComponent({
             this.errorMessage = '';
 
             try {
-                const result = await this.blockAction('help', undefined);
-                const url = result.data;
+                const result = await this.blockAction<string>('help', undefined);
 
-                if (!url) {
-                    this.errorMessage = 'An unknown error occurred communicating with the server';
+                if (result.isError) {
+                    this.errorMessage = result.errorMessage || 'An unknown error occurred communicating with the server';
                 }
-                else {
+                else if (result.data) {
                     // TODO make this force relative URLs (no absolute URLs)
-                    window.location.href = url;
+                    window.location.href = result.data;
                 }
             }
             catch (e) {
@@ -83,25 +92,27 @@ export default defineComponent({
             }
 
             this.isLoading = true;
-            this.errorMessage = '';
 
             try {
-                const result = await this.blockAction('login', {
+                const result = await this.blockAction<LoginResponse>('login', {
                     username: this.username,
                     password: this.password,
                     rememberMe: this.rememberMe
                 });
 
-                if (result.data.AuthCookie) {
+                if (result && !result.isError && result.data && result.data.AuthCookie) {
                     this.setCookie(result.data.AuthCookie);
                     this.redirectAfterLogin();
+                    return;
                 }
-                else {
-                    this.errorMessage = 'Authentication seemed to succeed, but the server did not generate a cookie';
-                    this.isLoading = false;
-                }
+
+                this.isLoading = false;
+                this.errorMessage = result.errorMessage || 'An unknown error occurred communicating with the server';
             }
             catch (e) {
+                // ts-ignore-line
+                console.log(JSON.stringify(e.response, null, 2));
+
                 if (typeof e === 'string') {
                     this.errorMessage = e;
                 }

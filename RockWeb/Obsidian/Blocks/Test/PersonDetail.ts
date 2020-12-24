@@ -2,7 +2,7 @@
 import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
 import RockButton from "../../Elements/RockButton.js";
 import TextBox from "../../Elements/TextBox.js";
-import { defineComponent } from "vue";
+import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/index.js';
 
 export default defineComponent({
@@ -58,7 +58,7 @@ export default defineComponent({
         }
     },
     computed: {
-        blockTitle() {
+        blockTitle(): string {
             return `${this.person.FirstName} ${this.person.LastName}`;
         }
     },

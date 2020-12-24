@@ -1,18 +1,18 @@
-﻿import { doApiCall } from '../Util/http.js';
+﻿import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/http.js';
 import { defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
 import { BlockConfig, VueComponent } from '../index.js';
 import store from '../Store/index.js';
 
-export type HttpResult = { data: unknown };
-export type BlockAction = (actionName: string, data: object | undefined) => HttpResult;
+export type BlockAction = <T>(actionName: string, data: HttpBodyData) => Promise<HttpResult<T>>;
+
 export type BlockHttp = {
-    get: (url: string, params: object | undefined) => HttpResult;
-    post: (url: string, params: object | undefined, data: object | undefined) => HttpResult;
+    get: <T>(url: string, params: HttpUrlParams) => Promise<HttpResult<T>>;
+    post: <T>(url: string, params: HttpUrlParams, data: HttpBodyData) => Promise<HttpResult<T>>;
 };
 
 type LogItem = {
     date: Date;
-    method: string;
+    method: HttpMethod;
     url: string;
 };
 
@@ -31,7 +31,7 @@ export default defineComponent({
     setup(props) {
         const log: LogItem[] = reactive([]);
 
-        const writeLog = (method: string, url: string) => {
+        const writeLog = (method: HttpMethod, url: string) => {
             log.push({
                 date: new Date(),
                 method,
@@ -39,30 +39,21 @@ export default defineComponent({
             });
         };
 
-        const httpCall = (method: string, url: string, params: object | undefined = undefined, data: object | undefined = undefined) => {
+        const httpCall = async <T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined) => {
             writeLog(method, url);
-            return doApiCall(method, url, params, data);
+            return await doApiCall<T>(method, url, params, data);
         };
 
-        const get = (url: string, params: object | undefined = undefined) => {
-            return httpCall('GET', url, params);
+        const get = async <T>(url: string, params: HttpUrlParams = undefined) => {
+            return await httpCall<T>('GET', url, params);
         };
 
-        const post = (url: string, params: object | undefined = undefined, data: object | undefined = undefined) => {
-            return httpCall('POST', url, params, data);
+        const post = async <T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined) => {
+            return await httpCall<T>('POST', url, params, data);
         };
 
-        const blockAction: BlockAction = (actionName: string, data: object | undefined = undefined) => {
-            try {
-                return post(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, data);
-            }
-            catch (e) {
-                if (e.response && e.response.data && e.response.data.Message) {
-                    throw e.response.data.Message;
-                }
-
-                throw e;
-            }
+        const blockAction: BlockAction = async <T>(actionName: string, data: HttpBodyData = undefined) => {
+            return await post<T>(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, data);
         };
 
         const blockHttp: BlockHttp = { get, post };

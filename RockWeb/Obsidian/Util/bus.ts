@@ -1,4 +1,4 @@
-﻿import mitt from "mitt";
+﻿import mitt from "../Vendor/Mitt/index.js";
 
 /**
  * The bus allows page components to send and receive arbitrary data from other page components.

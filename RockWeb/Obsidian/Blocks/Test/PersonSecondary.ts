@@ -3,8 +3,9 @@ import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
 import SecondaryBlock from "../../Controls/SecondaryBlock.js";
 import RockButton from "../../Elements/RockButton.js";
 import TextBox from "../../Elements/TextBox.js";
+import { defineComponent } from '../../Vendor/Vue/vue.js';
 
-export default {
+export default defineComponent({
     name: 'Test.PersonSecondary',
     components: {
         PaneledBlockTemplate,
@@ -78,4 +79,4 @@ export default {
         </template>
     </PaneledBlockTemplate>
 </SecondaryBlock>`
-}
+})

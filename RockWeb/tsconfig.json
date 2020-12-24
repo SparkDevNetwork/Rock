@@ -13,11 +13,7 @@
       "DOM",
       "ES2020",
       "ES2020.Symbol.WellKnown"
-    ],
-    "baseUrl": "",
-    "paths": {
-      "vue": [ "ObsidianDist/Vendor/Vue/vue" ]
-    }
+    ]
   },
   "include": [
     "Obsidian/**/*"

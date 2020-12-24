@@ -1,4 +1,4 @@
-﻿import { defineComponent } from "vue";
+﻿import { defineComponent } from "../Vendor/Vue/vue.js";
 import { newGuid } from "../Util/guid.js";
 
 export default defineComponent({

@@ -1,6 +1,7 @@
-﻿import { newGuid } from "../Util/guid.js";
+﻿import { defineComponent } from "../Vendor/Vue/vue.js";
+import { newGuid } from "../Util/guid.js";
 
-export default {
+export default defineComponent({
     name: 'CheckBox',
     props: {
         modelValue: {
@@ -38,4 +39,4 @@ export default {
         <span class="label-text ">{{label}}</span>
     </label>
 </div>`
-}
+});
