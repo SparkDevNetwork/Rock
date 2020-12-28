@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Tasks;
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -62,7 +63,7 @@ namespace Rock.Migrations.RockStartup
 
             foreach ( var runOnceJobId in runOnceJobIds )
             {
-                new Transactions.RunJobNowTransaction( runOnceJobId ).Enqueue();
+                new ProcessRunJobNow.Message { JobId = runOnceJobId }.Send();
             }
         }
     }

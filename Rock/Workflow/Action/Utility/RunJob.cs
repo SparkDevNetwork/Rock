@@ -22,6 +22,7 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 
 namespace Rock.Workflow.Action
 {
@@ -44,11 +45,7 @@ namespace Rock.Workflow.Action
                 ServiceJob Job = new ServiceJobService( rockContext ).Get( JobGuid );
                 if ( Job != null )
                 {
-                    var transaction = new Rock.Transactions.RunJobNowTransaction( Job.Id );
-
-                    // Process the transaction on another thread
-                    System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-
+                    new ProcessRunJobNow.Message { JobId = Job.Id }.Send();
                     action.AddLogEntry( string.Format( "The '{0}' job has been started.", Job.Name ) );
 
                     return true;
