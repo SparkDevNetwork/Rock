@@ -24,7 +24,7 @@
                             <div class="col-lg-6">
                                 <Rock:RockDropDownList ID="ddlEventType" runat="server" Label="Event Type" />
                                 <Rock:RockTextBox ID="tbWriterNodeName" runat="server" Label="Writer Node Name" />
-                                <Rock:RockTextBox ID="tbText" runat="server" Label="Text" />
+                                <Rock:RockTextBox ID="tbText" runat="server" Label="Details" />
                             </div>
                         </div>
                     </Rock:GridFilter>
@@ -35,7 +35,7 @@
                             <Rock:RockBoundField DataField="NodeName" HeaderText="Node Name" SortExpression="NodeName" />
                             <Rock:RockBoundField DataField="Severity" HeaderText="Severity" SortExpression="Severity" />
                             <Rock:RockBoundField DataField="EventType" HeaderText="Type" SortExpression="EventType" />
-                            <Rock:RockBoundField DataField="Text" HeaderText="Text" SortExpression="Text" />
+                            <Rock:RockBoundField DataField="Text" HeaderText="Details" SortExpression="Text" />
                         </Columns>
                     </Rock:Grid>
                 </div>
