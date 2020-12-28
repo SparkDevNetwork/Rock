@@ -56,7 +56,7 @@ namespace Rock.Model
                         wfnm.MetricValueDateTime <= sampleMaxDate )
                     .Select( wfnm => wfnm.MetricValue );
 
-                samples[i] = metricValues.Any() ? metricValues.Average() : 0;
+                samples[i] = metricValues.Any() ? metricValues.Max() : 0;
             }
 
             return samples;
