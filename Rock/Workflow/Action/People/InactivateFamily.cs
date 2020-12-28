@@ -47,7 +47,7 @@ namespace Rock.Workflow.Action
         required: false,
         order: 2,
         key: AttributeKey.InactiveNote,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType" } )]
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
     [CustomDropdownListField(
         "Multi-Family Logic",
@@ -164,7 +164,7 @@ namespace Rock.Workflow.Action
             }
             else if ( multiFamilyLogic == ( int ) LogicOption.InactivateIndividualsAllFamilies )
             {
-                var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person );
+                var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person ).Distinct();
                 foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                 {
                     InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
