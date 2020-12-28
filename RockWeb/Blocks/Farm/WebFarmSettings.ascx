@@ -19,51 +19,53 @@
     }
 </style>
 <script>
-var options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    legend: {
-        display: false
-    },
-    scales: {
-        yAxes: [{
-            display: false,
-            ticks: {
-                min: 0,
-                max: 100
-            }
-        }],
-        xAxes: [{
-            display: false
-        }]
-    },
-    hover: {
-        mode: 'nearest',
-        intersect: false
-    },
-    tooltips: {
-        hasIndicator: true,
-        intersect: false,
-        callbacks: {
-            label: function (tooltipItem, data) {
-                var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
-                if (label) {
-                    label = 'CPU: ' + label + '%';
+    (function () {
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    display: false,
+                    ticks: {
+                        min: 0,
+                        max: 100
+                    }
+                }],
+                xAxes: [{
+                    display: false
+                }]
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: false
+            },
+            tooltips: {
+                hasIndicator: true,
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+                        if (label) {
+                            label = 'CPU: ' + label + '%';
+                        }
+
+                        return label;
+                    }
                 }
-
-                return label;
             }
-        }
-    }
-};
+        };
 
-$(document).ready(function () {
-    $('.js-chart').each(function () {
-        var el = $(this);
-        var data = el.attr('data-chart') ? JSON.parse(el.attr('data-chart')) : {};
-        var chart = new Chart(el, { type: 'line', data: data, options: options });
-    });
-});
+        $(document).ready(function () {
+            $('.js-chart').each(function () {
+                var el = $(this);
+                var data = el.attr('data-chart') ? JSON.parse(el.attr('data-chart')) : {};
+                var chart = new Chart(el, { type: 'line', data: data, options: options });
+            });
+        });
+    })();
 </script>
 
 <asp:UpdatePanel ID="upUpdatePanel" runat="server">
@@ -93,37 +95,38 @@ $(document).ready(function () {
                                     <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand" OnItemDataBound="rNodes_ItemDataBound">
                                         <ItemTemplate>
                                             <div class="col-sm-6 col-md-6 col-lg-4">
-                                                <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
-                                                    <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
-                                                    <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                                        <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
-                                                            <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
-                                                            <asp:LinkButton runat="server" class="ml-1 font-weight-bold text-truncate text-black" CommandArgument='<%# Eval("Id") %>'>
-                                                                <%# Eval("NodeName") %>
-                                                            </asp:LinkButton>
-                                                        </span>
-                                                        <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
-                                                        <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                <asp:LinkButton runat="server" style="color: inherit;" CommandArgument='<%# Eval("Id") %>'>
+                                                    <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
+                                                        <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
+                                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
+                                                                <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
+                                                                <p class="ml-1 font-weight-bold text-truncate text-black mb-0">
+                                                                    <%# Eval("NodeName") %>
+                                                                </p>
+                                                            </span>
+                                                            <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
+                                                            <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                        </div>
+                                                        <div class="card-body p-0" style="height:88px;">
+                                                            <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
+                                                                <asp:Literal ID="lLastSeen" runat="server" />
+                                                            </span>
+                                                            <asp:Literal ID="lChart" runat="server" />
+                                                        </div>
                                                     </div>
-                                                    <div class="card-body p-0" style="height:88px;">
-                                                        <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
-                                                            <asp:Literal ID="lLastSeen" runat="server" />
-                                                        </span>
-                                                        <asp:Literal ID="lChart" runat="server" />
-                                                    </div>
-                                                </div>
+                                                </asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <div class="actions">
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        </div>
                     </div>
-                </div>
 
                 <div id="pnlEditDetails" runat="server">
                     <div class="alert alert-info">
@@ -149,6 +152,7 @@ $(document).ready(function () {
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
+
             </div>
         </asp:Panel>
     </ContentTemplate>

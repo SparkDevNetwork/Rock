@@ -43,6 +43,13 @@ namespace RockWeb.Blocks.Farm
         DefaultValue = Rock.SystemGuid.Page.WEB_FARM_NODE,
         Order = 1 )]
 
+    [IntegerField(
+        "Node CPU Chart Hours",
+        Key = AttributeKey.CpuChartHours,
+        Description = "The amount of hours represented by the width of the Node CPU charts.",
+        DefaultIntegerValue = 4,
+        Order = 2 )]
+
     public partial class WebFarmSettings : RockBlock, IDetailBlock
     {
         #region Keys
@@ -53,6 +60,7 @@ namespace RockWeb.Blocks.Farm
         private static class AttributeKey
         {
             public const string NodeDetailPage = "NodeDetailPage";
+            public const string CpuChartHours = "CpuChartHours";
         }
 
         /// <summary>
@@ -67,9 +75,26 @@ namespace RockWeb.Blocks.Farm
 
         #region Properties
 
-        private static readonly int _cpuMetricSampleCount = 30;
+        private static readonly int _cpuMetricSampleCount = 50;
         private static readonly DateTime _chartMaxDate = RockDateTime.Now;
-        private static readonly DateTime _chartMinDate = _chartMaxDate.AddMinutes( -60 );
+
+        /// <summary>
+        /// Gets the cpu chart min date.
+        /// </summary>
+        private DateTime ChartMinDate
+        {
+            get
+            {
+                if ( !_chartMinDate.HasValue )
+                {
+                    var hours = GetAttributeValue( AttributeKey.CpuChartHours ).AsInteger();
+                    _chartMinDate = _chartMaxDate.AddHours( 0 - hours );
+                }
+
+                return _chartMinDate.Value;
+            }
+        }
+        private DateTime? _chartMinDate = null;
 
         #endregion Properties
 
@@ -221,7 +246,7 @@ namespace RockWeb.Blocks.Farm
             // Show chart for responsive nodes
             if ( viewModel.IsActive && !viewModel.IsUnresponsive && viewModel.Metrics.Count() > 1 )
             {
-                var samples = WebFarmNodeMetricService.CalculateMetricSamples( viewModel.Metrics, _cpuMetricSampleCount, _chartMinDate, _chartMaxDate );
+                var samples = WebFarmNodeMetricService.CalculateMetricSamples( viewModel.Metrics, _cpuMetricSampleCount, ChartMinDate, _chartMaxDate );
                 var html = GetChartHtml( samples );
                 lChart.Text = html;
             }
@@ -382,7 +407,7 @@ namespace RockWeb.Blocks.Farm
                         Metrics = wfn.WebFarmNodeMetrics
                             .Where( wfnm =>
                                 wfnm.MetricType == WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent &&
-                                wfnm.MetricValueDateTime >= _chartMinDate &&
+                                wfnm.MetricValueDateTime >= ChartMinDate &&
                                 wfnm.MetricValueDateTime <= _chartMaxDate )
                             .Select( wfnm => new WebFarmNodeMetricService.MetricViewModel
                             {
