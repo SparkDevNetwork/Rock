@@ -29,7 +29,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Control/Container to manage Edit/Display AttributeValues for an IHasAttributes
     /// </summary>
-    public class AttributeValuesContainer : CompositeControl, IHasValidationGroup, INamingContainer
+    public class AttributeValuesContainer : DynamicPlaceholder, IHasValidationGroup, INamingContainer
     {
         #region ViewStateKeys
 
@@ -54,15 +54,6 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion ViewStateKeys
-
-        #region Controls
-
-        /// <summary>
-        /// The placeholder for attributes
-        /// </summary>
-        private DynamicPlaceholder _phAttributes;
-
-        #endregion Controls
 
         #region Private fields
 
@@ -234,18 +225,6 @@ namespace Rock.Web.UI.Controls
         #region Overrides
 
         /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            Controls.Clear();
-
-            _phAttributes = new DynamicPlaceholder();
-            _phAttributes.ID = this.ID + "_phAttributes";
-            Controls.Add( _phAttributes );
-        }
-
-        /// <summary>
         /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An object that represents the control state to restore.</param>
@@ -371,7 +350,7 @@ namespace Rock.Web.UI.Controls
                 item.LoadAttributes();
             }
 
-            var createdEditControls = Rock.Attribute.Helper.GetAttributeEditControls( _phAttributes, item );
+            var createdEditControls = Rock.Attribute.Helper.GetAttributeEditControls( this, item );
             return ( this._editModeAttributeIdsState?.All( a => createdEditControls.Any( c => c.Key.Id == a ) ) ) ?? false;
         }
 
@@ -383,7 +362,7 @@ namespace Rock.Web.UI.Controls
         public void AddEditControls( Rock.Attribute.IHasAttributes item, bool setValue )
         {
             EnsureChildControls();
-            _phAttributes.Controls.Clear();
+            Controls.Clear();
 
             if ( item == null )
             {
@@ -426,7 +405,7 @@ namespace Rock.Web.UI.Controls
                         Rock.Attribute.Helper.AddEditControlsForCategory(
                             attributeCategory.CategoryName,
                             item,
-                            _phAttributes,
+                            this,
                             this.ValidationGroup,
                             setValue,
                             options );
@@ -453,7 +432,7 @@ namespace Rock.Web.UI.Controls
 
             EnsureChildControls();
 
-            Rock.Attribute.Helper.GetEditValues( _phAttributes, item );
+            Rock.Attribute.Helper.GetEditValues( this, item );
         }
 
         /// <summary>
@@ -481,7 +460,7 @@ namespace Rock.Web.UI.Controls
         public void AddDisplayControls( Rock.Attribute.IHasAttributes item )
         {
             EnsureChildControls();
-            _phAttributes.Controls.Clear();
+            Controls.Clear();
 
             if ( item == null )
             {
@@ -511,11 +490,11 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl tabs = new HtmlGenericControl( "ul" );
                 tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
-                _phAttributes.Controls.Add( tabs );
+                Controls.Add( tabs );
 
                 HtmlGenericControl tabContent = new HtmlGenericControl( "div" );
                 tabContent.AddCssClass( "tab-content" );
-                _phAttributes.Controls.Add( tabContent );
+                Controls.Add( tabContent );
 
                 int tabIndex = 0;
                 foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
@@ -564,7 +543,7 @@ namespace Rock.Web.UI.Controls
                     ShowCategoryLabel = showCategoryLabel
                 };
 
-                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, attributeAddDisplayControlsOptions );
+                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, this, attributeAddDisplayControlsOptions );
             }
         }
 
@@ -574,7 +553,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public List<AttributeCache> GetDisplayedAttributes()
         {
-            return Rock.Attribute.Helper.GetDisplayedAttributes( _phAttributes );
+            return Rock.Attribute.Helper.GetDisplayedAttributes( this );
         }
 
         private List<AttributeCategory> GetDistinctAttributesByCategory( IHasAttributes item )

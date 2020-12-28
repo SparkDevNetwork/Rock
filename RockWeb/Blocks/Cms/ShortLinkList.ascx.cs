@@ -15,20 +15,21 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.ComponentModel;
-using Rock.Security;
-using System.Web.UI;
-using Rock.Web.Cache;
-using System.Web.UI.WebControls;
-using System.Data.Entity;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -309,7 +310,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        protected class ShortLinkRow
+        protected class ShortLinkRow : RockDynamic
         {
             public int Id { get; set; }
             public int SiteId { get; set; }
