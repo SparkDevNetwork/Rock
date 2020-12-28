@@ -27,7 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Transactions;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -366,42 +366,9 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            new StreakTypeRebuildTransaction( streakType.Id ).Enqueue();
+            new ProcessRebuildStreakType.Message { StreakTypeId = streakType.Id }.Send();
             ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started." );
             btnRebuild.Enabled = false;
-        }
-
-        /// <summary>
-        /// Synchronizes the rebuild status.
-        /// </summary>
-        private void SyncRebuildStatus()
-        {
-            if ( RockQueue.IsExecuting<StreakTypeRebuildTransaction>() )
-            {
-                var progress = RockQueue.CurrentlyExecutingTransactionProgress;
-
-                if ( progress.HasValue )
-                {
-                    ShowBlockNotification( nbEditModeMessage, string.Format(
-                        "A streak type rebuild is running and is {0}% complete. Please check back later.",
-                        progress.Value ));
-                }
-                else
-                {
-                    ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently running. Please check back later." );
-                }
-
-                btnRebuild.Enabled = false;
-            }
-            else if ( RockQueue.IsInQueue<StreakTypeRebuildTransaction>() )
-            {
-                ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently queued. Please check back later." );
-                btnRebuild.Enabled = false;
-            }
-            else
-            {
-                btnRebuild.Enabled = true;
-            }
         }
 
         /// <summary>
@@ -679,8 +646,6 @@ namespace RockWeb.Blocks.Streaks
             SetLinkVisibility( btnAchievements, AttributeKey.AchievementsPage );
             SetLinkVisibility( btnExclusions, AttributeKey.ExclusionsPage );
             SetLinkVisibility( btnMapEditor, AttributeKey.MapEditorPage );
-
-            SyncRebuildStatus();
         }
 
         /// <summary>
