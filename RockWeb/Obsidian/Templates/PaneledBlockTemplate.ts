@@ -1,4 +1,4 @@
-﻿import { defineComponent } from "../Vendor/Vue/vue.js"
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
 
 // Provides a generic Rock Block structure
 export default defineComponent({
@@ -16,4 +16,4 @@ export default defineComponent({
         </div>
     </div>
 </div>`
-})
+});

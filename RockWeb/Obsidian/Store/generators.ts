@@ -1,5 +1,11 @@
-﻿import { defineComponent } from "../Vendor/Vue/vue.js";
-import DropDownList from "../Elements/DropDownList.js";
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
+import DropDownList from '../Elements/DropDownList.js';
+import { Module } from '../Vendor/Vuex/index.js';
+import { RootState } from './index.js';
+import Entity from '../Types/Models/entity.js';
+import cache from '../Util/cache.js';
+import http from '../Util/http.js';
+import { CommonEntity } from './commonEntities.js';
 
 export type CommonEntityOption = {
     key: string;
@@ -60,4 +66,45 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
         template:
             `<DropDownList v-model="internalValue" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
     });
+}
+
+/**
+* Generate a Vuex module that fetches, caches, and stores common entities for use across all controls and blocks.
+* Provide the namespace (ex: campuses) that will serve as the Vuex namespace.
+* Also provide the apiUrl (ex: api/campuses) that allows the module to hydrate its items when needed.
+*/
+export function generateCommonEntityModule<TEntity extends Entity>(commonEntity: CommonEntity): Module<{ items: TEntity[] }, RootState> {
+    return {
+        namespaced: true as const,
+        state: {
+            items: []
+        },
+        mutations: {
+            setItems(state, { items }: { items: TEntity[] }) {
+                state.items = items;
+            }
+        },
+        getters: {
+            all(state) {
+                return state.items;
+            },
+            getByGuid(state) {
+                return guid => state.items.find(i => i.Guid === guid);
+            }
+        },
+        actions: {
+            async initialize(context) {
+                const cacheKey = `common-entity-${commonEntity.namespace}`;
+                let items = cache.get<TEntity[]>(cacheKey) || [];
+
+                if (!items || !items.length) {
+                    const response = await http.get<TEntity[]>(commonEntity.apiUrl);
+                    items = response.data || [];
+                    cache.set(cacheKey, items);
+                }
+
+                context.commit('setItems', { items });
+            }
+        }
+    };
 }

@@ -1,12 +1,15 @@
-﻿export default {
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
+import store from '../Store/Index.js';
+
+export default defineComponent({
     name: 'SecondaryBlock',
     computed: {
         isVisible() {
-            return this.$store.state.areSecondaryBlocksShown;
+            return store.state.areSecondaryBlocksShown;
         }
     },
     template:
 `<div class="secondary-block">
     <slot v-if="isVisible" />
 </div>`
-}
+});

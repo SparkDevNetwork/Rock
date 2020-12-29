@@ -1,9 +1,12 @@
-﻿import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
-import DefinedTypePicker from "../../Controls/DefinedTypePicker.js";
-import DefinedValuePicker from "../../Controls/DefinedValuePicker.js";
-import CampusPicker from "../../Controls/CampusPicker.js";
+﻿import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
+import DefinedTypePicker from '../../Controls/DefinedTypePicker.js';
+import DefinedValuePicker from '../../Controls/DefinedValuePicker.js';
+import CampusPicker from '../../Controls/CampusPicker.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
-import store from '../../Store/index.js';
+import store from '../../Store/Index.js';
+import Campus from '../../Types/Models/Campus.js';
+import DefinedType from '../../Types/Models/DefinedType.js';
+import DefinedValue from '../../Types/Models/DefinedValue.js';
 
 export default defineComponent({
     name: 'Test.ControlGallery',
@@ -17,21 +20,30 @@ export default defineComponent({
         return {
             definedTypeGuid: '',
             definedValueGuid: '',
-            campusGuid: ''
+            campusGuid: '',
+            definedValue: null as DefinedValue | null
         };
     },
+    methods: {
+        onDefinedValueChange(definedValue: DefinedValue | null) {
+            this.definedValue = definedValue;
+        }
+    },
     computed: {
-        campusName() {
-            const campus = store.getters['campuses/getByGuid'](this.campusGuid);
+        campusName(): string {
+            const campus = store.getters['campuses/getByGuid'](this.campusGuid) as Campus;
             return campus ? campus.Name : '';
         },
-        definedTypeName() {
-            const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid);
+        definedTypeName(): string {
+            const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid) as DefinedType;
             return definedType ? definedType.Name : '';
+        },
+        definedValueName(): string {
+            return this.definedValue ? this.definedValue.Value : '';
         }
     },
     template:
-        `<PaneledBlockTemplate>
+`<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Obsidian Control Gallery
@@ -40,7 +52,7 @@ export default defineComponent({
         <div class="row">
             <div class="col-sm-12 col-md-6 col-lg-4">
                 <DefinedTypePicker label="Defined Type" v-model="definedTypeGuid" />
-                <DefinedValuePicker label="Defined Value" v-model="definedValueGuid" :defined-type-guid="definedTypeGuid" />
+                <DefinedValuePicker label="Defined Value" v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
                 <CampusPicker label="Campus" v-model="campusGuid" />
             </div>
         </div>
@@ -52,7 +64,11 @@ export default defineComponent({
                     {{definedTypeGuid}}
                     <span v-if="definedTypeName">({{definedTypeName}})</span>
                 </p>
-                <p><strong>Defined Value Guid</strong> {{definedValueGuid}}</p>
+                <p>
+                    <strong>Defined Value Guid</strong>
+                    {{definedValueGuid}}
+                    <span v-if="definedValueName">({{definedValueName}})</span>
+                </p>
                 <p>
                     <strong>Campus Guid</strong>
                     {{campusGuid}}
@@ -62,4 +78,4 @@ export default defineComponent({
         </div>
     </template>
 </PaneledBlockTemplate>`
-})
+});

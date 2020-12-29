@@ -24,7 +24,7 @@ export default defineComponent({
     setup() {
         return {
             blockAction: inject('blockAction') as BlockAction
-        }
+        };
     },
     data() {
         return {
@@ -36,7 +36,7 @@ export default defineComponent({
         };
     },
     methods: {
-        setCookie(cookie: AuthCookie) {
+        setCookie(cookie: AuthCookie): void {
             let expires = '';
 
             if (cookie.Expires) {
@@ -55,7 +55,7 @@ export default defineComponent({
 
             document.cookie = `${cookie.Name}=${cookie.Value}${expires}; path=/`;
         },
-        redirectAfterLogin() {
+        redirectAfterLogin(): void {
             const urlParams = new URLSearchParams(window.location.search);
             const returnUrl = urlParams.get('returnurl');
 
@@ -64,7 +64,7 @@ export default defineComponent({
                 window.location.href = decodeURIComponent(returnUrl);
             }
         },
-        async onHelpClick() {
+        async onHelpClick(): Promise<void> {
             this.isLoading = true;
             this.errorMessage = '';
 
@@ -86,7 +86,7 @@ export default defineComponent({
                 this.isLoading = false;
             }
         },
-        async submitLogin() {
+        async submitLogin(): Promise<void> {
             if (this.isLoading) {
                 return;
             }

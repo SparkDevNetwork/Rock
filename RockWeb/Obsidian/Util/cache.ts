@@ -21,7 +21,7 @@ function set<T>(key: string, value: T, expiration: Date | null = null) {
     const cache: CacheEntry<T> = { expiration, value };
     const cacheJson = JSON.stringify(cache);
     sessionStorage.setItem(key, cacheJson);
-};
+}
 
 /**
  * Gets a stored cache value if there is one that has not yet expired.
@@ -47,7 +47,7 @@ function get<T>(key: string) {
     }
 
     return cache.value;
-};
+}
 
 export default {
     set,

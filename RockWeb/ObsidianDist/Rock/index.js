@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/index.js"], function (require, exports, vue_js_1, RockBlock_js_1, index_js_1) {
+define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js"], function (require, exports, vue_js_1, RockBlock_js_1, Index_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.initializePage = exports.initializeBlock = void 0;
@@ -58,7 +58,7 @@ define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", 
             },
             template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" />"
         });
-        app.use(index_js_1.default);
+        app.use(Index_js_1.default);
         app.mount(config.rootElement);
         return app;
     }
@@ -68,11 +68,11 @@ define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", 
     * page parameters and context entities.
     * @param {object} pageData
     */
-    function initializePage(pageData) {
+    function initializePage(pageConfig) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, index_js_1.default.dispatch('initialize', { pageData: pageData })];
+                    case 0: return [4 /*yield*/, Index_js_1.default.dispatch('initialize', { pageConfig: pageConfig })];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];

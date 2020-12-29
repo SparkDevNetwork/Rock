@@ -1,17 +1,23 @@
-﻿import { createApp, markRaw } from './Vendor/Vue/vue.js';
-import RockBlock from './Controls/RockBlock.js'
-import store from './Store/index.js'
-
-export type VueComponent = {
-    name: string;
-    [key: string]: string | object | Function;
-}
+﻿import { App, Component, createApp, markRaw } from './Vendor/Vue/vue.js';
+import RockBlock from './Controls/RockBlock.js';
+import store from './Store/Index.js';
+import { Guid } from './Util/Guid.js';
+import Person from './Types/Models/Person.js';
+import Entity from './Types/Models/Entity.js';
 
 export type BlockConfig = {
     blockFileIdentifier: string;
     rootElement: Element;
     blockGuid: string;
-    configurationValues: { [key: string]: string | number | null | object };
+    configurationValues: Record<string, unknown>;
+};
+
+export type PageConfig = {
+    pageId: number;
+    pageGuid: Guid;
+    pageParameters: Record<string, unknown>,
+    currentPerson: Person | null,
+    contextEntities: Record<string, Entity>
 };
 
 /**
@@ -20,7 +26,7 @@ export type BlockConfig = {
 * @param config
 * @param blockComponent
 */
-export function initializeBlock(config: BlockConfig, blockComponent: VueComponent | null) {
+export function initializeBlock(config: BlockConfig, blockComponent: Component | null): App {
     const app = createApp({
         name: `Root.${config.blockFileIdentifier}`,
         components: {
@@ -45,6 +51,6 @@ export function initializeBlock(config: BlockConfig, blockComponent: VueComponen
 * page parameters and context entities.
 * @param {object} pageData
 */
-export async function initializePage(pageData) {
-    await store.dispatch('initialize', { pageData });
+export async function initializePage(pageConfig: PageConfig) {
+    await store.dispatch('initialize', { pageConfig });
 }

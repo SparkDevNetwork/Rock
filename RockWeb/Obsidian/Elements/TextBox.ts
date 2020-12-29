@@ -1,5 +1,5 @@
 ﻿import { defineComponent } from '../Vendor/Vue/vue.js';
-import { newGuid } from "../Util/guid.js";
+import { newGuid } from '../Util/guid.js';
 
 export default defineComponent({
     name: 'TextBox',
@@ -20,19 +20,19 @@ export default defineComponent({
     emits: [
         'update:modelValue'
     ],
-    data: function() {
+    data: function () {
         return {
             uniqueId: `rock-textbox-${newGuid()}`,
             internalValue: this.modelValue
         };
     },
     methods: {
-        handleInput: function() {
+        handleInput: function () {
             this.$emit('update:modelValue', this.internalValue);
         },
     },
     watch: {
-        value: function() {
+        value: function () {
             this.internalValue = this.modelValue;
         }
     },
@@ -45,4 +45,4 @@ export default defineComponent({
         <input :id="uniqueId" :type="type" class="form-control" v-model="internalValue" @input="handleInput" />
     </div>
 </div>`
-})
+});

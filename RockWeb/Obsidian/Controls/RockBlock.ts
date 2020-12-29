@@ -1,13 +1,13 @@
 ﻿import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/http.js';
-import { defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
-import { BlockConfig, VueComponent } from '../index.js';
+import { Component, defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
+import { BlockConfig } from '../index.js';
 import store from '../Store/index.js';
 
-export type BlockAction = <T>(actionName: string, data: HttpBodyData) => Promise<HttpResult<T>>;
+export type BlockAction = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
 
 export type BlockHttp = {
-    get: <T>(url: string, params: HttpUrlParams) => Promise<HttpResult<T>>;
-    post: <T>(url: string, params: HttpUrlParams, data: HttpBodyData) => Promise<HttpResult<T>>;
+    get: <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
+    post: <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
 };
 
 type LogItem = {
@@ -24,7 +24,7 @@ export default defineComponent({
             required: true
         },
         blockComponent: {
-            type: Object as PropType<VueComponent>,
+            type: Object as PropType<Component>,
             default: null
         }
     },

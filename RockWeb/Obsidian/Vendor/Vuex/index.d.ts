@@ -1,13 +1,13 @@
-import { App, WatchOptions, InjectionKey } from "vue";
+import { App, WatchOptions, InjectionKey } from 'vue';
 
 // augment typings of Vue.js
-import "./vue";
+import './vue';
 
-import { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers } from "./helpers";
-import { createLogger } from "./logger";
+import { mapState, mapMutations, mapGetters, mapActions, createNamespacedHelpers } from './helpers';
+import { createLogger } from './logger';
 
-export * from "./helpers";
-export * from "./logger";
+export * from './helpers';
+export * from './logger';
 
 export declare class Store<S> {
   constructor(options: StoreOptions<S>);

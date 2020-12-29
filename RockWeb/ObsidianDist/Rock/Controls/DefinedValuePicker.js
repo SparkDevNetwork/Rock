@@ -66,7 +66,8 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Elements/DropDownList.
             };
         },
         emits: [
-            'update:modelValue'
+            'update:modelValue',
+            'update:model'
         ],
         data: function () {
             return {
@@ -89,7 +90,10 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Elements/DropDownList.
         },
         methods: {
             onChange: function () {
+                var _this = this;
                 this.$emit('update:modelValue', this.internalValue);
+                var definedValue = this.definedValues.find(function (dv) { return dv.Guid === _this.internalValue; }) || null;
+                this.$emit('update:model', definedValue);
             }
         },
         watch: {
@@ -109,7 +113,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Elements/DropDownList.
                                     return [3 /*break*/, 3];
                                 case 1:
                                     this.isLoading = true;
-                                    return [4 /*yield*/, this.http.get("/api/obsidian/v1/controls/definedvaluepicker/" + this.definedTypeGuid, undefined)];
+                                    return [4 /*yield*/, this.http.get("/api/obsidian/v1/controls/definedvaluepicker/" + this.definedTypeGuid)];
                                 case 2:
                                     result = _a.sent();
                                     if (result && result.data) {

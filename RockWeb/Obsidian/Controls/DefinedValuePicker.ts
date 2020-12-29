@@ -1,13 +1,8 @@
-﻿import { defineComponent, inject, PropType } from "../Vendor/Vue/vue.js";
-import DropDownList from "../Elements/DropDownList.js";
-import { BlockHttp } from "./RockBlock.js";
-import { CommonEntityOption } from "../Store/generators.js";
-import { Guid } from "../Util/guid.js";
-
-type DefinedValueViewModel = {
-    Guid: Guid;
-    Value: string;
-}
+﻿import { defineComponent, inject, PropType } from '../Vendor/Vue/vue.js';
+import DropDownList from '../Elements/DropDownList.js';
+import { BlockHttp } from './RockBlock.js';
+import { CommonEntityOption } from '../Store/Generators.js';
+import DefinedValue from '../Types/Models/DefinedValue.js';
 
 export default defineComponent({
     name: 'DefinedValuePicker',
@@ -35,15 +30,16 @@ export default defineComponent({
     setup() {
         return {
             http: inject('http') as BlockHttp
-        }
+        };
     },
     emits: [
-        'update:modelValue'
+        'update:modelValue',
+        'update:model'
     ],
-    data: function () {
+    data() {
         return {
             internalValue: this.modelValue,
-            definedValues: [] as DefinedValueViewModel[],
+            definedValues: [] as DefinedValue[],
             isLoading: false
         };
     },
@@ -60,23 +56,26 @@ export default defineComponent({
         }
     },
     methods: {
-        onChange: function () {
+        onChange: function (): void {
             this.$emit('update:modelValue', this.internalValue);
+
+            const definedValue = this.definedValues.find(dv => dv.Guid === this.internalValue) || null;
+            this.$emit('update:model', definedValue);
         }
     },
     watch: {
-        value: function () {
+        value: function (): void {
             this.internalValue = this.modelValue;
         },
         definedTypeGuid: {
             immediate: true,
-            handler: async function () {
+            handler: async function (): Promise<void> {
                 if (!this.definedTypeGuid) {
                     this.definedValues = [];
                 }
                 else {
                     this.isLoading = true;
-                    const result = await this.http.get<DefinedValueViewModel[]>(`/api/obsidian/v1/controls/definedvaluepicker/${this.definedTypeGuid}`, undefined);
+                    const result = await this.http.get<DefinedValue[]>(`/api/obsidian/v1/controls/definedvaluepicker/${this.definedTypeGuid}`);
 
                     if (result && result.data) {
                         this.definedValues = result.data;

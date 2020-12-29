@@ -1,9 +1,10 @@
-﻿import bus from "../../Util/bus.js";
-import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
-import RockButton from "../../Elements/RockButton.js";
-import TextBox from "../../Elements/TextBox.js";
+﻿import bus from '../../Util/Bus.js';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
+import RockButton from '../../Elements/RockButton.js';
+import TextBox from '../../Elements/TextBox.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
-import store from '../../Store/index.js';
+import store from '../../Store/Index.js';
+import Person from '../../Types/Models/Person.js';
 
 export default defineComponent({
     name: 'Test.PersonDetail',
@@ -13,9 +14,13 @@ export default defineComponent({
         TextBox
     },
     data() {
-        const person = {
+        const person: Person = {
             FirstName: 'Ted',
-            LastName: 'Decker'
+            LastName: 'Decker',
+            PhotoUrl: '',
+            FullName: 'Ted Decker',
+            Guid: '',
+            Id: 0
         };
 
         return {
@@ -53,7 +58,7 @@ export default defineComponent({
             bus.publish('PersonDetail:Message', this.messageToPublish);
             this.messageToPublish = '';
         },
-        receiveMessage(message) {
+        receiveMessage(message: string) {
             this.receivedMessage = message;
         }
     },
@@ -63,10 +68,10 @@ export default defineComponent({
         }
     },
     created() {
-        bus.subscribe('PersonSecondary:Message', this.receiveMessage);
+        bus.subscribe<string>('PersonSecondary:Message', this.receiveMessage);
     },
     template:
-        `<PaneledBlockTemplate>
+`<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Detail Block: {{blockTitle}}

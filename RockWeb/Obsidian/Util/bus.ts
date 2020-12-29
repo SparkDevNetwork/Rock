@@ -1,4 +1,4 @@
-﻿import mitt from "../Vendor/Mitt/index.js";
+﻿import mitt from '../Vendor/Mitt/index.js';
 
 /**
  * The bus allows page components to send and receive arbitrary data from other page components.
@@ -27,7 +27,7 @@ const writeLog = (msg: string) => {
 function publish<T>(eventName: string, payload: T) {
     writeLog(`Published ${eventName}`);
     bus.emit(eventName, payload);
-};
+}
 
 /**
 * Whenever an event is received of eventName, the callback is executed with the message
@@ -35,10 +35,12 @@ function publish<T>(eventName: string, payload: T) {
 */
 function subscribe<T>(eventName: string, callback: (payload: T) => void) {
     writeLog(`Subscribed to ${eventName}`);
-    bus.on(eventName, T => {
-        callback(T);
+    bus.on<T>(eventName, payload => {
+        if (payload) {
+            callback(payload);
+        }
     });
-};
+}
 
 export default {
     publish,

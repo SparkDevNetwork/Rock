@@ -1,8 +1,8 @@
-﻿import axios from "../Vendor/Axios/index.js";
+﻿import axios from '../Vendor/Axios/index.js';
 
-export type HttpMethod = 'GET' | 'POST';
-export type HttpUrlParams = object | undefined | null;
-export type HttpBodyData = object | undefined | null;
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+export type HttpUrlParams = Record<string, unknown> | undefined | null;
+export type HttpBodyData = Record<string, unknown> | undefined | null;
 
 export type HttpResult<T> = {
     statusCode: number;
@@ -69,7 +69,7 @@ export async function doApiCall<T>(method: HttpMethod, url: string, params: Http
 * @param {string} url The endpoint to access, such as /api/campuses/
 * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
 */
-export async function get<T>(url: string, params: HttpUrlParams = undefined) {
+export async function get<T>(url: string, params: HttpUrlParams = undefined): Promise<HttpResult<T>> {
     return await doApiCall<T>('GET', url, params, undefined);
 }
 
@@ -79,7 +79,7 @@ export async function get<T>(url: string, params: HttpUrlParams = undefined) {
 * @param {object} params Query parameter object.  Will be converted to ?key1=value1&key2=value2 as part of the URL.
 * @param {any} data This will be the body of the request
 */
-export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined) {
+export async function post<T>(url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     return await doApiCall<T>('POST', url, params, data);
 }
 

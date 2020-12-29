@@ -7,13 +7,23 @@
     const initializeBlock = (config) => {
         const blockPath = `/ObsidianDist/Rock/Blocks/${config.blockFileIdentifier}.js`;
 
-        require(['/ObsidianDist/Rock/index.js'], ({ initializeBlock }) => {
-            require([blockPath], (blockComponentModule) => {
-                initializeBlock(config, blockComponentModule ? blockComponentModule.default : null);
-            }, (e) => {
-                initializeBlock(config, null);
-            });
-        });
+        require(
+            ['/ObsidianDist/Rock/index.js'],
+            ({ initializeBlock }) => {
+                require(
+                    [blockPath],
+                    blockComponentModule => initializeBlock(config, blockComponentModule ? blockComponentModule.default : null),
+                    err => {
+                        initializeBlock(config, null);
+                        throw err;
+                    }
+                );
+            },
+            err => {
+                console.error(`Could not initialize Obsidian when trying to load ${config.blockFileIdentifier}`);
+                throw err;
+            }
+        );
     };
 
     /**

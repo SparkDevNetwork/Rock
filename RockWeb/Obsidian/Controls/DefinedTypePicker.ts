@@ -1,4 +1,4 @@
-﻿import { createCommonEntityPicker } from "../Store/generators.js";
+﻿import { createCommonEntityPicker } from '../Store/Generators.js';
 import store from '../Store/index.js';
 
 export default createCommonEntityPicker(

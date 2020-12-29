@@ -1,4 +1,4 @@
-﻿import { defineComponent } from '../Vendor/Vue/vue.js'
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
 
 export default defineComponent({
     name: 'LoadingIndicator',

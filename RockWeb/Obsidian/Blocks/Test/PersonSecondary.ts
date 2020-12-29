@@ -1,9 +1,11 @@
-﻿import bus from "../../Util/bus.js";
-import PaneledBlockTemplate from "../../Templates/PaneledBlockTemplate.js";
-import SecondaryBlock from "../../Controls/SecondaryBlock.js";
-import RockButton from "../../Elements/RockButton.js";
-import TextBox from "../../Elements/TextBox.js";
+﻿import bus from '../../Util/Bus.js';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
+import SecondaryBlock from '../../Controls/SecondaryBlock.js';
+import RockButton from '../../Elements/RockButton.js';
+import TextBox from '../../Elements/TextBox.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
+import store from '../../Store/Index.js';
+import Person from '../../Types/Models/Person.js';
 
 export default defineComponent({
     name: 'Test.PersonSecondary',
@@ -20,37 +22,37 @@ export default defineComponent({
         };
     },
     methods: {
-        receiveMessage(message) {
+        receiveMessage(message: string): void {
             this.receivedMessage = message;
         },
-        doPublish() {
+        doPublish(): void {
             bus.publish('PersonSecondary:Message', this.messageToPublish);
             this.messageToPublish = '';
         }
     },
     computed: {
-        currentPerson() {
-            return this.$store.state.currentPerson;
+        currentPerson(): Person | null {
+            return store.state.currentPerson;
         },
-        currentPersonName() {
+        currentPersonName(): string {
             return this.currentPerson ? this.currentPerson.FullName : 'anonymous';
         },
-        imageUrl() {
+        imageUrl(): string {
             if (this.currentPerson && this.currentPerson.PhotoUrl) {
                 return this.currentPerson.PhotoUrl;
             }
 
-            return '/Assets/Images/person-no-photo-unknown.svg'
+            return '/Assets/Images/person-no-photo-unknown.svg';
         },
-        photoElementStyle() {
-            return `background-image: url("${this.imageUrl}"); background-size: cover; background-repeat: no-repeat;`
+        photoElementStyle(): string {
+            return `background-image: url("${this.imageUrl}"); background-size: cover; background-repeat: no-repeat;`;
         }
     },
     created() {
-        bus.subscribe('PersonDetail:Message', this.receiveMessage);
+        bus.subscribe<string>('PersonDetail:Message', this.receiveMessage);
     },
     template:
-`<SecondaryBlock>
+        `<SecondaryBlock>
     <PaneledBlockTemplate>
         <template v-slot:title>
             <i class="fa fa-flask"></i>
@@ -79,4 +81,4 @@ export default defineComponent({
         </template>
     </PaneledBlockTemplate>
 </SecondaryBlock>`
-})
+});

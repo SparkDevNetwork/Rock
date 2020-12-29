@@ -19,22 +19,22 @@ define(["require", "exports", "../Vendor/Mitt/index.js"], function (require, exp
         writeLog("Published " + eventName);
         bus.emit(eventName, payload);
     }
-    ;
     /**
     * Whenever an event is received of eventName, the callback is executed with the message
     * payload as a parameter.
     */
     function subscribe(eventName, callback) {
         writeLog("Subscribed to " + eventName);
-        bus.on(eventName, function (T) {
-            callback(T);
+        bus.on(eventName, function (payload) {
+            if (payload) {
+                callback(payload);
+            }
         });
     }
-    ;
     exports.default = {
         publish: publish,
         subscribe: subscribe,
         log: log
     };
 });
-//# sourceMappingURL=bus.js.map
+//# sourceMappingURL=Bus.js.map
