@@ -604,6 +604,8 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
+    <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
     <Compile Include="Tasks\ProcessRunJobNow.cs" />
     <Compile Include="Tasks\ProcessRebuildStreakType.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
