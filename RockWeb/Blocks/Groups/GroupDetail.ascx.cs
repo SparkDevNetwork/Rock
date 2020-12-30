@@ -1343,7 +1343,7 @@ namespace RockWeb.Blocks.Groups
                             newQualifier.Guid = Guid.NewGuid();
                             newQualifier.IsSystem = false;
 
-                            newAttribute.AttributeQualifiers.Add( qualifier );
+                            newAttribute.AttributeQualifiers.Add( newQualifier );
                         }
 
                         attributeService.Add( newAttribute );
