@@ -1,28 +1,27 @@
-﻿Obsidian.Blocks.registerBlock({
-    name: 'org_rocksolidchurch.PageDebug.ContextEntities',
-    components: {
-        PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate
-    },
-    data() {
-        return {
-        };
-    },
-    computed: {
-        contextPerson() {
-            return this.$store.getters.personContext || {};
+﻿define(function (require) {
+    const PaneledBlockTemplate = require('/ObsidianJs/Generated/Templates/PaneledBlockTemplate.js').default;
+
+    return {
+        name: 'org_rocksolidchurch.PageDebug.ContextEntities',
+        components: {
+            PaneledBlockTemplate
         },
-        contextGroup() {
-            return this.$store.getters.groupContext || {};
+        computed: {
+            contextPerson() {
+                return this.$store.getters.personContext || {};
+            },
+            contextGroup() {
+                return this.$store.getters.groupContext || {};
+            },
+            contextEntities() {
+                return this.$store.state.contextEntities;
+            }
         },
-        contextEntities() {
-            return this.$store.state.contextEntities;
-        }
-    },
-    template:
-`<PaneledBlockTemplate>
+        template:
+            `<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-pizza-slice"></i>
-        Context Entities
+        Context Entities (JS Plugin)
     </template>
     <template v-slot:default>
         <dl>
@@ -40,4 +39,5 @@
         </dl>
     </template>
 </PaneledBlockTemplate>`
+    };
 });

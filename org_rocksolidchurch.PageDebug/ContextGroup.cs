@@ -23,16 +23,16 @@ using Rock.Obsidian.Blocks;
 namespace org_rocksolidchurch.PageDebug
 {
     /// <summary>
-    /// Shows the page's context entities.
+    /// Shows the page's context group.
     /// </summary>
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
-    [DisplayName( "Context Entities" )]
+    [DisplayName( "Context Group" )]
     [Category( "Rock Solid Church > Page Debug" )]
-    [Description( "Shows the page's context entities" )]
-    [IconCssClass( "fa fa-pizza-slice" )]
+    [Description( "Shows the page's context group" )]
+    [IconCssClass( "fa fa-grin-tongue-squint" )]
 
-    public class ContextEntities : PluginObsidianBlockType
+    public class ContextGroup : PluginObsidianBlockType
     {
         /// <summary>
         /// Gets a value indicating whether the block file is written in TypeScript.
@@ -41,6 +41,6 @@ namespace org_rocksolidchurch.PageDebug
         /// <value>
         /// <c>true</c> if this instance is type script; otherwise, <c>false</c>.
         /// </value>
-        public override bool IsTypeScript => false;
+        public override bool IsTypeScript => true;
     }
 }

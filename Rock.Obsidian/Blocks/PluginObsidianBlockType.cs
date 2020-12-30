@@ -26,18 +26,33 @@ namespace Rock.Obsidian.Blocks
         #region Properties
 
         /// <summary>
+        /// Gets a value indicating whether the block file is written in TypeScript.
+        /// If false, then JavaScript.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is type script; otherwise, <c>false</c>.
+        /// </value>
+        public abstract bool IsTypeScript { get; }
+
+        /// <summary>
         /// Gets the block markup file identifier.
         /// </summary>
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockMarkupFileIdentifier
+        public override string BlockFileUrl
         {
             get
             {
                 var type = GetType();
-                var ns = type.Namespace;
-                return $"{ns}.{type.Name}";
+                var ns = type.Namespace.Replace( ".", "/" );
+
+                if ( IsTypeScript )
+                {
+                    return $"/ObsidianJs/Generated/Plugins/{ns}/{type.Name}";
+                }
+
+                return $"/ObsidianJs/PluginsJs/{ns}/{type.Name}";
             }
         }
 

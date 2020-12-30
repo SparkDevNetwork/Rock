@@ -2,6 +2,8 @@
 import { Component, defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
 import { BlockConfig } from '../index.js';
 import store from '../Store/index.js';
+import { Guid } from '../Util/guid.js';
+import Alert from '../Elements/Alert.js';
 
 export type BlockAction = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
 
@@ -18,6 +20,9 @@ type LogItem = {
 
 export default defineComponent({
     name: 'RockBlock',
+    components: {
+        Alert
+    },
     props: {
         config: {
             type: Object as PropType<BlockConfig>,
@@ -65,19 +70,34 @@ export default defineComponent({
     data() {
         return {
             blockGuid: this.config.blockGuid,
-            log: [] as LogItem[]
+            error: ''
         };
     },
+    methods: {
+        clearError() {
+            this.error = '';
+        }
+    },
     computed: {
-        pageGuid() {
+        pageGuid(): Guid {
             return store.state.pageGuid;
+        }
+    },
+    errorCaptured(err: unknown) {
+        if (err instanceof Error) {
+            this.error = err.message;
         }
     },
     template:
 `<div class="obsidian-block">
+    <Alert v-if="!blockComponent" class="alert-danger">
+        <strong>Not Found</strong>
+        Could not find block component: "{{this.config.blockFileUrl}}"
+    </Alert>
+    <Alert v-if="error" :dismissible="true" @dismiss="clearError" class="alert-danger">
+        <strong>Uncaught Error</strong>
+        {{error}}
+    </Alert>
     <component :is="blockComponent" />
-    <div v-if="!blockComponent" class="alert alert-danger">
-        Could not find block component: "{{this.config.blockFileIdentifier}}"
-    </div>
 </div>`
 });

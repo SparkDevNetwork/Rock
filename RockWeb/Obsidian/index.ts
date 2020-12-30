@@ -6,7 +6,7 @@ import Person from './Types/Models/Person.js';
 import Entity from './Types/Models/Entity.js';
 
 export type BlockConfig = {
-    blockFileIdentifier: string;
+    blockFileUrl: string;
     rootElement: Element;
     blockGuid: string;
     configurationValues: Record<string, unknown>;
@@ -27,8 +27,10 @@ export type PageConfig = {
 * @param blockComponent
 */
 export function initializeBlock(config: BlockConfig, blockComponent: Component | null): App {
+    const name = `Root${config.blockFileUrl.replace(/\//g, '.')}`;
+
     const app = createApp({
-        name: `Root.${config.blockFileIdentifier}`,
+        name,
         components: {
             RockBlock
         },

@@ -34,11 +34,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Store/index.js"], function (require, exports, http_js_1, vue_js_1, index_js_1) {
+define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Store/index.js", "../Elements/Alert.js"], function (require, exports, http_js_1, vue_js_1, index_js_1, Alert_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
         name: 'RockBlock',
+        components: {
+            Alert: Alert_js_1.default
+        },
         props: {
             config: {
                 type: Object,
@@ -115,15 +118,25 @@ define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Sto
         data: function () {
             return {
                 blockGuid: this.config.blockGuid,
-                log: []
+                error: ''
             };
+        },
+        methods: {
+            clearError: function () {
+                this.error = '';
+            }
         },
         computed: {
             pageGuid: function () {
                 return index_js_1.default.state.pageGuid;
             }
         },
-        template: "<div class=\"obsidian-block\">\n    <component :is=\"blockComponent\" />\n    <div v-if=\"!blockComponent\" class=\"alert alert-danger\">\n        Could not find block component: \"{{this.config.blockFileIdentifier}}\"\n    </div>\n</div>"
+        errorCaptured: function (err) {
+            if (err instanceof Error) {
+                this.error = err.message;
+            }
+        },
+        template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" class=\"alert-danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" :dismissible=\"true\" @dismiss=\"clearError\" class=\"alert-danger\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
     });
 });
 //# sourceMappingURL=RockBlock.js.map

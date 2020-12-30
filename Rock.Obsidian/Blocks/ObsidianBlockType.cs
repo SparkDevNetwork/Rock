@@ -33,7 +33,7 @@ namespace Rock.Obsidian.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        string BlockMarkupFileIdentifier { get; }
+        string BlockFileUrl { get; }
 
         /// <summary>
         /// Gets the property values that will be sent to the block.
@@ -57,13 +57,13 @@ namespace Rock.Obsidian.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public virtual string BlockMarkupFileIdentifier
+        public virtual string BlockFileUrl
         {
             get
             {
                 var type = GetType();
                 var lastNamespace = type.Namespace.Split( '.' ).Last();
-                return $"{lastNamespace}/{type.Name}";
+                return $"/ObsidianJs/Generated/Blocks/{lastNamespace}/{type.Name}";
             }
         }
 
@@ -94,7 +94,7 @@ $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 (function () {{
     Obsidian.initializeBlock({{
-        blockFileIdentifier: '{BlockMarkupFileIdentifier}',
+        blockFileUrl: '{BlockFileUrl}',
         rootElement: document.getElementById('{rootElementId}'),
         blockGuid: '{BlockCache.Guid}',
         configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() )},

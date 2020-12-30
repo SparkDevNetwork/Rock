@@ -27,7 +27,7 @@ define(["require", "exports", "../Vendor/Vuex/index.js", "./commonEntities.js"],
                 return !!state.currentPerson;
             },
             contextEntity: function (state) {
-                return function (type) { return state.contextEntities[type]; };
+                return function (type) { return (state.contextEntities[type] || null); };
             },
             personContext: function (state, getters) {
                 return getters.contextEntity('Person');

@@ -28,6 +28,10 @@ export default defineComponent({
         doPublish(): void {
             bus.publish('PersonSecondary:Message', this.messageToPublish);
             this.messageToPublish = '';
+            
+        },
+        doThrowError(): void {
+            throw new Error('This is an uncaught error');
         }
     },
     computed: {
@@ -52,7 +56,7 @@ export default defineComponent({
         bus.subscribe<string>('PersonDetail:Message', this.receiveMessage);
     },
     template:
-        `<SecondaryBlock>
+`<SecondaryBlock>
     <PaneledBlockTemplate>
         <template v-slot:title>
             <i class="fa fa-flask"></i>
@@ -66,6 +70,7 @@ export default defineComponent({
                         <div class="photo-icon photo-round photo-round-sm" :style="photoElementStyle"></div>
                     </p>
                     <p>This is a secondary block. It respects the store's value indicating if secondary blocks are visible.</p>
+                    <RockButton class="btn-danger btn-sm" @click="doThrowError">Throw Error</RockButton>
                 </div>
                 <div class="col-sm-6">
                     <div class="well">

@@ -5,14 +5,19 @@
      * @param {any} config
      */
     const initializeBlock = (config) => {
-        const blockPath = `/ObsidianDist/Rock/Blocks/${config.blockFileIdentifier}.js`;
+        const blockPath = `${config.blockFileUrl}.js`;
 
         require(
-            ['/ObsidianDist/Rock/index.js'],
+            ['/ObsidianJs/Generated/index.js'],
             ({ initializeBlock }) => {
                 require(
                     [blockPath],
-                    blockComponentModule => initializeBlock(config, blockComponentModule ? blockComponentModule.default : null),
+                    blockComponentModule => {
+                        const blockComponent = blockComponentModule ?
+                            (blockComponentModule.default || blockComponentModule) :
+                            null;
+                        initializeBlock(config, blockComponent)
+                    },
                     err => {
                         initializeBlock(config, null);
                         throw err;
@@ -31,7 +36,7 @@
      * @param {any} config
      */
     const initializePage = (config) => {
-        require(['/ObsidianDist/Rock/index.js'], ({ initializePage }) => {
+        require(['/ObsidianJs/Generated/index.js'], ({ initializePage }) => {
             initializePage(config);
         });
     };

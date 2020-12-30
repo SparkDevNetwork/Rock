@@ -5,7 +5,7 @@
     "removeComments": false,
     "sourceMap": true,
     "target": "es5",
-    "outDir": "ObsidianDist/Rock/",
+    "outDir": "ObsidianJs/Generated/",
     "module": "AMD",
     "moduleResolution": "Node",
     "strict": true,
@@ -13,7 +13,8 @@
       "DOM",
       "ES2020",
       "ES2020.Symbol.WellKnown"
-    ]
+    ],
+    "allowUnreachableCode": false
   },
   "include": [
     "Obsidian/**/*"

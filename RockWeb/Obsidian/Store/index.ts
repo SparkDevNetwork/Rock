@@ -1,5 +1,6 @@
 ﻿import { PageConfig } from '../index.js';
 import Entity from '../Types/Models/Entity.js';
+import Group from '../Types/Models/Group.js';
 import Person from '../Types/Models/Person.js';
 import { Guid } from '../Util/guid.js';
 import { createStore } from '../Vendor/Vuex/index.js';
@@ -22,19 +23,19 @@ export default createStore<RootState>({
         pageParameters: {},
         contextEntities: {},
         pageId: 0,
-        pageGuid: '',
+        pageGuid: '' as Guid,
     },
     getters: {
         isAuthenticated(state) {
             return !!state.currentPerson;
         },
-        contextEntity(state) {
-            return (type) => state.contextEntities[type];
+        contextEntity(state): (type: string) => Entity | null {
+            return (type: string) => (state.contextEntities[type] || null);
         },
-        personContext(state, getters) {
+        personContext(state, getters): Person | null {
             return getters.contextEntity('Person');
         },
-        groupContext(state, getters) {
+        groupContext(state, getters): Group | null {
             return getters.contextEntity('Group');
         }
     },

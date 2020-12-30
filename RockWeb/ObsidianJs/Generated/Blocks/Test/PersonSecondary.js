@@ -22,6 +22,9 @@ define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlock
             doPublish: function () {
                 Bus_js_1.default.publish('PersonSecondary:Message', this.messageToPublish);
                 this.messageToPublish = '';
+            },
+            doThrowError: function () {
+                throw new Error('This is an uncaught error');
             }
         },
         computed: {
@@ -44,7 +47,7 @@ define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlock
         created: function () {
             Bus_js_1.default.subscribe('PersonDetail:Message', this.receiveMessage);
         },
-        template: "<SecondaryBlock>\n    <PaneledBlockTemplate>\n        <template v-slot:title>\n            <i class=\"fa fa-flask\"></i>\n            Secondary Block\n        </template>\n        <template v-slot:default>\n            <div class=\"row\">\n                <div class=\"col-sm-6\">\n                    <p>\n                        Hi, {{currentPersonName}}!\n                        <div class=\"photo-icon photo-round photo-round-sm\" :style=\"photoElementStyle\"></div>\n                    </p>\n                    <p>This is a secondary block. It respects the store's value indicating if secondary blocks are visible.</p>\n                </div>\n                <div class=\"col-sm-6\">\n                    <div class=\"well\">\n                        <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                        <RockButton class=\"btn-primary btn-sm\" @click=\"doPublish\">Publish</RockButton>\n                    </div>\n                    <p>\n                        <strong>Detail block says:</strong>\n                        {{receivedMessage}}\n                    </p>\n                </div>\n            </div>\n        </template>\n    </PaneledBlockTemplate>\n</SecondaryBlock>"
+        template: "<SecondaryBlock>\n    <PaneledBlockTemplate>\n        <template v-slot:title>\n            <i class=\"fa fa-flask\"></i>\n            Secondary Block\n        </template>\n        <template v-slot:default>\n            <div class=\"row\">\n                <div class=\"col-sm-6\">\n                    <p>\n                        Hi, {{currentPersonName}}!\n                        <div class=\"photo-icon photo-round photo-round-sm\" :style=\"photoElementStyle\"></div>\n                    </p>\n                    <p>This is a secondary block. It respects the store's value indicating if secondary blocks are visible.</p>\n                    <RockButton class=\"btn-danger btn-sm\" @click=\"doThrowError\">Throw Error</RockButton>\n                </div>\n                <div class=\"col-sm-6\">\n                    <div class=\"well\">\n                        <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                        <RockButton class=\"btn-primary btn-sm\" @click=\"doPublish\">Publish</RockButton>\n                    </div>\n                    <p>\n                        <strong>Detail block says:</strong>\n                        {{receivedMessage}}\n                    </p>\n                </div>\n            </div>\n        </template>\n    </PaneledBlockTemplate>\n</SecondaryBlock>"
     });
 });
 //# sourceMappingURL=PersonSecondary.js.map

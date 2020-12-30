@@ -45,8 +45,9 @@ define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", 
     * @param blockComponent
     */
     function initializeBlock(config, blockComponent) {
+        var name = "Root" + config.blockFileUrl.replace(/\//g, '.');
         var app = vue_js_1.createApp({
-            name: "Root." + config.blockFileIdentifier,
+            name: name,
             components: {
                 RockBlock: RockBlock_js_1.default
             },
@@ -82,4 +83,4 @@ define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", 
     }
     exports.initializePage = initializePage;
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=Index.js.map
