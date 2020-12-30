@@ -53,8 +53,8 @@ define(["require", "exports", "../Vendor/Axios/index.js"], function (require, ex
                     case 0: return [4 /*yield*/, index_js_1.default({
                             method: method,
                             url: url,
-                            data: data,
-                            params: params
+                            params: params,
+                            data: data
                         })];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
@@ -77,7 +77,7 @@ define(["require", "exports", "../Vendor/Axios/index.js"], function (require, ex
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, doApiCallRaw(method, url, data, params)];
+                        return [4 /*yield*/, doApiCallRaw(method, url, params, data)];
                     case 1:
                         result = _a.sent();
                         return [2 /*return*/, {

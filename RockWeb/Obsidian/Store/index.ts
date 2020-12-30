@@ -1,10 +1,10 @@
-﻿import { PageConfig } from '../index.js';
+﻿import { PageConfig } from '../Index.js';
 import Entity from '../Types/Models/Entity.js';
 import Group from '../Types/Models/Group.js';
 import Person from '../Types/Models/Person.js';
-import { Guid } from '../Util/guid.js';
+import { Guid } from '../Util/Guid.js';
 import { createStore } from '../Vendor/Vuex/index.js';
-import { commonEntities, commonEntityModules } from './commonEntities.js';
+import { commonEntities, commonEntityModules } from './CommonEntities.js';
 
 export interface RootState {
     areSecondaryBlocksShown: boolean;

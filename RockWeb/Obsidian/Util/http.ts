@@ -23,8 +23,8 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
     return await axios({
         method,
         url,
-        data,
-        params
+        params,
+        data
     });
 }
 
@@ -37,7 +37,7 @@ async function doApiCallRaw(method: HttpMethod, url: string, params: HttpUrlPara
 */
 export async function doApiCall<T>(method: HttpMethod, url: string, params: HttpUrlParams = undefined, data: HttpBodyData = undefined): Promise<HttpResult<T>> {
     try {
-        const result = await doApiCallRaw(method, url, data, params);
+        const result = await doApiCallRaw(method, url, params, data);
 
         return {
             data: result.data as T,

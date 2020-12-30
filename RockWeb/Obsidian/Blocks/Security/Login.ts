@@ -94,7 +94,7 @@ export default defineComponent({
             this.isLoading = true;
 
             try {
-                const result = await this.blockAction<LoginResponse>('login', {
+                const result = await this.blockAction<LoginResponse>('DoLogin', {
                     username: this.username,
                     password: this.password,
                     rememberMe: this.rememberMe
@@ -124,8 +124,8 @@ export default defineComponent({
             }
         }
     },
-    template:
-        `<div class="login-block">
+    template: `
+<div class="login-block">
     <fieldset>
         <legend>Login</legend>
 

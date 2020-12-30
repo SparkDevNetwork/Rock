@@ -1,4 +1,4 @@
-define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/guid.js"], function (require, exports, vue_js_1, guid_js_1) {
+define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], function (require, exports, vue_js_1, Guid_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
@@ -30,7 +30,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/guid.js"], functi
         ],
         data: function () {
             return {
-                uniqueId: "rock-dropdownlist-" + guid_js_1.newGuid(),
+                uniqueId: "rock-dropdownlist-" + Guid_js_1.newGuid(),
                 internalValue: this.modelValue
             };
         },

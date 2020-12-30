@@ -264,19 +264,22 @@ namespace Rock.Rest.Controllers
         /// </exception>
         private IHttpActionResult InvokeAction( Blocks.IRockBlockType block, string verb, string actionName, Dictionary<string, JToken> actionParameters )
         {
-            MethodInfo action;
-
             //
             // Find the action they requested.
             //
-            action = block.GetType().GetMethods( BindingFlags.Instance | BindingFlags.Public )
-                .SingleOrDefault( m => m.GetCustomAttribute<Blocks.BlockActionAttribute>()?.ActionName == actionName );
+            var actions = block.GetType()
+                .GetMethods( BindingFlags.Instance | BindingFlags.Public )
+                .Where( m =>
+                    m.GetCustomAttribute<Blocks.BlockActionAttribute>()?
+                        .ActionName
+                        .Equals( actionName, StringComparison.OrdinalIgnoreCase) == true );
 
-            if ( action == null )
+            if ( actions.Count() != 1 )
             {
                 return NotFound();
             }
 
+            var action = actions.Single();
             var methodParameters = action.GetParameters();
             var parameters = new List<object>();
 

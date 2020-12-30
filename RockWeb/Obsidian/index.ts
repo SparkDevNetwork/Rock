@@ -5,11 +5,13 @@ import { Guid } from './Util/Guid.js';
 import Person from './Types/Models/Person.js';
 import Entity from './Types/Models/Entity.js';
 
+export type BlockSettings = Record<string, unknown>;
+
 export type BlockConfig = {
     blockFileUrl: string;
     rootElement: Element;
-    blockGuid: string;
-    configurationValues: Record<string, unknown>;
+    blockGuid: Guid;
+    blockSettings: BlockSettings;
 };
 
 export type PageConfig = {

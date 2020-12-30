@@ -20,7 +20,6 @@ define(["require", "exports"], function (require, exports) {
         var cacheJson = JSON.stringify(cache);
         sessionStorage.setItem(key, cacheJson);
     }
-    ;
     /**
      * Gets a stored cache value if there is one that has not yet expired.
      * @param key
@@ -40,7 +39,6 @@ define(["require", "exports"], function (require, exports) {
         }
         return cache.value;
     }
-    ;
     exports.default = {
         set: set,
         get: get

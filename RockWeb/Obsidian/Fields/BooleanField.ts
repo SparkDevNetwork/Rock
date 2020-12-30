@@ -1,8 +1,14 @@
-﻿Obsidian.Fields.registerField('1EDAFDED-DFE6-4334-B019-6EECBA89E05A', {
+﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { Guid } from '../Util/Guid.js';
+import { registerFieldType } from './Index.js';
+
+const fieldTypeGuid: Guid = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A';
+
+export default registerFieldType(fieldTypeGuid, defineComponent({
     name: 'BooleanField',
     props: {
         modelValue: {
-            type: String,
+            type: String as PropType<string>,
             required: true
         }
     },
@@ -11,7 +17,7 @@
             return (this.modelValue || '').trim().toLowerCase();
         },
         valueIsNull() {
-            return !this.safeValue
+            return !this.safeValue;
         },
         valueIsTrue() {
             return ['true', 'yes', 't', 'y', '1'].indexOf(this.safeValue) !== -1;
@@ -34,6 +40,6 @@
             return this.valueIsTrue ? 'Yes' : 'No';
         }
     },
-    template:
-`<span>{{ valueAsYesNoOrNull }}</span>`
-});
+    template: `
+<span>{{ valueAsYesNoOrNull }}</span>`
+}));

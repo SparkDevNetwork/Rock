@@ -8,4 +8,5 @@
     exports.provide = Vue.provide;
     exports.markRaw = Vue.markRaw;
     exports.inject = Vue.inject;
+    exports.ref = Vue.ref;
 });

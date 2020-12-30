@@ -1,4 +1,4 @@
-﻿import { Guid } from '../../Util/guid';
+﻿import { Guid } from '../../Util/Guid.js';
 
 export default interface Entity {
     Id: number;

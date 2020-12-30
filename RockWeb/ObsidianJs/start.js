@@ -8,7 +8,7 @@
         const blockPath = `${config.blockFileUrl}.js`;
 
         require(
-            ['/ObsidianJs/Generated/index.js'],
+            ['/ObsidianJs/Generated/Index.js'],
             ({ initializeBlock }) => {
                 require(
                     [blockPath],
@@ -36,7 +36,7 @@
      * @param {any} config
      */
     const initializePage = (config) => {
-        require(['/ObsidianJs/Generated/index.js'], ({ initializePage }) => {
+        require(['/ObsidianJs/Generated/Index.js'], ({ initializePage }) => {
             initializePage(config);
         });
     };

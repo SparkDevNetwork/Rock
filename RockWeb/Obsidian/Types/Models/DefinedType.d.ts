@@ -1,4 +1,4 @@
-﻿import Entity from './Entity';
+﻿import Entity from './Entity.js';
 
 export default interface DefinedType extends Entity {
     Name: string;

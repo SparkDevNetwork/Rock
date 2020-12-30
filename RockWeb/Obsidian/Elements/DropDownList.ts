@@ -1,5 +1,5 @@
 ﻿import { defineComponent } from '../Vendor/Vue/vue.js';
-import { newGuid } from '../Util/guid.js';
+import { newGuid } from '../Util/Guid.js';
 
 export default defineComponent({
     name: 'DropDownList',

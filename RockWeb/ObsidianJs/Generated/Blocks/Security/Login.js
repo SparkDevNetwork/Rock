@@ -130,7 +130,7 @@ define(["require", "exports", "../../Elements/TextBox.js", "../../Elements/Check
                                 _a.label = 1;
                             case 1:
                                 _a.trys.push([1, 3, , 4]);
-                                return [4 /*yield*/, this.blockAction('login', {
+                                return [4 /*yield*/, this.blockAction('DoLogin', {
                                         username: this.username,
                                         password: this.password,
                                         rememberMe: this.rememberMe
@@ -163,7 +163,7 @@ define(["require", "exports", "../../Elements/TextBox.js", "../../Elements/Check
                 });
             }
         },
-        template: "<div class=\"login-block\">\n    <fieldset>\n        <legend>Login</legend>\n\n        <div class=\"alert alert-danger\" v-if=\"errorMessage\" v-html=\"errorMessage\"></div>\n\n        <form @submit.prevent=\"submitLogin\">\n            <TextBox label=\"Username\" v-model=\"username\" />\n            <TextBox label=\"Password\" v-model=\"password\" type=\"password\" />\n            <CheckBox label=\"Keep me logged in\" v-model=\"rememberMe\" />\n            <RockButton :is-loading=\"isLoading\" loading-text=\"Logging In...\" class=\"btn btn-primary\" @click=\"submitLogin\" type=\"submit\">\n                Log In\n            </RockButton>\n        </form>\n\n        <RockButton :is-loading=\"isLoading\" class=\"btn btn-link\" @click=\"onHelpClick\">\n            Forgot Account\n        </RockButton>\n\n    </fieldset>\n</div>"
+        template: "\n<div class=\"login-block\">\n    <fieldset>\n        <legend>Login</legend>\n\n        <div class=\"alert alert-danger\" v-if=\"errorMessage\" v-html=\"errorMessage\"></div>\n\n        <form @submit.prevent=\"submitLogin\">\n            <TextBox label=\"Username\" v-model=\"username\" />\n            <TextBox label=\"Password\" v-model=\"password\" type=\"password\" />\n            <CheckBox label=\"Keep me logged in\" v-model=\"rememberMe\" />\n            <RockButton :is-loading=\"isLoading\" loading-text=\"Logging In...\" class=\"btn btn-primary\" @click=\"submitLogin\" type=\"submit\">\n                Log In\n            </RockButton>\n        </form>\n\n        <RockButton :is-loading=\"isLoading\" class=\"btn btn-link\" @click=\"onHelpClick\">\n            Forgot Account\n        </RockButton>\n\n    </fieldset>\n</div>"
     });
 });
 //# sourceMappingURL=Login.js.map

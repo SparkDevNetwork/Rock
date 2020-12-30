@@ -111,7 +111,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetConfigurationValues()
+        public override object GetBlockSettings()
         {
             return new
             {
@@ -128,7 +128,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <summary>
         /// Get data based on the configured category setting.
         /// </summary>
-        [BlockAction( "GetAttributeDataList" )]
+        [BlockAction]
         public BlockActionResult GetAttributeDataList()
         {
             var currentPerson = GetCurrentPerson();

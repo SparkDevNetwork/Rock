@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -23,9 +22,7 @@ using System.Net;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Obsidian.Blocks.Groups
@@ -51,8 +48,8 @@ namespace Rock.Obsidian.Blocks.Groups
         /// <param name="filterOptions">The filter options.</param>
         /// <param name="sortOptions">The sort options.</param>
         /// <returns></returns>
-        [BlockAction( "getGroupMemberList" )]
-        public BlockActionResult BlockActionLogin( int groupId, FilterOptions filterOptions, SortProperty sortProperty )
+        [BlockAction]
+        public BlockActionResult GetGroupMemberList( int groupId, FilterOptions filterOptions, SortProperty sortProperty )
         {
             using ( var rockContext = new RockContext() )
             {

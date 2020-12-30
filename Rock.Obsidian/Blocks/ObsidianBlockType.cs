@@ -39,7 +39,7 @@ namespace Rock.Obsidian.Blocks
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <returns>A collection of string/object pairs.</returns>
-        object GetConfigurationValues();
+        object GetBlockSettings();
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ namespace Rock.Obsidian.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetConfigurationValues() {
+        public virtual object GetBlockSettings() {
             return null;
         }
 
@@ -97,7 +97,7 @@ $@"<div id=""{rootElementId}""></div>
         blockFileUrl: '{BlockFileUrl}',
         rootElement: document.getElementById('{rootElementId}'),
         blockGuid: '{BlockCache.Guid}',
-        configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() )},
+        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() )},
     }});
 }})();
 </script>";

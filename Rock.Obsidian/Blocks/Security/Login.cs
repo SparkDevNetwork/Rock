@@ -134,7 +134,7 @@ for help. Thank you.",
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetConfigurationValues()
+        public override object GetBlockSettings()
         {
             return new
             {
@@ -153,8 +153,8 @@ for help. Thank you.",
         /// <param name="password"></param>
         /// <param name="rememberMe"></param>
         /// <param name="username"></param>
-        [BlockAction( "login" )]
-        public BlockActionResult BlockActionLogin( string username, string password, bool rememberMe )
+        [BlockAction]
+        public BlockActionResult DoLogin( string username, string password, bool rememberMe )
         {
             if ( username.IsNullOrWhiteSpace() || password.IsNullOrWhiteSpace() )
             {

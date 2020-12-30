@@ -1,44 +1,73 @@
-﻿Obsidian.Blocks.registerBlock({
+﻿import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
+import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
+import store from '../../Store/Index.js';
+import Grid, { FilterOptions, SortDirection, SortProperty } from '../../Controls/Grid.js';
+import GridRow from '../../Controls/GridRow.js';
+import GridColumn from '../../Controls/GridColumn.js';
+import GridSelectColumn from '../../Controls/GridSelectColumn.js';
+import GridProfileLinkColumn from '../../Controls/GridProfileLinkColumn.js';
+import { BlockAction } from '../../Controls/RockBlock.js';
+
+type GroupMemberViewModel = {
+    FullName: string;
+    GroupMemberId: number;
+    PersonId: number;
+    PhotoUrl: string;
+    RoleName: string;
+    StatusName: string;
+};
+
+type GetGroupMemberListResponse = {
+    GroupMembers: GroupMemberViewModel[]
+};
+
+export default defineComponent({
     name: 'Groups.GroupMemberList',
-    inject: [
-        'blockAction'
-    ],
     components: {
-        PaneledBlockTemplate: Obsidian.Templates.PaneledBlockTemplate,
-        Grid: Obsidian.Controls.Grid,
-        GridRow: Obsidian.Controls.GridRow,
-        GridColumn: Obsidian.Controls.GridColumn,
-        GridSelectColumn: Obsidian.Controls.GridSelectColumn,
-        GridProfileLinkColumn: Obsidian.Controls.GridProfileLinkColumn
+        PaneledBlockTemplate,
+        Grid: Grid<GroupMemberViewModel>(),
+        GridRow: GridRow<GroupMemberViewModel>(),
+        GridColumn: GridColumn<GroupMemberViewModel>(),
+        GridSelectColumn: GridSelectColumn<GroupMemberViewModel>(),
+        GridProfileLinkColumn: GridProfileLinkColumn<GroupMemberViewModel>()
+    },
+    setup() {
+        return {
+            blockAction: inject('blockAction') as BlockAction
+        };
     },
     data() {
         return {
             isLoading: false,
             errorMessage: '',
-            members: [],
+            members: [] as GroupMemberViewModel[],
             sortProperty: {
-                direction: 0,
-                property: ''
-            }
+                Direction: SortDirection.Ascending,
+                Property: ''
+            } as SortProperty
         };
     },
     computed: {
-        groupId() {
-            return (this.$store.getters.groupContext || {}).Id || 0;
+        groupId(): number {
+            return (store.getters.groupContext || {}).Id || 0;
         },
     },
     methods: {
-        async fetchGroupMembers() {
+        async fetchGroupMembers(): Promise<void> {
+            if (this.isLoading) {
+                return;
+            }
+
             this.isLoading = true;
             this.errorMessage = '';
 
             try {
-                const result = await this.blockAction('getGroupMemberList', {
+                const result = await this.blockAction<GetGroupMemberListResponse>('getGroupMemberList', {
                     groupId: this.groupId,
                     filterOptions: {
-                        take: 50,
-                        skip: 0
-                    },
+                        Take: 50,
+                        Skip: 0
+                    } as FilterOptions,
                     sortProperty: this.sortProperty
                 });
 
@@ -56,26 +85,31 @@
                 this.isLoading = false;
             }
         },
-        onRowClick(rowContext) {
+        onRowClick(rowContext): void {
             const groupMemberId = rowContext.rowId;
             location.href = '/GroupMember/' + groupMemberId;
         }
     },
     watch: {
-        async groupId() {
+        async groupId(): Promise<void> {
             if (this.groupId) {
                 await this.fetchGroupMembers();
             }
         },
         sortProperty: {
             deep: true,
-            async handler() {
+            async handler(): Promise<void> {
                 await this.fetchGroupMembers();
             }
         }
     },
-    template:
-`<PaneledBlockTemplate>
+    async mounted(): Promise<void> {
+        if (this.groupId) {
+            await this.fetchGroupMembers();
+        }
+    },
+    template: `
+<PaneledBlockTemplate>
     <template #title>
         <i class="fa fa-users"></i>
         Group Members

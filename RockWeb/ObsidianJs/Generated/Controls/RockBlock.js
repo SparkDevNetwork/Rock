@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Store/index.js", "../Elements/Alert.js"], function (require, exports, http_js_1, vue_js_1, index_js_1, Alert_js_1) {
+define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js", "../Elements/Alert.js"], function (require, exports, http_js_1, vue_js_1, Index_js_1, Alert_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
@@ -113,7 +113,7 @@ define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Sto
             var blockHttp = { get: get, post: post };
             vue_js_1.provide('http', blockHttp);
             vue_js_1.provide('blockAction', blockAction);
-            vue_js_1.provide('configurationValues', props.config.configurationValues);
+            vue_js_1.provide('blockSettings', props.config.blockSettings);
         },
         data: function () {
             return {
@@ -128,7 +128,7 @@ define(["require", "exports", "../Util/http.js", "../Vendor/Vue/vue.js", "../Sto
         },
         computed: {
             pageGuid: function () {
-                return index_js_1.default.state.pageGuid;
+                return Index_js_1.default.state.pageGuid;
             }
         },
         errorCaptured: function (err) {

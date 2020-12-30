@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-define(["require", "exports", "../Vendor/Vuex/index.js", "./commonEntities.js"], function (require, exports, index_js_1, commonEntities_js_1) {
+define(["require", "exports", "../Vendor/Vuex/index.js", "./CommonEntities.js"], function (require, exports, index_js_1, CommonEntities_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     // Declare the Vuex store
@@ -54,13 +54,13 @@ define(["require", "exports", "../Vendor/Vuex/index.js", "./commonEntities.js"],
                 var pageConfig = _a.pageConfig;
                 context.commit('setPageInitializationData', pageConfig);
                 // Initialize each common entity module
-                for (var _i = 0, commonEntities_1 = commonEntities_js_1.commonEntities; _i < commonEntities_1.length; _i++) {
+                for (var _i = 0, commonEntities_1 = CommonEntities_js_1.commonEntities; _i < commonEntities_1.length; _i++) {
                     var commonEntity = commonEntities_1[_i];
                     context.dispatch(commonEntity.namespace + "/initialize");
                 }
             }
         },
-        modules: __assign({}, commonEntities_js_1.commonEntityModules)
+        modules: __assign({}, CommonEntities_js_1.commonEntityModules)
     });
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=Index.js.map

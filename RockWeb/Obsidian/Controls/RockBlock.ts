@@ -1,8 +1,8 @@
 ﻿import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/http.js';
 import { Component, defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
-import { BlockConfig } from '../index.js';
-import store from '../Store/index.js';
-import { Guid } from '../Util/guid.js';
+import { BlockConfig } from '../Index.js';
+import store from '../Store/Index.js';
+import { Guid } from '../Util/Guid.js';
 import Alert from '../Elements/Alert.js';
 
 export type BlockAction = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
@@ -65,7 +65,7 @@ export default defineComponent({
 
         provide('http', blockHttp);
         provide('blockAction', blockAction);
-        provide('configurationValues', props.config.configurationValues);
+        provide('blockSettings', props.config.blockSettings);
     },
     data() {
         return {
