@@ -295,7 +295,7 @@ WHERE SundayDate IS NULL
             get
             {
                 var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-                if ( graduationDateWithCurrentYear < RockDateTime.Today )
+                if ( graduationDateWithCurrentYear <= RockDateTime.Today )
                 {
                     // if the graduation date already occurred this year, return next year' graduation date
                     return graduationDateWithCurrentYear.AddYears( 1 );
