@@ -2,6 +2,14 @@
 
 A zip file named *.slingshot with the following sub files:
 
+* attendance.csv
+* business.csv
+* business-address.csv
+* business-attribute.csv
+* business-attributevalue.csv
+* business-phone.csv
+* business-contact.csv
+* family-attribute.csv
 * family-note.csv
 * financial-account.csv
 * financial-batch.csv
@@ -9,16 +17,65 @@ A zip file named *.slingshot with the following sub files:
 * financial-transaction.csv
 * financial-transactiondetail.csv
 * group.csv
+* group-address.csv
+* group-attribute.csv
+* group-attributevalue.csv
 * groupmember.csv
 * grouptype.csv
+* locations.csv
 * person-address.csv
 * person-attribute.csv
 * person-attributevalue.csv
 * person-note.csv
 * person-phone.csv
+* person-searchkey.csv
 * person.csv
+* schedule.csv
 
 # Sub File Formats
+
+## attendance.csv
+`AttendanceId,PersonId,GroupId,LocationId,ScheduleId,DeviceId,StartDateTime,EndDateTime,NoteCampusId`
+
+Example:
+`732216119,19471,1096,2021694793,1645614320,3/1/2010 9:00,3/1/2010 10:00,1`		
+
+## business.csv
+
+`Id,Name,RecordStatus,InactiveReason,Email,EmailPreference,CampusId`
+
+## business-address.csv
+
+`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
+
+## business-attribute.csv
+`Key,Name,FieldType,Category`
+
+Example:
+`DonorBusiness,Donor Business,Rock.Field.Types.BooleanFieldType,Donors`
+
+## business-attributevalue.csv
+`BusinessId,AttributeKey,AttributeValue`
+
+Example:
+`12,DonorBusiness,TRUE`
+
+## business-phone.csv
+
+`BusinessId,PhoneType,PhoneNumber,IsMessagingEnabled,IsUnlisted`
+
+## business-contact.csv
+
+`PersonId,BusinessId`
+
+Example:
+`14,3213213210`
+
+## family-attribute.csv
+`Key,Name,FieldType,Category`
+
+Example:
+`FamilyPhoto,Family Photo,Rock.Field.Types.ImageFieldType,Family Information`
 
 ## family-note.csv
 
@@ -74,6 +131,23 @@ Example:
 Example:
 `3213213210,Activities,0,0,9999,`
 
+## group-address.csv
+`GroupId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
+
+Example:
+`68,11624 N 31st Dr,,Phoenix,Az,85029-3202,,33.59310,-112.12649,1,Home`
+
+## group-attribute.csv
+`Key,Name,FieldType,Category`
+
+Example:
+`HasChildcare,Has Childcare,Rock.Field.Types.BooleanFieldType,Small Group`
+
+## group-attributevalue.csv
+`GroupId,AttributeKey,AttributeValue`
+
+Example:
+`10,HasChildcare,TRUE`
 
 ## groupmember.csv
 
@@ -89,6 +163,12 @@ Example:
 
 Example:
 `9999,Imported Group`
+
+## locations.csv
+`Id,ParentLocationId,Name,IsActive,LocationType,Street1,Street2,City,State,Country,PostalCode,County`
+
+Example:
+`2,,Main Campus,1,Campus,24654 N Lake Pleasant Pkwy Ste 103-192,,Peoria,Az,US,85383-1359,Maricopa`
 
 
 ## person-address.csv
@@ -134,6 +214,11 @@ Example(s):
 `14,Home,480-555-1234,,`
 `14,Parent's Phone,602-555-1212,,False`
 
+## person-search-key.csv
+`PersonId,SearchValue`
+
+Example:
+`4,ted@example.com`
 
 ## person.csv
 
@@ -142,6 +227,13 @@ Example(s):
 Example(s):
 `14,10000,Mr Bobby Brown,,Adult,Robert,Bob,Brown,Wayne,Mr,,,Male,Single,,,Active,,Member,EmailAllowed,5/10/1997 12:00:00 AM,8/20/2016 12:00:00 AM,,0,,,,True,False`
 `15,10001,Mr Joey Rogers & Ms Rolyn Washington,C:\Temp\Photos\acsThumb999.jpg,Adult,Rolyn,,Washington,Sue,Ms,,rolyn_washington@fakeinbox.com,Female,Single,9/26/1990 12:00:00 AM,,Active,,Member,EmailAllowed,6/9/1997 12:00:00 AM,10/24/2017 12:00:00 AM,C:\Temp\Photos\acsThumb998.jpg,0,,,,True,False`
+
+## schedule.csv
+`Id,Name`
+
+Example:
+`1280818793,Tuesday at 1:30 PM`
+
 
 
 # Proposed 2/26/2019
@@ -197,26 +289,4 @@ The following are new, proposed file format definitions that are being considere
 `Id,Name,RegistrationTemplateId,StartDateTime,EndDateTime,SendReminderDateTime,MaxAttendees,AccountId,ContactPhone,ContactEmail,PersonId,AdditionalReminderDetails,AdditionalConfirmationDetails`
 
 
-# Proposed 4/11/2019
-
-The following are new, proposed file format definitions that are being considered for addition to the Slingshot importer for "Business" data.
-
-## business.csv
-
-`Id,Name,RecordStatus,InactiveReason,Email,EmailPreference,CampusId`
-
-## business-address.csv
-
-`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,AddressType`
-
-## business-phone.csv
-
-`BusinessId,PhoneType,PhoneNumber,IsMessagingEnabled,IsUnlisted`
-
-## business-contact.csv
-
-`PersonId,BusinessId`
-
-Example:
-`14,3213213210`
 
