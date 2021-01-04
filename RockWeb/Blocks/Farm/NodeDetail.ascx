@@ -84,13 +84,16 @@ $(document).ready(function () {
                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
-                    
+
                     <div class="row">
                         <div class="col-md-5">
                             <asp:Literal ID="lDescription" runat="server" />
                         </div>
-                        <div class="col-md-7" style="height:250px;">
-                            <asp:Literal ID="lChart" runat="server" />
+                        <div class="col-md-7">
+                            <span class="control-label">CPU Utilization</span>
+                            <div style="height:250px;">
+                                <asp:Literal ID="lChart" runat="server" />
+                            </div>
                         </div>
                     </div>
 
@@ -101,7 +104,7 @@ $(document).ready(function () {
 
                 <div id="pnlEditDetails" runat="server">
                     <div class="alert alert-info">
-                        In order to respect any new setting changes made here, please restart this node after saving. 
+                        In order to respect any new setting changes made here, please restart this node after saving.
                     </div>
 
                     <div class="actions">
