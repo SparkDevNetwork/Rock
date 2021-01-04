@@ -65,10 +65,10 @@ namespace Rock.Model
         public bool ShowInGrid { get; set; }
 
         /// <summary>
-        /// Gets or sets the data select component entity type identifier.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Reporting.DataSelectComponent" /> that this report field is using.
         /// </summary>
         /// <value>
-        /// The data select component entity type identifier.
+        /// The DataSelectComponent EntityTypeId
         /// </value>
         [DataMember]
         public int? DataSelectComponentEntityTypeId { get; set; }
@@ -152,10 +152,10 @@ namespace Rock.Model
         public virtual Report Report { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the data select component entity.
+        /// Gets or sets the EntityType of the <see cref="Rock.Reporting.DataSelectComponent" /> that this report field is using.
         /// </summary>
         /// <value>
-        /// The type of the data select component entity.
+        /// The DataSelectComponent EntityType
         /// </value>
         [DataMember]
         public virtual EntityType DataSelectComponentEntityType { get; set; }

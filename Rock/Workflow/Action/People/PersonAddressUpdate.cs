@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute("Person", "Workflow attribute that contains the person to update.", true, "", "", 0, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the the location type to update.", false, "", "", 1, "LocationTypeAttribute",
+    [WorkflowAttribute( "Location Type (From Attribute)", "The attribute that contains the location type to update.", false, "", "", 1, "LocationTypeAttribute",
         new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location to update (if attribute is not specified or is an invalid value).", true, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 2 )]
     [LocationField("Location", "The location to use for updating person's record.", false, "", "", 3 )]

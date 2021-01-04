@@ -35,7 +35,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static DataView GetDataViewForFilterComponent( Guid? dataViewGuid, RockContext context = null )
         {
-            if (!dataViewGuid.HasValue)
+            if ( !dataViewGuid.HasValue )
             {
                 return null;
             }
@@ -46,15 +46,15 @@ namespace Rock.Reporting
 
             DataView dataView = dsService.Get( dataViewGuid.Value );
 
-            if (dataView == null
-                || dataView.DataViewFilter == null)
+            if ( dataView == null
+                || dataView.DataViewFilter == null )
             {
                 return null;
             }
 
             // Verify that the Data View does not contain any references to itself in any of its components.
             // This configuration would cause a circular reference exception during evaluation of the Data View.
-            if (dsService.IsViewInFilter( dataView.Id, dataView.DataViewFilter ))
+            if ( dsService.IsViewInFilter( dataView.Id, dataView.DataViewFilter ) )
             {
                 throw new Exception( "Filter issue(s): One of the filters contains a circular reference to the Data View itself." );
             }
@@ -74,14 +74,7 @@ namespace Rock.Reporting
         {
             var paramExpression = serviceInstance.ParameterExpression;
 
-            List<string> errorMessages;
-
-            var whereExpression = dataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
-
-            if (errorMessages.Any())
-            {
-                throw new Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
-            }
+            var whereExpression = dataView.GetExpression( serviceInstance, paramExpression );
 
             return query.Where( paramExpression, whereExpression );
         }
@@ -102,9 +95,7 @@ namespace Rock.Reporting
 
             var dsService = new DataViewService( new RockContext() );
 
-            var dataView = dsService.Get( id.Value );
-
-            return dataView?.Guid;
+            return dsService.GetGuid( id.Value );
         }
 
         /// <summary>
@@ -124,16 +115,14 @@ namespace Rock.Reporting
         /// <returns>The Id of the specified DataView, or null if the Data View does not exist.</returns>
         public static int? GetDataViewId( Guid? dataViewGuid )
         {
-            if (!dataViewGuid.HasValue)
+            if ( !dataViewGuid.HasValue )
             {
                 return null;
             }
 
             var dsService = new DataViewService( new RockContext() );
 
-            var dataView = dsService.Get( dataViewGuid.Value );
-
-            return dataView?.Id;
+            return dsService.GetId( dataViewGuid.Value );
         }
 
         /// <summary>
@@ -205,7 +194,7 @@ namespace Rock.Reporting
         {
             var value = GetParameterOrDefault( parameters, parameterIndex, string.Empty );
 
-            return value.Split( new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries ).ToList();            
+            return value.Split( new string[] { delimiter }, StringSplitOptions.RemoveEmptyEntries ).ToList();
         }
     }
 }

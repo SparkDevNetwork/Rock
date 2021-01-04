@@ -22,7 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -359,22 +359,46 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
-            if ( sortProperty.Property.StartsWith( "attribute:" ) )
+            if ( sortProperty.Property.StartsWith( "attribute:" ) && source.Any() )
             {
                 var itemType = typeof( T );
                 var attributeCache = AttributeCache.Get( sortProperty.Property.Substring( 10 ).AsInteger() );
                 if ( attributeCache != null && typeof( IModel ).IsAssignableFrom( typeof( T ) ) )
                 {
-                    var entityIds = new List<int>();
-
+                    List<int> ids = new List<int>();
                     var models = new List<IModel>();
                     source.ToList().ForEach( i => models.Add( i as IModel ) );
-                    var ids = models.Select( m => m.Id ).ToList();
-
-                    var field = attributeCache.FieldType.Field;
 
                     using ( var rockContext = new RockContext() )
                     {
+                        //Check if Attribute Entity Type is same as Source Entity Type
+                        var type = models.First().GetType();
+                        EntityTypeCache modelEntity = EntityTypeCache.Get( type, false );
+                        PropertyInfo modelProperty = null;
+                        //Same Entity Type
+                        if ( modelEntity != null && modelEntity.Id == attributeCache.EntityTypeId )
+                        {
+                            ids = models.Select( m => m.Id ).ToList();
+                        }
+                        //Different Entity Types
+                        else if ( modelEntity != null )
+                        {
+                            //Search the entity properties for a matching entity and save the property information and primary key name
+                            var propertiesWithAttributes = type.GetProperties().Where( a => typeof( IHasAttributes ).IsAssignableFrom( a.PropertyType ) ).ToList();
+                            foreach ( var propertyInfo in propertiesWithAttributes )
+                            {
+                                var propertyEntity = EntityTypeCache.Get( propertyInfo.PropertyType, false );
+                                if ( propertyEntity != null && propertyEntity.Id == attributeCache.EntityTypeId )
+                                {
+                                    Object obj = models.First().GetPropertyValue( propertyInfo.Name );
+                                    var prop = obj.GetType().GetProperty( "Id" );
+                                    modelProperty = propertyInfo;
+                                    ids = models.Select( m => Int32.Parse( prop.GetValue( m.GetPropertyValue( propertyInfo.Name ) ).ToString() ) ).ToList();
+                                }
+                            }
+                        }
+                        var field = attributeCache.FieldType.Field;
+
                         foreach ( var attributeValue in new AttributeValueService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( v =>
@@ -383,7 +407,27 @@ namespace Rock
                                 ids.Contains( v.EntityId.Value ) )
                             .ToList() )
                         {
-                            var model = models.FirstOrDefault( m => m.Id == attributeValue.EntityId.Value );
+                            IModel model = null;
+                            if ( modelEntity != null && modelEntity.Id == attributeCache.EntityTypeId )
+                            {
+                                model = models.FirstOrDefault( m => m.Id == attributeValue.EntityId.Value );
+                            }
+                            else if ( modelEntity != null )
+                            {
+                                //Use the model property and primary key name to get the foreign key EntityId refers to
+                                model = models.FirstOrDefault( m =>
+                                {
+                                    var obj = m.GetPropertyValue( modelProperty.Name );
+                                    PropertyInfo prop = obj.GetType().GetProperty( "Id" );
+                                    string val = prop.GetValue( obj ).ToString();
+                                    return Int32.Parse( val ) == attributeValue.EntityId.Value;
+                                } );
+                            }
+                            else
+                            {
+                                //Handle not finding an Entity type
+                                model = null;
+                            }
                             if ( model != null )
                             {
                                 model.CustomSortValue = field.SortValue( null, attributeValue.Value, attributeCache.QualifierValues );
@@ -431,7 +475,7 @@ namespace Rock
             }
 
             return qry;
-            
+
         }
 
         /// <summary>

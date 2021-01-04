@@ -111,8 +111,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            // Update CategoryCache ScheduleExclusions
-            CategoryCache.UpdateCachedEntity( this.CategoryId, entityState );
+            // Tell the CategoryCache that is has been modified since its ScheduleExclusions modified
+            CategoryCache.UpdateCachedEntity( this.CategoryId, EntityState.Modified );
         }
 
         #endregion

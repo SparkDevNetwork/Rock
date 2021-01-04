@@ -697,6 +697,30 @@ namespace Rock.MyWell
                 var twiceMonthlyDays = new int[2] { 1, 15 };
                 billingFrequency = BillingFrequency.twice_monthly;
 
+                /* 2020-07-30 MDP
+                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it, 
+                    but it really end up posting on whatever the next 1st or 15th lands on (which is what we want to happen).
+                    For example, if we set up a 1st/15th schedule to start on July 23rd, it'll report that the NextBillDate is July 23rd,
+                    but it won't really bill until Aug 1st. From then on, the NextBillDate will get reported as whatever the next 1st and 15th is.
+                    Even though it bills on the correct days, it can be confusing when it says that the next bill date is July 23rd.
+                    To avoid that confusion, lets round the start date to the next upcoming 1st or 15th.
+                 */
+
+                var nextBillDayOfMonth = billingPlanParameters.NextBillDateUTC.Value.Day;
+
+                if ( nextBillDayOfMonth > 1 && nextBillDayOfMonth < 15 )
+                {
+                    // they specifed a start between the 1st and 15th, so round up the next 15th
+                    var nextFifteenth = new DateTime( billingPlanParameters.NextBillDateUTC.Value.Year, billingPlanParameters.NextBillDateUTC.Value.Month, 15 );
+                    billingPlanParameters.NextBillDateUTC = nextFifteenth;
+                }
+                else if ( nextBillDayOfMonth > 15 )
+                {
+                    // they specifed a start after 15th, so round up the next month's 1st
+                    var nextFirst = new DateTime( billingPlanParameters.NextBillDateUTC.Value.Year, billingPlanParameters.NextBillDateUTC.Value.Month, 1 ).AddMonths( 1 );
+                    billingPlanParameters.NextBillDateUTC = nextFirst;
+                }
+
                 // twiceMonthly Days have to be in numeric order
                 billingDays = $"{twiceMonthlyDays.OrderBy( a => a ).ToList().AsDelimited( "," )}";
             }

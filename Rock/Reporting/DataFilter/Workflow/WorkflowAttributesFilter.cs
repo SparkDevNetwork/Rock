@@ -18,27 +18,75 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
 using Rock.Data;
-using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Workflow
 {
     /// <summary>
-    /// Filter workflow on any of its attribute values
+    /// Filter Workflows by their Attribute Values
     /// </summary>
-    [Description( "Filter workflow on its attribute values" )]
+    [Description( "Filter Workflows by their Attribute Values" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Attributes Filter" )]
     public class WorkflowAttributesFilter : EntityFieldFilter
     {
+        #region Settings
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class SelectionConfig
+        {
+            public int? WorkflowTypeId { get; set; }
+
+            public List<string> AttributeFilterSettings { get; set; } = new List<string>();
+
+            public string AttributeKey { get; set; }
+
+            /// <summary>
+            /// Parses the specified selection.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
+            {
+                var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
+
+                if ( selectionConfig == null )
+                {
+                    // see if it is in an older format
+                    var values = selection.FromJsonOrNull<List<string>>() ?? new List<string>();
+                    selectionConfig = new SelectionConfig();
+                    if ( values.Count > 0 )
+                    {
+                        var workflowTypeId = WorkflowTypeCache.GetId( values[0].AsGuid() );
+                        selectionConfig.WorkflowTypeId = workflowTypeId;
+                    }
+
+                    if ( values.Count > 1 )
+                    {
+                        selectionConfig.AttributeKey = values[1];
+                    }
+
+                    selectionConfig.AttributeFilterSettings = values.Skip( 1 ).ToList();
+                }
+
+                selectionConfig.AttributeFilterSettings = selectionConfig.AttributeFilterSettings ?? new List<string>();
+
+                return selectionConfig;
+            }
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -78,7 +126,7 @@ namespace Rock.Reporting.DataFilter.Workflow
         }
 
         /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the FilterField control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
         /// controls parent container can be referenced through a '$content' variable that is set by the control before 
         /// referencing this property.
@@ -99,25 +147,42 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string result = "Workflow Property";
+            return GetSelectedFieldName( selection );
+        }
 
-            // First value is workflow type, second value is attribute, remaining values are the field type's filter values
-            var values = JsonConvert.DeserializeObject<List<string>>( selection );
-            if ( values.Count >= 2 )
+        /// <summary>
+        /// Gets the name of the selected field.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public override string GetSelectedFieldName( string selection )
+        {
+            string result = "Workflow Property";
+            if ( !string.IsNullOrWhiteSpace( selection ) )
             {
-                var workflowType = new WorkflowTypeService( new RockContext() ).Get( values[0].AsGuid() );
-                if ( workflowType != null )
+                var settings = SelectionConfig.Parse( selection );
+                var entityField = GetWorkflowAttributes( settings.WorkflowTypeId ).FirstOrDefault( f => f.UniqueName == settings.AttributeKey );
+                if ( entityField != null )
                 {
-                    var entityFields = GetWorkflowAttributes( workflowType.Id );
-                    var entityField = entityFields.FindFromFilterSelection( values[1] );
-                    if ( entityField != null )
-                    {
-                        result = entityField.FormattedFilterDescription( values.Skip( 2 ).ToList() );
-                    }
+                    result = entityField.FormattedFilterDescription( settings.AttributeFilterSettings );
                 }
+
+                return result;
             }
 
-            return result;
+            return null;
+        }
+
+        /// <summary>
+        /// Updates the selection from page parameters if there is a page parameter for the selection
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="rockBlock">The rock block.</param>
+        /// <returns></returns>
+        public override string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        {
+            // don't modify the selection for the Filter based on PageParameters
+            return selection;
         }
 
         /// <summary>
@@ -139,70 +204,94 @@ namespace Rock.Reporting.DataFilter.Workflow
             workflowTypePicker.ID = filterControl.ID + "_workflowTypePicker";
             workflowTypePicker.Label = "Workflow Type";
             workflowTypePicker.AddCssClass( "js-workflow-type-picker" );
-            workflowTypePicker.SelectItem += workflowTypePicker_SelectItem;
-            workflowTypePicker.Visible = filterMode == FilterMode.AdvancedFilter;
+            workflowTypePicker.ValueChanged += workflowTypePicker_ValueChanged;
+            if ( filterMode == FilterMode.SimpleFilter )
+            {
+                // we still need to render the control in order to get the selected WorkflowTypeId on PostBack, so just hide it instead
+                workflowTypePicker.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+
             containerControl.Controls.Add( workflowTypePicker );
 
-            // set the WorkflowTypePicker selected value now so we can create the other controls the depending on know the workflowTypeid
-            var hfItem = workflowTypePicker.ControlsOfTypeRecursive<HiddenFieldWithClass>().Where( a => a.CssClass.Contains( "js-item-id-value" ) ).FirstOrDefault();
-            int? workflowTypeId = filterControl.Page.Request.Params[hfItem.UniqueID].AsIntegerOrNull();
-            workflowTypePicker.SetValue( workflowTypeId );
-            workflowTypePicker_SelectItem( workflowTypePicker, new EventArgs() );
+            // set the WorkflowTypePicker selected value now so we can create the other controls the depending on know the workflowTypeId
+            if ( filterControl.Page.IsPostBack )
+            {
+                var hiddenField = workflowTypePicker.ControlsOfTypeRecursive<HiddenFieldWithClass>().Where( a => a.CssClass.Contains( "js-item-id-value" ) ).FirstOrDefault();
+
+                // since we just created the WorkflowTypePicker, we'll have to sniff the WorkflowTypeId from Request.Params
+                int? workflowTypeId = filterControl.Page.Request.Params[hiddenField.UniqueID].AsIntegerOrNull();
+                workflowTypePicker.SetValue( workflowTypeId );
+                EnsureSelectedWorkflowTypeControls( workflowTypePicker );
+            }
 
             return new Control[] { containerControl };
         }
 
         /// <summary>
-        /// Handles the SelectItem event of the workflowTypePicker control.
+        /// Handles the ValueChanged event of the workflowTypePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        public void workflowTypePicker_SelectItem( object sender, EventArgs e )
+        public void workflowTypePicker_ValueChanged( object sender, EventArgs e )
         {
-            WorkflowTypePicker workflowTypePicker = sender as WorkflowTypePicker;
-            if ( workflowTypePicker == null )
-            {
-                workflowTypePicker = ( sender as Control ).FirstParentControlOfType<WorkflowTypePicker>();
-            }
+            DynamicControlsPanel containerControl = ( sender as Control ).FirstParentControlOfType<DynamicControlsPanel>();
+            WorkflowTypePicker workflowTypePicker = containerControl.ControlsOfTypeRecursive<WorkflowTypePicker>().Where( a => a.CssClass.Contains( "js-workflow-type-picker" ) ).FirstOrDefault();
+            EnsureSelectedWorkflowTypeControls( workflowTypePicker );
+        }
 
+        /// <summary>
+        /// Ensures that the controls that are created based on the WorkflowType have been created
+        /// </summary>
+        /// <param name="workflowTypePicker">The workflow type picker.</param>
+        private void EnsureSelectedWorkflowTypeControls( WorkflowTypePicker workflowTypePicker )
+        {
             DynamicControlsPanel containerControl = workflowTypePicker.Parent as DynamicControlsPanel;
             FilterField filterControl = containerControl.FirstParentControlOfType<FilterField>();
 
-            containerControl.Controls.Clear();
-            containerControl.Controls.Add( workflowTypePicker );
+            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValueAsId() );
 
             // Create the field selection dropdown
-            var ddlProperty = new RockDropDownList();
-            ddlProperty.ID = string.Format( "{0}_{1}_ddlProperty", containerControl.ID, workflowTypePicker.SelectedValue );
-            containerControl.Controls.Add( ddlProperty );
+            string propertyControlId = string.Format( "{0}_ddlProperty", containerControl.ID );
+            RockDropDownList ddlProperty = containerControl.Controls.OfType<RockDropDownList>().FirstOrDefault( a => a.ID == propertyControlId );
+            if ( ddlProperty == null )
+            {
+                ddlProperty = new RockDropDownList();
+                ddlProperty.ID = propertyControlId;
+                ddlProperty.AutoPostBack = true;
+                ddlProperty.SelectedIndexChanged += ddlProperty_SelectedIndexChanged;
+                ddlProperty.AddCssClass( "js-property-dropdown" );
+                ddlProperty.Attributes["EntityTypeId"] = EntityTypeCache.GetId<Rock.Model.Workflow>().ToString();
+                containerControl.Controls.Add( ddlProperty );
+            }
+
+            // update the list of items just in case the WorkflowType changed
+            ddlProperty.Items.Clear();
 
             // add Empty option first
             ddlProperty.Items.Add( new ListItem() );
+            foreach ( var entityField in entityFields )
+            {
+                // Add the field to the dropdown of available fields
+                ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
+            }
 
-            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
+            if ( workflowTypePicker.Page.IsPostBack )
+            {
+                ddlProperty.SetValue( workflowTypePicker.Page.Request.Params[ddlProperty.UniqueID] );
+            }
+
             foreach ( var entityField in entityFields )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
-                var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
-                if ( control != null )
+                if ( !containerControl.Controls.OfType<Control>().Any( a => a.ID == controlId ) )
                 {
-                    // Add the field to the dropdown of available fields
-                    ddlProperty.Items.Add( new ListItem( entityField.TitleWithoutQualifier, entityField.UniqueName ) );
-                    containerControl.Controls.Add( control );
+                    var control = entityField.FieldType.Field.FilterControl( entityField.FieldConfig, controlId, true, filterControl.FilterMode );
+                    if ( control != null )
+                    {
+                        containerControl.Controls.Add( control );
+                    }
                 }
             }
-
-            ddlProperty.AutoPostBack = true;
-
-            // grab the currently selected value off of the request params since we are creating the controls after the Page Init
-            var selectedValue = ddlProperty.Page.Request.Params[ddlProperty.UniqueID];
-            if ( selectedValue != null )
-            {
-                ddlProperty.SelectedValue = selectedValue;
-                ddlProperty_SelectedIndexChanged( ddlProperty, new EventArgs() );
-            }
-
-            ddlProperty.SelectedIndexChanged += ddlProperty_SelectedIndexChanged;
         }
 
         /// <summary>
@@ -212,14 +301,15 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlProperty_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var ddlEntityField = sender as RockDropDownList;
-            var containerControl = ddlEntityField.FirstParentControlOfType<DynamicControlsPanel>();
-            FilterField filterControl = ddlEntityField.FirstParentControlOfType<FilterField>();
-            WorkflowTypePicker workflowTypePicker = filterControl.ControlsOfTypeRecursive<WorkflowTypePicker>().Where( a => a.HasCssClass( "js-workflow-type-picker" ) ).FirstOrDefault();
+            var ddlProperty = sender as RockDropDownList;
+            var containerControl = ddlProperty.FirstParentControlOfType<DynamicControlsPanel>();
+            FilterField filterControl = ddlProperty.FirstParentControlOfType<FilterField>();
+            var workflowTypePicker = filterControl.ControlsOfTypeRecursive<WorkflowTypePicker>().Where( a => a.HasCssClass( "js-workflow-type-picker" ) ).FirstOrDefault();
 
-            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
+            var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValueAsId() );
 
-            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlEntityField.SelectedValue );
+            var entityField = entityFields.FirstOrDefault( a => a.UniqueName == ddlProperty.SelectedValue );
+
             if ( entityField != null )
             {
                 string controlId = string.Format( "{0}_{1}", containerControl.ID, entityField.UniqueName );
@@ -253,13 +343,13 @@ namespace Rock.Reporting.DataFilter.Workflow
                     WorkflowTypePicker workflowTypePicker = containerControl.Controls[0] as WorkflowTypePicker;
                     workflowTypePicker.RenderControl( writer );
 
-                    DropDownList ddlEntityField = containerControl.Controls[1] as DropDownList;
-                    var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValue.AsIntegerOrNull() );
+                    DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
+                    var entityFields = GetWorkflowAttributes( workflowTypePicker.SelectedValueAsId() );
 
                     var panelControls = new List<Control>();
                     panelControls.AddRange( containerControl.Controls.OfType<Control>() );
 
-                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlEntityField, panelControls, containerControl.ID, filterMode );
+                    RenderEntityFieldsControls( entityType, filterControl, writer, entityFields, ddlProperty, panelControls, containerControl.ID, filterMode );
                 }
             }
         }
@@ -273,7 +363,7 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls, FilterMode filterMode )
         {
-            var values = new List<string>();
+            var settings = new SelectionConfig();
 
             if ( controls.Length > 0 )
             {
@@ -282,40 +372,31 @@ namespace Rock.Reporting.DataFilter.Workflow
                 {
                     // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
                     WorkflowTypePicker workflowTypePicker = containerControl.Controls[0] as WorkflowTypePicker;
-                    Guid workflowTypeGuid = Guid.Empty;
-                    var workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypePicker.SelectedValue.AsIntegerOrNull() ?? 0 );
-                    if ( workflowType != null )
+                    var workflowTypeId = workflowTypePicker.SelectedValueAsId();
+
+                    if ( containerControl.Controls.Count > 1 )
                     {
-                        if ( containerControl.Controls.Count == 1 || filterMode == FilterMode.SimpleFilter )
+                        DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
+                        settings.AttributeKey = ddlProperty.SelectedValue;
+                        settings.WorkflowTypeId = workflowTypeId;
+                        var entityFields = GetWorkflowAttributes( workflowTypeId );
+                        var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
+                        if ( entityField != null )
                         {
-                            workflowTypePicker_SelectItem( workflowTypePicker, new EventArgs() );
-                        }
+                            var panelControls = new List<Control>();
+                            panelControls.AddRange( containerControl.Controls.OfType<Control>() );
 
-                        if ( containerControl.Controls.Count > 1 )
-                        {
-                            DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
-
-                            var entityFields = GetWorkflowAttributes( workflowType.Id );
-                            var entityField = entityFields.FirstOrDefault( f => f.UniqueName == ddlProperty.SelectedValue );
-                            if ( entityField != null )
+                            var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.UniqueName ) );
+                            if ( control != null )
                             {
-                                var panelControls = new List<Control>();
-                                panelControls.AddRange( containerControl.Controls.OfType<Control>() );
-
-                                var control = panelControls.FirstOrDefault( c => c.ID.EndsWith( entityField.UniqueName ) );
-                                if ( control != null )
-                                {
-                                    values.Add( workflowType.Guid.ToString() );
-                                    values.Add( ddlProperty.SelectedValue );
-                                    entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => values.Add( v ) );
-                                }
+                                entityField.FieldType.Field.GetFilterValues( control, entityField.FieldConfig, filterMode ).ForEach( v => settings.AttributeFilterSettings.Add( v ) );
                             }
                         }
                     }
                 }
             }
 
-            return values.ToJson();
+            return settings.ToJson();
         }
 
         /// <summary>
@@ -326,32 +407,33 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            if ( !string.IsNullOrWhiteSpace( selection ) )
+            var settings = SelectionConfig.Parse( selection );
+
+            if ( controls.Length > 0 )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
-                if ( controls.Length > 0 && values.Count > 0 )
+                int? workflowTypeId = settings.WorkflowTypeId;
+
+                var containerControl = controls[0] as DynamicControlsPanel;
+                if ( containerControl.Controls.Count > 0 )
                 {
-                    var workflowType = new WorkflowTypeService( new RockContext() ).Get( values[0].AsGuid() );
-                    if ( workflowType != null )
-                    {
-                        var containerControl = controls[0] as DynamicControlsPanel;
-                        if ( containerControl.Controls.Count > 0 )
-                        {
-                            WorkflowTypePicker workflowTypePicker = containerControl.Controls[0] as WorkflowTypePicker;
-                            workflowTypePicker.SetValue( workflowType.Id );
-                            workflowTypePicker_SelectItem( workflowTypePicker, new EventArgs() );
-                        }
+                    WorkflowTypePicker workflowTypePicker = containerControl.Controls[0] as WorkflowTypePicker;
+                    workflowTypePicker.SetValue( workflowTypeId );
+                    EnsureSelectedWorkflowTypeControls( workflowTypePicker );
+                }
 
-                        if ( containerControl.Controls.Count > 1 && values.Count > 1 )
-                        {
-                            DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
-                            var entityFields = GetWorkflowAttributes( workflowType.Id );
+                if ( containerControl.Controls.Count > 1 )
+                {
+                    DropDownList ddlProperty = containerControl.Controls[1] as DropDownList;
+                    var entityFields = GetWorkflowAttributes( workflowTypeId );
 
-                            var panelControls = new List<Control>();
-                            panelControls.AddRange( containerControl.Controls.OfType<Control>() );
-                            SetEntityFieldSelection( entityFields, ddlProperty, values.Skip( 1 ).ToList(), panelControls );
-                        }
-                    }
+                    var panelControls = new List<Control>();
+                    panelControls.AddRange( containerControl.Controls.OfType<Control>() );
+
+                    var parameters = new List<string> { settings.AttributeKey };
+
+                    parameters.AddRange( settings.AttributeFilterSettings );
+
+                    SetEntityFieldSelection( entityFields, ddlProperty, parameters, panelControls );
                 }
             }
         }
@@ -366,24 +448,15 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            if ( !string.IsNullOrWhiteSpace( selection ) )
+            var settings = SelectionConfig.Parse( selection );
+
+            if ( settings.AttributeFilterSettings.Any() )
             {
-                var values = JsonConvert.DeserializeObject<List<string>>( selection );
-
-                if ( values.Count >= 3 )
+                var entityFields = GetWorkflowAttributes( settings.WorkflowTypeId );
+                var entityField = entityFields.FindFromFilterSelection( settings.AttributeKey );
+                if ( entityField != null )
                 {
-                    var workflowType = new WorkflowTypeService( new RockContext() ).Get( values[0].AsGuid() );
-                    if ( workflowType != null )
-                    {
-                        string selectedProperty = values[1];
-
-                        var entityFields = GetWorkflowAttributes( workflowType.Id );
-                        var entityField = entityFields.FindFromFilterSelection( selectedProperty );
-                        if ( entityField != null )
-                        {
-                            return GetAttributeExpression( serviceInstance, parameterExpression, entityField, values.Skip( 2 ).ToList() );
-                        }
-                    }
+                    return GetAttributeExpression( serviceInstance, parameterExpression, entityField, settings.AttributeFilterSettings );
                 }
             }
 
@@ -399,17 +472,25 @@ namespace Rock.Reporting.DataFilter.Workflow
         /// </summary>
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         /// <returns></returns>
-        private List<EntityField> GetWorkflowAttributes( int? workflowTypeId )
+        private static List<EntityField> GetWorkflowAttributes( int? workflowTypeId )
         {
             List<EntityField> entityAttributeFields = new List<EntityField>();
 
+            var fakeWorkflow = new Rock.Model.Workflow();
             if ( workflowTypeId.HasValue )
             {
-                var fakeWorkflow = new Rock.Model.Workflow { WorkflowTypeId = workflowTypeId.Value };
-                Rock.Attribute.Helper.LoadAttributes( fakeWorkflow );
-                var attributeList = fakeWorkflow.Attributes.Select( a => a.Value ).ToList();
-                EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
+                fakeWorkflow.WorkflowTypeId = workflowTypeId.Value;
             }
+            else
+            {
+                //// if no WorkflowTypeId was specified, just set the WorkflowTypeId to 0
+                //// NOTE: There could be Workflow Attributes that are not specific to a WorkflowTypeId
+                fakeWorkflow.WorkflowTypeId = 0;
+            }
+
+            Rock.Attribute.Helper.LoadAttributes( fakeWorkflow );
+            var attributeList = fakeWorkflow.Attributes.Select( a => a.Value ).ToList();
+            EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
 
             int index = 0;
             var sortedFields = new List<EntityField>();

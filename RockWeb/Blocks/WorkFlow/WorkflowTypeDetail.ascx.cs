@@ -795,13 +795,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             workflowActionType.WorkflowForm = new WorkflowActionForm();
                         }
 
-                        workflowActionType.WorkflowForm.NotificationSystemCommunicationId = editorWorkflowActionType.WorkflowForm.NotificationSystemCommunicationId;
-                        workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
-                        workflowActionType.WorkflowForm.AllowNotes = editorWorkflowActionType.WorkflowForm.AllowNotes;
-                        workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
-                        workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
-                        workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
-                        workflowActionType.WorkflowForm.ActionAttributeGuid = editorWorkflowActionType.WorkflowForm.ActionAttributeGuid;
+                        WorkflowFormEditor.CopyEditableProperties( editorWorkflowActionType.WorkflowForm, workflowActionType.WorkflowForm );
 
                         var editorGuids = editorWorkflowActionType.WorkflowForm.FormAttributes
                             .Select( a => a.Attribute.Guid )

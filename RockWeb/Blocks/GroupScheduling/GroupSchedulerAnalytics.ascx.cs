@@ -158,8 +158,6 @@ namespace RockWeb.Blocks.GroupScheduling
 
         protected string DoughnutChartDeclineValuesJSON { get; set; }
 
-        private List<string> _errorMessages;
-
         #endregion Properties
 
         #region Overrides
@@ -364,7 +362,6 @@ var barChart = new Chart(barCtx, {{
         /// </summary>
         private void LoadFilterFromUserPreferencesOrURL()
         {
-
             sdrpDateRange.DelimitedValues = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedDateRange );
             hfTabs.Value = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedViewBy );
             gpGroups.GroupId = this.GetUrlSettingOrBlockUserPreference( UserPreferenceKey.SelectedGroupId ).AsIntegerOrNull();
@@ -383,8 +380,6 @@ var barChart = new Chart(barCtx, {{
             }
 
             ppPerson.SetValue( selectedPerson );
-
-            
         }
 
         /// <summary>
@@ -461,7 +456,8 @@ var barChart = new Chart(barCtx, {{
                         break;
                     case "dataview":
                         var dataView = new DataViewService( rockContext ).Get( dvDataViews.SelectedValueAsInt().Value );
-                        var personsFromDv = dataView.GetQuery( null, rockContext, null, out _errorMessages ) as IQueryable<Person>;
+                        var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                        var personsFromDv = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                         var personAliasIds = personsFromDv.Select( d => d.Aliases.Where( a => a.AliasPersonId == d.Id ).Select( a => a.Id ).FirstOrDefault() ).ToList();
 
                         groupAttendances = groupAttendances.Where( a => personAliasIds.Contains( a.PersonAliasId.Value ) );
@@ -544,7 +540,7 @@ var barChart = new Chart(barCtx, {{
 
                 var groupSchedules = groupLocations.SelectMany( a => a.Schedules ).DistinctBy( a => a.Guid ).ToList();
 
-                List<Schedule> sortedScheduleList = groupSchedules.OrderByNextScheduledDateTime();
+                List<Schedule> sortedScheduleList = groupSchedules.OrderByOrderAndNextScheduledDateTime();
 
                 cblSchedules.Visible = sortedScheduleList.Any();
 
@@ -573,20 +569,29 @@ var barChart = new Chart(barCtx, {{
                 return;
             }
 
-            DateTime firstDateTime;
-            DateTime lastDateTime;
+            DateRange dateRange;
 
             if ( sdrpDateRange.DelimitedValues.IsNotNullOrWhiteSpace() )
             {
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
-                firstDateTime = dateRange.Start.Value.Date;
-                lastDateTime = dateRange.End.Value.Date;
+                dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
             }
             else
             {
-                firstDateTime = attendances.Min( a => a.StartDateTime.Date );
-                lastDateTime = attendances.Max( a => a.StartDateTime.Date );
+                dateRange = new DateRange();
             }
+
+            if ( !dateRange.Start.HasValue )
+            {
+                dateRange.Start = attendances.Min( a => a.StartDateTime.Date );
+            }
+
+            if ( !dateRange.End.HasValue )
+            {
+                dateRange.End = attendances.Max( a => a.StartDateTime.Date );
+            }
+
+            var firstDateTime = dateRange.Start.Value.Date;
+            var lastDateTime = dateRange.End.Value.Date;
 
             int daysCount = ( int ) Math.Ceiling( ( lastDateTime - firstDateTime ).TotalDays );
 
@@ -792,10 +797,13 @@ var barChart = new Chart(barCtx, {{
                         {
                             nbGroupWarning.Visible = true;
                         }
+
                         return false;
                     }
+
                 case "person":
                     return ppPerson.PersonAliasId != null ? true : !( nbPersonWarning.Visible = true );
+
                 case "dataview":
                     return ( dvDataViews.SelectedValue != null && dvDataViews.SelectedValue != "0" ) ? true : !( nbDataviewWarning.Visible = true );
             }
@@ -859,7 +867,7 @@ var barChart = new Chart(barCtx, {{
                 }
             }
 
-            if (gData.SortProperty != null)
+            if ( gData.SortProperty != null )
             {
                 schedulerSummaryDataList = schedulerSummaryDataList.AsQueryable().Sort( gData.SortProperty ).ToList();
             }
@@ -981,6 +989,7 @@ var barChart = new Chart(barCtx, {{
             public DateTime StartDateTime { get; private set; }
 
             public int ScheduledCount { get; private set; }
+
             public string ScheduledCountText
             {
                 get
@@ -990,6 +999,7 @@ var barChart = new Chart(barCtx, {{
             }
 
             public int NoResponseCount { get; private set; }
+
             public string NoResponseCountText
             {
                 get
@@ -999,6 +1009,7 @@ var barChart = new Chart(barCtx, {{
             }
 
             public int DeclineCount { get; private set; }
+
             public string DeclineCountText
             {
                 get
@@ -1008,6 +1019,7 @@ var barChart = new Chart(barCtx, {{
             }
 
             public int AttendedCount { get; private set; }
+
             public string AttendedCountText
             {
                 get
@@ -1017,6 +1029,7 @@ var barChart = new Chart(barCtx, {{
             }
 
             public int CommittedNoShowCount { get; private set; }
+
             public string CommittedNoShowCountText
             {
                 get

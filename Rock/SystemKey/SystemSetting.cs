@@ -157,6 +157,11 @@ namespace Rock.SystemKey
         public const string COMMUNICATION_SETTING_APPROVAL_TEMPLATE = "core_CommunicationSettingApprovalTemplate";
 
         /// <summary>
+        /// Enable Cache Manager statistics and performance counters.
+        /// </summary>
+        public const string CACHE_MANAGER_ENABLE_STATISTICS = "CacheManagerEnableStatistics";
+
+        /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
         [Obsolete( "This functionality is no longer used." )]
@@ -176,5 +181,40 @@ namespace Rock.SystemKey
         [Obsolete( "This functionality is no longer used." )]
         [RockObsolete( "1.9" )]
         public const string DO_NOT_DISTURB_ACTIVE = "core_DoNotDisturbActive";
+
+        /// <summary>
+        /// The open id connect RSA keys
+        /// </summary>
+        public const string OPEN_ID_CONNECT_RSA_KEYS = "OpenIdConnectRsaKeys";
+
+        /// <summary>
+        /// The open identifier connect settings
+        /// </summary>
+        public const string OPEN_ID_CONNECT_SETTINGS = "OpenIdConnectSettings";
+
+        /// <summary>
+        /// The webfarm is enabled
+        /// </summary>
+        public const string WEBFARM_IS_ENABLED = "WEBFARM_IS_ENABLED";
+
+        /// <summary>
+        /// The webfarm key
+        /// </summary>
+        public const string WEBFARM_KEY = "WEBFARM_KEY";
+
+        /// <summary>
+        /// The webfarm leadership polling interval lower limit seconds
+        /// </summary>
+        public const string WEBFARM_LEADERSHIP_POLLING_INTERVAL_LOWER_LIMIT_SECONDS = "WEBFARM_LEADERSHIP_POLLING_INTERVAL_LOWER_LIMIT_SECONDS";
+
+        /// <summary>
+        /// The webfarm leadership polling interval upper limit seconds
+        /// </summary>
+        public const string WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS = "WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS";
+
+        /// <summary>
+        /// The RockCleanup Last Run DateTime
+        /// </summary>
+        public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
     }
 }

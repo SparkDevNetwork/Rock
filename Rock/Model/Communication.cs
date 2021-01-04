@@ -554,7 +554,7 @@ namespace Rock.Model
         /// The send source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate SendSourceDate { get; set; }
+        public virtual AnalyticsSourceDate SendSourceDate { get; set; }
         #endregion
 
         #region ISecured
@@ -678,9 +678,8 @@ namespace Rock.Model
                 var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
                 foreach ( var segmentDataView in segmentDataViewList )
                 {
-                    List<string> errorMessages;
 
-                    var exp = segmentDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    var exp = segmentDataView.GetExpression( personService, paramExpression );
                     if ( exp != null )
                     {
                         if ( segmentExpression == null )
@@ -870,6 +869,23 @@ namespace Rock.Model
             }
 
             return emailMediumEntityTypeId;
+        }
+
+        /// <summary>
+        /// Determines the medium entity type identifier.
+        /// Given the email and sms medium entity type ids and the available communication preferences
+        /// this method will determine which medium entity type id should be used and return that id.
+        /// If a preference could not be determined the email medium entity type id will be returned.
+        /// </summary>
+        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
+        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="recipientPreference">The recipient preference.</param>
+        /// <returns></returns>
+        [Obsolete("Use the override that includes 'pushMediumEntityTypeId' instead.")]
+        [RockObsolete("1.11")]
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        {
+            return DetermineMediumEntityTypeId( emailMediumEntityTypeId, smsMediumEntityTypeId, 0, recipientPreference );
         }
 
         /// <summary>

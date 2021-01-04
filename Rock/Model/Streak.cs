@@ -23,6 +23,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -167,20 +168,6 @@ namespace Rock.Model
         {
             get => !InactiveDateTime.HasValue;
         }
-
-        /// <summary>
-        /// Gets or sets the streak achievement attempts.
-        /// </summary>
-        /// <value>
-        /// The streak type achievement types.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<StreakAchievementAttempt> StreakAchievementAttempts
-        {
-            get => _streakAchievementAttempts ?? ( _streakAchievementAttempts = new Collection<StreakAchievementAttempt>() );
-            set => _streakAchievementAttempts = value;
-        }
-        private ICollection<StreakAchievementAttempt> _streakAchievementAttempts;
 
         #endregion Virtual Properties
 

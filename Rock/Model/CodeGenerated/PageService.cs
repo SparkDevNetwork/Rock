@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.ConnectionRequestDetailPageId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, ConnectionType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
@@ -142,6 +148,7 @@ namespace Rock.Model
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
@@ -160,7 +167,6 @@ namespace Rock.Model
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;
             target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
             target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             target.PageDisplayDescription = source.PageDisplayDescription;
             target.PageDisplayIcon = source.PageDisplayIcon;

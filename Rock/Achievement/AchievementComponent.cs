@@ -29,6 +29,31 @@ namespace Rock.Achievement
     public abstract class AchievementComponent : Rock.Extension.Component
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="AchievementComponent"/> class.
+        /// </summary>
+        /// <param name="supportedConfiguration">The supported configuration.</param>
+        /// <param name="attributeKeysStoredInConfig">The attribute keys stored in configuration.</param>
+        public AchievementComponent( AchievementConfiguration supportedConfiguration, HashSet<string> attributeKeysStoredInConfig )
+        {
+            SupportedConfiguration = supportedConfiguration;
+            AttributeKeysStoredInConfig = attributeKeysStoredInConfig;
+        }
+
+        /// <summary>
+        /// Gets the supported configuration.
+        /// </summary>
+        public readonly AchievementConfiguration SupportedConfiguration;
+
+        /// <summary>
+        /// Gets the attribute keys stored in configuration.
+        /// <see cref="AchievementType.ComponentConfigJson"/>
+        /// </summary>
+        /// <value>
+        /// The attribute keys stored in configuration.
+        /// </value>
+        public readonly HashSet<string> AttributeKeysStoredInConfig;
+
+        /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
         /// <value>
@@ -74,51 +99,155 @@ namespace Rock.Achievement
         }
 
         /// <summary>
-        /// Loads the attributes for the <see cref="StreakTypeAchievementType" />.
+        /// Loads the attributes for the <see cref="AchievementType" />.
         /// </summary>
-        /// <param name="streakTypeAchievementType"></param>
-        public void LoadAttributes( StreakTypeAchievementType streakTypeAchievementType )
+        /// <param name="achievementType"></param>
+        public void LoadAttributes( AchievementType achievementType )
         {
-            if ( streakTypeAchievementType is null )
+            if ( achievementType is null )
             {
-                throw new ArgumentNullException( nameof( streakTypeAchievementType ) );
+                throw new ArgumentNullException( nameof( achievementType ) );
             }
 
-            streakTypeAchievementType.LoadAttributes();
+            achievementType.LoadAttributes();
         }
 
         /// <summary>
-        /// Gets the value of an attribute key. Do not use this method. Use <see cref="GetAttributeValue(StreakTypeAchievementTypeCache, string)" />
+        /// Gets the value of an attribute key. Do not use this method. Use <see cref="GetAttributeValue(AchievementTypeCache, string)" />
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public override string GetAttributeValue( string key )
         {
-            throw new Exception( "Use the GetAttributeValue( streakTypeAchievementTypeCache, key ) method instead." );
+            throw new Exception( "Use the GetAttributeValue( AchievementTypeCache, key ) method instead." );
+        }
+
+        /// <summary>
+        /// Gets the badge merge fields primarily intended for <see cref="AchievementType.BadgeLavaTemplate"/>.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public virtual Dictionary<string, object> GetBadgeMergeFields( AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            var rockContext = new RockContext();
+            var mergeFields = new Dictionary<string, object>
+            {
+                {  "AchievementType", achievementTypeCache }
+            };
+
+            var achievementTypeService = new AchievementTypeService( rockContext );
+            mergeFields["ProgressStatement"] = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
+
+            var entityTypeService = new EntityTypeService( rockContext );
+            mergeFields["Achiever"] = entityTypeService.GetEntity( achievementTypeCache.AchieverEntityTypeId, achieverEntityId );
+
+            if ( achievementTypeCache.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id )
+            {
+                mergeFields["Person"] = ( mergeFields["Achiever"] as PersonAlias )?.Person;
+            }
+            else if ( achievementTypeCache.AchieverEntityTypeId == EntityTypeCache.Get<Person>().Id )
+            {
+                mergeFields["Person"] = mergeFields["Achiever"] as Person;
+            }
+            else
+            {
+                mergeFields["Person"] = null;
+            }
+
+            return mergeFields;
+        }
+
+        /// <summary>
+        /// Gets the badge markup for this achiever for this achievement.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public virtual string GetBadgeMarkup( AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            if ( !achievementTypeCache.BadgeLavaTemplate.IsNullOrWhiteSpace() )
+            {
+                var mergeFields = GetBadgeMergeFields( achievementTypeCache, achieverEntityId );
+                return achievementTypeCache.BadgeLavaTemplate.ResolveMergeFields( mergeFields );
+            }
+
+            var rockContext = new RockContext();
+            var achievementTypeService = new AchievementTypeService( rockContext );
+            var progressStatement = achievementTypeService.GetProgressStatement( achievementTypeCache, achieverEntityId );
+
+            if ( progressStatement.SuccessCount < 1 )
+            {
+                return string.Empty;
+            }
+
+            var iconClass = achievementTypeCache.AchievementIconCssClass.IsNullOrWhiteSpace() ?
+                "fa fa-medal" :
+                achievementTypeCache.AchievementIconCssClass;
+            var successCountMarkup = string.Empty;
+
+            if ( progressStatement.SuccessCount > 1 )
+            {
+                successCountMarkup =
+$@"<span class=""badge-count"">
+    {progressStatement.SuccessCount}
+</span>";
+            }
+
+            return
+$@"<div style=""color: #16c98d"">
+    <i class=""badge-icon {iconClass}""></i>
+    {successCountMarkup}
+</div>";
         }
 
         /// <summary>
         /// Gets the attribute value for the achievement
         /// </summary>
-        /// <param name="streakTypeAchievementTypeCache"></param>
+        /// <param name="achievementTypeCache"></param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        protected string GetAttributeValue( StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, string key )
+        protected string GetAttributeValue( AchievementTypeCache achievementTypeCache, string key )
         {
-            if ( streakTypeAchievementTypeCache is null )
+            if ( achievementTypeCache is null )
             {
-                throw new ArgumentNullException( nameof( streakTypeAchievementTypeCache ) );
+                throw new ArgumentNullException( nameof( achievementTypeCache ) );
             }
 
-            return streakTypeAchievementTypeCache.GetAttributeValue( key );
+            if ( AttributeKeysStoredInConfig.Contains( key ) )
+            {
+                return achievementTypeCache.GetComponentConfigValue( key );
+            }
+
+            return achievementTypeCache.GetAttributeValue( key );
         }
+
+        /// <summary>
+        /// Convert attribute values to a dictionary configuration. This will be serialized and stored on the model.
+        /// <see cref="AchievementType.ComponentConfigJson" />
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <returns></returns>
+        public virtual Dictionary<string, string> GenerateConfigFromAttributeValues( AchievementTypeCache achievementTypeCache )
+        {
+            var dictionary = new Dictionary<string, string>();
+
+            foreach ( var key in AttributeKeysStoredInConfig )
+            {
+                dictionary[key] = achievementTypeCache.GetAttributeValue( key );
+            }
+
+            return dictionary;
+        }
+
+        #region Attempt Calculation Helpers
 
         /// <summary>
         /// Copies the source attempt properties to the target.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="target">The target.</param>
-        protected void CopyAttempt( StreakAchievementAttempt source, StreakAchievementAttempt target )
+        protected void CopyAttempt( AchievementAttempt source, AchievementAttempt target )
         {
             target.Progress = source.Progress;
             target.IsClosed = source.IsClosed;
@@ -130,16 +259,13 @@ namespace Rock.Achievement
         /// <summary>
         /// Calculates the minimum date for the next achievement attempt.
         /// </summary>
-        /// <param name="enrollmentDate">The streak type start date.</param>
+        /// <param name="minDate">The date to begin looking for the next attempt allowed date. Use <see cref="DateTime.MinValue"/> as a default.</param>
         /// <param name="mostRecentClosedAttempt">The most recent closed attempt.</param>
         /// <param name="achievementTypeStartDate">The achievement type start date.</param>
         /// <param name="targetCount">How many engagements are required to be successful</param>
         /// <returns></returns>
-        protected DateTime CalculateMinDateForAchievementAttempt( DateTime enrollmentDate, StreakAchievementAttempt mostRecentClosedAttempt, DateTime? achievementTypeStartDate, int targetCount )
+        protected DateTime CalculateMinDateForAchievementAttempt( DateTime minDate, AchievementAttempt mostRecentClosedAttempt, DateTime? achievementTypeStartDate, int targetCount )
         {
-            // Use the enrollment date as a starting point for the calculation
-            var minDate = enrollmentDate;
-
             // If the achievement start date is later, then use that
             if ( achievementTypeStartDate.HasValue && achievementTypeStartDate.Value > minDate )
             {
@@ -214,7 +340,7 @@ namespace Rock.Achievement
         /// <param name="attempt">The attempt.</param>
         /// <param name="targetCount">The target count.</param>
         /// <returns></returns>
-        protected static int CalculateDeficiency( StreakAchievementAttempt attempt, int targetCount )
+        protected static int CalculateDeficiency( AchievementAttempt attempt, int targetCount )
         {
             var progress = attempt?.Progress ?? 0m;
 
@@ -231,144 +357,64 @@ namespace Rock.Achievement
             return targetCount - attemptCount;
         }
 
+        #endregion Attempt Calculation Helpers
+
+        #region Abstract Methods
+
         /// <summary>
-        /// Processes the specified streak type achievement type cache.
+        /// Gets the name of the source that these achievements are measured from.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <returns></returns>
+        public abstract string GetSourceName( AchievementTypeCache achievementTypeCache );
+
+        /// <summary>
+        /// Processes the specified achievement type cache for the source entity.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="streakTypeAchievementTypeCache">The streak type achievement type cache.</param>
-        /// <param name="streak">The streak.</param>
-        public virtual void Process( RockContext rockContext, StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, Streak streak )
-        {
-            // If the achievement type is not active (or null) then there is nothing to do
-            if ( streakTypeAchievementTypeCache?.IsActive != true )
-            {
-                return;
-            }
-
-            // Determine the person id
-            var personAliasService = new PersonAliasService( rockContext );
-            var personId = personAliasService.GetPersonId( streak.PersonAliasId );
-
-            if ( !personId.HasValue )
-            {
-                ExceptionLogService.LogException(
-                    $"Could not derive personId from personAliasId {streak.PersonAliasId} used on streak {streak.Id} when processing achievement {streakTypeAchievementTypeCache.Name}" );
-                return;
-            }
-
-            // If there are unmet prerequisites, then there is nothing to do
-            var streakTypeAchievementTypeService = new StreakTypeAchievementTypeService( rockContext );
-            var unmetPrerequisites = streakTypeAchievementTypeService.GetUnmetPrerequisites( streakTypeAchievementTypeCache.Id, personId.Value );
-
-            if ( unmetPrerequisites.Any() )
-            {
-                return;
-            }
-
-            // Get all of the attempts for this streak and achievement combo, ordered by start date DESC so that
-            // the most recent attempts can be found with FirstOrDefault
-            var streakAchievementAttemptService = new StreakAchievementAttemptService( rockContext );
-            var attempts = streakAchievementAttemptService.Queryable()
-                .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
-                .Where( saa =>
-                    saa.StreakTypeAchievementTypeId == streakTypeAchievementTypeCache.Id &&
-                    saa.StreakId == streak.Id )
-                .ToList();
-
-            var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
-            var overachievementPossible = streakTypeAchievementTypeCache.AllowOverAchievement && mostRecentSuccess != null && !mostRecentSuccess.IsClosed;
-            var successfulAttemptCount = attempts.Count( saa => saa.IsSuccessful );
-            var maxSuccessesAllowed = streakTypeAchievementTypeCache.MaxAccomplishmentsAllowed ?? int.MaxValue;
-
-            // If the most recent success is still open and overachievement is allowed, then update it
-            if ( overachievementPossible )
-            {
-                UpdateOpenAttempt( mostRecentSuccess, streakTypeAchievementTypeCache, streak );
-
-                if ( !mostRecentSuccess.IsClosed )
-                {
-                    // New records can only be created once the open records are all closed
-                    return;
-                }
-            }
-
-            // If the success count limit has been reached, then no more processing should be done
-            if ( successfulAttemptCount >= maxSuccessesAllowed )
-            {
-                return;
-            }
-
-            // Everything after the most recent success is on the table for deletion. Successes should not be
-            // deleted. Everything after a success might be recalculated because of streak map data changes.
-            // Try to reuse these attempts if they match for continuity, but if the start date is changed, they
-            // get deleted.
-            var attemptsToDelete = attempts;
-
-            if ( mostRecentSuccess != null )
-            {
-                attemptsToDelete = attemptsToDelete
-                    .Where( saa => saa.AchievementAttemptStartDateTime > mostRecentSuccess.AchievementAttemptStartDateTime )
-                    .ToList();
-            }
-
-            var newAttempts = CreateNewAttempts( streakTypeAchievementTypeCache, streak, mostRecentSuccess );
-
-            if ( newAttempts != null && newAttempts.Any() )
-            {
-                newAttempts = newAttempts.OrderBy( saa => saa.AchievementAttemptStartDateTime ).ToList();
-
-                foreach ( var newAttempt in newAttempts )
-                {
-                    // Keep the old attempt if possible, otherwise add a new one
-                    var existingAttempt = attemptsToDelete.FirstOrDefault( saa => saa.AchievementAttemptStartDateTime == newAttempt.AchievementAttemptStartDateTime );
-
-                    if ( existingAttempt != null )
-                    {
-                        attemptsToDelete.Remove( existingAttempt );
-                        CopyAttempt( newAttempt, existingAttempt );
-                    }
-                    else
-                    {
-                        newAttempt.StreakId = streak.Id;
-                        newAttempt.StreakTypeAchievementTypeId = streakTypeAchievementTypeCache.Id;
-                        streakAchievementAttemptService.Add( newAttempt );
-                    }
-
-                    // If this attempt was successful then make re-check the max success limit
-                    if ( newAttempt.IsSuccessful )
-                    {
-                        successfulAttemptCount++;
-
-                        if ( successfulAttemptCount >= maxSuccessesAllowed )
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if ( attemptsToDelete.Any() )
-            {
-                streakAchievementAttemptService.DeleteRange( attemptsToDelete );
-            }
-        }
+        /// <param name="achievementTypeCache">The streak type achievement type cache.</param>
+        /// <param name="sourceEntity">The source entity.</param>
+        /// <returns>The set of attempts that were created or updated</returns>
+        public abstract HashSet<AchievementAttempt> Process( RockContext rockContext, AchievementTypeCache achievementTypeCache, IEntity sourceEntity );
 
         /// <summary>
-        /// Update the open attempt record if there are changes. Be sure to close the attempt if it is no longer possible to make
-        /// progress on this open attempt.
+        /// Should the achievement type process attempts if the given source entity has been modified in some way.
         /// </summary>
-        /// <param name="openAttempt">The open attempt.</param>
-        /// <param name="streakTypeAchievementTypeCache">The streak type achievement type cache.</param>
-        /// <param name="streak">The streak.</param>
-        protected abstract void UpdateOpenAttempt( StreakAchievementAttempt openAttempt, StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, Streak streak );
-
-        /// <summary>
-        /// Create new attempt records and return them in a list. All new attempts should be after the most recent successful attempt.
-        /// </summary>
-        /// <param name="streakTypeAchievementTypeCache">The streak type achievement type cache.</param>
-        /// <param name="streak">The streak.</param>
-        /// <param name="mostRecentSuccess">The most recent successful attempt.</param>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="sourceEntity">The source entity.</param>
         /// <returns></returns>
-        protected abstract List<StreakAchievementAttempt> CreateNewAttempts( StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, Streak streak, StreakAchievementAttempt mostRecentSuccess );
+        public abstract bool ShouldProcess( AchievementTypeCache achievementTypeCache, IEntity sourceEntity );
+
+        /// <summary>
+        /// Gets the source entities query. This is the set of source entities that should be passed to the process method
+        /// when processing this achievement type.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public abstract IQueryable<IEntity> GetSourceEntitiesQuery( AchievementTypeCache achievementTypeCache, RockContext rockContext );
+
+        /// <summary>
+        /// Gets the achiever attempt query. This is the query (not enumerated) that joins attempts of this achievement type with the
+        /// achiever entities, as well as the name (<see cref="AchieverAttemptItem.AchieverName"/> that could represent the achiever
+        /// in a grid or other such display.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public abstract IQueryable<AchieverAttemptItem> GetAchieverAttemptQuery( AchievementTypeCache achievementTypeCache, RockContext rockContext );
+
+        /// <summary>
+        /// Determines whether this achievement type applies given the set of filters. The filters could be the query string
+        /// of a web request.
+        /// </summary>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="filters">The filters.</param>
+        /// <returns>
+        ///   <c>true</c> if [is relevant to all filters] [the specified filters]; otherwise, <c>false</c>.
+        /// </returns>
+        public abstract bool IsRelevantToAllFilters( AchievementTypeCache achievementTypeCache, List<KeyValuePair<string, string>> filters );
+
+        #endregion Abstract Methods
     }
 }

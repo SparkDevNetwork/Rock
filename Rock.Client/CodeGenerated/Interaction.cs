@@ -77,9 +77,6 @@ namespace Rock.Client
         public int? InteractionSessionId { get; set; }
 
         /// <summary />
-        public AnalyticsSourceDate InteractionSourceDate { get; set; }
-
-        /// <summary />
         public string InteractionSummary { get; set; }
 
         /// <summary />
@@ -161,7 +158,6 @@ namespace Rock.Client
             this.InteractionEndDateTime = source.InteractionEndDateTime;
             this.InteractionLength = source.InteractionLength;
             this.InteractionSessionId = source.InteractionSessionId;
-            this.InteractionSourceDate = source.InteractionSourceDate;
             this.InteractionSummary = source.InteractionSummary;
             this.InteractionTimeToServe = source.InteractionTimeToServe;
             this.Medium = source.Medium;
@@ -196,6 +192,9 @@ namespace Rock.Client
 
         /// <summary />
         public InteractionSession InteractionSession { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate InteractionSourceDate { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

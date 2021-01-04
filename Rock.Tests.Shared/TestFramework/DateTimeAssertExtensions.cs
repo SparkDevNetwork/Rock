@@ -57,5 +57,32 @@ namespace Rock.Tests.Shared
                                                 totalSecondsDifference ) );
             }
         }
+
+        /// <summary>
+        /// Asserts that the two DateTime objects can be considered equivalent because they occur on the same date, regardless of the time of day.
+        /// </summary>
+        /// <param name="expectedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        public static void AreEqualDate( this Assert assert, DateTime? expectedDate, DateTime? actualDate, string message = null )
+        {
+            if ( expectedDate == null
+                 && actualDate == null )
+            {
+                return;
+            }
+            else if ( expectedDate == null )
+            {
+                throw new NullReferenceException( message ?? "The expected date was null" );
+            }
+            else if ( actualDate == null )
+            {
+                throw new NullReferenceException( message ?? "The actual date was null" );
+            }
+
+            if ( expectedDate.Value.Date != actualDate.Value.Date )
+            {
+                throw new Exception( message ?? string.Format( "\nExpected Date: {0}\nActual Date: {1}\n", expectedDate, actualDate ) );
+            }
+        }
     }
 }

@@ -463,33 +463,34 @@ namespace Rock.Field.Types
         public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
             List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-            if ( selectedValues.Any() )
+            if ( !selectedValues.Any() )
             {
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
-
-                object constantValue;
-                if ( propertyType.IsEnum )
-                {
-                    constantValue = Enum.Parse( propertyType, selectedValues[0] );
-                }
-                else
-                {
-                    constantValue = selectedValues[0] as string;
-                }
-
-                ConstantExpression constantExpression = Expression.Constant( constantValue );
-                Expression comparison = Expression.Equal( propertyExpression, constantExpression );
-
-                foreach ( string selectedValue in selectedValues.Skip( 1 ) )
-                {
-                    constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
-                    comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
-                }
-
-                return comparison;
+                // if none of the values are selected, don't filter the results
+                return Expression.Constant( true );
             }
 
-            return null;
+            MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+            object constantValue;
+            if ( propertyType.IsEnum )
+            {
+                constantValue = Enum.Parse( propertyType, selectedValues[0] );
+            }
+            else
+            {
+                constantValue = selectedValues[0] as string;
+            }
+
+            ConstantExpression constantExpression = Expression.Constant( constantValue );
+            Expression comparison = Expression.Equal( propertyExpression, constantExpression );
+
+            foreach ( string selectedValue in selectedValues.Skip( 1 ) )
+            {
+                constantExpression = Expression.Constant( Enum.Parse( propertyType, selectedValue ) );
+                comparison = Expression.Or( comparison, Expression.Equal( propertyExpression, constantExpression ) );
+            }
+
+            return comparison;
         }
 
         /// <summary>

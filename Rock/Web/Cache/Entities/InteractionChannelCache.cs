@@ -363,7 +363,24 @@ namespace Rock.Web.Cache
         /// <param name="channelName">Name of the channel.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetChannelIdByForeignKey</exception>
-        public static int GetChannelIdByForeignKey( string foreignKey, string channelName )
+        [Obsolete( "Use GetCreateChannelIdByForeignKey instead." )]
+        [RockObsolete("1.11")]
+        public static int GetChannelIdByForeignKey( string foreignKey, string channelName)
+        {
+            return GetCreateChannelIdByForeignKey( foreignKey, channelName, null );
+        }
+
+        /// <summary>
+        /// Gets the channel identifier by ForeignKey, and creates it if it doesn't exist.
+        /// If foreignKey is blank, this will throw a <seealso cref="ArgumentNullException" />
+        /// </summary>
+        /// <param name="foreignKey">The foreign key.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        /// <param name="channelTypeMediumValueId">The channel type medium value identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">ForeignKey must be specified when using GetChannelIdByForeignKey</exception>
+        /// <exception cref="ArgumentNullException">ForeignKey must be specified when using GetChannelIdByForeignKey</exception>
+        public static int GetCreateChannelIdByForeignKey( string foreignKey, string channelName, int? channelTypeMediumValueId )
         {
             if ( foreignKey.IsNullOrWhiteSpace() )
             {
@@ -386,6 +403,7 @@ namespace Rock.Web.Cache
                     interactionChannel = new InteractionChannel();
                     interactionChannel.Name = channelName;
                     interactionChannel.ForeignKey = foreignKey;
+                    interactionChannel.ChannelTypeMediumValueId = channelTypeMediumValueId;
                     interactionChannelService.Add( interactionChannel );
                     rockContext.SaveChanges();
                 }

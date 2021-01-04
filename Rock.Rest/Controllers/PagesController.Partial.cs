@@ -87,5 +87,18 @@ namespace Rock.Rest.Controllers
 
             return pageItemList.AsQueryable();
         }
+
+        /// <summary>
+        /// Gets the children.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="hidePageIds">The hide page ids.</param>
+        /// <returns></returns>
+        [RockObsolete("1.11")]
+        [Authenticate, Secured]
+        public IQueryable<TreeViewItem> GetChildren( int id, string hidePageIds = null )
+        {
+            return GetChildren( id, hidePageIds, null );
+        }
     }
 }

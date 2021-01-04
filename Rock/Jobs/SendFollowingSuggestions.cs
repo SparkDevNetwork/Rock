@@ -293,8 +293,6 @@ namespace Rock.Jobs
                             .Distinct()
                             .ToList();
 
-                        var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot", rockContext );
-
                         foreach ( var person in new PersonService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( p => suggestionPersonIds.Contains( p.Id ) )

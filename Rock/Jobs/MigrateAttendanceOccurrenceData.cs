@@ -29,7 +29,7 @@ namespace Rock.Jobs
     /// This job migrates data from attendance records into attendance occurance records.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
-    [DisplayName( "Migrate Attendance Occurrence Data" )]
+    [DisplayName( "Rock Update Helper v8.0 - Migrate Attendance Occurrence Data" )]
     [Description( "This job migrates data from attendance records into attendance occurance records." )]
 
     [DisallowConcurrentExecution]

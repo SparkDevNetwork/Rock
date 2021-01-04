@@ -82,24 +82,40 @@ namespace Rock.Lava.Blocks
 
                 var parms = ParseMarkup( _markup, context );
 
-                if ( parms["statement"] == "select" )
+                var sqlTimeout = ( int? ) null;
+                if ( parms.ContainsKey( "timeout" ) )
                 {
-                    var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), null );
-
-                    context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
+                    sqlTimeout = parms["timeout"].AsIntegerOrNull();
                 }
-                else if (parms["statement"] == "command" )
+                
+                switch ( parms["statement"] )
                 {
-                    var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
+                    case "select":
+                        var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
 
-                    foreach ( var p in parms )
-                    {
-                        sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
-                    }
+                        context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
+                        break;
+                    case "command":
+                        var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
 
-                    int numOfRowEffected = new RockContext().Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+                        foreach ( var p in parms )
+                        {
+                            sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
+                        }
 
-                    context.Scopes.Last()[parms["return"]] = numOfRowEffected;
+                        using ( var rockContext = new RockContext() )
+                        {
+                            if ( sqlTimeout != null )
+                            {
+                                rockContext.Database.CommandTimeout = sqlTimeout;
+                            }
+                            int numOfRowEffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+
+                            context.Scopes.Last()[parms["return"]] = numOfRowEffected;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -136,7 +152,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
-
+            
             var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )

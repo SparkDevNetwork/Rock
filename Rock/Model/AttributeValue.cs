@@ -778,14 +778,20 @@ namespace Rock.Model
             {
             var rockContext = new RockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
+            var attributeService = new AttributeService(rockContext);
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
                 am.AttributeMatrixItems.Any( ami => ami.Id == EntityId )
             ).Select( am => am.Guid.ToString() );
 
+            var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
+            var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
+                a.FieldTypeId == matrixFieldType.Id
+            ).Select( a => a.Id );
+
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                matrixGuidQuery.Contains( av.Value )
+                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value )
             );
 
             return attributeValue;

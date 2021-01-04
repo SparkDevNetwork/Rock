@@ -34,12 +34,45 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Attendance List" )]
     [Category( "Groups" )]
     [Description( "Lists all the scheduled occurrences for a given group." )]
-    [LinkedPage( "Detail Page", "", true, "", "", 0 )]
-    [BooleanField( "Allow Add", "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?", true, "", 1 )]
-    [BooleanField( "Allow Campus Filter", "Should block add an option to allow filtering attendance counts and percentage by campus?", false, "", 2 )]
-    [BooleanField( "Display Notes", "Should the Notes column be displayed?", true, "", 3 )]
+
+    [LinkedPage( "Detail Page",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.DetailPage )]
+    [BooleanField( "Allow Add",
+        Description = "Should block support adding new attendance dates outside of the group's configured schedule and group type's exclusion dates?",
+        DefaultBooleanValue = true,
+        Order = 1,
+        Key = AttributeKey.AllowAdd )]
+    [BooleanField( "Allow Campus Filter",
+        Description = "Should block add an option to allow filtering attendance counts and percentage by campus?",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = AttributeKey.AllowCampusFilter )]
+    [BooleanField( "Display Notes",
+        Description = "Should the Notes column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 3,
+        Key = AttributeKey.DisplayNotes)]
+    [BooleanField( "Display Attendance Type",
+        Description = "Should the Attendance Type column be displayed?",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.DisplayAttendanceType )]
     public partial class GroupAttendanceList : RockBlock, ICustomGridColumns
     {
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string AllowAdd = "AllowAdd";
+            public const string AllowCampusFilter = "AllowCampusFilter";
+            public const string DisplayNotes = "DisplayNotes";
+            public const string DisplayAttendanceType = "DisplayAttendanceType";
+        }
+
         #region Private Variables
 
         private RockContext _rockContext = null;
@@ -79,17 +112,23 @@ namespace RockWeb.Blocks.Groups
 
                 // make sure they have Auth to edit the block OR edit to the Group
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( "AllowAdd" ).AsBoolean();
+                gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( AttributeKey.AllowAdd ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
 
                 var notesColumn = gOccurrences.Columns.OfType<BoundField>().Where( a => a.DataField == "Notes" ).FirstOrDefault();
                 if ( notesColumn != null )
                 {
-                    notesColumn.Visible = GetAttributeValue( "DisplayNotes" ).AsBoolean();
+                    notesColumn.Visible = GetAttributeValue( AttributeKey.DisplayNotes ).AsBoolean();
+                }
+
+                var attendanceTypeColumn = gOccurrences.Columns.OfType<BoundField>().Where( a => a.DataField == "AttendanceTypeValueId" ).FirstOrDefault();
+                if ( attendanceTypeColumn != null )
+                {
+                    attendanceTypeColumn.Visible = GetAttributeValue( AttributeKey.DisplayAttendanceType ).AsBoolean();
                 }
             }
 
-            _allowCampusFilter = GetAttributeValue( "AllowCampusFilter" ).AsBoolean();
+            _allowCampusFilter = GetAttributeValue( AttributeKey.AllowCampusFilter ).AsBoolean();
             bddlCampus.Visible = _allowCampusFilter;
             if ( _allowCampusFilter )
             {
@@ -273,7 +312,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
         }
 
         /// <summary>
@@ -308,7 +347,7 @@ namespace RockWeb.Blocks.Groups
                 qryParams.Add( "GroupTypeIds", groupTypeIds );
             }
 
-            NavigateToLinkedPage( "DetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
         }
 
         /// <summary>
@@ -631,6 +670,7 @@ namespace RockWeb.Blocks.Groups
         public double AttendanceRate { get; set; }
         public bool CanDelete { get; set; }
         public string Notes { get; set; }
+        public int? AttendanceTypeValueId { get; set; }
 
         public AttendanceListOccurrence( AttendanceOccurrence occurrence )
         {
@@ -672,6 +712,7 @@ namespace RockWeb.Blocks.Groups
             DidAttendCount = occurrence.DidAttendCount;
             AttendanceRate = occurrence.AttendanceRate;
             Notes = occurrence.Notes;
+            AttendanceTypeValueId = occurrence.AttendanceTypeValueId;
         }
     }
 

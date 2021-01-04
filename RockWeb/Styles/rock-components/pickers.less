@@ -37,6 +37,7 @@
     max-width: ~"calc(100% - 25px)";
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
+    line-height: @line-height-computed;
     color: @input-color;
     background-color: @input-bg;
     border: 1px solid @input-border;
@@ -48,7 +49,7 @@
     i {
       float: left;
       margin-right: 6px;
-      line-height: @line-height-computed;
+      line-height: inherit;
       vertical-align: bottom;
     }
 
@@ -56,7 +57,7 @@
       float: left;
       width: ~"calc(100% - 42px)";
       overflow: hidden;
-      line-height: @line-height-computed;
+      line-height: inherit;
       text-overflow: ellipsis;
       white-space: nowrap;
     }

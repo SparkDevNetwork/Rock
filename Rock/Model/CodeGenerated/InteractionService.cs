@@ -102,7 +102,6 @@ namespace Rock.Model
             target.InteractionEndDateTime = source.InteractionEndDateTime;
             target.InteractionLength = source.InteractionLength;
             target.InteractionSessionId = source.InteractionSessionId;
-            target.InteractionSourceDate = source.InteractionSourceDate;
             target.InteractionSummary = source.InteractionSummary;
             target.InteractionTimeToServe = source.InteractionTimeToServe;
             target.Medium = source.Medium;

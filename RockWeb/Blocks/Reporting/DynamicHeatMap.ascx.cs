@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -142,7 +143,38 @@ namespace RockWeb.Blocks.Reporting
                 pnlPieSlicer.Visible = this.GetAttributeValue( "ShowPieSlicer" ).AsBoolean();
                 pnlSaveShape.Visible = this.GetAttributeValue( "ShowSaveLocation" ).AsBoolean();
 
-                ShowMap();
+                try
+                {
+                    ShowMap();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+
+                    if ( sqlTimeoutException != null )
+                    {
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
+                        nbErrorMessage.Text = "This query did not complete in a timely manner.";
+                    }
+                    else
+                    {
+                        if ( ex is RockDataViewFilterExpressionException )
+                        {
+                            RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
+                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( this.GetDataView() );
+                        }
+                        else
+                        {
+                            nbErrorMessage.Text = "There was a problem with one of the filters for this report's dataview.";
+                        }
+
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+
+                        nbErrorMessage.Details = ex.Message;
+                        nbErrorMessage.Visible = true;
+                    }
+                }
             }
             else if ( this.Request.Params["__EVENTTARGET"] == upSaveLocation.ClientID )
             {
@@ -253,13 +285,19 @@ namespace RockWeb.Blocks.Reporting
 
             lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
 
-            // add styling to map
-            string styleCode = "null";
-
             DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ).AsGuid() );
+            // add styling to map
             if ( dvcMapStyle != null )
             {
-                styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                this.StyleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                if ( this.StyleCode.IsNullOrWhiteSpace() )
+                {
+                    this.StyleCode = "[]";
+                }
+            }
+            else
+            {
+                this.StyleCode = "[]";
             }
 
             var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -311,40 +349,13 @@ namespace RockWeb.Blocks.Reporting
             var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
             int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
-            // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
-            int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
-            Guid? dataViewGuid = null;
-            if ( !dataViewId.HasValue )
-            {
-                dataViewGuid = this.GetAttributeValue( "DataView" ).AsGuidOrNull();
-            }
-
-            if ( ddlUserDataView.Visible )
-            {
-                dataViewGuid = ddlUserDataView.SelectedValue.AsGuidOrNull();
-            }
-
+            DataView dataView = GetDataView();
             IQueryable<int> qryPersonIds = null;
 
-            if ( dataViewId.HasValue || dataViewGuid.HasValue )
+            if ( dataView != null )
             {
-                DataView dataView = null;
-
-                // if a DataViewId page parameter was specified, use that, otherwise use the blocksetting or filter selection
-                if ( dataViewId.HasValue )
-                {
-                    dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
-                }
-                else
-                {
-                    dataView = new DataViewService( rockContext ).Get( dataViewGuid.Value );
-                }
-
-                if ( dataView != null )
-                {
-                    List<string> errorMessages;
-                    qryPersonIds = dataView.GetQuery( null, rockContext, null, out errorMessages ).OfType<Person>().Select( a => a.Id );
-                }
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs { DbContext = rockContext };
+                qryPersonIds = dataView.GetQuery( dataViewGetQueryArgs ).OfType<Person>().Select( a => a.Id );
             }
 
             if ( qryPersonIds == null )
@@ -417,11 +428,48 @@ namespace RockWeb.Blocks.Reporting
                 ? string.Format( "{{ location: new google.maps.LatLng({0}, {1}), weight: {2} }}", a.Lat, a.Long, a.Weight )
                 : string.Format( "new google.maps.LatLng({0}, {1})", a.Lat, a.Long ) ).ToList().AsDelimited( ",\n" );
 
-            StyleCode = styleCode;
             hfPolygonColors.Value = polygonColors;
             hfCenterLatitude.Value = latitude.ToString();
             hfCenterLongitude.Value = longitude.ToString();
             hfZoom.Value = zoom.ToString();
+        }
+
+        /// <summary>
+        /// Gets the data view.
+        /// </summary>
+        /// <returns></returns>
+        private DataView GetDataView()
+        {
+            var rockContext = new RockContext();
+            DataView dataView = null;
+
+            // if there is a DataViewId page parameter, use that instead of the Block or Filter dataview setting (the filter control won't be visible if there is a DataViewId page parameter)
+            int? dataViewId = this.PageParameter( "DataViewId" ).AsIntegerOrNull();
+            Guid? dataViewGuid = null;
+            if ( !dataViewId.HasValue )
+            {
+                dataViewGuid = this.GetAttributeValue( "DataView" ).AsGuidOrNull();
+            }
+
+            if ( ddlUserDataView.Visible )
+            {
+                dataViewGuid = ddlUserDataView.SelectedValue.AsGuidOrNull();
+            }
+
+            if ( dataViewId.HasValue || dataViewGuid.HasValue )
+            {
+                // if a DataViewId page parameter was specified, use that, otherwise use the blocksetting or filter selection
+                if ( dataViewId.HasValue )
+                {
+                    dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                }
+                else
+                {
+                    dataView = new DataViewService( rockContext ).Get( dataViewGuid.Value );
+                }
+            }
+
+            return dataView;
         }
 
         /// <summary>

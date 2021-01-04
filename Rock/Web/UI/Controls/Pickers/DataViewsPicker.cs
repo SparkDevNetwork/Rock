@@ -62,31 +62,35 @@ namespace Rock.Web.UI.Controls
         {
             this.Items.Clear();
 
-            if ( _entityTypeId.HasValue )
+            if ( !_entityTypeId.HasValue )
             {
-                // add Empty option first
-                this.Items.Add( new ListItem() );
+                return;
+            }
 
-                using ( var rockContext = new RockContext() )
+            // add Empty option first
+            this.Items.Add( new ListItem() );
+
+            var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var allEntityFilters = new DataViewFilterService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( f => f.EntityTypeId == _entityTypeId )
+                    .ToList();
+
+                foreach ( var dataView in new DataViewService( rockContext )
+                    .GetByEntityTypeId( _entityTypeId.Value )
+                    .Include( "EntityType" )
+                    .Include( "Category" )
+                    .Include( "DataViewFilter" )
+                    .AsNoTracking() )
                 {
-                    var allEntityFilters = new DataViewFilterService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( f => f.EntityTypeId == _entityTypeId )
-                        .ToList();
-
-                    foreach ( var dataView in new DataViewService( rockContext )
-                        .GetByEntityTypeId( _entityTypeId.Value )
-                        .Include( "EntityType" )
-                        .Include( "Category" )
-                        .Include( "DataViewFilter" )
-                        .AsNoTracking() )
+                    if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson )
+                        && dataView.DataViewFilter != null
+                        && dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
                     {
-                        var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                        if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&
-                            dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
-                        {
-                            this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
-                        }
+                        this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
                     }
                 }
             }

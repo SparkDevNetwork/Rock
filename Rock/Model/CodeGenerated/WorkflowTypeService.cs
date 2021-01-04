@@ -52,6 +52,24 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementFailureWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementStartWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementSuccessWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleCancellationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, GroupType.FriendlyTypeName );
@@ -73,24 +91,6 @@ namespace Rock.Model
             if ( new Service<StepWorkflowTrigger>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StepWorkflowTrigger.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementFailureWorkflowTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementStartWorkflowTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementSuccessWorkflowTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
                 return false;
             }  
             return true;

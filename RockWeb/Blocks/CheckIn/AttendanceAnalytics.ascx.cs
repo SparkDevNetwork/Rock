@@ -31,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -47,7 +48,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [GroupTypesField(
         name: "Group Types",
-        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance type's areas will be available.",
+        description: "Optional List of specific group types that should be included. If none are selected, an option to select an attendance type will be displayed and all of that attendance area's areas will be available.",
         required: false,
         defaultGroupTypeGuids: "",
         category: "",
@@ -84,12 +85,12 @@ namespace RockWeb.Blocks.CheckIn
         required: false,
         defaultValue: "",
         category: "",
-        order:4,
+        order: 4,
         key: AttributeKeys.DetailPage )]
 
     [LinkedPage(
         name: "Check-in Detail Page",
-        description:"Page that shows the user details for the check-in data.",
+        description: "Page that shows the user details for the check-in data.",
         required: false,
         defaultValue: "",
         category: "",
@@ -99,7 +100,7 @@ namespace RockWeb.Blocks.CheckIn
     [DefinedValueField(
         definedTypeGuid: Rock.SystemGuid.DefinedType.CHART_STYLES,
         name: "Chart Style",
-        description:"",
+        description: "",
         required: true,
         allowMultiple: false,
         defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
@@ -129,24 +130,24 @@ namespace RockWeb.Blocks.CheckIn
         key: AttributeKeys.GroupSpecific )]
 
     [BooleanField(
-        name:"Show Schedule Filter",
-        description:"Should the Schedules filter be displayed",
-        defaultValue:true,
-        category:"",
+        name: "Show Schedule Filter",
+        description: "Should the Schedules filter be displayed",
+        defaultValue: true,
+        category: "",
         order: 9,
         key: AttributeKeys.ShowScheduleFilter )]
 
     [BooleanField( name: "Show Campus Filter",
-        description:"Should the Campus filter be displayed?",
+        description: "Should the Campus filter be displayed?",
         defaultValue: true,
         category: "",
         order: 10,
         key: AttributeKeys.ShowCampusFilter )]
 
-    [BooleanField( name:"Show View By Option",
-        description:"Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
-        defaultValue:true,
-        category:"",
+    [BooleanField( name: "Show View By Option",
+        description: "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
+        defaultValue: true,
+        category: "",
         order: 11,
         key: AttributeKeys.ShowViewByOption )]
 
@@ -173,7 +174,7 @@ namespace RockWeb.Blocks.CheckIn
         required: false,
         defaultValue: 1,
         order: 14,
-        key: AttributeKeys.FilterColumnCount)]
+        key: AttributeKeys.FilterColumnCount )]
 
     public partial class AttendanceAnalytics : RockBlock
     {
@@ -240,7 +241,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
 
-                if ( _specificGroup == null || ( !IsUserAuthorized(Rock.Security.Authorization.VIEW) && !_specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ) )
+                if ( _specificGroup == null || ( !IsUserAuthorized( Rock.Security.Authorization.VIEW ) && !_specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ) )
                 {
                     nbInvalidGroup.Visible = true;
                     pnlContent.Visible = false;
@@ -306,7 +307,7 @@ namespace RockWeb.Blocks.CheckIn
                 try
                 {
                     LoadSettings();
-                    if ( ( !_isGroupSpecific && FilterIncludedInURL ) || (_isGroupSpecific && _specificGroup != null ) )
+                    if ( ( !_isGroupSpecific && FilterIncludedInURL ) || ( _isGroupSpecific && _specificGroup != null ) )
                     {
                         LoadChartAndGrids();
                     }
@@ -417,22 +418,22 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !groupTypeGuids.Any() )
                 {
                     // show the CheckinType control if there isn't a block setting for specific group types
-                    ddlAttendanceType.Visible = true;
+                    ddlAttendanceArea.Visible = true;
                     var groupTypeService = new GroupTypeService( _rockContext );
                     Guid groupTypePurposeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-                    ddlAttendanceType.GroupTypes = groupTypeService.Queryable()
+                    ddlAttendanceArea.GroupTypes = groupTypeService.Queryable()
                             .Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeGuid )
                             .OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
                 }
                 else
                 {
                     // hide the CheckinType control if there is a block setting for group types
-                    ddlAttendanceType.Visible = false;
+                    ddlAttendanceArea.Visible = false;
                 }
             }
             else
             {
-                ddlAttendanceType.Visible = false;
+                ddlAttendanceArea.Visible = false;
             }
         }
 
@@ -533,25 +534,20 @@ namespace RockWeb.Blocks.CheckIn
         /// <returns></returns>
         private List<GroupType> GetSelectedGroupTypes()
         {
-
-
             if ( !_isGroupSpecific )
             {
                 var groupTypeGuids = this.GetAttributeValue( AttributeKeys.GroupTypes ).SplitDelimitedValues().AsGuidList();
+                var groupTypeService = new GroupTypeService( _rockContext );
                 if ( groupTypeGuids.Any() )
                 {
-                    var groupTypeService = new GroupTypeService( _rockContext );
-
-                    var groupTypes = groupTypeService
-                        .Queryable().AsNoTracking()
-                        .Where( t => groupTypeGuids.Contains( t.Guid ) )
+                    var groupTypes = groupTypeGuids.Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null )
                         .OrderBy( t => t.Order )
                         .ThenBy( t => t.Name )
                         .ToList();
 
                     foreach ( var groupType in groupTypes.ToList() )
                     {
-                        foreach ( var childGroupType in groupTypeService.GetAllAssociatedDescendentsOrdered( groupType.Id ) )
+                        foreach ( var childGroupType in groupTypeService.GetCheckinAreaDescendantsOrdered( groupType.Id ) )
                         {
                             if ( !groupTypes.Any( t => t.Id == childGroupType.Id ) )
                             {
@@ -560,15 +556,19 @@ namespace RockWeb.Blocks.CheckIn
                         }
                     }
 
-                    return groupTypes;
+                    var groupTypeIds = groupTypes.Select( a => a.Id ).ToList();
+                    return groupTypeService.GetByIds( groupTypeIds ).ToList();
                 }
                 else
                 {
-                    if ( ddlAttendanceType.SelectedGroupTypeId.HasValue )
+                    if ( ddlAttendanceArea.SelectedGroupTypeId.HasValue )
                     {
-                        return new GroupTypeService( _rockContext )
-                            .GetAllAssociatedDescendentsOrdered( ddlAttendanceType.SelectedGroupTypeId.Value )
+                        var groupTypeIds = groupTypeService
+                            .GetCheckinAreaDescendantsOrdered( ddlAttendanceArea.SelectedGroupTypeId.Value )
+                            .Select(a => a.Id)
                             .ToList();
+
+                        return groupTypeService.GetByIds( groupTypeIds ).ToList();
                     }
                 }
             }
@@ -741,7 +741,7 @@ function(item) {
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceType.SelectedGroupTypeId.ToString(), false );
+            this.SetUserPreference( keyPrefix + "TemplateGroupTypeId", ddlAttendanceArea.SelectedGroupTypeId.ToString(), false );
 
             this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues, false );
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value, false );
@@ -836,7 +836,7 @@ function(item) {
 
             if ( !_isGroupSpecific )
             {
-                ddlAttendanceType.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
+                ddlAttendanceArea.SelectedGroupTypeId = GetSetting( keyPrefix, "TemplateGroupTypeId" ).AsIntegerOrNull();
                 cbIncludeGroupsWithoutSchedule.Checked = this.GetBlockUserPreference( "IncludeGroupsWithoutSchedule" ).AsBooleanOrNull() ?? true;
                 BuildGroupTypesUI( false );
             }
@@ -1106,11 +1106,11 @@ function(item) {
 
             // Adjust the start/end times to reflect the attendance dates who's SundayDate value would fall between the date range selected
             DateTime start = dateRange.Start.HasValue ?
-                dateRange.Start.Value.Date.AddDays( 0 - ( dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : (int)dateRange.Start.Value.DayOfWeek - 1 ) ) :
+                dateRange.Start.Value.Date.AddDays( 0 - ( dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : ( int ) dateRange.Start.Value.DayOfWeek - 1 ) ) :
                 new DateTime( 1900, 1, 1 );
 
             DateTime end = dateRange.End.HasValue ?
-                dateRange.End.Value.AddDays( 0 - (int)dateRange.End.Value.DayOfWeek ) :
+                dateRange.End.Value.AddDays( 0 - ( int ) dateRange.End.Value.DayOfWeek ) :
                 new DateTime( 2100, 1, 1, 23, 59, 59 );
 
             if ( end < start )
@@ -1446,7 +1446,7 @@ function(item) {
                             child.GivingId = row["ChildGivingId"].ToString();
                             child.Birthdate = row["ChildBirthDate"] as DateTime?;
                             child.Gender = row["ChildGender"].ToString().ConvertToEnum<Gender>();
-                            child.Grade = Person.GradeFormattedFromGraduationYear(row["ChildGraduationYear"] as int?);
+                            child.Grade = Person.GradeFormattedFromGraduationYear( row["ChildGraduationYear"] as int? );
                             child.Age = Person.GetAge( child.Birthdate );
                             result.Child = child;
                         }
@@ -1473,10 +1473,9 @@ function(item) {
                     var dataView = new DataViewService( _rockContext ).Get( dataViewId.Value );
                     if ( dataView != null )
                     {
-                        var errorMessages = new List<string>();
                         var dvPersonService = new PersonService( _rockContext );
                         ParameterExpression paramExpression = dvPersonService.ParameterExpression;
-                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression, out errorMessages );
+                        Expression whereExpression = dataView.GetExpression( dvPersonService, paramExpression );
 
                         SortProperty sort = null;
                         var dataViewPersonIdQry = dvPersonService
@@ -1600,7 +1599,7 @@ function(item) {
                                 parent.Email = row["ParentEmail"].ToString();
                                 parent.GivingId = row["ParentGivingId"].ToString();
                                 parent.Birthdate = row["ParentBirthDate"] as DateTime?;
-                                parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();                                
+                                parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();
                                 parent.Age = Person.GetAge( parent.Birthdate );
                                 result.Parent = parent;
                             }
@@ -1708,7 +1707,7 @@ function(item) {
             {
                 parentGenderField.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
-                    
+
             var parentEmailField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Parent Email" );
             if ( parentEmailField != null )
             {
@@ -1929,33 +1928,16 @@ function(item) {
         private void LogAndShowException( Exception exception )
         {
             LogException( exception );
-            string errorMessage = null;
-            string stackTrace = string.Empty;
-            while ( exception != null )
+            Exception sqlException = ReportingHelper.FindSqlTimeoutException( exception );
+            if ( sqlException != null )
             {
-                errorMessage = exception.Message;
-                stackTrace += exception.StackTrace;
-                if ( exception is System.Data.SqlClient.SqlException )
-                {
-                    // if there was a SQL Server Timeout, have the warning be a friendly message about that.
-                    if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
-                    {
-                        errorMessage = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
-                        break;
-                    }
-                    else
-                    {
-                        exception = exception.InnerException;
-                    }
-                }
-                else
-                {
-                    exception = exception.InnerException;
-                }
+                nbAttendeesError.Text = "The attendee report did not complete in a timely manner. Try again using a smaller date range and fewer campuses and groups.";
+                nbAttendeesError.Visible = true;
+                return;
             }
 
-            nbAttendeesError.Text = errorMessage;
-            nbAttendeesError.Details = stackTrace;
+            nbAttendeesError.Text = "An error occurred";
+            nbAttendeesError.Details = exception.Message;
             nbAttendeesError.Visible = true;
         }
 
@@ -2182,8 +2164,8 @@ function(item) {
                     {
                         lHomeAddress.Text = _personLocations[currentPersonId].FormattedHtmlAddress;
                         lHomeAddressStreet.Text = _personLocations[currentPersonId].Street1.Trim();
-                        if ( !string.IsNullOrEmpty(_personLocations[currentPersonId].Street2 ))
-						{
+                        if ( !string.IsNullOrEmpty( _personLocations[currentPersonId].Street2 ) )
+                        {
                             lHomeAddressStreet.Text += " " + _personLocations[currentPersonId].Street2;
                         }
                         lHomeAddressCity.Text = _personLocations[currentPersonId].City;

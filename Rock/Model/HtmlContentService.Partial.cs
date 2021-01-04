@@ -242,7 +242,7 @@ namespace Rock.Model
         public static string GetCachedContent( int blockId, string entityValue )
         {
             string cacheKey = HtmlContentCacheKey( blockId, entityValue );
-            return RockCache.Get( cacheKey ) as string;
+            return RockCache.Get( cacheKey, true ) as string;
         }
 
         /// <summary>

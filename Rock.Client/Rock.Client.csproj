@@ -40,6 +40,9 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="CodeGenerated\AchievementAttempt.cs" />
+    <Compile Include="CodeGenerated\AchievementType.cs" />
+    <Compile Include="CodeGenerated\AchievementTypePrerequisite.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
@@ -78,6 +81,9 @@
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\AuthClaim.cs" />
+    <Compile Include="CodeGenerated\AuthClient.cs" />
+    <Compile Include="CodeGenerated\AuthScope.cs" />
     <Compile Include="CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="CodeGenerated\Badge.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
@@ -183,6 +189,8 @@
     <Compile Include="CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="CodeGenerated\History.cs" />
     <Compile Include="CodeGenerated\HtmlContent.cs" />
+    <Compile Include="CodeGenerated\IdentityVerification.cs" />
+    <Compile Include="CodeGenerated\IdentityVerificationCode.cs" />
     <Compile Include="CodeGenerated\Interaction.cs" />
     <Compile Include="CodeGenerated\InteractionChannel.cs" />
     <Compile Include="CodeGenerated\InteractionComponent.cs" />
@@ -270,10 +278,7 @@
     <Compile Include="CodeGenerated\StepWorkflow.cs" />
     <Compile Include="CodeGenerated\StepWorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\Streak.cs" />
-    <Compile Include="CodeGenerated\StreakAchievementAttempt.cs" />
     <Compile Include="CodeGenerated\StreakType.cs" />
-    <Compile Include="CodeGenerated\StreakTypeAchievementType.cs" />
-    <Compile Include="CodeGenerated\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="CodeGenerated\StreakTypeExclusion.cs" />
     <Compile Include="CodeGenerated\SystemCommunication.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />

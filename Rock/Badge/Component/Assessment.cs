@@ -272,12 +272,16 @@ namespace Rock.Badge.Component
             writer.Write( badgeRow1.ToString() );
             writer.Write( badgeRow2.ToString() );
             writer.Write( "</div></div>" );
-            writer.Write( $@"
-                <script>
-                    Sys.Application.add_load(function () {{
-                        $('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});
-                    }});
-                </script>" );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            return $"$('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});";
         }
 
         /// <summary>

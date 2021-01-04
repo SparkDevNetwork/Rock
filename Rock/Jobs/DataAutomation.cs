@@ -1214,41 +1214,49 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
-                    if ( dataView != null )
+                    if ( dataView == null )
                     {
-                        List<string> errorMessages = new List<string>();
-                        var qryPersonsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Person>;
-                        if ( qryPersonsInDataView != null )
+                        continue;
+                    }
+
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DbContext = dataViewRockContext
+                    };
+
+                    var qryPersonsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
+                    if ( qryPersonsInDataView == null )
+                    {
+                        continue;
+                    }
+
+                    var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
+                    totalToUpdate += personsToUpdate.Count();
+                    foreach ( var person in personsToUpdate )
+                    {
+                        try
                         {
-                            var personsToUpdate = qryPersonsInDataView.Where( a => a.ConnectionStatusValueId != connectionStatusValueId ).AsNoTracking().ToList();
-                            totalToUpdate += personsToUpdate.Count();
-                            foreach ( var person in personsToUpdate )
+                            using ( var updateRockContext = new RockContext() )
                             {
-                                try
-                                {
-                                    using ( var updateRockContext = new RockContext() )
-                                    {
-                                        updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                        // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                        updateRockContext.People.Attach( person );
+                                updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                updateRockContext.People.Attach( person );
 
-                                        recordsUpdated++;
-                                        person.ConnectionStatusValueId = connectionStatusValueId;
-                                        updateRockContext.SaveChanges();
+                                recordsUpdated++;
+                                person.ConnectionStatusValueId = connectionStatusValueId;
+                                updateRockContext.SaveChanges();
 
-                                        if ( recordsUpdated % 100 == 0 )
-                                        {
-                                            context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
-                                        }
-                                    }
-                                }
-                                catch ( Exception ex )
+                                if ( recordsUpdated % 100 == 0 )
                                 {
-                                    // log but don't throw
-                                    ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
-                                    recordsWithError += 1;
+                                    context.UpdateLastStatusMessage( $"Processing Connection Status Update for {cacheConnectionStatusValue}: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                                 }
                             }
+                        }
+                        catch ( Exception ex )
+                        {
+                            // log but don't throw
+                            ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
+                            recordsWithError += 1;
                         }
                     }
                 }
@@ -1293,34 +1301,43 @@ Update Family Status: {updateFamilyStatus}
                 using ( var dataViewRockContext = new RockContext() )
                 {
                     var dataView = new DataViewService( dataViewRockContext ).Get( dataViewId );
-                    if ( dataView != null )
+                    if ( dataView == null )
                     {
-                        List<string> errorMessages = new List<string>();
-                        var qryGroupsInDataView = dataView.GetQuery( null, dataViewRockContext, null, out errorMessages ) as IQueryable<Group>;
-                        if ( qryGroupsInDataView != null )
+                        continue;
+                    }
+
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DbContext = dataViewRockContext
+                    };
+
+                    var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Group>;
+                    if ( qryGroupsInDataView == null )
+                    {
+                        continue;
+                    }
+
+                    var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
+                    totalToUpdate += groupsToUpdate.Count();
+                    foreach ( var group in groupsToUpdate )
+                    {
+                        using ( var updateRockContext = new RockContext() )
                         {
-                            var groupsToUpdate = qryGroupsInDataView.Where( a => a.StatusValueId != groupStatusValueId ).AsNoTracking().ToList();
-                            totalToUpdate += groupsToUpdate.Count();
-                            foreach ( var group in groupsToUpdate )
+                            updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                            // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                            updateRockContext.Groups.Attach( group );
+
+                            recordsUpdated++;
+                            group.StatusValueId = groupStatusValueId;
+                            updateRockContext.SaveChanges();
+
+                            if ( recordsUpdated % 100 == 0 )
                             {
-                                using ( var updateRockContext = new RockContext() )
-                                {
-                                    updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                    // Attach the group to the updateRockContext so that it'll be tracked/saved using updateRockContext 
-                                    updateRockContext.Groups.Attach( group );
-
-                                    recordsUpdated++;
-                                    group.StatusValueId = groupStatusValueId;
-                                    updateRockContext.SaveChanges();
-
-                                    if ( recordsUpdated % 100 == 0 )
-                                    {
-                                        context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
-                                    }
-                                }
+                                context.UpdateLastStatusMessage( $"Processing Family Status Update: {recordsUpdated:N0} of {totalToUpdate:N0}" );
                             }
                         }
                     }
+
                 }
             }
 
@@ -1578,21 +1595,31 @@ Update Family Status: {updateFamilyStatus}
         /// <returns></returns>
         private IQueryable<int> GetPeopleInDataViewQuery( bool enabled, int? dataviewId, RockContext rockContext )
         {
-            if ( enabled && dataviewId.HasValue )
+            if ( !enabled || dataviewId == null )
             {
-                var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
-                if ( dataView != null )
-                {
-                    List<string> errorMessages = new List<string>();
-                    var qry = dataView.GetQuery( null, rockContext, null, out errorMessages );
-                    if ( qry != null )
-                    {
-                        return qry.Select( e => e.Id );
-                    }
-                }
+                return null;
             }
 
-            return null;
+            var dataView = new DataViewService( rockContext ).Get( dataviewId.Value );
+            if ( dataView == null )
+            {
+                return null;
+            }
+
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DbContext = rockContext
+            };
+
+            var qry = dataView.GetQuery( dataViewGetQueryArgs );
+
+            if ( qry == null )
+            {
+                return null;
+            }
+
+            return qry.Select( e => e.Id );
+
         }
 
         /// <summary>

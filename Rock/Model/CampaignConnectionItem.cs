@@ -82,7 +82,7 @@ namespace Rock
         /// Gets or sets the request comments lava template.
         /// </summary>
         /// <value>
-        /// The the request comments lava template.
+        /// The request comments lava template.
         /// </value>
         public string RequestCommentsLavaTemplate { get; set; }
 

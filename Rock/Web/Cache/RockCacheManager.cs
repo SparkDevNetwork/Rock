@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-
 using CacheManager.Core;
 using CacheManager.Core.Internal;
 
@@ -100,20 +99,30 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
+            bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean()?? false;
+
             bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean()?? false;
             if ( redisEnabled == false )
             {
-                return new ConfigurationBuilder( "InProcess" )
-                .WithDictionaryHandle()
-                .EnableStatistics()
-                .Build();
+                var config = new ConfigurationBuilder( "InProcess" )
+                .WithDictionaryHandle();
+                if ( cacheStatisticsEnabled )
+                {
+                    config = config.EnableStatistics().EnablePerformanceCounters();
+                }
+                else
+                {
+                    config = config.DisablePerformanceCounters().DisableStatistics();
+                }
+
+                return config.Build();
             }
 
             string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
             string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
             int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
 
-            return new ConfigurationBuilder( "InProcess With Redis Backplane" )
+            var cacheConfig = new ConfigurationBuilder( "InProcess With Redis Backplane" )
                 .WithJsonSerializer()
                 .WithDictionaryHandle()
                 .And
@@ -142,9 +151,18 @@ namespace Rock.Web.Cache
                 .WithMaxRetries( 100 )
                 .WithRetryTimeout( 10 )
                 .WithRedisBackplane( "redis" )
-                .WithRedisCacheHandle( "redis", true )
-                .EnableStatistics()
-                .Build();
+                .WithRedisCacheHandle( "redis", true );
+
+            if ( cacheStatisticsEnabled )
+            {
+                cacheConfig = cacheConfig.EnableStatistics().EnablePerformanceCounters();
+            }
+            else
+            {
+                cacheConfig = cacheConfig.DisablePerformanceCounters().DisableStatistics();
+            }
+
+            return cacheConfig.Build();
         }
 
         /// <summary>
@@ -208,11 +226,13 @@ namespace Rock.Web.Cache
             if ( region.IsNotNullOrWhiteSpace() )
             {
                 Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
+                UpdateCacheReferences( key, region, updateValue );
             }
             else
             {
                 Cache.AddOrUpdate( key, updateValue, v => updateValue );
-            }
+                UpdateCacheReferences( key, region, updateValue );
+            }            
         }
 
         /// <summary>
@@ -256,6 +276,27 @@ namespace Rock.Web.Cache
 
             return cacheStatistics;
         }
+
+        #region Private Methods
+        /// <summary>
+        /// Updates the cache references for lists of strings and objects. This allows us to retrieve all items from the cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <param name="item">Type of the item.</param>
+        private void UpdateCacheReferences( string key, string region, T item )
+        {
+            if ( item is List<string> )
+            {
+                RockCache.StringCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+
+            if ( item is List<object> )
+            {
+                RockCache.ObjectCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+        }
+        #endregion
     }
 
     /// <summary>

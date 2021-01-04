@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Category>( Context ).Queryable().Any( a => a.ParentCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName.Pluralize().ToLower() );
@@ -121,12 +127,6 @@ namespace Rock.Model
             if ( new Service<StepProgram>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, StepProgram.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
                 return false;
             }  
  

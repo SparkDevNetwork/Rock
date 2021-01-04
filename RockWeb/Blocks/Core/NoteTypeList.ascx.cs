@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Core
             {
                 var service = new NoteTypeService( rockContext );
                 var noteType = service.Get( e.RowKeyId );
-                if ( noteType != null )
+                if ( noteType != null && !noteType.IsSystem )
                 {
                     string errorMessage = string.Empty;
                     if ( service.CanDelete( noteType, out errorMessage ) )
@@ -265,6 +265,28 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gNoteTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gNoteTypes_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var noteTypeRow = e.Row.DataItem as NoteTypeRow;
+            if ( noteTypeRow == null )
+            {
+                return;
+            }
+
+            bool canDelete = !noteTypeRow.NoteType.IsSystem && noteTypeRow.NoteType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+            ( ( LinkButton ) e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0] ).Visible = canDelete;
+        }
         #endregion
 
         #region Methods

@@ -113,14 +113,19 @@
         </div>
 
         <h4>Cache</h4>
-        <div id="cache-details">
-            <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
-        </div>
+        <asp:Panel ID="pnlShowCacheStatistics" runat="server" Visible="false">
+            <div id="cache-details">
+                <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
+            </div>
 
-        <p><a id="show-cache-objects" href="#">Show Cache Statistics</a></p>
-        <div id="cache-objects" style="display:none">
-            <p><asp:Literal ID="lCacheObjects" runat="server"></asp:Literal></p>
-        </div>
+            <p><a id="show-cache-objects" href="#">Show Cache Statistics</a></p>
+            <div id="cache-objects" style="display:none">
+                <p><asp:Literal ID="lCacheObjects" runat="server"></asp:Literal></p>
+            </div>
+        </asp:Panel>
+        <asp:Panel ID="pnlHideCacheStatistics" runat="server">
+            <p><a id="cache-disabled" target="_top" href="/cachemanager">Cache Statistics (disabled)</a></p>
+        </asp:Panel>
 
         <div>
             <h4>Threads</h4>

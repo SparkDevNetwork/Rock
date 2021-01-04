@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            this.ItemRestUrlExtraParams = "/0";
+            this.ItemRestUrlExtraParams = $"/{RootLocationId}";
             this.IconCssClass = "fa fa-home";
             base.OnInit( e );
         }
@@ -181,6 +181,29 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Private reference to RootLocationId.
+        /// </summary>
+        private int _rootLocationId = 0;
 
+        /// <summary>
+        /// Gets or sets the root location identifier, which will be passed to the Rest endpoint. Leave the default value of 0 to get all locations.
+        /// Note: Setting this property will overwrite any value currently in the ItemPicker.ItemRestUrlExtraParams property.
+        /// </summary>
+        /// <value>
+        /// The root location identifier.
+        /// </value>
+        public int RootLocationId
+        {
+            get
+            {
+                return _rootLocationId;
+            }
+            set
+            {
+                _rootLocationId = value;
+                this.ItemRestUrlExtraParams = $"/{value}";
+            }
+        }
     }
 }

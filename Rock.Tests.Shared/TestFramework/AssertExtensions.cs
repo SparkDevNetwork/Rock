@@ -49,6 +49,24 @@ namespace Rock.Tests.Shared
             StringAssert.Contains( value, substring);
         }
 
+        public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
+        {
+            if ( value == null && substring == null )
+            {
+                throw new NullReferenceException( "Null value is unexpected." );
+            }
+            else if ( value == null )
+            {
+                return;
+            }
+            else if ( substring == null )
+            {
+                return;
+            }
+
+            Assert.IsFalse( value.Contains( substring ) );
+        }
+
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
         {
             Assert.AreEqual( expected, actual, delta );

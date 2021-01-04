@@ -35,6 +35,12 @@ namespace Rock.Client
         public InteractionImportInteraction Interaction { get; set; }
 
         /// <summary />
+        public Guid? InteractionChannelChannelTypeMediumValueGuid { get; set; }
+
+        /// <summary />
+        public int? InteractionChannelChannelTypeMediumValueId { get; set; }
+
+        /// <summary />
         public string InteractionChannelForeignKey { get; set; }
 
         /// <summary />
@@ -65,6 +71,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionImport source )
         {
             this.Interaction = source.Interaction;
+            this.InteractionChannelChannelTypeMediumValueGuid = source.InteractionChannelChannelTypeMediumValueGuid;
+            this.InteractionChannelChannelTypeMediumValueId = source.InteractionChannelChannelTypeMediumValueId;
             this.InteractionChannelForeignKey = source.InteractionChannelForeignKey;
             this.InteractionChannelGuid = source.InteractionChannelGuid;
             this.InteractionChannelId = source.InteractionChannelId;

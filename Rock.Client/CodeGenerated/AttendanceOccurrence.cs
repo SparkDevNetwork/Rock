@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? AnonymousAttendanceCount { get; set; }
 
         /// <summary />
+        public int? AttendanceTypeValueId { get; set; }
+
+        /// <summary />
         public string DeclineConfirmationMessage { get; set; }
 
         /// <summary />
@@ -74,9 +77,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime OccurrenceDate { get; set; }
-
-        /// <summary />
-        public AnalyticsSourceDate OccurrenceSourceDate { get; set; }
 
         /// <summary />
         public int? ScheduleId { get; set; }
@@ -125,6 +125,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             this.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            this.AttendanceTypeValueId = source.AttendanceTypeValueId;
             this.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             this.DeclineReasonValueIds = source.DeclineReasonValueIds;
             this.DidNotOccur = source.DidNotOccur;
@@ -136,7 +137,6 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
-            this.OccurrenceSourceDate = source.OccurrenceSourceDate;
             this.ScheduleId = source.ScheduleId;
             this.ShowDeclineReasons = source.ShowDeclineReasons;
             this.StepTypeId = source.StepTypeId;
@@ -161,6 +161,9 @@ namespace Rock.Client
 
         /// <summary />
         public int OccurrenceDateKey { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate OccurrenceSourceDate { get; set; }
 
         /// <summary />
         public StepType StepType { get; set; }

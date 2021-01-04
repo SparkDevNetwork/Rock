@@ -13,13 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Jwt;
 
@@ -32,6 +34,22 @@ namespace Rock.Rest.Filters
     public class AuthenticateAttribute : AuthorizationFilterAttribute
     {
         /// <summary>
+        /// Standard Claims needed for OIDC Authentication.
+        /// </summary>
+        private class Claims
+        {
+            /// <summary>
+            /// The username
+            /// </summary>
+            public const string Username = "username";
+
+            /// <summary>
+            /// The client identifier
+            /// </summary>
+            public const string ClientId = "client_id";
+        }
+
+        /// <summary>
         /// Calls when a process requests authorization.
         /// </summary>
         /// <param name="actionContext">The action context, which encapsulates information for using <see cref="T:System.Web.Http.Filters.AuthorizationFilterAttribute" />.</param>
@@ -41,13 +59,47 @@ namespace Rock.Rest.Filters
             var principal = System.Threading.Thread.CurrentPrincipal;
             if ( principal != null && principal.Identity != null && !string.IsNullOrWhiteSpace( principal.Identity.Name ) )
             {
-                //var userLoginService = new UserLoginService();
-                //var user = userLoginService.GetByUserName(principal.Identity.Name);
-                //if ( user != null )
-                //{
                 actionContext.Request.SetUserPrincipal( principal );
                 return;
-                //}
+            }
+
+            // If check if ASOS authentication occurred.
+            principal = actionContext.RequestContext.Principal;
+            if ( principal != null && principal.Identity != null )
+            {
+                var claimIdentity = principal.Identity as ClaimsIdentity;
+                if ( claimIdentity != null )
+                {
+                    var clientId = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.ClientId )?.Value;
+                    if ( clientId.IsNotNullOrWhiteSpace() )
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var authClientService = new AuthClientService( rockContext );
+                            var authClient = authClientService.GetByClientId( clientId );
+                            if ( authClient.AllowUserApiAccess )
+                            {
+                                var userName = claimIdentity.Claims.FirstOrDefault( c => c.Type == Claims.Username )?.Value;
+
+                                if ( userName.IsNotNullOrWhiteSpace() && clientId.IsNotNullOrWhiteSpace() )
+                                {
+                                    UserLogin userLogin = null;
+
+                                    var userLoginService = new UserLoginService( rockContext );
+                                    userLogin = userLoginService.GetByUserName( userName );
+
+                                    if ( userLogin != null )
+                                    {
+                                        var identity = new GenericIdentity( userLogin.UserName );
+                                        principal = new GenericPrincipal( identity, null );
+                                        actionContext.Request.SetUserPrincipal( principal );
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // If not, see if there's a valid token

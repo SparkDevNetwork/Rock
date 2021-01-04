@@ -247,6 +247,56 @@ namespace Rock.Badge
         public virtual void Render( BadgeCache badge, HtmlTextWriter writer ) { }
 
         /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GetJavaScript( BadgeCache badge )
+        {
+            return null;
+
+            /*
+             * BJW 2020-09-18
+             * When working on the connections board, I discovered that the badges with <script> tags in the 
+             * Render method were not working correctly when added dynamically to the page. It turns out that
+             * some DOM manipulation methods such as .innerHtml do not allow <script> tags to be evaluated by 
+             * the browser. The postback must be using one of these methods. The solution was to register the 
+             * scripts using the ScriptManager.RegisterClientScriptBlock which ensures that the script is 
+             * evaluated even when added after the initial page load. This is happening in the BadgeControl.
+             */
+        }
+
+        /// <summary>
+        /// Adds the java script within a standardized function wrapper. This can be overridden when a
+        /// different wrapper function is needed.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetWrappedJavaScript( BadgeCache badge )
+        {
+            var script = GetJavaScript( badge );
+
+            if ( script.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return
+$@"(function () {{
+    {script}
+}})();";
+        }
+
+        /// <summary>
+        /// Generates a key unique to this instance of the badge/entity combination. This
+        /// is suitable for use as an HTML id.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GenerateBadgeKey( BadgeCache badge )
+        {
+            var entityKey = Entity != null ? Entity.Guid.ToString() : "no-entity";
+            return $"{GetType().Name}-{badge.Guid}-{entityKey}";
+        }
+
+        /// <summary>
         /// Renders the specified writer.
         /// </summary>
         /// <param name="personBadgeCache">The badge.</param>

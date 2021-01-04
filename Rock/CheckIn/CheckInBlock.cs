@@ -419,21 +419,30 @@ namespace Rock.CheckIn
                             }
                         }
 
-                        var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
-                        if ( activityType != null )
+                        WorkflowActivityTypeCache activityType = null;
+                        try
                         {
-                            WorkflowActivity.Activate( activityType, CurrentWorkflow, rockContext );
-                            if ( workflowService.Process( CurrentWorkflow, CurrentCheckInState, out errorMessages ) )
+                            activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
+                            if ( activityType != null )
                             {
-                                // Keep workflow active for continued processing
-                                CurrentWorkflow.CompletedDateTime = null;
+                                WorkflowActivity.Activate( activityType, CurrentWorkflow, rockContext );
+                                if ( workflowService.Process( CurrentWorkflow, CurrentCheckInState, out errorMessages ) )
+                                {
+                                    // Keep workflow active for continued processing
+                                    CurrentWorkflow.CompletedDateTime = null;
 
-                                return true;
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
                             }
                         }
-                        else
+                        catch ( Exception ex )
                         {
-                            errorMessages.Add( string.Format( "Workflow type does not have a '{0}' activity type", activityName ) );
+                            ExceptionLogService.LogException( new Exception( $"An exception occurred when doing the {activityType} checkin workflow activity", ex ) );
+                            errorMessages.Add( $"An error occurred processing {activityType}" );
                         }
                     }
                     else
@@ -529,7 +538,16 @@ namespace Rock.CheckIn
             else
             {
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                modalAlert?.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                if ( modalAlert != null )
+                {
+                    modalAlert?.Show( errorMsg.Replace( "'", @"\'" ), Rock.Web.UI.Controls.ModalAlertType.Warning );
+                }
+                else
+                {
+                    // if no modalAlert was specified, let the block handle the exception
+                    throw new Exception( errorMsg );
+                }
+
                 return false;
             }
         }
@@ -834,7 +852,8 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            this.LocalDeviceConfig.SaveToCookie( this.Page );
+            var localDeviceConfigValue = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
+            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
 
             Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 

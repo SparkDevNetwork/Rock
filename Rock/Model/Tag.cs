@@ -60,7 +60,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the name of the column/property that contains the value that can narrow the scope of entities that can receive this Tag. Entities where this 
         /// column contains the <see cref="EntityTypeQualifierValue"/> will be eligible to have this Tag. This property must be used in conjunction with the <see cref="EntityTypeQualifierValue"/>
-        /// property. If all entities of the the specified <see cref="Rock.Model.EntityType"/> are eligible to use this Tag, this property will be null.
+        /// property. If all entities of the specified <see cref="Rock.Model.EntityType"/> are eligible to use this Tag, this property will be null.
         /// </summary>
         /// <value>
         /// A <see cref="System.String" /> representing the EntityTypeQualifierColumn.

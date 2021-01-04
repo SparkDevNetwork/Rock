@@ -496,6 +496,8 @@
 
                 }).fail(function (a) {
                     console.log('fail:' + a.responseText);
+                    $(".ajax-error-message").html(a.responseText);
+                    $(".ajax-error").show();
                     $loadingNotification.hide();
                 });
             },

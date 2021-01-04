@@ -60,7 +60,7 @@ namespace Rock.Model
             {
                 groupMemberAssignment.LocationId = locationId;
             }
-            
+
             return groupMemberAssignment;
         }
 
@@ -80,6 +80,22 @@ namespace Rock.Model
             {
                 this.Delete( groupMemberAssignment );
             }
+        }
+
+        /// <summary>
+        /// Gets GroupMemberAssignment by GroupMember.Id, ScheduleId, and LocationId (which is a unique constraint)
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <returns></returns>
+        public GroupMemberAssignment GetByGroupMemberScheduleAndLocation( GroupMember groupMember, int? scheduleId, int? locationId )
+        {
+            return this.Queryable()
+                .Where( a => a.GroupMemberId == groupMember.Id
+                    && a.ScheduleId == scheduleId
+                    && a.LocationId == locationId )
+                .FirstOrDefault();
         }
     }
 }

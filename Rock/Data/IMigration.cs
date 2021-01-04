@@ -26,5 +26,11 @@ namespace Rock.Data
         /// </summary>
         /// <param name="sql">The SQL statement.</param>
         void Sql( string sql );
+
+        /// <summary>
+        /// Executes a sql statement
+        /// </summary>
+        /// <param name="sql">The SQL.</param>
+        object SqlScalar( string sql );
     }
 }

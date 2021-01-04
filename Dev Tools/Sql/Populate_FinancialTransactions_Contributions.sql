@@ -4,7 +4,7 @@ set nocount on
 declare
     @yearsBack int = 1,
     @maxPersonCount INT = 40000, /* limit to first X persons in the database (Handy for testing Statement Generator) */ 
-    @maxTransactionCount int = 500000, 
+    @maxTransactionCount int = 100000, 
     @maxBatchNumber INT = 1000
 
 declare
@@ -14,19 +14,25 @@ declare
   @transactionDateTime datetime,
   @transactionAmount decimal(18,2),
   @transactionNote nvarchar(max),
-  @transactionTypeValueId int = (select Id from DefinedValue where Guid = '2D607262-52D6-4724-910D-5C6E8FB89ACC'),
-  @currencyTypeCash int = (select Id from DefinedValue where Guid = 'F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93'),
+  @transactionTypeValueId int = (select top 1 Id from DefinedValue where Guid = '2D607262-52D6-4724-910D-5C6E8FB89ACC'),
+  @currencyTypeCash int = (select top 1 Id from DefinedValue where Guid = 'F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93'),
+  @currencyTypeCheck int = (select top 1 Id from DefinedValue where Guid = '8B086A19-405A-451F-8D44-174E92D6B402'),
+  @currencyTypeCreditCard int = (select top 1 Id from DefinedValue where Guid = '928A2E04-C77B-4282-888F-EC549CEE026A'),
   @creditCardTypeVisa int = (select Id from DefinedValue where Guid = 'FC66B5F8-634F-4800-A60D-436964D27B64'),
-  @sourceTypeValueId int, 
-  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01'), --FINANCIAL_SOURCE_TYPE 
-  @accountId int,
+  @sourceTypeDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '4F02B41E-AB7D-4345-8A97-3904DDD89B01') --FINANCIAL_SOURCE_TYPE 
+
+declare
+  @sourceTypeValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID()), 
+  @accountId int = (select top 1 id from FinancialAccount),
   @batchId int,
   @batchStatusOpen int = 1,
   @transactionId int,
   @financialPaymentDetailId int,
   @checkMicrEncrypted nvarchar(max) = null,
   @checkMicrHash nvarchar(128) = null,
-  @checkMicrParts nvarchar(max) = null
+  @checkMicrParts nvarchar(max) = null,
+  @currencyType int,
+  @creditCardType int
 
 declare
   @daysBack int = @yearsBack * 366
@@ -92,9 +98,6 @@ begin transaction
 */
 
 set @transactionDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
-declare 
-  @MaxBatchId int = (select max(Id) from FinancialBatch),
-  @MaxAccountId int = (select max(Id) from FinancialAccount)
 
 while @transactionCounter < @maxTransactionCount
 begin
@@ -113,17 +116,36 @@ begin
 
     while (@TransactionCountPerPerson < @MaxTransactionCountPerPerson AND @transactionCounter < @maxTransactionCount)
     begin
-        
-        
         set @transactionAmount = ROUND(rand() * 5000, 2);
 
         SET @TransactionCountPerPerson = @TransactionCountPerPerson + 1;
 
-        set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
+        if (@transactionCounter % 100 = 0 ) begin
+          set @transactionNote = 'Random Note ' + convert(nvarchar(max), rand());
+        end else begin
+          set @transactionNote =  null
+        end
 
-        set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+        if (rand() * 20 = 1) begin
+          -- have around 5% be checks
+          set @currencyType = @currencyTypeCheck
+          set @checkMicrHash = replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '') + replace(cast(NEWID() as nvarchar(36)), '-', '');
+          set @creditCardType = null
+        end
+        else if (rand() * 20 = 1) begin
+          -- have around 5% be cash
+          set @currencyType = @currencyTypeCash
+          set @checkMicrHash = null
+          set @creditCardType = null
+        end
+        else begin
+          -- have around  80% be creditcard
+          set @currencyType = @currencyTypeCreditCard
+          set @checkMicrHash = null
+          set @creditCardType = @creditCardTypeVisa
+        end
 
-        insert into FinancialPaymentDetail ( CurrencyTypeValueId, CreditCardTypeValueId, [Guid] ) values (@currencyTypeCash, @creditCardTypeVisa, NEWID());
+        insert into FinancialPaymentDetail ( CurrencyTypeValueId, CreditCardTypeValueId, [Guid] ) values (@currencyType, @creditCardType, NEWID());
         set @financialPaymentDetailId = SCOPE_IDENTITY()
 
         if (@transactionCounter % 100 = 0 )
@@ -150,6 +172,7 @@ begin
                     ([AuthorizedPersonAliasId]
                     ,[BatchId]
                     ,[TransactionDateTime]
+                    ,[TransactionDateKey]
                     ,[SundayDate]
                     ,[TransactionCode]
                     ,[Summary]
@@ -164,6 +187,7 @@ begin
                     (@authorizedPersonAliasId
                     ,@batchId
                     ,@transactionDateTime
+                    ,CONVERT(INT, (CONVERT(CHAR(8), @transactionDateTime, 112)))
                     ,dbo.ufnUtility_GetSundayDate(@transactionDateTime)
                     ,null
                     ,@transactionNote

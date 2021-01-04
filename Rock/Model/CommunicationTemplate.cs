@@ -382,6 +382,15 @@ namespace Rock.Model
         public virtual bool IsPersonal => SenderPersonAliasId.HasValue;
 
         /// <summary>
+        /// Gets or sets the image file for the Template Preview Image
+        /// </summary>
+        /// <value>
+        /// The image file
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageFile {get; set;}
+
+        /// <summary>
         /// Gets or sets the logo binary file that email messages using this template can use for the logo in the message content
         /// </summary>
         /// <value>
@@ -389,6 +398,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the push image file.
+        /// </summary>
+        /// <value>
+        /// The push image file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile PushImageBinaryFile { get; set; }
 
         /// <summary>
         /// Gets or sets the category.
@@ -540,7 +558,9 @@ namespace Rock.Model
         public CommunicationTemplateConfiguration()
         {
             this.HasOptional( c => c.Category ).WithMany().HasForeignKey( c => c.CategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.ImageFile ).WithMany().HasForeignKey( c => c.ImageFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.LogoBinaryFile ).WithMany().HasForeignKey( c => c.LogoBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.PushImageBinaryFile ).WithMany().HasForeignKey( c => c.PushImageBinaryFileId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SMSFromDefinedValue ).WithMany().HasForeignKey( c => c.SMSFromDefinedValueId ).WillCascadeOnDelete( false );
         }

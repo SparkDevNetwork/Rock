@@ -92,6 +92,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            target.AttendanceTypeValueId = source.AttendanceTypeValueId;
             target.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             target.DeclineReasonValueIds = source.DeclineReasonValueIds;
             target.DidNotOccur = source.DidNotOccur;
@@ -102,7 +103,6 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
-            target.OccurrenceSourceDate = source.OccurrenceSourceDate;
             target.ScheduleId = source.ScheduleId;
             target.ShowDeclineReasons = source.ShowDeclineReasons;
             target.StepTypeId = source.StepTypeId;

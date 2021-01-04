@@ -33,7 +33,9 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
 
-using DDay.iCal;
+using Ical.Net;
+using Ical.Net.DataTypes;
+using Calendar = Ical.Net.Calendar;
 
 using DotLiquid;
 using DotLiquid.Util;
@@ -48,6 +50,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -1272,15 +1275,15 @@ namespace Rock.Lava
         /// <returns>a list of datetimes</returns>
         private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
-            iCalendar calendar = iCalendar.LoadFromStream( new StringReader( iCalString ) ).First() as iCalendar;
-            DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
+            var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
+            var calendarEvent = calendar.Events[0] as Event;
 
-            if ( !useEndDateTime && calendarEvent.DTStart != null )
+            if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.StartTime.Value ).ToList();
             }
-            else if ( useEndDateTime && calendarEvent.DTEnd != null )
+            else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.EndTime.Value ).ToList();
@@ -3842,6 +3845,7 @@ namespace Rock.Lava
         {
             int? inputAsInt = null;
             Guid? inputAsGuid = null;
+            bool inputIsAll = false;
 
             // ensure they provided a cache type
             if ( input == null || cacheType.IsNullOrWhiteSpace() )
@@ -3850,153 +3854,117 @@ namespace Rock.Lava
             }
 
             // figure out the input type
-            inputAsInt = input.ToString().AsIntegerOrNull();
+            string inputString = input.ToString();
+            inputAsInt = inputString.AsIntegerOrNull();
 
             if ( !inputAsInt.HasValue ) // not an int try guid
             {
-                inputAsGuid = input.ToString().AsGuidOrNull();
+                inputAsGuid = inputString.AsGuidOrNull();
+
+                if ( !inputAsGuid.HasValue ) // not a guid try "All"
+                {
+                    inputIsAll = inputString.Equals( "All", StringComparison.OrdinalIgnoreCase );
+                }
             }
 
-            if ( inputAsGuid.HasValue || inputAsInt.HasValue )
+            if ( inputAsGuid.HasValue || inputAsInt.HasValue || inputIsAll )
             {
+                Type modelCacheType;
+
                 switch ( cacheType )
                 {
                     case "DefinedValue":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return DefinedValueCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return DefinedValueCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( DefinedValueCache );
+                            break;
                         }
                     case "DefinedType":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return DefinedTypeCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return DefinedTypeCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( DefinedTypeCache );
+                            break;
                         }
                     case "Campus":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return CampusCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return CampusCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( CampusCache );
+                            break;
                         }
                     case "Category":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return CategoryCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return CategoryCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( CategoryCache );
+                            break;
                         }
                     case "GroupType":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return GroupTypeCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return GroupTypeCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( GroupTypeCache );
+                            break;
                         }
                     case "Page":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return PageCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return PageCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( PageCache );
+                            break;
                         }
                     case "Block":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return BlockCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return BlockCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( BlockCache );
+                            break;
                         }
                     case "BlockType":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return BlockTypeCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return BlockTypeCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( BlockTypeCache );
+                            break;
                         }
                     case "EventCalendar":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return EventCalendarCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return EventCalendarCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( EventCalendarCache );
+                            break;
                         }
                     case "Attribute":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return AttributeCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return AttributeCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( AttributeCache );
+                            break;
                         }
                     case "NoteType":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return NoteTypeCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return NoteTypeCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( NoteTypeCache );
+                            break;
                         }
                     case "ContentChannel":
                         {
-                            if ( inputAsInt.HasValue )
-                            {
-                                return ContentChannelCache.Get( inputAsInt.Value );
-                            }
-                            else
-                            {
-                                return ContentChannelCache.Get( inputAsGuid.Value );
-                            }
+                            modelCacheType = typeof( ContentChannelCache );
+                            break;
                         }
                     default:
                         {
                             return $"Cache type {cacheType} not supported.";
                         }
+                }
+
+                try
+                {
+                    if ( inputAsInt.HasValue )
+                    {
+                        return modelCacheType
+                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new [] { typeof( int ) }, null )
+                            .Invoke( null, new object[] { inputAsInt.Value } );
+                    }
+                    else if ( inputAsGuid.HasValue )
+                    {
+                        return modelCacheType
+                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new [] { typeof( Guid ) }, null )
+                            .Invoke( null, new object[] { inputAsGuid.Value } );
+                    }
+                    else
+                    {
+                        return modelCacheType
+                            .GetMethod( "All", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new Type[] { }, null )
+                            .Invoke( null, null );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+
+                    return null;
                 }
             }
 
@@ -4701,6 +4669,22 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Adds the response header.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="headerName">Name of the header.</param>
+        public static void AddResponseHeader( string input, string headerName )
+        {
+            // Check if header already exists, if so remove current value.
+            if ( HttpContext.Current.Response.Headers.AllKeys.Contains( headerName ) )
+            {
+                HttpContext.Current.Response.Headers.Remove( headerName );
+            }
+
+            HttpContext.Current.Response.AddHeader( headerName, input );
+        }
+
+        /// <summary>
         /// Returns the specified page parm.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -4915,6 +4899,115 @@ namespace Rock.Lava
             rockContext.SaveChanges();
 
             return shortLink.ShortLinkUrl;
+        }
+
+        /// <summary>
+        /// Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.
+        /// </summary>
+        /// <param name="input">The input. This may be an integer ID or a Guid.</param>
+        /// <param name="fallbackUrl">The fallback URL to be used if the input is not defined.</param>
+        /// <param name="rootUrl">
+        /// This parameter is multipurpose:
+        /// <para>If the string value 'rootUrl' or true, the application root URL will be prepended and the GetImage handler will be used to serve the image.</para>
+        /// <para>If false or null, the application root URL will not be prepended but the GetImage handler will be used to serve the image.</para>
+        /// </param>
+        /// <returns>The image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.</returns>
+        public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
+        {
+            string inputString = input?.ToString();
+            var queryStringKey = "Id";
+            var useFallbackUrl = false;
+
+            if ( !inputString.AsIntegerOrNull().HasValue )
+            {
+                queryStringKey = "Guid";
+
+                if ( !inputString.AsGuidOrNull().HasValue )
+                {
+                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    useFallbackUrl = true;
+                }
+            }
+
+            if ( useFallbackUrl )
+            {
+                return fallbackUrl ?? string.Empty;
+            }
+
+            /*
+                8/12/2020 - JH
+                The rootUrl parameter is multipurpose:
+
+                1. If the object is a string whose value is "rootUrl" OR the object is a bool whose value is true:
+                       prepend the application root URL and use the GetImage handler to serve the image.
+
+                2. If the object is a bool whose value is false OR the object is null:
+                       do not prepend the application root URL but use the GetImage handler to serve the image.
+
+                3. Future dev will dictate (i.e. If the object is a string whose value is "cdnUrl" ...)
+            */
+            bool useGetImageHandler = false;
+            bool prependAppRootUrl = false;
+
+            string rootUrlString = rootUrl?.ToString();
+
+            // Note that this will return false (and not null) for any string value other than a "truthy" value, meaning that any string comparisons below need to done BEFORE a rootUrlAsBool.HasValue check.
+            bool? rootUrlAsBool = rootUrlString?.AsBooleanOrNull();
+
+            if ( rootUrlString?.Equals( "rootUrl", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                useGetImageHandler = true;
+                prependAppRootUrl = true;
+            }
+            else if ( rootUrlAsBool.HasValue || rootUrl == null )
+            {
+                useGetImageHandler = true;
+                prependAppRootUrl = rootUrlAsBool ?? false;
+            }
+
+            string url = null;
+
+            if ( useGetImageHandler )
+            {
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
+
+                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+            }
+
+            return url;
+        }
+
+        /// <summary>
+        /// Returns a named configuration setting for the current Rock instance.
+        /// </summary>
+        /// <param name="input">The name of the configuration setting.</param>
+        /// <returns>A configuration value.</returns>
+        public static object RockInstanceConfig( object input )
+        {
+            var valueName = input.ToStringSafe().Trim().ToLower();
+
+            if ( valueName == "applicationdirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+            }
+            else if ( valueName == "isclustered" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+            }
+            else if ( valueName == "machinename" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+            }
+            else if ( valueName == "physicaldirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+            }
+            else if ( valueName == "systemdatetime" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+            }
+
+            return $"Configuration setting \"{ input }\" is not available.";
         }
 
         #endregion Misc Filters

@@ -61,7 +61,7 @@ namespace Rock.Model
         public int SiteId { get; set; }
         
         /// <summary>
-        /// Gets or sets the the Url/Domain Name of this SiteDomain. This property is required.
+        /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
         /// <remarks>
         /// Examples include: localhost, mysite.com (or www.mysite.com), subdomain.mysite.com.

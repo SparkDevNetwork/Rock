@@ -5,11 +5,11 @@
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
 
-    Sys.Application.add_load( function () {
+    Sys.Application.add_load(function () {
         $('.js-follow-status').tooltip();
     });
 
-    Sys.WebForms.PageRequestManager.getInstance().add_endRequest( function () {
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
         $(document).ready(function () {
 
             var tbRegistrationNameId = '<%=tbRegistrationName.ClientID %>';
@@ -22,8 +22,7 @@
                     var registrationNameValue = $('#' + tbRegistrationNameId).val();
                     var publicNameValue = $('#' + tbPublicNameNameId).val();
 
-                    if ((publicNameValue == '') || (publicNameValue == previousRegistrationName))
-                    {
+                    if ((publicNameValue == '') || (publicNameValue == previousRegistrationName)) {
                         $('#' + tbPublicNameNameId).val(registrationNameValue);
                     }
                     previousRegistrationName = registrationNameValue;
@@ -40,7 +39,7 @@
     </Triggers>
     <ContentTemplate>
 
-        <asp:Panel ID="pnlLavaInstructions" runat="server" Visible="false" >
+        <asp:Panel ID="pnlLavaInstructions" runat="server" Visible="false">
             <asp:Literal ID="lLavaInstructions" runat="server" />
         </asp:Panel>
 
@@ -78,7 +77,7 @@
                 <asp:Panel ID="pnlWizard" runat="server" CssClass="wizard" Visible="false">
 
                     <div id="divTemplate" runat="server" class="wizard-item">
-                        <asp:LinkButton ID="lbTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false" >
+                        <asp:LinkButton ID="lbTemplate" runat="server" OnClick="lbTemplate_Click" CausesValidation="false">
                             <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
@@ -92,7 +91,7 @@
                     </div>
 
                     <div id="divRegistration" runat="server" class="wizard-item">
-                        <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false" >
+                        <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
                                     <i class="fa fa-fw fa-file-o"></i>
@@ -105,7 +104,7 @@
                     </div>
 
                     <div id="divGroup" runat="server" class="wizard-item">
-                        <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false" >
+                        <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
                                     <i class="fa fa-fw fa-users"></i>
@@ -118,7 +117,7 @@
                     </div>
 
                     <div id="divEvent" runat="server" class="wizard-item">
-                        <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false" >
+                        <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
                                     <i class="fa fa-fw fa-calendar-check-o"></i>
@@ -131,7 +130,7 @@
                     </div>
 
                     <div id="divEventOccurrence" runat="server" class="wizard-item">
-                        <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false" >
+                        <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
                                     <i class="fa fa-fw fa-clock-o"></i>
@@ -242,6 +241,12 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbSlug" runat="server" Label="Slug" />
+                                    <asp:CustomValidator runat="server"
+                                        ID="cvUrlSlug"
+                                        ErrorMessage="URL Slug must be unique across all events."
+                                        ControlToValidate="tbSlug"
+                                        OnServerValidate="cvUrlSlug_ServerValidate"
+                                        Display="None" />
                                 </div>
                             </div>
 
@@ -255,7 +260,7 @@
                                 </div>
                             </div>
                             <div class="actions">
-                                <asp:LinkButton ID="lbPrev_Registration" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Registration_Click"  />
+                                <asp:LinkButton ID="lbPrev_Registration" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Registration_Click" />
                                 <asp:LinkButton ID="lbNext_Registration" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Registration_Click" />
                             </div>
                         </fieldset>
@@ -294,7 +299,7 @@
                                 </div>
                             </div>
                             <div class="actions">
-                                <asp:LinkButton ID="lbPrev_Group" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Group_Click"  />
+                                <asp:LinkButton ID="lbPrev_Group" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Group_Click" />
                                 <asp:LinkButton ID="lbNext_Group" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Group_Click" />
                             </div>
                         </fieldset>
@@ -355,7 +360,7 @@
                                             OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
                                             RepeatDirection="Horizontal" Required="true" />
                                         <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL"
-                                            Help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)."/>
+                                            Help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)." />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />
@@ -365,13 +370,13 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attribute Values">
-                                            <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
+                                            <Rock:DynamicPlaceholder ID="phAttributes" runat="server" />
                                         </Rock:PanelWidget>
                                     </div>
                                 </div>
                             </asp:Panel>
                             <div class="actions">
-                                <asp:LinkButton ID="lbPrev_Event" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Event_Click"  />
+                                <asp:LinkButton ID="lbPrev_Event" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Event_Click" />
                                 <asp:LinkButton ID="lbNext_Event" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Event_Click" />
                             </div>
                         </fieldset>
@@ -388,7 +393,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" >
+                                    <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
                                         <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ValidationGroup="Schedule" AllowMultiSelect="true" Required="true" OnSaveSchedule="sbSchedule_SaveSchedule" />
                                         <asp:Literal ID="lScheduleText" runat="server" />
                                     </Rock:RockControlWrapper>
@@ -400,7 +405,7 @@
                                 </div>
                             </div>
                             <div class="actions">
-                                <asp:LinkButton ID="lbPrev_EventOccurrence" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_EventOccurrence_Click"  />
+                                <asp:LinkButton ID="lbPrev_EventOccurrence" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_EventOccurrence_Click" />
                                 <asp:LinkButton ID="lbNext_EventOccurrence" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_EventOccurrence_Click" />
                             </div>
                         </fieldset>
@@ -414,7 +419,7 @@
 
                         <fieldset>
                             <div class="actions">
-                                <asp:LinkButton ID="lbPrev_Summary" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Summary_Click"  />
+                                <asp:LinkButton ID="lbPrev_Summary" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPrev_Summary_Click" />
                                 <asp:LinkButton ID="lbNext_Summary" runat="server" AccessKey="n" Text="Finish" DataLoadingText="Finish" CssClass="btn btn-primary pull-right js-wizard-navigation" OnClick="lbNext_Summary_Click" />
                             </div>
                         </fieldset>
@@ -430,11 +435,16 @@
                             <hr />
 
                             <ul>
-                                <li id="liRegistrationLink" runat="server"><asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
-                                <li id="liGroupLink" runat="server"><asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
-                                <li id="liEventLink" runat="server"><asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
-                                <li id="liExternalEventLink" runat="server"><asp:HyperLink ID="hlExternalEventDetails" runat="server" Text="View External Event Details" /></li>
-                                <li id="liEventOccurrenceLink" runat="server"><asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
+                                <li id="liRegistrationLink" runat="server">
+                                    <asp:HyperLink ID="hlRegistrationInstance" runat="server" Text="View Registration Instance" /></li>
+                                <li id="liGroupLink" runat="server">
+                                    <asp:HyperLink ID="hlGroup" runat="server" Text="View Group" /></li>
+                                <li id="liEventLink" runat="server">
+                                    <asp:HyperLink ID="hlEventDetail" runat="server" Text="View Event Detail" /></li>
+                                <li id="liExternalEventLink" runat="server">
+                                    <asp:HyperLink ID="hlExternalEventDetails" runat="server" Text="View External Event Details" /></li>
+                                <li id="liEventOccurrenceLink" runat="server">
+                                    <asp:HyperLink ID="hlEventOccurrence" runat="server" Text="View Event Occurrence" /></li>
                             </ul>
                         </div>
                     </asp:Panel>
