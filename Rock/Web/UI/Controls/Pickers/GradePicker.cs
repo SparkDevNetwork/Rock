@@ -149,7 +149,7 @@ namespace Rock.Web.UI.Controls
             DateTime gradeTransitionDate = new DateTime( RockDateTime.Now.Year, currentGraduationDate.Month, currentGraduationDate.Day );
 
             // add a year if the next graduation mm/dd won't happen until next year
-            int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
+            int gradeOffsetRefactor = ( RockDateTime.Today < gradeTransitionDate ) ? 0 : 1;
 
             string gradeSelectionScript = $@"
     $('#{this.ClientID}').on('change', function(){{
