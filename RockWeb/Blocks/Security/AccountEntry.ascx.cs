@@ -520,6 +520,15 @@ usernameTextbox.blur(function () {{
                         ShowErrorMessage( "User name must be a valid email address." );
                         return;
                     }
+                } else
+                {
+                    var regexString = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+                    var match = System.Text.RegularExpressions.Regex.Match( tbUserName.Text, regexString );
+                    if ( !match.Success )
+                    {
+                        ShowErrorMessage( "Username is not valid. " + Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) );
+                        return;
+                    }
                 }
 
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
