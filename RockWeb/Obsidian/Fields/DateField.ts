@@ -1,12 +1,12 @@
 ﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { Guid } from '../Util/Guid.js';
 import { registerFieldType } from './Index.js';
-import { asYesNoOrNull } from '../Filters/Boolean.js';
+import { asDateString } from '../Filters/Date.js';
 
-const fieldTypeGuid: Guid = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A';
+const fieldTypeGuid: Guid = '6B6AA175-4758-453F-8D83-FCD8044B5F36';
 
 export default registerFieldType(fieldTypeGuid, defineComponent({
-    name: 'BooleanField',
+    name: 'DateField',
     props: {
         modelValue: {
             type: String as PropType<string>,
@@ -14,10 +14,10 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     computed: {
-        valueAsYesNoOrNull() {
-            return asYesNoOrNull(this.modelValue);
+        valueAsDateString() {
+            return asDateString(this.modelValue);
         }
     },
     template: `
-<span>{{ valueAsYesNoOrNull }}</span>`
+<span>{{modelValue}} => {{ valueAsDateString }}</span>`
 }));

@@ -2,8 +2,9 @@
 import { Guid } from '../Util/Guid.js';
 import { Component, defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
-import './BooleanField.js';
-import './TextField.js';
+import TextField from '../Fields/TextField.js';
+import '../Fields/BooleanField.js';
+import '../Fields/DateField.js';
 
 export default defineComponent({
     name: 'RockField',
@@ -19,7 +20,14 @@ export default defineComponent({
     },
     computed: {
         fieldComponent(): Component | null {
-            return getFieldTypeComponent(this.fieldTypeGuid);
+            const field = getFieldTypeComponent(this.fieldTypeGuid);
+
+            if (!field) {
+                // Fallback to text field
+                return TextField.component;
+            }
+
+            return field;
         }
     },
     template: `

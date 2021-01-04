@@ -28,7 +28,21 @@ export type PageConfig = {
 * @param config
 * @param blockComponent
 */
-export function initializeBlock(config: BlockConfig, blockComponent: Component | null): App {
+export async function initializeBlock(config: BlockConfig): Promise<App> {
+    const blockPath = `${config.blockFileUrl}.js`;
+    let blockComponent: Component | null = null;
+
+    try {
+        const blockComponentModule = await import(blockPath);
+        blockComponent = blockComponentModule ?
+            (blockComponentModule.default || blockComponentModule) :
+            null;
+    }
+    catch (e) {
+        // Log the error, but continue setting up the app so the UI will show the user an error
+        console.error(e);
+    }
+
     const name = `Root${config.blockFileUrl.replace(/\//g, '.')}`;
 
     const app = createApp({

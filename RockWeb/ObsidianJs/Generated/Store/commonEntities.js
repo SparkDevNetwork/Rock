@@ -14,4 +14,4 @@ define(["require", "exports", "./Generators.js"], function (require, exports, Ge
         exports.commonEntityModules[commonEntity.namespace] = Generators_js_1.generateCommonEntityModule(commonEntity);
     }
 });
-//# sourceMappingURL=commonEntities.js.map
+//# sourceMappingURL=CommonEntities.js.map

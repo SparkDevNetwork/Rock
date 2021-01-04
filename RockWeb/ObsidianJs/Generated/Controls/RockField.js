@@ -1,4 +1,4 @@
-define(["require", "exports", "../Fields/Index.js", "../Vendor/Vue/vue.js", "./BooleanField.js", "./TextField.js"], function (require, exports, Index_js_1, vue_js_1) {
+define(["require", "exports", "../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextField.js", "../Fields/BooleanField.js", "../Fields/DateField.js"], function (require, exports, Index_js_1, vue_js_1, TextField_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
@@ -15,7 +15,12 @@ define(["require", "exports", "../Fields/Index.js", "../Vendor/Vue/vue.js", "./B
         },
         computed: {
             fieldComponent: function () {
-                return Index_js_1.getFieldTypeComponent(this.fieldTypeGuid);
+                var field = Index_js_1.getFieldTypeComponent(this.fieldTypeGuid);
+                if (!field) {
+                    // Fallback to text field
+                    return TextField_js_1.default.component;
+                }
+                return field;
             }
         },
         template: "\n<component :is=\"fieldComponent\" v-model=\"modelValue\" />"

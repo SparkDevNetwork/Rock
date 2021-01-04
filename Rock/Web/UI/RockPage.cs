@@ -1123,8 +1123,8 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
                     {
-                        var script =
-$@"Rock.settings.initialize({{
+                        var script = $@"
+Rock.settings.initialize({{
     siteId: {_pageCache.Layout.SiteId},
     layoutId: {_pageCache.LayoutId},
     pageId: {_pageCache.Id},
@@ -1132,12 +1132,14 @@ $@"Rock.settings.initialize({{
     baseUrl: '{ResolveUrl( "~" )}'
 }});
 
-Obsidian.initializePage({{
-    pageId: {_pageCache.Id},
-    pageGuid: '{_pageCache.Guid}',
-    pageParameters: {PageParameters().ToJson()},
-    currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToJson() )},
-    contextEntities: {GetContextEntities().ToJson()}
+require(['/ObsidianJs/Generated/Index.js'], function (Obsidian) {{
+    Obsidian.initializePage({{
+        pageId: {_pageCache.Id},
+        pageGuid: '{_pageCache.Guid}',
+        pageParameters: {PageParameters().ToJson()},
+        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToJson() )},
+        contextEntities: {GetContextEntities().ToJson()}
+    }});
 }});";
 
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );

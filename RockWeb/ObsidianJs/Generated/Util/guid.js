@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.newGuid = void 0;
+    exports.areEqual = exports.normalize = exports.newGuid = void 0;
     /**
     * Generates a new Guid
     */
@@ -13,5 +13,22 @@ define(["require", "exports"], function (require, exports) {
         });
     }
     exports.newGuid = newGuid;
+    /**
+     * Returns a normalized Guid that can be compared with string equality (===)
+     * @param a
+     */
+    function normalize(a) {
+        return a.toLowerCase();
+    }
+    exports.normalize = normalize;
+    /**
+     * Are the guids equal?
+     * @param a
+     * @param b
+     */
+    function areEqual(a, b) {
+        return normalize(a) === normalize(b);
+    }
+    exports.areEqual = areEqual;
 });
-//# sourceMappingURL=guid.js.map
+//# sourceMappingURL=Guid.js.map

@@ -44,24 +44,50 @@ define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", 
     * @param config
     * @param blockComponent
     */
-    function initializeBlock(config, blockComponent) {
-        var name = "Root" + config.blockFileUrl.replace(/\//g, '.');
-        var app = vue_js_1.createApp({
-            name: name,
-            components: {
-                RockBlock: RockBlock_js_1.default
-            },
-            data: function () {
-                return {
-                    config: config,
-                    blockComponent: blockComponent ? vue_js_1.markRaw(blockComponent) : null
-                };
-            },
-            template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" />"
+    function initializeBlock(config) {
+        return __awaiter(this, void 0, void 0, function () {
+            var blockPath, blockComponent, blockComponentModule, e_1, name, app;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        blockPath = config.blockFileUrl + ".js";
+                        blockComponent = null;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, new Promise(function (resolve_1, reject_1) { require([blockPath], resolve_1, reject_1); })];
+                    case 2:
+                        blockComponentModule = _a.sent();
+                        blockComponent = blockComponentModule ?
+                            (blockComponentModule.default || blockComponentModule) :
+                            null;
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        // Log the error, but continue setting up the app so the UI will show the user an error
+                        console.error(e_1);
+                        return [3 /*break*/, 4];
+                    case 4:
+                        name = "Root" + config.blockFileUrl.replace(/\//g, '.');
+                        app = vue_js_1.createApp({
+                            name: name,
+                            components: {
+                                RockBlock: RockBlock_js_1.default
+                            },
+                            data: function () {
+                                return {
+                                    config: config,
+                                    blockComponent: blockComponent ? vue_js_1.markRaw(blockComponent) : null
+                                };
+                            },
+                            template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" />"
+                        });
+                        app.use(Index_js_1.default);
+                        app.mount(config.rootElement);
+                        return [2 /*return*/, app];
+                }
+            });
         });
-        app.use(Index_js_1.default);
-        app.mount(config.rootElement);
-        return app;
     }
     exports.initializeBlock = initializeBlock;
     /**

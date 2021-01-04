@@ -11,3 +11,20 @@ export function newGuid(): Guid {
     });
 }
 
+/**
+ * Returns a normalized Guid that can be compared with string equality (===)
+ * @param a
+ */
+export function normalize(a: Guid) {
+    return a.toLowerCase();
+}
+
+/**
+ * Are the guids equal?
+ * @param a
+ * @param b
+ */
+export function areEqual(a: Guid, b: Guid) {
+    return normalize(a) === normalize(b);
+}
+
