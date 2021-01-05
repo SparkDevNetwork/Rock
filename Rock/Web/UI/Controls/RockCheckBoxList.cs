@@ -455,11 +455,11 @@ namespace Rock.Web.UI.Controls
    function StrikeOffCheckbox( checkboxControl ){{
                 if ( checkboxControl.prop( 'checked' ) )
                 {{
-                    checkboxControl.parent('label').addClass( 'line-through' );
+                    checkboxControl.parent('label').addClass( 'text-linethrough' );
                 }}
                 else
                 {{
-                    checkboxControl.parent('label').removeClass( 'line-through' );
+                    checkboxControl.parent('label').removeClass( 'text-linethrough' );
                 }}
 
             }}

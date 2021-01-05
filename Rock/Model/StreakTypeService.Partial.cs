@@ -298,7 +298,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress"></param>
+        /// <param name="progress">Optional (using null is fine)</param>
         /// <param name="streakTypeId"></param>
         /// <param name="errorMessage"></param>
         public static void RebuildStreakType( IProgress<int?> progress, int streakTypeId, out string errorMessage )
@@ -396,7 +396,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress">The progress.</param>
+        /// <param name="progress">The progress. Optional (using null is fine)</param>
         /// <param name="streakTypeCache">The streak type.</param>
         /// <param name="errorMessage">The error message.</param>
         private static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
@@ -511,7 +511,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress">The progress.</param>
+        /// <param name="progress">The progress. Optional (using null is fine)</param>
         /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="errorMessage">The error message.</param>
         private static void RebuildStreakTypeFromInteraction( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
