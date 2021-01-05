@@ -4,8 +4,9 @@
     "fix": "eslint Obsidian --fix --ext .ts"
   },
   "dependencies": {
+    "vee-validate": "^4.1.3",
     "vue": "^3.0.4",
-    "vuex": "^4.0.0-rc.2"
+    "yup": "^0.32.8"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.11.1",

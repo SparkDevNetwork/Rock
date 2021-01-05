@@ -5,60 +5,70 @@ import TextBox from '../../Elements/TextBox.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
 import Person from '../../Types/Models/Person.js';
+import EmailInput from '../../Elements/EmailInput.js';
+import RockValidation from '../../Controls/RockValidation.js';
+import RockForm from '../../Controls/RockForm.js';
+import CampusPicker from '../../Controls/CampusPicker.js';
 
 export default defineComponent({
     name: 'Test.PersonDetail',
     components: {
         PaneledBlockTemplate,
         RockButton,
-        TextBox
+        TextBox,
+        EmailInput,
+        RockValidation,
+        RockForm,
+        CampusPicker
     },
     data() {
         const person: Person = {
-            FirstName: 'Ted',
-            LastName: 'Decker',
+            FirstName: 'John',
+            LastName: 'Smith',
             PhotoUrl: '',
-            FullName: 'Ted Decker',
+            FullName: 'John Smith',
+            Email: 'john@smith.com',
             Guid: '',
             Id: 0
         };
 
         return {
             person,
-            personForEditing: { ...person },
+            personForEditing: { ...person } as Person,
             isEditMode: false,
             messageToPublish: '',
-            receivedMessage: ''
+            receivedMessage: '',
+            campusId: ''
         };
     },
     methods: {
-        setAreSecondaryBlocksShown(isVisible) {
+        setAreSecondaryBlocksShown(isVisible): void {
             store.commit('setAreSecondaryBlocksShown', { areSecondaryBlocksShown: isVisible });
         },
-        setIsEditMode(isEditMode) {
+        setIsEditMode(isEditMode): void {
             this.isEditMode = isEditMode;
             this.setAreSecondaryBlocksShown(!isEditMode);
         },
-        doEdit() {
+        doEdit(): void {
             this.personForEditing = { ...this.person };
             this.setIsEditMode(true);
         },
-        doDelete() {
+        doDelete(): void {
             console.log('delete here');
         },
-        doCancel() {
+        doCancel(): void {
             this.personForEditing = { ...this.person };
             this.setIsEditMode(false);
         },
-        doSave() {
+        doSave(): void {
             this.person = { ...this.personForEditing };
             this.setIsEditMode(false);
         },
-        doPublish() {
+        doPublish(): void {
             bus.publish('PersonDetail:Message', this.messageToPublish);
             this.messageToPublish = '';
         },
-        receiveMessage(message: string) {
+        receiveMessage(message: string): void {
             this.receivedMessage = message;
         }
     },
@@ -67,7 +77,7 @@ export default defineComponent({
             return `${this.person.FirstName} ${this.person.LastName}`;
         }
     },
-    created() {
+    created(): void {
         bus.subscribe<string>('PersonSecondary:Message', this.receiveMessage);
     },
     template:
@@ -77,14 +87,22 @@ export default defineComponent({
         Detail Block: {{blockTitle}}
     </template>
     <template v-slot:default>
-        <template v-if="isEditMode">
+        <RockForm v-if="isEditMode" @submit="doSave">
             <div class="row">
-                <div class="col-sm-6 col-lg-4">
-                    <TextBox label="First Name" v-model="personForEditing.FirstName" />
+                <div class="col-sm-6">
+                    <TextBox label="First Name" v-model="personForEditing.FirstName" rules="required" disabled />
                     <TextBox label="Last Name" v-model="personForEditing.LastName" />
                 </div>
+                <div class="col-sm-6">
+                    <EmailInput v-model="personForEditing.Email" rules="required" />
+                    <CampusPicker v-model="campusId" rules="required" />
+                </div>
             </div>
-        </template>
+            <div class="actions">
+                <RockButton class="btn-primary" type="submit">Save</RockButton>
+                <RockButton class="btn-link" @click="doCancel">Cancel</RockButton>
+            </div>
+        </RockForm>
         <template v-else>
             <div class="row">
                 <div class="col-sm-6">
@@ -93,6 +111,8 @@ export default defineComponent({
                         <dd>{{person.FirstName}}</dd>
                         <dt>Last Name</dt>
                         <dd>{{person.LastName}}</dd>
+                        <dt>Email</dt>
+                        <dd>{{person.Email}}</dd>
                     </dl>
                 </div>
                 <div class="col-sm-6">
@@ -106,17 +126,11 @@ export default defineComponent({
                     </p>
                 </div>
             </div>
-        </template>
-        <div class="actions">
-            <template v-if="isEditMode">
-                <RockButton class="btn-primary" @click="doSave">Save</RockButton>
-                <RockButton class="btn-link" @click="doCancel">Cancel</RockButton>
-            </template>
-            <template v-else>
+            <div class="actions">
                 <RockButton class="btn-primary" @click="doEdit">Edit</RockButton>
                 <RockButton class="btn-link" @click="doDelete">Delete</RockButton>
-            </template>
-        </div>
+            </div>
+        </template>
     </template>
 </PaneledBlockTemplate>`
 });

@@ -15,7 +15,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "./Index.js", "../Filters/
                 return Date_js_1.asDateString(this.modelValue);
             }
         },
-        template: "\n<span>{{modelValue}} => {{ valueAsDateString }}</span>"
+        template: "\n<span>{{ valueAsDateString }}</span>"
     }));
 });
 //# sourceMappingURL=DateField.js.map

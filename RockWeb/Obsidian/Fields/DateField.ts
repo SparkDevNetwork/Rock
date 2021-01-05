@@ -19,5 +19,5 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<span>{{modelValue}} => {{ valueAsDateString }}</span>`
+<span>{{ valueAsDateString }}</span>`
 }));

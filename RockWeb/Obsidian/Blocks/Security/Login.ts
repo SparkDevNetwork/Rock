@@ -135,7 +135,7 @@ export default defineComponent({
             <TextBox label="Username" v-model="username" />
             <TextBox label="Password" v-model="password" type="password" />
             <CheckBox label="Keep me logged in" v-model="rememberMe" />
-            <RockButton :is-loading="isLoading" loading-text="Logging In..." class="btn btn-primary" @click="submitLogin" type="submit">
+            <RockButton :is-loading="isLoading" loading-text="Logging In..." class="btn btn-primary" type="submit">
                 Log In
             </RockButton>
         </form>

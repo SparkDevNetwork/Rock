@@ -4,6 +4,7 @@ import store from './Store/Index.js';
 import { Guid } from './Util/Guid.js';
 import Person from './Types/Models/Person.js';
 import Entity from './Types/Models/Entity.js';
+import './Rules/Index.js';
 
 export type BlockSettings = Record<string, unknown>;
 

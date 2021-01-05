@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js"], function (require, exports, vue_js_1, RockBlock_js_1, Index_js_1) {
+define(["require", "exports", "./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js", "./Rules/Index.js"], function (require, exports, vue_js_1, RockBlock_js_1, Index_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.initializePage = exports.initializeBlock = void 0;

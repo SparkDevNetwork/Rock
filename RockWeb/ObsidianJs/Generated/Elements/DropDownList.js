@@ -1,8 +1,11 @@
-define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], function (require, exports, vue_js_1, Guid_js_1) {
+define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValidate/vee-validate.js"], function (require, exports, vue_js_1, Guid_js_1, vee_validate_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
         name: 'DropDownList',
+        components: {
+            Field: vee_validate_js_1.Field
+        },
         props: {
             modelValue: {
                 type: String,
@@ -12,10 +15,6 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], functi
                 type: String,
                 required: true
             },
-            required: {
-                type: Boolean,
-                default: false
-            },
             disabled: {
                 type: Boolean,
                 default: false
@@ -23,6 +22,10 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], functi
             options: {
                 type: Array,
                 required: true
+            },
+            rules: {
+                type: String,
+                default: ''
             }
         },
         emits: [
@@ -34,8 +37,13 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], functi
                 internalValue: this.modelValue
             };
         },
+        computed: {
+            isRequired: function () {
+                return this.rules.includes('required');
+            }
+        },
         methods: {
-            onChange: function () {
+            onInput: function () {
                 this.$emit('update:modelValue', this.internalValue);
             }
         },
@@ -44,7 +52,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Util/Guid.js"], functi
                 this.internalValue = this.modelValue;
             }
         },
-        template: "<div class=\"form-group rock-drop-down-list\" :class=\"{required: required}\">\n    <label class=\"control-label\" :for=\"uniqueId\">{{label}}</label>\n    <div class=\"control-wrapper\">\n        <select :id=\"uniqueId\" class=\"form-control\" v-model=\"internalValue\" @change=\"onChange\" :disabled=\"disabled\">\n            <option value=\"\"></option>\n            <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n        </select>\n    </div>\n</div>"
+        template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"onInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-drop-down-list\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <label class=\"control-label\" :for=\"uniqueId\">{{label}}</label>\n        <div class=\"control-wrapper\">\n            <select :id=\"uniqueId\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\">\n                <option value=\"\"></option>\n                <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n            </select>\n        </div>\n    </div>\n</Field>"
     });
 });
 //# sourceMappingURL=DropDownList.js.map

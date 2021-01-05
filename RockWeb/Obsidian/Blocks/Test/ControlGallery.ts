@@ -51,9 +51,9 @@ export default defineComponent({
     <template v-slot:default>
         <div class="row">
             <div class="col-sm-12 col-md-6 col-lg-4">
-                <DefinedTypePicker label="Defined Type" v-model="definedTypeGuid" />
-                <DefinedValuePicker label="Defined Value" v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
-                <CampusPicker label="Campus" v-model="campusGuid" />
+                <DefinedTypePicker v-model="definedTypeGuid" />
+                <DefinedValuePicker v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
+                <CampusPicker v-model="campusGuid" />
             </div>
         </div>
         <hr />

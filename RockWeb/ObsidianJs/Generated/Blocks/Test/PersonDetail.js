@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js"], function (require, exports, Bus_js_1, PaneledBlockTemplate_js_1, RockButton_js_1, TextBox_js_1, vue_js_1, Index_js_1) {
+define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js", "../../Elements/EmailInput.js", "../../Controls/RockValidation.js", "../../Controls/RockForm.js", "../../Controls/CampusPicker.js"], function (require, exports, Bus_js_1, PaneledBlockTemplate_js_1, RockButton_js_1, TextBox_js_1, vue_js_1, Index_js_1, EmailInput_js_1, RockValidation_js_1, RockForm_js_1, CampusPicker_js_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = vue_js_1.defineComponent({
@@ -17,14 +17,19 @@ define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlock
         components: {
             PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
             RockButton: RockButton_js_1.default,
-            TextBox: TextBox_js_1.default
+            TextBox: TextBox_js_1.default,
+            EmailInput: EmailInput_js_1.default,
+            RockValidation: RockValidation_js_1.default,
+            RockForm: RockForm_js_1.default,
+            CampusPicker: CampusPicker_js_1.default
         },
         data: function () {
             var person = {
-                FirstName: 'Ted',
-                LastName: 'Decker',
+                FirstName: 'John',
+                LastName: 'Smith',
                 PhotoUrl: '',
-                FullName: 'Ted Decker',
+                FullName: 'John Smith',
+                Email: 'john@smith.com',
                 Guid: '',
                 Id: 0
             };
@@ -33,7 +38,8 @@ define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlock
                 personForEditing: __assign({}, person),
                 isEditMode: false,
                 messageToPublish: '',
-                receivedMessage: ''
+                receivedMessage: '',
+                campusId: ''
             };
         },
         methods: {
@@ -75,7 +81,7 @@ define(["require", "exports", "../../Util/Bus.js", "../../Templates/PaneledBlock
         created: function () {
             Bus_js_1.default.subscribe('PersonSecondary:Message', this.receiveMessage);
         },
-        template: "<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Detail Block: {{blockTitle}}\n    </template>\n    <template v-slot:default>\n        <template v-if=\"isEditMode\">\n            <div class=\"row\">\n                <div class=\"col-sm-6 col-lg-4\">\n                    <TextBox label=\"First Name\" v-model=\"personForEditing.FirstName\" />\n                    <TextBox label=\"Last Name\" v-model=\"personForEditing.LastName\" />\n                </div>\n            </div>\n        </template>\n        <template v-else>\n            <div class=\"row\">\n                <div class=\"col-sm-6\">\n                    <dl>\n                        <dt>First Name</dt>\n                        <dd>{{person.FirstName}}</dd>\n                        <dt>Last Name</dt>\n                        <dd>{{person.LastName}}</dd>\n                    </dl>\n                </div>\n                <div class=\"col-sm-6\">\n                    <div class=\"well\">\n                        <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                        <RockButton class=\"btn-primary btn-sm\" @click=\"doPublish\">Publish</RockButton>\n                    </div>\n                    <p>\n                        <strong>Secondary block says:</strong>\n                        {{receivedMessage}}\n                    </p>\n                </div>\n            </div>\n        </template>\n        <div class=\"actions\">\n            <template v-if=\"isEditMode\">\n                <RockButton class=\"btn-primary\" @click=\"doSave\">Save</RockButton>\n                <RockButton class=\"btn-link\" @click=\"doCancel\">Cancel</RockButton>\n            </template>\n            <template v-else>\n                <RockButton class=\"btn-primary\" @click=\"doEdit\">Edit</RockButton>\n                <RockButton class=\"btn-link\" @click=\"doDelete\">Delete</RockButton>\n            </template>\n        </div>\n    </template>\n</PaneledBlockTemplate>"
+        template: "<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Detail Block: {{blockTitle}}\n    </template>\n    <template v-slot:default>\n        <RockForm v-if=\"isEditMode\" @submit=\"doSave\">\n            <div class=\"row\">\n                <div class=\"col-sm-6\">\n                    <TextBox label=\"First Name\" v-model=\"personForEditing.FirstName\" rules=\"required\" disabled />\n                    <TextBox label=\"Last Name\" v-model=\"personForEditing.LastName\" />\n                </div>\n                <div class=\"col-sm-6\">\n                    <EmailInput v-model=\"personForEditing.Email\" rules=\"required\" />\n                    <CampusPicker v-model=\"campusId\" rules=\"required\" />\n                </div>\n            </div>\n            <div class=\"actions\">\n                <RockButton class=\"btn-primary\" type=\"submit\">Save</RockButton>\n                <RockButton class=\"btn-link\" @click=\"doCancel\">Cancel</RockButton>\n            </div>\n        </RockForm>\n        <template v-else>\n            <div class=\"row\">\n                <div class=\"col-sm-6\">\n                    <dl>\n                        <dt>First Name</dt>\n                        <dd>{{person.FirstName}}</dd>\n                        <dt>Last Name</dt>\n                        <dd>{{person.LastName}}</dd>\n                        <dt>Email</dt>\n                        <dd>{{person.Email}}</dd>\n                    </dl>\n                </div>\n                <div class=\"col-sm-6\">\n                    <div class=\"well\">\n                        <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                        <RockButton class=\"btn-primary btn-sm\" @click=\"doPublish\">Publish</RockButton>\n                    </div>\n                    <p>\n                        <strong>Secondary block says:</strong>\n                        {{receivedMessage}}\n                    </p>\n                </div>\n            </div>\n            <div class=\"actions\">\n                <RockButton class=\"btn-primary\" @click=\"doEdit\">Edit</RockButton>\n                <RockButton class=\"btn-link\" @click=\"doDelete\">Delete</RockButton>\n            </div>\n        </template>\n    </template>\n</PaneledBlockTemplate>"
     });
 });
 //# sourceMappingURL=PersonDetail.js.map

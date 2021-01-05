@@ -49,7 +49,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "../Elements/DropDownList.
             },
             label: {
                 type: String,
-                required: true
+                default: 'Defined Value'
             },
             definedTypeGuid: {
                 type: String,

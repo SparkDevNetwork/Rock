@@ -25,7 +25,7 @@ define(["require", "exports", "../Vendor/Vue/vue.js"], function (require, export
                     }
                 }
             },
-            template: "<tr @click=\"onRowClick\">\n    <slot />\n</tr>"
+            template: "\n<tr @click=\"onRowClick\">\n    <slot />\n</tr>"
         });
     }
     exports.default = OfType;

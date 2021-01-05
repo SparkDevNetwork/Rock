@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.Configuration;
 using System.Web.Optimization;
 
@@ -94,8 +93,14 @@ public class BundleConfig
             "~/Scripts/editor.js/*.js" ) );
 
         // Add Obsidian scripts
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" )
-            .IncludeDirectory( "~/ObsidianJs/Vendor", "*.js", true ) );
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include(
+            "~/ObsidianJs/Vendor/axios.js",
+            "~/ObsidianJs/Vendor/mitt.js",
+            "~/ObsidianJs/Vendor/require.js",
+            "~/ObsidianJs/Vendor/vue.js",
+            "~/ObsidianJs/Vendor/vee-validate.js",
+            "~/ObsidianJs/Vendor/vuex.js"
+        ) );
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occasionally was an empty string.
         foreach ( var bundle in bundles )

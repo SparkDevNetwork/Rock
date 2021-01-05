@@ -6,6 +6,7 @@ import Entity from '../Types/Models/entity.js';
 import cache from '../Util/cache.js';
 import http from '../Util/http.js';
 import { CommonEntity } from './commonEntities.js';
+import { splitCamelCase } from '../Filters/String.js';
 
 export type CommonEntityOption = {
     key: string;
@@ -20,6 +21,8 @@ export type CommonEntityOption = {
 * options object list for the drop down list.
 */
 export function createCommonEntityPicker(entityName: string, getOptionsFunc: () => CommonEntityOption[]) {
+    const entityNameForDisplay = splitCamelCase(entityName);
+
     return defineComponent({
         name: `${entityName}Picker`,
         components: {
@@ -32,7 +35,7 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
             },
             label: {
                 type: String,
-                required: true
+                default: entityNameForDisplay
             },
             required: {
                 type: Boolean,

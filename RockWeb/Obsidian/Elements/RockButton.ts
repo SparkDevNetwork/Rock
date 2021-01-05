@@ -1,27 +1,35 @@
-﻿import { defineComponent } from '../Vendor/Vue/vue.js';
+﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
 export default defineComponent({
     name: 'RockButton',
     props: {
         isLoading: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             default: false
         },
         loadingText: {
-            type: String,
+            type: String as PropType<string>,
             default: 'Loading...'
+        },
+        type: {
+            type: String as PropType<string>,
+            default: 'button'
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         }
     },
     emits: [
         'click'
     ],
     methods: {
-        handleClick: function () {
-            this.$emit('click');
+        handleClick: function (event: Event) {
+            this.$emit('click', event);
         }
     },
     template:
-`<button class="btn" :disabled="isLoading" @click.prevent="handleClick">
+`<button class="btn" :disabled="isLoading || disabled" @click="handleClick" :type="type">
     <template v-if="isLoading">
         {{loadingText}}
     </template>

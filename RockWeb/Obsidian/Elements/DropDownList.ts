@@ -1,8 +1,12 @@
-﻿import { defineComponent } from '../Vendor/Vue/vue.js';
+﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { newGuid } from '../Util/Guid.js';
+import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 
 export default defineComponent({
     name: 'DropDownList',
+    components: {
+        Field
+    },
     props: {
         modelValue: {
             type: String,
@@ -12,10 +16,6 @@ export default defineComponent({
             type: String,
             required: true
         },
-        required: {
-            type: Boolean,
-            default: false
-        },
         disabled: {
             type: Boolean,
             default: false
@@ -23,6 +23,10 @@ export default defineComponent({
         options: {
             type: Array,
             required: true
+        },
+        rules: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -34,8 +38,13 @@ export default defineComponent({
             internalValue: this.modelValue
         };
     },
+    computed: {
+        isRequired(): boolean {
+            return this.rules.includes('required');
+        }
+    },
     methods: {
-        onChange: function () {
+        onInput: function () {
             this.$emit('update:modelValue', this.internalValue);
         }
     },
@@ -44,14 +53,21 @@ export default defineComponent({
             this.internalValue = this.modelValue;
         }
     },
-    template:
-        `<div class="form-group rock-drop-down-list" :class="{required: required}">
-    <label class="control-label" :for="uniqueId">{{label}}</label>
-    <div class="control-wrapper">
-        <select :id="uniqueId" class="form-control" v-model="internalValue" @change="onChange" :disabled="disabled">
-            <option value=""></option>
-            <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
-        </select>
+    template: `
+<Field
+    v-model="internalValue"
+    @input="onInput"
+    :name="label"
+    :rules="rules"
+    #default="{field, errors}">
+    <div class="form-group rock-drop-down-list" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
+        <label class="control-label" :for="uniqueId">{{label}}</label>
+        <div class="control-wrapper">
+            <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field">
+                <option value=""></option>
+                <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
+            </select>
+        </div>
     </div>
-</div>`
+</Field>`
 });

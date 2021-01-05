@@ -16,7 +16,7 @@ export default defineComponent({
         },
         label: {
             type: String as PropType<string>,
-            required: true
+            default: 'Defined Value'
         },
         definedTypeGuid: {
             type: String as PropType<string>,

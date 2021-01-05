@@ -25,8 +25,8 @@ export default function OfType<T>() {
                 }
             }
         },
-        template:
-`<tr @click="onRowClick">
+        template: `
+<tr @click="onRowClick">
     <slot />
 </tr>`
     });

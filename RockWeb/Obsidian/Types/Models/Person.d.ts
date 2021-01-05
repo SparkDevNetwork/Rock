@@ -5,4 +5,5 @@ export default interface Person extends Entity {
     LastName: string;
     PhotoUrl: string;
     FullName: string;
+    Email: string;
 }
