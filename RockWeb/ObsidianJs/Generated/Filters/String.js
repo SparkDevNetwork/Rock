@@ -1,7 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.splitCamelCase = exports.isNullOrWhitespace = exports.isWhitespace = exports.isEmpty = void 0;
+    var __moduleName = context_1 && context_1.id;
     /**
      * Is the value an empty string?
      * @param val
@@ -12,7 +11,7 @@ define(["require", "exports"], function (require, exports) {
         }
         return false;
     }
-    exports.isEmpty = isEmpty;
+    exports_1("isEmpty", isEmpty);
     /**
      * Is the value an empty string?
      * @param val
@@ -23,7 +22,7 @@ define(["require", "exports"], function (require, exports) {
         }
         return false;
     }
-    exports.isWhitespace = isWhitespace;
+    exports_1("isWhitespace", isWhitespace);
     /**
      * Is the value null, undefined or whitespace?
      * @param val
@@ -31,7 +30,7 @@ define(["require", "exports"], function (require, exports) {
     function isNullOrWhitespace(val) {
         return isWhitespace(val) || val === undefined || val === null;
     }
-    exports.isNullOrWhitespace = isNullOrWhitespace;
+    exports_1("isNullOrWhitespace", isNullOrWhitespace);
     /**
      * Turns "MyCamelCaseString" into "My Camel Case String"
      * @param val
@@ -42,6 +41,11 @@ define(["require", "exports"], function (require, exports) {
         }
         return val;
     }
-    exports.splitCamelCase = splitCamelCase;
+    exports_1("splitCamelCase", splitCamelCase);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=String.js.map

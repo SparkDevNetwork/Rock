@@ -1,30 +1,43 @@
-﻿define(function (require) {
-    const PaneledBlockTemplate = require('/ObsidianJs/Generated/Templates/PaneledBlockTemplate.js').default;
-
-    return {
-        name: 'org_rocksolidchurch.PageDebug.ContextEntities',
-        components: {
-            PaneledBlockTemplate
-        },
-        computed: {
-            contextPerson() {
-                return this.$store.getters.personContext || {};
+﻿RegisterObsidianPlugin(
+    [
+        '/ObsidianJs/Generated/Templates/PaneledBlockTemplate.js',
+        '/ObsidianJs/Generated/Util/Guid.js'
+    ],
+    function (
+        PaneledBlockTemplateModule,
+        GuidModule
+    ) {
+        return {
+            name: 'org_rocksolidchurch.PageDebug.ContextEntities',
+            components: {
+                PaneledBlockTemplate: PaneledBlockTemplateModule.default
             },
-            contextGroup() {
-                return this.$store.getters.groupContext || {};
+            data() {
+                return {
+                    aGuid: GuidModule.newGuid()
+                };
             },
-            contextEntities() {
-                return this.$store.state.contextEntities;
-            }
-        },
-        template:
-            `<PaneledBlockTemplate>
+            computed: {
+                contextPerson() {
+                    return this.$store.getters.personContext || {};
+                },
+                contextGroup() {
+                    return this.$store.getters.groupContext || {};
+                },
+                contextEntities() {
+                    return this.$store.state.contextEntities;
+                }
+            },
+            template: `
+<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-pizza-slice"></i>
         Context Entities (JS Plugin)
     </template>
     <template v-slot:default>
         <dl>
+            <dt>Random Guid</dt>
+            <dd>{{aGuid}}</dd>
             <dt>Person (shortcut)</dt>
             <dd>{{contextPerson.FullName}}</dd>
             <dt>Group (shortcut)</dt>
@@ -39,5 +52,5 @@
         </dl>
     </template>
 </PaneledBlockTemplate>`
-    };
-});
+        };
+    });

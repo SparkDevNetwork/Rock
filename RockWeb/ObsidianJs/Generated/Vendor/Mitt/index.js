@@ -1,5 +1,7 @@
-﻿define(["exports"], function (exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = mitt;
+﻿System.register([], function (_export) {
+    _export("default", mitt);
+    return {
+        setters: [],
+        execute: function () { }
+    };
 });

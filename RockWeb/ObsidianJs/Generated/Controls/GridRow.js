@@ -1,6 +1,7 @@
-define(["require", "exports", "../Vendor/Vue/vue.js"], function (require, exports, vue_js_1) {
+System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    var vue_js_1;
+    var __moduleName = context_1 && context_1.id;
     function OfType() {
         return vue_js_1.defineComponent({
             name: 'GridRow',
@@ -28,6 +29,15 @@ define(["require", "exports", "../Vendor/Vue/vue.js"], function (require, export
             template: "\n<tr @click=\"onRowClick\">\n    <slot />\n</tr>"
         });
     }
-    exports.default = OfType;
+    exports_1("default", OfType);
+    return {
+        setters: [
+            function (vue_js_1_1) {
+                vue_js_1 = vue_js_1_1;
+            }
+        ],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=GridRow.js.map

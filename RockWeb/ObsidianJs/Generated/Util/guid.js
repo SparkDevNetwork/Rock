@@ -1,7 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.areEqual = exports.normalize = exports.newGuid = void 0;
+    var __moduleName = context_1 && context_1.id;
     /**
     * Generates a new Guid
     */
@@ -12,7 +11,7 @@ define(["require", "exports"], function (require, exports) {
             return v.toString(16);
         });
     }
-    exports.newGuid = newGuid;
+    exports_1("newGuid", newGuid);
     /**
      * Returns a normalized Guid that can be compared with string equality (===)
      * @param a
@@ -20,7 +19,7 @@ define(["require", "exports"], function (require, exports) {
     function normalize(a) {
         return a.toLowerCase();
     }
-    exports.normalize = normalize;
+    exports_1("normalize", normalize);
     /**
      * Are the guids equal?
      * @param a
@@ -29,6 +28,11 @@ define(["require", "exports"], function (require, exports) {
     function areEqual(a, b) {
         return normalize(a) === normalize(b);
     }
-    exports.areEqual = areEqual;
+    exports_1("areEqual", areEqual);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=Guid.js.map

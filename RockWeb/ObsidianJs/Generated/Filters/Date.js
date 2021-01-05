@@ -1,7 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.asDateString = exports.asDateOrNull = void 0;
+    var __moduleName = context_1 && context_1.id;
     /**
      * Adjust for the timezone offset so early morning times don't appear as the previous local day.
      * @param val
@@ -30,7 +29,7 @@ define(["require", "exports"], function (require, exports) {
         }
         return null;
     }
-    exports.asDateOrNull = asDateOrNull;
+    exports_1("asDateOrNull", asDateOrNull);
     /**
      * Transforms the value into a string like '9/13/2001'
      * @param val
@@ -42,6 +41,11 @@ define(["require", "exports"], function (require, exports) {
         }
         return dateOrNull.toLocaleDateString();
     }
-    exports.asDateString = asDateString;
+    exports_1("asDateString", asDateString);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=Date.js.map

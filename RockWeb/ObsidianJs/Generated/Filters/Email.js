@@ -1,7 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.isEmail = void 0;
+    var __moduleName = context_1 && context_1.id;
     /**
      * Is the value a valid email address?
      * @param val
@@ -13,6 +12,11 @@ define(["require", "exports"], function (require, exports) {
         }
         return false;
     }
-    exports.isEmail = isEmail;
+    exports_1("isEmail", isEmail);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=Email.js.map

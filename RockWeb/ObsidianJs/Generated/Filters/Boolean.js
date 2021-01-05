@@ -1,7 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.asTrueFalseOrNull = exports.asYesNoOrNull = exports.asBoolean = exports.asBooleanOrNull = void 0;
+    var __moduleName = context_1 && context_1.id;
     /**
      * Transform the value into true, false, or null
      * @param val
@@ -25,7 +24,7 @@ define(["require", "exports"], function (require, exports) {
         }
         return null;
     }
-    exports.asBooleanOrNull = asBooleanOrNull;
+    exports_1("asBooleanOrNull", asBooleanOrNull);
     /**
      * Transform the value into true or false
      * @param val
@@ -33,7 +32,7 @@ define(["require", "exports"], function (require, exports) {
     function asBoolean(val) {
         return !!asBooleanOrNull(val);
     }
-    exports.asBoolean = asBoolean;
+    exports_1("asBoolean", asBoolean);
     /** Transform the value into the strings "Yes", "No", or null */
     function asYesNoOrNull(val) {
         var boolOrNull = asBooleanOrNull(val);
@@ -42,7 +41,7 @@ define(["require", "exports"], function (require, exports) {
         }
         return boolOrNull ? 'Yes' : 'No';
     }
-    exports.asYesNoOrNull = asYesNoOrNull;
+    exports_1("asYesNoOrNull", asYesNoOrNull);
     /** Transform the value into the strings "True", "False", or null */
     function asTrueFalseOrNull(val) {
         var boolOrNull = asBooleanOrNull(val);
@@ -51,6 +50,11 @@ define(["require", "exports"], function (require, exports) {
         }
         return boolOrNull ? 'True' : 'False';
     }
-    exports.asTrueFalseOrNull = asTrueFalseOrNull;
+    exports_1("asTrueFalseOrNull", asTrueFalseOrNull);
+    return {
+        setters: [],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=Boolean.js.map

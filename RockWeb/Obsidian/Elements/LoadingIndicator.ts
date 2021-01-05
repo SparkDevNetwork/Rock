@@ -2,8 +2,8 @@
 
 export default defineComponent({
     name: 'LoadingIndicator',
-    template:
-`<div class="text-muted">
+    template: `
+<div class="text-muted">
     Loading...
 </div>`
 });

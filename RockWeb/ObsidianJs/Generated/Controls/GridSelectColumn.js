@@ -1,6 +1,7 @@
-define(["require", "exports", "../Vendor/Vue/vue.js", "./GridColumn.js"], function (require, exports, vue_js_1, GridColumn_js_1) {
+System.register(["../Vendor/Vue/vue.js", "./GridColumn.js"], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    var vue_js_1, GridColumn_js_1;
+    var __moduleName = context_1 && context_1.id;
     function OfType() {
         return vue_js_1.defineComponent({
             name: 'GridSelectColumn',
@@ -48,6 +49,18 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "./GridColumn.js"], functi
             template: "\n<GridColumn class=\"grid-select-field\" align=\"center\">\n    <template #header>\n        <div @click.stop class=\"checkbox\">\n            <label title=\"\">\n                <input type=\"checkbox\" class=\"select-all\" v-model=\"gridContext.selectAllRows\" />\n                <span class=\"label-text\">&nbsp;</span>\n            </label>\n        </div>\n    </template>\n    <template #default>\n        <div @click.stop class=\"checkbox\">\n            <label title=\"\">\n                <input type=\"checkbox\" class=\"select-all\" v-model=\"isSelected\" />\n                <span class=\"label-text\">&nbsp;</span>\n            </label>\n        </div>\n    </template>\n</GridColumn>"
         });
     }
-    exports.default = OfType;
+    exports_1("default", OfType);
+    return {
+        setters: [
+            function (vue_js_1_1) {
+                vue_js_1 = vue_js_1_1;
+            },
+            function (GridColumn_js_1_1) {
+                GridColumn_js_1 = GridColumn_js_1_1;
+            }
+        ],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=GridSelectColumn.js.map

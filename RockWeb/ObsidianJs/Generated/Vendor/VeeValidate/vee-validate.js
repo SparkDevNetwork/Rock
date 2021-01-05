@@ -1,8 +1,8 @@
-﻿define(["exports"], function (exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.default = VeeValidate;
-    exports.Form = VeeValidate.Form;
-    exports.Field = VeeValidate.Field;
-    exports.defineRule = VeeValidate.defineRule; 
+﻿System.register([], function (_export) {
+    _export("default", VeeValidate);
+    _export(VeeValidate);
+    return {
+        setters: [],
+        execute: function () { }
+    };
 });

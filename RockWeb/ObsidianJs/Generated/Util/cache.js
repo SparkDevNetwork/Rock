@@ -1,6 +1,6 @@
-define(["require", "exports"], function (require, exports) {
+System.register([], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    var __moduleName = context_1 && context_1.id;
     /**
     * Stores the value using the given key. The cache will expire at the expiration or in
     * 1 minute if none is provided
@@ -39,9 +39,14 @@ define(["require", "exports"], function (require, exports) {
         }
         return cache.value;
     }
-    exports.default = {
-        set: set,
-        get: get
+    return {
+        setters: [],
+        execute: function () {
+            exports_1("default", {
+                set: set,
+                get: get
+            });
+        }
     };
 });
 //# sourceMappingURL=cache.js.map

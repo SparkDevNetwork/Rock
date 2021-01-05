@@ -1,17 +1,7 @@
-define(["require", "exports", "../Vendor/Mitt/index.js"], function (require, exports, index_js_1) {
+System.register(["../Vendor/Mitt/index.js"], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var bus = index_js_1.default();
-    var log = [];
-    /**
-    * Write a log entry that a payload was sent or received.
-    */
-    var writeLog = function (msg) {
-        log.push({
-            date: new Date(),
-            message: msg
-        });
-    };
+    var index_js_1, bus, log, writeLog;
+    var __moduleName = context_1 && context_1.id;
     /**
     * Send the payload to subscribers listening for the event name
     */
@@ -31,10 +21,30 @@ define(["require", "exports", "../Vendor/Mitt/index.js"], function (require, exp
             }
         });
     }
-    exports.default = {
-        publish: publish,
-        subscribe: subscribe,
-        log: log
+    return {
+        setters: [
+            function (index_js_1_1) {
+                index_js_1 = index_js_1_1;
+            }
+        ],
+        execute: function () {
+            bus = index_js_1.default();
+            log = [];
+            /**
+            * Write a log entry that a payload was sent or received.
+            */
+            writeLog = function (msg) {
+                log.push({
+                    date: new Date(),
+                    message: msg
+                });
+            };
+            exports_1("default", {
+                publish: publish,
+                subscribe: subscribe,
+                log: log
+            });
+        }
     };
 });
 //# sourceMappingURL=Bus.js.map

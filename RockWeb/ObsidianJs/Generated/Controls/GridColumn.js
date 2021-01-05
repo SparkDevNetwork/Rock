@@ -1,6 +1,7 @@
-define(["require", "exports", "../Vendor/Vue/vue.js", "./Grid.js"], function (require, exports, vue_js_1, Grid_js_1) {
+System.register(["../Vendor/Vue/vue.js", "./Grid.js"], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    var vue_js_1, Grid_js_1;
+    var __moduleName = context_1 && context_1.id;
     function OfType() {
         return vue_js_1.defineComponent({
             name: 'GridColumn',
@@ -58,6 +59,18 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "./Grid.js"], function (re
             template: "\n<th\n    v-if=\"rowContext.isHeader\"\n    scope=\"col\"\n    @click=\"onHeaderClick\"\n    :class=\"isCurrentlySortedAsc ? 'ascending' : isCurrentlySortedDesc ? 'descending' : ''\">\n    <a v-if=\"mySortExpression\" href=\"javascript:void(0);\">\n        <slot name=\"header\">\n            {{title}}\n        </slot>\n    </a>\n    <template v-else>\n        <slot name=\"header\">\n            {{title}}\n        </slot>\n    </template>\n</th>\n<td v-else class=\"grid-select-cell\">\n    <slot>\n        {{rowContext.rowData[property]}}\n    </slot>\n</td>"
         });
     }
-    exports.default = OfType;
+    exports_1("default", OfType);
+    return {
+        setters: [
+            function (vue_js_1_1) {
+                vue_js_1 = vue_js_1_1;
+            },
+            function (Grid_js_1_1) {
+                Grid_js_1 = Grid_js_1_1;
+            }
+        ],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=GridColumn.js.map

@@ -1,4 +1,14 @@
-﻿define(["exports"], function (exports) {
+﻿System.register([], function (_export) {
+    _export("default", Vue);
+    _export(Vue);
+    return {
+        setters: [],
+        execute: function () { }
+    };
+});
+
+/*
+define(["exports"], function (exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Vue;
@@ -10,3 +20,4 @@
     exports.inject = Vue.inject;
     exports.ref = Vue.ref;
 });
+*/

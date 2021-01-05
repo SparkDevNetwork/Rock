@@ -8,8 +8,8 @@ export default defineComponent({
             return store.state.areSecondaryBlocksShown;
         }
     },
-    template:
-`<div class="secondary-block">
+    template: `
+<div class="secondary-block">
     <slot v-if="isVisible" />
 </div>`
 });

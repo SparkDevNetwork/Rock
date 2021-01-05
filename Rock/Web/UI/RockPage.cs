@@ -1132,7 +1132,7 @@ Rock.settings.initialize({{
     baseUrl: '{ResolveUrl( "~" )}'
 }});
 
-require(['/ObsidianJs/Generated/Index.js'], function (Obsidian) {{
+System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     Obsidian.initializePage({{
         pageId: {_pageCache.Id},
         pageGuid: '{_pageCache.Guid}',

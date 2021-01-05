@@ -1,6 +1,7 @@
-define(["require", "exports", "../Vendor/Vue/vue.js", "./GridColumn.js"], function (require, exports, vue_js_1, GridColumn_js_1) {
+System.register(["../Vendor/Vue/vue.js", "./GridColumn.js"], function (exports_1, context_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    var vue_js_1, GridColumn_js_1;
+    var __moduleName = context_1 && context_1.id;
     function OfType() {
         return vue_js_1.defineComponent({
             name: 'GridProfileLinkColumn',
@@ -36,6 +37,18 @@ define(["require", "exports", "../Vendor/Vue/vue.js", "./GridColumn.js"], functi
             template: "<GridColumn :rowContext=\"rowContext\" class=\"grid-columncommand\" align=\"center\">\n    <a v-if=\"url\" @click.stop class=\"btn btn-default btn-sm\" :href=\"url\">\n        <i class=\"fa fa-user\"></i>\n    </a>\n</GridColumn>"
         });
     }
-    exports.default = OfType;
+    exports_1("default", OfType);
+    return {
+        setters: [
+            function (vue_js_1_1) {
+                vue_js_1 = vue_js_1_1;
+            },
+            function (GridColumn_js_1_1) {
+                GridColumn_js_1 = GridColumn_js_1_1;
+            }
+        ],
+        execute: function () {
+        }
+    };
 });
 //# sourceMappingURL=GridProfileLinkColumn.js.map

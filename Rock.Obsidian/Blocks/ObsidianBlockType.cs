@@ -92,12 +92,12 @@ namespace Rock.Obsidian.Blocks
             return
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
-require(['/ObsidianJs/Generated/Index.js'], function (Obsidian) {{
+System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     Obsidian.initializeBlock({{
         blockFileUrl: '{BlockFileUrl}',
         rootElement: document.getElementById('{rootElementId}'),
         blockGuid: '{BlockCache.Guid}',
-        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() )},
+        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() )}
     }});
 }});
 </script>";
