@@ -5,6 +5,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -24,7 +25,7 @@ namespace Rock.Workflow.Action
 
     [WorkflowAttribute(
         "Person",
-        Description = "The attribute that contains the person use for the inactivation.",
+        Description = "The attribute that contains the person to use for the inactivation.",
         IsRequired = true,
         Order = 0,
         Key = AttributeKey.Person,
@@ -46,15 +47,15 @@ namespace Rock.Workflow.Action
         required: false,
         order: 2,
         key: AttributeKey.InactiveNote,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType" } )]
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
 
     [CustomDropdownListField(
         "Multi-Family Logic",
-        description: "This determines what to do if the person is in more than one family.",
-        listSource: "0^Inactivate individuals in the primary family,1^Inactivate individuals in all families,2^Inactivate just the individual",
-        required: true,
-        order: 3,
-        key: AttributeKey.MultiFamilyLogic )]
+        Description = "This determines what to do if the person is in more than one family.",
+        ListSource = "0^Inactivate individuals in the primary family,1^Inactivate individuals in all families,2^Inactivate just the individual",
+        IsRequired = true,
+        Order = 3,
+        Key = AttributeKey.MultiFamilyLogic )]
 
     #endregion Attributes
 
@@ -114,6 +115,9 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
+            // If the configured inactiveReasonGuid is not in the inactiveReasonDefinedValues, then
+            // that guid is probably from an attribute and therefore we need to get the inactiveReasonGuid
+            // from the workflow's attribute value instead.
             Guid inactiveReasonGuid = GetAttributeValue( action, AttributeKey.InactiveReason ).AsGuid();
             var inactiveReasonDefinedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() ).DefinedValues;
             if ( !inactiveReasonDefinedValues.Any( a => a.Guid == inactiveReasonGuid ) )
@@ -126,6 +130,7 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            // Now can we do our final check to ensure the guid is a valid inactive reason.
             if ( !inactiveReasonDefinedValues.Any( a => a.Guid == inactiveReasonGuid ) )
             {
                 var message = string.Format( "Inactive Reason could not be found for selected value ('{0}')!", inactiveReasonGuid.ToString() );
@@ -146,7 +151,7 @@ namespace Rock.Workflow.Action
 
             var multiFamilyLogic = GetAttributeValue( action, AttributeKey.MultiFamilyLogic ).AsInteger();
 
-            if ( multiFamilyLogic == 0 )
+            if ( multiFamilyLogic == (int) LogicOption.InactivateIndividualsPrimaryFamily )
             {
                 if ( person.PrimaryFamily != null )
                 {
@@ -157,9 +162,9 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
-            else if ( multiFamilyLogic == 1 )
+            else if ( multiFamilyLogic == ( int ) LogicOption.InactivateIndividualsAllFamilies )
             {
-                var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person );
+                var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person ).Distinct();
                 foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                 {
                     InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
@@ -223,6 +228,16 @@ namespace Rock.Workflow.Action
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// The enum that corresponds with the MultiFamilyLogic block setting.
+        /// </summary>
+        private enum LogicOption
+        {
+            InactivateIndividualsPrimaryFamily = 0,
+            InactivateIndividualsAllFamilies = 1,
+            InactivateJustIndividual = 2
         }
     }
 }

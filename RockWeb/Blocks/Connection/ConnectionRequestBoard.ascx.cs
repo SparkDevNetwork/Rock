@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -4750,8 +4749,9 @@ namespace RockWeb.Blocks.Connection
             return service.Queryable()
                 .AsNoTracking()
                 .Where( at =>
-                    !at.ConnectionTypeId.HasValue ||
-                    at.ConnectionTypeId == connectionType.Id );
+                    ( !at.ConnectionTypeId.HasValue ||
+                    at.ConnectionTypeId == connectionType.Id ) &&
+                    at.IsActive );
         }
 
         /// <summary>
