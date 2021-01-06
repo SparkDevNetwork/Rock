@@ -250,6 +250,7 @@ namespace RockWeb.Blocks.Communication
 
                 try
                 {
+                    testCommunication.CreatedDateTime = RockDateTime.Now;
                     testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                     // removed the AsNoTracking() from the next line because otherwise the Person/PersonAlias is attempted (but fails) to be added as new.
                     testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable()
@@ -323,11 +324,17 @@ namespace RockWeb.Blocks.Communication
                 {
                     try
                     {
-                        // make sure we delete the test communication record we created to send the test
+                        //
+                        // We can't actually delete the test communication since if it is an
+                        // action type of "Show Details" then they won't be able to view the
+                        // communication on their device to see how it looks. Instead we switch
+                        // the communication to be transient so the cleanup job will take care
+                        // of it later.
+                        //
                         if ( communicationService != null && testCommunication != null )
                         {
                             var testCommunicationId = testCommunication.Id;
-                            communicationService.Delete( testCommunication );
+                            testCommunication.Status = CommunicationStatus.Transient;
                             rockContext.SaveChanges( disablePrePostProcessing: true );
 
                             // Delete any Person History that was created for the Test Communication

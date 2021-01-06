@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -219,11 +220,7 @@ namespace RockWeb.Blocks.Administration
             var job = new ServiceJobService( new RockContext() ).Get( e.RowKeyId );
             if ( job != null )
             {
-                var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id );
-
-                // Process the transaction on another thread
-                System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-
+                new ProcessRunJobNow.Message { JobId = job.Id }.Send();
                 mdGridWarning.Show( string.Format( "The '{0}' job has been started.", job.Name ), ModalAlertType.Information );
 
                 // wait a split second for the job to start so that the grid will show the status (if it changed)

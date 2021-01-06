@@ -297,13 +297,16 @@
                                     <div class="col-md-4">
                                         <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />

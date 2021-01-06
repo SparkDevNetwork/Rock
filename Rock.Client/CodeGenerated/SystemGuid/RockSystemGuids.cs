@@ -1359,6 +1359,7 @@ namespace Rock.Client.SystemGuid
         public const string USER_ACCOUNTS = "306BFEF8-596C-482A-8DEC-34A7B622E688";
         public const string VERIFY_PHOTOS = "07E4BA19-614A-42D0-9D75-DFB31374844D";
         public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
+        public const string WEB_FARM_NODE = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2";
         public const string WEBSITE = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F";
         public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";
         public const string WORKFLOW = "CDB27DB2-977C-415A-AED5-D0751DFD5DF2";

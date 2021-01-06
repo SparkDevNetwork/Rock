@@ -123,6 +123,9 @@ namespace Rock.Client
         public Rock.Client.Enums.RegistrationNotify Notify { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
+
+        /// <summary />
         public string PaymentReminderEmailTemplate { get; set; }
 
         /// <summary />
@@ -272,6 +275,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Notify = source.Notify;
+            this.PaymentRedirectVendor = source.PaymentRedirectVendor;
             this.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             this.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             this.PaymentReminderFromName = source.PaymentReminderFromName;

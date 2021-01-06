@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Following POCO Service class
+    /// Service/Data access class for <see cref="Rock.Model.Following"/> entity objects.
     /// </summary>
     public partial class FollowingService
     {
@@ -111,6 +111,21 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the by entity and person.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Following> GetByEntityAndPerson( int entityTypeId, int entityId, int personId )
+        {
+            return this.Queryable()
+                .Where( f => f.EntityTypeId == entityTypeId
+                    && f.PersonAlias.PersonId == personId
+                    && f.EntityId == entityId );
         }
     }
 }

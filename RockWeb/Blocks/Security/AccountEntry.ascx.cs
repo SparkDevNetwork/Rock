@@ -347,7 +347,7 @@ usernameTextbox.blur(function () {{
                         usernameUnavailable.removeClass('alert-warning');
                     }} else {{
                         availabilityMessageRow.show();
-                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken!');
+                        usernameUnavailable.html('That ' + usernameFieldLabel + ' is already taken.');
                         usernameUnavailable.addClass('alert-warning');
                         usernameUnavailable.removeClass('alert-success');
                     }}
@@ -358,7 +358,7 @@ usernameTextbox.blur(function () {{
             }});
         }}
     }} else {{
-        usernameUnavailable.html(usernameFieldLabel + ' is required!');
+        usernameUnavailable.html(usernameFieldLabel + ' is required.');
         usernameUnavailable.addClass('alert-warning');
         usernameUnavailable.removeClass('alert-success');
     }}
@@ -521,6 +521,16 @@ usernameTextbox.blur(function () {{
                         return;
                     }
                 }
+                else
+                {
+                    var regexString = Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" );
+                    var match = System.Text.RegularExpressions.Regex.Match( tbUserName.Text, regexString );
+                    if ( !match.Success )
+                    {
+                        ShowErrorMessage( GetAttributeValue( AttributeKey.UsernameFieldLabel ) + " is not valid. " + Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) );
+                        return;
+                    }
+                }
 
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
@@ -533,7 +543,7 @@ usernameTextbox.blur(function () {{
                     }
                     else
                     {
-                        ShowErrorMessage( "Username already exists" );
+                        ShowErrorMessage( "That " + GetAttributeValue( AttributeKey.UsernameFieldLabel ) + " is already taken." );
                     }
                 }
                 else

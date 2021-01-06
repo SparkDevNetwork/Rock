@@ -527,6 +527,13 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum PaymentRedirectVendor
+    {
+        Pushpay = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,
@@ -835,6 +842,14 @@ namespace Rock.Client.Enums
         Total = 0x0,
         FinancialAccount = 0x1,
         Campus = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TypeOfMetric
+    {
+        CpuUsagePercent = 0x0,
+        MemoryUsageMegabytes = 0x1,
     }
 
     /// <summary>
