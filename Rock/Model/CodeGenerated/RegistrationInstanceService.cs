@@ -106,6 +106,7 @@ namespace Rock.Model
             target.MaxAttendees = source.MaxAttendees;
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
+            target.PaymentRedirectData = source.PaymentRedirectData;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
             target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;

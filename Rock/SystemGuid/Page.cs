@@ -997,6 +997,12 @@ namespace Rock.SystemGuid
         public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
 
         /// <summary>
+        /// The web farm node
+        /// Parent page: Web Farm
+        /// </summary>
+        public const string WEB_FARM_NODE = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2";
+
+        /// <summary>
         /// Gets the File Storage Providers page guid
         /// ParentPage: System Settings
         /// </summary>

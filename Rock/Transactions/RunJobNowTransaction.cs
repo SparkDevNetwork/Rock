@@ -31,6 +31,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
+    [Obsolete( "Use ProcessRunNowJob Task instead." )]
+    [RockObsolete( "1.13" )]
     public class RunJobNowTransaction : ITransaction
     {
 

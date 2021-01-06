@@ -2325,7 +2325,7 @@ namespace Rock.Model
         /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
-        /// <param name="personIdList">A a list of Person IDs.</param>
+        /// <param name="personIdList">A list of Person IDs.</param>
         public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
         {
             var rockContext = this.Context as RockContext;

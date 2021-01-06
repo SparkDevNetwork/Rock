@@ -123,6 +123,7 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
+            target.PaymentRedirectVendor = source.PaymentRedirectVendor;
             target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             target.PaymentReminderFromName = source.PaymentReminderFromName;
