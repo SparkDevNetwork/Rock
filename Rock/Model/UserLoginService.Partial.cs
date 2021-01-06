@@ -21,6 +21,7 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -84,10 +85,14 @@ namespace Rock.Model
 
             var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
+            {
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ) );
+            }
 
             if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+            {
                 throw new Exception( "Cannot change password on external service type" );
+            }
 
             authenticationComponent.SetPassword( user, password );
             user.LastPasswordChangedDateTime = RockDateTime.Now;
@@ -104,8 +109,12 @@ namespace Rock.Model
             {
                 string identifier = string.Empty;
                 try
-                { identifier = Rock.Security.Encryption.DecryptString( code ); }
-                catch { }
+                {
+                    identifier = Rock.Security.Encryption.DecryptString( code );
+                }
+                catch
+                {
+                }
 
                 if ( identifier.IsNotNullOrWhiteSpace() && identifier.StartsWith( "ROCK|" ) )
                 {
@@ -116,16 +125,23 @@ namespace Rock.Model
                         string username = idParts[2];
                         long ticks = 0;
                         if ( !long.TryParse( idParts[3], out ticks ) )
+                        {
                             ticks = 0;
+                        }
+
                         DateTime dateTime = new DateTime( ticks );
 
                         // Confirmation Code is only valid for an hour
                         if ( RockDateTime.Now.Subtract( dateTime ).Hours > 1 )
+                        {
                             return null;
+                        }
 
                         UserLogin user = this.GetByEncryptedKey( publicKey );
                         if ( user != null && user.UserName == username )
+                        {
                             return user;
+                        }
                     }
                 }
             }
@@ -173,9 +189,11 @@ namespace Rock.Model
                     if ( user != null && userIsOnline )
                     {
                         // Save last activity date
-                        var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                        transaction.UserId = user.Id;
-                        transaction.LastActivityDate = RockDateTime.Now;
+                        var message = new UpdateUserLastActivity.Message
+                        {
+                            UserId = user.Id,
+                            LastActivityDate = RockDateTime.Now,
+                        };
 
                         if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
                         {
@@ -184,23 +202,12 @@ namespace Rock.Model
                                 HttpContext.Current.Session["RockUserId"] = user.Id;
                             }
 
-                            // see if there is already a LastActivitytransaction queued for this user, and just update its LastActivityDate instead of adding another to the queue
-                            var userLastActivity = Rock.Transactions.RockQueue.TransactionQueue.ToArray().OfType<Rock.Transactions.UserLastActivityTransaction>()
-                                .Where( a => a.UserId == transaction.UserId ).FirstOrDefault();
-
-                            if ( userLastActivity != null )
-                            {
-                                userLastActivity.LastActivityDate = transaction.LastActivityDate;
-                            }
-                            else
-                            {
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                            }
+                            message.Send();
                         }
                         else
                         {
-                            transaction.IsOnLine = false;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                            message.IsOnline = false;
+                            message.Send();
 
                             Authorization.SignOut();
                             return null;
@@ -290,7 +297,7 @@ namespace Rock.Model
             string passwordRegex = globalAttributes.GetValue( "PasswordRegexFriendlyDescription" );
             if ( string.IsNullOrEmpty( passwordRegex ) )
             {
-                return "";
+                return string.Empty;
             }
             else
             {
@@ -318,7 +325,8 @@ namespace Rock.Model
         /// or
         /// Invalid Person, person does not exist;person
         /// </exception>
-        public static UserLogin Create( RockContext rockContext,
+        public static UserLogin Create(
+            RockContext rockContext,
             Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             int entityTypeId,
@@ -336,7 +344,9 @@ namespace Rock.Model
                 {
                     UserLogin user = userLoginService.GetByUserName( username );
                     if ( user != null )
+                    {
                         throw new ArgumentOutOfRangeException( "username", "Username already exists" );
+                    }
 
                     DateTime createDate = RockDateTime.Now;
 
@@ -353,7 +363,9 @@ namespace Rock.Model
                     {
                         var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
                         if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                        {
                             throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+                        }
 
                         user.Password = authenticationComponent.EncodePassword( user, password );
                     }
@@ -395,7 +407,8 @@ namespace Rock.Model
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
-        public static UserLogin Create( RockContext rockContext,
+        public static UserLogin Create(
+            RockContext rockContext,
             Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             int entityTypeId,
@@ -468,8 +481,10 @@ namespace Rock.Model
                 Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                 cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
-                relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                    cleanUrl, Rock.Web.UI.RockPage.GetClientIpAddress() );
+                relatedDataBuilder.AppendFormat(
+                    " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                    cleanUrl,
+                    Rock.Web.UI.RockPage.GetClientIpAddress() );
             }
 
             var historyChangeList = new History.HistoryChangeList();
@@ -538,6 +553,5 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 }

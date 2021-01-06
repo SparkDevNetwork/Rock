@@ -14,55 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Update the status of scheduled transactions
     /// </summary>
-    [Obsolete( "Use UpdatePaymentStatusFinancialScheduledTransactions Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class UpdatePaymentStatusTransaction : ITransaction
+    public sealed class UpdatePaymentStatusFinancialScheduledTransactions : BusStartedTask<UpdatePaymentStatusFinancialScheduledTransactions.Message>
     {
-        /// <summary>
-        /// Gets or sets the gateway identifier.
-        /// </summary>
-        /// <value>
-        /// The gateway identifier.
-        /// </value>
-        public int GatewayId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scheduled transaction ids.
-        /// </summary>
-        /// <value>
-        /// The scheduled transaction ids.
-        /// </value>
-        public List<int> ScheduledTransactionIds { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UpdatePaymentStatusTransaction"/> class.
-        /// </summary>
-        /// <param name="gatewayId">The gateway identifier.</param>
-        /// <param name="scheduledTransactionIds">The scheduled transaction ids.</param>
-        public UpdatePaymentStatusTransaction( int gatewayId, List<int> scheduledTransactionIds )
-        {
-            GatewayId = gatewayId;
-            ScheduledTransactionIds = scheduledTransactionIds;
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
-            if ( !ScheduledTransactionIds.Any() )
+            if ( !message.ScheduledTransactionIds.Any() )
             {
                 return;
             }
@@ -71,7 +45,7 @@ namespace Rock.Transactions
             {
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
 
-                foreach ( var scheduledTransactionId in ScheduledTransactionIds )
+                foreach ( var scheduledTransactionId in message.ScheduledTransactionIds )
                 {
                     var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
 
@@ -83,6 +57,20 @@ namespace Rock.Transactions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the scheduled transaction ids.
+            /// </summary>
+            /// <value>
+            /// The scheduled transaction ids.
+            /// </value>
+            public List<int> ScheduledTransactionIds { get; set; }
         }
     }
 }

@@ -15,67 +15,37 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Sends an event registration confirmation
     /// </summary>
-    [Obsolete( "Use ProcessSendRegistrationConfirmation Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class SendRegistrationConfirmationTransaction : ITransaction
+    public sealed class ProcessSendRegistrationConfirmation : BusStartedTask<ProcessSendRegistrationConfirmation.Message>
     {
-
-        /// <summary>
-        /// Gets or sets the communication identifier.
-        /// </summary>
-        /// <value>
-        /// The communication identifier.
-        /// </value>
-        public int RegistrationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the application root.
-        /// </summary>
-        /// <value>
-        /// The application root.
-        /// </value>
-        public string AppRoot { get; set; }
-
-        /// <summary>
-        /// Gets or sets the theme root.
-        /// </summary>
-        /// <value>
-        /// The theme root.
-        /// </value>
-        public string ThemeRoot {get;set;}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommunicationApprovalEmail"/> class.
-        /// </summary>
-        public SendRegistrationConfirmationTransaction()
-        {
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registration = new RegistrationService( rockContext )
-                    .Queryable( "RegistrationInstance.RegistrationTemplate" ).AsNoTracking()
-                    .FirstOrDefault( r => r.Id == RegistrationId );
+                    .Queryable( "RegistrationInstance.RegistrationTemplate" )
+                    .AsNoTracking()
+                    .FirstOrDefault( r => r.Id == message.RegistrationId );
 
-                if ( registration != null && 
-                    registration.RegistrationInstance != null && 
+                if ( registration != null &&
+                    registration.RegistrationInstance != null &&
                     !string.IsNullOrEmpty( registration.ConfirmationEmail ) )
                 {
                     var template = registration.RegistrationInstance.RegistrationTemplate;
@@ -94,13 +64,43 @@ namespace Rock.Transactions
                         emailMessage.FromName = template.ConfirmationFromName;
                         emailMessage.Subject = template.ConfirmationSubject;
                         emailMessage.Message = template.ConfirmationEmailTemplate;
-                        emailMessage.AppRoot = AppRoot;
-                        emailMessage.ThemeRoot = ThemeRoot;
+                        emailMessage.AppRoot = message.AppRoot;
+                        emailMessage.ThemeRoot = message.ThemeRoot;
                         emailMessage.CurrentPerson = currentPersonOverride;
                         emailMessage.Send();
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the communication identifier.
+            /// </summary>
+            /// <value>
+            /// The communication identifier.
+            /// </value>
+            public int RegistrationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the application root.
+            /// </summary>
+            /// <value>
+            /// The application root.
+            /// </value>
+            public string AppRoot { get; set; }
+
+            /// <summary>
+            /// Gets or sets the theme root.
+            /// </summary>
+            /// <value>
+            /// The theme root.
+            /// </value>
+            public string ThemeRoot { get; set; }
         }
     }
 }

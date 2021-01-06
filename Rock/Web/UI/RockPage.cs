@@ -34,6 +34,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -749,11 +750,13 @@ namespace Rock.Web.UI
             {
                 if ( CurrentUser != null )
                 {
-                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                    transaction.UserId = CurrentUser.Id;
-                    transaction.LastActivityDate = RockDateTime.Now;
-                    transaction.IsOnLine = false;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var message = new UpdateUserLastActivity.Message
+                    {
+                        UserId = CurrentUser.Id,
+                        LastActivityDate = RockDateTime.Now,
+                        IsOnline = false
+                    };
+                    message.Send();
                 }
 
                 Authorization.SignOut();

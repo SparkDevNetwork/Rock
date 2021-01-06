@@ -16,47 +16,31 @@
 //
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Writes entity audits 
     /// </summary>
-    [Obsolete( "Use UpdateDigitalSignatureDocument Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class UpdateDigitalSignatureDocumentTransaction : ITransaction
+    public sealed class UpdateDigitalSignatureDocument : BusStartedTask<UpdateDigitalSignatureDocument.Message>
     {
         /// <summary>
-        /// Gets or sets the signature document type identifier.
+        /// Executes this instance.
         /// </summary>
-        /// <value>
-        /// The signature document type identifier.
-        /// </value>
-        public int SignatureDocumentId { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UpdateDigitalSignatureDocumentTransaction"/> class.
-        /// </summary>
-        /// <param name="signatureDocumentId">The signature document identifier.</param>
-        public UpdateDigitalSignatureDocumentTransaction( int signatureDocumentId )
-        {
-            SignatureDocumentId = signatureDocumentId;
-        }
-
-        /// <summary>
-        /// Execute method to write transaction to the database.
-        /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
                 var docTypeService = new SignatureDocumentTemplateService( rockContext );
                 var docService = new SignatureDocumentService( rockContext );
 
-                var document = docService.Get( SignatureDocumentId );
+                var document = docService.Get( message.SignatureDocumentId );
                 if ( document != null )
                 {
                     var status = document.Status;
@@ -73,6 +57,20 @@ namespace Rock.Transactions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the signature document type identifier.
+            /// </summary>
+            /// <value>
+            /// The signature document type identifier.
+            /// </value>
+            public int SignatureDocumentId { get; set; }
         }
     }
 }
