@@ -1,0 +1,19 @@
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
+
+// Provides a generic Rock Block structure
+export default defineComponent({
+    name: 'PaneledBlockTemplate',
+    template:
+`<div class="panel panel-block">
+    <div class="panel-heading">
+        <h1 class="panel-title">
+            <slot name="title" />
+        </h1>
+    </div>
+    <div class="panel-body">
+        <div class="block-content">
+            <slot />
+        </div>
+    </div>
+</div>`
+});

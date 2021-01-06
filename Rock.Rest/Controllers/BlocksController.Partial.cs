@@ -131,6 +131,11 @@ namespace Rock.Rest.Controllers
         [Route( "api/blocks/action/{blockGuid}/{actionName}" )]
         public IHttpActionResult BlockActionAsPost( string blockGuid, string actionName, [NakedBody] string parameters )
         {
+            if ( parameters.IsNullOrWhiteSpace() )
+            {
+                return ProcessAction( Request.Method.ToString(), blockGuid.AsGuidOrNull(), actionName, null );
+            }
+
             //
             // We have to manually parse the JSON data, otherwise any strings
             // that look like dates get converted to Date objects. This causes
@@ -139,78 +144,11 @@ namespace Rock.Rest.Controllers
             // example, with Attribute Values.
             //
             using ( var stringReader = new StringReader( parameters ) )
+            using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
             {
-                using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
-                {
-                    var parameterToken = JToken.ReadFrom( jsonReader );
-
-                    return ProcessAction( Request.Method.ToString(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
-                }
+                var parameterToken = JToken.ReadFrom( jsonReader );
+                return ProcessAction( Request.Method.ToString(), blockGuid.AsGuidOrNull(), actionName, parameterToken );
             }
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="page">The page unique identifier.</param>
-        /// <param name="block">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <returns></returns>
-        /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
-        [Authenticate]
-        [HttpGet]
-        [Route( "api/blocks/action/{page}/{block}/{actionName}")]
-        [RockObsolete( "1.12" )]
-        public IHttpActionResult BlockAction( string page, string block, string actionName )
-        {
-            return ProcessAction( "GET", block.AsGuidOrNull(), actionName, null );
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageIdentifier">The page unique identifier.</param>
-        /// <param name="blockIdentifier">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
-        [Authenticate]
-        [Route( "api/blocks/action/{pageIdentifier}/{blockIdentifier}/{actionName}" )]
-        [RockObsolete( "1.12" )]
-        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [NakedBody] string parameters )
-        {
-            //
-            // We have to manually parse the JSON data, otherwise any strings
-            // that look like dates get converted to Date objects. This causes
-            // problems because then when we later stuff that Date object into
-            // an actual string, the format has been changed. This happens, for
-            // example, with Attribute Values.
-            //
-            using ( var stringReader = new StringReader( parameters ) )
-            {
-                using ( var jsonReader = new JsonTextReader( stringReader ) { DateParseHandling = DateParseHandling.None } )
-                {
-                    var parameterToken = JToken.ReadFrom( jsonReader );
-
-                    return ProcessAction( Request.Method.ToString(), blockIdentifier.AsGuidOrNull(), actionName, parameterToken );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Executes an action handler on a specific block.
-        /// </summary>
-        /// <param name="pageIdentifier">The page unique identifier.</param>
-        /// <param name="blockIdentifier">The block unique identifier.</param>
-        /// <param name="actionName">Name of the action.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Authenticate]
-        public IHttpActionResult BlockAction( string pageIdentifier, string blockIdentifier, string actionName, [FromBody] JToken parameters )
-        {
-            return ProcessAction( Request.Method.ToString(), blockIdentifier.AsGuidOrNull(), actionName, parameters );
         }
 
         /// <summary>
@@ -326,19 +264,22 @@ namespace Rock.Rest.Controllers
         /// </exception>
         private IHttpActionResult InvokeAction( Blocks.IRockBlockType block, string verb, string actionName, Dictionary<string, JToken> actionParameters )
         {
-            MethodInfo action;
-
             //
             // Find the action they requested.
             //
-            action = block.GetType().GetMethods( BindingFlags.Instance | BindingFlags.Public )
-                .SingleOrDefault( m => m.GetCustomAttribute<Blocks.BlockActionAttribute>()?.ActionName == actionName );
+            var actions = block.GetType()
+                .GetMethods( BindingFlags.Instance | BindingFlags.Public )
+                .Where( m =>
+                    m.GetCustomAttribute<Blocks.BlockActionAttribute>()?
+                        .ActionName
+                        .Equals( actionName, StringComparison.OrdinalIgnoreCase) == true );
 
-            if ( action == null )
+            if ( actions.Count() != 1 )
             {
                 return NotFound();
             }
 
+            var action = actions.Single();
             var methodParameters = action.GetParameters();
             var parameters = new List<object>();
 

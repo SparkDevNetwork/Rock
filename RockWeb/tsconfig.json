@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "outDir": "ObsidianJs/Generated/",
+    "module": "System",
+    "moduleResolution": "Node",
+    "strict": true,
+    "lib": [
+      "DOM",
+      "ES2020",
+      "ES2020.Symbol.WellKnown"
+    ],
+    "allowUnreachableCode": false
+  },
+  "include": [
+    "Obsidian/**/*"
+  ],
+  "compileOnSave": true
+}

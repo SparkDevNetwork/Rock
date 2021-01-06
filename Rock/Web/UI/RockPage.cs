@@ -32,7 +32,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
@@ -721,6 +723,7 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/Obsidian" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -1120,15 +1123,24 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
                     {
-                        string script = string.Format( @"
-    Rock.settings.initialize({{
-        siteId: {0},
-        layoutId: {1},
-        pageId: {2},
-        layout: '{3}',
-        baseUrl: '{4}'
-    }});",
-                            _pageCache.Layout.SiteId, _pageCache.LayoutId, _pageCache.Id, _pageCache.Layout.FileName, ResolveUrl( "~" ) );
+                        var script = $@"
+Rock.settings.initialize({{
+    siteId: {_pageCache.Layout.SiteId},
+    layoutId: {_pageCache.LayoutId},
+    pageId: {_pageCache.Id},
+    layout: '{_pageCache.Layout.FileName}',
+    baseUrl: '{ResolveUrl( "~" )}'
+}});
+
+System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
+    Obsidian.initializePage({{
+        pageId: {_pageCache.Id},
+        pageGuid: '{_pageCache.Guid}',
+        pageParameters: {PageParameters().ToJson()},
+        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToJson() )},
+        contextEntities: {GetContextEntities().ToJson()}
+    }});
+}});";
 
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
                     }
@@ -1233,6 +1245,9 @@ namespace Rock.Web.UI
 
                                         if ( blockEntity is Rock.Blocks.IRockBlockType rockBlockEntity )
                                         {
+                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
+                                            rockBlockEntity.RequestContext.AddContextEntitiesForPage( _pageCache );
+
                                             var wrapper = new RockBlockTypeWrapper
                                             {
                                                 Page = this,
@@ -2163,6 +2178,32 @@ Sys.Application.add_load(function () {
             }
 
             return resolvedUrl;
+        }
+
+        /// <summary>
+        /// Gets the context entities.
+        /// </summary>
+        /// <returns></returns>
+        internal Dictionary<string, object> GetContextEntities()
+        {
+            var contextEntities = new Dictionary<string, object>();
+
+            foreach ( var contextEntityType in GetContextEntityTypes() )
+            {
+                var contextEntity = GetCurrentContext( contextEntityType );
+
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+
+                    if ( type != null )
+                    {
+                        contextEntities.Add( type.Name, contextEntity );
+                    }
+                }
+            }
+
+            return contextEntities;
         }
 
         /// <summary>
