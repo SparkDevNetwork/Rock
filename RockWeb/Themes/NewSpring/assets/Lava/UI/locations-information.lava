@@ -1,4 +1,4 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'greenville','eastlan' | Replace:'-',' ' | Capitalize %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 {% assign mailingAddress = campus.MailingAddress %}
 {% assign officeAddress = campus.OfficeAddress %}
@@ -14,7 +14,7 @@
     <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
         <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
             <h3 class="push-half-bottom">Sunday Gatherings</h3>
-            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
+            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.{% if campusSlug == 'Rock Hill' %} We will be gathering outdoors. Please bring a chair.{% elseif campusSlug == 'Eastlan' %} <a href="/kidspring">KidSpring</a> is open during the 9:30am and 11:30am gatherings.{% endif %}</small></p>
             <p class="lead">{{ serviceTimes }}
             {% if getDirections != empty %}
                 <a href="{{ getDirections }}" >Get Directions</a>
@@ -22,7 +22,7 @@
             </p>
         </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
             <h3 class="push-half-bottom">Fuse Student Ministry</h3>
-            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for Fuse &mdash; the Student Ministry of NewSpring Church.</small></p>
+            <p class="push-half-bottom" style="max-width: 400px;"><small>Fuse is happening in-person and online every Wednesday. Watch as a family or connect to a Fuse Group.<br><a href="/fuse?utm_source=newspring&utm_medium=text&utm_campaign=locations">Learn More</a></small></p>
             <p class="lead">{{ fuseServiceTimes }}</p>
         </div>{% endif %}
     </div>
@@ -44,7 +44,7 @@
 
             {% if officeAddress.Street1 != null and officeAddress.Street1 != '' and officeAddress.Street1 != location.Street1 %}
                 <h3 class="push-half-bottom">Office Address</h3>
-                <p class="lead"> 
+                <p class="lead">
                     {{ officeAddress.Street1 }}<br>
                     {% if officeAddress.Street2 != empty %}
                         {{ officeAddress.Street2 }}<br>
@@ -66,7 +66,8 @@
 
         </div><div class="col-xs-12 col-sm-12 col-md-4">
             <h3 class="push-half-bottom">Phone</h3>
-            <p class="lead"><a href="tel:+1{{ campus.PhoneNumber | Remove:'-' }}">({{ campus.PhoneNumber | Slice:0,3 }}) {{ campus.PhoneNumber | Slice:4,9 }}</a></p>
+            {% assign phoneNumber = campus.PhoneNumber | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' %}
+            <p class="lead"><a href="tel:+1{{ phoneNumber }}">({{ phoneNumber | Slice:0,3 }}) {{ phoneNumber | Slice:3,3 }}-{{ phoneNumber | Slice:6,4 }}</a></p>
         </div><div class="col-xs-12 col-sm-12 col-md-4">
             <h3 class="push-half-bottom">Email</h3>
             <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
