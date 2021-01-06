@@ -1,0 +1,27 @@
+<div class="panel">
+    <div class="panel-body">
+        <div class="row flex handheld-block">
+            <div class="col-lg-4 col-md-5 col-xs-5 text-center">
+                {% if imageLink != empty %}<a href="{{ imageLink }}">{% endif %}
+                    <div class="ratio ratio-square relative background-cover rounded-corners" style="background-image:url('{{ image | Trim }}');">
+                        <div class="ratio-item">
+                            {% if newStatus == 'Yes' %}<span class="absolute top-zero right-zero push-quarter-top push-quarter-right label label-primary">NEW</span>{% endif %}
+                        </div>
+                    </div>
+                {% if imageLink != empty %}</a>{% endif %}
+            </div>
+            <div class="col-lg-8 col-md-7 col-xs-7">
+                {% if personLink != empty %}<a href="{{ personLink }}">{% endif %}
+                    <h4 class="push-quarter-bottom">{{ name }}</h4>
+                {% if personLink != empty %}</a>{% endif %}
+
+                {% if campus %}<p class="push-quarter-bottom strong">{{ campus }}</p>{% endif %}
+
+                <p class="flush">{{ content }}</p>
+            </div>
+        </div>
+        
+        <!-- <p class="strong flush"><small><span class="pull-right color-theme-4">{{ item.StartDateTime | Date:'MMMM d, yyyy hh:mm tt' }}</span></small></p> -->
+
+    </div>
+</div>

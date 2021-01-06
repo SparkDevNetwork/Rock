@@ -27,10 +27,16 @@
 
             <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
-                <div class="btn-group btn-group-justified margin-b-lg panel-settings-group" >
-                    <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
-                    <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
-                    <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                <div class="row text-center">
+                    <div class="col-md-4 col-sm-4 col-xs-12 margin-b-md">
+                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-12 margin-b-md">
+                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-12 margin-b-md">
+                        <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    </div>
                 </div>
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />

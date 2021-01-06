@@ -1,0 +1,140 @@
+/* 
+    These styles are loaded into the email editor iframe to help style the
+    edit surface of the email template. Style variables are defaulted to look
+    at those in the core Rock theme. Other themes that would like to use this
+    control will need to override to match.
+*/
+
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-variables.less";
+@import (inline)  "../../../Styles/RockFont/style.css";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+.state-drag .dropzone {
+	border: 1px solid yellow;
+}
+
+.state-drag .structure-dropzone {
+	border: 1px solid green;
+}
+
+.structure-dropzone {
+	border: 1px dotted blue;
+	min-height: 36px;
+	width: 100%;
+}
+
+.dropzone {
+	border: 1px dotted rgba(0, 0, 0, 0.3);
+	min-height: 24px;
+	width: 100%;
+}
+
+.editor-toolbar-container {
+  background-color: @panel-heading-bg;
+  font-family: @font-family-sans-serif;
+  color: @text-color;
+  overflow: auto;
+  padding: 12px 12px 0 12px;
+}
+
+.editor-toolbar-container p {
+  margin: 0 0 2px 0;
+}
+
+.editor-toolbar-container:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.component-separator {
+  width: 24px;
+  float: left;
+  height: 20px;
+}
+
+.component {
+  cursor: pointer;
+  overflow: auto;
+}
+
+.component.selected {
+	border: 1px solid red;
+}
+
+.component[data-state=component] {
+	display: table;
+	width: 100%;
+}
+
+.component[data-state=template] {
+  border: 1px solid @btn-default-border;
+  text-align: center;
+  padding: 4px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-family: @font-family-sans-serif;
+  background-color: @btn-default-bg;
+  color: @btn-default-color;
+  border-radius: 4px;
+  width: 40px;
+  float: left;
+  margin-right: 8px;
+  cursor: move;
+}
+
+.component[data-state=template] i {
+	font-size: 22px;
+}
+
+// miniturize the image component when dragging to make it easier to 
+// precisly place it in tight areas
+.gu-mirror.component-image img {
+    max-width: 150px;
+}
+
+/*
+-=-=- Dragula Classes 
+*/
+
+/* Is added to the mirror image. It handles fixed positioning and z-index (and removes any prior margins on the element). Note 
+that the mirror image is appended to the mirrorContainer, not to its initial container. Keep that in mind when styling your 
+elements with nested rules, like .list .item { padding: 10px; }.*/
+.gu-mirror {
+  position: fixed !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  opacity: 0.8;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+  filter: alpha(opacity=80);
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: move;
+}
+
+/* Is a helper class to apply display: none to an element. */
+.gu-hide {
+  display: none !important;
+}
+
+/* Is added to the mirrorContainer element when dragging. You can use it to style the mirrorContainer while something is being dragged. */
+.gu-unselectable {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Is added to the source element when its mirror image is dragged. It just adds opacity to it.*/
+.gu-transit { 
+  opacity: 0.2;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+  filter: alpha(opacity=20);
+  float: none !important; /* added to override the float from the component */
+}
+
+/* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
+.gu-transit .container{
+    display: none;
+}

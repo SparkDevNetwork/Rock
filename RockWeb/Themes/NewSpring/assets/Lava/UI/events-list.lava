@@ -1,0 +1,162 @@
+{% assign limit = limit | AsInteger %}
+{% assign fallbackImage = 'Global' | Attribute:'ImageLandscape' %}
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' %}
+{% assign campus = campusSlug %}
+{% if campus == empty %}
+  {% assign campus = 'Global' | PageParameter:'Campus' %}
+{% endif %}
+{% assign campusName = campus | Capitalize | Replace:'-',' ' %}
+{% assign campusId = 'All' | FromCache:'Campus' | Where:'Name',campusName | Select:'Id' | First | AsInteger %}
+
+{%- comment -%}
+  Generate an array of event Ids to iterate through so we can omit events that don't have occurrences with a NextStartDateTime.
+{%- endcomment -%}
+{% capture eventsString %}[
+  {% eventcalendaritem where:'EventCalendarId == 1' iterator:'items' %}
+    {% for item in items %}
+      {% assign event = item.EventItem %}
+      {% assign occurrences = event.EventItemOccurrences %}
+
+      {% assign occurrenceStartTimes = occurrences | Map:'NextStartDateTime' %}
+      {% assign occurrencesWithNextStartDateTime = 0 %}
+      {% assign nextStartDateTime = null %}
+
+      {%- comment -%}
+        Loop through occurrences and add up the ones that have a startTime.
+      {%- endcomment -%}
+      {% for startTime in occurrenceStartTimes %}
+        {% if startTime and startTime != '' %}
+          {% assign occurrencesWithNextStartDateTime = occurrencesWithNextStartDateTime | Plus:1 %}
+          {% if nextStartDateTime == null %}
+            {% assign nextStartDateTime = startTime %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if event.IsActive and event.IsApproved and occurrencesWithNextStartDateTime >= 1 %}{
+      "EventItemId":{{ event.Id | ToJSON }},
+      "EventName":{{ event.Name | ToJSON }},
+      "NextStartDateTime":{{ nextStartDateTime | ToJSON }},
+      "OccurrencesWithNextStartDateTime":{{ occurrencesWithNextStartDateTime | ToJSON }}
+      },{% endif %}
+    {% endfor %}
+  {% endeventcalendaritem %}
+]{% endcapture %}
+
+{% assign eventsObject = eventsString | FromJSON | OrderBy:'NextStartDateTime' %}
+
+
+{%- comment -%}
+  We have to call entity for each event Id individually, otherwise we lose our sort on NextStartDateTime.
+{%- endcomment -%}
+<div class="row row-iso">
+  {% for eventItem in eventsObject %}
+
+    {% eventitem id:'{{ eventItem.EventItemId }}' iterator:'events' %}
+      {% assign event = events | First %}
+      {% assign eventName = event.Name | Replace:"'","’" %}
+      {% assign eventCampusNames = event.EventItemOccurrences | Map:'Campus' | Select:'Name' | Uniq %}
+      {% assign eventCampusCount = eventCampusNames | Size %}
+      {% assign occurrences = event.EventItemOccurrences %}
+
+      {%- comment -%}
+        If we're on a campus filter - we want to look at occurrences that have a campusId that matches OR is null (all campuses).
+      {%- endcomment -%}
+
+      {% for occurrence in occurrences %}
+        {%- comment -%}
+          This conditional is way more complex than probably necessary, and I know i'm repeating the occurrence loop, but because of the fact that you can't use paranthesis for complex conditionals, this was the only way I knew how to do it. BK
+        {%- endcomment -%}
+        {% if campus and campus != empty %}
+          {% if occurrence.CampusId == campusId or occurrence.CampusId == null %}
+
+            {% assign occurrenceStartDateTime = occurrence | Property:'NextStartDateTime' %}
+            {% if occurrenceStartDateTime and occurrenceStartDateTime != empty %}
+              {% assign nextOccurrence = occurrence %}
+              {% assign nextStartDateTime = occurrence | Property:'NextStartDateTime' %}
+              {% break %}
+            {% endif %}
+
+          {% endif %}
+        {% else %}
+
+          {% assign occurrenceStartDateTime = occurrence | Property:'NextStartDateTime' %}
+          {% if occurrenceStartDateTime and occurrenceStartDateTime != empty %}
+            {% assign nextOccurrence = occurrence %}
+            {% assign nextStartDateTime = occurrence | Property:'NextStartDateTime' %}
+            {% break %}
+          {% endif %}
+
+        {% endif %}
+      {% endfor %}
+    {% endeventitem %}
+
+    {% capture eventCampusClasses %}{% for campus in eventCampusNames %}campus-{{ campus | Downcase | Replace:' ','-' }} {% endfor %}{% if eventCampusCount == 0 %}campus-all{% endif %}{% endcapture %}
+
+    <div class='col-iso col-md-4 col-sm-6 col-xs-12 {{ eventCampusClasses }}'>
+    {% assign title = event.Name | Replace:"'","’" %}
+    {% assign imageurl = event | Attribute:'ImageLandscape' | WithFallback:'',fallbackImage %}
+    {% capture type %}{% if eventCampusCount == 0 or eventCampusCount > 1 %}Multiple Campuses{% else %}{{ nextOccurrence.Campus.Name }}{% endif %}{% endcapture %}
+    {% capture content %}
+      {% if nextStartDateTime and nextStartDateTime != empty %}
+        <p class="push-half-bottom"><i class="fal fa-calendar-alt push-quarter-right"></i> {% if campus and campus == empty %}Next Date: {% endif %}{[ formatDate date:'{{ nextStartDateTime }}' ]} @ {{ nextStartDateTime | Date:'h:mmtt' | Downcase | Replace:':00','' }}</p>
+      {% endif %}
+    {% endcapture %}
+    {% capture linktext %}{% if campus and campus != empty %}See Event Details{% else %}See All Times & Locations{% endif %}{% endcapture %}
+
+    {[ card title:'{{ title }}' titlesize:'h4' type:'{{ type }}' content:'{{ content }}' imageurl:'{{ imageurl }}' linktext:'{{ linktext }}' linkurl:'/events/detail?EventItemId={{ event.Id }}' ]}
+
+  </div>{% endfor %}
+</div>
+
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
+
+{% assign campusString = campusName | Downcase | Replace:' ','-' %}
+<script>
+$(document).ready(function(){
+
+  let campusSelect = $('#CampusSelect');
+  let campus = '{{ campusString }}'
+
+  if(campus) {
+    campusSelect.val(campus);
+  }
+
+  $('.row-iso').isotope({
+    // options
+    itemSelector: '.col-iso',
+    percentPosition: true,
+    layoutMode: 'fitRows',
+    stagger: 30
+  });
+
+  function filterEvents(campus) {
+    if(campus) {
+      let filterValue = '.campus-' + campus + ', .campus-all';
+      {% if limit and limit != empty %}
+        $('.row-iso').isotope({
+          filter: function() {
+            return $(this).is(filterValue) && $(this).index(filterValue) < {{ limit }};
+          }
+        });
+      {% else %}
+        $('.row-iso').isotope({
+          filter: filterValue
+        });
+      {% endif %}
+    } else {
+      $('.row-iso').isotope({ filter: '*' });
+    }
+  };
+
+  filterEvents(campus);
+
+  campusSelect.on('change',function(e){
+    if(this.value) {
+      window.location.href = '/events?campus=' + this.value;
+    } else {
+      window.location.href = '/events';
+    }
+  });
+});
+</script>
