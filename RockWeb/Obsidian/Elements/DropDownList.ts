@@ -2,6 +2,12 @@
 import { newGuid } from '../Util/Guid.js';
 import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 
+export type DropDownListOption = {
+    key: string,
+    value: string,
+    text: string
+};
+
 export default defineComponent({
     name: 'DropDownList',
     components: {
@@ -21,7 +27,7 @@ export default defineComponent({
             default: false
         },
         options: {
-            type: Array,
+            type: Array as PropType<DropDownListOption[]>,
             required: true
         },
         rules: {

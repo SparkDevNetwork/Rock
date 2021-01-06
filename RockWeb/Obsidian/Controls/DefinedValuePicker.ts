@@ -1,7 +1,6 @@
 ﻿import { defineComponent, inject, PropType } from '../Vendor/Vue/vue.js';
-import DropDownList from '../Elements/DropDownList.js';
+import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
 import { BlockHttp } from './RockBlock.js';
-import { CommonEntityOption } from '../Store/Generators.js';
 import DefinedValue from '../Types/Models/DefinedValue.js';
 
 export default defineComponent({
@@ -47,12 +46,12 @@ export default defineComponent({
         isEnabled(): boolean {
             return !!this.definedTypeGuid && !this.isLoading;
         },
-        options(): CommonEntityOption[] {
+        options(): DropDownListOption[] {
             return this.definedValues.map(dv => ({
                 key: dv.Guid,
                 value: dv.Guid,
                 text: dv.Value
-            } as CommonEntityOption));
+            } as DropDownListOption));
         }
     },
     methods: {

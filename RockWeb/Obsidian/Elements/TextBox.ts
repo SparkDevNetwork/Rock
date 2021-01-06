@@ -49,7 +49,7 @@ export default defineComponent({
         }
     },
     watch: {
-        value: function () {
+        modelValue: function () {
             this.internalValue = this.modelValue;
         }
     },

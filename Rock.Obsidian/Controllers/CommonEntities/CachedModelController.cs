@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -38,8 +39,13 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// </summary>
         /// <param name="cache">The cache.</param>
         /// <returns></returns>
-        protected virtual object GetViewModel( TCache cache ) {
-            return cache;
+        protected virtual ICachedModelViewModel GetViewModel( TCache cache )
+        {
+            return new
+            {
+                cache.Id,
+                cache.Guid
+            } as ICachedModelViewModel;
         }
 
         /// <summary>
@@ -49,11 +55,34 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        public IEnumerable<object> GetList()
+        public IEnumerable<ICachedModelViewModel> GetList()
         {
             var cacheItems = ModelCache<TCache, TModel>.All();
             var viewModels = cacheItems.Select( GetViewModel );
             return viewModels;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="Rock.Obsidian.Controllers.ObsidianController" />
+        public interface ICachedModelViewModel
+        {
+            /// <summary>
+            /// Gets or sets the unique identifier.
+            /// </summary>
+            /// <value>
+            /// The unique identifier.
+            /// </value>
+            Guid Guid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            int Id { get; set; }
         }
     }
 }

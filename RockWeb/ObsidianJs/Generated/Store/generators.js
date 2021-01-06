@@ -54,7 +54,11 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js", "../Util
             props: {
                 modelValue: {
                     type: String,
-                    required: true
+                    default: ''
+                },
+                id: {
+                    type: Number,
+                    default: 0
                 },
                 label: {
                     type: String,
@@ -66,30 +70,52 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js", "../Util
                 }
             },
             emits: [
-                'update:modelValue'
+                'update:modelValue',
+                'update:id'
             ],
             data: function () {
                 return {
-                    internalValue: '',
+                    providedOptions: getOptionsFunc(),
+                    selectedGuid: '',
                     isLoading: false
                 };
             },
             computed: {
                 options: function () {
-                    return getOptionsFunc();
+                    return getOptionsFunc().map(function (o) { return ({
+                        key: o.Guid,
+                        text: o.Text,
+                        value: o.Guid
+                    }); });
+                },
+                currentCommonEntity: function () {
+                    var _this = this;
+                    return this.providedOptions.find(function (o) { return o.Guid === _this.selectedGuid; }) || null;
                 }
             },
             methods: {
                 onChange: function () {
-                    this.$emit('update:modelValue', this.internalValue);
+                    this.$emit('update:modelValue', this.selectedGuid);
+                    this.$emit('update:id', this.currentCommonEntity ? this.currentCommonEntity.Id : null);
                 }
             },
             watch: {
-                value: function () {
-                    this.internalValue = this.modelValue;
+                value: {
+                    immediate: true,
+                    handler: function () {
+                        this.selectedGuid = this.modelValue;
+                    }
+                },
+                id: {
+                    immediate: true,
+                    handler: function () {
+                        var _this = this;
+                        var option = this.providedOptions.find(function (o) { return o.Id === _this.id; }) || null;
+                        this.selectedGuid = option ? option.Guid : '';
+                    }
                 }
             },
-            template: "<DropDownList v-model=\"internalValue\" @change=\"onChange\" :disabled=\"isLoading\" :label=\"label\" :options=\"options\" />"
+            template: "\n<DropDownList v-model=\"selectedGuid\" @change=\"onChange\" :disabled=\"isLoading\" :label=\"label\" :options=\"options\" />"
         });
     }
     exports_1("createCommonEntityPicker", createCommonEntityPicker);
@@ -115,7 +141,14 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js", "../Util
                     return state.items;
                 },
                 getByGuid: function (state) {
-                    return function (guid) { return state.items.find(function (i) { return i.Guid === guid; }); };
+                    return function (guid) {
+                        return state.items.find(function (i) { return i.Guid === guid; }) || null;
+                    };
+                },
+                getById: function (state) {
+                    return function (id) {
+                        return state.items.find(function (i) { return i.Id === id; }) || null;
+                    };
                 }
             },
             actions: {

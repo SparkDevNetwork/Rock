@@ -13,9 +13,9 @@ System.register(["../Store/Generators.js", "../Store/index.js"], function (expor
         ],
         execute: function () {
             exports_1("default", Generators_js_1.createCommonEntityPicker('Campus', function () { return index_js_1.default.getters['campuses/all'].map(function (c) { return ({
-                key: c.Guid,
-                value: c.Guid,
-                text: c.Name
+                Guid: c.Guid,
+                Id: c.Id,
+                Text: c.Name
             }); }); }));
         }
     };

@@ -1,5 +1,5 @@
-﻿import { defineComponent } from '../Vendor/Vue/vue.js';
-import DropDownList from '../Elements/DropDownList.js';
+﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
 import { Module } from '../Vendor/Vuex/index.js';
 import { RootState } from './index.js';
 import Entity from '../Types/Models/entity.js';
@@ -7,11 +7,12 @@ import cache from '../Util/cache.js';
 import http from '../Util/http.js';
 import { CommonEntity } from './commonEntities.js';
 import { splitCamelCase } from '../Filters/String.js';
+import { Guid } from '../Util/Guid.js';
 
 export type CommonEntityOption = {
-    key: string;
-    value: string;
-    text: string;
+    Guid: Guid;
+    Id: number;
+    Text: string;
 };
 
 /**
@@ -30,8 +31,12 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
         },
         props: {
             modelValue: {
-                type: String,
-                required: true
+                type: String as PropType<Guid>,
+                default: ''
+            },
+            id: {
+                type: Number as PropType<number>,
+                default: 0
             },
             label: {
                 type: String,
@@ -43,31 +48,51 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
             }
         },
         emits: [
-            'update:modelValue'
+            'update:modelValue',
+            'update:id'
         ],
         data: function () {
             return {
-                internalValue: '',
+                providedOptions: getOptionsFunc(),
+                selectedGuid: '',
                 isLoading: false
             };
         },
         computed: {
-            options() {
-                return getOptionsFunc();
+            options(): DropDownListOption[] {
+                return getOptionsFunc().map(o => ({
+                    key: o.Guid,
+                    text: o.Text,
+                    value: o.Guid
+                } as DropDownListOption));
+            },
+            currentCommonEntity(): CommonEntityOption | null {
+                return this.providedOptions.find(o => o.Guid === this.selectedGuid) || null;
             }
         },
         methods: {
             onChange: function () {
-                this.$emit('update:modelValue', this.internalValue);
+                this.$emit('update:modelValue', this.selectedGuid);
+                this.$emit('update:id', this.currentCommonEntity ? this.currentCommonEntity.Id : null);
             }
         },
         watch: {
-            value: function () {
-                this.internalValue = this.modelValue;
+            value: {
+                immediate: true,
+                handler() {
+                    this.selectedGuid = this.modelValue;
+                }
+            },
+            id: {
+                immediate: true,
+                handler() {
+                    const option = this.providedOptions.find(o => o.Id === this.id) || null;
+                    this.selectedGuid = option ? option.Guid : '';
+                }
             }
         },
-        template:
-            `<DropDownList v-model="internalValue" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
+        template: `
+<DropDownList v-model="selectedGuid" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
     });
 }
 
@@ -92,7 +117,14 @@ export function generateCommonEntityModule<TEntity extends Entity>(commonEntity:
                 return state.items;
             },
             getByGuid(state) {
-                return guid => state.items.find(i => i.Guid === guid);
+                return (guid: Guid) => {
+                    return state.items.find(i => i.Guid === guid) || null;
+                };
+            },
+            getById(state) {
+                return (id: number) => {
+                    return state.items.find(i => i.Id === id) || null;
+                };
             }
         },
         actions: {

@@ -4,6 +4,9 @@ import Loading from '../../Controls/Loading.js';
 import RockField from '../../Controls/RockField.js';
 import { BlockAction } from '../../Controls/RockBlock.js';
 import { BlockSettings } from '../../Index.js';
+import store from '../../Store/Index.js';
+import { Guid } from '../../Util/Guid.js';
+import Person from '../../Types/Models/Person.js';
 
 type AttributeData = {
     Label: string;
@@ -30,11 +33,24 @@ export default defineComponent({
             attributeDataList: [] as AttributeData[]
         };
     },
+    computed: {
+        personGuid(): Guid | null {
+            const person = (store.getters.personContext || null) as Person | null;
+            return person ? person.Guid : null;
+        }
+    },
     methods: {
         async loadData() {
+            if (!this.personGuid) {
+                this.attributeDataList = [];
+                return;
+            }
+
             try {
                 this.isLoading = true;
-                const result = await this.blockAction<AttributeData[]>('GetAttributeDataList');
+                const result = await this.blockAction<AttributeData[]>('GetAttributeDataList', {
+                    PersonGuid: this.personGuid
+                });
 
                 if (result.data) {
                     this.attributeDataList = result.data;
@@ -45,8 +61,15 @@ export default defineComponent({
             }
         }
     },
-    async mounted() {
-        await this.loadData();
+    watch: {
+        personGuid: {
+            immediate: true,
+            async handler() {
+                if (this.personGuid) {
+                    await this.loadData();
+                }
+            }
+        }
     },
     template: `
 <PaneledBlockTemplate class="panel-persondetails">

@@ -62,7 +62,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     }
                 },
                 watch: {
-                    value: function () {
+                    modelValue: function () {
                         this.internalValue = this.modelValue;
                     }
                 },

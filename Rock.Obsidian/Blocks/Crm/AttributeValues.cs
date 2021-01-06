@@ -128,60 +128,69 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <summary>
         /// Get data based on the configured category setting.
         /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetAttributeDataList()
+        public BlockActionResult GetAttributeDataList( Guid personGuid )
         {
-            var currentPerson = GetCurrentPerson();
-            var categories = GetCategoryGuids();
-            var attributeDataList = new List<AttributeData>();
-
-            if ( !categories.Any() || currentPerson == null )
+            using ( var rockContext = new RockContext() )
             {
+                var currentPerson = GetCurrentPerson();
+
+                var personService = new PersonService( rockContext );
+                var person = personService.Get( personGuid );
+
+                var categories = GetCategoryGuids();
+                var attributeDataList = new List<AttributeData>();
+
+                if ( !categories.Any() || person == null || currentPerson == null )
+                {
+                    return new BlockActionResult( HttpStatusCode.OK, attributeDataList );
+                }
+
+                person.LoadAttributes();
+                var attributeService = new AttributeService( rockContext );
+                var orderOverride = GetAttributeValue( AttributeKey.AttributeOrder ).SplitDelimitedValues().AsIntegerList();
+
+                var orderedAttributeList = attributeService.Queryable()
+                    .Where( a => a.IsActive && a.Categories.Any( c => categories.Contains( c.Guid ) ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToAttributeCacheList();
+
+                foreach ( var attributeId in orderOverride )
+                {
+                    var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
+
+                    if ( attribute != null && attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    {
+                        attributeDataList.Add( GetAttributeData( attribute, person ) );
+                    }
+                }
+
+                foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
+                {
+                    if ( attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    {
+                        attributeDataList.Add( GetAttributeData( attribute, person ) );
+                    }
+                }
+
+                attributeDataList = attributeDataList.Where( a => a != null ).ToList();
                 return new BlockActionResult( HttpStatusCode.OK, attributeDataList );
             }
-
-            var rockContext = new RockContext();
-            var attributeService = new AttributeService( rockContext );
-            var orderOverride = GetAttributeValue( AttributeKey.AttributeOrder ).SplitDelimitedValues().AsIntegerList();
-
-            var orderedAttributeList = attributeService.Queryable()
-                .Where( a => a.IsActive && a.Categories.Any( c => categories.Contains( c.Guid ) ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToAttributeCacheList();
-
-            foreach ( var attributeId in orderOverride )
-            {
-                var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
-
-                if ( attribute != null && attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                {
-                    attributeDataList.Add( GetAttributeData( attribute ) );
-                }
-            }
-
-            foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
-            {
-                if ( attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                {
-                    attributeDataList.Add( GetAttributeData( attribute ) );
-                }
-            }
-
-            attributeDataList = attributeDataList.Where( a => a != null ).ToList();
-            return new BlockActionResult( HttpStatusCode.OK, attributeDataList );
         }
 
         /// <summary>
         /// Gets the attribute data.
         /// </summary>
         /// <param name="attribute">The attribute.</param>
+        /// <param name="person">The person.</param>
         /// <returns></returns>
-        private AttributeData GetAttributeData( AttributeCache attribute )
+        private AttributeData GetAttributeData( AttributeCache attribute, Person person )
         {
             var useAbbreviatedName = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean();
-            var contextPerson = GetContextPerson();
-            var attributeValue = contextPerson.GetAttributeValue( attribute.Key );
+            var attributeValue = person.GetAttributeValue( attribute.Key );
 
             if ( attributeValue.IsNullOrWhiteSpace() )
             {
@@ -265,27 +274,6 @@ namespace Rock.Obsidian.Blocks.Crm
         {
             return GetAttributeValue( AttributeKey.Category ).SplitDelimitedValues( false ).AsGuidList();
         }
-
-        /// <summary>
-        /// Gets the context person.
-        /// </summary>
-        /// <returns></returns>
-        private Person GetContextPerson()
-        {
-            if ( _contextPerson != null )
-            {
-                return _contextPerson;
-            }
-
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-
-            _contextPerson = personService.Get( 4 );
-            _contextPerson?.LoadAttributes();
-
-            return _contextPerson;
-        }
-        private Person _contextPerson = null;
 
         #endregion Data Access
 

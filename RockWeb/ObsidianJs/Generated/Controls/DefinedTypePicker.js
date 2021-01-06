@@ -13,9 +13,9 @@ System.register(["../Store/Generators.js", "../Store/index.js"], function (expor
         ],
         execute: function () {
             exports_1("default", Generators_js_1.createCommonEntityPicker('DefinedType', function () { return index_js_1.default.getters['definedTypes/all'].map(function (dt) { return ({
-                key: dt.Guid,
-                value: dt.Guid,
-                text: dt.Name
+                Guid: dt.Guid,
+                Id: dt.Id,
+                Text: dt.Name
             }); }); }));
         }
     };

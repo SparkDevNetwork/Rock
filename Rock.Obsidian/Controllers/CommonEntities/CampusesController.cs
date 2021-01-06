@@ -32,10 +32,11 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// </summary>
         /// <param name="cache">The cache.</param>
         /// <returns></returns>
-        protected override object GetViewModel( CampusCache cache )
+        protected override ICachedModelViewModel GetViewModel( CampusCache cache )
         {
             return new CampusViewModel
             {
+                Id = cache.Id,
                 Guid = cache.Guid,
                 Name = cache.Name,
                 IsActive = cache.IsActive
@@ -45,8 +46,13 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// <summary>
         /// Campus View Model
         /// </summary>
-        public sealed class CampusViewModel
+        public sealed class CampusViewModel: ICachedModelViewModel
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            public int Id { get; set; }
+
             /// <summary>
             /// Gets or sets the unique identifier.
             /// </summary>

@@ -32,9 +32,10 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// </summary>
         /// <param name="cache">The cache.</param>
         /// <returns></returns>
-        protected override object GetViewModel( DefinedTypeCache cache )
+        protected override ICachedModelViewModel GetViewModel( DefinedTypeCache cache )
         {
             return new DefinedTypeViewModel {
+                Id = cache.Id,
                 Guid = cache.Guid,
                 Name = cache.Name
             };
@@ -43,8 +44,13 @@ namespace Rock.Obsidian.Controllers.CommonEntities
         /// <summary>
         /// Defined Type View Model
         /// </summary>
-        public sealed class DefinedTypeViewModel
+        public sealed class DefinedTypeViewModel: ICachedModelViewModel
         {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            public int Id { get; set; }
+
             /// <summary>
             /// Gets or sets the unique identifier.
             /// </summary>

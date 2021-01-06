@@ -1,11 +1,11 @@
-﻿import { createCommonEntityPicker } from '../Store/Generators.js';
+﻿import { CommonEntityOption, createCommonEntityPicker } from '../Store/Generators.js';
 import store from '../Store/index.js';
 
 export default createCommonEntityPicker(
     'Campus',
     () => store.getters['campuses/all'].map(c => ({
-        key: c.Guid,
-        value: c.Guid,
-        text: c.Name
-    }))
+        Guid: c.Guid,
+        Id: c.Id,
+        Text: c.Name
+    } as CommonEntityOption))
 );
