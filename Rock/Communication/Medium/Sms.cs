@@ -25,6 +25,7 @@ using System.Text.RegularExpressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
@@ -358,10 +359,11 @@ namespace Rock.Communication.Medium
             rockContext.SaveChanges();
 
             // queue the sending
-            var transaction = new Rock.Transactions.SendCommunicationTransaction();
-            transaction.CommunicationId = communication.Id;
-            transaction.PersonAlias = null;
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            var transaction = new ProcessSendCommunication.Message()
+            {
+                CommunicationId = communication.Id,
+            };
+            transaction.Send();
         }
 
         /// <summary>

@@ -17,54 +17,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
-    /// Runs a job now
+    /// Sends a communication approval email
     /// </summary>
-    [Obsolete( "Use ProcessSendCommunicationApprovalEmail Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class SendCommunicationApprovalEmail : ITransaction
+    public sealed class ProcessSendCommunicationApprovalEmail : BusStartedTask<ProcessSendCommunicationApprovalEmail.Message>
     {
-
-        /// <summary>
-        /// Gets or sets the communication identifier.
-        /// </summary>
-        /// <value>
-        /// The communication identifier.
-        /// </value>
-        public int CommunicationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the approval page URL. Defaults to ~/Communication/{communicationId}.
-        /// </summary>
-        /// <value>
-        /// The approval page URL.
-        /// </value>
-        public string ApprovalPageUrl { get; set; } = null;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SendCommunicationApprovalEmail"/> class.
-        /// </summary>
-        public SendCommunicationApprovalEmail( )
-        {
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
-                var communication = new CommunicationService( rockContext ).Get( CommunicationId );
+                var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
 
                 if ( communication != null && communication.Status == CommunicationStatus.PendingApproval )
                 {
@@ -81,12 +57,13 @@ namespace Rock.Transactions
                         var communicationSettingApprovalGuid = Rock.Web.SystemSettings.GetValue( SystemSetting.COMMUNICATION_SETTING_APPROVAL_TEMPLATE ).AsGuidOrNull();
                         if ( communicationSettingApprovalGuid.HasValue )
                         {
+                            var approvalPageUrl = message.ApprovalPageUrl;
 
                             // create approval link if one was not provided
-                            if ( string.IsNullOrEmpty( ApprovalPageUrl ) )
+                            if ( string.IsNullOrEmpty( approvalPageUrl ) )
                             {
                                 var internalApplicationRoot = GlobalAttributesCache.Value( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
-                                ApprovalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
+                                approvalPageUrl = $"{internalApplicationRoot}Communication/{communication.Id}";
                             }
 
                             foreach ( var approver in approvers )
@@ -99,7 +76,7 @@ namespace Rock.Transactions
                                 mergeFields.Add( "Approver", approver.Person );
                                 mergeFields.Add( "Communication", communication );
                                 mergeFields.Add( "RecipientsCount", communication.GetRecipientsQry( rockContext ).Count() );
-                                mergeFields.Add( "ApprovalPageUrl", ApprovalPageUrl );
+                                mergeFields.Add( "ApprovalPageUrl", approvalPageUrl );
                                 recipients.Add( new RockEmailMessageRecipient( approver.Person, mergeFields ) );
                                 emailMessage.SetRecipients( recipients );
                                 emailMessage.Send();
@@ -108,6 +85,28 @@ namespace Rock.Transactions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the communication identifier.
+            /// </summary>
+            /// <value>
+            /// The communication identifier.
+            /// </value>
+            public int CommunicationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the approval page URL. Defaults to ~/Communication/{communicationId}.
+            /// </summary>
+            /// <value>
+            /// The approval page URL.
+            /// </value>
+            public string ApprovalPageUrl { get; set; } = null;
         }
     }
 }

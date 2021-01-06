@@ -18,61 +18,30 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Sends an email to group leaders whenever a new registration adds a registrant to their group
     /// </summary>
-    [Obsolete( "Use ProcesSendRegistrationNotification Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class SendRegistrationNotificationTransaction : ITransaction
+    public sealed class ProcesSendRegistrationNotification : BusStartedTask<ProcesSendRegistrationNotification.Message>
     {
-        /// <summary>
-        /// Gets or sets the communication identifier.
-        /// </summary>
-        /// <value>
-        /// The communication identifier.
-        /// </value>
-        public int RegistrationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the application root.
-        /// </summary>
-        /// <value>
-        /// The application root.
-        /// </value>
-        public string AppRoot { get; set; }
-
-        /// <summary>
-        /// Gets or sets the theme root.
-        /// </summary>
-        /// <value>
-        /// The theme root.
-        /// </value>
-        public string ThemeRoot { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SendRegistrationNotificationTransaction"/> class.
-        /// </summary>
-        public SendRegistrationNotificationTransaction()
-        {
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
                 var registration = new RegistrationService( rockContext )
                     .Queryable( "RegistrationInstance.RegistrationTemplate" ).AsNoTracking()
-                    .FirstOrDefault( r => r.Id == RegistrationId );
+                    .FirstOrDefault( r => r.Id == message.RegistrationId );
 
                 if ( registration != null && !string.IsNullOrEmpty( registration.ConfirmationEmail ) &&
                     registration.RegistrationInstance != null && registration.RegistrationInstance.RegistrationTemplate != null )
@@ -91,7 +60,7 @@ namespace Rock.Transactions
                         ( template.Notify & RegistrationNotify.RegistrationContact ) == RegistrationNotify.RegistrationContact )
                     {
                         var messageRecipient = registration.RegistrationInstance.GetContactRecipient( mergeFields );
-                        if (!anonymousHash.Contains( messageRecipient.To ) )
+                        if ( !anonymousHash.Contains( messageRecipient.To ) )
                         {
                             messageRecipients.Add( messageRecipient );
                             anonymousHash.Add( messageRecipient.To );
@@ -105,7 +74,7 @@ namespace Rock.Transactions
                         new GroupService( rockContext ).GetFollowers( registration.GroupId.Value ).AsNoTracking()
                             .Where( p =>
                                 p.Email != null &&
-                                p.Email != "" )
+                                p.Email != string.Empty )
                             .ToList()
                             .ForEach( p => messageRecipients.Add( new RockEmailMessageRecipient( p, mergeFields ) ) );
                     }
@@ -118,7 +87,7 @@ namespace Rock.Transactions
                             .Where( m =>
                                 m.Person != null &&
                                 m.Person.Email != null &&
-                                m.Person.Email != "" )
+                                m.Person.Email != string.Empty )
                             .Select( m => m.Person )
                             .ToList()
                             .ForEach( p => messageRecipients.Add( new RockEmailMessageRecipient( p, mergeFields ) ) );
@@ -129,12 +98,42 @@ namespace Rock.Transactions
                         var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.REGISTRATION_NOTIFICATION.AsGuid() );
                         emailMessage.AdditionalMergeFields = mergeFields;
                         emailMessage.SetRecipients( messageRecipients );
-                        emailMessage.AppRoot = AppRoot;
-                        emailMessage.ThemeRoot = ThemeRoot;
+                        emailMessage.AppRoot = message.AppRoot;
+                        emailMessage.ThemeRoot = message.ThemeRoot;
                         emailMessage.Send();
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the communication identifier.
+            /// </summary>
+            /// <value>
+            /// The communication identifier.
+            /// </value>
+            public int RegistrationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the application root.
+            /// </summary>
+            /// <value>
+            /// The application root.
+            /// </value>
+            public string AppRoot { get; set; }
+
+            /// <summary>
+            /// Gets or sets the theme root.
+            /// </summary>
+            /// <value>
+            /// The theme root.
+            /// </value>
+            public string ThemeRoot { get; set; }
         }
     }
 }

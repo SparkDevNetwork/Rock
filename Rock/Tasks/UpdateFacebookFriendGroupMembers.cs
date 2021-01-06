@@ -17,52 +17,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Rock;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Update Facebook Friend Relationships
     /// </summary>
-    [Obsolete( "Use UpdateFacebookFriendGroupMembers Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class UpdateFacebookFriends : ITransaction
+    public sealed class UpdateFacebookFriendGroupMembers : BusStartedTask<UpdateFacebookFriendGroupMembers.Message>
     {
-        /// <summary>
-        /// Gets or sets the person identifier.
-        /// </summary>
-        /// <value>
-        /// The person identifier.
-        /// </value>
-        public int PersonId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the facebook ids.
-        /// </summary>
-        /// <value>
-        /// The facebook ids.
-        /// </value>
-        public List<string> FacebookIds { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UpdateFacebookFriends" /> class.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="facebookIds">The facebook ids.</param>
-        public UpdateFacebookFriends( int personId, List<string> facebookIds )
-        {
-            PersonId = personId;
-            FacebookIds = facebookIds;
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -83,13 +55,13 @@ namespace Rock.Transactions
                         var groupMemberService = new GroupMemberService( rockContext );
 
                         // Convert list of facebook ids into list of usernames
-                        var friendUserNames = FacebookIds.Select( i => "FACEBOOK_" + i ).ToList();
+                        var friendUserNames = message.FacebookIds.Select( i => "FACEBOOK_" + i ).ToList();
 
                         // Get the list of person ids associated with friends usernames
                         var friendPersonIds = userLoginService.Queryable()
                             .Where( l =>
                                 l.PersonId.HasValue &&
-                                l.PersonId != PersonId &&
+                                l.PersonId != message.PersonId &&
                                 friendUserNames.Contains( l.UserName ) )
                             .Select( l => l.PersonId.Value )
                             .Distinct()
@@ -98,7 +70,7 @@ namespace Rock.Transactions
                         // Get the person's group id
                         var personGroup = groupMemberService.Queryable()
                             .Where( m =>
-                                m.PersonId == PersonId &&
+                                m.PersonId == message.PersonId &&
                                 m.GroupRoleId == ownerRole.Id &&
                                 m.Group.GroupTypeId == relationshipGroupType.Id )
                             .Select( m => m.Group )
@@ -108,7 +80,7 @@ namespace Rock.Transactions
                         if ( personGroup == null )
                         {
                             var groupMember = new GroupMember();
-                            groupMember.PersonId = PersonId;
+                            groupMember.PersonId = message.PersonId;
                             groupMember.GroupRoleId = ownerRole.Id;
 
                             personGroup = new Group();
@@ -139,7 +111,7 @@ namespace Rock.Transactions
                             .Where( m =>
                                 m.Group.GroupTypeId == relationshipGroupType.Id && (
                                     ( friendPersonIds.Contains( m.PersonId ) && m.GroupId == personGroupId ) ||
-                                    ( m.PersonId == PersonId && m.GroupId != personGroupId )
+                                    ( m.PersonId == message.PersonId && m.GroupId != personGroupId )
                                 ) )
                             .ToList();
 
@@ -162,13 +134,13 @@ namespace Rock.Transactions
                         {
                             var groupMember = new GroupMember();
                             groupMember.GroupId = familyId;
-                            groupMember.PersonId = PersonId;
+                            groupMember.PersonId = message.PersonId;
                             groupMember.GroupRoleId = friendRole.Id;
                             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                             currentFriends.Add( groupMember );
                         }
 
-                        //  Add any current friends that do not exist in Rock yet
+                        // Add any current friends that do not exist in Rock yet
                         foreach ( var groupMember in currentFriends
                             .Where( f => !existingFriends.Any( e => e.IsEqualTo( f ) ) ) )
                         {
@@ -186,6 +158,28 @@ namespace Rock.Transactions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the facebook ids.
+            /// </summary>
+            /// <value>
+            /// The facebook ids.
+            /// </value>
+            public List<string> FacebookIds { get; set; }
         }
     }
 }

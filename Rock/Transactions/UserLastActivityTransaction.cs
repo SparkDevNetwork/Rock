@@ -24,6 +24,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a person is viewed.
     /// </summary>
+    [Obsolete( "Use UpdateUserLastActivity Task instead." )]
+    [RockObsolete( "1.13" )]
     public class UserLastActivityTransaction : ITransaction
     {
         /// <summary>

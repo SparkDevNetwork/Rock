@@ -15,45 +15,46 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
-    /// Writes entity audits 
+    /// Sends a communication
     /// </summary>
-    [Obsolete( "Use ProcessSendCommunication Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class SendCommunicationTransaction : ITransaction
+    public sealed class ProcessSendCommunication : BusStartedTask<ProcessSendCommunication.Message>
     {
         /// <summary>
-        /// Gets or sets the communication id
+        /// Executes this instance.
         /// </summary>
-        /// <value>
-        /// The communication id.
-        /// </value>
-        public int CommunicationId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the person alias.
-        /// </summary>
-        /// <value>
-        /// The person alias.
-        /// </value>
-        public PersonAlias PersonAlias { get; set; }
-
-        /// <summary>
-        /// Execute method to write transaction to the database.
-        /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             using ( var rockContext = new RockContext() )
             {
-                var communication = new CommunicationService( rockContext ).Get( CommunicationId );
+                var communication = new CommunicationService( rockContext ).Get( message.CommunicationId );
                 AsyncHelper.RunSync( () => Model.Communication.SendAsync( communication ) );
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the communication id
+            /// </summary>
+            /// <value>
+            /// The communication id.
+            /// </value>
+            public int CommunicationId { get; set; }
         }
     }
 }

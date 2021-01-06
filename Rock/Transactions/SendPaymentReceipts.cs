@@ -28,6 +28,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
+    [Obsolete( "Use ProcessSendPaymentReceiptEmails Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendPaymentReceipts : ITransaction
     {
 
