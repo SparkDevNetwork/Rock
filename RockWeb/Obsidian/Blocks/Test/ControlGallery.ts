@@ -63,8 +63,8 @@ export default defineComponent({
             return this.definedValue ? this.definedValue.Value : '';
         }
     },
-    template:
-`<PaneledBlockTemplate>
+    template: `
+<PaneledBlockTemplate>
     <template v-slot:title>
         <i class="fa fa-flask"></i>
         Obsidian Control Gallery

@@ -44,6 +44,9 @@ System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (ex
                     },
                     groupContext: function (state, getters) {
                         return getters.contextEntity('Group');
+                    },
+                    pageParameter: function (state) {
+                        return function (key) { return (state.pageParameters[key]); };
                     }
                 },
                 mutations: {

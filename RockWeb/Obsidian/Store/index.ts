@@ -37,6 +37,9 @@ export default createStore<RootState>({
         },
         groupContext(state, getters): Group | null {
             return getters.contextEntity('Group');
+        },
+        pageParameter(state): (key: string) => unknown {
+            return (key: string) => (state.pageParameters[key]);
         }
     },
     mutations: {
