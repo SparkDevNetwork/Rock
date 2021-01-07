@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.IdentityVerification", "FailedMatchAttemptCount", c => c.Int(nullable: false));
+            AddColumn("dbo.IdentityVerification", "FailedMatchAttemptCount", c => c.Int());
         }
         
         /// <summary>
