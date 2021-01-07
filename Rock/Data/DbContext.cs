@@ -22,6 +22,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
@@ -389,19 +390,32 @@ namespace Rock.Data
         {
             if ( enableAuditing )
             {
-                try
+                var audits = updatedItems
+                    .Where( a => a.Audit?.Details?.Any() == true )
+                    .Select( i => i.Audit )
+                    .ToList();
+
+                if ( audits.Any() )
                 {
-                    var audits = updatedItems.Where( a => a.Audit != null ).Select( i => i.Audit ).ToList();
-                    if ( audits.Any( a => a.Details.Any() ) )
+                    Task.Run( async () =>
                     {
-                        var transaction = new Rock.Transactions.AuditTransaction();
-                        transaction.Audits = audits.Where( a => a.Details.Any() == true ).ToList();
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                    }
-                }
-                catch ( SystemException ex )
-                {
-                    ExceptionLogService.LogException( ex, null );
+                        // Wait 1 second to allow all post save actions to complete
+                        await Task.Delay( 1000 );
+
+                        try
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var auditService = new AuditService( rockContext );
+                                auditService.AddRange( audits );
+                                rockContext.SaveChanges( true );
+                            }
+                        }
+                        catch ( SystemException ex )
+                        {
+                            ExceptionLogService.LogException( ex, null );
+                        }
+                    } );
                 }
             }
 
