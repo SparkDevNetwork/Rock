@@ -73,7 +73,7 @@ namespace Rock.Model
         /// The failed match attempt count.
         /// </value>
         [DataMember]
-        public int FailedMatchAttemptCount { get; set; }
+        public int? FailedMatchAttemptCount { get; set; }
 
         #endregion Entity Properties
 

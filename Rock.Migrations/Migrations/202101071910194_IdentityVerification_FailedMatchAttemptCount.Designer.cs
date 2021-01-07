@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202101071850569_IdentityVerification_FailedMatchAttemptCount"; }
+            get { return "202101071910194_IdentityVerification_FailedMatchAttemptCount"; }
         }
         
         string IMigrationMetadata.Source
