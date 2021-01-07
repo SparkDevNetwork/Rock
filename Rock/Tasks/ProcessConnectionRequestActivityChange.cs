@@ -149,7 +149,7 @@ namespace Rock.Tasks
             /// <value>
             /// The connection opportunity identifier.
             /// </value>
-            public int ConnectionOpportunityId { get; set; }
+            public int? ConnectionOpportunityId { get; set; }
 
             /// <summary>
             /// Gets or sets the connection activity type identifier.
