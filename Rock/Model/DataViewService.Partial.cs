@@ -24,6 +24,7 @@ using System.Reflection;
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -133,7 +134,6 @@ namespace Rock.Model
             return false;
         }
 
-
         /// <summary>
         /// Create a new non-persisted Data View using an existing Data View as a template. 
         /// </summary>
@@ -152,7 +152,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Data View and reset the properties that connect it to the permanent store.
-            var newItem = ( DataView ) ( item.Clone( true ) );
+            var newItem = ( DataView )item.Clone( true );
 
             newItem.Id = 0;
             newItem.Guid = Guid.NewGuid();
@@ -224,33 +224,35 @@ namespace Rock.Model
         /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
         public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
         {
-            var transaction = new Rock.Transactions.RunDataViewTransaction();
-            transaction.DataViewId = dataViewId;
-            transaction.LastRunDateTime = RockDateTime.Now;
-            transaction.ShouldIncrementRunCount = true;
+            var updateDataViewStatisticsMsg = new UpdateDataViewStatistics.Message()
+            {
+                DataViewId = dataViewId,
+                LastRunDateTime = RockDateTime.Now,
+                ShouldIncrementRunCount = true
+            };
 
             if ( timeToRunDurationMilliseconds.HasValue )
             {
-                transaction.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
+                updateDataViewStatisticsMsg.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was
                  * already evaluated, which in turn already counted the run so we don't want to double count it here.
                  */
-                transaction.ShouldIncrementRunCount = false;
+                updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;
             }
 
             if ( persistedLastRunDurationMilliseconds.HasValue )
             {
-                transaction.PersistedLastRefreshDateTime = RockDateTime.Now;
-                transaction.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
+                updateDataViewStatisticsMsg.PersistedLastRefreshDateTime = RockDateTime.Now;
+                updateDataViewStatisticsMsg.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
                 /*
                  * If the persisted last run duration is set that means this was called after the expression was
                  * already evaluated, which in turn already counted the run so we don't want to double count it here.
                  */
-                transaction.ShouldIncrementRunCount = false;
+                updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;
             }
 
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            updateDataViewStatisticsMsg.Send();
         }
 
         #endregion Static Methods
@@ -262,7 +264,9 @@ namespace Rock.Model
         private void ResetPermanentStoreIdentifiers( DataViewFilter filter )
         {
             if ( filter == null )
+            {
                 return;
+            }
 
             filter.Id = 0;
             filter.Guid = Guid.NewGuid();
@@ -276,6 +280,5 @@ namespace Rock.Model
                 this.ResetPermanentStoreIdentifiers( childFilter );
             }
         }
-
     }
 }
