@@ -1,4 +1,4 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'greenville','eastlan' | Replace:'-',' ' | Capitalize %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
 {% if servicetype == 'Fuse' %}
@@ -8,8 +8,8 @@
 {% endif %}
 
 {% if campus.campusStaff != empty %}
-{[ section title:'{{ campus.Name }} Staff' ]}
-        
+{[ section title:'{{ campus.Name }} Campus Staff' ]}
+
     {% if leader != null %}
     <div class="floating floating-left row soft-double-sides push-double-top xs-soft-half-sides xs-push-half-top xs-text-center sm-text-center md-text-left mx-auto" style="max-width: 1200px;">
         <div class="floating-item col-xs-12 col-sm-12 col-md-3 push-bottom xs-push-half-bottom">
