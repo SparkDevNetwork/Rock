@@ -163,6 +163,12 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = true,
         Order = 18 )]
 
+    [BooleanField( "Add Administrate Security to Group Creator",
+        Key = AttributeKey.AddAdministrateSecurityToGroupCreator,
+        Description = "If enabled, the person who creates a new group will be granted 'Administrate' security rights to the group.  This was the behavior in previous versions of Rock.  If disabled, the group creator will not be able to edit security or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
+        DefaultBooleanValue = false,
+        Order = 19)]
+
     #endregion Block Attributes
 
     public partial class GroupDetail : ContextEntityBlock, IDetailBlock
@@ -198,6 +204,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupSchedulerPage = "GroupSchedulerPage";
             public const string GroupRSVPPage = "GroupRSVPPage";
             public const string EnableGroupTags = "EnableGroupTags";
+            public const string AddAdministrateSecurityToGroupCreator = "AddAdministrateSecurityToGroupCreator";
         }
 
         #endregion Attribute Keys
@@ -1125,7 +1132,11 @@ namespace RockWeb.Blocks.Groups
                 // Save changes because we'll need the group's Id next...
                 rockContext.SaveChanges();
 
-                if ( adding )
+                /* 2020-11-18 ETD
+                 * Do not assign the group creater Administrate security permisisons unless AddAdministrateSecurityToGroupCreator is true.
+                 */
+
+                if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToGroupCreator).AsBoolean() )
                 {
                     // Add ADMINISTRATE to the person who added the group
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
