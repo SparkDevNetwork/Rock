@@ -127,6 +127,33 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show status on transfer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show status on transfer]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowStatusOnTransfer { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show connect button].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show connect button]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowConnectButton { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show campus on transfer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show campus on transfer]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowCampusOnTransfer { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
