@@ -631,6 +631,7 @@
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
+    <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />

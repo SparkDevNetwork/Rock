@@ -17,18 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Store;
 using Rock.Utility;
 using Rock.VersionInfo;
@@ -180,13 +174,19 @@ namespace RockWeb.Blocks.Store
 
             lAuthorInfo.Text = string.Format( "<a href='{0}'>{1}</a>", package.Vendor.Url, package.Vendor.Name );
 
+            lCost.Text = string.Empty;
+            lbInstall.Visible = true;
             if ( package.IsFree )
             {
                 lCost.Text = "<div class='pricelabel free'><h4>Free</h4></div>";
             }
-            else
+            else if ( package.Price != null )
             {
                 lCost.Text = string.Format( "<div class='pricelabel cost'><h4>${0}</h4></div>", package.Price );
+            }
+            else
+            {
+                lbInstall.Visible = false;
             }
 
             // get latest version
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Store
             if ( package.Versions.Count > 0 )
             {
                 RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
-                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
+                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending( v => v.Id ).FirstOrDefault();
             }
 
             // determine the state of the install button (install, update, buy or installed)
@@ -214,11 +214,11 @@ namespace RockWeb.Blocks.Store
                     if ( package.IsPurchased )
                     {
                         lbInstall.Text = "Install";
-                        lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString());
+                        lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString() );
 
                         // set rating link button
                         lbRate.Visible = true;
-                        lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString());
+                        lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString() );
                     }
                     else
                     {
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Store
                 {
                     // have a previous version installed
                     lbInstall.Text = "Update";
-                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel);
+                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel );
 
                     // set rating link button
                     lbRate.Visible = true;
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Store
                 rptScreenshots.DataBind();
 
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
-                lLatestVersionDate.Text = latestVersion.AddedDate.ToString("MMMM d, yyyy");
+                lLatestVersionDate.Text = latestVersion.AddedDate.ToString( "MMMM d, yyyy" );
                 lLatestVersionDescription.Text = latestVersion.Description;
 
                 var versionReviews = new PackageVersionRatingService().GetPackageVersionRatings( latestVersion.Id );
@@ -286,15 +286,15 @@ namespace RockWeb.Blocks.Store
                 }
 
                 lLastUpdate.Text = latestVersion.AddedDate.ToShortDateString();
-                lRequiredRockVersion.Text = string.Format("v{0}.{1}",
+                lRequiredRockVersion.Text = string.Format( "v{0}.{1}",
                                                 latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
-                                                latestVersion.RequiredRockSemanticVersion.Patch.ToString());
+                                                latestVersion.RequiredRockSemanticVersion.Patch.ToString() );
                 lDocumenationLink.Text = string.Format( "<a href='{0}' target='_blank'>Documentation Link</a>", latestVersion.DocumentationUrl );
 
                 lSupportLink.Text = string.Format( "<a href='{0}'>Support Link</a>", package.SupportUrl );
 
                 // fill in previous version info
-                rptAdditionalVersions.DataSource = package.Versions.Where( v => v.Id < latestVersion.Id ).OrderByDescending( v => v.AddedDate);
+                rptAdditionalVersions.DataSource = package.Versions.Where( v => v.Id < latestVersion.Id ).OrderByDescending( v => v.AddedDate );
                 rptAdditionalVersions.DataBind();
 
                 // get the details for the latest version
@@ -347,11 +347,11 @@ namespace RockWeb.Blocks.Store
         {
             var ratings = new PackageVersionRatingService().GetPackageVersionRatings( versionId );
 
-            if (ratings.Count > 0 )
+            if ( ratings.Count > 0 )
             {
                 var avgRating = ratings.Sum( r => r.Rating ) / ratings.Count();
 
-                return (Math.Round( (double)avgRating * 2 ) / 2).ToString();
+                return ( Math.Round( ( double ) avgRating * 2 ) / 2 ).ToString();
             }
             else
             {
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Store
             return "{{ Rating | RatingMarkup }}".ResolveMergeFields( mergeValues );
         }
 
-        protected string FormatReviewText(string reviewText )
+        protected string FormatReviewText( string reviewText )
         {
             return reviewText.Replace( "\r\n", "<br />" ).Replace( Environment.NewLine, "<br />" ).Replace( "\n", "<br />" );
         }

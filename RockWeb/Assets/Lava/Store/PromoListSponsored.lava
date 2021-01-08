@@ -22,11 +22,11 @@
                                     {{ promo.PackageRating | RatingMarkup }}
                                 </div>
                                 <div class="cost pull-right">
-                                    {% if promo.PackagePrice == 0 %}
-                                        Free
-                                    {% else %}
-                                        ${{ promo.PackagePrice }}
-                                    {% endif %}
+                                  {% if promo.PackagePrice == 0 %}
+                                    Free
+                                  {% elseif promo.PackagePrice != null %}
+                                    ${{ promo.PackagePrice }}
+                                  {% endif %}
                                 </div>
                             </div>
                         </a>
