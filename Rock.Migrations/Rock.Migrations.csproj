@@ -93,6 +93,10 @@
     <Compile Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.Designer.cs">
       <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.cs" />
+    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.Designer.cs">
+      <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -1558,6 +1562,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.resx">
       <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.resx">
+      <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
