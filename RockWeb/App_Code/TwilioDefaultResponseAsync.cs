@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using RockWeb;
 using Rock.SystemKey;
+using System.Collections.Generic;
 
 public abstract class TwilioDefaultResponseAsync : IAsyncResult
 {
@@ -52,7 +53,14 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     /// <summary>
     /// The enable logging
     /// </summary>
-    public bool EnableLogging { get; set; }
+    public bool EnableLogging
+    {
+        get
+        {
+            return Rock.Logging.RockLogger.Log.ShouldLogEntry( Rock.Logging.RockLogLevel.Debug, Rock.Logging.RockLogDomains.Communications );
+        }
+    }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TwilioDefaultResponseAsync"/> class.
@@ -106,7 +114,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         }
         else
         {
-            TwilioLogging.HandleRequestLogging( _context, EnableLogging );
+            LogRequest();
 
             if ( request.Form["SmsStatus"] != null )
             {
@@ -217,7 +225,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         {
             if ( EnableLogging )
             {
-                TwilioLogging.WriteRequestToTwilioLog( _context, "Request was not a post." );
+                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "Request was not a post." );
             }
             return false;
         }
@@ -241,7 +249,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         {
             if ( EnableLogging )
             {
-                TwilioLogging.WriteRequestToTwilioLog( _context, "X-Twilio-Signature not found." );
+                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "X-Twilio-Signature not found." );
             }
 
             return false;
@@ -257,7 +265,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         {
             if ( EnableLogging )
             {
-                TwilioLogging.WriteRequestToTwilioLog( _context, "Not auth token found." );
+                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "No auth token found." );
             }
             return false;
         }
@@ -279,10 +287,29 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( !isValid && EnableLogging )
         {
-            TwilioLogging.WriteRequestToTwilioLog( _context, "Authentication Failed: request.Url.AbsoluteUri: " + request.Url.AbsoluteUri + " requestUrl: " + requestUrl + " authToken: " + authToken );
+            string authMessage = "Authentication Failed: request.Url.AbsoluteUri: " + request.Url.AbsoluteUri + " requestUrl: " + requestUrl + " authToken: " + authToken;
+            Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, authMessage );
         }
 
         return isValid;
+    }
+
+    private void LogRequest()
+    {
+        if ( !EnableLogging )
+        {
+            return;
+        }
+
+        var formValues = new List<string>();
+        formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", _context.Request.Url ) );
+
+        foreach ( string name in _context.Request.Form.AllKeys )
+        {
+            formValues.Add( string.Format( "{0}: '{1}'", name, _context.Request.Form[name] ) );
+        }
+
+        Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, formValues.AsDelimited( ", " ) );
     }
 
     /// <summary>
