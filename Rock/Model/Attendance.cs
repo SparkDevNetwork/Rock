@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -737,7 +738,10 @@ namespace Rock.Model
         {
             if ( _declinedScheduledAttendance )
             {
-                new GroupScheduleCancellationTransaction( this ).Enqueue();
+                new LaunchGroupScheduleCancellationWorkflow.Message()
+                {
+                    AttendanceId = this.Id
+                }.Send();
             }
 
             if ( !_isDeleted )

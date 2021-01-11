@@ -286,6 +286,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUPS_GROUP_MEMBER_LIST = "88B7EFA9-7419-4D05-9F88-38B936E61EDD";
         public const string HTML_CONTENT = "19B61D65-37E3-459F-A44F-DEF0089118A3";
         public const string LOG_VIEWER = "6059FC03-E398-4359-8632-909B63FFA550";
+        public const string MASS_PUSH_NOTIFICATIONS = "D886DB44-0D0F-46D3-86AE-C959C520B0FD";
         public const string MOTIVATORS = "18CF8DA8-5DE0-49EC-A279-D5507CFA5713";
         public const string NOTES = "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3";
         public const string OIDC_AUTHORIZE = "D9E2BE51-6AC2-43D6-BE63-9E5EC571BD95";
@@ -304,6 +305,7 @@ namespace Rock.Client.SystemGuid
         public const string RSVP_RESPONSE = "EEFD83FB-6EE1-44F4-A012-7569F979CD6B";
         public const string SYSTEM_COMMUNICATION_DETAIL = "8713F91A-8738-453D-AF13-3ED57F74137E";
         public const string SYSTEM_COMMUNICATION_LIST = "13BD5FCC-8F03-46B4-B193-E9C0987D2F20";
+        public const string WORKFLOW_ENTRY = "A8BD05C8-6F89-4628-845B-059E686F089A";
     }
 
     /// <summary>
@@ -1220,6 +1222,7 @@ namespace Rock.Client.SystemGuid
         public const string LOGIN_SECURITY = "03CB988A-138C-448B-A43D-8891844EEB18";
         public const string MANAGE = "B0F4B33D-DD11-4CCC-B79D-9342831B8701";
         public const string MANAGE_WORKFLOWS = "61E1B4B6-EACE-42E8-A2FB-37465E6D0004";
+        public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
         public const string MERGE_PEOPLE = "F0C4E25F-83DF-44FF-AB5A-EF6C3044FAD3";
         public const string MERGE_TEMPLATE_DETAIL = "F29C7AF7-6436-4C4B-BD17-330A487A4BF4";
         public const string MERGE_TEMPLATE_ENTRY = "B864FBFD-3699-4DB5-A8A9-12B2FEA86C7A";
@@ -1356,6 +1359,7 @@ namespace Rock.Client.SystemGuid
         public const string USER_ACCOUNTS = "306BFEF8-596C-482A-8DEC-34A7B622E688";
         public const string VERIFY_PHOTOS = "07E4BA19-614A-42D0-9D75-DFB31374844D";
         public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
+        public const string WEB_FARM_NODE = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2";
         public const string WEBSITE = "F7105BFE-B28C-41B6-9CE6-F1018D77DD8F";
         public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";
         public const string WORKFLOW = "CDB27DB2-977C-415A-AED5-D0751DFD5DF2";

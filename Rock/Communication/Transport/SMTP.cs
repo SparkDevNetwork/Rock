@@ -33,6 +33,7 @@ namespace Rock.Communication.Transport
     [TextField( "User Name", "", false, "", "", 2 )]
     [TextField( "Password", "", false, "", "", 3, null, true )]
     [BooleanField( "Use SSL", "", false, "", 4 )]
+    [IntegerField( "Concurrent Send Workers", "", false, 10, "", 5, key: "MaxParallelization" )]
     public class SMTP : SMTPComponent
     {
         /// <summary>

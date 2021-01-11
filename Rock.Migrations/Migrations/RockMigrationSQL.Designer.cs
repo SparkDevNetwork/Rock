@@ -2216,5 +2216,23 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding parallax effects (when the background image of a section scrolls at a different speed than the rest of the page) can greatly enhance the 
+        ///    aesthetics of the page. Until now, this effect has taken quite a bit of CSS know how to achieve. Now it’s as simple as:
+        ///&lt;/p&gt;
+        ///&lt;pre&gt;{[ parallax image:&apos;&apos;https://source.unsplash.com/phIFdC6lA4E/1920x1080&apos;&apos; contentpadding:&apos;&apos;20px&apos;&apos; ]}
+        ///    &amp;lt;h1&amp;gt;Hello World&amp;lt;/h1&amp;gt;
+        ///{[ endparallax ]}&lt;/pre&gt;
+        ///
+        ///&lt;p&gt;  
+        ///    This shor [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202012151955324_Rollup_1215_parallaxupdate {
+            get {
+                return ResourceManager.GetString("_202012151955324_Rollup_1215_parallaxupdate", resourceCulture);
+            }
+        }
     }
 }

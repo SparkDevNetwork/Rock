@@ -45,7 +45,7 @@ namespace Rock.WebFarm
                     RockWebFarm.OnReceivedStartup( message.SenderNodeName );
                     break;
                 case RockWebFarm.EventType.Shutdown:
-                    RockWebFarm.OnReceivedShutdown( message.SenderNodeName );
+                    RockWebFarm.OnReceivedShutdown( message.SenderNodeName, message.Payload );
                     break;
                 case RockWebFarm.EventType.Availability:
                     RockWebFarm.OnReceivedAvailabilityChange( message.SenderNodeName, message.Payload );

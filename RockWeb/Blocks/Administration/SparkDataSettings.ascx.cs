@@ -27,6 +27,7 @@ using Rock.Utility.Settings.SparkData;
 using Rock.Utility.SparkDataApi;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -277,10 +278,7 @@ namespace RockWeb.Blocks.Administration
                 ServiceJob job = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.GET_NCOA.AsGuid() );
                 if ( job != null )
                 {
-                    var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id );
-
-                    // Process the transaction on another thread
-                    System.Threading.Tasks.Task.Run( () => transaction.Execute() );
+                    new ProcessRunJobNow.Message { JobId = job.Id }.Send();
 
                     mdGridWarning.Show( string.Format( "The '{0}' job has been started.", job.Name ), ModalAlertType.Information );
                     lbStartNcoa.Enabled = false;

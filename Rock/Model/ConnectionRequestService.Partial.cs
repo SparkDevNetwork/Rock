@@ -420,6 +420,20 @@ namespace Rock.Model
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
             }
 
+            // Filter past due: Allow other states to go throgh, but "future follow-up" must be due today or already past due
+            if ( args.IsFutureFollowUpPastDueOnly )
+            {
+                var midnight = RockDateTime.Today.AddDays( 1 );
+
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr =>
+                    cr.ConnectionState != ConnectionState.FutureFollowUp ||
+                    (
+                        cr.FollowupDate.HasValue &&
+                        cr.FollowupDate.Value < midnight
+                    )
+                );
+            }
+
             // Filter last activity
             if ( args.LastActivityTypeIds?.Any() == true )
             {
@@ -631,6 +645,11 @@ namespace Rock.Model
         /// Gets or sets the sort property.
         /// </summary>
         public ConnectionRequestViewModelSortProperty? SortProperty { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is future follow up past due only.
+        /// </summary>
+        public bool IsFutureFollowUpPastDueOnly { get; set; }
     }
 
     /// <summary>

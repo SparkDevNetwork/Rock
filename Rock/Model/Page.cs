@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -193,7 +194,7 @@ namespace Rock.Model
         private bool _pageDisplayDescription = true;
 
         /// <summary>
-        /// Gets or sets a a value indicating when the Page should be displayed in the navigation.
+        /// Gets or sets a value indicating when the Page should be displayed in the navigation.
         /// </summary>
         /// <value>
         /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation 
@@ -670,7 +671,10 @@ namespace Rock.Model
 
             if ( _didNameChange )
             {
-                new PageRenameTransaction( Guid ).Enqueue();
+                new AddPageRenameInteraction.Message()
+                {
+                    PageGuid = Guid
+                }.Send();
             }
         }
 

@@ -37,7 +37,7 @@ namespace Rock.Transactions
         private DateTime? AttendanceDateTime;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
+        /// Initializes a new instance of the <see cref="GroupAttendedTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
         public GroupAttendedTransaction( DbEntityEntry entry )

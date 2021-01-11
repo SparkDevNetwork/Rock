@@ -1163,6 +1163,11 @@ namespace Rock.Web.UI
             {
                 foreach ( Control control in controls )
                 {
+                    if ( control is Rock.Web.UI.Controls.IDoNotBlockValidate)
+                    {
+                        continue;
+                    }
+
                     if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
                     {
                         var rockControl = ( Rock.Web.UI.Controls.IHasValidationGroup ) control;

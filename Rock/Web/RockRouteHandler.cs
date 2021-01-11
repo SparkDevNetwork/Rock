@@ -24,6 +24,7 @@ using System.Web.Compilation;
 using System.Web.Routing;
 
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -185,7 +186,7 @@ namespace Rock.Web
 
                                             string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
-                                            var transaction = new ShortLinkTransaction
+                                            var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
                                                 PageShortLinkId = pageShortLink.Id,
                                                 Token = pageShortLink.Token,
@@ -196,7 +197,8 @@ namespace Rock.Web
                                                 UserName = requestContext.HttpContext.User?.Identity.Name
                                             };
 
-                                            RockQueue.TransactionQueue.Enqueue( transaction );
+
+                                            addShortLinkInteractionMsg.Send();
 
                                             requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();

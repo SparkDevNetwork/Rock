@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.Data;
@@ -24,6 +25,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes entity audits 
     /// </summary>
+    [Obsolete( "Use UpdateDigitalSignatureDocument Task instead." )]
+    [RockObsolete( "1.13" )]
     public class UpdateDigitalSignatureDocumentTransaction : ITransaction
     {
         /// <summary>

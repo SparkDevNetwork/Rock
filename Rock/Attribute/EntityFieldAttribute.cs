@@ -32,7 +32,7 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="entityControlHelpTextFormat">The entity control help text format.
         /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
-        /// and/or a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included
+        /// and/or a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included
         /// </param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="category">The category.</param>

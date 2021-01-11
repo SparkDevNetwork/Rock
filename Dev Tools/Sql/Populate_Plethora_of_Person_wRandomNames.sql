@@ -12024,7 +12024,7 @@ BEGIN
         WHERE #personLastNames.number = ROUND(rand() * @lastNameCount, 0)
 
         -- add first member of family
-        SET @email = @firstName + '.' + @lastName + '@nowhere.com';
+        SET @email = @firstName + '.' + @lastName + '@nowhere.test';
         SET @adultBirthYear = datepart(year, sysdatetime()) - 19 - ROUND(rand(CHECKSUM(newid())) * 70, 0);
         SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
         SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
@@ -12170,7 +12170,7 @@ BEGIN
         WHERE #personFirstNames.number >= ROUND(rand() * @firstNameCount, 0)
             AND gender = @genderInt
 
-        SET @email = @firstName + '.' + @lastName + '@nowhere.com';
+        SET @email = @firstName + '.' + @lastName + '@nowhere.test';
         SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
         SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
         SET @spousePersonGuid = NEWID();

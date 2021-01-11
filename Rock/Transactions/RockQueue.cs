@@ -32,6 +32,8 @@ namespace Rock.Transactions
         /// <value>
         /// The currently executing transaction progress.
         /// </value>
+        [Obsolete( "Use Rock.Tasks instead of transactions" )]
+        [RockObsolete( "1.13" )]
         public static int? CurrentlyExecutingTransactionProgress { get; private set; }
 
         /// <summary>
@@ -59,7 +61,6 @@ namespace Rock.Transactions
             while ( TransactionQueue.TryDequeue( out var transaction ) )
             {
                 CurrentlyExecutingTransaction = transaction;
-                CurrentlyExecutingTransactionProgress = null;
 
                 if ( CurrentlyExecutingTransaction == null )
                 {
@@ -68,28 +69,11 @@ namespace Rock.Transactions
 
                 try
                 {
-                    if ( CurrentlyExecutingTransaction is ITransactionWithProgress )
-                    {
-                        var transactionWithProgress = CurrentlyExecutingTransaction as ITransactionWithProgress;
-
-                        if ( transactionWithProgress.Progress != null )
-                        {
-                            transactionWithProgress.Progress.ProgressChanged += ( reporter, progress ) =>
-                            {
-                                CurrentlyExecutingTransactionProgress = progress;
-                            };
-                        }
-                    }
-
                     CurrentlyExecutingTransaction.Execute();
                 }
                 catch ( Exception ex )
                 {
                     errorHandler( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ) );
-                }
-                finally
-                {
-                    CurrentlyExecutingTransactionProgress = 100;
                 }
             }
         }

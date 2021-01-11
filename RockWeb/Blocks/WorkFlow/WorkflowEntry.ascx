@@ -105,7 +105,7 @@
                     }
                 }
 
-                $(this).button('loading');
+                //$(this).button('loading');
                 return true;
             }
         </script>

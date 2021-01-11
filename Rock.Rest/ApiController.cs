@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Rest
@@ -517,13 +518,12 @@ namespace Rock.Rest
             }
             else
             {
-                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeGuid, workflowName );
-                if ( workflowAttributeValues != null )
+                new LaunchWorkflow.Message
                 {
-                    transaction.WorkflowAttributeValues = workflowAttributeValues;
-                }
-
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    WorkflowTypeGuid = workflowTypeGuid,
+                    WorkflowName = workflowName,
+                    WorkflowAttributeValues = workflowAttributeValues
+                }.Send();
             }
         }
 
@@ -551,13 +551,12 @@ namespace Rock.Rest
             }
             else
             {
-                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeId, workflowName );
-                if ( workflowAttributeValues != null )
+                new LaunchWorkflow.Message
                 {
-                    transaction.WorkflowAttributeValues = workflowAttributeValues;
-                }
-
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    WorkflowTypeId = workflowTypeId,
+                    WorkflowName = workflowName,
+                    WorkflowAttributeValues = workflowAttributeValues
+                }.Send();
             }
         }
 

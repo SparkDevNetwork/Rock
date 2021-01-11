@@ -17,11 +17,11 @@
                         {{ package.Rating | RatingMarkup }}
                     </div>
                     <div class="cost pull-right">
-                        {% if package.Price == 0 %}
-                            Free
-                        {% else %}
-                            ${{ package.Price }}
-                        {% endif %}
+                      {% if package.IsFree == true %}
+                        Free
+                      {% elseif package.Price != null %}
+                        ${{ package.Price }}
+                      {% endif %}
                     </div>
                 </div>
 

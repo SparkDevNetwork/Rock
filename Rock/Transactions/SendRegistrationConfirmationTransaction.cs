@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity;
 using System.Linq;
 
@@ -26,6 +27,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Sends an event registration confirmation
     /// </summary>
+    [Obsolete( "Use ProcessSendRegistrationConfirmation Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendRegistrationConfirmationTransaction : ITransaction
     {
 

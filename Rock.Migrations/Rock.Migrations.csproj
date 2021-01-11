@@ -61,6 +61,42 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202012091759168_Rollup_1209.cs" />
+    <Compile Include="Migrations\202012091759168_Rollup_1209.Designer.cs">
+      <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.cs" />
+    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.Designer.cs">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012151955324_Rollup_1215.cs" />
+    <Compile Include="Migrations\202012151955324_Rollup_1215.Designer.cs">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.cs" />
+    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.Designer.cs">
+      <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.cs" />
+    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.Designer.cs">
+      <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202012222016408_Rollup_1222.cs" />
+    <Compile Include="Migrations\202012222016408_Rollup_1222.Designer.cs">
+      <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202101051713098_Rollup_0105.cs" />
+    <Compile Include="Migrations\202101051713098_Rollup_0105.Designer.cs">
+      <DependentUpon>202101051713098_Rollup_0105.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.cs" />
+    <Compile Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.Designer.cs">
+      <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.cs" />
+    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.Designer.cs">
+      <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -1503,6 +1539,33 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202012091759168_Rollup_1209.resx">
+      <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012092122418_KpiShortCodeEdit.resx">
+      <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012151955324_Rollup_1215.resx">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012161922246_WebFarmNodeMetric.resx">
+      <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.resx">
+      <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202012222016408_Rollup_1222.resx">
+      <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202101051713098_Rollup_0105.resx">
+      <DependentUpon>202101051713098_Rollup_0105.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.resx">
+      <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.resx">
+      <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
     </EmbeddedResource>
@@ -2596,6 +2659,9 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202012151955324_Rollup_1215_parallaxupdate.sql">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>

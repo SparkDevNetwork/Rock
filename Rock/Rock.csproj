@@ -234,6 +234,7 @@
     <Reference Include="Microsoft.SqlServer.Types, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.11.0.2\lib\net20\Microsoft.SqlServer.Types.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
@@ -536,6 +537,10 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
+    <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
+    <Compile Include="Communication\VideoEmbed\YoutubeEmbed.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
     <Compile Include="Badge\Component\Achievement.cs" />
@@ -591,11 +596,44 @@
     <Compile Include="CheckIn\LocalDeviceConfiguration.cs" />
     <Compile Include="CheckIn\RosterAttendee.cs" />
     <Compile Include="Communication\CommunicationHelper.cs" />
+    <Compile Include="Communication\IAsyncTransport.cs" />
+    <Compile Include="Communication\IAsyncMediumComponent.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
     <Compile Include="Communication\PushData.cs" />
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
+    <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Tasks\AddCommunicationRecipients.cs" />
+    <Compile Include="Tasks\AddNewMetaphones.cs" />
+    <Compile Include="Tasks\AddPageRenameInteraction.cs" />
+    <Compile Include="Tasks\AddShortLinkInteraction.cs" />
+    <Compile Include="Tasks\DeleteBinaryFileAttribute.cs" />
+    <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
+    <Compile Include="Tasks\LaunchGroupMemberPlacedElsewhereWorkflow.cs" />
+    <Compile Include="Tasks\LaunchGroupScheduleCancellationWorkflow.cs" />
+    <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
+    <Compile Include="Tasks\ProcessConnectionRequestActivityChange.cs" />
+    <Compile Include="Tasks\ProcesSendRegistrationNotification.cs" />
+    <Compile Include="Tasks\ProcessRunJobNow.cs" />
+    <Compile Include="Tasks\ProcessRebuildStreakType.cs" />
+    <Compile Include="Tasks\ProcessSendCommunication.cs" />
+    <Compile Include="Tasks\ProcessSendCommunicationApprovalEmail.cs" />
+    <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
+    <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
+    <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\RegisterRestControllers.cs" />
+    <Compile Include="Tasks\UpdateDataViewStatistics.cs" />
+    <Compile Include="Tasks\UpdateDigitalSignatureDocument.cs" />
+    <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
+    <Compile Include="Tasks\UpdateGroupMember.cs" />
+    <Compile Include="Tasks\UpdatePaymentStatusFinancialScheduledTransactions.cs" />
+    <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
+    <Compile Include="Tasks\UpdateReportStatistics.cs" />
+    <Compile Include="Tasks\LaunchWorkflow.cs" />
+    <Compile Include="Tasks\UpdateUserLastActivity.cs" />
+    <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
@@ -638,7 +676,11 @@
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
+    <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
+    <Compile Include="Model\StepProgramService.Partial.cs" />
+    <Compile Include="Model\WebFarmNodeMetric.cs" />
+    <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeLog.cs" />
     <Compile Include="Model\WebFarmNode.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
@@ -656,6 +698,8 @@
     <Compile Include="Model\DocumentService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Model\WebFarmNodeService.Partial.cs" />
+    <Compile Include="Model\WebFarmNodeMetricService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
     <Compile Include="Plugin\HotFixes\138_MigrationRollupsFor11_4_1.cs" />
     <Compile Include="Plugin\HotFixes\137_MigrationRollupsFor11_4_0.cs" />
@@ -681,6 +725,7 @@
     <Compile Include="Tasks\AddPersonViewed.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
     <Compile Include="Tasks\BusStartedTask.cs" />
+    <Compile Include="Utility\AsyncHelper.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\ExtensionMethods\DateKeyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\AssemblyExtensions.cs" />
@@ -755,6 +800,7 @@
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -2865,6 +2911,7 @@
     <Compile Include="Workflow\Action\Groups\UpdateGroupMemberStatus.cs" />
     <Compile Include="Workflow\Action\People\AddPersonToFamily.cs" />
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
+    <Compile Include="Workflow\Action\People\InactivateFamily.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
     <Compile Include="Workflow\Action\People\PersonGetCampusTeamMember.cs" />

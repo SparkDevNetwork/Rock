@@ -137,7 +137,16 @@ namespace Rock.WebStartup
 
             // Start the message bus
             RockMessageBus.StartAsync().Wait();
-            ShowDebugTimingMessage( $"Message Bus: ({RockMessageBus.GetTransportName()})" );
+            var busTransportName = RockMessageBus.GetTransportName();
+
+            if ( busTransportName.IsNullOrWhiteSpace() )
+            {
+                ShowDebugTimingMessage( "Message Bus" );
+            }
+            else
+            {
+                ShowDebugTimingMessage( $"Message Bus ({busTransportName})" );
+            }
 
             // Start stage 1 of the web farm
             RockWebFarm.StartStage1();

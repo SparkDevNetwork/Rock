@@ -1904,6 +1904,14 @@ namespace Rock.Data
         public DbSet<WebFarmNode> WebFarmNodes { get; set; }
 
         /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
+
+        /// <summary>
         /// Gets or sets the web farm node logs.
         /// </summary>
         /// <value>

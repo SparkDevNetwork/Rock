@@ -712,7 +712,7 @@ namespace RockWeb.Blocks.Communication
                         CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, newCommunication.Id.ToString() );
                     }
 
-                    Response.Redirect( CurrentPageReference.BuildUrl() );
+                    Response.Redirect( CurrentPageReference.BuildUrl(), false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
             }
