@@ -256,6 +256,7 @@ ORDER BY g2.Name, p.LastName, p.NickName
 {% comment %}
   Group Leader Resources
 {% endcomment %}
+{%- comment -%}
 {% if groups != empty or leaders != empty or coaches != empty %}
   {% contentchannelitem where:'ContentChannelId == 714' limit:'3' sort:'StartDateTime desc' iterator:'items' %}
     {% if items and items != empty %}
@@ -298,7 +299,7 @@ ORDER BY g2.Name, p.LastName, p.NickName
         </div>{% endfor %}
       </div>
 
-      {% comment %} <p class="xs-push-half-bottom"><a href="/groups/resources" class="btn xs-btn-block btn-primary shadowed"><i class="fas fa-sm fa-book push-quarter-right"></i> View More Resources</a></p> {% endcomment %}
     {% endif %}
   {% endcontentchannelitem %}
 {% endif %}
+{%- endcomment -%}

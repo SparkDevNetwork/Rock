@@ -10,7 +10,7 @@
       {% capture content %}
         <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
       {% endcapture %}
-      {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
+      {[ card type:'Location' title:'{{ campus.Name | Replace:'Eastlan','Greenville' }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase | Replace:'eastlan','greenville' }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
     [[ enditem ]]
   {% endfor %}
 {[ endswiper ]}
