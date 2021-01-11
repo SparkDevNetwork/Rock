@@ -630,6 +630,7 @@
     <Compile Include="Tasks\UpdatePaymentStatusFinancialScheduledTransactions.cs" />
     <Compile Include="Tasks\UpdatePersonSignalTypes.cs" />
     <Compile Include="Tasks\UpdateReportStatistics.cs" />
+    <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="Utility\MethodRetry.cs" />

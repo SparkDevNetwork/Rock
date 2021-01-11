@@ -21,6 +21,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Transactions
@@ -164,18 +165,13 @@ namespace Rock.Transactions
         private void LaunchWorkflow( int workflowTypeId )
         {
             var attempt = GetAchievementAttempt();
-            ITransaction transaction;
 
-            if ( attempt != null )
+            new LaunchWorkflow.Message
             {
-                transaction = new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
-            }
-            else
-            {
-                transaction = new LaunchWorkflowTransaction( workflowTypeId );
-            }
-
-            transaction.Enqueue();
+                EntityTypeId = attempt?.TypeId,
+                EntityId = attempt?.Id,
+                WorkflowTypeId = workflowTypeId
+            }.Send();
         }
 
         /// <summary>
