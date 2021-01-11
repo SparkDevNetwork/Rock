@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -199,14 +200,19 @@ namespace Rock.Rest.Controllers
         public DataSet GetContributionPersonGroupAddress( [FromBody]ContributionStatementOptions options )
         {
             Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add( "startDate", options.StartDate );
-            if ( options.EndDate.HasValue )
+            var startDate = options.StartDate;
+            var endDate = options.EndDate ?? DateTime.MaxValue;
+
+            // The SQL date type has a more limited range than C# DateTime. We need to conform the date values to fit
+            // in the SQL date range or an error will be thrown in the stored procedure.
+            if ( startDate < SqlDateTime.MinValue.Value )
             {
-                parameters.Add( "endDate", options.EndDate.Value );
+                startDate = SqlDateTime.MinValue.Value;
             }
-            else
+
+            if ( endDate > SqlDateTime.MaxValue.Value )
             {
-                parameters.Add( "endDate", DateTime.MaxValue );
+                endDate = SqlDateTime.MaxValue.Value;
             }
 
             if ( options.AccountIds != null )
@@ -237,6 +243,8 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByPostalCode", options.OrderByPostalCode );
+            parameters.Add( "startDate", startDate );
+            parameters.Add( "endDate", endDate );
             var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )

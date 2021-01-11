@@ -67,7 +67,7 @@ namespace Rock.Tests.Integration.Communications.Transport
             smtp.Send( (RockMessage)rockEmailMessage, 0, null, out List<string> errorMessages );
 
             // Assert
-            Assert.That.AreEqual( 0, errorMessages.Count );
+            Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings(", ") );
         }
 
         #endregion

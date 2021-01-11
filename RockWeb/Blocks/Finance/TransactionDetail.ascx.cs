@@ -1779,12 +1779,17 @@ namespace RockWeb.Blocks.Finance
         {
             var feeColumn = GetFeeColumn( gAccountsEdit );
 
+            if ( UseSimpleAccountMode )
+            {
+                var txnDetail = TransactionDetailsState.FirstOrDefault();
+                ApplyFeeValueToField( tbSingleAccountFeeAmount, txnDetail );
+            }
+
             if ( UseSimpleAccountMode && TransactionDetailsState.Count() == 1 )
             {
                 var txnDetail = TransactionDetailsState.First();
                 tbSingleAccountAmount.Label = AccountName( txnDetail.AccountId );
                 tbSingleAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
-                ApplyFeeValueToField( tbSingleAccountFeeAmount, txnDetail );
                 feeColumn.Visible = txnDetail.FeeAmount.HasValue;
             }
             else
@@ -1813,9 +1818,9 @@ namespace RockWeb.Blocks.Finance
                     Amount = totalAmount
                 } );
 
+                feeColumn.Visible = hasFeeInfo;
                 gAccountsEdit.DataSource = accounts;
                 gAccountsEdit.DataBind();
-                feeColumn.Visible = hasFeeInfo;
             }
         }
 
@@ -1853,7 +1858,7 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue( null );
                 tbAccountAmount.Text = string.Empty;
-                tbAccountFeeAmount.Text = string.Empty;
+                ApplyFeeValueToField( tbAccountFeeAmount, txnDetail );
                 tbAccountSummary.Text = string.Empty;
 
                 txnDetail = new FinancialTransactionDetail();
@@ -2100,12 +2105,13 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Applies the fee value to field.
         /// </summary>
-        /// <param name="tbSingleAccountFeeAmount">The tb single account fee amount.</param>
+        /// <param name="field">The tb single account fee amount.</param>
         /// <param name="transactionDetail">The transaction detail.</param>
-        private static void ApplyFeeValueToField( CurrencyBox tbSingleAccountFeeAmount, FinancialTransactionDetail transactionDetail )
+        private void ApplyFeeValueToField( CurrencyBox field, FinancialTransactionDetail transactionDetail )
         {
-            tbSingleAccountFeeAmount.Text = GetFeeAsText( transactionDetail.FeeAmount );
-            tbSingleAccountFeeAmount.Visible = transactionDetail.FeeAmount.HasValue;
+            var hasFeeInfo = TransactionDetailsState.Any( d => d.FeeAmount.HasValue );
+            field.Visible = hasFeeInfo;
+            field.Text = transactionDetail == null ? string.Empty : GetFeeAsText( transactionDetail.FeeAmount );
         }
 
         /// <summary>

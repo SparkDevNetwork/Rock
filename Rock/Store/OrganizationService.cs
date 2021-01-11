@@ -32,8 +32,8 @@ namespace Rock.Store
         /// <summary>
         /// Initializes a new instance of the <see cref="OrganizationService"/> class.
         /// </summary>
-        public OrganizationService() :base()
-        {}
+        public OrganizationService() : base()
+        { }
 
         /// <summary>
         /// Gets the organizations.
@@ -58,19 +58,12 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
 
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
-            string requestUrl = string.Format( "api/Store/RetrieveOrganizations/{0}/{1}", encodedUserName, encodedPassword );
-            var request = new RestRequest( requestUrl, Method.GET );
 
-            // deserialize to list of packages
-            var response = client.Execute<List<Organization>>( request );
+            var response = ExecuteRestGetRequest<List<Organization>>( $"api/Store/RetrieveOrganizations/{encodedUserName}/{encodedPassword}" );
 
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            if ( response.ResponseStatus == ResponseStatus.Completed && response.Data != null )
             {
                 return response.Data;
             }
@@ -79,6 +72,71 @@ namespace Rock.Store
                 errorResponse = response.ErrorMessage;
                 return new List<Organization>();
             }
+        }
+
+        /// <summary>
+        /// Gets the organization.
+        /// </summary>
+        /// <param name="organizationKey">The organization key.</param>
+        /// <returns></returns>
+        public StoreApiResult<Organization> GetOrganization( string organizationKey )
+        {
+            string encodedOrganizationKey = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( organizationKey ) ) );
+
+            var response = ExecuteRestGetRequest<Organization>( $"api/Store/RetrieveOrganization/{encodedOrganizationKey}" );
+
+            if ( response.ResponseStatus == ResponseStatus.Completed )
+            {
+                return new StoreApiResult<Organization>
+                {
+                    Result = response.Data
+                };
+            }
+
+            return new StoreApiResult<Organization>
+            {
+                ErrorResponse = response.ErrorMessage
+            };
+        }
+
+        /// <summary>
+        /// Sets the size of the organization.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="organizationKey">The organization key.</param>
+        /// <param name="averageWeeklyAttendance">The average weekly attendance.</param>
+        /// <returns></returns>
+        public StoreApiResult<Organization> SetOrganizationSize( string username, string password, string organizationKey, int averageWeeklyAttendance )
+        {
+            // setup REST call
+            var client = new RestClient( _rockStoreUrl );
+            client.Timeout = _clientTimeout;
+
+            string encodedOrganizationKey = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( organizationKey ) ) );
+            string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
+            string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
+            string requestUrl = string.Format( $"api/Store/SetOrganizationSize/{encodedUserName}/{encodedPassword}/{encodedOrganizationKey}" );
+
+            var request = new RestRequest( requestUrl, Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddBody( averageWeeklyAttendance );
+
+            // deserialize to list of packages
+            var response = client.Execute<Organization>( request );
+
+            if ( response.ResponseStatus == ResponseStatus.Completed )
+            {
+                return new StoreApiResult<Organization>
+                {
+                    Result = response.Data
+                };
+            }
+
+            return new StoreApiResult<Organization>
+            {
+                ErrorResponse = response.ErrorMessage
+            };
         }
     }
 }

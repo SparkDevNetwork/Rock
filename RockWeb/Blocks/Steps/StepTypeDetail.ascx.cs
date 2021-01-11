@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -81,6 +82,15 @@ namespace RockWeb.Blocks.Steps
         order: 8,
         key: AttributeKey.BulkEntryPage )]
 
+    [CodeEditorField(
+        "Key Performance Indicator Lava",
+        IsRequired = false,
+        DefaultValue = DefaultValue.KpiLava,
+        Key = AttributeKey.KpiLava,
+        EditorMode = CodeEditorMode.Lava,
+        Description = "The Lava used to render the Key Performance Indicators bar. <span class='tip tip-lava'></span>",
+        Order = 9 )]
+
     #endregion Block Attributes
 
     public partial class StepTypeDetail : RockBlock, IDetailBlock
@@ -116,6 +126,30 @@ namespace RockWeb.Blocks.Steps
             /// The bulk entry page
             /// </summary>
             public const string BulkEntryPage = "BulkEntryPage";
+
+            /// <summary>
+            /// The kpi lava
+            /// </summary>
+            public const string KpiLava = "KpiLava";
+        }
+
+        /// <summary>
+        /// Default Attribute Values
+        /// </summary>
+        private static class DefaultValue
+        {
+            /// <summary>
+            /// The kpi lava
+            /// </summary>
+            public const string KpiLava =
+@"{[kpis]}
+    [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
+    {% if StepType.HasEndDate %}
+        [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
+        [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]
+    {% endif %}
+    [[ kpi icon:'fa-check-square' value:'{{StepsCompleted | Format:'N0'}}' label:'Steps Completed' color:'indigo-700']][[ endkpi ]]
+{[endkpis]}";
         }
 
         #endregion Attribute Keys
@@ -330,6 +364,7 @@ namespace RockWeb.Blocks.Steps
         protected void btnRefreshChart_Click( object sender, EventArgs e )
         {
             RefreshChart();
+            RefreshKpi();
         }
 
         /// <summary>
@@ -1448,11 +1483,51 @@ namespace RockWeb.Blocks.Steps
             descriptionListMain.Add( "Description", stepType.Description );
 
             lStepTypeDescription.Text = descriptionListMain.Html;
+            lStepTypeName.Text = stepType.Name;
 
             // Configure Label: Inactive
             hlInactive.Visible = !stepType.IsActive;
 
             RefreshChart();
+            RefreshKpi();
+        }
+
+        /// <summary>
+        /// Refreshes the kpi.
+        /// </summary>
+        private void RefreshKpi()
+        {
+            var stepType = GetStepType();
+            var template = GetAttributeValue( AttributeKey.KpiLava );
+
+            if ( template.IsNullOrWhiteSpace() || stepType == null )
+            {
+                return;
+            }
+
+            var startedQuery = GetStartedStepQuery();
+            var completedQuery = GetCompletedStepQuery();
+
+            var individualsCompleting = completedQuery.Select( s => s.PersonAlias.PersonId ).Distinct().Count();
+            var stepsStarted = startedQuery.Count();
+            var stepsCompleted = completedQuery.Count();
+
+            var daysToCompleteList = completedQuery
+                .Select( s => SqlFunctions.DateDiff( "DAY", s.StartDateTime, s.CompletedDateTime ) )
+                .Where( i => i.HasValue )
+                .Select( i => i.Value )
+                .ToList();
+
+            var avgDaysToComplete = daysToCompleteList.Any() ? ( int ) daysToCompleteList.Average() : 0;
+
+            lKpi.Text = template.ResolveMergeFields( new Dictionary<string, object>
+            {
+                { "IndividualsCompleting", individualsCompleting },
+                { "AvgDaysToComplete", avgDaysToComplete },
+                { "StepsStarted", stepsStarted },
+                { "StepsCompleted", stepsCompleted },
+                { "StepType", stepType }
+            } );
         }
 
         /// <summary>
@@ -1659,9 +1734,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Get chart data and set visibility of related elements.
-            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
-
-            var chartFactory = this.GetChartJsFactory( reportPeriod );
+            var chartFactory = this.GetChartJsFactory();
 
             chartCanvas.Visible = chartFactory.HasData;
             nbActivityChartMessage.Visible = !chartFactory.HasData;
@@ -1674,7 +1747,12 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Add client script to construct the chart.
-            var chartDataJson = chartFactory.GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
+            var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                SizeToFitContainerWidth = true,
+                MaintainAspectRatio = false,
+                LineTension = 0.4m
+            } );
 
             string script = string.Format( @"
             var barCtx = $('#{0}')[0].getContext('2d');
@@ -1686,41 +1764,93 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Gets a configured factory that creates the data required for the chart.
+        /// Gets the completed step query.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( TimePeriod reportPeriod )
+        private IQueryable<Step> GetCompletedStepQuery()
         {
             var dataContext = GetDataContext();
-
             var stepService = new StepService( dataContext );
 
-            // Get the Steps associated with the current Step Type.
-            var stepsStartedQuery = stepService.Queryable().AsNoTracking()
-                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepTypeId == _stepTypeId &&
+                    x.StepType.IsActive &&
+                    x.CompletedDateKey != null );
 
-            var stepsCompletedQuery = stepService.Queryable().AsNoTracking()
-                .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
-
+            // Apply date range
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
             var dateRange = reportPeriod.GetDateRange();
-
             var startDate = dateRange.Start;
             var endDate = dateRange.End;
 
             if ( startDate != null )
             {
-                startDate = startDate.Value.Date;
-
-                stepsStartedQuery = stepsStartedQuery.Where( x => x.StartDateTime >= startDate );
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime >= startDate );
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey >= startDateKey );
             }
 
             if ( endDate != null )
             {
-                var compareDate = endDate.Value.Date.AddDays( 1 );
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
+            }
 
-                stepsStartedQuery = stepsStartedQuery.Where( x => x.StartDateTime < compareDate );
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateTime < compareDate );
+            return query;
+        }
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetStartedStepQuery()
+        {
+            var dataContext = GetDataContext();
+            var stepService = new StepService( dataContext );
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepTypeId == _stepTypeId &&
+                    x.StepType.IsActive &&
+                    x.StartDateKey != null );
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.StartDateKey <= compareDateKey );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets a configured factory that creates the data required for the chart.
+        /// </summary>
+        /// <returns></returns>
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory()
+        {
+            var reportPeriod = new TimePeriod( drpSlidingDateRange.DelimitedValues );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate.HasValue )
+            {
+                startDate = startDate.Value.Date;
             }
 
             // Initialize a new Chart Factory.
@@ -1740,48 +1870,42 @@ namespace RockWeb.Blocks.Steps
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
             // Determine the appropriate date grouping for the chart data points.
-            Func<Step, DateTime> groupKeySelector;
+            Func<int, int> groupKeySelector;
+            var groupByDay = factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day;
 
-            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+            if ( groupByDay )
             {
                 // Group Steps by Start Date.
-                groupKeySelector = ( x => x.StartDateTime.Value.Date );
+                groupKeySelector = ( x => x );
             }
             else
             {
                 // Group Steps by Start Date rounded to beginning of the month.
-                groupKeySelector = ( x => new DateTime( x.StartDateTime.Value.Year, x.StartDateTime.Value.Month, 1 ) );
+                groupKeySelector = ( x => x / 100 );
             }
 
             // Add data series for Steps started.
-            var startedSeriesDataPoints = stepsStartedQuery.ToList()
+            var startedSeriesDataPoints = GetStartedStepQuery()
+                .Select( x => x.StartDateKey.Value )
+                .ToList()
                 .GroupBy( groupKeySelector )
                 .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Started",
-                    DateTime = x.Key,
+                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( x.Key * 100 + 1 ).GetDateKeyDate(), // +1 to get first day of month
                     Value = x.Count(),
                     SortKey = "1"
                 } );
 
-            if ( factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
-            {
-                // Group Steps by Completed Date.
-                groupKeySelector = ( x => x.CompletedDateTime.Value.Date );
-            }
-            else
-            {
-                // Group Steps by Completed Date rounded to beginning of the month.
-                groupKeySelector = ( x => new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ) );
-            }
-
             // Add data series for Steps completed.
-            var completedSeriesDataPoints = stepsCompletedQuery.ToList()
+            var completedSeriesDataPoints = GetCompletedStepQuery()
+                .Select( x => x.CompletedDateKey.Value )
+                .ToList()
                 .GroupBy( groupKeySelector )
                 .Select( x => new ChartDatasetInfo
                 {
                     DatasetName = "Completed",
-                    DateTime = x.Key,
+                    DateTime = groupByDay ? x.Key.GetDateKeyDate() : ( x.Key * 100 + 1 ).GetDateKeyDate(), // +1 to get first day of month
                     Value = x.Count(),
                     SortKey = "2"
                 } );

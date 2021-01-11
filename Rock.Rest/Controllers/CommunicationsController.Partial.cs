@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Threading.Tasks;
 using System.Web.Http;
 
 using Rock.Rest.Filters;
@@ -31,11 +32,11 @@ namespace Rock.Rest.Controllers
         /// <param name="id">The identifier.</param>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "api/Communications/Send/{id}" )]
-        public virtual void Send( int id )
+        [Route( "api/Communications/Send/{id}" )]
+        public virtual Task Send( int id )
         {
             var communication = GetById( id );
-            Rock.Model.Communication.Send( communication );
+            return Model.Communication.SendAsync( communication );
         }
     }
 }

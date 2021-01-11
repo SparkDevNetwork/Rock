@@ -27,13 +27,14 @@ namespace Rock.Model
     /// </summary>
     public partial class IdentityVerification : Model<IdentityVerification>
     {
+        #region Entity Properties
         /// <summary>
         /// Gets or sets the reference number.
         /// </summary>
         /// <value>
         /// The reference number.
         /// </value>
-        [DataMember()]
+        [DataMember]
         [MaxLength( 150 )]
         public string ReferenceNumber { get; set; }
 
@@ -52,7 +53,7 @@ namespace Rock.Model
         /// <value>
         /// The request ip address.
         /// </value>
-        [DataMember()]
+        [DataMember]
         [MaxLength( 45 )]
         public string RequestIpAddress { get; set; }
 
@@ -62,8 +63,21 @@ namespace Rock.Model
         /// <value>
         /// The identity verification code identifier.
         /// </value>
-        [DataMember()]
+        [DataMember]
         public int IdentityVerificationCodeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the failed match attempt count.
+        /// </summary>
+        /// <value>
+        /// The failed match attempt count.
+        /// </value>
+        [DataMember]
+        public int? FailedMatchAttemptCount { get; set; }
+
+        #endregion Entity Properties
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the identity verification code.
@@ -72,6 +86,8 @@ namespace Rock.Model
         /// The identity verification code.
         /// </value>
         public virtual IdentityVerificationCode IdentityVerificationCode { get; set; }
+
+        #endregion Virtual Properties
     }
 
     #region Entity Configuration
@@ -90,5 +106,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

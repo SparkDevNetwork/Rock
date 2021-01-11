@@ -282,7 +282,7 @@ namespace Rock.MyWell.Controls
 
             lPaymentSelectorHTML.Text = $@"
 <div class='gateway-type-selector btn-group btn-group-justified' role='group'>
-    <a class='btn btn-default active js-payment-creditcard payment-creditcard' runat='server'>
+    <a class='btn btn-primary active js-payment-creditcard payment-creditcard' runat='server'>
         Card
     </a>
     <a class='btn btn-default js-payment-ach payment-ach' runat='server'>

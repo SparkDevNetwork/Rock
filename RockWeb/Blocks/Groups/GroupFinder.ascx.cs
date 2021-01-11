@@ -216,8 +216,9 @@ namespace RockWeb.Blocks.Groups
                 BindAttributes();
                 BuildDynamicControls();
 
-                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() && GetAttributeValue("DisplayCampusFilter").AsBoolean() )
                 {
+                    // Default campus filter selection to campus context (user can override filter).
                     var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
@@ -899,6 +900,17 @@ namespace RockWeb.Blocks.Groups
                 if ( searchCampuses.Count > 0 )
                 {
                     groupQry = groupQry.Where( c => searchCampuses.Contains( c.CampusId ?? -1 ) );
+                }
+            }
+            else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+            {
+                // if Campus Context is enabled and the filter is not shown, we need to filter campuses directly.
+                var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
+                var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                if ( contextCampus != null )
+                {
+                    groupQry = groupQry.Where( c => c.CampusId == contextCampus.Id );
                 }
             }
 

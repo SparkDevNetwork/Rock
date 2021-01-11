@@ -11,6 +11,10 @@
                 <h1 class="panel-title">
                     <asp:Literal ID="lStepTypeTitle" runat="server" />
                 </h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlCampus" runat="server" />
+                    <asp:Literal ID="lStatus" runat="server" />
+                </div>
             </div>
 
             <div class="panel-body">
@@ -18,9 +22,40 @@
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div id="pnlViewDetails" runat="server">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-3">
+                            <asp:Literal runat="server" ID="lPersonPhotoHtml" />
+                        </div>
+                        <div>
+                            <h3 class="font-weight-semibold my-0">
+                                <asp:Literal runat="server" ID="lPersonName" />
+                            </h3>
+                            <span class="text-muted">
+                                <asp:Literal runat="server" ID="lPersonSubTitle" />
+                            </span>
+                        </div>
+                    </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <asp:Literal ID="lStepDescription" runat="server"></asp:Literal>
+                        <asp:Literal ID="lStartHtml" runat="server" />
+                        <asp:Literal ID="lEndHtml" runat="server" />
+                        <div runat="server" id="divTimespan" class="col-sm-4 mt-3">
+                            <div class="kpi kpi-light text-blue-700 border-0 p-0">
+                                <div class="kpi-icon">
+                                    <img class="svg-placeholder" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'></svg>">
+                                    <div class="kpi-content">
+                                        <asp:Literal runat="server" ID="lDays" />
+                                    </div>
+                                </div>
+                                <div class="kpi-stat">
+                                    <span class="kpi-label text-color">
+                                        <asp:Literal runat="server" ID="lDaysLabel" /> to<br/>
+                                        Complete
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <asp:Literal ID="lNotesHtml" runat="server" />
                         </div>
                         <div class="col-md-6">
                             <%-- Manual Workflow Triggers --%>
@@ -71,6 +106,9 @@
                         </div>
                         <div class="col-sm-12 col-md-6">
                             <Rock:StepStatusPicker ID="rsspStatus" runat="server" Label="Status" Required="true" />
+                        </div>
+                        <div class="col-sm-12">
+                            <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" Required="false" Rows="4" TextMode="MultiLine" />
                         </div>
                     </div>
 

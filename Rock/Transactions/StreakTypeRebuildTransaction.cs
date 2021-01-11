@@ -24,6 +24,8 @@ namespace Rock.Transactions
     /// Transaction to rebuild streak type data from attendance data
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use ProcessRebuildStreakType Task instead." )]
+    [RockObsolete( "1.13" )]
     public class StreakTypeRebuildTransaction : ITransactionWithProgress
     {
         /// <summary>

@@ -35,13 +35,13 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbLastName;
         private DefinedValuePicker _ddlSuffix;
         private RockDropDownList _ddlGender;
-        private DatePicker _dpBirthdate;
+        private BirthdayPicker _bpBirthdate;
         private GradePicker _ddlGradePicker;
         private PhoneNumberBox _pnbMobile;
         private EmailBox _ebEmail;
         private RockDropDownList _ddlRelationshipType;
         private PlaceHolder _phAttributes;
-
+        private RockRadioButtonList _rblCommunicationPreference;
         private LinkButton _lbDelete;
 
         /// <summary>
@@ -127,12 +127,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dpBirthdate.Visible;
+                return _bpBirthdate.Visible;
             }
             set
             {
                 EnsureChildControls();
-                _dpBirthdate.Visible = value;
+                _bpBirthdate.Visible = value;
             }
         }
 
@@ -147,12 +147,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dpBirthdate.Required;
+                return _bpBirthdate.Required;
             }
             set
             {
                 EnsureChildControls();
-                _dpBirthdate.Required = value;
+                _bpBirthdate.Required = value;
             }
         }
 
@@ -255,6 +255,7 @@ namespace Rock.Web.UI.Controls
                 _ebEmail.Visible = value;
             }
         }
+
         /// <summary>
         /// Gets or sets a value indicating whether [require email address].
         /// </summary>
@@ -272,6 +273,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _ebEmail.Required = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the communication preference control.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the communication preference control should be shown; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCommunicationPreference
+        {
+            get
+            {
+                EnsureChildControls();
+                return _rblCommunicationPreference.Visible;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rblCommunicationPreference.Visible = value;
             }
         }
 
@@ -456,13 +477,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _dpBirthdate.SelectedDate;
+                return _bpBirthdate.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                _dpBirthdate.SelectedDate = value;
+                _bpBirthdate.SelectedDate = value;
             }
         }
 
@@ -569,6 +590,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        public CommunicationType CommunicationPreference
+        {
+            get
+            {
+                EnsureChildControls();
+                return ((CommunicationType?) _rblCommunicationPreference.SelectedValue.AsIntegerOrNull()) ?? CommunicationType.Email;
+            }
+            set
+            {
+                EnsureChildControls();
+                _rblCommunicationPreference.SelectedValue = value.ConvertToInt().ToString();
+            }
+        }
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -587,10 +627,11 @@ namespace Rock.Web.UI.Controls
                 _tbLastName.ValidationGroup = value;
                 _ddlSuffix.ValidationGroup = value;
                 _ddlGender.ValidationGroup = value;
-                _dpBirthdate.ValidationGroup = value;
+                _bpBirthdate.ValidationGroup = value;
                 _ddlGradePicker.ValidationGroup = value;
                 _pnbMobile.ValidationGroup = value;
                 _ebEmail.ValidationGroup = value;
+                _rblCommunicationPreference.ValidationGroup = value;
                 _ddlRelationshipType.ValidationGroup = value;
                 foreach ( var ctrl in _phAttributes.Controls )
                 {
@@ -604,6 +645,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the validation errors.
+        /// </summary>
+        /// <value>
+        /// The validation errors.
+        /// </value>
+        public List<string> ValidationErrors { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the columns.
+        /// </summary>
+        /// <value>
+        /// The columns.
+        /// </value>
+        public int Columns { get; set; } = 4;
+
+        /// <summary>
         /// Returns true if all of the requires fields have a value and the birthdate is successfully parsed
         /// </summary>
         /// <value>
@@ -614,6 +671,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
+                ValidationErrors.Clear();
 
                 if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace())
                 {
@@ -630,12 +688,7 @@ namespace Rock.Web.UI.Controls
                     return false;
                 }
 
-                if ( _dpBirthdate.Required && _dpBirthdate.SelectedDate == null)
-                {
-                    return false;
-                }
-
-                if( _dpBirthdate.Text.IsNotNullOrWhiteSpace() && _dpBirthdate.SelectedDate == null )
+                if ( _bpBirthdate.Required && _bpBirthdate.SelectedDate == null)
                 {
                     return false;
                 }
@@ -657,6 +710,13 @@ namespace Rock.Web.UI.Controls
 
                 if ( !_pnbMobile.IsValid )
                 {
+                    return false;
+                }
+
+                var communicationPreference = (CommunicationType)_rblCommunicationPreference.SelectedValue.AsInteger();
+                if (communicationPreference == CommunicationType.SMS && _pnbMobile.Visible && _pnbMobile.Number.IsNullOrWhiteSpace())
+                {
+                    ValidationErrors.Add( "SMS Number is required if SMS communication preference is selected." );
                     return false;
                 }
 
@@ -682,7 +742,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName = new RockTextBox();
             _ddlSuffix = new DefinedValuePicker();
             _ddlGender = new RockDropDownList();
-            _dpBirthdate = new DatePicker();
+            _bpBirthdate = new BirthdayPicker();
             _ddlGradePicker = new GradePicker { UseAbbreviation = true, UseGradeOffsetAsValue = true };
             _ddlGradePicker.Label = string.Empty;
             _pnbMobile = new PhoneNumberBox();
@@ -690,6 +750,7 @@ namespace Rock.Web.UI.Controls
             _ddlRelationshipType = new RockDropDownList();
             _phAttributes = new PlaceHolder();
             _lbDelete = new LinkButton();
+            _rblCommunicationPreference = new RockRadioButtonList();
         }
 
         /// <summary>
@@ -706,24 +767,26 @@ namespace Rock.Web.UI.Controls
             _tbLastName.ID = "_tbLastName";
             _ddlSuffix.ID = "_ddlSuffix";
             _ddlGender.ID = "_ddlGender";
-            _dpBirthdate.ID = "_dtBirthdate";
+            _bpBirthdate.ID = "_bpBirthdate";
             _ddlGradePicker.ID = "_ddlGrade";
             _pnbMobile.ID = "_pnbPhone";
             _ebEmail.ID = "_ebEmail";
             _ddlRelationshipType.ID = "_ddlRelationshipType";
             _phAttributes.ID = "_phAttributes";
             _lbDelete.ID = "_lbDelete";
+            _rblCommunicationPreference.ID = "_rblCommunicationPreference";
 
             Controls.Add( _lNickName );
             Controls.Add( _lLastName );
             Controls.Add( _tbNickName );
             Controls.Add( _tbLastName );
             Controls.Add( _ddlSuffix );
-            Controls.Add( _dpBirthdate );
+            Controls.Add( _bpBirthdate );
             Controls.Add( _ddlGender );
             Controls.Add( _ddlGradePicker );
             Controls.Add( _pnbMobile );
             Controls.Add( _ebEmail );
+            Controls.Add( _rblCommunicationPreference );
             Controls.Add( _ddlRelationshipType );
             Controls.Add( _phAttributes );
             Controls.Add( _lbDelete );
@@ -761,10 +824,8 @@ namespace Rock.Web.UI.Controls
                 _ddlGender.SelectedValue = genderValue;
             }
 
-            _dpBirthdate.RequiredErrorMessage = "Birth date is required for all children";
-            _dpBirthdate.Label = "Birth Date";
-            _dpBirthdate.ShowOnFocus = false;
-            _dpBirthdate.StartView = DatePicker.StartViewOption.decade;
+            _bpBirthdate.RequiredErrorMessage = "Birth date is required for all children";
+            _bpBirthdate.Label = "Birth Date";
 
             _ddlGradePicker.CssClass = "form-control";
             _ddlGradePicker.RequiredErrorMessage = _ddlGradePicker.Label + " is required for all children";
@@ -780,6 +841,15 @@ namespace Rock.Web.UI.Controls
             _pnbMobile.RequiredErrorMessage = "A valid phone number is required for all children.";
 
             _ebEmail.Label = "Email Address";
+
+            _rblCommunicationPreference.Label = "Communication Preference";
+            _rblCommunicationPreference.RepeatDirection = RepeatDirection.Horizontal;
+
+            if ( _rblCommunicationPreference.Items.Count == 0 )
+            {
+                _rblCommunicationPreference.Items.Add( new ListItem( "Email", "1" ) );
+                _rblCommunicationPreference.Items.Add( new ListItem( "SMS", "2" ) );
+            }
 
             _ddlRelationshipType.CssClass = "form-control";
             _ddlRelationshipType.Required = true;
@@ -826,11 +896,11 @@ namespace Rock.Web.UI.Controls
                 // Relationship
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle(6) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _ddlRelationshipType.RenderControl( writer );
                 writer.RenderEndTag();
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" ); // filler/blocker column
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) ); // filler/blocker column
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderEndTag();
                 writer.RenderEndTag(); // end Relationship row
@@ -845,46 +915,45 @@ namespace Rock.Web.UI.Controls
                 _tbNickName.Visible = !existingPerson;
                 _tbLastName.Visible = !existingPerson;
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _lNickName.RenderControl( writer );
                 _tbNickName.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _lLastName.RenderControl( writer );
                 _tbLastName.RenderControl( writer );
                 writer.RenderEndTag();
 
-
-                if ( this.ShowSuffix )
-                {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _ddlSuffix.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
                 if ( this.ShowGender )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ddlGender.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
+                if ( this.ShowSuffix )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _ddlSuffix.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
                 if ( this.ShowBirthDate )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _dpBirthdate.RenderControl( writer );
+                    _bpBirthdate.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
                 if ( this.ShowGrade )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ddlGradePicker.RenderControl( writer );
                     writer.RenderEndTag();
@@ -892,7 +961,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowMobilePhone )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _pnbMobile.RenderControl( writer );
                     writer.RenderEndTag();
@@ -900,15 +969,23 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowEmailAddress )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _ebEmail.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
+                if ( this.ShowCommunicationPreference )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 6 ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _rblCommunicationPreference.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
                 foreach ( Control attributeCtrl in _phAttributes.Controls )
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, GetColumnStyle( 3 ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     attributeCtrl.RenderControl( writer );
                     writer.RenderEndTag();
@@ -966,6 +1043,21 @@ namespace Rock.Web.UI.Controls
             {
                 child.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( _phAttributes.Controls[i] ), attribute.QualifierValues ) );
             }
+        }
+
+        private string GetColumnStyle( int columns )
+        {
+            if ( ( columns != 3 && columns != 6 ) || Columns == 4 )
+            {
+                return "col-sm-" + columns.ToString();
+            }
+
+            if ( columns == 6 )
+            {
+                return "col-sm-" + columns.ToString();
+            }
+
+            return "col-sm-" + ( columns * 2 ).ToString();
         }
 
         /// <summary>
@@ -1090,6 +1182,14 @@ namespace Rock.Web.UI.Controls
         public string EmailAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        public CommunicationType CommunicationPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the relationship.
         /// </summary>
         /// <value>
@@ -1120,6 +1220,7 @@ namespace Rock.Web.UI.Controls
             BirthDate = person.BirthDate;
             GradeOffset = person.GradeOffset;
             Age = person.Age;
+            CommunicationPreference = person.CommunicationPreference;
 
             var mobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             MobilePhoneNumber = mobilePhone?.Number;

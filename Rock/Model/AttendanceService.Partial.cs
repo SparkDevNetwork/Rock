@@ -324,12 +324,13 @@ namespace Rock.Model
             if ( startDate.HasValue )
             {
                 startDate = startDate.Value.Date;
-                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate >= startDate.Value );
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.SundayDate >= startDate.Value );
             }
 
             if ( endDate.HasValue )
             {
-                qryAttendance = qryAttendance.Where( a => a.Occurrence.OccurrenceDate < endDate.Value );
+                endDate = endDate.Value.Date.AddDays(1);
+                qryAttendance = qryAttendance.Where( a => a.Occurrence.SundayDate < endDate.Value );
             }
 
             if ( dataViewId.HasValue )
@@ -1876,13 +1877,14 @@ namespace Rock.Model
         /// <param name="scheduledByPersonAlias">The scheduled by person alias.</param>
         private void SchedulePersonsAutomaticallyForAttendanceOccurrence( AttendanceOccurrence attendanceOccurrence, PersonAlias scheduledByPersonAlias )
         {
+            var rockContext = this.Context as RockContext;
             int locationId = attendanceOccurrence.LocationId.Value;
             int scheduleId = attendanceOccurrence.ScheduleId.Value;
             int attendanceOccurrenceId = attendanceOccurrence.Id;
 
             // get the capacity settings for the Group/Location/Schedule. NOTE: The Database and UI don't prevent duplicate LocationIds for a group,
             // but since that really doesn't make sense, just grab the first one
-            int? desiredCapacity = new GroupLocationService( this.Context as RockContext ).Queryable()
+            int? desiredCapacity = new GroupLocationService( rockContext ).Queryable()
                 .Where( gl => gl.GroupId == attendanceOccurrence.GroupId )
                 .Where( gl => gl.LocationId == locationId )
                 .SelectMany( gl => gl.GroupLocationScheduleConfigs )
@@ -1958,7 +1960,7 @@ namespace Rock.Model
             }
 
             // get GroupMemberAssignmments for the groupMembers returned from schedulerResources for this occurrence's locationId and scheduleId
-            var groupMemberAssignmentsQuery = new GroupMemberAssignmentService( this.Context as RockContext )
+            var groupMemberAssignmentsQuery = new GroupMemberAssignmentService( rockContext )
                 .Queryable()
                 .Where( a => scheduleResourcesGroupMemberIds.Contains( a.GroupMemberId ) )
                 .Where( a => ( !a.LocationId.HasValue || a.LocationId == locationId )
@@ -1967,16 +1969,31 @@ namespace Rock.Model
             // Exclude GroupMemberAssignments that don't have a schedule or location set (since that means they don't want to be auto-scheduled)
             groupMemberAssignmentsQuery = groupMemberAssignmentsQuery.Where( a => a.LocationId.HasValue || a.ScheduleId.HasValue );
 
-            var groupMemberAssignmentsList = groupMemberAssignmentsQuery.Select( a => new GroupMemberAssignmentInfo
-            {
-                GroupMemberId = a.GroupMember.Id,
-                PersonId = a.GroupMember.PersonId,
-                LocationId = a.LocationId,
-                ScheduleId = a.ScheduleId,
-                SpecificLocationAndSchedule = a.LocationId.HasValue && a.ScheduleId.HasValue,
-                SpecificScheduleOnly = !a.LocationId.HasValue && a.ScheduleId.HasValue,
-                SpecificLocationOnly = !a.LocationId.HasValue && !a.ScheduleId.HasValue,
-            } ).ToList();
+            var endOfOccurrenceDay = attendanceOccurrence.OccurrenceDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+            var groupMemberAssignmentsList = groupMemberAssignmentsQuery
+                .Select( a => new {
+                    GroupMemberId = a.GroupMember.Id,
+                    a.GroupMember.PersonId,
+                    a.LocationId,
+                    a.ScheduleId
+                })
+                .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
+                    ( gma, a ) => new GroupMemberAssignmentInfo
+                    {
+                        GroupMemberId = gma.GroupMemberId,
+                        PersonId = gma.PersonId,
+                        LocationId = gma.LocationId,
+                        ScheduleId = gma.ScheduleId,
+                        SpecificLocationAndSchedule = gma.LocationId.HasValue && gma.ScheduleId.HasValue,
+                        SpecificScheduleOnly = !gma.LocationId.HasValue && gma.ScheduleId.HasValue,
+                        SpecificLocationOnly = !gma.LocationId.HasValue && !gma.ScheduleId.HasValue,
+                        LastScheduledDate = a
+                            .Where( att => ( att.ScheduledToAttend != null && att.ScheduledToAttend.Value ) || ( att.RequestedToAttend != null && att.RequestedToAttend.Value ) )
+                            .Where( att => att.StartDateTime <= endOfOccurrenceDay )
+                            .Select( att => att.StartDateTime )
+                            .DefaultIfEmpty()
+                            .Max()
+                    } ).ToList();
 
             if ( !groupMemberAssignmentsList.Any() )
             {
@@ -1990,7 +2007,8 @@ namespace Rock.Model
 
             /* 2020-08-03 MDP
              The rules for autoschedule
-               - Randomize order of List (order by Guid.NewGuid()
+               - Order by Last Scheduled date (Last Scheduled across all groups)
+               - Randomize order of List (order by Guid.NewGuid())
 
                - then to schedule in this order
                1) Person has both Schedule and Location specified
@@ -2005,8 +2023,11 @@ namespace Rock.Model
                3)  People with Location only (in random order)
              */
 
-            // randomize order of group member assignments
-            groupMemberAssignmentsList = groupMemberAssignmentsList.OrderBy( a => Guid.NewGuid() ).ToList();
+            // order group member assignments by the last time they served and then randomly after that.
+            groupMemberAssignmentsList = groupMemberAssignmentsList
+                .OrderBy( a => a.LastScheduledDate )
+                .ThenBy( a => Guid.NewGuid() )
+                .ToList();
 
             // assign based on specificity rule (see above engineering note)
             var groupMemberAssignmentSortedBySpecificity = groupMemberAssignmentsList
@@ -2274,6 +2295,14 @@ namespace Rock.Model
             /// The schedule identifier.
             /// </value>
             public int? ScheduleId { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the last scheduled date.
+            /// </summary>
+            /// <value>
+            /// The last scheduled date.
+            /// </value>
+            public DateTime LastScheduledDate { get; internal set; }
         }
 
         #endregion GroupScheduling Related
@@ -2297,7 +2326,7 @@ namespace Rock.Model
         /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
-        /// <param name="personIdList">A a list of Person IDs.</param>
+        /// <param name="personIdList">A list of Person IDs.</param>
         public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
         {
             var rockContext = this.Context as RockContext;

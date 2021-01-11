@@ -20,9 +20,13 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Rock.Communication.Transport;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -35,13 +39,190 @@ namespace Rock.Communication
     public abstract class EmailTransportComponent : TransportComponent
     {
         /// <summary>
-        /// Send the implementation specific email. This class will call this method and pass the post processed data in a  rock email message which
-        /// can then be used to send the implementation specific message.
+        /// Send the implementation specific email.
         /// </summary>
         /// <param name="rockEmailMessage">The rock email message.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// This class will call this method and pass the post processed data in a rock email message which
+        /// can then be used to send the implementation specific message.
+        /// </remarks>
         protected abstract EmailSendResponse SendEmail( RockEmailMessage rockEmailMessage );
 
+        /// <summary>
+        /// Sends the email asynchronous.
+        /// </summary>
+        /// <param name="rockEmailMessage">The rock email message.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This class will call this method and pass the post processed data in a rock email message which
+        /// can then be used to send the implementation specific message.
+        /// </remarks>
+        protected virtual Task<EmailSendResponse> SendEmailAsync( RockEmailMessage rockEmailMessage )
+        {
+            throw new NotImplementedException();
+        }
+
+        #region Async Send Methods
+        /// <summary>
+        /// Sends the RockMessage asynchronously via email.
+        /// </summary>
+        /// <param name="rockMessage">The rock message.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// In order for this method to be used the derived class must implement the IAsyncTransport interface.
+        /// </remarks>
+        public async Task<SendMessageResult> SendAsync( RockMessage rockMessage, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
+        {
+            var sendResult = new SendMessageResult();
+
+            var emailMessage = rockMessage as RockEmailMessage;
+            if ( emailMessage == null )
+            {
+                sendResult.Errors.Add( "No email message was provided." );
+                return sendResult;
+            }
+
+            var mergeFields = GetAllMergeFields( rockMessage.CurrentPerson, rockMessage.AdditionalMergeFields );
+            var globalAttributes = GlobalAttributesCache.Get();
+            var fromAddress = GetFromAddress( emailMessage, mergeFields, globalAttributes );
+
+            if ( fromAddress.IsNullOrWhiteSpace() )
+            {
+                sendResult.Errors.Add( "A From address was not provided." );
+                return sendResult;
+            }
+
+            var templateMailMessage = GetTemplateRockEmailMessage( emailMessage, mergeFields, globalAttributes );
+            var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
+
+            var sendTask = new List<Task<SendMessageResult>>();
+            var asyncTransport = this as IAsyncTransport;
+            var maxParallelization = asyncTransport?.MaxParallelization ?? 10;
+
+            using ( var mutex = new SemaphoreSlim( maxParallelization ) )
+            {
+                foreach ( var rockMessageRecipient in rockMessage.GetRecipients() )
+                {
+                    await mutex.WaitAsync().ConfigureAwait( false );
+
+                    sendTask.Add( ThrottleHelper.ThrottledExecute( () => SendEmailToRecipientAsync( templateMailMessage, rockMessageRecipient, mergeFields, organizationEmail ), mutex ) );
+                }
+
+                /*
+                 * Now that we have fired off all of the task, we need to wait for them to complete, get their results,
+                 * and then process that result. Once all of the task have been completed we can continue.
+                 */
+                while ( sendTask.Count > 0 )
+                {
+                    var sendRecipientResultTask = await Task.WhenAny( sendTask ).ConfigureAwait( false );
+                    sendTask.Remove( sendRecipientResultTask );
+
+                    var sendRecipientResult = await sendRecipientResultTask.ConfigureAwait( false );
+                    sendResult.MessagesSent += sendRecipientResult.MessagesSent;
+                    sendResult.Errors.AddRange( sendRecipientResult.Errors );
+                    sendResult.Warnings.AddRange( sendRecipientResult.Warnings );
+                }
+            }
+
+            return sendResult;
+        }
+
+        /// <summary>
+        /// Sends the Communication asynchronously to the email recipients.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        /// <remarks>
+        /// In order for this method to be used the derived class must implement the IAsyncTransport interface.
+        /// </remarks>
+        public async Task SendAsync( Model.Communication communication, int mediumEntityTypeId, Dictionary<string, string> mediumAttributes )
+        {
+            using ( var communicationRockContext = new RockContext() )
+            {
+                // Requery the Communication
+                communication = GetSendableCommunication( communication.Id, communicationRockContext );
+
+                if ( communication == null )
+                {
+                    return;
+                }
+
+                // If there are no pending recipients than just exit the method
+                var communicationRecipientService = new CommunicationRecipientService( communicationRockContext );
+
+                var unprocessedRecipientCount = communicationRecipientService
+                    .Queryable()
+                    .ByCommunicationId( communication.Id )
+                    .ByStatus( CommunicationRecipientStatus.Pending )
+                    .ByMediumEntityTypeId( mediumEntityTypeId )
+                    .Count();
+
+                if ( unprocessedRecipientCount == 0 )
+                {
+                    return;
+                }
+
+                var currentPerson = communication.CreatedByPersonAlias?.Person;
+                var mergeFields = GetAllMergeFields( currentPerson, communication.AdditionalLavaFields );
+
+                var globalAttributes = GlobalAttributesCache.Get();
+
+                var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes );
+                var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
+
+                var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
+
+                var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
+                var communicationEntityTypeId = EntityTypeCache.Get<Model.Communication>().Id;
+                var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
+
+                // Loop through recipients and send the email
+                var sendingTask = new List<Task>( unprocessedRecipientCount );
+                var asyncTransport = this as IAsyncTransport;
+                var maxParallelization = asyncTransport?.MaxParallelization ?? 10;
+
+                using ( var mutex = new SemaphoreSlim( maxParallelization ) )
+                {
+                    var recipientFound = true;
+                    while ( recipientFound )
+                    {
+                        var getRecipientTimer = System.Diagnostics.Stopwatch.StartNew();
+                        var recipient = GetNextPending( communication.Id, mediumEntityTypeId, communication.IsBulkCommunication );
+                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: It took {1} ticks to get the next pending recipient.", nameof( SendAsync ), getRecipientTimer.ElapsedTicks );
+
+                        // This means we are done, break the loop
+                        if ( recipient == null )
+                        {
+                            recipientFound = false;
+                            continue;
+                        }
+
+                        var startMutexWait = System.Diagnostics.Stopwatch.StartNew();
+                        await mutex.WaitAsync().ConfigureAwait( false );
+
+                        RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2} with a {3} tick wait.", nameof( SendAsync ), communication.Name, recipient.Id, startMutexWait.ElapsedTicks );
+                        sendingTask.Add( ThrottleHelper.ThrottledExecute( () => SendToRecipientAsync( recipient.Id, communication, mediumEntityTypeId, mediumAttributes, mergeFields, templateEmailMessage, organizationEmail ), mutex ) );
+                    }
+
+                    /*
+                     * Now that we have fired off all of the task, we need to wait for them to complete. 
+                     * Once all of the task have been completed we can continue.
+                     */
+                    while ( sendingTask.Count > 0 )
+                    {
+                        var completedTask = await Task.WhenAny( sendingTask ).ConfigureAwait( false );
+                        sendingTask.Remove( completedTask );
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Non-async Send Methods
         /// <summary>
         /// Sends the specified rock message.
         /// </summary>
@@ -81,13 +262,9 @@ namespace Rock.Communication
 
                     var result = SendEmail( recipientEmailMessage );
 
-                    // Create the communication record
-                    if ( recipientEmailMessage.CreateCommunicationRecord )
-                    {
-                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, recipientEmailMessage.FromName, recipientEmailMessage.FromEmail, recipientEmailMessage.Subject, recipientEmailMessage.Message );
-                        transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
-                        RockQueue.TransactionQueue.Enqueue( transaction );
-                    }
+                    var sendMesaageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
+
+                    errorMessages.AddRange( sendMesaageResult.Errors );
                 }
                 catch ( Exception ex )
                 {
@@ -151,8 +328,8 @@ namespace Rock.Communication
 
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
-                var personEntityTypeId = EntityTypeCache.Get( "Rock.Model.Person" ).Id;
-                var communicationEntityTypeId = EntityTypeCache.Get( "Rock.Model.Communication" ).Id;
+                var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
+                var communicationEntityTypeId = EntityTypeCache.Get<Model.Communication>().Id;
                 var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
 
                 // Loop through recipients and send the email
@@ -161,7 +338,6 @@ namespace Rock.Communication
                 {
                     using ( var recipientRockContext = new RockContext() )
                     {
-
                         var recipient = Model.Communication.GetNextPending( communication.Id, mediumEntityTypeId, recipientRockContext );
 
                         // This means we are done, break the loop
@@ -221,6 +397,7 @@ namespace Rock.Communication
                 }
             }
         }
+        #endregion
 
         /// <summary>
         /// Validates the recipient.
@@ -289,7 +466,8 @@ namespace Rock.Communication
             {
                 return fromParts[1];
             }
-            return "";
+
+            return string.Empty;
         }
 
         /// <summary>
@@ -353,7 +531,6 @@ namespace Rock.Communication
 
         private string GetFromAddress( RockEmailMessage emailMessage, Dictionary<string, object> mergeFields, GlobalAttributesCache globalAttributes )
         {
-
             // Resolve any possible merge fields in the from address
             string fromAddress = emailMessage.FromEmail.ResolveMergeFields( mergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands );
             fromAddress = fromAddress.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : fromAddress;
@@ -395,6 +572,7 @@ namespace Rock.Communication
                     replyToAddress += $",{safeSenderResult.ReplyToAddress.ToString()}";
                 }
             }
+
             return replyToAddress;
         }
 
@@ -413,6 +591,9 @@ namespace Rock.Communication
             templateRockEmailMessage.EnabledLavaCommands = emailMessage.EnabledLavaCommands;
             templateRockEmailMessage.CssInliningEnabled = emailMessage.CssInliningEnabled;
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
+            templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
+            templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
+            templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
 
             var fromAddress = GetFromAddress( emailMessage, mergeFields, globalAttributes );
             var fromName = GetFromName( emailMessage, mergeFields, globalAttributes );
@@ -444,6 +625,7 @@ namespace Rock.Communication
                     foreach ( var binaryFileId in emailMessage.Attachments.Where( a => a != null ).Select( a => a.Id ) )
                     {
                         var attachment = binaryFileService.Get( binaryFileId );
+
                         // We need to call content stream to make sure it is loaded while we have the rock context.
                         var attachmentString = attachment.ContentStream;
                         templateRockEmailMessage.Attachments.Add( attachment );
@@ -478,16 +660,18 @@ namespace Rock.Communication
             resultEmailMessage.FromName = fromName;
 
             // Reply To
-            var replyToEmail = "";
+            var replyToEmail = string.Empty;
             if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
             {
                 // Resolve any possible merge fields in the replyTo address
                 replyToEmail = communication.ReplyToEmail.ResolveMergeFields( mergeFields, resultEmailMessage.CurrentPerson );
             }
+
             resultEmailMessage.ReplyToEmail = replyToEmail;
 
             // Attachments
             resultEmailMessage.Attachments = communication.GetAttachments( CommunicationType.Email ).Select( a => a.BinaryFile ).ToList();
+
             // Load up the content stream while the context is still active.
             for ( int i = 0; i < resultEmailMessage.Attachments.Count; i++ )
             {
@@ -504,12 +688,14 @@ namespace Rock.Communication
             recipientEmail.EnabledLavaCommands = emailMessage.EnabledLavaCommands;
             recipientEmail.AppRoot = emailMessage.AppRoot;
             recipientEmail.CssInliningEnabled = emailMessage.CssInliningEnabled;
+            recipientEmail.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
+            recipientEmail.ThemeRoot = emailMessage.ThemeRoot;
+
             // CC
             recipientEmail.CCEmails = emailMessage.CCEmails;
 
             // BCC
             recipientEmail.BCCEmails = emailMessage.BCCEmails;
-
 
             // Attachments
             recipientEmail.Attachments = emailMessage.Attachments;
@@ -562,9 +748,12 @@ namespace Rock.Communication
 
             // Body (HTML)
             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, rockMessageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
-            body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
-            recipientEmail.Message = body;
+            if ( body.IsNotNullOrWhiteSpace() )
+            {
+                body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+            }
 
+            recipientEmail.Message = body;
 
             Guid? recipientGuid = null;
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
@@ -655,7 +844,8 @@ namespace Rock.Communication
             // Body Plain Text
             if ( mediumAttributes.ContainsKey( "DefaultPlainText" ) )
             {
-                var plainText = ResolveText( mediumAttributes["DefaultPlainText"],
+                var plainText = ResolveText(
+                    mediumAttributes["DefaultPlainText"],
                     emailMessage.CurrentPerson,
                     communication.EnabledLavaCommands,
                     mergeFields,
@@ -673,7 +863,8 @@ namespace Rock.Communication
             // Get the unsubscribe content and add a merge field for it
             if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
             {
-                string unsubscribeHtml = ResolveText( mediumAttributes["UnsubscribeHTML"],
+                string unsubscribeHtml = ResolveText(
+                    mediumAttributes["UnsubscribeHTML"],
                     emailMessage.CurrentPerson,
                     communication.EnabledLavaCommands,
                     mergeFields,
@@ -718,5 +909,212 @@ namespace Rock.Communication
             return recipientEmail;
         }
 
+        /// <summary>
+        /// Returns the communication only if it is okay to send.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private Model.Communication GetSendableCommunication( int communicationId, RockContext rockContext )
+        {
+            var communication = new CommunicationService( rockContext )
+                    .Queryable()
+                    .Include( a => a.CreatedByPersonAlias.Person )
+                    .Include( a => a.CommunicationTemplate )
+                    .FirstOrDefault( c => c.Id == communicationId );
+
+            var isApprovedCommunication = communication != null && communication.Status == Model.CommunicationStatus.Approved;
+            var isReadyToSend = communication != null &&
+                                    ( !communication.FutureSendDateTime.HasValue
+                                    || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 );
+
+            if ( !isApprovedCommunication || !isReadyToSend )
+            {
+                return null;
+            }
+
+            return communication;
+        }
+
+        /// <summary>
+        /// Gets the next pending recipient from the communication.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="mediumEntityId">The medium entity identifier.</param>
+        /// <param name="isBulkCommunication">if set to <c>true</c> [is bulk communication].</param>
+        /// <returns></returns>
+        private Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, bool isBulkCommunication )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var recipient = Model.Communication.GetNextPending( communicationId, mediumEntityId, rockContext );
+                if ( ValidRecipient( recipient, isBulkCommunication ) )
+                {
+                    return recipient;
+                }
+                else
+                {
+                    rockContext.SaveChanges();
+                    return GetNextPending( communicationId, mediumEntityId, isBulkCommunication );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends to the communication recipient asynchronous.
+        /// </summary>
+        /// <param name="recipientId">The recipient identifier.</param>
+        /// <param name="communication">The communication.</param>
+        /// <param name="mediumEntityTypeId">The medium entity type identifier.</param>
+        /// <param name="mediumAttributes">The medium attributes.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <param name="templateEmailMessage">The template email message.</param>
+        /// <param name="organizationEmail">The organization email.</param>
+        private async Task SendToRecipientAsync(
+           int recipientId,
+           Model.Communication communication,
+           int mediumEntityTypeId,
+           Dictionary<string, string> mediumAttributes,
+           Dictionary<string, object> mergeFields,
+           RockEmailMessage templateEmailMessage,
+           string organizationEmail )
+        {
+            var methodTimer = System.Diagnostics.Stopwatch.StartNew();
+            using ( var rockContext = new RockContext() )
+            {
+                var recipient = new CommunicationRecipientService( rockContext ).Get( recipientId );
+
+                if ( recipient == null )
+                {
+                    return;
+                }
+
+                try
+                {
+                    // Create merge field dictionary
+                    var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
+                    var recipientEmailMessage = GetRecipientRockEmailMessage( templateEmailMessage, communication, recipient, mergeObjects, organizationEmail, mediumAttributes );
+
+                    var result = await SendEmailAsync( recipientEmailMessage ).ConfigureAwait( false );
+
+                    // Update recipient status and status note
+                    recipient.Status = result.Status;
+                    if ( result.Status == CommunicationRecipientStatus.Failed )
+                    {
+                        recipient.StatusNote = result.StatusNote;
+                    }
+
+                    recipient.TransportEntityTypeName = this.GetType().FullName;
+
+                    // Log it
+                    try
+                    {
+                        var historyChangeList = new History.HistoryChangeList();
+                        var communicationEntityTypeId = EntityTypeCache.Get<Model.Communication>().Id;
+                        var communicationCategoryGuid = Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid();
+
+                        historyChangeList.AddChange(
+                            History.HistoryVerb.Sent,
+                            History.HistoryChangeType.Record,
+                            $"Communication" )
+                            .SetRelatedData( recipientEmailMessage.FromName, communicationEntityTypeId, communication.Id )
+                            .SetCaption( recipientEmailMessage.Subject );
+
+                        HistoryService.SaveChanges( rockContext, typeof( Rock.Model.Person ), communicationCategoryGuid, recipient.PersonAlias.PersonId, historyChangeList, false, communication.SenderPersonAliasId );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    recipient.Status = CommunicationRecipientStatus.Failed;
+                    recipient.StatusNote = "Exception: " + ex.Messages().AsDelimited( " => " );
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Took {1} ticks to retrieve and send the email.", nameof( SendToRecipientAsync ), methodTimer.ElapsedTicks );
+        }
+
+        /// <summary>
+        /// Handles the exception response.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <returns></returns>
+        private SendMessageResult HandleExceptionResponse( Exception ex )
+        {
+            var sendResult = new SendMessageResult();
+            sendResult.Errors.Add( ex.Message );
+            ExceptionLogService.LogException( ex );
+            return sendResult;
+        }
+
+        /// <summary>
+        /// Handles the email send response.
+        /// </summary>
+        /// <param name="rockMessageRecipient">The rock message recipient.</param>
+        /// <param name="recipientEmailMessage">The recipient email message.</param>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private SendMessageResult HandleEmailSendResponse( RockMessageRecipient rockMessageRecipient, RockEmailMessage recipientEmailMessage, EmailSendResponse result )
+        {
+            var sendResult = new SendMessageResult();
+            if ( result.Status == CommunicationRecipientStatus.Failed )
+            {
+                sendResult.Errors.Add( result.StatusNote );
+            }
+            else
+            {
+                sendResult.MessagesSent = 1;
+            }
+
+            // Create the communication record
+            if ( recipientEmailMessage.CreateCommunicationRecord )
+            {
+                var recipients = new List<RockMessageRecipient>() { rockMessageRecipient };
+                var addCommunicationRecipientsMsg = new AddCommunicationRecipients.Message()
+                {
+                    Recipients = recipients,
+                    FromName = recipientEmailMessage.FromName,
+                    FromAddress = recipientEmailMessage.FromEmail,
+                    Subject = recipientEmailMessage.Subject,
+                    HtmlMessage = recipientEmailMessage.Message,
+                    RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull(),
+                    RecipientStatus = result.Status
+                };
+
+                addCommunicationRecipientsMsg.Send();
+            }
+
+            return sendResult;
+        }
+
+        /// <summary>
+        /// Sends the email to recipient asynchronous.
+        /// </summary>
+        /// <param name="templateMailMessage">The template mail message.</param>
+        /// <param name="rockMessageRecipient">The rock message recipient.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <param name="organizationEmail">The organization email.</param>
+        /// <returns></returns>
+        private async Task<SendMessageResult> SendEmailToRecipientAsync( RockEmailMessage templateMailMessage, RockMessageRecipient rockMessageRecipient, Dictionary<string, object> mergeFields, string organizationEmail )
+        {
+            try
+            {
+                var recipientEmailMessage = GetRecipientRockEmailMessage( templateMailMessage, rockMessageRecipient, mergeFields, organizationEmail );
+
+                var result = await SendEmailAsync( recipientEmailMessage ).ConfigureAwait( false );
+
+                return HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
+            }
+            catch ( Exception ex )
+            {
+                return HandleExceptionResponse( ex );
+            }
+        }
     }
 }

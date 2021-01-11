@@ -104,7 +104,7 @@ namespace Rock.CheckIn
         public bool FirstTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the the unique code for check-in labels
+        /// Gets or sets the unique code for check-in labels
         /// </summary>
         /// <value>
         /// The security code.

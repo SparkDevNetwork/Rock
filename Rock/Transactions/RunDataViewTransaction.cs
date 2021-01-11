@@ -27,6 +27,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a dataview is run.
     /// </summary>
+    [Obsolete( "Use UpdateDataViewStatistics Task instead." )]
+    [RockObsolete( "1.13" )]
     public class RunDataViewTransaction : ITransaction
     {
         /// <summary>

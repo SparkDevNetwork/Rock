@@ -913,7 +913,7 @@ $(document).ready(function() {
 
             var lastRefreshDateTime = dataView.CreatedDateTime;
 
-            if ( dataView.RunCountLastRefreshDateTime == null )
+            if ( dataView.RunCountLastRefreshDateTime != null )
             {
                 lastRefreshDateTime = dataView.RunCountLastRefreshDateTime;
             }

@@ -289,7 +289,6 @@
                     //  - in the case of #2, the dragged div will end up in the resource list (in the position it was dragged to), and we'll update that
                     // 3) The Person was removed via the js-remove button (not dragged) and is also not in the Resource List (they got scheduled for all possible visible time-slots)
                     //  - in the case of #3, then we don't have a $scheduledResource div, so we don't have anything to update. In that case, we'll refresh the whole list
-                    debugger
                     if (rebuildResourceList) {
                         // the scheduled person was removed via the js-remove button (case #3), so we can't easily populate the resource list without rebuilding the whole thing
                         self.populateSchedulerResources(self.$resourceList);
