@@ -371,6 +371,26 @@ namespace Rock.WebFarm
         #region Event Handlers
 
         /// <summary>
+        /// Called when someone requests a Rock restart.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        public static void OnRestartRequested( Person currentPerson )
+        {
+            var personName = currentPerson == null ?
+                "Unknown" :
+                $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
+            var payload = $"{personName} requested Rock restart";
+
+            using ( var rockContext = new RockContext() )
+            {
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, payload );
+                rockContext.SaveChanges();
+            }
+
+            PublishEvent( EventType.Shutdown, payload: payload );
+        }
+
+        /// <summary>
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>

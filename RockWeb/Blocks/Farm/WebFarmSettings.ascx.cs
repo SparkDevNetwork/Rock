@@ -388,7 +388,6 @@ namespace RockWeb.Blocks.Farm
             // Bind the grid data view models
             using ( var rockContext = new RockContext() )
             {
-                rockContext.SqlLogging( true );
                 var webFarmNodeService = new WebFarmNodeService( rockContext );
                 var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 
