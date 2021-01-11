@@ -8,7 +8,7 @@ import store from '../../Store/Index.js';
 import Person from '../../Types/Models/Person.js';
 
 export default defineComponent({
-    name: 'Test.PersonSecondary',
+    name: 'Example.PersonSecondary',
     components: {
         PaneledBlockTemplate,
         SecondaryBlock,

@@ -22,11 +22,11 @@ declare type PersonViewModel = {
     NickName: string;
     LastName: string;
     Email: string;
-    CampusId: number | null;
+    PrimaryCampusId: number | null;
 };
 
 export default defineComponent({
-    name: 'Test.PersonDetail',
+    name: 'Example.PersonDetail',
     components: {
         PaneledBlockTemplate,
         RockButton,
@@ -90,7 +90,7 @@ export default defineComponent({
     computed: {
         campus(): Campus | null {
             if (this.person) {
-                return store.getters['campuses/getById'](this.person.CampusId) || null;
+                return store.getters['campuses/getById'](this.person.PrimaryCampusId) || null;
             }
 
             return null;
@@ -158,7 +158,7 @@ export default defineComponent({
                         </div>
                         <div class="col-sm-6">
                             <EmailInput v-model="personForEditing.Email" />
-                            <CampusPicker v-model:id="personForEditing.CampusId" />
+                            <CampusPicker v-model:id="personForEditing.PrimaryCampusId" />
                         </div>
                     </div>
                     <div class="actions">

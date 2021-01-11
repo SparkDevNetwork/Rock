@@ -28,7 +28,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
         ],
         execute: function () {
             exports_1("default", vue_js_1.defineComponent({
-                name: 'Test.PersonSecondary',
+                name: 'Example.PersonSecondary',
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
                     SecondaryBlock: SecondaryBlock_js_1.default,

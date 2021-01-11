@@ -32,7 +32,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Controls/Defi
                 template: "\n<div class=\"row\">\n    <div class=\"col-md-6\">\n        <slot name=\"gallery\" />\n    </div>\n    <div class=\"col-md-6\">\n        <slot name=\"result\" />\n    </div>\n</div>\n<hr />"
             });
             exports_1("default", vue_js_1.defineComponent({
-                name: 'Test.ControlGallery',
+                name: 'Example.ControlGallery',
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
                     DefinedTypePicker: DefinedTypePicker_js_1.default,

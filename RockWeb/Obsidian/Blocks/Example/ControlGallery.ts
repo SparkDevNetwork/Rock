@@ -24,7 +24,7 @@ const GalleryAndResult = defineComponent({
 });
 
 export default defineComponent({
-    name: 'Test.ControlGallery',
+    name: 'Example.ControlGallery',
     components: {
         PaneledBlockTemplate,
         DefinedTypePicker,
