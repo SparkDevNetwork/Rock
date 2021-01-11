@@ -909,7 +909,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> that represents the the purpose of the GroupType.
+        /// A <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </value>
         [DataMember]
         public virtual DefinedValue GroupTypePurposeValue { get; set; }
@@ -1022,7 +1022,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group status defined.
         /// </value>
-        public DefinedType GroupStatusDefinedType { get; set; }
+        public virtual DefinedType GroupStatusDefinedType { get; set; }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.

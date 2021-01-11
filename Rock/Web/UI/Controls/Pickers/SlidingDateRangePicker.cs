@@ -273,7 +273,7 @@ namespace Rock.Web.UI.Controls
 
             // change the inputsClass on the DateRangePicker to "" instead of "form-control-group";
             _drpDateRange.InputsClass = "";
-            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange";
+            _drpDateRange.CssClass = "js-time-units-date-range slidingdaterange-daterange pull-left";
             _drpDateRange.ID = "drpDateRange_" + this.ID;
 
             Controls.Add( _ddlLastCurrent );
@@ -317,9 +317,9 @@ namespace Rock.Web.UI.Controls
             _ddlLastCurrent.Items.Clear();
             _ddlLastCurrent.Items.Add( new ListItem( string.Empty, SlidingDateRangeType.All.ConvertToInt().ToString() ) );
 
-            SlidingDateRangeType[] sortedTypes = new SlidingDateRangeType[] 
-                { 
-                    SlidingDateRangeType.Current, 
+            SlidingDateRangeType[] sortedTypes = new SlidingDateRangeType[]
+                {
+                    SlidingDateRangeType.Current,
                     SlidingDateRangeType.Previous,
                     SlidingDateRangeType.Last,
                     SlidingDateRangeType.Next,
@@ -348,7 +348,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [Flags]
         public enum SlidingDateRangeType
@@ -390,7 +390,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum TimeUnitType
         {
@@ -502,7 +502,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", "form-control-group" );
+            writer.AddAttribute( "class", "form-control-group " + this.FormGroupCssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlLastCurrent.RenderControl( writer );
@@ -812,7 +812,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
-        /// NOTE: The Displayed End Date is one day before the actual end date. 
+        /// NOTE: The Displayed End Date is one day before the actual end date.
         /// So, if your date range is displayed as 1/3/2015 to 1/4/2015, this will return 1/5/2015 12:00 AM as the End Date
         /// </summary>
         /// <param name="value">The value.</param>
@@ -1003,7 +1003,7 @@ namespace Rock.Web.UI.Controls
             SlidingDateRangeType[] slidingDateRangeTypesForHelp = new SlidingDateRangeType[] { SlidingDateRangeType.Current, SlidingDateRangeType.Previous, SlidingDateRangeType.Last, SlidingDateRangeType.Next, SlidingDateRangeType.Upcoming };
 
             string helpHtml = @"
-    
+
     <div class='slidingdaterange-help'>
 
         <p>A date range can either be a specific date range, or a sliding date range based on the current date and time.</p>
@@ -1053,7 +1053,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SlidingDateRangeTypeArrayConverter : ArrayConverter
     {
@@ -1129,7 +1129,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SlidingDateRangeUnitArrayConverter : ArrayConverter
     {

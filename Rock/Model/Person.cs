@@ -3375,7 +3375,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates, adds or removes a PhoneNumber of the given type.
+        /// Updates, adds or removes a PhoneNumber of the given type. (It doesn't save changes to the database ).
         /// </summary>
         public static void UpdatePhoneNumber( this Person person, int numberTypeValueId, string phoneCountryCode, string phoneNumber, bool? isMessagingEnabled, bool? isUnlisted, RockContext rockContext )
         {

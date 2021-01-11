@@ -42,7 +42,7 @@ namespace Rock.Web.Cache
         /// The entity document types.
         /// </value>
 		[DataMember]
-        public List<EntityDocumentTypes> EntityDocumentTypes { get; set; }
+        public List<EntityDocumentTypes> EntityDocumentTypes { get; private set; }
 
         /// <summary>
         /// Use Static Get() method to instantiate a new Global Attributes object

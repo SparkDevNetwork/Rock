@@ -283,7 +283,6 @@ namespace Rock.Model
             return FindPersons( new PersonMatchQuery( firstName, lastName, email, string.Empty ) );
         }
 
-
         /// <summary>
         /// Finds people who are considered to be good matches based on the query provided.
         /// </summary>
@@ -318,7 +317,6 @@ namespace Rock.Model
             {
                 query = query.Where( a => a.Gender == searchParameters.Gender.Value || a.Gender == Gender.Unknown );
             }
-
             // Create dictionary
             var foundPeople = query
                 .Select( p => new PersonSummary()
@@ -329,7 +327,8 @@ namespace Rock.Model
                     NickName = p.NickName,
                     Gender = p.Gender,
                     BirthDate = p.BirthDate,
-                    SuffixValueId = p.SuffixValueId
+                    SuffixValueId = p.SuffixValueId,
+                    Email = p.Email
                 } )
                 .ToList()
                 .ToDictionary(
@@ -350,11 +349,10 @@ namespace Rock.Model
 
                 // OR query for email or previous email
                 var previousEmailQry = new PersonSearchKeyService( this.Context as RockContext ).Queryable();
-                Queryable( includeDeceased, includeBusinesses )
+                this.Queryable( includeDeceased, includeBusinesses )
                     .AsNoTracking()
                     .Where(
-                        p => ( p.Email != String.Empty && p.Email != null && p.Email == searchParameters.Email ) ||
-                        previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
+                        p => previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
                     )
                     .Select( p => new PersonSummary()
                     {
@@ -371,13 +369,13 @@ namespace Rock.Model
                     {
                         if ( foundPeople.ContainsKey( p.Id ) )
                         {
-                            foundPeople[p.Id].EmailMatched = true;
+                            foundPeople[p.Id].PreviousEmailMatched = true;
                         }
                         else
                         {
                             foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
                             {
-                                EmailMatched = true
+                                PreviousEmailMatched = true
                             };
                         }
                     } );
@@ -453,10 +451,13 @@ namespace Rock.Model
 
             // Find people who have a good confidence score
             var goodMatches = foundPeople.Values
-                .Where( match => match.ConfidenceScore >= MATCH_SCORE_CUTOFF )
-                .OrderByDescending( match => match.ConfidenceScore );
+                .Where( match => match.MeetsMinimumConfidence )
+                .OrderByDescending( match => match.ConfidenceScore )
+                .Select( match => match.PersonId )
+                .ToList();
 
-            return GetByIds( goodMatches.Select( a => a.PersonId ).ToList() );
+            // The OrderBy ensures that the returned persons are in goodMatches.ConfidenceScore order
+            return GetByIds( goodMatches ).ToList().OrderBy( p => goodMatches.IndexOf( p.Id ) ).ToList();
         }
 
         #region FindPersonClasses
@@ -604,6 +605,9 @@ namespace Rock.Model
                 SuffixMatched = query.SuffixValueId.HasValue && person.SuffixValueId != null && query.SuffixValueId == person.SuffixValueId;
                 GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
 
+                EmailSearchSpecified = query.Email.IsNotNullOrWhiteSpace();
+                PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && query.Email == person.Email;
+
                 if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
                 {
                     BirthDate = query.BirthDate.Value.Month == person.BirthDate.Value.Month && query.BirthDate.Value.Day == person.BirthDate.Value.Day;
@@ -617,7 +621,11 @@ namespace Rock.Model
 
             public bool LastNameMatched { get; set; }
 
-            public bool EmailMatched { get; set; }
+            public bool EmailSearchSpecified { get; private set; }
+
+            public bool PrimaryEmailMatched { get; set; }
+
+            public bool PreviousEmailMatched { get; set; }
 
             public bool MobileMatched { get; set; }
 
@@ -631,6 +639,41 @@ namespace Rock.Model
 
             public bool BirthDateYearMatched { get; set; }
 
+            public bool MeetsMinimumConfidence
+            {
+                get
+                {
+                    if ( ConfidenceScore < MATCH_SCORE_CUTOFF )
+                    {
+                        return false;
+                    }
+
+                    if ( EmailSearchSpecified )
+                    {
+                        /* 
+                            2020-11-12 - MDP
+                            If Email is specified and the Matched Person has an email, it MUST match
+                            the person's primary email OR one of the person's previous emails.
+                            This prevents matching in cases where we should not match.
+
+                            See https://app.asana.com/0/1181881054809083/1199161381220905/f for why this was done
+                        */
+
+                        if ( PrimaryEmailMatched || PreviousEmailMatched )
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
 
             /// <summary>
             /// Calculates a score representing the likelihood this match is the correct match. Higher is better.
@@ -657,7 +700,7 @@ namespace Rock.Model
                         total += 12;
                     }
 
-                    if ( MobileMatched || EmailMatched )
+                    if ( MobileMatched || PrimaryEmailMatched || PreviousEmailMatched )
                     {
                         total += 15;
                     }
@@ -693,11 +736,14 @@ namespace Rock.Model
         private class PersonSummary
         {
             public int Id { get; set; }
+
             public string FirstName { get; set; }
 
             public string LastName { get; set; }
 
             public string NickName { get; set; }
+
+            public string Email { get; set; }
 
             public Gender Gender { get; set; }
 
@@ -931,7 +977,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="personConnectionStatusId">A <see cref="System.Int32"/> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
@@ -2285,7 +2331,7 @@ namespace Rock.Model
             var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
 
             int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
-           
+
             // cleanup phone
             phoneNumber = PhoneNumber.CleanNumber( phoneNumber );
 
@@ -2377,17 +2423,20 @@ namespace Rock.Model
 
             newPerson.PhoneNumbers = new List<PhoneNumber>();
 
-            var namelessPersonMobilePhoneNumberNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId ).Number;
+            var namelessPersonMobilePhoneNumber = namelessPerson.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == mobilePhoneTypeId );
 
-            // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
-            var newPersonMobilePhoneNumber = new PhoneNumber
+            if ( namelessPersonMobilePhoneNumber != null )
             {
-                NumberTypeValueId = mobilePhoneTypeId,
-                IsMessagingEnabled = true,
-                Number = namelessPersonMobilePhoneNumberNumber
-            };
+                // the person we are linking the phone number to doesn't have a SMS Messaging Number, so add a new one
+                var newPersonMobilePhoneNumber = new PhoneNumber
+                {
+                    NumberTypeValueId = mobilePhoneTypeId,
+                    IsMessagingEnabled = true,
+                    Number = namelessPersonMobilePhoneNumber.Number
+                };
 
-            newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+                newPerson.PhoneNumbers.Add( newPersonMobilePhoneNumber );
+            }
 
             var groupMember = new GroupMember();
             groupMember.GroupRoleId = newPersonGroupRoleId;
@@ -3395,7 +3444,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Adds a person alias, known relationship group, implied relationship group, and family for a new person.
-        /// Returns the new Family(Group) that was created for the person.
+        /// Returns the new Family(Group) that was created for the person. The Person and Family are saved to the database.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -3489,7 +3538,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the person to family.
+        /// Adds the person to family and saves changes to the database
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="newPerson">if set to <c>true</c> [new person].</param>

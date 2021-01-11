@@ -3190,7 +3190,6 @@ namespace RockWeb.Blocks.Examples
             {
                 byte[] imageData = webClient.DownloadData( imageUrl );
                 stopwatch.Stop();
-                Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 

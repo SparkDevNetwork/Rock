@@ -520,7 +520,7 @@ Guid - ContentChannelItem Guid
 
             SaveAttributeValues();
 
-            var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string>;
+            var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string>;
             if ( cacheKeys != null )
             {
                 foreach ( var cacheKey in cacheKeys )
@@ -605,8 +605,8 @@ Guid - ContentChannelItem Guid
 
             if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
             {
-                outputContents = GetCacheItem( outputCacheKey ) as string;
-                pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
+                outputContents = GetCacheItem( outputCacheKey, true ) as string;
+                pageTitle = GetCacheItem( pageTitleCacheKey, true ) as string;
             }
 
             bool isMergeContentEnabled = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
@@ -719,7 +719,7 @@ Guid - ContentChannelItem Guid
                 if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
                 {
                     string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                    var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                    var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string> ?? new HashSet<string>();
                     cacheKeys.Add( outputCacheKey );
                     cacheKeys.Add( pageTitleCacheKey );
                     AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
@@ -773,7 +773,7 @@ Guid - ContentChannelItem Guid
 
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                contentChannelItem = GetCacheItem( itemCacheKey ) as ContentChannelItem;
+                contentChannelItem = GetCacheItem( itemCacheKey, true ) as ContentChannelItem;
                 if ( contentChannelItem != null )
                 {
                     return contentChannelItem;
@@ -810,7 +810,7 @@ Guid - ContentChannelItem Guid
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
                 string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string> ?? new HashSet<string>();
                 cacheKeys.Add( itemCacheKey );
                 AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
                 AddCacheItem( itemCacheKey, contentChannelItem, itemCacheDuration.Value, cacheTags );

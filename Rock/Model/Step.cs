@@ -24,6 +24,7 @@ using System.Data.Entity.Infrastructure;
 
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Tasks;
 
 namespace Rock.Model
 {
@@ -210,7 +211,7 @@ namespace Rock.Model
         /// The start source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate StartSourceDate { get; set; }
+        public virtual AnalyticsSourceDate StartSourceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end source date.
@@ -219,7 +220,7 @@ namespace Rock.Model
         /// The end source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate EndSourceDate { get; set; }
+        public virtual AnalyticsSourceDate EndSourceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the completed source date.
@@ -228,7 +229,7 @@ namespace Rock.Model
         /// The completed source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate CompletedSourceDate { get; set; }
+        public virtual AnalyticsSourceDate CompletedSourceDate { get; set; }
         #endregion Virtual Properties
 
         #region Overrides
@@ -310,10 +311,23 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
-            // Add a transaction to process workflows associated with changes to this Step.
-            var transaction = new Rock.Transactions.StepChangeTransaction( entry );
+            int? previousStepStatusId = null;
 
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            if ( entry.State == System.Data.Entity.EntityState.Modified )
+            {
+                var dbProperty = entry.Property( nameof( StepStatusId ) );
+                previousStepStatusId = dbProperty?.OriginalValue as int?;
+            }
+
+            // Send a task to process workflows associated with changes to this Step.
+            new LaunchStepChangeWorkflows.Message
+            {
+                EntityGuid = Guid,
+                EntityState = entry.State,
+                StepTypeId = StepTypeId,
+                CurrentStepStatusId = StepStatusId,
+                PreviousStepStatusId = previousStepStatusId
+            }.Send();
 
             base.PreSaveChanges( dbContext, entry );
         }

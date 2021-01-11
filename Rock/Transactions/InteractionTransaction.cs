@@ -254,11 +254,11 @@ namespace Rock.Transactions
                 interaction.ChannelCustom1 = info.InteractionChannelCustom1?.Trim();
                 interaction.ChannelCustom2 = info.InteractionChannelCustom2?.Trim();
                 interaction.ChannelCustomIndexed1 = info.InteractionChannelCustomIndexed1?.Trim();
-                interaction.Source = info.InteractionSource?.Trim();
-                interaction.Medium = info.InteractionMedium?.Trim();
-                interaction.Campaign = info.InteractionCampaign?.Trim();
-                interaction.Content = info.InteractionContent?.Trim();
-                interaction.Term = info.InteractionTerm?.Trim();
+                interaction.Source = interaction.Source ?? info.InteractionSource?.Trim();
+                interaction.Medium = interaction.Medium ?? info.InteractionMedium?.Trim();
+                interaction.Campaign = interaction.Campaign ?? info.InteractionCampaign?.Trim();
+                interaction.Content = interaction.Content ?? info.InteractionContent?.Trim();
+                interaction.Term = interaction.Term ?? info.InteractionTerm?.Trim();
 
                 interaction.SetInteractionData( info.InteractionData?.Trim() );
                 interactionsToInsert.Add( interaction );
@@ -269,7 +269,7 @@ namespace Rock.Transactions
             // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
             // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit, so update the streak using a task.
-            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i ) ) );
+            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
         }
     }
 

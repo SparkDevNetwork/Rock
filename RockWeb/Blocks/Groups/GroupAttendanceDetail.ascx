@@ -46,6 +46,9 @@
 
                     <div class="row">
                         <div class="col-sm-12">
+                            <Rock:RockRadioButtonList ID="rblAttendanceType" runat="server" Label="Attendance Type" Visible="false" RepeatDirection="Horizontal" />
+                        </div>
+                        <div class="col-sm-12">
                             <Rock:RockCheckBox ID="cbDidNotMeet" runat="server" Text="We Did Not Meet" />
                         </div>
                     </div>

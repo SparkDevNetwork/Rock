@@ -45,9 +45,11 @@ namespace Rock.UniversalSearch.IndexModels
                 {
                     _InstancePropertyInfo = Instance.GetType().GetProperties();
                 }
+
                 return _InstancePropertyInfo;
             }
         }
+
         PropertyInfo[] _InstancePropertyInfo;
 
         /// <summary>
@@ -75,6 +77,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The model configuration.
         /// </value>
+        [RockIndexField]
         public string ModelConfiguration { get; set; }
 
         /// <summary>
@@ -83,8 +86,9 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The type of the index model.
         /// </value>
-        [RockIndexField(Index = IndexType.NotIndexed)]
-        public string IndexModelType {
+        [RockIndexField( Index = IndexType.NotIndexed )]
+        public string IndexModelType
+        {
             get
             {
                 return InstanceType.ToString();
@@ -120,12 +124,13 @@ namespace Rock.UniversalSearch.IndexModels
             // get template from entity type
             var sourceModelEntity = EntityTypeCache.All().Where( e => e.Name == this.SourceIndexModel ).FirstOrDefault();
 
-            if ( sourceModelEntity != null ) {
+            if ( sourceModelEntity != null )
+            {
                 var template = sourceModelEntity.IndexResultTemplate;
 
                 if ( template.IsNotNullOrWhiteSpace() )
                 {
-                    if ( mergeFields == null)
+                    if ( mergeFields == null )
                     {
                         mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
                     }
@@ -138,7 +143,7 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // otherwise return not implemented (blank)
-            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result};
+            return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result };
         }
 
         /// <summary>
@@ -164,7 +169,7 @@ namespace Rock.UniversalSearch.IndexModels
                 }
             }
 
-            return string.Empty;;
+            return string.Empty;
         }
 
         /// <summary>
@@ -224,11 +229,10 @@ namespace Rock.UniversalSearch.IndexModels
             foreach ( var attributeValue in sourceModel.AttributeValues )
             {
                 // check that the attribute is marked as IsIndexEnabled
-                var attribute = AttributeCache.Get(attributeValue.Value.AttributeId);
+                var attribute = AttributeCache.Get( attributeValue.Value.AttributeId );
 
                 if ( attribute.IsIndexEnabled )
                 {
-
                     var key = attributeValue.Key;
 
                     // remove invalid characters
@@ -262,14 +266,14 @@ namespace Rock.UniversalSearch.IndexModels
                 return true;
             }
 
-
             // next check for public properties via Reflection
             try
             {
                 return GetProperty( Instance, binder.Name, out result );
             }
-            catch { }
-            
+            catch
+            {
+            }
 
             // failed to retrieve a property
             result = null;
@@ -286,7 +290,6 @@ namespace Rock.UniversalSearch.IndexModels
         /// </returns>
         public override bool TrySetMember( SetMemberBinder binder, object value )
         {
-
             // first check to see if there's a native property to set
             if ( Instance != null )
             {
@@ -294,9 +297,13 @@ namespace Rock.UniversalSearch.IndexModels
                 {
                     bool result = SetProperty( this, binder.Name, value );
                     if ( result )
+                    {
                         return true;
+                    }
                 }
-                catch { }
+                catch
+                {
+                }
             }
 
             // no match - set or add to dictionary
@@ -316,7 +323,9 @@ namespace Rock.UniversalSearch.IndexModels
         protected bool GetProperty( object instance, string name, out object result )
         {
             if ( instance == null )
+            {
                 instance = this;
+            }
 
             var miArray = InstanceType.GetMember( name, BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance );
             if ( miArray != null && miArray.Length > 0 )
@@ -324,7 +333,7 @@ namespace Rock.UniversalSearch.IndexModels
                 var mi = miArray[0];
                 if ( mi.MemberType == MemberTypes.Property )
                 {
-                    result = ((PropertyInfo)mi).GetValue( instance, null );
+                    result = ( ( PropertyInfo ) mi ).GetValue( instance, null );
                     return true;
                 }
             }
@@ -343,7 +352,9 @@ namespace Rock.UniversalSearch.IndexModels
         protected bool SetProperty( object instance, string name, object value )
         {
             if ( instance == null )
+            {
                 instance = this;
+            }
 
             if ( name != null )
             {
@@ -353,11 +364,12 @@ namespace Rock.UniversalSearch.IndexModels
                     var mi = miArray[0];
                     if ( mi.MemberType == MemberTypes.Property )
                     {
-                        ((PropertyInfo)mi).SetValue( Instance, value, null );
+                        ( ( PropertyInfo ) mi ).SetValue( Instance, value, null );
                         return true;
                     }
                 }
             }
+
             return false;
         }
 
@@ -383,12 +395,15 @@ namespace Rock.UniversalSearch.IndexModels
                     // try reflection on instanceType
                     object result = null;
                     if ( GetProperty( Instance, key, out result ) )
+                    {
                         return result;
+                    }
 
                     // nope doesn't exist
                     return null;
                 }
             }
+
             set
             {
                 if ( key != null )
@@ -423,12 +438,15 @@ namespace Rock.UniversalSearch.IndexModels
             if ( includeInstanceProperties && Instance != null )
             {
                 foreach ( var prop in this.InstancePropertyInfo )
+                {
                     yield return new KeyValuePair<string, object>( prop.Name, prop.GetValue( Instance, null ) );
+                }
             }
 
             foreach ( var key in this._members.Keys )
+            {
                 yield return new KeyValuePair<string, object>( key, this._members[key] );
-
+            }
         }
 
         /// <summary>
@@ -456,7 +474,6 @@ namespace Rock.UniversalSearch.IndexModels
 
             return propertyNames;
         }
-
 
         #region ILiquid Implementation
         /// <summary>
@@ -501,14 +518,18 @@ namespace Rock.UniversalSearch.IndexModels
         {
             bool res = _members.ContainsKey( item.Key );
             if ( res )
+            {
                 return true;
+            }
 
             if ( includeInstanceProperties && Instance != null )
             {
                 foreach ( var prop in this.InstancePropertyInfo )
                 {
                     if ( prop.Name == item.Key )
+                    {
                         return true;
+                    }
                 }
             }
 

@@ -1896,6 +1896,30 @@ namespace Rock.Data
         public DbSet<UserLogin> UserLogins { get; set; }
 
         /// <summary>
+        /// Gets or sets the web farm nodes.
+        /// </summary>
+        /// <value>
+        /// The web farm nodes.
+        /// </value>
+        public DbSet<WebFarmNode> WebFarmNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node logs.
+        /// </summary>
+        /// <value>
+        /// The web farm node logs.
+        /// </value>
+        public DbSet<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflows.
         /// </summary>
         /// <value>

@@ -321,11 +321,11 @@ namespace Rock.Model
             var countryValue = DefinedTypeCache.Get( SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .GetDefinedValueFromValue( location.Country );
 
+            // Verify requirements for individual fields.
+            var invalidFields = new List<string>();
+
             if ( countryValue != null )
             {
-                // Verify requirements for individual fields.
-                var invalidFields = new List<string>();
-
                 var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
                 var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
                 var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
@@ -362,12 +362,16 @@ namespace Rock.Model
                 {
                     invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).IfEmpty( "Postal Code" ) );
                 }
+            }
+            else
+            {
+                invalidFields.Add( "Country" );
+            }
 
-                if ( invalidFields.Any() )
-                {
-                    errorMessage = $"Incomplete Address. The following fields are required: { invalidFields.AsDelimited( ", " ) }.";
-                    return false;
-                }
+            if ( invalidFields.Any() )
+            {
+                errorMessage = $"Incomplete Address. The following fields are required: { invalidFields.AsDelimited( ", " ) }.";
+                return false;
             }
 
             // Verify at least one address field contains a value.

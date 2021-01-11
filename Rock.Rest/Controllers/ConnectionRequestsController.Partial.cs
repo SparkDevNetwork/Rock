@@ -158,16 +158,17 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Does the status change cause workflows to be triggered?
         /// </summary>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
         /// <param name="fromStatusId">From status identifier.</param>
         /// <param name="toStatusId">To status identifier.</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured, HttpGet]
-        [System.Web.Http.Route( "api/ConnectionRequests/DoesStatusChangeCauseWorkflows/{fromStatusId}/{toStatusId}" )]
-        public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int fromStatusId, int toStatusId )
+        [System.Web.Http.Route( "api/ConnectionRequests/DoesStatusChangeCauseWorkflows/{connectionOpportunityId}/{fromStatusId}/{toStatusId}" )]
+        public WorkflowCheckViewModel DoesStatusChangeCauseWorkflows( int connectionOpportunityId, int fromStatusId, int toStatusId )
         {
             var connectionRequestService = Service as ConnectionRequestService;
-            return connectionRequestService.DoesStatusChangeCauseWorkflows( fromStatusId, toStatusId );
+            return connectionRequestService.DoesStatusChangeCauseWorkflows( connectionOpportunityId, fromStatusId, toStatusId );
         }
 
         /// <summary>
@@ -183,6 +184,7 @@ namespace Rock.Rest.Controllers
         /// <param name="delimitedConnectionStates">The delimited connection states.</param>
         /// <param name="delimitedLastActivityTypeIds">The delimited last activity type ids.</param>
         /// <param name="statusIconsTemplate">The status icons template.</param>
+        /// <param name="pastDueOnly">if set to <c>true</c> [past due only] for requests that are future follow-up.</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
@@ -197,7 +199,8 @@ namespace Rock.Rest.Controllers
             string delimitedStatusIds = null,
             string delimitedConnectionStates = null,
             string delimitedLastActivityTypeIds = null,
-            string statusIconsTemplate = null )
+            string statusIconsTemplate = null,
+            bool pastDueOnly = false )
         {
             var personAliasId = GetPersonAliasId();
 
@@ -219,8 +222,12 @@ namespace Rock.Rest.Controllers
                     MinDate = minDate,
                     MaxDate = maxDate,
                     StatusIds = delimitedStatusIds.SplitDelimitedValues().AsIntegerList(),
-                    ConnectionStates = delimitedConnectionStates.SplitDelimitedValues().ToList(),
-                    LastActivityTypeIds = delimitedLastActivityTypeIds.SplitDelimitedValues().AsIntegerList()
+                    ConnectionStates = delimitedConnectionStates
+                        .SplitDelimitedValues()
+                        .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
+                        .ToList(),
+                    LastActivityTypeIds = delimitedLastActivityTypeIds.SplitDelimitedValues().AsIntegerList(),
+                    IsFutureFollowUpPastDueOnly = pastDueOnly
                 },
                 statusIconsTemplate );
         }
@@ -240,8 +247,9 @@ namespace Rock.Rest.Controllers
         /// <param name="statusIconsTemplate">The status icons template.</param>
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="maxRequestsPerStatus">The maximum requests per status.</param>
+        /// <param name="pastDueOnly">if set to <c>true</c> [past due only] for future follow-up requests.</param>
         /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
+        /// <exception cref="HttpResponseException">errorResponse</exception>
         [Authenticate, Secured]
         [System.Web.Http.Route( "api/ConnectionRequests/ConnectionBoardStatusViewModels/{connectionOpportunityId}" )]
         public List<ConnectionStatusViewModel> GetConnectionBoardStatusViewModels(
@@ -256,7 +264,8 @@ namespace Rock.Rest.Controllers
             string delimitedLastActivityTypeIds = null,
             string statusIconsTemplate = null,
             ConnectionRequestViewModelSortProperty? sortProperty = null,
-            int? maxRequestsPerStatus = null )
+            int? maxRequestsPerStatus = null,
+            bool pastDueOnly = false )
         {
             var personAliasId = GetPersonAliasId();
 
@@ -277,9 +286,13 @@ namespace Rock.Rest.Controllers
                     MinDate = minDate,
                     MaxDate = maxDate,
                     StatusIds = delimitedStatusIds.SplitDelimitedValues().AsIntegerList(),
-                    ConnectionStates = delimitedConnectionStates.SplitDelimitedValues().ToList(),
+                    ConnectionStates = delimitedConnectionStates
+                        .SplitDelimitedValues()
+                        .Select( s => ( ConnectionState ) Enum.Parse( typeof( ConnectionState ), s ) )
+                        .ToList(),
                     LastActivityTypeIds = delimitedLastActivityTypeIds.SplitDelimitedValues().AsIntegerList(),
-                    SortProperty = sortProperty
+                    SortProperty = sortProperty,
+                    IsFutureFollowUpPastDueOnly = pastDueOnly
                 },
                 statusIconsTemplate,
                 maxRequestsPerStatus );

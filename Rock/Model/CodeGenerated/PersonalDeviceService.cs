@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Interaction>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, Interaction.FriendlyTypeName );

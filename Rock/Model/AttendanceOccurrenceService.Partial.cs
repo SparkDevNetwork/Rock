@@ -89,6 +89,27 @@ namespace Rock.Model
         /// <returns>An existing or new attendance occurrence</returns>
         public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes )
         {
+            return GetOrAdd( occurrenceDate, groupId, locationId, scheduleId, includes, null );
+        }
+
+        /// <summary>
+        /// Gets the specified occurrence record, creating it if necessary. Ensures that an AttendanceOccurrence
+        /// record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is
+        /// created and saved to the database.
+        /// NOTE: When looking for a matching occurrence, if null groupId, locationId or scheduleId is given
+        /// any matching record must also not have a group, location or schedule.
+        /// </summary>
+        /// <param name="occurrenceDate">The occurrence date.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="includes">Allows including attendance occurrence virtual properties like Attendees.</param>
+        /// <param name="attendanceTypeValueId">The attendance type identifier.</param>
+        /// <returns>
+        /// An existing or new attendance occurrence
+        /// </returns>
+        public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes, int? attendanceTypeValueId )
+        {
             var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId, includes );
 
             if ( occurrence == null )
@@ -103,6 +124,7 @@ namespace Rock.Model
                         GroupId = groupId,
                         LocationId = locationId,
                         ScheduleId = scheduleId,
+                        AttendanceTypeValueId = attendanceTypeValueId
                     };
 
                     var newOccurrenceService = new AttendanceOccurrenceService( newContext );

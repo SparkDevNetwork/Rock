@@ -605,7 +605,14 @@ namespace RockWeb.Blocks.Core
             {
                 // Get the installed package so we can check its version...
                 var installedPackage = NuGetService.GetInstalledPackage( _rockPackageId );
-                if ( installedPackage != null )
+                if ( installedPackage == null )
+                {
+                    pnlNoUpdates.Visible = false;
+                    pnlError.Visible = true;
+                    nbErrors.Text = "No packages were found under App_Data\\Packages\\, so it's not possible to perform an update using this block.";
+                    return false;
+                }
+                else
                 {
                     _installedVersion = installedPackage.Version;
                 }
@@ -646,7 +653,7 @@ namespace RockWeb.Blocks.Core
             {
                 pnlNoUpdates.Visible = false;
                 pnlError.Visible = true;
-                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
+                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</div>", ex.Message );
             }
 
             if ( verifiedPackages.Count > 0 )
@@ -947,6 +954,7 @@ namespace RockWeb.Blocks.Core
             pnlError.Visible = true;
             pnlUpdateSuccess.Visible = false;
             pnlNoUpdates.Visible = false;
+            nbErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
 
             if ( ex.Message.Contains( "404" ) )
             {
@@ -956,9 +964,10 @@ namespace RockWeb.Blocks.Core
             {
                 nbErrors.Text = string.Format( "I think either the update server is down or your <code>UpdateServerUrl</code> setting is incorrect: {0}", GlobalAttributesCache.Get().GetValue( "UpdateServerUrl" ) );
             }
-            else if ( ex.Message.Contains( "Unable to connect" ) )
+            else if ( ex.Message.Contains( "Unable to connect" ) || ex.Message.Contains( "(503)" ) )
             {
-                nbErrors.Text = "The update server is down. Try again later.";
+                nbErrors.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbErrors.Text = "The update server is currently unavailable (possibly undergoing maintenance). Please try again later.";
             }
             else
             {

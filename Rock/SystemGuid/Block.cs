@@ -109,5 +109,9 @@ namespace Rock.SystemGuid
         /// The oidc client detail block instance.
         /// </summary>
         public const string OIDC_CLIENT_DETAIL = "19B3433E-4C40-44D3-9974-5B2373F8AF8A";
+        /// <summary>
+        /// The workflow configuration change log notes block
+        /// </summary>
+        public const string WORKFLOW_CONFIGURATION_CHANGE_LOG_NOTES = "2194F555-1261-4D23-B5E0-F19380DFB10A";
     }
 }

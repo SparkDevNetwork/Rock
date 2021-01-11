@@ -85,11 +85,8 @@ namespace System.Web.Http
         /// <returns></returns>
         public static string GetCookie( this HttpRequestMessage request, string cookieName )
         {
-            CookieHeaderValue cookie = request.Headers.GetCookies( cookieName ).FirstOrDefault();
-            if ( cookie != null )
-                return cookie[cookieName].Value;
-
-            return null;
+            var cookie = request.Headers.GetCookies( cookieName ).FirstOrDefault();
+            return cookie[cookieName]?.Value;
         }
 
     }

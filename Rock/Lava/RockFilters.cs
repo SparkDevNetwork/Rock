@@ -4475,6 +4475,73 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Writes a cookie to the current HttpResponse.
+        /// </summary>
+        /// <param name="input">The cookie key.</param>
+        /// <param name="value">The cookie value.</param>
+        /// <param name="expiry">The number of minutes after which the cookie will expire.</param>
+        /// <returns>An empty string if the action succeeds, or an error message.</returns>
+        public static string WriteCookie( object input, object value, string expiry = null )
+        {
+            var key = input.ToStringSafe().Trim();
+
+            // There is some inconsistency in the way various browsers store a cookie with an empty key.
+            // To avoid unexpected results, we will disallow it here.
+            if ( string.IsNullOrEmpty( key ) )
+            {
+                return "WriteCookie failed: A Key must be specified.";
+            }
+
+            var response = System.Web.HttpContext.Current?.Response;
+
+            if ( response == null )
+            {
+                return "WriteCookie failed: A Http Session is required.";
+            }
+
+            var expiryMinutes = expiry.AsIntegerOrNull();
+
+            var cookie = new HttpCookie( key, value.ToStringSafe() );
+
+            if ( expiryMinutes.HasValue )
+            {
+                cookie.Expires = RockDateTime.Now.AddMinutes( expiryMinutes.Value );
+            }
+
+            response.Cookies.Set( cookie );
+
+            // Return an empty string to indicate success, because this "filter" has a side-effect with no output.
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Reads a cookie value from the current HttpRequest.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns>The cookie value, or null if the cookie does not exist.</returns>
+        public static string ReadCookie( object input )
+        {
+            var key = input.ToStringSafe().Trim();
+
+            if ( string.IsNullOrEmpty( key ) )
+            {
+                return "ReadCookie failed: A Key must be specified.";
+            }
+
+            var request = System.Web.HttpContext.Current?.Request;
+
+            if ( request != null )
+            {
+                if ( request.Cookies.AllKeys.Contains( key ) )
+                {
+                    return request.Cookies[key].Value;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Clients the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -4666,6 +4733,22 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Adds the response header.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="headerName">Name of the header.</param>
+        public static void AddResponseHeader( string input, string headerName )
+        {
+            // Check if header already exists, if so remove current value.
+            if ( HttpContext.Current.Response.Headers.AllKeys.Contains( headerName ) )
+            {
+                HttpContext.Current.Response.Headers.Remove( headerName );
+            }
+
+            HttpContext.Current.Response.AddHeader( headerName, input );
         }
 
         /// <summary>
@@ -4959,6 +5042,39 @@ namespace Rock.Lava
             }
 
             return url;
+        }
+
+        /// <summary>
+        /// Returns a named configuration setting for the current Rock instance.
+        /// </summary>
+        /// <param name="input">The name of the configuration setting.</param>
+        /// <returns>A configuration value.</returns>
+        public static object RockInstanceConfig( object input )
+        {
+            var valueName = input.ToStringSafe().Trim().ToLower();
+
+            if ( valueName == "applicationdirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+            }
+            else if ( valueName == "isclustered" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+            }
+            else if ( valueName == "machinename" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+            }
+            else if ( valueName == "physicaldirectory" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+            }
+            else if ( valueName == "systemdatetime" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+            }
+
+            return $"Configuration setting \"{ input }\" is not available.";
         }
 
         #endregion Misc Filters

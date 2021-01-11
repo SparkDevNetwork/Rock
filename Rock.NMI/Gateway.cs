@@ -858,7 +858,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 var transactionList = queryTransactionsResponse?.TransactionListResult?.TransactionList;
                 if ( transactionList == null )
                 {
-                    errorMessage = "Unexpected transaction list response returned From gateway.";
+                    // NMI returns { "nm_response": "" } if there are no Transactions, which would mean that TransactionList would be null
                     return paymentList;
                 }
 

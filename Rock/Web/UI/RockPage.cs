@@ -38,7 +38,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
+using static Rock.Security.Authorization;
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -919,7 +919,9 @@ namespace Rock.Web.UI
                     // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
-                    Response.Cookies[sidCookieName].Expires = DateTime.Now.AddDays( -1 );
+                    var cookie = Response.Cookies[sidCookieName];
+                    cookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -1363,6 +1365,19 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
+                        var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+                        var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+                        var cacheIndicator = isCacheEnabled ? "text-success" : "text-danger";
+                        var cacheEnabled = isCacheEnabled ? "enabled" : "disabled";
+
+                        var lbCacheControl = new LinkButton();
+                        lbCacheControl.Click += lbCacheControl_Click;
+                        lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
+                        lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
+                        adminFooter.Controls.Add( lbCacheControl );
+
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
@@ -1480,11 +1495,9 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache
                     // so it should always exist
-                    if ( _pageCache.OutputCacheDuration > 0 )
+                    if ( _pageCache.CacheControlHeader != null )
                     {
-                        Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
-                        Response.Cache.SetValidUntilExpires( true );
+                        _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
 
@@ -2299,7 +2312,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2332,7 +2345,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = null;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2390,7 +2403,9 @@ Sys.Application.add_load(function () {
                 HttpCookie httpCookie = Request.Cookies["rock_wifi"];
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
-                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                    var wiFiCookie = Response.Cookies["rock_wifi"];
+                    wiFiCookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( wiFiCookie );
                 }
             }
         }
@@ -2403,6 +2418,67 @@ Sys.Application.add_load(function () {
         public string GetContextCookieName( bool pageSpecific )
         {
             return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        public static void AddOrUpdateCookie( string name, string value, DateTime? expirationDate )
+        {
+            var cookie = new HttpCookie( name )
+            {
+                Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                Value = value
+            };
+
+            AddOrUpdateCookie( cookie );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// This method creates a new cookie using a deep clone of the provided cookie to ensure a cookie written to the response
+        /// does not contain properties that are not compatible with .Net 4.5.2 (e.g. SameSite).
+        /// Removes the cookie from the Request and Response using the cookie name, then adds the cloned clean cookie to the Response.
+        /// </summary>
+        /// <param name="cookie">The cookie.</param>
+        public static void AddOrUpdateCookie( HttpCookie cookie )
+        {
+            // If the samesite setting is not in the Path then add it
+            if ( cookie.Path.IsNullOrWhiteSpace() || !cookie.Path.Contains( "SameSite" ) )
+            {
+                SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+
+                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+                cookie.Path += sameSiteCookieValue;
+            }
+
+            // Clone the cookie to prevent the SameSite property from making an appearence in our response.
+            var responseCookie = new HttpCookie( cookie.Name )
+            {
+                Domain = cookie.Domain,
+                Expires = cookie.Expires,
+                HttpOnly = cookie.HttpOnly,
+                Path = cookie.Path,
+                Secure = cookie.Secure,
+                Value = cookie.Value
+            };
+
+            HttpContext.Current.Request.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Add( responseCookie );
+        }
+
+        /// <summary>
+        /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public HttpCookie GetCookie( string name )
+        {
+            return Request.Cookies[name] ?? Response.Cookies[name] ?? null;
         }
 
         /// <summary>
@@ -3449,6 +3525,35 @@ Sys.Application.add_load(function () {
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
+        /// <summary>
+        /// Handles the Click event of the lbCacheControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbCacheControl_Click( object sender, EventArgs e )
+        {
+            var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+            var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+            if ( cacheControlCookie == null )
+            {
+                cacheControlCookie = new HttpCookie( RockCache.CACHE_CONTROL_COOKIE );
+            }
+
+            cacheControlCookie.Value = ( !isCacheEnabled ).ToString();
+
+            AddOrUpdateCookie( cacheControlCookie );
+
+            if ( PageReference != null )
+            {
+                string pageUrl = PageReference.BuildUrl();
+                if ( !string.IsNullOrWhiteSpace( pageUrl ) )
+                {
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+        }
         #endregion
     }
 

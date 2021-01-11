@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Utility
                 // Cache tags are in an empty region. Calls without a region throw an exception
                 if ( stringCacheKey.Region.IsNotNullOrWhiteSpace() )
                 {
-                    var value = RockCacheManager<List<string>>.Instance.Cache.Get( stringCacheKey.Key, stringCacheKey.Region );
+                    var value = RockCacheManager<List<string>>.Instance.Get( stringCacheKey.Key, stringCacheKey.Region );
 
                     if ( value.IsNotNull() )
                     {

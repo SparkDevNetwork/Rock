@@ -163,7 +163,7 @@
                             <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server">
                                 <ContentTemplate>
                                     <div class="d-inline-block btn-group-mega js-btn-group-mega">
-                                        <button type="button" class="btn btn-xs dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <i class="fa fa-plug"></i>
                                             Opportunities
                                         </button>
@@ -204,7 +204,7 @@
                                             </asp:Repeater>
                                         </ul>
                                     </div>
-                                    <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs" OnClick="lbAddRequest_Click" CausesValidation="false">
+                                    <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbAddRequest_Click" CausesValidation="false">
                                         <i class="fa fa-plus"></i>
                                         Add Request
                                     </asp:LinkButton>
@@ -212,7 +212,7 @@
                             </asp:UpdatePanel>
                             <div class="d-block">
                                 <div class="btn-group">
-                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-user"></i>
                                         <asp:Literal runat="server" ID="lConnectorText" />
                                     </button>
@@ -242,7 +242,7 @@
                             </div>
                             <div class="d-block">
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-sort"></i>
                                         <asp:Literal runat="server" ID="lSortText" />
                                     </button>
@@ -260,12 +260,12 @@
                                         </asp:Repeater>
                                     </ul>
                                 </div>
-                                <a ID="aFilterDrawerToggle" runat="server" href="javascript:toggleFilterDrawer()" class="btn btn-xs">
+                                <a ID="aFilterDrawerToggle" runat="server" href="javascript:toggleFilterDrawer()" class="btn btn-xs btn-tool">
                                     <i class="fa fa-filter"></i>
                                     Filters
                                 </a>
                                 <div runat="server" id="divCampusBtnGroup" class="btn-group">
-                                    <button type="button" class="btn btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-building"></i>
                                         <asp:Literal runat="server" ID="lCurrentCampusName" />
                                     </button>
@@ -284,7 +284,7 @@
                                         </asp:Repeater>
                                     </ul>
                                 </div>
-                                <asp:LinkButton ID="lbToggleViewMode" runat="server" CssClass="btn btn-xs" OnClick="lbToggleViewMode_Click" />
+                                <asp:LinkButton ID="lbToggleViewMode" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbToggleViewMode_Click" />
                             </div>
                         </div>
 
@@ -297,13 +297,16 @@
                                     <div class="col-md-4">
                                         <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
@@ -328,15 +331,17 @@
                     <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
                         <Columns>
                             <Rock:SelectField></Rock:SelectField>
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
                             <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
                             <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
                             <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
                             <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
-                            <Rock:RockLiteralField ID="lState" HeaderText="State" />
-                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" />
+                            <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                             <Rock:SecurityField />
+                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                            <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </ContentTemplate>
@@ -478,17 +483,17 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-                            <div class="actions mb-4 mt-md-4 mb-md-5">
+                            <div class="actions d-flex mb-4 mt-md-4 mb-md-5">
                                 <asp:LinkButton ID="btnRequestModalViewModeEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnRequestModalViewModeEdit_Click" CausesValidation="false" />
                                 <asp:LinkButton ID="btnRequestModalViewModeTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeTransfer_Click" />
-                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
+                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-primary ml-auto" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
                             </div>
 
                             <div runat="server" id="divRequestModalViewModeActivityGridMode" class="mb-4">
                                 <div class="row">
-                                    <h5 class="col-md-6">Activities</h5>
+                                    <div class="col-md-6"><h5 class="mt-0">Activities</h5></div>
                                     <div class="col-md-6 text-right">
-                                        <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" OnClick="lbRequestModalViewModeAddActivity_Click" CssClass="small">
+                                        <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" OnClick="lbRequestModalViewModeAddActivity_Click" CssClass="btn btn-default btn-xs">
                                             <i class="fa fa-plus"></i>
                                             Add Activity
                                         </asp:LinkButton>
@@ -680,7 +685,7 @@
 <script id="js-template-column" type="text/template">
     <div class="board-column">
         <div class="board-heading mt-3 px-3">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
@@ -701,7 +706,7 @@
 </script>
 
 <script id="js-template-card" type="text/template">
-    <div class="board-card js-board-card" data-request-id="{{Id}}">
+    <div class="board-card js-board-card" data-request-id="{{Id}}" data-opportunity-id="{{ConnectionOpportunityId}}">
         <div class="board-card-content js-board-card-content">
             <div class="d-flex justify-content-between">
                 {{StatusIconsHtml}}

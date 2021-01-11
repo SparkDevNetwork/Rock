@@ -358,7 +358,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
-        /// <param name="seconds">A <see cref="System.Int32"/> representing the the amount of time in seconds that the object is cached. This is an absolute expiration</param>
+        /// <param name="seconds">A <see cref="System.Int32"/> representing the amount of time in seconds that the object is cached. This is an absolute expiration</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
         {
             var now = RockDateTime.Now;
@@ -423,7 +423,18 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            return RockCache.Get( ItemCacheKey( key ) );
+            return GetCacheItem( ItemCacheKey( key ), false );
+        }
+
+        /// <summary>
+        /// Gets the cache item.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="allowCacheByPass">if set to <c>true</c> [allow cache by pass].</param>
+        /// <returns></returns>
+        protected virtual object GetCacheItem( string key, bool allowCacheByPass )
+        {
+            return RockCache.Get( ItemCacheKey( key ), allowCacheByPass );
         }
 
         /// <summary>
@@ -1152,6 +1163,11 @@ namespace Rock.Web.UI
             {
                 foreach ( Control control in controls )
                 {
+                    if ( control is Rock.Web.UI.Controls.IDoNotBlockValidate)
+                    {
+                        continue;
+                    }
+
                     if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
                     {
                         var rockControl = ( Rock.Web.UI.Controls.IHasValidationGroup ) control;

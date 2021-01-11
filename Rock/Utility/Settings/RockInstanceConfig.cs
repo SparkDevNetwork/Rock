@@ -47,6 +47,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the name of the machine.
+        /// </summary>
+        /// <value>
+        /// The name of the machine.
+        /// </value>
+        public static string MachineName
+        {
+            get
+            {
+                return _serviceInstance.MachineName;
+            }
+        }
+
+        /// <summary>
         /// Returns the install path of the Rock application on the host.
         /// </summary>
         public static string PhysicalDirectory
@@ -87,6 +101,20 @@ namespace Rock.Utility.Settings
             get
             {
                 return _serviceInstance.Database;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is clustered.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsClustered
+        {
+            get
+            {
+                return _serviceInstance.IsClustered;
             }
         }
     }

@@ -21,8 +21,8 @@
         //
         // Region: URL Helpers
         //
-        const getWorkflowCheckApiUrl = function (fromStatusId, toStatusId) {
-            return Rock.settings.get('baseUrl') + 'api/ConnectionRequests/DoesStatusChangeCauseWorkflows/' + fromStatusId + '/' + toStatusId;
+        const getWorkflowCheckApiUrl = function (connectionOpportunityId, fromStatusId, toStatusId) {
+            return Rock.settings.get('baseUrl') + 'api/ConnectionRequests/DoesStatusChangeCauseWorkflows/' + connectionOpportunityId + '/' + fromStatusId + '/' + toStatusId;
         };
 
         const getStatusViewModelsApiUrl = function (connectionOpportunityId) {
@@ -136,19 +136,23 @@
             }
 
             if (options.requesterPersonAliasId) {
-                data.requesterPersonAliasId = options.requesterPersonAliasId
+                data.requesterPersonAliasId = options.requesterPersonAliasId;
             }
 
             if (options.statusIds && options.statusIds.length) {
-                data.delimitedStatusIds = options.statusIds.join('|')
+                data.delimitedStatusIds = options.statusIds.join('|');
             }
 
             if (options.connectionStates && options.connectionStates.length) {
-                data.delimitedConnectionStates = options.connectionStates.join('|')
+                data.delimitedConnectionStates = options.connectionStates.join('|');
+            }
+
+            if (options.pastDueOnly) {
+                data.pastDueOnly = true;
             }
 
             if (options.lastActivityTypeIds && options.lastActivityTypeIds.length) {
-                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|')
+                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|');
             }
 
             $.get({
@@ -182,19 +186,23 @@
             }
 
             if (options.requesterPersonAliasId) {
-                data.requesterPersonAliasId = options.requesterPersonAliasId
+                data.requesterPersonAliasId = options.requesterPersonAliasId;
             }
 
             if (options.statusIds && options.statusIds.length) {
-                data.delimitedStatusIds = options.statusIds.join('|')
+                data.delimitedStatusIds = options.statusIds.join('|');
             }
 
             if (options.connectionStates && options.connectionStates.length) {
-                data.delimitedConnectionStates = options.connectionStates.join('|')
+                data.delimitedConnectionStates = options.connectionStates.join('|');
+            }
+
+            if (options.pastDueOnly) {
+                data.pastDueOnly = true;
             }
 
             if (options.lastActivityTypeIds && options.lastActivityTypeIds.length) {
-                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|')
+                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|');
             }
 
             $.get({
@@ -214,13 +222,13 @@
             });
         };
 
-        const doesStatusChangeCauseWorkflows = function (fromStatusId, toStatusId, callback) {
+        const doesStatusChangeCauseWorkflows = function (connectionOpportunityId, fromStatusId, toStatusId, callback) {
             if (fromStatusId === toStatusId) {
                 callback(false);
                 return;
             }
 
-            const url = getWorkflowCheckApiUrl(fromStatusId, toStatusId);
+            const url = getWorkflowCheckApiUrl(connectionOpportunityId, fromStatusId, toStatusId);
 
             $.get({
                 url: url,
@@ -467,6 +475,7 @@
             const newIndex = $target.children().index(el);
             const originalIndex = Number($el.attr('data-index'));
             const requestId = $el.data('requestId');
+            const opportunityId = $el.data('opportunityId');
 
             if ($target.hasClass('js-drag-scroll-zone')) {
                 // Put the card back out of the scroll zone
@@ -474,7 +483,7 @@
                 return;
             }
 
-            doesStatusChangeCauseWorkflows(oldStatusId, newStatusId, function (data) {
+            doesStatusChangeCauseWorkflows(opportunityId, oldStatusId, newStatusId, function (data) {
                 if (data && data.DoesCauseWorkflows) {
                     const from = data.FromStatusName ? data.FromStatusName : 'that status';
                     const to = data.ToStatusName ? data.ToStatusName : 'this status';

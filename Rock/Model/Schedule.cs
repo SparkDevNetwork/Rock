@@ -279,9 +279,12 @@ namespace Rock.Model
 
                 Ical.Net.Interfaces.DataTypes.IRecurrencePattern rrule = null;
 
-                if ( calEvent.RecurrenceRules.Any() )
+                if ( calEvent != null )
                 {
-                    rrule = calEvent.RecurrenceRules[0]; 
+                    if ( calEvent.RecurrenceRules.Any() )
+                    {
+                        rrule = calEvent.RecurrenceRules[0];
+                    }
                 }
 
                 /* 2020-06-24 MP
@@ -822,7 +825,7 @@ namespace Rock.Model
                     a.Period.StartTime != null )
                 .Select( a => a.Period.StartTime.Value ) )
             {
-                // ensure the the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
+                // ensure the datetime is DateTimeKind.Local since iCal returns DateTimeKind.UTC
                 result.Add( DateTime.SpecifyKind( startDateTime, DateTimeKind.Local ) );
             }
 

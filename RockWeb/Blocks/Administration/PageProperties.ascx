@@ -98,7 +98,6 @@
                                         <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState" />
                                         <Rock:RockCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration" />
                                         <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Text="Allow Indexing" />
-                                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" Help="The length of time, in seconds, to cache the results of the page. This is cached on the individuals browser using the Expires header in the HTTP response." SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration" />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
@@ -119,6 +118,11 @@
                                                 <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
                                             </fieldset>
                                         </asp:PlaceHolder>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <Rock:CacheabilityPicker ID="cpCacheSettings" runat="server" Label="" />
                                     </div>
                                 </div>
                                 <div class="row">

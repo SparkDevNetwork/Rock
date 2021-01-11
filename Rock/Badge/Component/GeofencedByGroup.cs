@@ -27,7 +27,7 @@ namespace Rock.Badge.Component
     /// <summary>
     /// Geofenced By Group Badge
     /// </summary>
-    [Description( "Displays the group(s) of a particular type that have a geo-fence location around one or more of the the person's map locations." )]
+    [Description( "Displays the group(s) of a particular type that have a geo-fence location around one or more of the person's map locations." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Geofenced By Group" )]
 

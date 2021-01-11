@@ -690,15 +690,10 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-            var contextCookie = httpContext.Request.Cookies[cookieName];
-            if ( contextCookie == null )
-            {
-                contextCookie = new System.Web.HttpCookie( cookieName );
-            }
-
+            var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            httpContext.Response.Cookies.Add( contextCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }

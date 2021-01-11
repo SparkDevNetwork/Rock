@@ -652,21 +652,21 @@ input.namesearch {
 }
 
 .qr-code-container {
-  width: 60vw;
-  max-width: 75%;
-  margin: 0 auto 32px;
   position: relative;
-    display: block;
-    width: 100%;
-    padding: 0;
-    overflow: hidden;
-    border-radius: @border-radius-large;
+  display: block;
+  width: 60vw;
+  width: 100%;
+  max-width: 75%;
+  padding: 0;
+  margin: 0 auto 32px;
+  overflow: hidden;
+  border-radius: @border-radius-large;
 
-    &:before {
-      display: block;
+  &::before {
+    display: block;
+    padding-top: 100%;
     content: "";
-      padding-top: 100%;
-    }
+  }
 
   .qr-code {
     position: absolute;

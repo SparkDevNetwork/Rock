@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -25,36 +26,157 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// An editor control for a set of rows in an Attribute Matrix. Each matrix row is comprised of multiple Attributes Values.
     /// </summary>
-    public class AttributeMatrixEditor : CompositeControl, INamingContainer, IHasRequired, IHasValidationGroup
+    public class AttributeMatrixEditor : CompositeControl, INamingContainer, IRockControl
     {
-        #region Controls
-
-        private HiddenField _hfAttributeMatrixGuid;
-        private Grid _gMatrixItems;
-
-        private Panel _pnlEditMatrixItem;
-        private HiddenField _hfMatrixItemId;
-        private NotificationBox _nbWarning;
-        private DynamicPlaceholder _phMatrixItemAttributes;
-        private Panel _pnlActions;
-        private LinkButton _btnSaveMatrixItem;
-        private LinkButton _btnCancelMatrixItem;
-        private HiddenFieldWithValidationProperty _hfRowCount;
-        private HiddenFieldRangeValidator _requiredRowCountRangeValidator;
-
-        #endregion Controls
-
-        #region Properties
+        #region IRockControl implementation
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="IHasRequired" /> is required.
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the form group class.
+        /// </summary>
+        /// <value>
+        /// The form group class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        Description( "The CSS class to add to the form-group div." )
+        ]
+        public string FormGroupCssClass
+        {
+            get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
+            set { ViewState["FormGroupCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS Icon text.
+        /// </summary>
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The warning block." )
+        ]
+        public string Warning
+        {
+            get
+            {
+                return WarningBlock != null ? WarningBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( WarningBlock != null )
+                {
+                    WarningBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool Required { get; set; }
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public virtual bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the validation group.
@@ -76,6 +198,66 @@ namespace Rock.Web.UI.Controls
                 _requiredRowCountRangeValidator.ValidationGroup = value;
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return ( !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid )
+                    && _requiredRowCountRangeValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the warning block.
+        /// </summary>
+        /// <value>
+        /// The warning block.
+        /// </value>
+        public WarningBlock WarningBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private HiddenField _hfAttributeMatrixGuid;
+        private Grid _gMatrixItems;
+
+        private Panel _pnlEditMatrixItem;
+        private HiddenField _hfMatrixItemId;
+        private NotificationBox _nbWarning;
+        private DynamicPlaceholder _phMatrixItemAttributes;
+        private Panel _pnlActions;
+        private LinkButton _btnSaveMatrixItem;
+        private LinkButton _btnCancelMatrixItem;
+        private HiddenFieldWithValidationProperty _hfRowCount;
+        private HiddenFieldRangeValidator _requiredRowCountRangeValidator;
+
+        #endregion Controls
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the attribute matrix template identifier.
@@ -207,15 +389,24 @@ namespace Rock.Web.UI.Controls
 
                 AttributeMatrixTemplateService attributeMatrixTemplateService = new AttributeMatrixTemplateService( new RockContext() );
                 var attributeMatrixTemplateRanges = attributeMatrixTemplateService.GetSelect( this.AttributeMatrixTemplateId.Value, s => new { s.MinimumRows, s.MaximumRows } );
-                _requiredRowCountRangeValidator.MinimumValue = ( attributeMatrixTemplateRanges.MinimumRows ?? 0 ).ToString();
-                _requiredRowCountRangeValidator.Enabled = this.Required && attributeMatrixTemplateRanges.MinimumRows.HasValue;
-                if ( attributeMatrixTemplateRanges.MinimumRows == 1 )
+
+                // If a value is required, make sure we have a minumum row count of at least 1.
+                var minRowCount = attributeMatrixTemplateRanges.MinimumRows.GetValueOrDefault( 0 );
+                if ( this.Required
+                     && minRowCount < 1 )
                 {
-                    _requiredRowCountRangeValidator.ErrorMessage = $"At least {attributeMatrixTemplateRanges.MinimumRows} row is required";
+                    minRowCount = 1;
+                }
+                _requiredRowCountRangeValidator.MinimumValue = minRowCount.ToString();
+
+                _requiredRowCountRangeValidator.Enabled = minRowCount > 0;
+                if ( minRowCount == 1 )
+                {
+                    _requiredRowCountRangeValidator.ErrorMessage = "At least 1 row is required.";
                 }
                 else
                 {
-                    _requiredRowCountRangeValidator.ErrorMessage = $"At least {attributeMatrixTemplateRanges.MinimumRows} rows are required";
+                    _requiredRowCountRangeValidator.ErrorMessage = $"At least {minRowCount} rows are required";
                 }
             }
 
@@ -252,6 +443,43 @@ namespace Rock.Web.UI.Controls
             _pnlActions.Controls.Add( _btnCancelMatrixItem );
 
             this.Controls.Add( _pnlEditMatrixItem );
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// This is where you implement the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            // Set the required field message here because the control label may have been modified during initialization.
+            var minRowCount = _requiredRowCountRangeValidator.MinimumValue.AsInteger();
+
+            if ( minRowCount > 0 )
+            {
+                if ( minRowCount == 1 )
+                {
+                    _requiredRowCountRangeValidator.ErrorMessage = $"{this.Label} must have at least one entry.";
+                }
+                else
+                {
+                    _requiredRowCountRangeValidator.ErrorMessage = $"{this.Label} must have at least {minRowCount} entries.";
+                }
+            }
+
+            base.RenderControl( writer );
         }
 
         /// <summary>

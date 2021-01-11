@@ -77,7 +77,7 @@ namespace Rock.Web.Cache
         /// The layout mobile tablet.
         /// </value>
         [DataMember]
-        public string LayoutMobilePhone { get; set; }
+        public string LayoutMobilePhone { get; private set; }
 
         /// <summary>
         /// Gets or sets the layout mobile tablet.
@@ -86,7 +86,7 @@ namespace Rock.Web.Cache
         /// The layout mobile tablet.
         /// </value>
         [DataMember]
-        public string LayoutMobileTablet { get; set; }
+        public string LayoutMobileTablet { get; private set; }
 
         /// <summary>
         /// Gets or sets the description.

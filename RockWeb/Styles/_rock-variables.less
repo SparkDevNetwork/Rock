@@ -6,6 +6,9 @@
 
 @enable-global-custom-controls: false;
 
+@black: #000000;
+@white: #ffffff;
+
 // Theme Colors *open* { These default theme colors are provided to prevent compiling errors. Any custom themes should override these. }
 @theme-1:                     #428bca; // bootstrap primary blue
 @theme-1-text:                #fff;
@@ -38,6 +41,14 @@
 
 @brand-critical:              #ee7624; // #color
 @gray-lightest:               #f3f3f3;
+
+@brand-critical: #ee7624;
+
+@brand-facebook: #1877f2;
+@brand-twitter: #1da1f2;
+@brand-instagram: #F00075;
+@brand-snapchat: #FFFC00;
+@brand-googleplus: #ed4e23;
 
 /*
     The accent colors are deprecated and should not be used in new theme development. They will be
@@ -103,7 +114,7 @@
 @custom-control-gutter: 8px;
 
 @custom-control-indicator-size:         20px;
-@custom-control-indicator-bg: #fff;
+@custom-control-indicator-bg: @white;
 
 @custom-control-indicator-bg-size:      50%;
 
@@ -120,10 +131,10 @@
 @custom-control-indicator-checked-border-color: @brand-primary;
 @custom-control-indicator-checked-disabled-bg:  fade(@brand-primary, 50%);
 
-@custom-control-indicator-active-color: #fff;
+@custom-control-indicator-active-color: @white;
 @custom-control-indicator-active-bg: lighten(@brand-primary, 30%);
 
-@custom-control-indicator-focus-box-shadow: 0 0 0 1px #fff, 0 0 0 3px fade(@brand-primary, 20%);
+@custom-control-indicator-focus-box-shadow: 0 0 0 1px @white, 0 0 0 3px fade(@brand-primary, 20%);
 @custom-control-indicator-focus-border-color:   @input-border-focus;
 
 @custom-checkbox-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23ffffff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E");
@@ -171,6 +182,8 @@
 //--
 @panel-footer-color:          @panel-text; // The color text of the panel's footer.
 
+@panel-section-heading-bg: @well-bg;
+@panel-section-body-bg: @well-bg;
 
 // Cards
 
@@ -254,7 +267,7 @@
 //// Bio Bar
 @persondetails-bio-bg:                  @theme-4;
 @persondetails-bio-color:               @theme-4-text;
-@persondetails-bio-action-color:        #fff;
+@persondetails-bio-action-color:        @white;
 @persondetails-bio-action-bg:           #6a6a6a;
 @persondetails-bio-action-border:       darken(@persondetails-bio-action-bg, 5%);
 @persondetails-bio-photo-border:        @header-bg;
@@ -395,9 +408,11 @@
 
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-campus-bg:             #83758f; // Used for identifing campuses.
+@label-campus-color:          #fff;
 @label-type-bg:               @theme-8; // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
+@label-type-color:          #fff;
 
-@label-critical-bg:           #ee7624;
+@label-critical-bg:           @brand-critical;
 
 @badge-danger-bg:             @label-danger-bg;
 @badge-warning-bg:            @label-warning-bg;

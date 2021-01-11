@@ -255,7 +255,7 @@ namespace Rock.Web.Cache
         /// A boolean value.
         /// </value>
         [DataMember]
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical

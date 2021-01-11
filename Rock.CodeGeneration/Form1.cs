@@ -113,6 +113,7 @@ namespace Rock.CodeGeneration
             string rockClientFolder = tbClientFolder.Text;
 
             Cursor = Cursors.WaitCursor;
+            entityPropertyShouldBeVirtualWarnings = new List<string>();
 
             progressBar1.Visible = true;
             progressBar1.Maximum = cblModels.CheckedItems.Count;
@@ -177,6 +178,11 @@ namespace Rock.CodeGeneration
                     {
                         EnsureCopyrightHeaders( rootFolder.FullName );
                     }
+
+                    if ( cbHofixMigrations.Checked )
+                    {
+                        DisableHotFixMigrations( rootFolder.FullName );
+                    }
                 }
             }
 
@@ -194,7 +200,7 @@ namespace Rock.CodeGeneration
         {
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
-            StringBuilder singletonClassVariablesWarnings = new StringBuilder();
+            List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
@@ -333,7 +339,7 @@ namespace Rock.CodeGeneration
                                         string fullyQualifiedFieldName = $"{type.FullName}.{fieldOrPropertyName}";
                                         if ( !ignoredThreadSafeFieldWarning.Contains( fullyQualifiedFieldName ) )
                                         {
-                                            singletonClassVariablesWarnings.AppendLine( $" - {fullyQualifiedFieldName}" );
+                                            singletonClassVariablesWarnings.Add( $" - {fullyQualifiedFieldName}", true );
                                         }
                                     }
                                 }
@@ -346,15 +352,29 @@ namespace Rock.CodeGeneration
             }
 
             StringBuilder warnings = new StringBuilder();
-            if ( singletonClassVariablesWarnings.Length > 0 )
+            if (entityPropertyShouldBeVirtualWarnings.Count > 0)
             {
+                warnings.AppendLine( "Model Properties that should be marked virtual" );
+                foreach ( var warning in entityPropertyShouldBeVirtualWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
+            }
+
+
+            if ( singletonClassVariablesWarnings.Count > 0 )
+            {
+                warnings.AppendLine();
                 warnings.AppendLine( "Singleton non-threadsafe class variables." );
-                warnings.Append( singletonClassVariablesWarnings );
+                foreach ( var warning in singletonClassVariablesWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
             }
 
             if ( missingDbSetWarnings.Length > 0 )
             {
-                warnings.AppendLine();
+                
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }
@@ -362,7 +382,7 @@ namespace Rock.CodeGeneration
             if ( rockObsoleteWarnings.Length > 0 )
             {
                 warnings.AppendLine();
-                warnings.AppendLine( "[Obsolete] that does't have [RockObsolete]" );
+                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
                 warnings.Append( rockObsoleteWarnings );
             }
 
@@ -542,7 +562,7 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type, false, true );
+            var properties = GetEntityProperties( type, false, true, true );
 
             var sb = new StringBuilder();
 
@@ -716,7 +736,7 @@ GO
                 string parentTable = reader["FKTABLE_NAME"] as string;
                 string columnName = reader["FKCOLUMN_NAME"] as string;
                 bool isCascadeDelete = reader["DELETE_RULE"] as short? == 0;
-                
+
                 bool ignoreCanDelete = false;
                 bool hasEntityModel = true;
 
@@ -1090,14 +1110,17 @@ GO
             }
         }
 
+        private List<string> entityPropertyShouldBeVirtualWarnings = null;
+
         /// <summary>
         /// Gets the entity properties.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="includeRockClientIncludes">if set to <c>true</c> [include rock client includes].</param>
         /// <param name="includeObsolete">if set to <c>true</c> [include obsolete].</param>
+        /// <param name="reportVirtualPropertyWarnings">if set to <c>true</c> [report virtual property warnings].</param>
         /// <returns></returns>
-        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete, bool reportVirtualPropertyWarnings )
         {
             var properties = new Dictionary<string, PropertyInfo>();
 
@@ -1146,6 +1169,15 @@ GO
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
                             properties.Add( property.Name, property );
+
+                            if ( reportVirtualPropertyWarnings )
+                            {
+                                if ( property.PropertyType.IsClass
+                                && !property.PropertyType.Namespace.StartsWith( "System" ) )
+                                {
+                                    entityPropertyShouldBeVirtualWarnings.Add( $" - {type.FullName} {property.Name}", true );
+                                }
+                            }
                         }
                     }
                 }
@@ -1320,7 +1352,7 @@ GO
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
+            var entityProperties = GetEntityProperties( type, true, true, false ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1650,17 +1682,20 @@ GO
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.MyWell\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.NMI\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Oidc\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Security.Authentication.Auth0\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SendGrid\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Specs\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.TransNational.Pi\\" );
+            
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
@@ -1676,6 +1711,11 @@ GO
         private static int FixupCopyrightHeaders( string searchDirectory )
         {
             int result = 0;
+
+            if (!Directory.Exists(searchDirectory))
+            {
+                return 0;
+            }
 
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
 
@@ -1805,6 +1845,77 @@ GO
                 }
             }
             return result;
+        }
+
+        /// <summary>
+        /// Renames the Up() migration method into OldUp() and inserts a new empty Up() migration method.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        private static void DisableHotFixMigrations( string rootFolder )
+        {
+            string upMigrationText = "public override void Up()";
+            string newUpMigrationText = @"public override void Up()
+        {
+            //----------------------------------------------------------------------------------
+            // <auto-generated>
+            //     This Up() migration method was generated by the Rock.CodeGeneration project.
+            //     The purpose is to prevent hotfix migrations from running when they are not
+            //     needed. The migrations in this file are run by an EF migration instead.
+            // </auto-generated>
+            //----------------------------------------------------------------------------------
+        }
+
+        private void OldUp()";
+
+            // Get a list of cs files in the Plugin\HotFixes folder
+            string hotfixFolder = Path.Combine( rootFolder, "Rock", "Plugin", "HotFixes" );
+            List<string> hotfixMigrationFiles = Directory.GetFiles( hotfixFolder, "*.cs", SearchOption.TopDirectoryOnly ).Where( l => !l.Contains( "HotFixMigrationResource.Designer.cs" ) ).ToList();
+
+            foreach ( var hotfixMigrationFile in hotfixMigrationFiles )
+            {
+                var migrationFileText = File.ReadAllText( hotfixMigrationFile );
+
+                // If there is already an "OldUp() method then this file has already been commented out and can be skipped.
+                if ( migrationFileText.Contains( "OldUp()" ) )
+                {
+                    continue;
+                }
+
+                File.WriteAllText( hotfixMigrationFile, migrationFileText.Replace( upMigrationText, newUpMigrationText ) );
+
+                // Keeping this in case renaming the old up and creating a new empty Up is not accepted as a solution.
+                //var fileLines = File.ReadLines( hotfixMigrationFile );
+                //StringBuilder newText = new StringBuilder();
+                //bool startCommenting = false;
+
+                //foreach ( var fileLine in fileLines )
+                //{
+
+                //    if ( fileLine.Trim().Equals( "public override void Up()" ) )
+                //    {
+                //        startCommenting = true;
+                //    }
+
+                //    string newLineText = fileLine;
+
+                //    if ( startCommenting )
+                //    {
+                //        if ( fileLine.TrimStart().Equals( "{" ) )
+                //        {
+                //            newLineText = fileLine + "/*";
+                //        }
+                //        else if ( fileLine.TrimStart().Equals( "}" ) )
+                //        {
+                //            newLineText = "*/" + fileLine;
+                //            startCommenting = false;
+                //        }
+                //    }
+
+                //    newText.AppendLine( newLineText );
+                //}
+
+                //File.WriteAllText( hotfixMigrationFile, newText.ToString() );
+            }
         }
 
 

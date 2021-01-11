@@ -119,6 +119,7 @@ namespace RockWeb
         {
             RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
 
+            Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
 
             /* 2020-05-20 MDP
@@ -213,6 +214,8 @@ namespace RockWeb
             StartWorkflowActionUpdateAttributesThread();
 
             StartCompileThemesThread();
+
+            Rock.Bus.RockMessageBus.IsRockStarted = true;
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
@@ -495,14 +498,18 @@ namespace RockWeb
         {
             try
             {
+                // Log the reason that the application end was fired
+                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
+
+                // Stop the bus and farm
+                Rock.Bus.RockMessageBus.IsRockStarted = false;
+                Rock.WebFarm.RockWebFarm.Shutdown( shutdownReason );
+
                 // Tell our CompileThemesThread and BlockTypeCompilationThread to cancel if they aren't done when Rock shuts down
                 if ( _threadCancellationTokenSource != null )
                 {
                     _threadCancellationTokenSource.Cancel();
                 }
-
-                // Log the reason that the application end was fired
-                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
 
                 // Send debug info to debug window
                 System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );

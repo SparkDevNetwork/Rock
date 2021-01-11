@@ -40,7 +40,7 @@ namespace Rock.Web.Cache
         /// The name of the action.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the order of this action in the system.
@@ -58,7 +58,7 @@ namespace Rock.Web.Cache
         /// The order of this action in the system.
         /// </value>
         [DataMember]
-        public int Order { get; set; }
+        public int Order { get; private set; }
 
         /// <summary>
         /// Gets or sets the identifier for the entity type that handles this action's logic.
@@ -67,7 +67,7 @@ namespace Rock.Web.Cache
         /// The identifier for the entity type that handles this action's logic.
         /// </value>
         [DataMember]
-        public int SmsActionComponentEntityTypeId { get; set; }
+        public int SmsActionComponentEntityTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether further actions should be processed.
@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if further actions should be processed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ContinueAfterProcessing { get; set; }
+        public bool ContinueAfterProcessing { get; private set; }
 
         /// <summary>
         /// Gets or sets the SMS pipeline identifier.
@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         /// The SMS pipeline identifier.
         /// </value>
         [DataMember]
-        public int SmsPipelineId { get; set; }
+        public int SmsPipelineId { get; private set; }
 
         /// <summary>
         /// Gets the field.

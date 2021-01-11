@@ -234,15 +234,15 @@ namespace RockWeb.Blocks.Administration
             nbLoggingMessage.Text = "Setting saved successfully.";
         }
 
-        protected void btnLoggingFlush_Click( object sender, EventArgs e )
+        protected void btnDeleteLog_Click( object sender, EventArgs e )
         {
             nbLoggingMessage.Visible = true;
 
-            RockLogger.Log.Close();
+            RockLogger.Log.Delete();
 
             nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
             nbLoggingMessage.Title = string.Empty;
-            nbLoggingMessage.Text = "The buffered logs were successfully flushed out to the log file.";
+            nbLoggingMessage.Text = "The log files were successfully deleted.";
         }
         #endregion
 

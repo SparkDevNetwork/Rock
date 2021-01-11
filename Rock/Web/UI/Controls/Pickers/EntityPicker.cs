@@ -340,9 +340,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the entity control help text format
+        /// Gets or sets the entity control help text format.
         /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
-        /// and/or a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included
+        /// and/or a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.
         /// </summary>
         /// <value>
         /// The entity control help text.
@@ -361,9 +361,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the entity control warning text format
+        /// Gets or sets the entity control warning text format.
         /// Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included
-        /// and/or a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included
+        /// and/or a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.
         /// </summary>
         /// <value>
         /// The entity control warning text.

@@ -703,6 +703,7 @@ namespace RockWeb.Blocks.Event
             // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
             hfAllowNavigate.Value = false.ToTrueFalse();
 
+            SetRegistrationState();
             RegisterClientScript();
         }
 
@@ -2367,8 +2368,8 @@ namespace RockWeb.Blocks.Event
 
                 AddRegistrantsToGroup( rockContext, registration );
 
-                string appRoot = ResolveRockUrl( "~/" );
-                string themeRoot = ResolveRockUrl( "~~/" );
+                string appRoot = ResolveRockUrlIncludeRoot( "~/" );
+                string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
                 // Send/Resend a confirmation
                 var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
@@ -2685,6 +2686,9 @@ namespace RockWeb.Blocks.Event
                     string lastName = registrantInfo.GetLastName( RegistrationTemplate );
                     string email = registrantInfo.GetEmail( RegistrationTemplate );
 
+                    var birthday = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.Birthdate ).ToStringSafe().AsDateTime();
+                    var mobilePhone = registrantInfo.GetPersonFieldValue( RegistrationTemplate, RegistrationPersonFieldType.MobilePhone ).ToStringSafe();
+
                     if ( registrantInfo.Id > 0 )
                     {
                         registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
@@ -2720,16 +2724,15 @@ namespace RockWeb.Blocks.Event
 
                     if ( person == null )
                     {
-                        // Try to find a matching person based on name and email address
-                        person = personService.FindPerson( firstName, lastName, email, true );
+                        // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
+                        var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+                        person = personService.FindPerson( personQuery, true );
 
                         // Try to find a matching person based on name within same family as registrar
                         if ( person == null && registrar != null && registrantInfo.FamilyGuid == RegistrationState.FamilyGuid )
                         {
                             var familyMembers = registrar.GetFamilyMembers( true, rockContext )
-                                .Where( m =>
-                                    ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) &&
-                                    m.Person.LastName == lastName )
+                                .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
                                 .Select( m => m.Person )
                                 .ToList();
 
@@ -4062,6 +4065,12 @@ namespace RockWeb.Blocks.Event
                 return;
             }
 
+            //Don't show if Show Family Members option in the template is false.
+            if ( RegistrationTemplate.ShowCurrentFamilyMembers == false )
+            {
+                return;
+            }
+
             // Are there family members to choose from?
             if ( ddlFamilyMembers.Items.Count == 0 )
             {
@@ -4083,7 +4092,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Show the pnlFamilyMembers panel if none of the above hide conditions are met.
-            // The RegistrantsSameFamily is yes or is ask and rboFamilyOptions has a valid selection
+            // ShowCurrentFamilyMembers is true and RegistrantsSameFamily is "yes" or is "ask" AND rboFamilyOptions has a valid selection
             pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "block";
         }
 
@@ -4516,7 +4525,8 @@ namespace RockWeb.Blocks.Event
     // Adjust the Family Member dropdown when choosing same immediate family
     $('#{12}').on('change', function() {{
         var displaySetting = $('#{13}').css('display');
-        if ( $(""input[id*='{12}']:checked"").val() == '{14}' && displaySetting == 'none' ) {{
+
+        if ( {15} && $(""input[id*='{12}']:checked"").val() == '{14}' && displaySetting == 'none' ) {{
             $( '#{13}').slideToggle();
         }}
         else if ( displaySetting == 'block' ) {{
@@ -4610,6 +4620,7 @@ namespace RockWeb.Blocks.Event
             , rblFamilyOptions.ClientID              // {12}
             , pnlFamilyMembers.ClientID              // {13}
             , controlFamilyGuid                      // {14}
+            , RegistrationTemplate.ShowCurrentFamilyMembers.ToString().ToLower() // {15}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );

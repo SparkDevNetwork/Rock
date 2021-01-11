@@ -27,7 +27,7 @@
     position: relative;
     padding: 30px;
     outline: 2px dashed rgba(0,0,0,.3);
-    outline-offset: -2px;
+    outline-offset: -3px;
     &::after {
       position: absolute;
       top: 50%;
@@ -37,35 +37,37 @@
       font-size: 10px;
       color: rgba(0, 0, 0, .3);
       text-align: center;
-      content: "Drop something here";
-      -webkit-transform: translateY(-50%);
-      -moz-transform: translateY(-50%);
-      -ms-transform: translateY(-50%);
+      content: "Drop component here";
       transform: translateY(-50%);
     }
   }
 }
 
 .editor-toolbar-container {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 12px 12px 0;
+  padding: 0 12px;
   overflow: auto;
   font-family: @font-family-sans-serif;
   color: @text-color;
   color: var(--text-color);
   background-color: @panel-heading-bg;
-}
 
-.editor-toolbar-container p {
-  margin: 0 0 2px;
-}
+  &::after {
+    display: table;
+    clear: both;
+    content: "";
+  }
 
-.editor-toolbar-container::after {
-  display: table;
-  clear: both;
-  content: "";
+  p {
+    margin: 0 0 2px;
+  }
+
+  .component {
+    margin: 12px 3px;
+  }
 }
 
 .component-separator {
@@ -78,9 +80,6 @@
   display: block;
   overflow: auto;
   cursor: pointer;
-
-  outline: 2px dashed rgba(0,0,0,0);
-  outline-offset: -2px;
   transition: .2s outline linear;
 
   &:hover {
@@ -93,7 +92,8 @@
 
   &.selected {
     cursor: move;
-    outline: 2px solid #59c9a5;
+    outline: 3px solid #59c9a5;
+    outline-offset: -2px;
     opacity: 1;
   }
 }
@@ -106,10 +106,10 @@
 .component-section[data-state="component"] {
   box-sizing: border-box;
   display: block;
-  width: ~"calc(100% + 40px)" !important;
+  width: ~"calc(100% + 36px)" !important;
   padding: 0 15px;
-  margin-left: -20px;
-  border: 5px solid transparent;
+  margin-left: -18px;
+  border: 3px solid transparent;
   border-top: 0;
   border-bottom: 0;
   outline: none !important;
@@ -125,12 +125,16 @@
   }
 }
 
+.component-image {
+  img {
+    display: block;
+  }
+}
+
 .component[data-state="template"] {
   float: left;
   width: 40px;
   padding: 4px;
-  margin-right: 8px;
-  margin-bottom: 12px;
   font-family: @font-family-sans-serif;
   font-size: 11px;
   color: @btn-default-color;
@@ -145,11 +149,12 @@
   font-size: 22px;
 }
 
-// miniturize the image component when dragging to make it easier to
-// precisly place it in tight areas
-.gu-mirror.component-image {
-  max-width: 150px;
-  height: auto !important;
+// miniaturize the image component when dragging to make it easier to
+// precisely place it in tight areas
+.gu-mirror.component-image  {
+  img {
+    opacity: .5;
+  }
 }
 
 /*
@@ -166,9 +171,6 @@ elements with nested rules, like .list .item { padding: 10px; }. */
   margin: 0 !important;
   font-family: Arial, Helvetica, sans-serif;
   cursor: move;
-
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
-  filter: alpha(opacity=80);
   opacity: .8;
 }
 

@@ -107,9 +107,35 @@ namespace Rock.Model
                     int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
                     int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
         {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
+                     searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId, null );
+        }
+
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="checkinDateTime">The check-in date time.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="searchTypeValueId">The search type value identifier.</param>
+        /// <param name="searchValue">The search value.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <param name="attendanceCodeId">The attendance code identifier.</param>
+        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
+        /// <param name="attendanceTypeValueId">The attendance type identifier.</param>
+        /// <returns></returns>
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId,
+                    int? checkedInByPersonAliasId, int? attendanceTypeValueId )
+        {
             // Check to see if an occurrence exists already
             var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
-            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees" );
+            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees", attendanceTypeValueId );
 
             // If we still don't have an occurrence record (i.e. validation failed) return null 
             if ( occurrence == null )
@@ -652,6 +678,8 @@ namespace Rock.Model
         /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendScheduleConfirmationCommunication instead." )]
+        [RockObsolete( "1.13" )]
         public int SendScheduleConfirmationSystemEmails( IQueryable<Attendance> sendConfirmationAttendancesQuery, out List<string> errorMessages )
         {
             int emailsSent = 0;
@@ -664,11 +692,14 @@ namespace Rock.Model
                 && a.PersonAlias.Person.IsEmailActive );
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
-            {
-                ScheduleConfirmationSystemCommunicationId = s.Key.Value,
-                Attendances = s.ToList()
-            } ).ToList();
+            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList
+                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId )
+                .Where( a => a.Key.HasValue )
+                .Select( s => new
+                {
+                    ScheduleConfirmationSystemCommunicationId = s.Key.Value,
+                    Attendances = s.ToList()
+                } ).ToList();
 
             var rockContext = this.Context as RockContext;
 
@@ -737,15 +768,20 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
         /// <returns></returns>
+        [Obsolete( "Use SendScheduleReminderSystemCommunication instead." )]
+        [RockObsolete( "1.13" )]
         public int SendScheduleReminderSystemEmails( IQueryable<Attendance> sendReminderAttendancesQuery )
         {
             int emailsSent = 0;
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
-            {
-                ScheduleReminderSystemCommunicationId = s.Key.Value,
-                Attendances = s.ToList()
-            } ).ToList();
+            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList
+                .GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId )
+                .Where( a => a.Key.HasValue ).Select( s => new
+                {
+                    ScheduleReminderSystemCommunicationId = s.Key.Value,
+                    Attendances = s.ToList()
+                } )
+                .ToList();
 
             var rockContext = this.Context as RockContext;
 
@@ -787,6 +823,201 @@ namespace Rock.Model
             }
 
             return emailsSent;
+        }
+
+        /// <summary>
+        /// Sends the schedule confirmation communication.
+        /// </summary>
+        /// <param name="sendConfirmationAttendancesQuery">The send confirmation attendances query.</param>
+        /// <returns></returns>
+        public SendMessageResult SendScheduleConfirmationCommunication( IQueryable<Attendance> sendConfirmationAttendancesQuery )
+        {
+            sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
+                .Where( a =>
+                    ( a.PersonAlias.Person.Email != null
+                    && a.PersonAlias.Person.Email != string.Empty
+                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                    && a.PersonAlias.Person.IsEmailActive )
+                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
+                .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId.HasValue );
+
+            var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
+
+            var sendConfirmationIndividuals = sendConfirmationAttendancesQueryList
+                .GroupBy( a => new
+                {
+                    a.PersonAlias.Person,
+                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
+                    a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                } )
+                .Select( s => new SendSystemCommunicationIndividual
+                {
+                    SystemCommunicationId = s.Key.ScheduleConfirmationSystemCommunicationId.Value,
+                    Individual = s.Key.Person,
+                    GroupCommunicationPreference = s.Key.CommunicationPreference,
+                    Attendances = s.ToList()
+                } );
+
+            var sendMessageResults = SendSystemCommunications( sendConfirmationIndividuals, ( attendance ) => attendance.ScheduleConfirmationSent = true );
+
+            // group messages that are exactly the same and put a count of those in the message
+            sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( sendMessageResults.Exceptions.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule confirmations", sendMessageResults.Exceptions ) );
+            }
+
+            return sendMessageResults;
+        }
+
+        /// <summary>
+        /// Sends the schedule reminder system communication.
+        /// </summary>
+        /// <param name="sendReminderAttendancesQuery">The send reminder attendances query.</param>
+        /// <returns></returns>
+        public SendMessageResult SendScheduleReminderSystemCommunication( IQueryable<Attendance> sendReminderAttendancesQuery )
+        {
+            sendReminderAttendancesQuery = sendReminderAttendancesQuery
+                .Where( a =>
+                    ( a.PersonAlias.Person.Email != null
+                    && a.PersonAlias.Person.Email != string.Empty
+                    && a.PersonAlias.Person.EmailPreference != EmailPreference.DoNotEmail
+                    && a.PersonAlias.Person.IsEmailActive )
+                    || a.PersonAlias.Person.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) )
+                .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId.HasValue );
+
+            var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
+            var sendReminderIndividuals = sendReminderAttendancesQueryList
+                .GroupBy( a => new
+                {
+                    a.PersonAlias.Person,
+                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
+                    a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                } )
+                .Select( s => new SendSystemCommunicationIndividual
+                {
+                    SystemCommunicationId = s.Key.ScheduleReminderSystemCommunicationId.Value,
+                    Individual = s.Key.Person,
+                    GroupCommunicationPreference = s.Key.CommunicationPreference,
+                    Attendances = s.ToList()
+                } );
+
+            var sendMessageResults = SendSystemCommunications( sendReminderIndividuals, ( attendance ) => attendance.ScheduleReminderSent = true );
+
+            // group messages that are exactly the same and put a count of those in the message
+            sendMessageResults.Errors = sendMessageResults.Errors.GroupBy( a => a ).Select( s => s.Count() > 1 ? $"{s.Key}  ({s.Count()})" : s.Key ).ToList();
+
+            if ( sendMessageResults.Exceptions.Any() )
+            {
+                ExceptionLogService.LogException( new AggregateException( "Errors Occurred sending schedule reminders.", sendMessageResults.Exceptions ) );
+            }
+
+            return sendMessageResults;
+        }
+
+        private SendMessageResult SendSystemCommunications( IEnumerable<SendSystemCommunicationIndividual> sendSystemCommunicationIndividuals, Action<Attendance> updateAttendanceRecord )
+        {
+            var communicationMap = new Dictionary<int, SystemCommunication>();
+            var rockContext = this.Context as RockContext;
+            var sendMessageResults = new SendMessageResult();
+
+            foreach ( var individualNotification in sendSystemCommunicationIndividuals )
+            {
+                SystemCommunication communicationMessage = null;
+                if ( !communicationMap.TryGetValue( individualNotification.SystemCommunicationId, out communicationMessage ) )
+                {
+                    var scheduleConfirmationSystemCommunicaiton = new SystemCommunicationService( rockContext )
+                        .GetNoTracking( individualNotification.SystemCommunicationId );
+                    communicationMessage = scheduleConfirmationSystemCommunicaiton;
+                    communicationMap.Add( individualNotification.SystemCommunicationId, communicationMessage );
+                }
+
+                var recipient = individualNotification.Individual;
+                var attendances = individualNotification.Attendances;
+
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
+                mergeFields.Add( "Attendances", attendances );
+
+                var forceCommunicationType = CommunicationType.RecipientPreference;
+                var validSmsTemplateExists = communicationMessage.SMSMessage.IsNotNullOrWhiteSpace() && communicationMessage.SMSFromDefinedValueId != null;
+                var individualHasValidSmsNumber = recipient.PhoneNumbers.Any( ph => ph.IsMessagingEnabled );
+                if ( !validSmsTemplateExists || !individualHasValidSmsNumber )
+                {
+                    forceCommunicationType = CommunicationType.Email;
+                }
+
+                var mediumType = Communication.DetermineMediumEntityTypeId(
+                                   ( int ) CommunicationType.Email,
+                                   ( int ) CommunicationType.SMS,
+                                   ( int ) CommunicationType.PushNotification,
+                                   forceCommunicationType,
+                                   individualNotification.GroupCommunicationPreference,
+                                   individualNotification.Individual.CommunicationPreference );
+                try
+                {
+                    var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
+
+                    sendMessageResults.Errors.AddRange( sendIndividualMessageResult.Errors );
+                    sendMessageResults.Warnings.AddRange( sendIndividualMessageResult.Warnings );
+
+                    if ( sendIndividualMessageResult.MessagesSent > 0 )
+                    {
+                        sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
+                        foreach ( var attendance in attendances )
+                        {
+                            updateAttendanceRecord( attendance );
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    var emailException = new Exception( $"Exception occurred when trying to send Schedule Confirmation Email to { individualNotification.Individual }", ex );
+                    sendMessageResults.Errors.Add( emailException.Message );
+                    sendMessageResults.Exceptions.Add( emailException );
+                }
+            }
+
+            return sendMessageResults;
+        }
+
+        /// <summary>
+        /// This class is used by the send schedule communication functions so the data can be passed to a single shared method.
+        /// </summary>
+        private class SendSystemCommunicationIndividual
+        {
+            /// <summary>
+            /// Gets or sets the individual.
+            /// </summary>
+            /// <value>
+            /// The individual.
+            /// </value>
+            public Person Individual { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group communication preference.
+            /// </summary>
+            /// <value>
+            /// The group communication preference.
+            /// </value>
+            public CommunicationType GroupCommunicationPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets the system communication identifier.
+            /// </summary>
+            /// <value>
+            /// The system communication identifier.
+            /// </value>
+            public int SystemCommunicationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attendances.
+            /// </summary>
+            /// <value>
+            /// The attendances.
+            /// </value>
+            public List<Attendance> Attendances { get; set; }
         }
 
         #region GroupScheduling Related
@@ -1195,6 +1426,7 @@ namespace Rock.Model
                         {
                             PersonId = pa.PersonId,
                             GroupId = a.Occurrence.GroupId,
+                            GroupName = a.Occurrence.Group.Name,
                             ScheduleId = a.Occurrence.ScheduleId.Value,
                             ScheduleName = a.Occurrence.Schedule.Name,
                             LocationId = a.Occurrence.LocationId,
@@ -1212,6 +1444,7 @@ namespace Rock.Model
                         v => v.Select( x => new SchedulerResourceScheduled
                         {
                             GroupId = x.GroupId.Value,
+                            GroupName = x.GroupName,
                             LocationId = x.LocationId,
                             LocationName = x.LocationName,
                             ScheduleId = x.ScheduleId,
@@ -1232,7 +1465,7 @@ namespace Rock.Model
                     schedulerResource.ConfirmationStatus = ScheduledAttendanceItemStatus.Unscheduled.ConvertToString( false ).ToLower();
 
                     // see if they are scheduled for some other group during this occurrence
-                    schedulerResource.HasSchedulingConflict = scheduledForOccurrences?.Any( ao => ao.GroupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ) ?? false;
+                    schedulerResource.SchedulingConflicts = scheduledForOccurrences?.Where( ao => ao.GroupId != schedulerResourceParameters.AttendanceOccurrenceGroupId ).ToList();
 
                     // get list of places where this person is already scheduled for this Group
                     List<SchedulerResourceScheduled> schedulerResourceScheduledList = scheduledForOccurrences
@@ -1240,6 +1473,7 @@ namespace Rock.Model
                         .Select( ao => new SchedulerResourceScheduled
                         {
                             GroupId = ao.GroupId,
+                            GroupName = ao.GroupName,
                             LocationId = ao.LocationId,
                             LocationName = ao.LocationName,
                             ScheduleId = ao.ScheduleId,
@@ -1378,11 +1612,23 @@ namespace Rock.Model
                 RecordTypeValueId = ap.Person.RecordTypeValueId,
 
                 // set HasSchedulingConflict = true if the same person is requested/scheduled for another attendance within the same ScheduleId/Date
-                HasSchedulingConflict = conflictingScheduledAttendancesQuery.Any( c => c.Id != ap.Attendance.Id
-                                                                                && c.PersonAlias.PersonId == ap.Person.Id
-                                                                                && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
-                                                                                && c.Occurrence.ScheduleId == scheduleId
-                                                                                && c.Occurrence.OccurrenceDate == occurrenceDate ),
+                SchedulingConflicts = conflictingScheduledAttendancesQuery
+                    .Where( c => c.Id != ap.Attendance.Id
+                    && c.PersonAlias.PersonId == ap.Person.Id
+                    && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
+                    && c.Occurrence.ScheduleId == scheduleId
+                    && c.Occurrence.OccurrenceDate == occurrenceDate )
+                    .Select( x => new SchedulerResourceScheduled
+                    {
+                        GroupId = x.Occurrence.GroupId.Value,
+                        GroupName = x.Occurrence.Group.Name,
+                        LocationId = x.Occurrence.LocationId,
+                        LocationName = x.Occurrence.Location.Name,
+                        ScheduleId = attendanceOccurrenceInfo.ScheduleId.Value,
+                        ScheduleName = attendanceOccurrenceInfo.Schedule.Name,
+                        OccurrenceDate = occurrenceDate
+                    } ).ToList(),
+
                 BlackoutDateRanges = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == ap.Person.Id ).Select( s => new { s.StartDate, s.EndDate } ).ToList()
             } );
 
@@ -1513,7 +1759,7 @@ namespace Rock.Model
                     PersonNickName = a.NickName,
                     PersonLastName = a.LastName,
                     PersonName = Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
-                    HasSchedulingConflict = a.HasSchedulingConflict,
+                    SchedulingConflicts = a.SchedulingConflicts,
                     BlackoutDates = personBlackoutDates,
 
                     // not needed for resource that is getting listed in an occurrence
@@ -1630,13 +1876,14 @@ namespace Rock.Model
         /// <param name="scheduledByPersonAlias">The scheduled by person alias.</param>
         private void SchedulePersonsAutomaticallyForAttendanceOccurrence( AttendanceOccurrence attendanceOccurrence, PersonAlias scheduledByPersonAlias )
         {
+            var rockContext = this.Context as RockContext;
             int locationId = attendanceOccurrence.LocationId.Value;
             int scheduleId = attendanceOccurrence.ScheduleId.Value;
             int attendanceOccurrenceId = attendanceOccurrence.Id;
 
             // get the capacity settings for the Group/Location/Schedule. NOTE: The Database and UI don't prevent duplicate LocationIds for a group,
             // but since that really doesn't make sense, just grab the first one
-            int? desiredCapacity = new GroupLocationService( this.Context as RockContext ).Queryable()
+            int? desiredCapacity = new GroupLocationService( rockContext ).Queryable()
                 .Where( gl => gl.GroupId == attendanceOccurrence.GroupId )
                 .Where( gl => gl.LocationId == locationId )
                 .SelectMany( gl => gl.GroupLocationScheduleConfigs )
@@ -1712,7 +1959,7 @@ namespace Rock.Model
             }
 
             // get GroupMemberAssignmments for the groupMembers returned from schedulerResources for this occurrence's locationId and scheduleId
-            var groupMemberAssignmentsQuery = new GroupMemberAssignmentService( this.Context as RockContext )
+            var groupMemberAssignmentsQuery = new GroupMemberAssignmentService( rockContext )
                 .Queryable()
                 .Where( a => scheduleResourcesGroupMemberIds.Contains( a.GroupMemberId ) )
                 .Where( a => ( !a.LocationId.HasValue || a.LocationId == locationId )
@@ -1721,16 +1968,31 @@ namespace Rock.Model
             // Exclude GroupMemberAssignments that don't have a schedule or location set (since that means they don't want to be auto-scheduled)
             groupMemberAssignmentsQuery = groupMemberAssignmentsQuery.Where( a => a.LocationId.HasValue || a.ScheduleId.HasValue );
 
-            var groupMemberAssignmentsList = groupMemberAssignmentsQuery.Select( a => new GroupMemberAssignmentInfo
-            {
-                GroupMemberId = a.GroupMember.Id,
-                PersonId = a.GroupMember.PersonId,
-                LocationId = a.LocationId,
-                ScheduleId = a.ScheduleId,
-                SpecificLocationAndSchedule = a.LocationId.HasValue && a.ScheduleId.HasValue,
-                SpecificScheduleOnly = !a.LocationId.HasValue && a.ScheduleId.HasValue,
-                SpecificLocationOnly = !a.LocationId.HasValue && !a.ScheduleId.HasValue,
-            } ).ToList();
+            var endOfOccurrenceDay = attendanceOccurrence.OccurrenceDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+            var groupMemberAssignmentsList = groupMemberAssignmentsQuery
+                .Select( a => new {
+                    GroupMemberId = a.GroupMember.Id,
+                    a.GroupMember.PersonId,
+                    a.LocationId,
+                    a.ScheduleId
+                })
+                .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
+                    ( gma, a ) => new GroupMemberAssignmentInfo
+                    {
+                        GroupMemberId = gma.GroupMemberId,
+                        PersonId = gma.PersonId,
+                        LocationId = gma.LocationId,
+                        ScheduleId = gma.ScheduleId,
+                        SpecificLocationAndSchedule = gma.LocationId.HasValue && gma.ScheduleId.HasValue,
+                        SpecificScheduleOnly = !gma.LocationId.HasValue && gma.ScheduleId.HasValue,
+                        SpecificLocationOnly = !gma.LocationId.HasValue && !gma.ScheduleId.HasValue,
+                        LastScheduledDate = a
+                            .Where( att => ( att.ScheduledToAttend != null && att.ScheduledToAttend.Value ) || ( att.RequestedToAttend != null && att.RequestedToAttend.Value ) )
+                            .Where( att => att.StartDateTime <= endOfOccurrenceDay )
+                            .Select( att => att.StartDateTime )
+                            .DefaultIfEmpty()
+                            .Max()
+                    } ).ToList();
 
             if ( !groupMemberAssignmentsList.Any() )
             {
@@ -1744,7 +2006,8 @@ namespace Rock.Model
 
             /* 2020-08-03 MDP
              The rules for autoschedule
-               - Randomize order of List (order by Guid.NewGuid()
+               - Order by Last Scheduled date (Last Scheduled across all groups)
+               - Randomize order of List (order by Guid.NewGuid())
 
                - then to schedule in this order
                1) Person has both Schedule and Location specified
@@ -1759,8 +2022,11 @@ namespace Rock.Model
                3)  People with Location only (in random order)
              */
 
-            // randomize order of group member assignments
-            groupMemberAssignmentsList = groupMemberAssignmentsList.OrderBy( a => Guid.NewGuid() ).ToList();
+            // order group member assignments by the last time they served and then randomly after that.
+            groupMemberAssignmentsList = groupMemberAssignmentsList
+                .OrderBy( a => a.LastScheduledDate )
+                .ThenBy( a => Guid.NewGuid() )
+                .ToList();
 
             // assign based on specificity rule (see above engineering note)
             var groupMemberAssignmentSortedBySpecificity = groupMemberAssignmentsList
@@ -2028,6 +2294,14 @@ namespace Rock.Model
             /// The schedule identifier.
             /// </value>
             public int? ScheduleId { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the last scheduled date.
+            /// </summary>
+            /// <value>
+            /// The last scheduled date.
+            /// </value>
+            public DateTime LastScheduledDate { get; internal set; }
         }
 
         #endregion GroupScheduling Related
@@ -2051,7 +2325,7 @@ namespace Rock.Model
         /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
-        /// <param name="personIdList">A a list of Person IDs.</param>
+        /// <param name="personIdList">A list of Person IDs.</param>
         public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
         {
             var rockContext = this.Context as RockContext;
@@ -2342,6 +2616,14 @@ namespace Rock.Model
         public int GroupId { get; set; }
 
         /// <summary>
+        /// Gets or sets the name of the group.
+        /// </summary>
+        /// <value>
+        /// The name of the group.
+        /// </value>
+        public string GroupName { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedule identifier.
         /// </summary>
         /// <value>
@@ -2559,12 +2841,20 @@ namespace Rock.Model
         public bool HasGroupRequirementsConflict { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this Person has scheduling conflict with some other group for this schedule+date
+        /// Gets a value indicating whether this Person has scheduling conflict with some other group for this schedule+date
         /// </summary>
         /// <value>
         ///   <c>true</c> if this Person has scheduling conflict; otherwise, <c>false</c>.
         /// </value>
-        public bool HasSchedulingConflict { get; set; }
+        public bool HasSchedulingConflict => SchedulingConflicts?.Any() == true;
+
+        /// <summary>
+        /// Gets or sets the scheduling conflicts.
+        /// </summary>
+        /// <value>
+        /// The scheduling conflicts.
+        /// </value>
+        public List<SchedulerResourceScheduled> SchedulingConflicts { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this Person is already scheduled for this group+schedule+date
@@ -2665,7 +2955,6 @@ namespace Rock.Model
         Unscheduled,
     }
 
-
     /// <summary>
     /// 
     /// </summary>
@@ -2755,7 +3044,6 @@ namespace Rock.Model
         /// The attendance occurrence group identifier.
         /// </value>
         public int AttendanceOccurrenceGroupId { get; set; }
-
 
         /// <summary>
         /// Gets or sets the attendance occurrence schedule identifier.

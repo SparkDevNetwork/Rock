@@ -203,7 +203,7 @@ public class Mailgun : IHttpHandler
                 response.StatusCode = 406;
                 return;
             }
-            
+
             Guid? actionGuid = null;
             Guid? communicationRecipientGuid = null;
 

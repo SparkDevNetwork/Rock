@@ -112,6 +112,16 @@ namespace Rock.Model
         [IncludeAsEntityProperty]
         public decimal? FeeAmount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The fee coverage amount.
+        /// </value>
+        [DataMember]
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision(18, 2)]
+        public decimal? FeeCoverageAmount { get; set; }
         #endregion
 
         #region Virtual Properties

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Communication
@@ -31,6 +32,7 @@ namespace Rock.Communication
         /// The warnings.
         /// </value>
         public List<string> Warnings { get; set; } = new List<string>();
+
         /// <summary>
         /// Gets or sets the errors.
         /// </summary>
@@ -38,6 +40,15 @@ namespace Rock.Communication
         /// The errors.
         /// </value>
         public List<string> Errors { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets the exceptions.
+        /// </summary>
+        /// <value>
+        /// The exceptions.
+        /// </value>
+        public List<Exception> Exceptions { get; set; } = new List<Exception>();
+
         /// <summary>
         /// Gets or sets the messages sent.
         /// </summary>

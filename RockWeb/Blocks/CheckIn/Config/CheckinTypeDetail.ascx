@@ -66,7 +66,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
-                                        Help="Should there option for user to be able to check-out?" />
+                                        Help="Should individuals be allowed to manually check out?" />
                                         </div>
                                         <div class="col-md-6">
                                             <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes" 
@@ -74,7 +74,7 @@
                                         </div>
                                     </div>
                                     <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
-                                        Help="Should an option be displayed on the check-in welcome screen that allows user to view the management screen (after entering a passcode)?" />
+                                        Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                                     <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
                                         Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                                 </div>
@@ -83,7 +83,7 @@
                                         Help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked 
                                         within this number of days, they will automatically be selected during the Family check-in process." />
                                     <Rock:RockDropDownList ID="ddlAutoSelectOptions" runat="server" Label="Auto Select Options" 
-                                        Help="The options that should be pre-selected if user has previously checked in.">
+                                        Help="The options that should be pre-selected if an individual has previously checked in.">
                                         <asp:ListItem Text="People Only" Value="0" />
                                         <asp:ListItem Text="People and Their Area/Group/Location" Value="1" />
                                     </Rock:RockDropDownList>
@@ -107,7 +107,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlSearchType" runat="server" Label="Search Type" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlSearchType_SelectedIndexChanged"
-                                        Help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the user can also always check-in using
+                                        Help="The type of search that is available after person clicks the check-in button on the check-in Welcome screen. Note, the individual can also always check-in using
                                         a scanned barcode, fingerprint, RFID card, etc. if the scanner is attached and configured for keyboard wedge mode."/>
                                     <Rock:NumberBox ID="nbMaxResults" runat="server" Label="Maximum Number of Results"  NumberType="Integer" 
                                         Help="The maximum number of search results to return when searching (default is 100)." />

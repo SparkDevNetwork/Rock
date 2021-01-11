@@ -91,12 +91,61 @@ namespace Rock.Tests.Integration.Model
 
         #region Alpha-numeric codes
 
+        [Ignore("Sometimes with caching you have to throw out the first result.")]
+        [TestMethod]
+        public void RunTestThreeTimes()
+        {
+            for ( int i = 0; i < 3; i++ )
+            {
+                GenerateLotsOfCodes();
+            }
+        }
+
+        /// <summary>
+        /// Generates lots of codes to test performance.
+        /// </summary>
+        [Ignore("This is only for local testing.")]
+        [TestMethod]
+        public void GenerateLotsOfCodes()
+        {
+            int interations = 6000;
+            int alphaNumbericDigits = 0;
+            int alphaDigits = 0;
+            int numericDigits = 4;
+            bool isRandom = false;
+
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
+            for ( int i = 0; i < interations; i++ )
+            {
+                AttendanceCodeService.GetNew( alphaNumbericDigits, alphaDigits, numericDigits, isRandom );
+            }
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( $"New GetNew Method AlphaNumericDigits: {alphaNumbericDigits}, AlphaDigits: {alphaDigits}, NumericDigits: {numericDigits}, IsRandom: {isRandom}, Number of Codes Generated: {interations}. Total Time: {stopWatch.ElapsedMilliseconds} ms." );
+            ClearAttendanceService();
+            AttendanceCodeService.FlushTodaysCodes();
+        }
+
+        private void ClearAttendanceService()
+        {
+            using( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "delete from AttendanceCode" );
+            }
+        }
+
         /// <summary>
         /// Verify that three character alpha-numeric codes are all good codes.
         /// </summary>
         [TestMethod]
         public void AlphaNumericCodesShouldSkipBadCodes()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
             for ( int i = 0; i < 6000; i++ )
@@ -106,8 +155,11 @@ namespace Rock.Tests.Integration.Model
             }
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) ).Any();
-
             Assert.That.IsFalse( hasMatchIsBad );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaNumericCodesShouldSkipBadCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         #endregion
@@ -120,6 +172,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void CheckThreeChar002Code()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             AttendanceCode code = null;
             for ( int i = 0; i < 2; i++ )
             {
@@ -127,15 +182,21 @@ namespace Rock.Tests.Integration.Model
             }
 
             Assert.That.AreEqual( "002", code.Code );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test CheckThreeChar002Code took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         /// <summary>
         /// NOTE: This test currently fails in Rock v8 and earlier.
         /// </summary>
-        [Ignore( "Known issue in v8 and earlier. Remove this ignore when fixed." )]
         [TestMethod]
         public void NumericCodesShouldNotContain911And666()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
             for ( int i = 0; i < 2000; i++ )
@@ -146,6 +207,10 @@ namespace Rock.Tests.Integration.Model
 
             Assert.That.IsFalse( codeList.Any( s => s.Contains( "911" ) ) );
             Assert.That.IsFalse( codeList.Any( s => s.Contains( "666" ) ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test NumericCodesShouldNotContain911And666 took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         /// <summary>
@@ -157,6 +222,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void NumericCodeWithLengthOf2ShouldNotGoBeyond99()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             try
             {
                 var codeList = new List<string>();
@@ -177,6 +245,12 @@ namespace Rock.Tests.Integration.Model
                 // no actual solution).
                 Assert.That.IsTrue( true );
             }
+            finally
+            {
+                stopWatch.Stop();
+                System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+                System.Diagnostics.Trace.WriteLine( string.Format( "Test NumericCodeWithLengthOf2ShouldNotGoBeyond99 took {0} ms.", stopWatch.ElapsedMilliseconds ) );
+            }
         }
 
         /// <summary>
@@ -185,6 +259,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void NumericCodesShouldNotRepeat()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
             for ( int i = 0; i < 998; i++ )
@@ -198,6 +275,10 @@ namespace Rock.Tests.Integration.Model
                                     .Select( group => group.Key );
 
             Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join( ", ", duplicates ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test NumericCodesShouldNotRepeat took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         /// <summary>
@@ -206,6 +287,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void RandomNumericCodesShouldNotRepeat()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
             for ( int i = 0; i < 998; i++ )
@@ -219,6 +303,10 @@ namespace Rock.Tests.Integration.Model
                                     .Select( group => group.Key );
 
             Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join(", ", duplicates ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test RandomNumericCodesShouldNotRepeat took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         /// <summary>
@@ -231,6 +319,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void RequestingMoreCodesThanPossibleShouldThrowException()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
 
@@ -257,6 +348,12 @@ namespace Rock.Tests.Integration.Model
                 // no actual solution).
                 Assert.That.IsTrue( true );
             }
+            finally
+            {
+                stopWatch.Stop();
+                System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+                System.Diagnostics.Trace.WriteLine( string.Format( "Test RequestingMoreCodesThanPossibleShouldThrowException took {0} ms.", stopWatch.ElapsedMilliseconds ) );
+            }
         }
 
         /// <summary>
@@ -265,6 +362,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void Increment100SequentialNumericCodes()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             AttendanceCode code = null;
             for ( int i = 0; i < 100; i++ )
             {
@@ -272,6 +372,10 @@ namespace Rock.Tests.Integration.Model
             }
 
             Assert.That.AreEqual( "100", code.Code );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test Increment100SequentialNumericCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         #endregion
@@ -304,6 +408,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void AlphaOnlyCodesShouldNotRepeat()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
 
@@ -321,6 +428,10 @@ namespace Rock.Tests.Integration.Model
                                     .Select( group => group.Key );
 
             Assert.That.IsTrue( duplicates.Count() == 0 );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaOnlyCodesShouldNotRepeat took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         #endregion
@@ -348,6 +459,8 @@ namespace Rock.Tests.Integration.Model
         public void AlphaNumericWithNumericCodesShouldSkipBadCodes()
         {
             int attemptCombination = 0;
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
 
             try
             {
@@ -371,6 +484,12 @@ namespace Rock.Tests.Integration.Model
                 // we'll consider this a pass.
                 Assert.That.IsTrue( attemptCombination >= 600 );
             }
+            finally
+            {
+                stopWatch.Stop();
+                System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+                System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
+            }
         }
 
         #endregion
@@ -384,6 +503,9 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         public void TwoAlphaWithFourRandomNumericCodesShouldSkipBadCodes()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             int attemptCombination = 0;
 
             var codeList = new List<string>();
@@ -401,18 +523,23 @@ namespace Rock.Tests.Integration.Model
             var matches = codeList.Select( x => x ).Intersect( AttendanceCodeService.noGood );
 
             bool hasMatchIsBad = matches.Any();
-
             Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
 
         /// <summary>
         /// Codes containing parts combined into noGood codes, such as "P" + "55",
         /// should not occur.
         /// </summary>
-        [Ignore("Known issue in v10 and earlier. Remove this ignore when fixed.")]
         [TestMethod]
         public void AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes()
         {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
             var codeList = new List<string>();
             AttendanceCode code = null;
             for ( int i = 0; i < 6000; i++ )
@@ -423,8 +550,11 @@ namespace Rock.Tests.Integration.Model
 
             var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
-
             Assert.That.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
         }
         
         #endregion

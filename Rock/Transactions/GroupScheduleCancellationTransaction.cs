@@ -82,6 +82,7 @@ namespace Rock.Transactions
             if (!attendance.IsScheduledPersonDeclined())
             {
                 // attendance record wasn't actually canceled, or isn't canceled anymore, so nothing to do
+                return;
             }
 
             var workflowType = WorkflowTypeCache.Get( attendanceInfo.ScheduleCancellationWorkflowTypeId.Value );

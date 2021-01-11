@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Tasks;
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -52,6 +53,9 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_110_COMMUNICATIONRECIPIENT_RESPONSECODE_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
+                SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
@@ -59,7 +63,7 @@ namespace Rock.Migrations.RockStartup
 
             foreach ( var runOnceJobId in runOnceJobIds )
             {
-                new Transactions.RunJobNowTransaction( runOnceJobId ).Enqueue();
+                new ProcessRunJobNow.Message { JobId = runOnceJobId }.Send();
             }
         }
     }

@@ -117,11 +117,20 @@ namespace Rock.Data
 	                DECLARE @EntityTypeFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.EntityTypeFieldType' )
 	                DECLARE @ComponentFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentFieldType' )
 	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
+                    DECLARE @OldGuidString nvarchar(50) = LOWER(CAST(@Guid AS nvarchar(50)))
 
-                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), LOWER(CAST(@Guid AS varchar(50))), LOWER('{5}') )
+                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), @OldGuidString, LOWER('{5}') )
 	                FROM [AttributeValue] V
 	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
-	                WHERE ( A.[FieldTypeId] = @EntityTypeFieldTypeId OR A.[FieldTypeId] = @ComponentFieldTypeId	OR A.[FieldTypeId] = @ComponentsFieldTypeId )
+	                WHERE
+                        (
+                            A.[FieldTypeId] = @EntityTypeFieldTypeId OR
+                            A.[FieldTypeId] = @ComponentFieldTypeId	OR
+                            A.[FieldTypeId] = @ComponentsFieldTypeId
+                        ) AND
+                        Value IS NOT NULL AND
+                        Value != '' AND
+                        V.Value LIKE '%' + @OldGuidString + '%' -- short circuit unnecessary writes, which are slow because of indexes
                     OPTION (RECOMPILE)
 
                 END
@@ -3326,14 +3335,15 @@ END" );
         /// <param name="entityTypeGuid">The entity type unique identifier.</param>
         public void DeleteAttributesByEntityType( string entityTypeGuid )
         {
-            Migration.Sql( string.Format( @"
-                SELECT a.*
-                FROM Attribute a
-                WHERE a.EntityTypeId IN (
-	                SELECT w.Id
-	                FROM EntityType w
-	                WHERE w.Guid = '{0}'
-                )", entityTypeGuid ) );
+            Migration.Sql( $@"
+                DECLARE @EntityTypeGuid AS varchar(50) = '{entityTypeGuid}'
+                DECLARE @EntityTypeId AS int = (SELECT [Id] FROM [dbo].[EntityType] WHERE [Guid] = @EntityTypeGuid)
+
+                IF (@EntityTypeId IS NOT NULL)
+                BEGIN
+	                DELETE FROM [dbo].[Attribute] WHERE [EntityTypeId] = @EntityTypeId
+                END" );
+
         }
 
         /// <summary>
@@ -4357,9 +4367,20 @@ END
         /// <param name="userSelectable">if set to <c>true</c> [user selectable].</param>
         /// <param name="guid">The unique identifier.</param>
         /// <param name="IsSystem">if set to <c>true</c> [is system].</param>
-        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable,  string guid, bool IsSystem = true )
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="AllowWatching">if set to <c>true</c> [allow watching].</param>
+        public void UpdateNoteType( string name, string entityTypeName, bool userSelectable,  string guid, bool IsSystem = true, string iconCssClass = null, bool AllowWatching = false)
         {
             EnsureEntityTypeExists( entityTypeName );
+
+            if( iconCssClass == null )
+            {
+                iconCssClass = "NULL";
+            }
+            else
+            {
+                iconCssClass = $"'{iconCssClass}'";
+            }
 
             Migration.Sql( $@"
 
@@ -4370,9 +4391,9 @@ END
                 IF @Id IS NULL
                 BEGIN
                     INSERT INTO [NoteType] (
-                        [Name],[EntityTypeId],[UserSelectable],[Guid],[IsSystem])
+                        [Name],[EntityTypeId],[UserSelectable],[Guid],[IsSystem], [IconCssClass], [AllowsWatching])
                     VALUES(
-                        '{name}',@EntityTypeId,{userSelectable.Bit()},'{guid}',{IsSystem.Bit()})
+                        '{name}',@EntityTypeId,{userSelectable.Bit()},'{guid}',{IsSystem.Bit()}, {iconCssClass}, {AllowWatching.Bit()})
                 END
                 ELSE
                 BEGIN
@@ -4381,7 +4402,9 @@ END
                         [EntityTypeId] = @EntityTypeId,
                         [UserSelectable] = {userSelectable.Bit()},
                         [Guid] = '{guid}',
-                        [IsSystem] = {IsSystem.Bit()}
+                        [IsSystem] = {IsSystem.Bit()},
+                        [IconCssClass] = {iconCssClass},
+                        [AllowsWatching] = {AllowWatching.Bit()}
                     WHERE Id = @Id;
                 END" );
                     

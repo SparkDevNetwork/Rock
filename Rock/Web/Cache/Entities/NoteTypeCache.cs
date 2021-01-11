@@ -124,7 +124,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [requires approvals]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool RequiresApprovals { get; set; }
+        public bool RequiresApprovals { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allows watching].
@@ -133,7 +133,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [allows watching]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowsWatching { get; set; }
+        public bool AllowsWatching { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allows replies].
@@ -142,7 +142,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [allows replies]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowsReplies { get; set; }
+        public bool AllowsReplies { get; private set; }
 
         /// <summary>
         /// Gets or sets the maximum reply depth.
@@ -151,7 +151,7 @@ namespace Rock.Web.Cache
         /// The maximum reply depth.
         /// </value>
         [DataMember]
-        public int? MaxReplyDepth { get; set; }
+        public int? MaxReplyDepth { get; private set; }
 
         /// <summary>
         /// Gets or sets the background color of each note
@@ -160,7 +160,7 @@ namespace Rock.Web.Cache
         /// The color of the background.
         /// </value>
         [DataMember]
-        public string BackgroundColor { get; set; }
+        public string BackgroundColor { get; private set; }
 
         /// <summary>
         /// Gets or sets the font color of the note text
@@ -169,7 +169,7 @@ namespace Rock.Web.Cache
         /// The color of the font.
         /// </value>
         [DataMember]
-        public string FontColor { get; set; }
+        public string FontColor { get; private set; }
 
         /// <summary>
         /// Gets or sets the border color of each note
@@ -178,7 +178,7 @@ namespace Rock.Web.Cache
         /// The color of the border.
         /// </value>
         [DataMember]
-        public string BorderColor { get; set; }
+        public string BorderColor { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [send approval notifications].
@@ -187,7 +187,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [send approval notifications]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool SendApprovalNotifications { get; set; }
+        public bool SendApprovalNotifications { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [automatic watch authors].
@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [automatic watch authors]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AutoWatchAuthors { get; set; }
+        public bool AutoWatchAuthors { get; private set; }
 
         /// <summary>
         /// Gets or sets the approval URL template.
@@ -207,7 +207,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public string ApprovalUrlTemplate
         {
-            get; set;
+            get; private set;
         }
 
         #endregion

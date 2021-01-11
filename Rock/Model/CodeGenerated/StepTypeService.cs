@@ -118,6 +118,7 @@ namespace Rock.Model
             target.HighlightColor = source.HighlightColor;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsDateRequired = source.IsDateRequired;
             target.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
             target.MergeTemplateId = source.MergeTemplateId;
             target.Name = source.Name;

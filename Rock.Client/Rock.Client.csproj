@@ -81,6 +81,9 @@
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\AuthClaim.cs" />
+    <Compile Include="CodeGenerated\AuthClient.cs" />
+    <Compile Include="CodeGenerated\AuthScope.cs" />
     <Compile Include="CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="CodeGenerated\Badge.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />

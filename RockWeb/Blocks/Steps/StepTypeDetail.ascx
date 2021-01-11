@@ -39,23 +39,18 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="valStepTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <asp:CustomValidator ID="cvStepType" runat="server" Display="None" />
+
                 <div id="pnlViewDetails" runat="server">
+                    <h3 class="mt-1">
+                        <asp:Literal ID="lStepTypeName" runat="server" />
+                        Step Type
+                    </h3>
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lStepTypeDescription" runat="server"></asp:Literal>
+                        <div class="col-sm-12 col-md-6 col-lg-7">
+                            <asp:Literal ID="lStepTypeDescription" runat="server" />
                         </div>
-                    </div>
-                    <%-- Steps Activity Summary --%>
-                    <div id="pnlActivitySummary" runat="server">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <h5>Steps Activity Summary</h5>
-                            </div>
-                            <div class="col-sm-6">
-
-                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
-
+                        <div class="col-sm-12 col-md-6 col-lg-5">
+                            <div class="flex-grow-1 d-flex justify-content-end">
                                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
                                             runat="server"
                                             EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
@@ -63,10 +58,16 @@
                                             SlidingDateRangeMode="Current"
                                             TimeUnit="Year"
                                             Label=""
-                                            CssClass="pull-right" />
+                                            FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
 
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
+                    </div>
+                    <asp:Literal ID="lKpi" runat="server" />
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
                         <div id="pnlActivityChart" runat="server" class="chart-banner">
@@ -85,8 +86,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnBulkEntry" runat="server" CssClass="btn btn-default btn-sm" OnClick="btnBulkEntry_Click" CausesValidation="false"><i class="fa fa-truck"></i></asp:LinkButton>
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <asp:LinkButton ID="btnBulkEntry" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnBulkEntry_Click" CausesValidation="false"><i class="fa fa-truck"></i></asp:LinkButton>
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>
                 </div>
@@ -148,6 +149,14 @@
                                 RepeatDirection="Vertical"
                                 DataValueField="Id"
                                 DataTextField="Name" />
+                            <Rock:RockCheckBox ID="cbRequireDate"
+                                runat="server"
+                                SourceTypeName="Rock.Model.StepType, Rock"
+                                PropertyName="IsDateRequired"
+                                Label="Is Date Required"
+                                Help="Determines if the date for the step is required."
+                                Checked="false"
+                                Text="Yes" />
                         </div>
                     </div>
 

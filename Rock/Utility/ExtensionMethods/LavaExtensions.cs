@@ -648,6 +648,11 @@ namespace Rock
                     return content ?? string.Empty;
                 }
 
+                if ( mergeObjects == null )
+                {
+                    mergeObjects = new Dictionary<string, object>();
+                }
+
                 if ( GlobalAttributesCache.Get().LavaSupportLevel == Lava.LavaSupportLevel.LegacyWithWarning && mergeObjects.ContainsKey( "GlobalAttribute" ) )
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )

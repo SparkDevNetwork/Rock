@@ -38,7 +38,7 @@
                                 <HeaderStyle CssClass="grid-columncommand" />
                                 <ItemStyle HorizontalAlign="Center" CssClass="grid-columncommand" />
                                 <ItemTemplate>
-                                    <a id="aSecure" runat="server" class="btn btn-sm btn-security"><i class="fa fa-lock"></i></a>
+                                    <a id="aSecure" runat="server" class="btn btn-sm btn-square btn-security"><i class="fa fa-lock"></i></a>
                                 </ItemTemplate>
                             </Rock:RockTemplateFieldUnselected>
                         </Columns>

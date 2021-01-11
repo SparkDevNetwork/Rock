@@ -40,11 +40,19 @@
 
   {% assign occurrencesCount = occurrences | Size %}
 
-  {% capture addButton %}<p class="sm-push-half-bottom xs-push-half-bottom"><a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add Attendance</a></p>{% endcapture %}
+
+  {% capture actionButtons %}
+    <p class="sm-push-half-bottom xs-push-half-bottom">
+    {% if occurrencesCount and occurrencesCount >= 1 %}
+      <a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block sm-push-half-bottom xs-push-half-bottom shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Add Attendance</a>
+    {% endif %}
+      <a href="/groups/{{ groupId }}/toolbox" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-chevron-left push-quarter-right"></i> Back to Group</a>
+    </p>
+  {% endcapture %}
+
+  {{ actionButtons }}
 
   {% if occurrencesCount and occurrencesCount >= 1 %}
-
-    {{ addButton }}
 
     {% for occurrence in occurrences %}
 
@@ -117,7 +125,7 @@
 
     {% endfor %}
 
-    {{ addButton }}
+    {{ actionButtons }}
 
   {% else %}
 
@@ -126,6 +134,6 @@
       <p class="flush"><a href="{{ currentUrl }}/detail" class="btn btn-primary sm-btn-block xs-btn-block shadowed"><i class="fal fa-plus-circle push-quarter-right"></i> Take Attendance</a></p>
     {[ endcardBlock ]}
 
-  {% endif %}
+    {% endif %}
 
 {% endif %}

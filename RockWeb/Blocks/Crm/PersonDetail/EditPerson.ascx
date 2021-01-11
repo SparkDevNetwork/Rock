@@ -148,6 +148,8 @@
                                     <asp:ListItem Text="SMS" Value="2" />
                                 </Rock:RockRadioButtonList>
 
+                                <Rock:NotificationBox ID="nbCommunicationPreferenceWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                             </fieldset>
                         </div>
 

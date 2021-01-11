@@ -168,6 +168,14 @@ ORDER BY [Text]",
         DisplayDescription = true,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.SCHOOL_GRADES
         )]
+    [DefinedValueField( "Configured Attendance Type",
+        Description = "The Attendance type that an occurrence will have.",
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHECK_IN_ATTENDANCE_TYPES,
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHECK_IN_ATTENDANCE_TYPE_VIRTUAL,
+        Order = 28,
+        Key = AttributeKey.AttendanceType )]
     #region Messages Block Attribute Settings
 
     [TextField(
@@ -305,6 +313,7 @@ ORDER BY [Text]",
             public const string KnownIndividualPanel2IntroText = "KnownIndividualPanel2IntroText";
             public const string HideIndividualsYoungerThan = "HideIndividualsYoungerThan";
             public const string HideIndividualsInGradeLessThan = "HideIndividualsInGradeLessThan";
+            public const string AttendanceType = "AttendanceType";
         }
 
         /// <summary>
@@ -958,8 +967,20 @@ ORDER BY [Text]",
                 {
                     if ( person.PrimaryAliasId.HasValue )
                     {
-                        var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id, locationId, scheduleId, attendanceGroup.CampusId );
+                        int? attendanceTypeValueId = null;
+                        var attendanceTypeValueGuid = GetAttributeValue( AttributeKey.AttendanceType ).AsGuid();
+                        if ( !attendanceTypeValueGuid.IsEmpty() )
+                        {
+                            var attendanceTypeValue = DefinedValueCache.Get( attendanceTypeValueGuid );
+                            if(attendanceTypeValue != null )
+                            {
+                                attendanceTypeValueId = attendanceTypeValue.Id;
+                            }
+                        }
 
+                        var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id,
+                            locationId, scheduleId, attendanceGroup.CampusId, null, null, null, null, null, null, attendanceTypeValueId );
+                        
                     }
                 }
 

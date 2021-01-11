@@ -25,6 +25,31 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupTypeFieldAttribute : FieldAttribute
     {
+        private const string GROUP_TYPE_PURPOSE_VALUE_GUID_KEY = "groupTypePurposeValueGuid";
+
+        /// <summary>
+        /// Gets or sets the group type purpose value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value unique identifier.
+        /// </value>
+        public string GroupTypePurposeValueGuid
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( GROUP_TYPE_PURPOSE_VALUE_GUID_KEY );
+            }
+
+            set
+            {
+                Guid? guid = value.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    FieldConfigurationValues.AddOrReplace( GROUP_TYPE_PURPOSE_VALUE_GUID_KEY, new Field.ConfigurationValue( value ) );
+                }
+            }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute" /> class.
         /// </summary>
@@ -39,14 +64,7 @@ namespace Rock.Attribute
         public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null, string groupTypePurposeValueGuid = "" )
             : base( name, description, required, defaultGroupTypeGuid, category, order, key, typeof( Rock.Field.Types.GroupTypeFieldType ).FullName )
         {
-            if ( !string.IsNullOrWhiteSpace( groupTypePurposeValueGuid ) )
-            {
-                Guid? guid = groupTypePurposeValueGuid.AsGuidOrNull();
-                if ( guid.HasValue )
-                {
-                    FieldConfigurationValues.Add( "groupTypePurposeValueGuid", new Field.ConfigurationValue( groupTypePurposeValueGuid ) );
-                }
-            }
+            GroupTypePurposeValueGuid = groupTypePurposeValueGuid;
         }
     }
 }

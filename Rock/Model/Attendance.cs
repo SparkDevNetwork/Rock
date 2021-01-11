@@ -183,6 +183,16 @@ namespace Rock.Model
         public bool? Processed { get; set; }
 
         /// <summary>
+        /// Gets or sets the is first time.
+        /// </summary>
+        /// <value>
+        /// The first time the person has attended this group.
+        /// </value>
+        [DataMember]
+        public bool? IsFirstTime { get; set; }
+
+
+        /// <summary>
         /// Gets or sets the note.
         /// </summary>
         /// <value>
@@ -733,7 +743,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this ) );
+                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

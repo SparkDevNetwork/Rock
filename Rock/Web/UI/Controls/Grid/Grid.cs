@@ -405,6 +405,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use the CSS styles that would normally be used for a Grid using the 'Full' <see cref="GridDisplayType"/>.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [use the CSS styles that would normally be used for a Grid using the 'Full' <see cref="GridDisplayType"/>]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( false ),
+        Description( "If true and DisplayMode is 'Light', the CSS styles that would normally be used for a Grid using the 'Full' Display Type will be used, which includes a table border, row striping, Etc. If false, a much simpler set of styling rules will be applied.")
+        ]
+        public virtual bool UseFullStylesForLightGrid
+        {
+            get
+            {
+                return ( ViewState["UseFullStylesForLightGrid"] as string ).AsBoolean();
+            }
+
+            set
+            {
+                this.ViewState["UseFullStylesForLightGrid"] = value.ToString();
+            }
+        }
+
+        /// <summary>
         /// Gets the sort property.
         /// </summary>
         public SortProperty SortProperty
@@ -1109,7 +1133,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 divClasses.Add( "table-responsive" );
             }
 
-            if ( DisplayType == GridDisplayType.Light )
+            if ( DisplayType == GridDisplayType.Light && !UseFullStylesForLightGrid )
             {
                 divClasses.Add( "table-no-border" );
             }
@@ -1134,7 +1158,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 this.AddCssClass( "sticky-headers" );
             }
 
-            if ( DisplayType == GridDisplayType.Light )
+            if ( DisplayType == GridDisplayType.Light && !UseFullStylesForLightGrid )
             {
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
@@ -2855,75 +2879,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Adds the delete field.
-        /// </summary>
-        /// <param name="eventHandler">The event handler.</param>
-        /// <returns></returns>
-        public DeleteField AddDeleteFieldColumn( EventHandler<RowEventArgs> eventHandler )
-        {
-            var exisitingDeleteField = Columns.OfType<DeleteField>().LastOrDefault();
-
-            if ( exisitingDeleteField != null )
-            {
-                Columns.Remove( exisitingDeleteField );
-            }
-
-            var deleteField = new DeleteField();
-            deleteField.Click += eventHandler;
-            Columns.Add( deleteField );
-
-            return deleteField;
-        }
-
-        /// <summary>
-        /// Adds the column with a link to profile page.
-        /// </summary>
-        /// <param name="linkedPageAttributeKey">The linked page attribute key.</param>
-        /// <returns></returns>
-        public HyperLinkField AddPersonProfileLinkColumn( string linkedPageAttributeKey )
-        {
-            var linkedPageUrl = this.RockBlock()?.LinkedPageUrl( linkedPageAttributeKey, new Dictionary<string, string> { { "PersonId", "###" } } );
-
-            if ( linkedPageUrl.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var exisitingField = Columns.OfType<HyperLinkField>().LastOrDefault();
-
-            if ( exisitingField != null )
-            {
-                Columns.Remove( exisitingField );
-            }
-
-            var hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ControlStyle.CssClass = "btn btn-default btn-sm";
-            hlPersonProfileLink.DataNavigateUrlFields = new[] { PersonIdField };
-
-            /*
-             * 2020-02-27 - JPH
-             *
-             * The LinkedPageUrl() method now has logic to prevent JavaScript Injection attacks. See the following:
-             * https://app.asana.com/0/1121505495628584/1162600333693130/f
-             * https://github.com/SparkDevNetwork/Rock/commit/4d0a4917282121d8ea55064d4f660a9b1c476946#diff-4a0cf24007088762bcf634d2ca28f30a
-             *
-             * Because of this, the "###" we pass into this method below will be returned encoded.
-             * We now need to search for the encoded version within our usage of the Replace() method.
-             *
-             * Reason: XSS Prevention
-             */
-            hlPersonProfileLink.DataNavigateUrlFormatString = linkedPageUrl.Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<i class='fa fa-user'></i>";
-            hlPersonProfileLink.DataTextField = PersonIdField;
-            Columns.Add( hlPersonProfileLink );
-
-            return hlPersonProfileLink;
-        }
 
         /// <summary>
         /// Gets the route from event arguments.
@@ -4838,7 +4793,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         DataSource,
 
         /// <summary>
-        /// The the columns and formatting that is displayed in output
+        /// The columns and formatting that is displayed in output
         /// </summary>
         ColumnOutput
     }

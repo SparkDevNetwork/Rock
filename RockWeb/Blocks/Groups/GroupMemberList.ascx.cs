@@ -1015,10 +1015,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Add Link to Profile Page Column
-            gGroupMembers.AddPersonProfileLinkColumn( "PersonProfilePage" );
+            var personProfileLinkField = new PersonProfileLinkField();
+            personProfileLinkField.LinkedPageAttributeKey = "PersonProfilePage";
+            gGroupMembers.Columns.Add( personProfileLinkField );
 
-            // Add delete column
-            _deleteField = gGroupMembers.AddDeleteFieldColumn( DeleteOrArchiveGroupMember_Click );
+            // Hold a reference to the delete column
+            _deleteField = new DeleteField();
+            _deleteField.Click += DeleteOrArchiveGroupMember_Click;
+            gGroupMembers.Columns.Add( _deleteField );
         }
 
         /// <summary>

@@ -62,7 +62,7 @@ namespace Rock.Field.Types
             var tbHelpText = new RockTextBox();
             controls.Add( tbHelpText );
             tbHelpText.Label = "Entity Control Help Text Format";
-            tbHelpText.Help = "Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included and a {1} in places where you the the pluralized EntityType name (Campuses, Groups, etc) to be included.";
+            tbHelpText.Help = "Include a {0} in places where you want the EntityType name (Campus, Group, etc) to be included and a {1} in places where you want the pluralized EntityType name (Campuses, Groups, etc) to be included.";
 
             return controls;
         }

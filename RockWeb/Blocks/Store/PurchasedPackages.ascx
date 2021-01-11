@@ -4,10 +4,10 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-gift"></i> 
+                    <i class="fa fa-gift"></i>
                     Purchased Packages
                 </h1>
 
@@ -20,32 +20,27 @@
                 <asp:Panel ID="pnlPackages" runat="server">
                     <asp:Repeater ID="rptPurchasedProducts" runat="server" OnItemDataBound="rptPurchasedProducts_ItemDataBound" OnItemCommand="rptPurchasedProducts_ItemCommand">
                         <ItemTemplate>
-                            <div class="purchasedpackage row">
-                                <div class="col-md-4">
-                                    <div class="margin-b-md" style="
-                                        background: url('<%# Eval( "PackageIconBinaryFile.ImageUrl" ) %>') no-repeat center;
-                                        background-size: cover;
-                                        width: 100%;
-                                        height: 140px;">
-                                        </div>
+                            <div class="purchasedpackage row mb-4">
+                                <div class="col-md-3">
+                                    <img class="img-responsive mx-auto" src="<%# Eval( "PackageIconBinaryFile.ImageUrl" ) %>&h=140&w=280&zoom=2&mode=crop" width="280" height="140">
                                 </div>
-                                <div class="col-md-6 margin-b-md">
+                                <div class="col-md-7 mb-3">
                                     <h1><%# Eval( "Name" ) %></h1>
 
-                                    <div class="clearfix margin-b-sm">
-                                        <div class="pull-left"><strong>Purchased: </strong><br><%# string.Format("{0:M/d/yyyy}", Eval("PurchasedDate"))%></div>
-                                        <div class="pull-right"><strong>Purchased by: </strong><br><%# Eval( "Purchaser" ) %></div>
+                                    <div class="clearfix mb-2">
+                                        <div class="pull-left"><strong>Purchased</strong><br><%# string.Format("{0:M/d/yyyy}", Eval("PurchasedDate"))%></div>
+                                        <div class="pull-right"><strong>Purchased by</strong><br><%# Eval( "Purchaser" ) %></div>
                                     </div>
-
-                                    <%# Eval( "Description" ) %>
-
-                                    <p class="margin-t-md">
-                                        <asp:LinkButton ID="lbPackageDetails" runat="server" CssClass="btn btn-default btn-sm margin-b-sm" CommandName="PackageDetails" CommandArgument='<%#Eval("Id") %>'>Package Details</asp:LinkButton>
-                                    </p>
+                                    <div>
+                                        <%# Eval( "Description" ) %>
+                                    </div>
+                                    <div class="margin-t-md">
+                                        <asp:LinkButton ID="lbPackageDetails" runat="server" CssClass="btn btn-default btn-sm mb-2" CommandName="PackageDetails" CommandArgument='<%#Eval("Id") %>'>Package Details</asp:LinkButton>
+                                    </div>
                                 </div>
                                 <div class="col-md-2 purchasedpackage-install">
-                                    <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary margin-b-md" CommandName="Install" CommandArgument='<%#Eval("Id") %>'>Install</asp:LinkButton>
-                            
+                                    <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn btn-primary mb-3" CommandName="Install" CommandArgument='<%#Eval("Id") %>'>Install</asp:LinkButton>
+
                                     <asp:Literal ID="lVersionNotes" runat="server"></asp:Literal>
                                 </div>
                             </div>
@@ -63,7 +58,7 @@
                     </div>
                 </asp:Panel>
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

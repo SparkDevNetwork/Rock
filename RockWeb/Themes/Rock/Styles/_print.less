@@ -13,6 +13,9 @@
 
   body {
     font-size: 12px;
+    color: #000;
+    background-color: #fff;
+    -webkit-print-color-adjust: exact;
   }
 
   #content-wrapper,
@@ -21,12 +24,12 @@
     margin: 0;
   }
 
-  .nav-sub, // default sidebar navs on most pages
-  .navbar-static-side, // Main Sidebar
-  #cms-admin-footer,  // admin bar on bottom right
-  .breadcrumb, // remove the breadcrumbs
-  .main-footer // Remove the footer
-   {
+  // default sidebar navs on most pages
+  .nav-sub,
+  .navbar-static-side,
+  #cms-admin-footer,
+  .breadcrumb,
+  .main-footer {
     display: none;
   }
 

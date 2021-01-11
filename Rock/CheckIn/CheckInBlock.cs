@@ -852,7 +852,8 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            this.LocalDeviceConfig.SaveToCookie( this.Page );
+            var localDeviceConfigValue = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
+            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
 
             Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 

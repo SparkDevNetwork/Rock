@@ -476,7 +476,7 @@ namespace Rock.Web.UI.Controls
             _addressRequirementsValidator.ID = ID + "_addressrequirementsvalidator";
             _addressRequirementsValidator.CssClass = "validation-error help-inline";
             _addressRequirementsValidator.Enabled = true;
-            _addressRequirementsValidator.Display = ValidatorDisplay.Dynamic;
+            _addressRequirementsValidator.Display = ValidatorDisplay.None;
             _addressRequirementsValidator.ValidationGroup = ValidationGroup;
             this.Controls.Add( _addressRequirementsValidator );
 

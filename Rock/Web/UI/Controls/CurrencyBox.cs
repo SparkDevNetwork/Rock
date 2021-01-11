@@ -53,12 +53,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the base control and allows a dec to show on mobile keyboards
+        /// Renders the base control and allows a decimal keypad to show on mobile keyboards
         /// </summary>
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
             this.Attributes["step"] = "0.01";
+
+            /* 2020-11-20 MDP
+               inputmode tells the browser what type of input to expect. If we 
+               see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
+
+               This fixes an issue where some browsers (especially mobile phones) would allow non-decimal characters to be allowed in the input box
+            */
+            this.Attributes["inputmode"] = "decimal";
+
             base.RenderBaseControl( writer );
         }
 

@@ -51,20 +51,13 @@
                     Consider adding a manual workflow to your connection request to add people to this group." />
 
 
-                <h4 class="margin-t-xl">Auto Assignment Settings</h4>
-                <span class="text-muted">These optional settings determine if request should be auto assigned.</span>
+                <h4 class="margin-t-xl">Request Creation Settings</h4>
+                <span class="text-muted">These settings determine if requests should be auto created and assigned.</span>
                 <hr class="margin-t-sm" >
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockRadioButtonList ID="rblCreateConnectionRequests" runat="server" Label="Create Connection Requests" Required="true" RepeatDirection="Horizontal" OnSelectedIndexChanged="rblCreateConnectionRequests_SelectedIndexChanged" AutoPostBack="true"
-                                Help="Choose whether you want to automatically create all the connection requests at once or only as needed based on the daily limits of assigned connection" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:NumberBox ID="nbDailyLimit" runat="server" Label="Daily Limit of Assigned Connection Requests"
+                <Rock:RockRadioButtonList ID="rblCreateConnectionRequests" runat="server" Label="Create Connection Requests" Required="true" RepeatDirection="Horizontal"
+                    Help="Choose whether you want to automatically create all the connection requests at once or only as needed based on the daily limits of assigned connection" />
+                <Rock:NumberBox ID="nbDailyLimit" runat="server" Label="Daily Limit of Assigned Connection Requests"
                         Help="The number of requests each connector will be assigned each day. This can be overrided by Group Member attributes. Leave blank to not auto assign." CssClass="input-width-md"/>
-                    </div>
-                </div>
 
                 <h4 class="margin-t-xl">Recurrence Settings</h4>
                 <span class="text-muted">The settings determine if connection should be created on periodic basis.</span>

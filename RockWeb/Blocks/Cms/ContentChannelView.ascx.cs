@@ -662,7 +662,7 @@ $(document).ready(function() {
                 || isQueryParameterFilteringEnabled || !string.IsNullOrWhiteSpace( metaDescriptionAttributeValue )
                 || !string.IsNullOrWhiteSpace( metaImageAttributeValue ) ) )
             {
-                outputContents = GetCacheItem( OUTPUT_CACHE_KEY ) as string;
+                outputContents = GetCacheItem( OUTPUT_CACHE_KEY, true ) as string;
             }
 
             if ( outputContents == null )
@@ -884,7 +884,7 @@ $(document).ready(function() {
                 // only load from the cache if a cacheDuration was specified
                 if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                 {
-                    template = GetCacheItem( TEMPLATE_CACHE_KEY ) as Template;
+                    template = GetCacheItem( TEMPLATE_CACHE_KEY, true ) as Template;
                 }
 
                 if ( template == null )
@@ -925,9 +925,9 @@ $(document).ready(function() {
             // only load from the cache if a cacheDuration was specified
             if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
             {
-                items = GetCacheItem( CONTENT_CACHE_KEY ) as List<ContentChannelItem>;
-                tags = GetCacheItem( TAG_CACHE_KEY ) as List<TagModel>;
-                archiveSummaries = GetCacheItem( MONTH_YEAR_CACHE_KEY ) as List<ArchiveSummaryModel>;
+                items = GetCacheItem( CONTENT_CACHE_KEY, true ) as List<ContentChannelItem>;
+                tags = GetCacheItem( TAG_CACHE_KEY, true ) as List<TagModel>;
+                archiveSummaries = GetCacheItem( MONTH_YEAR_CACHE_KEY, true ) as List<ArchiveSummaryModel>;
             }
 
             if ( items == null || ( isQueryParameterFilteringEnabled && Request.QueryString.Count > 0 ) )

@@ -148,6 +148,7 @@ namespace Rock.Model
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
@@ -166,7 +167,6 @@ namespace Rock.Model
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;
             target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
             target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             target.PageDisplayDescription = source.PageDisplayDescription;
             target.PageDisplayIcon = source.PageDisplayIcon;

@@ -1137,8 +1137,10 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
 
-                if ( hfPaymentTab.Value != "None" )
+                if ( hfPaymentTab.Value == "CreditCard" || hfPaymentTab.Value == "ACH" )
                 {
+                    // if using a new CC or ACH, clear the payment info and let the gateway set the payment details in
+                    // Gateway.UpdateScheduledPayment, then fill in any missing details with SetFromPaymentInfo
                     scheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
                 }
 
@@ -1146,6 +1148,8 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     if ( hfPaymentTab.Value == "CreditCard" || hfPaymentTab.Value == "ACH" )
                     {
+                        // if using a new form of payment, update FinancialPaymentDetail
+                        // with anything the Gateway didn't set in UpdateScheduledPayment
                         scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, Gateway, rockContext );
                     }
 
@@ -1381,6 +1385,12 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 // if we weren't able to figure out InitialCreditCardTypeValue yet, assume it is Visa
                 referencePaymentInfo.InitialCreditCardTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() );
+            }
+
+            if ( referencePaymentInfo.ReferenceNumber.IsNullOrWhiteSpace() )
+            {
+                string errorMessage;
+                referencePaymentInfo.ReferenceNumber = Gateway.GetReferenceNumber( scheduledTransaction, out errorMessage );
             }
 
             return referencePaymentInfo;
