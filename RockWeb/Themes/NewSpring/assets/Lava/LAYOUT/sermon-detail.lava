@@ -41,6 +41,12 @@
         {% assign backgroundColor = parentItem.BackgroundColor %}
         {% assign parentVideo = parentItem.Video %}
         {% assign parentUrl = parentItem.Permalink %}
+
+        {% comment %}
+            Write parent interaction
+        {% endcomment %}
+        {% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ parentItem.ChannelId }}' channelname:'{{ parentItem.ChannelName }}' componententitytypeid:'209' componententityid:'{{ parentItem.Id }}' componentname:'{{ parentItem.Title }}' operation:'View' summary:'Viewed "{{ parentItem.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
     {% endif %}
 
     {% assign pagePath = 'Global' | Page:'Path' %}
