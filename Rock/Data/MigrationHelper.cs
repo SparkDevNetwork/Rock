@@ -338,7 +338,7 @@ namespace Rock.Data
                 ELSE
                 BEGIN
 	                INSERT INTO [BlockType]([IsSystem],[Category],[Name],[Description],[Guid], EntityTypeId)
-	                VALUES(1,'Mobile','{name}','{description.Replace( "'", "''" )}','{guid.ToUpper()}', @entityTypeId)
+	                VALUES(1,'{category}','{name}','{description.Replace( "'", "''" )}','{guid.ToUpper()}', @entityTypeId)
                 END" );
         }
 
