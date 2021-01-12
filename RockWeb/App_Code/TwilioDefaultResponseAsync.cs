@@ -53,6 +53,8 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     /// <summary>
     /// The enable logging
     /// </summary>
+    [Obsolete("The RockLogger checks if logging is enabled for Twilio when logging a message. If the logging status needs to be checked before creating a message use Rock.Logging.RockLogger.Log.ShouldLogEntry instead.")]
+    [RockObsolete("1.13")]
     public bool EnableLogging
     {
         get
@@ -223,10 +225,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
     {
         if ( request.HttpMethod != "POST" )
         {
-            if ( EnableLogging )
-            {
-                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "Request was not a post." );
-            }
+            Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "Request was not a post." );
             return false;
         }
 
@@ -247,11 +246,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         var signature = request.Headers["X-Twilio-Signature"];
         if ( signature.IsNullOrWhiteSpace() )
         {
-            if ( EnableLogging )
-            {
-                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "X-Twilio-Signature not found." );
-            }
-
+            Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "X-Twilio-Signature not found." );
             return false;
         }
 
@@ -263,10 +258,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         if ( authToken.IsNullOrWhiteSpace() )
         {
-            if ( EnableLogging )
-            {
-                Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "No auth token found." );
-            }
+            Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, "No auth token found." );
             return false;
         }
 
@@ -285,9 +277,9 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
         isValid = requestValidator.Validate( requestUrl, request.Form, signature );
 
-        if ( !isValid && EnableLogging )
+        if ( !isValid )
         {
-            string authMessage = "Authentication Failed: request.Url.AbsoluteUri: " + request.Url.AbsoluteUri + " requestUrl: " + requestUrl + " authToken: " + authToken;
+            string authMessage = string.Format( "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.Url.AbsoluteUri, requestUrl, authToken );
             Rock.Logging.RockLogger.Log.Debug( Rock.Logging.RockLogDomains.Communications, authMessage );
         }
 
@@ -296,13 +288,13 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
 
     private void LogRequest()
     {
-        if ( !EnableLogging )
+        if ( !Rock.Logging.RockLogger.Log.ShouldLogEntry( Rock.Logging.RockLogLevel.Debug, Rock.Logging.RockLogDomains.Communications ) )
         {
             return;
         }
 
         var formValues = new List<string>();
-        formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", _context.Request.Url ) );
+        formValues.Add( string.Format( "End Point URL: '{0}'", _context.Request.Url ) );
 
         foreach ( string name in _context.Request.Form.AllKeys )
         {
