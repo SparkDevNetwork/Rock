@@ -7,19 +7,22 @@ import { BlockSettings } from '../../Index.js';
 import store from '../../Store/Index.js';
 import { Guid } from '../../Util/Guid.js';
 import Person from '../../Types/Models/Person.js';
-
-type AttributeData = {
-    Label: string;
-    Value: string;
-    FieldTypeGuid: string;
-};
+import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
+import RockForm from '../../Controls/RockForm.js';
+import TextBox from '../../Elements/TextBox.js';
+import RockButton from '../../Elements/RockButton.js';
+import AttributeValue from '../../Types/Models/AttributeValue.js';
 
 export default defineComponent({
     name: 'Crm.AttributeValues',
     components: {
         PaneledBlockTemplate,
         Loading,
-        RockField
+        RockField,
+        JavaScriptAnchor,
+        RockForm,
+        TextBox,
+        RockButton
     },
     setup() {
         return {
@@ -30,16 +33,30 @@ export default defineComponent({
     data() {
         return {
             isLoading: true,
-            attributeDataList: [] as AttributeData[]
+            isEditMode: false,
+            attributeDataList: [] as AttributeValue[]
         };
     },
     computed: {
         personGuid(): Guid | null {
             const person = (store.getters.personContext || null) as Person | null;
             return person ? person.Guid : null;
+        },
+        nonEmptyAttributeValues(): AttributeValue[] {
+            return this.attributeDataList.filter(av => !!av.Value);
         }
     },
     methods: {
+        goToViewMode() {
+            this.isEditMode = false;
+        },
+        goToEditMode() {
+            this.isEditMode = true;
+        },
+        getAttributeLabel(attributeValue: AttributeValue) {
+            const useAbbreviatedNames = this.blockSettings.UseAbbreviatedNames as boolean;
+            return useAbbreviatedNames ? attributeValue.AttributeAbbreviatedName : attributeValue.AttributeName;
+        },
         async loadData() {
             if (!this.personGuid) {
                 this.attributeDataList = [];
@@ -48,7 +65,7 @@ export default defineComponent({
 
             try {
                 this.isLoading = true;
-                const result = await this.blockAction<AttributeData[]>('GetAttributeDataList', {
+                const result = await this.blockAction<AttributeValue[]>('GetAttributeValueList', {
                     PersonGuid: this.personGuid
                 });
 
@@ -59,6 +76,23 @@ export default defineComponent({
             finally {
                 this.isLoading = false;
             }
+        },
+        async doSave(): Promise<void> {
+            this.isLoading = true;
+
+            const keyArgsMap = {};
+
+            for (const a of this.attributeDataList) {
+                keyArgsMap[a.AttributeKey] = a;
+            }
+
+            await this.blockAction('SaveAttributeValues', {
+                personGuid: this.personGuid,
+                keyArgsMap
+            });
+
+            this.isLoading = false;
+            this.goToViewMode();
         }
     },
     watch: {
@@ -77,20 +111,37 @@ export default defineComponent({
         <i :class="blockSettings.BlockIconCssClass"></i>
         {{ blockSettings.BlockTitle }}
     </template>
+    <template v-slot:titleAside>
+        <div class="actions rollover-item pull-right">
+            <JavaScriptAnchor title="Order Attributes" class="btn-link edit">
+                <i class="fa fa-bars"></i>
+            </JavaScriptAnchor>
+            <JavaScriptAnchor title="Edit Attributes" class="btn-link edit" @click="goToEditMode">
+                <i class="fa fa-pencil"></i>
+            </JavaScriptAnchor>
+        </div>
+    </template>
     <template v-slot:default>
         <Loading :isLoading="isLoading">
-            <fieldset class="attribute-values ui-sortable">
-                <div v-for="a in attributeDataList" class="form-group static-control">
-                    <label class="control-label">
-                        {{ a.Label }}
-                    </label>
-                    <div class="control-wrapper">
-                        <div class="form-control-static">
-                            <RockField :fieldTypeGuid="a.FieldTypeGuid" v-model="a.Value" />
-                        </div>
+            <div v-if="!isEditMode" v-for="a in nonEmptyAttributeValues" class="form-group static-control">
+                <label class="control-label">
+                    {{ getAttributeLabel(a) }}
+                </label>
+                <div class="control-wrapper">
+                    <div class="form-control-static">
+                        <RockField :fieldTypeGuid="a.AttributeFieldTypeGuid" v-model="a.Value" />
                     </div>
                 </div>
-            </fieldset>
+            </div>
+            <RockForm v-else @submit="doSave">
+                <template v-for="a in attributeDataList">
+                    <RockField edit :fieldTypeGuid="a.AttributeFieldTypeGuid" v-model="a.Value" :label="getAttributeLabel(a)" :help="a.AttributeDescription" />
+                </template>
+                <div class="actions">
+                    <RockButton class="btn-primary btn-xs" type="submit">Save</RockButton>
+                    <RockButton class="btn-link btn-xs" @click="goToViewMode">Cancel</RockButton>
+                </div>
+            </RockForm>
         </Loading>
     </template>
 </PaneledBlockTemplate>`

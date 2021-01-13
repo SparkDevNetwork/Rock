@@ -1,6 +1,7 @@
 ﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { newGuid } from '../Util/Guid.js';
 import { Field } from '../Vendor/VeeValidate/vee-validate.js';
+import RockLabel from './RockLabel.js';
 
 export type DropDownListOption = {
     key: string,
@@ -11,7 +12,8 @@ export type DropDownListOption = {
 export default defineComponent({
     name: 'DropDownList',
     components: {
-        Field
+        Field,
+        RockLabel
     },
     props: {
         modelValue: {
@@ -31,6 +33,10 @@ export default defineComponent({
             required: true
         },
         rules: {
+            type: String as PropType<string>,
+            default: ''
+        },
+        help: {
             type: String as PropType<string>,
             default: ''
         }
@@ -67,7 +73,7 @@ export default defineComponent({
     :rules="rules"
     #default="{field, errors}">
     <div class="form-group rock-drop-down-list" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
-        <label class="control-label" :for="uniqueId">{{label}}</label>
+        <RockLabel :for="uniqueId" :help="help">{{label}}</RockLabel>
         <div class="control-wrapper">
             <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field">
                 <option value=""></option>

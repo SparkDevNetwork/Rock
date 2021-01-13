@@ -489,5 +489,24 @@ namespace Rock
 
             return rawTypeName;
         }
+
+        /// <summary>
+        /// Gets the types with attribute.
+        /// https://stackoverflow.com/a/720171/13215483
+        /// </summary>
+        /// <typeparam name="TAttribute">The type of the attribute.</typeparam>
+        /// <param name="inherit">if set to <c>true</c> [inherit].</param>
+        /// <returns></returns>
+        public static IEnumerable<Type> GetTypesWithAttribute<TAttribute>( bool inherit )
+            where TAttribute : System.Attribute
+        {
+            var assemblies = GetRockAndPluginAssemblies();
+
+            return
+                from a in assemblies
+                from t in a.GetTypes()
+                where t.IsDefined( typeof( TAttribute ), inherit )
+                select t;
+        }
     }
 }

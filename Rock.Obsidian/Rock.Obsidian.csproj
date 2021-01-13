@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\Crm\AttributeValues.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry.cs" />
     <Compile Include="Blocks\Groups\GroupMemberList.cs" />
     <Compile Include="Blocks\PluginObsidianBlockType.cs" />
     <Compile Include="Blocks\ObsidianBlockType.cs" />
@@ -65,8 +64,10 @@
     <Compile Include="Controllers\ObsidianController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\JavaScript.cs" />
+    <Compile Include="ViewModel\AttributeValueViewModel.cs" />
     <Compile Include="ViewModel\PersonViewModel.cs" />
     <Compile Include="ViewModel\ViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelOfAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

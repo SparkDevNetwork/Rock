@@ -16,6 +16,7 @@
 //
 
 using System;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Obsidian.ViewModel
@@ -83,7 +84,8 @@ namespace Rock.Obsidian.ViewModel
     /// <summary>
     /// Person View Model
     /// </summary>
-    public class PersonViewModel : PersonArgs
+    [ViewModelOf( typeof( Person ) )]
+    public class PersonViewModel : PersonArgs, IViewModel
     {
         /// <summary>
         /// Gets or sets the identifier.
@@ -108,5 +110,14 @@ namespace Rock.Obsidian.ViewModel
         /// The full name.
         /// </value>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// Sets the properties from entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        public void SetPropertiesFromEntity( IEntity entity )
+        {
+            entity.CopyPropertiesTo( this );
+        }
     }
 }

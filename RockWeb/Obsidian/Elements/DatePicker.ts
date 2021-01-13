@@ -4,7 +4,7 @@ import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 import RockLabel from './RockLabel.js';
 
 export default defineComponent({
-    name: 'TextBox',
+    name: 'DatePicker',
     components: {
         Field,
         RockLabel
@@ -21,10 +21,6 @@ export default defineComponent({
         help: {
             type: String as PropType<string>,
             default: ''
-        },
-        type: {
-            type: String as PropType<string>,
-            default: 'text'
         },
         rules: {
             type: String as PropType<string>,
@@ -66,12 +62,17 @@ export default defineComponent({
     :name="label"
     :rules="rules"
     #default="{field, errors}">
-    <div class="form-group rock-text-box" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
+    <div class="form-group date-picker" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
         <RockLabel :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" />
+            <div class="input-group input-width-md date">
+                <input :id="uniqueId" type="text" class="form-control" :disabled="disabled" v-bind="field" onfocus="(this.type='date')" onblur="(this.type='text')" />
+                <label :for="uniqueId" class="input-group-addon" :disabled="disabled">
+                    <i class="fa fa-calendar"></i>
+                </span>
+            </div>
         </div>
     </div>
 </Field>`

@@ -16,21 +16,36 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Rock.Data;
 
 namespace Rock.Obsidian.ViewModel
 {
     /// <summary>
+    /// View Model
+    /// </summary>
+    public interface IViewModel
+    {
+        /// <summary>
+        /// Sets the properties from entity.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        void SetPropertiesFromEntity( IEntity entity );
+    }
+
+    /// <summary>
     /// View Arguments to edit a model
     /// </summary>
-    public abstract class ViewArgs<T> where T : Entity<T>, new()
+    public abstract class ViewArgs<TEntity> where TEntity : Entity<TEntity>, new()
     {
         /// <summary>
         /// Applies the view arguments.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        public virtual void ApplyViewArgs( T entity )
+        public virtual void ApplyViewArgs( TEntity entity )
         {
             this.CopyPropertiesTo( entity );
         }
@@ -42,15 +57,103 @@ namespace Rock.Obsidian.ViewModel
     public static class ViewModelExtensions
     {
         /// <summary>
+        /// The view model types mapped by entity type
+        /// </summary>
+        private static Dictionary<Type, Type> _viewModelTypeMap = null;
+
+        /// <summary>
+        /// The view model types mapped by entity type
+        /// </summary>
+        private static Dictionary<Type, MethodInfo> _toViewModelMap = null;
+
+        /// <summary>
+        /// Gets the type of the view model for the entity type.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private static Type GetViewModelType( Type entityType )
+        {
+            if ( _viewModelTypeMap == null )
+            {
+                _viewModelTypeMap = new Dictionary<Type, Type>();
+                var viewModelTypes = Reflection.GetTypesWithAttribute<ViewModelOfAttribute>( true );
+
+                foreach ( var viewModelType in viewModelTypes )
+                {
+                    var props = viewModelType.GetCustomAttributes( typeof( ViewModelOfAttribute ), true ) as ViewModelOfAttribute[];
+
+                    foreach ( var prop in props )
+                    {
+                        _viewModelTypeMap[prop.RelatedEntityType] = viewModelType;
+                    }
+                }
+            }
+
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            return _viewModelTypeMap.GetValueOrNull( entityType );
+        }
+
+        /// <summary>
+        /// Gets to view model method.
+        /// </summary>
+        /// <param name="viewModelType">Type of the view model.</param>
+        /// <returns></returns>
+        private static MethodInfo GetToViewModelMethod( Type viewModelType )
+        {
+            if ( _toViewModelMap == null )
+            {
+                _toViewModelMap = new Dictionary<Type, MethodInfo>();
+            }
+
+            var methodInfo = _toViewModelMap.GetValueOrNull( viewModelType );
+
+            if ( methodInfo == null )
+            {
+                methodInfo = typeof( ViewModelExtensions )
+                    .GetMethods( BindingFlags.Public | BindingFlags.Static )
+                    .First( m => m.Name == nameof( ToViewModel ) && m.IsGenericMethodDefinition )
+                    .MakeGenericMethod( viewModelType );
+                _toViewModelMap[viewModelType] = methodInfo;
+            }
+
+            return methodInfo;
+        }
+
+        /// <summary>
         /// Converts to viewmodel.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="entity">The entity.</param>
         /// <returns></returns>
-        public static T ToViewModel<T>( this IEntity entity )
+        public static object ToViewModel( this IEntity entity )
         {
-            var viewModel = Activator.CreateInstance<T>();
-            entity.CopyPropertiesTo( viewModel );
+            var entityType = entity.GetType();
+            var viewModelType = GetViewModelType( entityType );
+
+            if ( viewModelType == null)
+            {
+                return null;
+            }
+
+            var methodInfo = GetToViewModelMethod( viewModelType );
+            var viewModel = methodInfo.Invoke( null, new[] { entity } );
+
+            return viewModel;
+        }
+
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <typeparam name="TViewModel"></typeparam>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        public static TViewModel ToViewModel<TViewModel>( this IEntity entity ) where TViewModel : IViewModel
+        {
+            var viewModel = Activator.CreateInstance<TViewModel>();
+            viewModel.SetPropertiesFromEntity( entity );
             return viewModel;
         }
 

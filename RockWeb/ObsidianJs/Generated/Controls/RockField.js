@@ -29,7 +29,20 @@ System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextFi
                     fieldTypeGuid: {
                         type: String,
                         required: true
+                    },
+                    edit: {
+                        type: Boolean,
+                        default: false
+                    },
+                    label: {
+                        type: String,
+                        default: ''
                     }
+                },
+                data: function () {
+                    return {
+                        internalValue: this.modelValue
+                    };
                 },
                 computed: {
                     fieldComponent: function () {
@@ -41,7 +54,12 @@ System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextFi
                         return field;
                     }
                 },
-                template: "\n<component :is=\"fieldComponent\" v-model=\"modelValue\" />"
+                watch: {
+                    internalValue: function () {
+                        this.$emit('update:modelValue', this.internalValue);
+                    }
+                },
+                template: "\n<component :is=\"fieldComponent\" v-model=\"internalValue\" :edit=\"edit\" :label=\"label\" />"
             }));
         }
     };

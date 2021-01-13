@@ -16,7 +16,20 @@ export default defineComponent({
         fieldTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+        edit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        label: {
+            type: String as PropType<string>,
+            default: ''
         }
+    },
+    data() {
+        return {
+            internalValue: this.modelValue
+        };
     },
     computed: {
         fieldComponent(): Component | null {
@@ -30,6 +43,11 @@ export default defineComponent({
             return field;
         }
     },
+    watch: {
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
+        }
+    },
     template: `
-<component :is="fieldComponent" v-model="modelValue" />`
+<component :is="fieldComponent" v-model="internalValue" :edit="edit" :label="label" />`
 });

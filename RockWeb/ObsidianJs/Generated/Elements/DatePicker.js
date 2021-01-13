@@ -19,7 +19,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
         ],
         execute: function () {
             exports_1("default", vue_js_1.defineComponent({
-                name: 'DropDownList',
+                name: 'DatePicker',
                 components: {
                     Field: vee_validate_js_1.Field,
                     RockLabel: RockLabel_js_1.default
@@ -33,21 +33,17 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                         type: String,
                         required: true
                     },
-                    disabled: {
-                        type: Boolean,
-                        default: false
-                    },
-                    options: {
-                        type: Array,
-                        required: true
+                    help: {
+                        type: String,
+                        default: ''
                     },
                     rules: {
                         type: String,
                         default: ''
                     },
-                    help: {
-                        type: String,
-                        default: ''
+                    disabled: {
+                        type: Boolean,
+                        default: false
                     }
                 },
                 emits: [
@@ -55,7 +51,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 ],
                 data: function () {
                     return {
-                        uniqueId: "rock-dropdownlist-" + Guid_js_1.newGuid(),
+                        uniqueId: "rock-textbox-" + Guid_js_1.newGuid(),
                         internalValue: this.modelValue
                     };
                 },
@@ -65,18 +61,18 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     }
                 },
                 methods: {
-                    onInput: function () {
+                    handleInput: function () {
                         this.$emit('update:modelValue', this.internalValue);
                     }
                 },
                 watch: {
-                    value: function () {
+                    modelValue: function () {
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"onInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-drop-down-list\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">{{label}}</RockLabel>\n        <div class=\"control-wrapper\">\n            <select :id=\"uniqueId\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\">\n                <option value=\"\"></option>\n                <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n            </select>\n        </div>\n    </div>\n</Field>"
+                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"handleInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group date-picker\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"control-wrapper\">\n            <div class=\"input-group input-width-md date\">\n                <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\" onfocus=\"(this.type='date')\" onblur=\"(this.type='text')\" />\n                <label :for=\"uniqueId\" class=\"input-group-addon\" :disabled=\"disabled\">\n                    <i class=\"fa fa-calendar\"></i>\n                </span>\n            </div>\n        </div>\n    </div>\n</Field>"
             }));
         }
     };
 });
-//# sourceMappingURL=DropDownList.js.map
+//# sourceMappingURL=DatePicker.js.map

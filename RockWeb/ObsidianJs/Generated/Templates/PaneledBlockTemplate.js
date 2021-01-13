@@ -11,7 +11,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
         execute: function () {
             exports_1("default", vue_js_1.defineComponent({
                 name: 'PaneledBlockTemplate',
-                template: "<div class=\"panel panel-block\">\n    <div class=\"panel-heading\">\n        <h1 class=\"panel-title\">\n            <slot name=\"title\" />\n        </h1>\n    </div>\n    <div class=\"panel-body\">\n        <div class=\"block-content\">\n            <slot />\n        </div>\n    </div>\n</div>"
+                template: "<div class=\"panel panel-block\">\n    <div class=\"panel-heading rollover-container\">\n        <h1 class=\"panel-title pull-left\">\n            <slot name=\"title\" />\n        </h1>\n        <slot name=\"titleAside\" />\n    </div>\n    <div class=\"panel-body\">\n        <div class=\"block-content\">\n            <slot />\n        </div>\n    </div>\n</div>"
             }));
         }
     };

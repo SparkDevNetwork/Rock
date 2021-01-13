@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.ViewModel;
 using Rock.Web.Cache;
 
 namespace Rock.Obsidian.Blocks.Crm
@@ -117,7 +118,8 @@ namespace Rock.Obsidian.Blocks.Crm
             {
                 BlockIconCssClass = GetBlockIconCssClass(),
                 BlockTitle = GetBlockTitle(),
-                ShowCategoryNamesAsSeparators = GetAttributeValue( AttributeKey.ShowCategoryNamesAsSeparators ).AsBoolean()
+                ShowCategoryNamesAsSeparators = GetAttributeValue( AttributeKey.ShowCategoryNamesAsSeparators ).AsBoolean(),
+                UseAbbreviatedNames = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean()
             };
         }
 
@@ -126,12 +128,51 @@ namespace Rock.Obsidian.Blocks.Crm
         #region Actions
 
         /// <summary>
+        /// Saves the attribute values.
+        /// </summary>
+        /// <param name="personGuid">The person unique identifier.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult SaveAttributeValues( Guid personGuid, Dictionary<string, AttributeValueArgs> keyArgsMap )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = GetCurrentPerson();
+
+                var personService = new PersonService( rockContext );
+                var person = personService.Get( personGuid );
+
+                if ( person == null || currentPerson == null )
+                {
+                    return new BlockActionResult( HttpStatusCode.NotFound );
+                }
+
+                person.LoadAttributes();
+                var attributes = GetAttributes( currentPerson, Rock.Security.Authorization.EDIT );
+
+                foreach ( var attribute in attributes )
+                {
+                    var arg = keyArgsMap.GetValueOrNull( attribute.Key );
+
+                    if ( arg != null )
+                    {
+                        person.SetAttributeValue( attribute.Key, arg.Value );
+                    }
+                }
+
+                person.SaveAttributeValues( rockContext );
+                return new BlockActionResult( HttpStatusCode.NoContent );
+            }
+        }
+
+        /// <summary>
         /// Get data based on the configured category setting.
         /// </summary>
         /// <param name="personGuid">The person unique identifier.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetAttributeDataList( Guid personGuid )
+        public BlockActionResult GetAttributeValueList( Guid personGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -141,7 +182,7 @@ namespace Rock.Obsidian.Blocks.Crm
                 var person = personService.Get( personGuid );
 
                 var categories = GetCategoryGuids();
-                var attributeDataList = new List<AttributeData>();
+                var attributeDataList = new List<AttributeValueViewModel>();
 
                 if ( !categories.Any() || person == null || currentPerson == null )
                 {
@@ -149,20 +190,14 @@ namespace Rock.Obsidian.Blocks.Crm
                 }
 
                 person.LoadAttributes();
-                var attributeService = new AttributeService( rockContext );
                 var orderOverride = GetAttributeValue( AttributeKey.AttributeOrder ).SplitDelimitedValues().AsIntegerList();
-
-                var orderedAttributeList = attributeService.Queryable()
-                    .Where( a => a.IsActive && a.Categories.Any( c => categories.Contains( c.Guid ) ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToAttributeCacheList();
+                var orderedAttributeList = GetAttributes( currentPerson, Rock.Security.Authorization.VIEW );
 
                 foreach ( var attributeId in orderOverride )
                 {
                     var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
 
-                    if ( attribute != null && attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    if ( attribute != null )
                     {
                         attributeDataList.Add( GetAttributeData( attribute, person ) );
                     }
@@ -170,10 +205,7 @@ namespace Rock.Obsidian.Blocks.Crm
 
                 foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
                 {
-                    if ( attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                    {
-                        attributeDataList.Add( GetAttributeData( attribute, person ) );
-                    }
+                    attributeDataList.Add( GetAttributeData( attribute, person ) );
                 }
 
                 attributeDataList = attributeDataList.Where( a => a != null ).ToList();
@@ -187,23 +219,34 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <param name="attribute">The attribute.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        private AttributeData GetAttributeData( AttributeCache attribute, Person person )
+        private AttributeValueViewModel GetAttributeData( AttributeCache attribute, Person person )
         {
-            var useAbbreviatedName = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean();
             var attributeValue = person.GetAttributeValue( attribute.Key );
 
-            if ( attributeValue.IsNullOrWhiteSpace() )
+            var viewModel = new AttributeValueViewModel
             {
-                return null;
-            }
-
-            var data = new AttributeData {
-                Label = useAbbreviatedName ? attribute.AbbreviatedName : attribute.Name,
-                Value = attributeValue,
-                FieldTypeGuid = attribute.FieldType.Guid
+                Value = attributeValue
             };
 
-            return data;
+            viewModel.SetPropertiesFromEntity( attribute );
+            return viewModel;
+        }
+
+        /// <summary>
+        /// Gets the attributes.
+        /// </summary>
+        /// <returns></returns>
+        private List<AttributeCache> GetAttributes( Person currentPerson, string authAction ) {
+            var categories = GetCategoryGuids();
+
+            return AttributeCache.All()
+                .Where( a =>
+                    a.IsActive &&
+                    a.Categories.Any( c => categories.Contains( c.Guid ) ) &&
+                    a.IsAuthorized( authAction, currentPerson ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
         }
 
         #endregion Actions
@@ -276,30 +319,5 @@ namespace Rock.Obsidian.Blocks.Crm
         }
 
         #endregion Data Access
-
-        #region View Models
-
-        /// <summary>
-        /// A login result object
-        /// </summary>
-        public class AttributeData
-        {
-            /// <summary>
-            /// Gets or sets the label.
-            /// </summary>
-            public string Label { get; set; }
-
-            /// <summary>
-            /// Gets or sets the formatted value.
-            /// </summary>
-            public string Value { get; set; }
-
-            /// <summary>
-            /// Gets the field type unique identifier.
-            /// </summary>
-            public Guid FieldTypeGuid { get; set; }
-        }
-
-        #endregion View Models
     }
 }
