@@ -67,6 +67,12 @@
         {% assign parentImage = parentItem.ImageLandscape %}
         {% capture parentPermalink %}{[ getPermalink cciid:'{{ parentItem.Id }}' ]}{% endcapture %}
         {% assign totalChildren = parentItem.Children | Size %}
+
+        {% comment %}
+            Write parent interaction
+        {% endcomment %}
+        {% interactionwrite channeltypemediumvalueid:'906' channelentityid:'{{ parentItem.ChannelId }}' channelname:'{{ parentItem.ChannelName }}' componententitytypeid:'209' componententityid:'{{ parentItem.Id }}' componentname:'{{ parentItem.Title }}' operation:'View' summary:'Viewed "{{ parentItem.Title }}"' channelcustom1:'{{ siteId }}' personaliasid:'{{ CurrentPerson.PrimaryAliasId }}' source:'{{ source }}' medium:'{{ medium }}' campaign:'{{ campaign }}' %}{{ currentUrl }}{% endinteractionwrite %}
+
     {% endif %}
 
     {% comment %}
