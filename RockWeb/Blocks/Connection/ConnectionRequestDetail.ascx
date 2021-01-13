@@ -256,10 +256,10 @@
                                 </div>
                             </Rock:RockControlWrapper>
 
-
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlTransferStatus" runat="server" Label="Status" />
+                            <Rock:CampusPicker ID="cpTransferCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpTransferCampus_SelectedIndexChanged" />
                         </div>
                     </div>
 

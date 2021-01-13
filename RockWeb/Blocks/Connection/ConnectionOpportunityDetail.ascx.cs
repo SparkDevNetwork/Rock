@@ -400,6 +400,9 @@ namespace RockWeb.Blocks.Connection
                 connectionOpportunity.IsActive = cbIsActive.Checked;
                 connectionOpportunity.PublicName = tbPublicName.Text;
                 connectionOpportunity.IconCssClass = tbIconCssClass.Text;
+                connectionOpportunity.ShowCampusOnTransfer = cbShowCampusOnTransfer.Checked;
+                connectionOpportunity.ShowConnectButton = cbShowConnectButton.Checked;
+                connectionOpportunity.ShowStatusOnTransfer = cbShowStatusOnTransfer.Checked;
 
                 int? orphanedPhotoId = null;
                 if ( connectionOpportunity.PhotoId != imgupPhoto.BinaryFileId )
@@ -1767,6 +1770,9 @@ namespace RockWeb.Blocks.Connection
             htmlSummary.Text = connectionOpportunity.Summary;
             htmlDescription.Text = connectionOpportunity.Description;
             cbIsActive.Checked = connectionOpportunity.IsActive;
+            cbShowStatusOnTransfer.Checked = connectionOpportunity.ShowStatusOnTransfer;
+            cbShowConnectButton.Checked = connectionOpportunity.ShowConnectButton;
+            cbShowCampusOnTransfer.Checked = connectionOpportunity.ShowCampusOnTransfer;
 
             WorkflowsState = new List<WorkflowTypeStateObj>();
             foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows )
