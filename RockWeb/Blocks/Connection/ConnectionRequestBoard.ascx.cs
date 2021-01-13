@@ -2471,70 +2471,15 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRequestModalViewModeTransferModeOpportunity_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var connectors = new Dictionary<int, Person>();
-
-            ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Clear();
-            ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Add( new ListItem() );
             var rockContext = new RockContext();
-            ConnectionOpportunity connectionOpportunity = null;
             var connectionOpportunityID = ddlRequestModalViewModeTransferModeOpportunity.SelectedValue.AsIntegerOrNull();
-
-            if ( connectionOpportunityID.HasValue )
+            var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
+            if ( connectionOpportunity != null )
             {
-                connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
-                if ( connectionOpportunity != null && connectionOpportunity.ConnectionType != null )
-                {
-                    rbRequestModalViewModeTransferModeDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
-                    var connectionOpportunityConnectorPersonList = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
-                        .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id ).SelectMany( a => a.ConnectorGroup.Members )
-                        .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active ).Select( a => a.Person ).AsNoTracking().ToList();
-
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
-                }
-
-                // Add the current person as possible connector
-                if ( CurrentPerson != null )
-                {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
-                }
-
-                // Add connectors to dropdown list
-                connectors
-                    .ToList()
-                    .OrderBy( p => p.Value.LastName )
-                    .ThenBy( p => p.Value.NickName )
-                    .ToList()
-                    .ForEach( c =>
-                        ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Add( new ListItem( c.Value.FullName, c.Key.ToString() ) ) );
+                rbRequestModalViewModeTransferModeDefaultConnector.Text = "Default Connector for " + connectionOpportunity.Name;
             }
 
-
-            int? defaultConnectorPersonId = null;
-            var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( ConnectionRequestId.Value );
-            if ( connectionRequest != null && connectionOpportunity != null )
-            {
-                defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
-                if ( defaultConnectorPersonId.HasValue )
-                {
-                    var defaultConnectorListItem = ddlRequestModalViewModeTransferModeOpportunityConnector.Items.FindByValue( defaultConnectorPersonId.ToString() );
-                    if ( defaultConnectorListItem != null )
-                    {
-                        defaultConnectorListItem.Attributes["IsDefaultConnector"] = true.ToTrueFalse();
-                    }
-                }
-            }
-
-            if ( rbRequestModalViewModeTransferModeDefaultConnector.Checked && connectionOpportunity != null )
-            {
-                if ( defaultConnectorPersonId.HasValue )
-                {
-                    ddlRequestModalViewModeTransferModeOpportunityConnector.SetValue( defaultConnectorPersonId.Value );
-                }
-            }
-            else if ( connectionRequest != null && connectionRequest.ConnectorPersonAlias != null )
-            {
-                ddlRequestModalViewModeTransferModeOpportunityConnector.SetValue( connectionRequest.ConnectorPersonAlias.PersonId );
-            }
+            RebindTransferOpportunityConnector( connectionOpportunity, true, rockContext );
         }
 
         /// <summary>
@@ -2549,7 +2494,20 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Handles the Click event of the btnTransferSave control.
+        /// Handles the SelectedIndexChanged event of the cpTransferCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cpTransferCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var connectionOpportunityID = ddlRequestModalViewModeTransferModeOpportunity.SelectedValue.AsIntegerOrNull();
+            var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Get( connectionOpportunityID.Value );
+            RebindTransferOpportunityConnector( connectionOpportunity, false, rockContext );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRequestModalViewModeTransferModeSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -2565,7 +2523,6 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null )
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
-                    int? newStatusId = ddlRequestModalViewModeTransferModeStatus.SelectedValueAsId();
 
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
                     var transferredActivityId = connectionActivityTypeService.Queryable()
@@ -2573,10 +2530,22 @@ namespace RockWeb.Blocks.Connection
                         .Select( t => t.Id )
                         .FirstOrDefault();
 
-                    if ( newOpportunityId.HasValue && newStatusId.HasValue && transferredActivityId > 0 )
+                    if ( newOpportunityId.HasValue && transferredActivityId > 0 )
                     {
+                        var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
+
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
-                        connectionRequest.ConnectionStatusId = newStatusId.Value;
+                        if ( newOpportunity.ShowStatusOnTransfer && ddlRequestModalViewModeTransferModeStatus.Visible )
+                        {
+                            var newStatusId = ddlRequestModalViewModeTransferModeStatus.SelectedValueAsId();
+                            connectionRequest.ConnectionStatusId = newStatusId.Value;
+                        }
+
+                        if ( newOpportunity.ShowCampusOnTransfer && cpTransferCampus.Visible )
+                        {
+                            connectionRequest.CampusId = cpTransferCampus.SelectedCampusId;
+                        }
+
                         connectionRequest.AssignedGroupId = null;
                         connectionRequest.AssignedGroupMemberRoleId = null;
                         connectionRequest.AssignedGroupMemberStatus = null;
@@ -2588,7 +2557,6 @@ namespace RockWeb.Blocks.Connection
                         }
                         else if ( rbRequestModalViewModeTransferModeDefaultConnector.Checked )
                         {
-                            var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
                             if ( newOpportunity != null )
                             {
                                 connectionRequest.ConnectorPersonAliasId = newOpportunity.GetDefaultConnectorPersonAliasId( connectionRequest.CampusId );
@@ -3748,6 +3716,112 @@ namespace RockWeb.Blocks.Connection
                 pnlFollowing,
                 CurrentPerson,
                 "Rock.controls.connectionRequestBoard.onFollowingChange" );
+        }
+
+        /// <summary>
+        /// Set the control on transfer
+        /// </summary>
+        private void SetControlOnTransfer( ConnectionOpportunity connectionOpportunity, ConnectionRequest connectionRequest )
+        {
+            ddlRequestModalViewModeTransferModeStatus.Visible = connectionOpportunity.ShowStatusOnTransfer;
+            if ( connectionOpportunity.ShowStatusOnTransfer )
+            {
+                ddlRequestModalViewModeTransferModeStatus.Items.Clear();
+                foreach ( var status in connectionOpportunity.ConnectionType.ConnectionStatuses )
+                {
+                    ddlRequestModalViewModeTransferModeStatus.Items.Add( new ListItem( status.Name, status.Id.ToString() ) );
+                }
+                ddlRequestModalViewModeTransferModeStatus.SetValue( connectionRequest.ConnectionStatusId.ToString() );
+            }
+
+            cpTransferCampus.Visible = connectionOpportunity.ShowCampusOnTransfer;
+            if ( connectionOpportunity.ShowCampusOnTransfer )
+            {
+                cpTransferCampus.IncludeInactive = false;
+                cpTransferCampus.SetValue( connectionRequest.CampusId );
+            }
+        }
+
+        /// <summary>
+        /// Rebind transfer opportunity connector
+        /// </summary>
+        private void RebindTransferOpportunityConnector( ConnectionOpportunity connectionOpportunity, bool setControl = false, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var connectors = new Dictionary<int, Person>();
+            var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( ConnectionRequestId.Value );
+            ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Clear();
+            ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Add( new ListItem() );
+
+            if ( connectionOpportunity != null )
+            {
+                if ( connectionOpportunity.ConnectionType != null && connectionRequest != null )
+                {
+                    if ( setControl )
+                    {
+                        SetControlOnTransfer( connectionOpportunity, connectionRequest );
+                    }
+
+                    var campusId = connectionRequest.CampusId;
+                    if ( connectionOpportunity.ShowCampusOnTransfer )
+                    {
+                        campusId = cpTransferCampus.SelectedCampusId;
+                    }
+
+                    var connectionOpportunityConnectorPersonList = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
+                        .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id && ( !campusId.HasValue || !a.CampusId.HasValue || a.CampusId.Value == campusId.Value ) )
+                        .SelectMany( a => a.ConnectorGroup.Members )
+                        .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Select( a => a.Person )
+                        .AsNoTracking()
+                        .ToList();
+
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                }
+
+                // Add the current person as possible connector
+                if ( CurrentPerson != null )
+                {
+                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                }
+
+                // Add connectors to dropdown list
+                connectors
+                    .ToList()
+                    .OrderBy( p => p.Value.LastName )
+                    .ThenBy( p => p.Value.NickName )
+                    .ToList()
+                    .ForEach( c =>
+                        ddlRequestModalViewModeTransferModeOpportunityConnector.Items.Add( new ListItem( c.Value.FullName, c.Key.ToString() ) ) );
+            }
+
+
+            int? defaultConnectorPersonId = null;
+            if ( connectionRequest != null && connectionOpportunity != null )
+            {
+                defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
+                if ( defaultConnectorPersonId.HasValue )
+                {
+                    var defaultConnectorListItem = ddlRequestModalViewModeTransferModeOpportunityConnector.Items.FindByValue( defaultConnectorPersonId.ToString() );
+                    if ( defaultConnectorListItem != null )
+                    {
+                        defaultConnectorListItem.Attributes["IsDefaultConnector"] = true.ToTrueFalse();
+                    }
+                }
+            }
+
+            if ( rbRequestModalViewModeTransferModeDefaultConnector.Checked && connectionOpportunity != null )
+            {
+                if ( defaultConnectorPersonId.HasValue )
+                {
+                    ddlRequestModalViewModeTransferModeOpportunityConnector.SetValue( defaultConnectorPersonId.Value );
+                }
+            }
+            else if ( connectionRequest != null && connectionRequest.ConnectorPersonAlias != null )
+            {
+                ddlRequestModalViewModeTransferModeOpportunityConnector.SetValue( connectionRequest.ConnectorPersonAlias.PersonId );
+            }
         }
 
         #endregion UI Bindings
