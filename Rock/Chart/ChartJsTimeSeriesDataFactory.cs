@@ -263,7 +263,17 @@ namespace Rock.Chart
                 args.SizeToFitContainerWidth = true;
             }
 
-            dynamic optionsData = new { args.MaintainAspectRatio, responsive = args.SizeToFitContainerWidth, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
+            var optionsData = new
+            {
+                maintainAspectRatio = args.MaintainAspectRatio,
+                responsive = args.SizeToFitContainerWidth,
+                legend = optionsLegend,
+                scales = new
+                {
+                    xAxes = optionsXaxes,
+                    yAxes = optionsYaxes
+                }
+            };
 
             // Create the data structure for Chartjs parameter "chart".
             string chartStyle = GetChartJsStyleParameterValue( this.ChartStyle );
