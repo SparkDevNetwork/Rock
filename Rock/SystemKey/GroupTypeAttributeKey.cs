@@ -123,6 +123,11 @@ namespace Rock.SystemKey
         public const string CHECKIN_FAMILYSELECT_LAVA_TEMPLATE = "core_checkin_FamilyLavaTemplate";
 
         /// <summary>
+        /// The GroupType attribute key for the checkin PersonSelect lava template.
+        /// </summary>
+        public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationTemplate";
+
+        /// <summary>
         /// The grouptype attribute key for the checkin success lava template
         /// </summary>
         public const string CHECKIN_SUCCESS_LAVA_TEMPLATE = "core_checkin_SuccessLavaTemplate";
