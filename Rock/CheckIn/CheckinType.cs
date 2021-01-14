@@ -279,6 +279,14 @@ namespace Rock.CheckIn
         public string FamilySelectLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
 
         /// <summary>
+        /// Gets the person select additional information template.
+        /// </summary>
+        /// <value>
+        /// The person select additional information template.
+        /// </value>
+        public string PersonSelectAdditionalInfoTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_TEMPLATE );
+
+        /// <summary>
         /// Gets the success lava template.
         /// </summary>
         /// <value>
