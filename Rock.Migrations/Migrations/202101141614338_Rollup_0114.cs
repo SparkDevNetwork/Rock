@@ -77,7 +77,7 @@ namespace Rock.Migrations
         private void AddGroupTypeAttributePersonSelectLavaTemplateButtonUp()
         {
             // Entity: Rock.Model.GroupType Attribute: Person Select Additional Information Template
-            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.GroupType", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "GroupTypePurposeValueId", "142", "Person Select Additional Information Template", "Person Select Template", @"The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks.", 1040, @"", "55ED9569-8ED8-45A4-AD54-E23F968494EB", "core_PersonSelectAdditionalInformationTemplate");
+            RockMigrationHelper.AddOrUpdateEntityAttribute( "Rock.Model.GroupType", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "GroupTypePurposeValueId", "142", "Person Select Additional Information Template", "Person Select Template", @"The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks.", 1040, @"", "55ED9569-8ED8-45A4-AD54-E23F968494EB", "core_checkin_PersonSelectAdditionalInformationLavaTemplate");
 
             // Qualifier for attribute: core_PersonSelectAdditionalInformationTemplate
             RockMigrationHelper.UpdateAttributeQualifier( "55ED9569-8ED8-45A4-AD54-E23F968494EB", "editorHeight", @"", "3AF279D6-0BED-4646-9484-63A4A65ECCE5");
