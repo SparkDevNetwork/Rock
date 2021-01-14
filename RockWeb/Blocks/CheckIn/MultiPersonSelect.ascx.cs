@@ -224,6 +224,7 @@ namespace RockWeb.Blocks.CheckIn
                 pnlPhoto.Visible = !_hidePhotos;
 
                 var lPersonButton = e.Item.FindControl( "lPersonButton" ) as Literal;
+                var lPersonSelectLava = e.Item.FindControl( "lPersonSelectLava" ) as Literal;
                 var person = e.Item.DataItem as CheckInPerson;
 
                 if ( lPersonButton != null && person != null )
@@ -280,6 +281,17 @@ namespace RockWeb.Blocks.CheckIn
                         lPersonButton.Text = string.Format( @"
 <div class='family-personselect'>{0}</div>
 ", person.Person.FullName );
+                    }
+                }
+
+                if ( lPersonSelectLava != null && person != null )
+                {
+                    var personSelectLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectAdditionalInfoTemplate;
+                    if ( personSelectLavaTemplate.IsNotNullOrWhiteSpace() )
+                    {
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        mergeFields.Add( "Person", person );
+                        lPersonSelectLava.Text = personSelectLavaTemplate.ResolveMergeFields( mergeFields );
                     }
                 }
             }
