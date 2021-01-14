@@ -125,7 +125,7 @@ namespace Rock.SystemKey
         /// <summary>
         /// The GroupType attribute key for the checkin PersonSelect lava template.
         /// </summary>
-        public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationTemplate";
+        public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationLavaTemplate";
 
         /// <summary>
         /// The grouptype attribute key for the checkin success lava template
