@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 if ( lPersonSelectLava != null && person != null )
                 {
-                    var personSelectLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectAdditionalInfoTemplate;
+                    var personSelectLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectAdditionalInfoLavaTemplate;
                     if ( personSelectLavaTemplate.IsNotNullOrWhiteSpace() )
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
