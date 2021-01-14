@@ -1,6 +1,6 @@
-﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
 import { Guid } from '../Util/Guid.js';
-import { registerFieldType } from './Index.js';
+import { getFieldTypeProps, registerFieldType } from './Index.js';
 import { asDateString } from '../Filters/Date.js';
 import DatePicker from '../Elements/DatePicker.js';
 
@@ -11,20 +11,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
     components: {
         DatePicker
     },
-    props: {
-        modelValue: {
-            type: String as PropType<string>,
-            required: true
-        },
-        edit: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        label: {
-            type: String as PropType<string>,
-            default: ''
-        }
-    },
+    props: getFieldTypeProps(),
     data() {
         return {
             internalValue: this.modelValue
@@ -41,6 +28,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<DatePicker v-if="edit" v-model="internalValue" :label="label" :help="help" />
+<DatePicker v-if="edit" v-model="internalValue" />
 <span v-else>{{ valueAsDateString }}</span>`
 }));

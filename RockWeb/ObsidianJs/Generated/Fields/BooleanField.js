@@ -24,24 +24,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Boolean.js", 
                 components: {
                     DropDownList: DropDownList_js_1.default
                 },
-                props: {
-                    modelValue: {
-                        type: String,
-                        required: true
-                    },
-                    edit: {
-                        type: Boolean,
-                        default: false
-                    },
-                    label: {
-                        type: String,
-                        default: ''
-                    },
-                    help: {
-                        type: String,
-                        default: ''
-                    }
-                },
+                props: Index_js_1.getFieldTypeProps(),
                 data: function () {
                     var trueVal = Boolean_js_1.asTrueFalseOrNull(true);
                     var falseVal = Boolean_js_1.asTrueFalseOrNull(false);
@@ -71,7 +54,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Boolean.js", 
                         }
                     }
                 },
-                template: "\n<DropDownList v-if=\"edit\" v-model=\"internalValue\" :label=\"label\" :options=\"dropDownListOptions\" :help=\"help\" />\n<span v-else>{{ valueAsYesNoOrNull }}</span>"
+                template: "\n<DropDownList v-if=\"edit\" v-model=\"internalValue\" :options=\"dropDownListOptions\" />\n<span v-else>{{ valueAsYesNoOrNull }}</span>"
             })));
         }
     };

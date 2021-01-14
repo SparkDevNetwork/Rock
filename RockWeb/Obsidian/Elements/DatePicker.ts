@@ -71,7 +71,7 @@ export default defineComponent({
                 <input :id="uniqueId" type="text" class="form-control" :disabled="disabled" v-bind="field" onfocus="(this.type='date')" onblur="(this.type='text')" />
                 <label :for="uniqueId" class="input-group-addon" :disabled="disabled">
                     <i class="fa fa-calendar"></i>
-                </span>
+                </label>
             </div>
         </div>
     </div>

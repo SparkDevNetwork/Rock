@@ -1,5 +1,6 @@
-﻿import { Component } from '../Vendor/Vue/vue.js';
+﻿import { Component, PropType } from '../Vendor/Vue/vue.js';
 import { Guid, normalize } from '../Util/Guid.js';
+import { ConfigurationValues } from '../Types/Models/AttributeValue.js';
 
 const fieldTypeComponentPaths: Record<Guid, Component> = {};
 
@@ -7,6 +8,23 @@ export type FieldTypeModule = {
     fieldTypeGuid: Guid;
     component: Component;
 };
+
+export function getFieldTypeProps() {
+    return {
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+        edit: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        configurationValues: {
+            type: Object as PropType<ConfigurationValues>,
+            default: () => ({})
+        }
+    };
+}
 
 export function registerFieldType(fieldTypeGuid: Guid, component: Component) {
     const normalizedGuid = normalize(fieldTypeGuid);

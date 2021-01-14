@@ -55,7 +55,12 @@ export default defineComponent({
         },
         getAttributeLabel(attributeValue: AttributeValue) {
             const useAbbreviatedNames = this.blockSettings.UseAbbreviatedNames as boolean;
-            return useAbbreviatedNames ? attributeValue.AttributeAbbreviatedName : attributeValue.AttributeName;
+
+            if (useAbbreviatedNames) {
+                return attributeValue.AttributeAbbreviatedName || attributeValue.AttributeName;
+            }
+
+            return attributeValue.AttributeName;
         },
         async loadData() {
             if (!this.personGuid) {
@@ -135,7 +140,14 @@ export default defineComponent({
             </div>
             <RockForm v-else @submit="doSave">
                 <template v-for="a in attributeDataList">
-                    <RockField edit :fieldTypeGuid="a.AttributeFieldTypeGuid" v-model="a.Value" :label="getAttributeLabel(a)" :help="a.AttributeDescription" />
+                    <RockField
+                        edit
+                        :fieldTypeGuid="a.AttributeFieldTypeGuid"
+                        v-model="a.Value"
+                        :label="getAttributeLabel(a)"
+                        :help="a.AttributeDescription"
+                        :rules="a.AttributeIsRequired ? 'required' : ''"
+                        :configurationValues="a.AttributeQualifierValues"  />
                 </template>
                 <div class="actions">
                     <RockButton class="btn-primary btn-xs" type="submit">Save</RockButton>

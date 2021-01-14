@@ -24,20 +24,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Date.js", "..
                 components: {
                     DatePicker: DatePicker_js_1.default
                 },
-                props: {
-                    modelValue: {
-                        type: String,
-                        required: true
-                    },
-                    edit: {
-                        type: Boolean,
-                        default: false
-                    },
-                    label: {
-                        type: String,
-                        default: ''
-                    }
-                },
+                props: Index_js_1.getFieldTypeProps(),
                 data: function () {
                     return {
                         internalValue: this.modelValue
@@ -53,7 +40,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Date.js", "..
                         this.$emit('update:modelValue', this.internalValue);
                     }
                 },
-                template: "\n<DatePicker v-if=\"edit\" v-model=\"internalValue\" :label=\"label\" :help=\"help\" />\n<span v-else>{{ valueAsDateString }}</span>"
+                template: "\n<DatePicker v-if=\"edit\" v-model=\"internalValue\" />\n<span v-else>{{ valueAsDateString }}</span>"
             })));
         }
     };

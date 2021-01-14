@@ -72,7 +72,7 @@ export default defineComponent({
     <template v-slot:default>
         <GalleryAndResult>
             <template #gallery>
-                <TextBox label="Text 1" v-model="text" />
+                <TextBox label="Text 1" v-model="text" :maxLength="10" showCountDown />
                 <TextBox label="Text 2" v-model="text" />
             </template>
             <template #result>

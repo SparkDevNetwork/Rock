@@ -1,6 +1,6 @@
 ﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { Guid } from '../Util/Guid.js';
-import { registerFieldType } from './Index.js';
+import { getFieldTypeProps, registerFieldType } from './Index.js';
 import { asYesNoOrNull, asTrueFalseOrNull } from '../Filters/Boolean.js';
 import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
 
@@ -11,24 +11,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
     components: {
         DropDownList
     },
-    props: {
-        modelValue: {
-            type: String as PropType<string>,
-            required: true
-        },
-        edit: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        label: {
-            type: String as PropType<string>,
-            default: ''
-        },
-        help: {
-            type: String as PropType<string>,
-            default: ''
-        }
-    },
+    props: getFieldTypeProps(),
     data() {
         const trueVal = asTrueFalseOrNull(true);
         const falseVal = asTrueFalseOrNull(false);
@@ -60,6 +43,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<DropDownList v-if="edit" v-model="internalValue" :label="label" :options="dropDownListOptions" :help="help" />
+<DropDownList v-if="edit" v-model="internalValue" :options="dropDownListOptions" />
 <span v-else>{{ valueAsYesNoOrNull }}</span>`
 }));

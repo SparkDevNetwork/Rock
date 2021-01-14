@@ -26,12 +26,20 @@ export default defineComponent({
             type: String as PropType<string>,
             default: 'text'
         },
+        maxLength: {
+            type: Number as PropType<number>,
+            default: 524288
+        },
+        showCountDown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
         rules: {
             type: String as PropType<string>,
             default: ''
         },
         disabled: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             default: false
         }
     },
@@ -47,6 +55,20 @@ export default defineComponent({
     computed: {
         isRequired(): boolean {
             return this.rules.includes('required');
+        },
+        charsRemaining(): number {
+            return this.maxLength - this.modelValue.length;
+        },
+        countdownClass(): string {
+            if (this.charsRemaining >= 10) {
+                return 'badge-default';
+            }
+
+            if (this.charsRemaining >= 0) {
+                return 'badge-warning';
+            }
+
+            return 'badge-danger';
         }
     },
     methods: {
@@ -66,12 +88,15 @@ export default defineComponent({
     :name="label"
     :rules="rules"
     #default="{field, errors}">
+    <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
+        {{charsRemaining}}
+    </em>
     <div class="form-group rock-text-box" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
         <RockLabel :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" />
+            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" />
         </div>
     </div>
 </Field>`

@@ -22,27 +22,10 @@ System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextFi
             exports_1("default", vue_js_1.defineComponent({
                 name: 'RockField',
                 props: {
-                    modelValue: {
-                        type: String,
-                        required: true
-                    },
                     fieldTypeGuid: {
                         type: String,
                         required: true
-                    },
-                    edit: {
-                        type: Boolean,
-                        default: false
-                    },
-                    label: {
-                        type: String,
-                        default: ''
                     }
-                },
-                data: function () {
-                    return {
-                        internalValue: this.modelValue
-                    };
                 },
                 computed: {
                     fieldComponent: function () {
@@ -54,12 +37,7 @@ System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextFi
                         return field;
                     }
                 },
-                watch: {
-                    internalValue: function () {
-                        this.$emit('update:modelValue', this.internalValue);
-                    }
-                },
-                template: "\n<component :is=\"fieldComponent\" v-model=\"internalValue\" :edit=\"edit\" :label=\"label\" />"
+                template: "\n<component :is=\"fieldComponent\" />"
             }));
         }
     };

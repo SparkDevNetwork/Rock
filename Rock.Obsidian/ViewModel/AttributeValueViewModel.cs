@@ -16,7 +16,9 @@
 //
 
 using System;
+using System.Collections.Generic;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -83,6 +85,22 @@ namespace Rock.Obsidian.ViewModel
         public string AttributeDescription { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [attribute is required].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attribute is required]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AttributeIsRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute qualifier values.
+        /// </summary>
+        /// <value>
+        /// The attribute qualifier values.
+        /// </value>
+        public Dictionary<string, ConfigurationValue> AttributeQualifierValues { get; set; }
+
+        /// <summary>
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -108,6 +126,8 @@ namespace Rock.Obsidian.ViewModel
                 AttributeFieldTypeGuid = attribute.FieldType.Guid;
                 AttributeKey = attribute.Key;
                 AttributeDescription = attribute.Description;
+                AttributeIsRequired = attribute.IsRequired;
+                AttributeQualifierValues = attribute.QualifierValues;
             }
         }
     }

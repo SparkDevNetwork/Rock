@@ -1,6 +1,6 @@
-System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js"], function (exports_1, context_1) {
+System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js", "../Filters/Boolean.js"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Index_js_1, TextBox_js_1, fieldTypeGuid;
+    var vue_js_1, Index_js_1, TextBox_js_1, Boolean_js_1, fieldTypeGuid, ConfigurationValueKey;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -12,29 +12,24 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js"]
             },
             function (TextBox_js_1_1) {
                 TextBox_js_1 = TextBox_js_1_1;
+            },
+            function (Boolean_js_1_1) {
+                Boolean_js_1 = Boolean_js_1_1;
             }
         ],
         execute: function () {
             fieldTypeGuid = '9C204CD0-1233-41C5-818A-C5DA439445AA';
+            (function (ConfigurationValueKey) {
+                ConfigurationValueKey["IsPassword"] = "ispassword";
+                ConfigurationValueKey["MaxCharacters"] = "maxcharacters";
+                ConfigurationValueKey["ShowCountDown"] = "showcountdown";
+            })(ConfigurationValueKey || (ConfigurationValueKey = {}));
             exports_1("default", Index_js_1.registerFieldType(fieldTypeGuid, vue_js_1.defineComponent({
                 name: 'TextField',
                 components: {
                     TextBox: TextBox_js_1.default
                 },
-                props: {
-                    modelValue: {
-                        type: String,
-                        required: true
-                    },
-                    edit: {
-                        type: Boolean,
-                        default: false
-                    },
-                    label: {
-                        type: String,
-                        default: ''
-                    }
-                },
+                props: Index_js_1.getFieldTypeProps(),
                 data: function () {
                     return {
                         internalValue: this.modelValue
@@ -44,8 +39,23 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js"]
                     safeValue: function () {
                         return (this.modelValue || '').trim();
                     },
-                    valueIsNull: function () {
-                        return !this.safeValue;
+                    configAttributes: function () {
+                        var attributes = {};
+                        var maxCharsConfig = this.configurationValues[ConfigurationValueKey.MaxCharacters];
+                        if (maxCharsConfig && maxCharsConfig.Value) {
+                            var maxCharsValue = Number(maxCharsConfig.Value);
+                            if (maxCharsValue) {
+                                attributes.maxLength = maxCharsValue;
+                            }
+                        }
+                        var showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
+                        if (showCountDownConfig && showCountDownConfig.Value) {
+                            var showCountDownValue = Boolean_js_1.asBooleanOrNull(showCountDownConfig.Value) || false;
+                            if (showCountDownValue) {
+                                attributes.showCountDown = showCountDownValue;
+                            }
+                        }
+                        return attributes;
                     }
                 },
                 watch: {
@@ -53,7 +63,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js"]
                         this.$emit('update:modelValue', this.internalValue);
                     }
                 },
-                template: "\n<TextBox v-if=\"edit\" v-model=\"internalValue\" :label=\"label\" :help=\"help\" />\n<span v-else>{{ safeValue }}</span>"
+                template: "\n<TextBox v-if=\"edit\" v-model=\"internalValue\" v-bind=\"configAttributes\" />\n<span v-else>{{ safeValue }}</span>"
             })));
         }
     };

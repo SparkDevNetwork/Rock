@@ -14,7 +14,7 @@ export function ruleArrayToString(rulesArray: string[]) {
 
 defineRule('required', (value => {
     if (isNullOrWhitespace(value)) {
-        return 'This field is required';
+        return 'is required';
     }
 
     return true;
@@ -28,7 +28,7 @@ defineRule('email', (value => {
 
     // Check if email
     if (!isEmail(value)) {
-        return 'This field must be a valid email';
+        return 'must be a valid email';
     }
 
     return true;

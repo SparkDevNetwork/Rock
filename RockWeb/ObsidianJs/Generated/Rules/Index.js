@@ -25,7 +25,7 @@ System.register(["../Filters/Email.js", "../Filters/String.js", "../Vendor/VeeVa
         execute: function () {
             vee_validate_js_1.defineRule('required', (function (value) {
                 if (String_js_1.isNullOrWhitespace(value)) {
-                    return 'This field is required';
+                    return 'is required';
                 }
                 return true;
             }));
@@ -36,7 +36,7 @@ System.register(["../Filters/Email.js", "../Filters/String.js", "../Vendor/VeeVa
                 }
                 // Check if email
                 if (!Email_js_1.isEmail(value)) {
-                    return 'This field must be a valid email';
+                    return 'must be a valid email';
                 }
                 return true;
             }));
