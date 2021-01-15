@@ -28,6 +28,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<DatePicker v-if="edit" v-model="internalValue" />
+<DatePicker v-if="isEditMode" v-model="internalValue" />
 <span v-else>{{ valueAsDateString }}</span>`
 }));

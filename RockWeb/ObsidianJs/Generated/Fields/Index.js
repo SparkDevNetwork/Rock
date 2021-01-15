@@ -8,7 +8,7 @@ System.register(["../Util/Guid.js"], function (exports_1, context_1) {
                 type: String,
                 required: true
             },
-            edit: {
+            isEditMode: {
                 type: Boolean,
                 default: false
             },

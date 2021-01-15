@@ -43,6 +43,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<DropDownList v-if="edit" v-model="internalValue" :options="dropDownListOptions" />
+<DropDownList v-if="isEditMode" v-model="internalValue" :options="dropDownListOptions" />
 <span v-else>{{ valueAsYesNoOrNull }}</span>`
 }));

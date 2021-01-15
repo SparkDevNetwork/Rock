@@ -63,7 +63,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js",
                         this.$emit('update:modelValue', this.internalValue);
                     }
                 },
-                template: "\n<TextBox v-if=\"edit\" v-model=\"internalValue\" v-bind=\"configAttributes\" />\n<span v-else>{{ safeValue }}</span>"
+                template: "\n<TextBox v-if=\"isEditMode\" v-model=\"internalValue\" v-bind=\"configAttributes\" />\n<span v-else>{{ safeValue }}</span>"
             })));
         }
     };

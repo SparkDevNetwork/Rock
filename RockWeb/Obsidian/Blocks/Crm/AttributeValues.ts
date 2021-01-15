@@ -1,7 +1,6 @@
 ﻿import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
 import Loading from '../../Controls/Loading.js';
-import RockField from '../../Controls/RockField.js';
 import { BlockAction } from '../../Controls/RockBlock.js';
 import { BlockSettings } from '../../Index.js';
 import store from '../../Store/Index.js';
@@ -12,17 +11,18 @@ import RockForm from '../../Controls/RockForm.js';
 import TextBox from '../../Elements/TextBox.js';
 import RockButton from '../../Elements/RockButton.js';
 import AttributeValue from '../../Types/Models/AttributeValue.js';
+import AttributeValueContainer from '../../Controls/AttributeValueContainer.js';
 
 export default defineComponent({
     name: 'Crm.AttributeValues',
     components: {
         PaneledBlockTemplate,
         Loading,
-        RockField,
         JavaScriptAnchor,
         RockForm,
         TextBox,
-        RockButton
+        RockButton,
+        AttributeValueContainer
     },
     setup() {
         return {
@@ -42,8 +42,8 @@ export default defineComponent({
             const person = (store.getters.personContext || null) as Person | null;
             return person ? person.Guid : null;
         },
-        nonEmptyAttributeValues(): AttributeValue[] {
-            return this.attributeDataList.filter(av => !!av.Value);
+        useAbbreviatedNames(): boolean {
+            return this.blockSettings.UseAbbreviatedNames as boolean;
         }
     },
     methods: {
@@ -52,15 +52,6 @@ export default defineComponent({
         },
         goToEditMode() {
             this.isEditMode = true;
-        },
-        getAttributeLabel(attributeValue: AttributeValue) {
-            const useAbbreviatedNames = this.blockSettings.UseAbbreviatedNames as boolean;
-
-            if (useAbbreviatedNames) {
-                return attributeValue.AttributeAbbreviatedName || attributeValue.AttributeName;
-            }
-
-            return attributeValue.AttributeName;
         },
         async loadData() {
             if (!this.personGuid) {
@@ -96,8 +87,8 @@ export default defineComponent({
                 keyArgsMap
             });
 
-            this.isLoading = false;
             this.goToViewMode();
+            this.isLoading = false;
         }
     },
     watch: {
@@ -128,27 +119,9 @@ export default defineComponent({
     </template>
     <template v-slot:default>
         <Loading :isLoading="isLoading">
-            <div v-if="!isEditMode" v-for="a in nonEmptyAttributeValues" class="form-group static-control">
-                <label class="control-label">
-                    {{ getAttributeLabel(a) }}
-                </label>
-                <div class="control-wrapper">
-                    <div class="form-control-static">
-                        <RockField :fieldTypeGuid="a.AttributeFieldTypeGuid" v-model="a.Value" />
-                    </div>
-                </div>
-            </div>
+            <AttributeValueContainer v-if="!isEditMode" :attributeValues="attributeDataList" :showEmptyValues="false" />
             <RockForm v-else @submit="doSave">
-                <template v-for="a in attributeDataList">
-                    <RockField
-                        edit
-                        :fieldTypeGuid="a.AttributeFieldTypeGuid"
-                        v-model="a.Value"
-                        :label="getAttributeLabel(a)"
-                        :help="a.AttributeDescription"
-                        :rules="a.AttributeIsRequired ? 'required' : ''"
-                        :configurationValues="a.AttributeQualifierValues"  />
-                </template>
+                <AttributeValueContainer :attributeValues="attributeDataList" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
                     <RockButton class="btn-primary btn-xs" type="submit">Save</RockButton>
                     <RockButton class="btn-link btn-xs" @click="goToViewMode">Cancel</RockButton>

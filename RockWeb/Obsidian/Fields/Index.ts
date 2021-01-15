@@ -15,7 +15,7 @@ export function getFieldTypeProps() {
             type: String as PropType<string>,
             required: true
         },
-        edit: {
+        isEditMode: {
             type: Boolean as PropType<boolean>,
             default: false
         },

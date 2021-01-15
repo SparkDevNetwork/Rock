@@ -54,7 +54,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Boolean.js", 
                         }
                     }
                 },
-                template: "\n<DropDownList v-if=\"edit\" v-model=\"internalValue\" :options=\"dropDownListOptions\" />\n<span v-else>{{ valueAsYesNoOrNull }}</span>"
+                template: "\n<DropDownList v-if=\"isEditMode\" v-model=\"internalValue\" :options=\"dropDownListOptions\" />\n<span v-else>{{ valueAsYesNoOrNull }}</span>"
             })));
         }
     };

@@ -57,6 +57,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<TextBox v-if="edit" v-model="internalValue" v-bind="configAttributes" />
+<TextBox v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" />
 <span v-else>{{ safeValue }}</span>`
 }));

@@ -1,4 +1,4 @@
-System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplate.js", "../../Controls/Loading.js", "../../Controls/RockField.js", "../../Store/Index.js", "../../Elements/JavaScriptAnchor.js", "../../Controls/RockForm.js", "../../Elements/TextBox.js", "../../Elements/RockButton.js"], function (exports_1, context_1) {
+System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplate.js", "../../Controls/Loading.js", "../../Store/Index.js", "../../Elements/JavaScriptAnchor.js", "../../Controls/RockForm.js", "../../Elements/TextBox.js", "../../Elements/RockButton.js", "../../Controls/AttributeValueContainer.js"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, PaneledBlockTemplate_js_1, Loading_js_1, RockField_js_1, Index_js_1, JavaScriptAnchor_js_1, RockForm_js_1, TextBox_js_1, RockButton_js_1;
+    var vue_js_1, PaneledBlockTemplate_js_1, Loading_js_1, Index_js_1, JavaScriptAnchor_js_1, RockForm_js_1, TextBox_js_1, RockButton_js_1, AttributeValueContainer_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -48,9 +48,6 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             },
             function (Loading_js_1_1) {
                 Loading_js_1 = Loading_js_1_1;
-            },
-            function (RockField_js_1_1) {
-                RockField_js_1 = RockField_js_1_1;
             },
             function (Index_js_1_1) {
                 Index_js_1 = Index_js_1_1;
@@ -66,6 +63,9 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             },
             function (RockButton_js_1_1) {
                 RockButton_js_1 = RockButton_js_1_1;
+            },
+            function (AttributeValueContainer_js_1_1) {
+                AttributeValueContainer_js_1 = AttributeValueContainer_js_1_1;
             }
         ],
         execute: function () {
@@ -74,11 +74,11 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
                     Loading: Loading_js_1.default,
-                    RockField: RockField_js_1.default,
                     JavaScriptAnchor: JavaScriptAnchor_js_1.default,
                     RockForm: RockForm_js_1.default,
                     TextBox: TextBox_js_1.default,
-                    RockButton: RockButton_js_1.default
+                    RockButton: RockButton_js_1.default,
+                    AttributeValueContainer: AttributeValueContainer_js_1.default
                 },
                 setup: function () {
                     return {
@@ -98,8 +98,8 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         var person = (Index_js_1.default.getters.personContext || null);
                         return person ? person.Guid : null;
                     },
-                    nonEmptyAttributeValues: function () {
-                        return this.attributeDataList.filter(function (av) { return !!av.Value; });
+                    useAbbreviatedNames: function () {
+                        return this.blockSettings.UseAbbreviatedNames;
                     }
                 },
                 methods: {
@@ -108,13 +108,6 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                     },
                     goToEditMode: function () {
                         this.isEditMode = true;
-                    },
-                    getAttributeLabel: function (attributeValue) {
-                        var useAbbreviatedNames = this.blockSettings.UseAbbreviatedNames;
-                        if (useAbbreviatedNames) {
-                            return attributeValue.AttributeAbbreviatedName || attributeValue.AttributeName;
-                        }
-                        return attributeValue.AttributeName;
                     },
                     loadData: function () {
                         return __awaiter(this, void 0, void 0, function () {
@@ -165,8 +158,8 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                                             })];
                                     case 1:
                                         _b.sent();
-                                        this.isLoading = false;
                                         this.goToViewMode();
+                                        this.isLoading = false;
                                         return [2 /*return*/];
                                 }
                             });
@@ -193,7 +186,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         }
                     }
                 },
-                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <div v-if=\"!isEditMode\" v-for=\"a in nonEmptyAttributeValues\" class=\"form-group static-control\">\n                <label class=\"control-label\">\n                    {{ getAttributeLabel(a) }}\n                </label>\n                <div class=\"control-wrapper\">\n                    <div class=\"form-control-static\">\n                        <RockField :fieldTypeGuid=\"a.AttributeFieldTypeGuid\" v-model=\"a.Value\" />\n                    </div>\n                </div>\n            </div>\n            <RockForm v-else @submit=\"doSave\">\n                <template v-for=\"a in attributeDataList\">\n                    <RockField\n                        edit\n                        :fieldTypeGuid=\"a.AttributeFieldTypeGuid\"\n                        v-model=\"a.Value\"\n                        :label=\"getAttributeLabel(a)\"\n                        :help=\"a.AttributeDescription\"\n                        :rules=\"a.AttributeIsRequired ? 'required' : ''\"\n                        :configurationValues=\"a.AttributeQualifierValues\"  />\n                </template>\n                <div class=\"actions\">\n                    <RockButton class=\"btn-primary btn-xs\" type=\"submit\">Save</RockButton>\n                    <RockButton class=\"btn-link btn-xs\" @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValueContainer v-if=\"!isEditMode\" :attributeValues=\"attributeDataList\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValueContainer :attributeValues=\"attributeDataList\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton class=\"btn-primary btn-xs\" type=\"submit\">Save</RockButton>\n                    <RockButton class=\"btn-link btn-xs\" @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };
