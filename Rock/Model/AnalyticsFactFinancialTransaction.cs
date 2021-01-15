@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>
     {
         #region Entity Properties

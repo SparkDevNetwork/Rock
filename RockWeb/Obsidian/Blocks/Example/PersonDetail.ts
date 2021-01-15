@@ -4,7 +4,6 @@ import RockButton from '../../Elements/RockButton.js';
 import TextBox from '../../Elements/TextBox.js';
 import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
-import Person from '../../Types/Models/Person.js';
 import EmailInput from '../../Elements/EmailInput.js';
 import RockValidation from '../../Controls/RockValidation.js';
 import RockForm from '../../Controls/RockForm.js';
@@ -13,7 +12,8 @@ import { Guid } from '../../Util/Guid.js';
 import Loading from '../../Controls/Loading.js';
 import PrimaryBlock from '../../Controls/PrimaryBlock.js';
 import { BlockAction } from '../../Controls/RockBlock.js';
-import Campus from '../../Types/Models/Campus.js';
+import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 
 declare type PersonViewModel = {
     Id: number;

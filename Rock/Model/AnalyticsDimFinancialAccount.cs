@@ -30,6 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsDimFinancialAccount : Rock.Data.Entity<AnalyticsDimFinancialAccount>
     {
         #region Entity Properties

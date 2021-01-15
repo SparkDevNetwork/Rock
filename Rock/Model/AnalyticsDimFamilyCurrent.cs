@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFamilyCurrent" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsDimFamilyCurrent : AnalyticsDimFamilyBase<AnalyticsDimFamilyCurrent>
     {
         // intentionally blank. See AnalyticsDimFamilyBase, etc for the fields

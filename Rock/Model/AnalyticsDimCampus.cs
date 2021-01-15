@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimCampus" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsDimCampus : AnalyticsSourceCampusBase<AnalyticsDimCampus>
     {
         #region Entity Properties

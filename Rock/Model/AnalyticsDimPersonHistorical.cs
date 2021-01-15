@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimPersonHistorical" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsDimPersonHistorical : AnalyticsDimPersonBase<AnalyticsDimPersonHistorical>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields

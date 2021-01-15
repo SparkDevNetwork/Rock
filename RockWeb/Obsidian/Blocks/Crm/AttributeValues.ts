@@ -5,13 +5,19 @@ import { BlockAction } from '../../Controls/RockBlock.js';
 import { BlockSettings } from '../../Index.js';
 import store from '../../Store/Index.js';
 import { Guid } from '../../Util/Guid.js';
-import Person from '../../Types/Models/Person.js';
 import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
 import RockForm from '../../Controls/RockForm.js';
 import TextBox from '../../Elements/TextBox.js';
 import RockButton from '../../Elements/RockButton.js';
-import AttributeValue from '../../Types/Models/AttributeValue.js';
 import AttributeValueContainer from '../../Controls/AttributeValueContainer.js';
+import AttributeValue from '../../ViewModels/CodeGenerated/AttributeValueViewModel.js';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
+import Attribute from '../../ViewModels/CodeGenerated/AttributeViewModel.js';
+
+type ViewModel = {
+    Attribute: Attribute,
+    Value: string | null
+};
 
 export default defineComponent({
     name: 'Crm.AttributeValues',
@@ -34,7 +40,7 @@ export default defineComponent({
         return {
             isLoading: true,
             isEditMode: false,
-            attributeDataList: [] as AttributeValue[]
+            viewModels: [] as ViewModel[]
         };
     },
     computed: {
@@ -55,18 +61,18 @@ export default defineComponent({
         },
         async loadData() {
             if (!this.personGuid) {
-                this.attributeDataList = [];
+                this.viewModels = [];
                 return;
             }
 
             try {
                 this.isLoading = true;
-                const result = await this.blockAction<AttributeValue[]>('GetAttributeValueList', {
+                const result = await this.blockAction<ViewModel[]>('GetAttributeValueList', {
                     PersonGuid: this.personGuid
                 });
 
                 if (result.data) {
-                    this.attributeDataList = result.data;
+                    this.viewModels = result.data;
                 }
             }
             finally {
@@ -76,15 +82,15 @@ export default defineComponent({
         async doSave(): Promise<void> {
             this.isLoading = true;
 
-            const keyArgsMap = {};
+            const keyValueMap = {};
 
-            for (const a of this.attributeDataList) {
-                keyArgsMap[a.AttributeKey] = a;
+            for (const a of this.viewModels) {
+                keyValueMap[a.Attribute.Key] = a.Value;
             }
 
             await this.blockAction('SaveAttributeValues', {
                 personGuid: this.personGuid,
-                keyArgsMap
+                keyValueMap
             });
 
             this.goToViewMode();
@@ -119,9 +125,9 @@ export default defineComponent({
     </template>
     <template v-slot:default>
         <Loading :isLoading="isLoading">
-            <AttributeValueContainer v-if="!isEditMode" :attributeValues="attributeDataList" :showEmptyValues="false" />
+            <AttributeValueContainer v-if="!isEditMode" :attributeValues="viewModels" :showEmptyValues="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValueContainer :attributeValues="attributeDataList" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValueContainer :attributeValues="viewModels" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
                     <RockButton class="btn-primary btn-xs" type="submit">Save</RockButton>
                     <RockButton class="btn-link btn-xs" @click="goToViewMode">Cancel</RockButton>

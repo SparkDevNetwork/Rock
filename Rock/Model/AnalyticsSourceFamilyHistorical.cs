@@ -32,6 +32,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceFamilyHistorical" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceFamilyHistorical : AnalyticsSourceFamilyBase<AnalyticsSourceFamilyHistorical>
     {
         // intentionally blank

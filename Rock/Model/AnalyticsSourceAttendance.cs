@@ -30,6 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceAttendance" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceAttendance : AnalyticsBaseAttendance<AnalyticsSourceAttendance>
     {
         // intentionally blank

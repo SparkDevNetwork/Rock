@@ -28,6 +28,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimFamilyHeadOfHousehold" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimPersonBase<AnalyticsDimFamilyHeadOfHousehold>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields

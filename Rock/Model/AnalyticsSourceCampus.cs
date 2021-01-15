@@ -30,6 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceCampus" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceCampus : AnalyticsSourceCampusBase<AnalyticsSourceCampus>
     {
         // intentionally blank

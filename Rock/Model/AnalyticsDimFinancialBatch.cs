@@ -30,6 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimFinancialBatch" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsDimFinancialBatch : Rock.Data.Entity<AnalyticsDimFinancialBatch>
     {
         #region Entity Properties

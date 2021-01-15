@@ -33,6 +33,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsSourceFinancialTransaction>
     {
         // intentionally blank

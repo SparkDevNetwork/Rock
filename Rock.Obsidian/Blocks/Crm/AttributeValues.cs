@@ -23,7 +23,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
-using Rock.Obsidian.ViewModel;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 
 namespace Rock.Obsidian.Blocks.Crm
@@ -134,7 +134,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <param name="attributeValues">The attribute values.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveAttributeValues( Guid personGuid, Dictionary<string, AttributeValueArgs> keyArgsMap )
+        public BlockActionResult SaveAttributeValues( Guid personGuid, Dictionary<string, string> keyValueMap )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -153,11 +153,9 @@ namespace Rock.Obsidian.Blocks.Crm
 
                 foreach ( var attribute in attributes )
                 {
-                    var arg = keyArgsMap.GetValueOrNull( attribute.Key );
-
-                    if ( arg != null )
+                    if ( keyValueMap.ContainsKey( attribute.Key ) )
                     {
-                        person.SetAttributeValue( attribute.Key, arg.Value );
+                        person.SetAttributeValue( attribute.Key, keyValueMap[attribute.Key] );
                     }
                 }
 
@@ -182,11 +180,11 @@ namespace Rock.Obsidian.Blocks.Crm
                 var person = personService.Get( personGuid );
 
                 var categories = GetCategoryGuids();
-                var attributeDataList = new List<AttributeValueViewModel>();
+                var viewModels = new List<ViewModel>();
 
                 if ( !categories.Any() || person == null || currentPerson == null )
                 {
-                    return new BlockActionResult( HttpStatusCode.OK, attributeDataList );
+                    return new BlockActionResult( HttpStatusCode.OK, viewModels );
                 }
 
                 person.LoadAttributes();
@@ -199,37 +197,32 @@ namespace Rock.Obsidian.Blocks.Crm
 
                     if ( attribute != null )
                     {
-                        attributeDataList.Add( GetAttributeData( attribute, person ) );
+                        viewModels.Add( GetViewModel( attribute, person ) );
                     }
                 }
 
                 foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
                 {
-                    attributeDataList.Add( GetAttributeData( attribute, person ) );
+                    viewModels.Add( GetViewModel( attribute, person ) );
                 }
 
-                attributeDataList = attributeDataList.Where( a => a != null ).ToList();
-                return new BlockActionResult( HttpStatusCode.OK, attributeDataList );
+                viewModels = viewModels.Where( a => a != null ).ToList();
+                return new BlockActionResult( HttpStatusCode.OK, viewModels );
             }
         }
 
         /// <summary>
-        /// Gets the attribute data.
+        /// Gets the view model.
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        private AttributeValueViewModel GetAttributeData( AttributeCache attribute, Person person )
-        {
-            var attributeValue = person.GetAttributeValue( attribute.Key );
-
-            var viewModel = new AttributeValueViewModel
+        private ViewModel GetViewModel( AttributeCache attribute, Person person ) {
+            return new ViewModel
             {
-                Value = attributeValue
+                Value = person.GetAttributeValue( attribute.Key ),
+                Attribute = attribute.ToViewModel()
             };
-
-            viewModel.SetPropertiesFromEntity( attribute );
-            return viewModel;
         }
 
         /// <summary>
@@ -319,5 +312,31 @@ namespace Rock.Obsidian.Blocks.Crm
         }
 
         #endregion Data Access
+
+        #region View Models
+
+        /// <summary>
+        /// View Model
+        /// </summary>
+        public sealed class ViewModel
+        {
+            /// <summary>
+            /// Gets or sets the attribute.
+            /// </summary>
+            /// <value>
+            /// The attribute.
+            /// </value>
+            public IViewModel Attribute { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+        }
+
+        #endregion ViewModels
     }
 }

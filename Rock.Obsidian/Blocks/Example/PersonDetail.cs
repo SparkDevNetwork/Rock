@@ -22,7 +22,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
-using Rock.Obsidian.ViewModel;
+using Rock.ViewModel;
 
 namespace Rock.Obsidian.Blocks.Example
 {
@@ -68,7 +68,7 @@ namespace Rock.Obsidian.Blocks.Example
         /// <param name="personArgs">The person arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult EditPerson( Guid personGuid, PersonArgs personArgs )
+        public BlockActionResult EditPerson( Guid personGuid, PersonViewModel personArgs )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -80,7 +80,12 @@ namespace Rock.Obsidian.Blocks.Example
                     return new BlockActionResult( HttpStatusCode.NotFound );
                 }
 
-                person.ApplyViewArgs( personArgs );
+                person.PrimaryFamily.CampusId = personArgs.PrimaryCampusId;
+                person.Email = personArgs.Email;
+                person.FirstName = personArgs.FirstName;
+                person.NickName = personArgs.NickName;
+                person.LastName = personArgs.LastName;
+
                 rockContext.SaveChanges();
                 return new BlockActionResult( HttpStatusCode.OK );
             }

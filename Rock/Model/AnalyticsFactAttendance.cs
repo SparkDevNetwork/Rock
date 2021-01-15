@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactAttendance" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsFactAttendance : AnalyticsBaseAttendance<AnalyticsFactAttendance>
     {
         #region Entity Properties specific to Analytics

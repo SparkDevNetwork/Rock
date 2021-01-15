@@ -35,6 +35,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceDate" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceDate
     {
         #region Entity Properties

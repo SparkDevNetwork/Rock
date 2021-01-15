@@ -90,7 +90,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                     return {
                         isLoading: true,
                         isEditMode: false,
-                        attributeDataList: []
+                        viewModels: []
                     };
                 },
                 computed: {
@@ -116,7 +116,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                                 switch (_a.label) {
                                     case 0:
                                         if (!this.personGuid) {
-                                            this.attributeDataList = [];
+                                            this.viewModels = [];
                                             return [2 /*return*/];
                                         }
                                         _a.label = 1;
@@ -129,7 +129,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                                     case 2:
                                         result = _a.sent();
                                         if (result.data) {
-                                            this.attributeDataList = result.data;
+                                            this.viewModels = result.data;
                                         }
                                         return [3 /*break*/, 4];
                                     case 3:
@@ -142,19 +142,19 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                     },
                     doSave: function () {
                         return __awaiter(this, void 0, void 0, function () {
-                            var keyArgsMap, _i, _a, a;
+                            var keyValueMap, _i, _a, a;
                             return __generator(this, function (_b) {
                                 switch (_b.label) {
                                     case 0:
                                         this.isLoading = true;
-                                        keyArgsMap = {};
-                                        for (_i = 0, _a = this.attributeDataList; _i < _a.length; _i++) {
+                                        keyValueMap = {};
+                                        for (_i = 0, _a = this.viewModels; _i < _a.length; _i++) {
                                             a = _a[_i];
-                                            keyArgsMap[a.AttributeKey] = a;
+                                            keyValueMap[a.Attribute.Key] = a.Value;
                                         }
                                         return [4 /*yield*/, this.blockAction('SaveAttributeValues', {
                                                 personGuid: this.personGuid,
-                                                keyArgsMap: keyArgsMap
+                                                keyValueMap: keyValueMap
                                             })];
                                     case 1:
                                         _b.sent();
@@ -186,7 +186,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         }
                     }
                 },
-                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValueContainer v-if=\"!isEditMode\" :attributeValues=\"attributeDataList\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValueContainer :attributeValues=\"attributeDataList\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton class=\"btn-primary btn-xs\" type=\"submit\">Save</RockButton>\n                    <RockButton class=\"btn-link btn-xs\" @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValueContainer v-if=\"!isEditMode\" :attributeValues=\"viewModels\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValueContainer :attributeValues=\"viewModels\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton class=\"btn-primary btn-xs\" type=\"submit\">Save</RockButton>\n                    <RockButton class=\"btn-link btn-xs\" @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };
