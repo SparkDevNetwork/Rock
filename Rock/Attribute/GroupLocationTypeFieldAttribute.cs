@@ -40,15 +40,15 @@ namespace Rock.Attribute
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.GroupLocationTypeFieldType ).FullName )
         {
             /*
-             * 07/13/2020 - Shaun
-             * This is a workaround because the original constructor for this
-             * class was built to accept groupTypeGuid as the only parameter,
-             * so if any plugins were using the constructor in this manner,
-             * they would be passing the guid into the name parameter, so we
-             * will check there, first.
-             *
-             * Reason: Maintaining backwards compatibility for plugins.
-             */
+            07/13/2020 - Shaun
+            This is a workaround because the original constructor for this
+            class was built to accept groupTypeGuid as the only parameter,
+            so if any plugins were using the constructor in this manner,
+            they would be passing the guid into the name parameter, so we
+            will check there, first.
+            
+            Reason: Maintaining backwards compatibility for plugins.
+            */
             Guid? groupType = name.AsGuidOrNull();
             if ( groupType == null )
             {
