@@ -45,7 +45,7 @@ export default {
 #eventCardList{
   display:flex;
   flex-wrap:wrap;
-  max-width:100%;
+  width:100%;
   flex-direction:row;
   position:relative;
 

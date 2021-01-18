@@ -158,16 +158,16 @@ export default {
   left:0;
   bottom:0;
   right:0;
-  z-index:20;
+  z-index:200;
 }
 #Modal .card {
   background-color:white;
-  width: clamp(280px, 55vw, 600px);
+  width: clamp(400px, 90vw, 1000px);
   overflow-y:scroll;
-  max-height:90vh;
+  min-height:90vh;
+  max-height: 95vh;
   position:relative;
   padding: 0;
-  padding-top:45px;
 
   /* left:50%;
   top:50%;
@@ -184,17 +184,21 @@ export default {
   display:flex;
   flex-direction:row-reverse;
   align-items:center;
-  position: absolute;
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+box-shadow: 0 5px 3px rgba(0,0,0,.25);
+  
     z-index: 101;
     top: 0;
-    right:0;
+    right:50%;
     left:0;
-    width:inherit;
+    width:100%;
     height:45px;
 
 }
 .top i {
   cursor:pointer;
+
 }
 .gradient {
    background-color:black;
@@ -217,11 +221,4 @@ export default {
     padding:5px 10px 5px 20px;
 
  }
-</style>
-<style>
-.modal-open {
-  overflow: hidden;
-  height: 100vh;
-}
-
 </style>

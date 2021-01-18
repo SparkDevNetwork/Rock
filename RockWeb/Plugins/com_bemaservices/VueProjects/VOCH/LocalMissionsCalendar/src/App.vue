@@ -1,8 +1,7 @@
 <template>
   <v-app>
       <v-main>
-
-          <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:space-between; margin-bottom:10px; width:100%;">
+        <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:space-between; margin-bottom:10px; width:100%;">
              <div class="col-md-3" >
 
                   <div style="display:flex; flex-direction:row; flex-wrap:no-wrap; justify-content:space-around; align-items:baseline;">
@@ -43,7 +42,7 @@
             <div class="btn btn-primary" @click="clearFilters">Clear Filters</div>
 
             </div>
-          </div>
+          </p>
           <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:flex-end; margin-bottom:10px; width:100%;">
             <v-spacer></v-spacer>
                     <div class="col-md-2" style="text-align:right;">
@@ -181,11 +180,23 @@ export default {
       this.calendarType = payload.type;
     },
     showModal(payload) {
-      document.getElementById('app').classList.add('modal-open');
+      
+      // Disable Scroll on Parent when modal Open.
+      document.body.style.top = `-${window.scrollY}px`;
+      document.body.style.position = 'fixed';
+      
+      // Load event into modal
       this.focusEvent = payload;
     },
     closeModal() {
-      document.getElementById('app').classList.remove('modal-open');
+      
+      //Get the Current Scroll Position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      
+      // Clear Modal Event
       this.focusEvent = null;
     },
     clearFilters() {
@@ -265,7 +276,6 @@ export default {
         this.focus = new Date();
       }
     },
-
   },
   computed: {
     getDate() {
