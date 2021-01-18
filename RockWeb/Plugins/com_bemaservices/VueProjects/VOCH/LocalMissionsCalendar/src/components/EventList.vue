@@ -1,24 +1,24 @@
 <template>
   
     <div id="eventCardList">
-      <Observer @intersect="$emit('SetFocus')"/>
+      <!-- <Observer @intersect="$emit('SetFocus')"/> -->
       
         <EventCard v-for="(event,index) in Events" :key="index" :Event="event" v-on="$listeners"/>
       
-      <Observer @intersect="$emit('Next')"/>
+      <!-- <Observer @intersect="$emit('Next')"/> -->
     </div>
   
 </template>
 
 <script>
   import EventCard from './EventCard'
-  import Observer from './Observer'
+  // import Observer from './Observer'
 
 export default {
 
 components: {
 EventCard,
-Observer
+// Observer
 },
 
 props:{
