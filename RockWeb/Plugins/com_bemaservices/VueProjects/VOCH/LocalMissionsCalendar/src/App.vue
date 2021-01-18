@@ -10,7 +10,7 @@
                       v-if="this.focus > new Date()"
                         @click='prev'
                       ></i>
-                    <h4>{{getDate }} </h4>
+                    <h4>{{ getDate }} </h4>
                     <i class="fa fa-chevron-right"
                       @click="next"></i>
                
@@ -312,8 +312,8 @@ export default {
       
       filteredEvents = filteredEvents.filter ( e => {
           let nextStartDate = new Date(e.EventNextStartDate.StartDateTime).getTime()
-          
-          return nextStartDate < endDate.getTime() && nextStartDate >= new Date();
+          // Filter to only return events that next start after the current date, start after the startDate(Allowing for progressing through the calendar), and before the end date.
+          return nextStartDate < endDate.getTime() && nextStartDate >= new Date() && nextStartDate >= startDate.getTime();
           
           })
       return filteredEvents.sort((a,b) => ((a.EventNextStartDate.StartDateTime > b.EventNextStartDate.StartDateTime ) ? 1 : -1));
@@ -339,7 +339,9 @@ export default {
       const currentDate = new Date()
       const categoryList = [];
       this.Events.map((item) => {
-        if (item.Categories.length > 0 && item.EventNextStartDate.NextStartDateTime >= currentDate) {
+        
+        if (item.Categories.length > 0 && new Date(item.EventNextStartDate.StartDateTime) >= currentDate) {
+          
           item.Categories.map((category) => {
             const newCategory = {};
             newCategory.Id = category.Id;
@@ -348,7 +350,7 @@ export default {
           });
         }
       });
-
+      
       const result = [];
       const map = new Map();
       categoryList.map((item) => {
