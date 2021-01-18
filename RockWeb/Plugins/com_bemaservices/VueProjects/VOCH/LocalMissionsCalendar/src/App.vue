@@ -111,7 +111,8 @@ export default {
   
   async mounted() {
     let today = new Date();
-    this.focus = new Date( today.getFullYear(), today.getMonth() - 1, 1);
+    
+    this.focus = new Date( today.getFullYear(), today.getMonth(), 1);
     if(typeof calendar !== 'undefined'){
       this.calendar = calendar;
     } else {
