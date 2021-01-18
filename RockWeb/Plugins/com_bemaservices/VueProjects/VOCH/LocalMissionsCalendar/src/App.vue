@@ -1,10 +1,10 @@
 <template>
   <v-app>
       <v-main>
-        
+
           <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:space-between; margin-bottom:10px; width:100%;">
              <div class="col-md-3" >
-               
+
                   <div style="display:flex; flex-direction:row; flex-wrap:no-wrap; justify-content:space-around; align-items:baseline;">
                     <i class="fa fa-chevron-left"
                       v-if="this.focus > new Date()"
@@ -13,7 +13,7 @@
                     <h4>{{ getDate }} </h4>
                     <i class="fa fa-chevron-right"
                       @click="next"></i>
-               
+
                 </div>
           </div>
             <div class="col-md-3">
@@ -22,16 +22,16 @@
               </multiselect>
             </div>
           <div class="col-md-3">
-            <multiselect 
-              v-model="SelectedCategory" 
-              :options="Categories" 
-              :multiple="true" 
-              :close-on-select="false" 
-              :clear-on-select="false" 
+            <multiselect
+              v-model="SelectedCategory"
+              :options="Categories"
+              :multiple="true"
+              :close-on-select="false"
+              :clear-on-select="false"
               :preserve-search="true"
-              placeholder="Filter By Category" 
-              label="Value" 
-              track-by="Id" 
+              placeholder="Filter By Category"
+              label="Value"
+              track-by="Id"
               :preselect-first="false"
               :allowEmpty="true"
               >
@@ -41,13 +41,13 @@
             </div>
          <div class="col-md-1">
             <div class="btn btn-primary" @click="clearFilters">Clear Filters</div>
-          
+
             </div>
           </div>
           <div class="row" style="dislay:flex; flex-direction:row; flex-wrap:no-wrap; align-items:baseline; justify-content:flex-end; margin-bottom:10px; width:100%;">
             <v-spacer></v-spacer>
                     <div class="col-md-2" style="text-align:right;">
-          
+
               <v-btn-toggle v-model="SelectedView">
               <v-btn small>
                 <i class="fa fa-th"></i>
@@ -58,19 +58,17 @@
             </v-btn-toggle>
             </div>
           </div>
-        
-          
-        
+
         <CalendarView v-if="SelectedView == '1'" :Events="filteredEvents" :focus="focus" :type="calendarType" @setFocus="setFocus" @ShowModal="showModal" @CalendarType="SetType" />
 
-        <EventList 
+        <EventList
           v-else
           :Events="filteredEvents"
           @ShowModal="showModal"
           @Previous="prev"
           @Next="next"
           @SetFocus="setFocus"
-      
+
           />
 
          <transition name="fade">
@@ -82,10 +80,11 @@
 </template>
 
 <script>
-import Multiselect from 'vue-multiselect'
-import EventList from './components/EventList'
-import CalendarView from './components/CalendarView'
-import EventModal from './components/EventModal'
+import Multiselect from 'vue-multiselect';
+import EventList from './components/EventList';
+import CalendarView from './components/CalendarView';
+import EventModal from './components/EventModal';
+
 export default {
   name: 'App',
 
@@ -93,7 +92,7 @@ export default {
     Multiselect,
     EventList,
     CalendarView,
-    EventModal
+    EventModal,
   },
 
   data: () => ({
@@ -101,19 +100,19 @@ export default {
     SelectedCampus: null,
     SelectedCategory: null,
     SelectedView: 0,
-    focus:null,
+    focus: null,
     focusEvent: null,
-    calendarType:'month',
+    calendarType: 'month',
     loadStartDate: new Date(),
     Events: [],
-    calendar:null,
+    calendar: null,
   }),
-  
+
   async mounted() {
-    let today = new Date();
-    
-    this.focus = new Date( today.getFullYear(), today.getMonth(), 1);
-    if(typeof calendar !== 'undefined'){
+    const today = new Date();
+
+    this.focus = new Date(today.getFullYear(), today.getMonth(), 1);
+    if (typeof calendar !== 'undefined') {
       this.calendar = calendar;
     } else {
       this.calendar = 5;
@@ -130,194 +129,181 @@ export default {
     }
 
     try {
-      let startDate = new Date();
-      let endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1).toISOString();
-      
+      const startDate = new Date();
+      const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1).toISOString();
+
       const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
         credentials: 'include',
       });
       const events = await response.json();
-      
+
       this.Events = events;
     } catch (err) {
-      
+
     }
   },
   watch: {
-      focus: async function (val) {
-      let daystoAdd = 30;
+    async focus(val) {
+      const daystoAdd = 30;
       let endDate = new Date(val.getFullYear(), val.getMonth() + 1, 1).toISOString();
-      let startDate = new Date(val);
-       switch(this.calendarType) {
+      const startDate = new Date(val);
+      switch (this.calendarType) {
         case 'day':
-         endDate = new Date(startDate.setDate(startDate.getDate()+1)).toISOString()
-         break;
+          endDate = new Date(startDate.setDate(startDate.getDate() + 1)).toISOString();
+          break;
         case 'week':
-          endDate = new Date(startDate.setDate(startDate.getDate()+7)).toISOString()
+          endDate = new Date(startDate.setDate(startDate.getDate() + 7)).toISOString();
           break;
       }
       try {
-       
-      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
-        credentials: 'include',
-      });
-      const events = await response.json();
-      const newEvents = []
-      await events.forEach(
-        (newEvent) => {
-         if(this.Events.findIndex(event => event.OccurrenceId == newEvent.OccurrenceId) < 0 ){
-           newEvents.push(newEvent)
-         }
-        }
+        const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
+          credentials: 'include',
+        });
+        const events = await response.json();
+        const newEvents = [];
+        await events.forEach(
+          (newEvent) => {
+            if (this.Events.findIndex((event) => event.OccurrenceId == newEvent.OccurrenceId) < 0) {
+              newEvents.push(newEvent);
+            }
+          },
 
-      )
-      
-      this.Events = this.Events.concat(newEvents)
+        );
 
+        this.Events = this.Events.concat(newEvents);
+      } catch (err) {
 
-
-      
-      
-    } catch (err) {
-      
-    }
+      }
     },
   },
   methods: {
     SetType(payload) {
-      this.calendarType = payload.type
+      this.calendarType = payload.type;
     },
-    showModal(payload){
-      document.getElementById('app').classList.add("modal-open");
+    showModal(payload) {
+      document.getElementById('app').classList.add('modal-open');
       this.focusEvent = payload;
     },
-    closeModal(){
-      document.getElementById('app').classList.remove("modal-open");
+    closeModal() {
+      document.getElementById('app').classList.remove('modal-open');
       this.focusEvent = null;
     },
     clearFilters() {
-      this.SelectedCampus = null
+      this.SelectedCampus = null;
       this.SelectedCategory = null;
     },
-    prev(){
-      switch(this.calendarType) {
+    prev() {
+      switch (this.calendarType) {
         case 'day':
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
-            let newDate = currentfocus.setDate(currentfocus.getDate()-1);
-             this.focus = new Date(newDate);
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
+            const newDate = currentfocus.setDate(currentfocus.getDate() - 1);
+            this.focus = new Date(newDate);
           } else {
-            let currentfocus = new Date()
-            this.focus =  new Date(currentfocus.setDate(currentfocus.getDate()-1));
-          }    // code block
+            const currentfocus = new Date();
+            this.focus = new Date(currentfocus.setDate(currentfocus.getDate() - 1));
+          } // code block
           break;
         case 'week':
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
-            let newDate = currentfocus.setDate(currentfocus.getDate()-7);
-             this.focus = new Date(newDate);;
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
+            const newDate = currentfocus.setDate(currentfocus.getDate() - 7);
+            this.focus = new Date(newDate);
           } else {
-            let currentfocus = new Date()
-            let newDate = currentfocus.setDate(currentfocus.getDate()-7);
-             this.focus = new Date(newDate);;
-          }    // code block
+            const currentfocus = new Date();
+            const newDate = currentfocus.setDate(currentfocus.getDate() - 7);
+            this.focus = new Date(newDate);
+          } // code block
           break;
         default:
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
             this.focus = new Date(currentfocus.getFullYear(), currentfocus.getMonth() - 1, 1);
           } else {
-            let today = new Date()
-            this.focus = new Date( today.getFullYear(), today.getMonth() - 1, 1)
-          }    // code block
+            const today = new Date();
+            this.focus = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+          } // code block
       }
     },
-    next(){
-      switch(this.calendarType) {
+    next() {
+      switch (this.calendarType) {
         case 'day':
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
-            let newDate = currentfocus.setDate(currentfocus.getDate()+1);
-             this.focus = new Date(newDate);
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
+            const newDate = currentfocus.setDate(currentfocus.getDate() + 1);
+            this.focus = new Date(newDate);
           } else {
-            let currentfocus = new Date()
-            this.focus =  new Date(currentfocus.setDate(currentfocus.getDate()+1));
-          }    // code block
+            const currentfocus = new Date();
+            this.focus = new Date(currentfocus.setDate(currentfocus.getDate() + 1));
+          } // code block
           break;
         case 'week':
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
-            let newDate = currentfocus.setDate(currentfocus.getDate()+7);
-             this.focus = new Date(newDate);;
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
+            const newDate = currentfocus.setDate(currentfocus.getDate() + 7);
+            this.focus = new Date(newDate);
           } else {
-            let currentfocus = new Date()
-            let newDate = currentfocus.setDate(currentfocus.getDate()+7);
-             this.focus = new Date(newDate);;
-          }    // code block
+            const currentfocus = new Date();
+            const newDate = currentfocus.setDate(currentfocus.getDate() + 7);
+            this.focus = new Date(newDate);
+          } // code block
           break;
         default:
-          if(this.focus){
-            let currentfocus = new Date(this.focus)
+          if (this.focus) {
+            const currentfocus = new Date(this.focus);
             this.focus = new Date(currentfocus.getFullYear(), currentfocus.getMonth() + 1, 1);
           } else {
-            let today = new Date()
-            this.focus = new Date( today.getFullYear(), today.getMonth() + 1, 1)
-          }    // code block
+            const today = new Date();
+            this.focus = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+          } // code block
       }
- 
     },
-    setFocus(val){
-      
-      if(!!val) {
-       
+    setFocus(val) {
+      if (val) {
         this.focus = new Date(val);
       } else {
         this.focus = new Date();
       }
-    }
-  
+    },
+
   },
   computed: {
-      getDate(){
-      if(this.focus && this.focus != '' ){
-        return `${new Date(this.focus).toLocaleString('en-us', { month: 'long' }) } ${new Date(this.focus).getFullYear()}`
-      } else {
-        return `${new Date().toLocaleString('en-us', { month: 'long' }) } ${new Date().getFullYear()}`
+    getDate() {
+      if (this.focus && this.focus != '') {
+        return `${new Date(this.focus).toLocaleString('en-us', { month: 'long' })} ${new Date(this.focus).getFullYear()}`;
       }
+      return `${new Date().toLocaleString('en-us', { month: 'long' })} ${new Date().getFullYear()}`;
     },
-    filteredEvents(){
-      
-      let selectedCategories = this.SelectedCategory
-      let filteredEvents = this.Events
+    filteredEvents() {
+      const selectedCategories = this.SelectedCategory;
+      let filteredEvents = this.Events;
       let startDate = new Date();
-      var endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-      
-      if(this.SelectedCampus && this.SelectedCampus.length > 0 ){
-        let selectedCampuses = this.SelectedCampus.map((e) => { return e.CampusId })
-        filteredEvents = filteredEvents.filter( tag => selectedCampuses.includes(tag.CampusId) == true)
+      let endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
 
+      if (this.SelectedCampus && this.SelectedCampus.length > 0) {
+        const selectedCampuses = this.SelectedCampus.map((e) => e.CampusId);
+        filteredEvents = filteredEvents.filter((tag) => selectedCampuses.includes(tag.CampusId) == true);
       }
 
-      if(this.SelectedCategory && this.SelectedCategory.length > 0 ){
-        let selectedCategories = this.SelectedCategory.map((e) => { return e.Id })
-        
-        filteredEvents = filteredEvents.filter( e => {
-          let itemCategoriesList = e.Categories.map(category => { return category.Id })
-          return itemCategoriesList.some(r=> selectedCategories.indexOf(r) >= 0)
-        })
+      if (this.SelectedCategory && this.SelectedCategory.length > 0) {
+        const selectedCategories = this.SelectedCategory.map((e) => e.Id);
+
+        filteredEvents = filteredEvents.filter((e) => {
+          const itemCategoriesList = e.Categories.map((category) => category.Id);
+          return itemCategoriesList.some((r) => selectedCategories.indexOf(r) >= 0);
+        });
       }
-      if(this.focus ) {
-        startDate = this.focus
-        endDate = new Date (startDate.getFullYear(), startDate.getMonth() + 1, 1)
+      if (this.focus) {
+        startDate = this.focus;
+        endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1);
       }
-      
-      filteredEvents = filteredEvents.filter ( e => {
-          let nextStartDate = new Date(e.EventNextStartDate.StartDateTime).getTime()
-          // Filter to only return events that next start after the current date, start after the startDate(Allowing for progressing through the calendar), and before the end date.
-          return nextStartDate < endDate.getTime() && nextStartDate >= new Date() && nextStartDate >= startDate.getTime();
-          
-          })
-      return filteredEvents.sort((a,b) => ((a.EventNextStartDate.StartDateTime > b.EventNextStartDate.StartDateTime ) ? 1 : -1));
+
+      filteredEvents = filteredEvents.filter((e) => {
+        const nextStartDate = new Date(e.EventNextStartDate.StartDateTime).getTime();
+        // Filter to only return events that next start after the current date, start after the startDate(Allowing for progressing through the calendar), and before the end date.
+        return nextStartDate < endDate.getTime() && nextStartDate >= new Date() && nextStartDate >= startDate.getTime();
+      });
+      return filteredEvents.sort((a, b) => ((a.EventNextStartDate.StartDateTime > b.EventNextStartDate.StartDateTime) ? 1 : -1));
     },
     Campuses() {
       const result = [];
@@ -337,12 +323,10 @@ export default {
       return result.sort((a, b) => ((a.CampusName > b.CampusName) ? 1 : -1));
     },
     Categories() {
-      const currentDate = new Date()
+      const currentDate = new Date();
       const categoryList = [];
       this.Events.map((item) => {
-        
         if (item.Categories.length > 0 && new Date(item.EventNextStartDate.StartDateTime) >= currentDate) {
-          
           item.Categories.map((category) => {
             const newCategory = {};
             newCategory.Id = category.Id;
@@ -351,7 +335,7 @@ export default {
           });
         }
       });
-      
+
       const result = [];
       const map = new Map();
       categoryList.map((item) => {

@@ -4,7 +4,7 @@
       <v-sheet height="64">
         <v-toolbar
           flat
-          
+
         >
         <v-spacer></v-spacer>
           <v-btn
@@ -61,7 +61,7 @@
           @click:event="showEvent"
           @click:more="viewDay"
           @click:date="viewDay"
-          
+
         ></v-calendar>
         <v-menu
           v-model="selectedOpen"
@@ -109,110 +109,109 @@
   </v-row>
 </template>
 <script>
-import multiselect from 'vue-multiselect'
+import multiselect from 'vue-multiselect';
+
 export default {
-    components:{ multiselect },
-    props: {
-      Events: {
-        type:Array,
-        required:true,
-      },
-      focus: {
-        type: Date
-      },
-      type:{
-        type: String
-      }
+  components: { multiselect },
+  props: {
+    Events: {
+      type: Array,
+      required: true,
     },
-    data: () => ({
-      typeToLabel: {
-        month: 'Month',
-        week: 'Week',
-        day: 'Day',
-      },
-      CalendarTypes: ['Month', 'Week', 'Day'],
-      selectedType:null,
-      selectedEvent: {},
-      selectedElement: null,
-      selectedOpen: false,
-      colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
-    }),
-    watch:{
-      type: function(val) {
-        this.$emit('CalendarType',{type: val})
-      }
+    focus: {
+      type: Date,
     },
-    mounted () {
-      this.$refs.calendar.checkChange()
+    type: {
+      type: String,
     },
-    methods: {
-      changeType(val){
-        this.$emit('CalendarType',{type: val})
-      },
-      viewDay ({ date }) {
-        let newDate = date + 'T00:00:00.0000'
-        this.$emit('setFocus',newDate)
-        this.$emit('CalendarType',{type: 'day'})
-      },
-      getEventColor (event) {
-        return event.color
-      },
-      setToday () {
-        this.$emit('setFocus',null)
-      },
-      
-      showEvent ({ nativeEvent, event }) {
-        this.$emit('ShowModal',event.Event)
-       
-
-       
-        nativeEvent.stopPropagation()
-      },
-      // updateRange ({ start, end }) {
-      //   const events = []
-
-      //   const min = new Date(`${start.date}T00:00:00`)
-      //   const max = new Date(`${end.date}T23:59:59`)
-      //   const days = (max.getTime() - min.getTime()) / 86400000
-      //   const eventCount = this.rnd(days, days + 20)
-
-      //   for (let i = 0; i < eventCount; i++) {
-      //     const allDay = this.rnd(0, 3) === 0
-      //     const firstTimestamp = this.rnd(min.getTime(), max.getTime())
-      //     const first = new Date(firstTimestamp - (firstTimestamp % 900000))
-      //     const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
-      //     const second = new Date(first.getTime() + secondTimestamp)
-
-      //     events.push({
-      //       name: this.names[this.rnd(0, this.names.length - 1)],
-      //       start: first,
-      //       end: second,
-      //       color: this.colors[this.rnd(0, this.colors.length - 1)],
-      //       timed: !allDay,
-      //     })
-      //   }
-
-      //   this.events = events
-      // },
-      rnd (a, b) {
-        return Math.floor((b - a + 1) * Math.random()) + a
-      },
+  },
+  data: () => ({
+    typeToLabel: {
+      month: 'Month',
+      week: 'Week',
+      day: 'Day',
     },
-     computed: {
-      processEvents(){
-        let Events = [];
-        this.Events.forEach((e,index) => {
-          let newEvent = {};
-          newEvent.name = e.EventName;
-          newEvent.start = e.EventNextStartDate.StartDateTime;
-          newEvent.end = e.EventNextStartDate.EndDateTime;
-          newEvent.color = this.colors[index % this.colors.length]
-          newEvent.Event = e;
-          Events.push(newEvent)
-        })
-        return Events;
-      },
+    CalendarTypes: ['Month', 'Week', 'Day'],
+    selectedType: null,
+    selectedEvent: {},
+    selectedElement: null,
+    selectedOpen: false,
+    colors: ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey darken-1'],
+  }),
+  watch: {
+    type(val) {
+      this.$emit('CalendarType', { type: val });
     },
-  }
-    
+  },
+  mounted() {
+    this.$refs.calendar.checkChange();
+  },
+  methods: {
+    changeType(val) {
+      this.$emit('CalendarType', { type: val });
+    },
+    viewDay({ date }) {
+      const newDate = `${date}T00:00:00.0000`;
+      this.$emit('setFocus', newDate);
+      this.$emit('CalendarType', { type: 'day' });
+    },
+    getEventColor(event) {
+      return event.color;
+    },
+    setToday() {
+      this.$emit('setFocus', null);
+    },
+
+    showEvent({ nativeEvent, event }) {
+      this.$emit('ShowModal', event.Event);
+
+      nativeEvent.stopPropagation();
+    },
+    // updateRange ({ start, end }) {
+    //   const events = []
+
+    //   const min = new Date(`${start.date}T00:00:00`)
+    //   const max = new Date(`${end.date}T23:59:59`)
+    //   const days = (max.getTime() - min.getTime()) / 86400000
+    //   const eventCount = this.rnd(days, days + 20)
+
+    //   for (let i = 0; i < eventCount; i++) {
+    //     const allDay = this.rnd(0, 3) === 0
+    //     const firstTimestamp = this.rnd(min.getTime(), max.getTime())
+    //     const first = new Date(firstTimestamp - (firstTimestamp % 900000))
+    //     const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000
+    //     const second = new Date(first.getTime() + secondTimestamp)
+
+    //     events.push({
+    //       name: this.names[this.rnd(0, this.names.length - 1)],
+    //       start: first,
+    //       end: second,
+    //       color: this.colors[this.rnd(0, this.colors.length - 1)],
+    //       timed: !allDay,
+    //     })
+    //   }
+
+    //   this.events = events
+    // },
+    rnd(a, b) {
+      return Math.floor((b - a + 1) * Math.random()) + a;
+    },
+  },
+  computed: {
+    processEvents() {
+      const Events = [];
+      this.Events.forEach((e, index) => {
+        const newEvent = {};
+        newEvent.name = e.EventName;
+        newEvent.start = e.EventNextStartDate.StartDateTime;
+        newEvent.end = e.EventNextStartDate.EndDateTime;
+        newEvent.color = this.colors[index % this.colors.length];
+        newEvent.Event = e;
+        Events.push(newEvent);
+      });
+      return Events;
+    },
+  },
+};
+
 </script>

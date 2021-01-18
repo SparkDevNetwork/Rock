@@ -16,19 +16,19 @@
       <v-img
         class="white--text align-end gradient"
         aspect-ratio="1.7778"
-        
+
         @load="showTitle = false"
         @error="showTitle = true"
         width="100%"
       :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
       >
-      
+
       </v-img>
-      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>   
+      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>
     </div>
   <v-card-title class="titleFont">{{Event.EventName}}</v-card-title>
     <v-card-subtitle class="pb-0" style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:space-between; align-items:top; flex-shirnk:1">
-        
+
         <div style="flex-shrink:1;">
           {{ formatDate(Event.EventNextStartDate.StartDateTime) }} at {{ formatTime(Event.EventNextStartDate.StartDateTime) }}
           <div>{{ Event.OccurrenceLocation }}</div>
@@ -71,7 +71,6 @@
         <span>Hide Details</span>
       </v-btn>
 
-      
     </v-card-actions>
     </div>
   </v-card>
@@ -80,22 +79,23 @@
 </template>
 
 <script>
-import Eventcard from './EventCard'
+import Eventcard from './EventCard';
+
 export default {
   components: {
-    Eventcard
+    Eventcard,
   },
-  props:{
-    Event:{
-      type:Object,
-      required:true,
-    }
+  props: {
+    Event: {
+      type: Object,
+      required: true,
+    },
   },
   data: () => ({
-    showTitle:false,
-      }),
-  methods:{
-    closeModal(){
+    showTitle: false,
+  }),
+  methods: {
+    closeModal() {
       this.$emit('CloseModal');
     },
     formatDate(dateItem) {
@@ -143,7 +143,7 @@ export default {
       };
     },
   },
-}
+};
 </script>
 
 <style scoped>
@@ -152,7 +152,7 @@ export default {
   position: fixed;
   display:flex;
   flex-direction:column;
-  justify-content:space-around; 
+  justify-content:space-around;
   align-items:center;
   top:0;
   left:0;
@@ -168,8 +168,7 @@ export default {
   position:relative;
   padding: 0;
   padding-top:45px;
-  
- 
+
   /* left:50%;
   top:50%;
    right:50%;
@@ -178,7 +177,7 @@ export default {
   transform:translate(-50%, -50%) */
 }
 .top {
-  
+
   background-color:#34aeb7;
   color:white;
   padding:1vh 1vw;
@@ -198,7 +197,7 @@ export default {
   cursor:pointer;
 }
 .gradient {
-   background-color:black;  
+   background-color:black;
  }
  .titleFont {
    font-size:clamp(1.5rem, 2vw, 3rem);
@@ -208,15 +207,15 @@ export default {
    background: rgb(255,255,255);
    background: linear-gradient(0deg, rgba(255,255,255,.9) 46%, rgba(52, 174, 183, 1)90%);
  }
- 
+
  .campusBox {
-    position:absolute; 
-    right:0; 
-    bottom:0; 
-    background-color:rgba(0,0,0,.75); 
-    color:white; 
+    position:absolute;
+    right:0;
+    bottom:0;
+    background-color:rgba(0,0,0,.75);
+    color:white;
     padding:5px 10px 5px 20px;
-    
+
  }
 </style>
 <style>
