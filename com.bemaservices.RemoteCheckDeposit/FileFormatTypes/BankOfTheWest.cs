@@ -128,7 +128,7 @@ Amount: {{ Amount }}", order: 20 )]
         /// </returns>
         protected override CashLetterHeader GetCashLetterHeaderRecord( ExportOptions options )
         {
-            int cashHeaderId = GetSystemSetting( SystemSettingNextCashHeaderId ).AsIntegerOrNull() ?? 0;
+            int cashHeaderId = GetSystemSetting( SystemSettingNextCashHeaderId ).AsIntegerOrNull() ?? 10000001;
 
             var header = base.GetCashLetterHeaderRecord( options );
             header.ID = cashHeaderId.ToString( "D8" );
