@@ -254,7 +254,19 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 if ( value.IsNotNullOrWhiteSpace() )
                 {
-                    _hfValue.Value = Uri.EscapeUriString( value ); // HttpUtility.UrlEncode makes spaces + instead of %20
+                    /*
+                        1/15/2021 - NAm
+
+                        An earlier note said we should not use HttpUtility.UrlEncode because it
+                        would convert spaces into "+" instead of %20.  However we've now learned
+                        that Uri.EscapeUriString has a limit between 32766-65520 characters
+                        which is less than the length of some "values".  Therefore we'll jump through
+                        this hoop and perform the conversion using a custom Escape method.
+
+                        Reason: Image data inside of Structured Content Editor.
+                     */
+
+                    _hfValue.Value = EscapeLongDataString( value ); // HttpUtility.UrlEncode makes spaces + instead of %20
                 }
             }
         }
@@ -417,6 +429,29 @@ onChange: function() {{
 }});
 ", this.ClientID, _hfValue.ClientID, structuredContentToolConfiguration );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "structure-content-script" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Escapes the data string in such a way as to deal with really long values commonly found
+        /// in pasted image data (data:image/png;base64,....) which would otherwise throw a
+        /// UriFormatException ("Invalid URI: The Uri string is too long.").
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        private static string EscapeLongDataString( string str )
+        {
+            var maxLength = 32766;  // per https://docs.microsoft.com/en-us/dotnet/api/system.uri.escapedatastring?view=net-5.0
+            var iterations = str.Length / maxLength;
+
+            var sb = new StringBuilder();
+            for ( int i = 0; i <= iterations; i++ )
+            {
+                sb.Append( Uri.EscapeDataString( i < iterations
+                    ? str.Substring( maxLength * i, maxLength )
+                    : str.Substring( maxLength * i ) ) );
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
