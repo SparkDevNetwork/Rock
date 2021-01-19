@@ -2,12 +2,12 @@
 import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
 import { Module } from '../Vendor/Vuex/index.js';
 import { RootState } from './index.js';
-import Entity from '../Types/Models/entity.js';
 import cache from '../Util/cache.js';
 import http from '../Util/http.js';
 import { CommonEntity } from './commonEntities.js';
 import { splitCamelCase } from '../Filters/String.js';
 import { Guid } from '../Util/Guid.js';
+import Entity from '../ViewModels/Entity.js';
 
 export type CommonEntityOption = {
     Guid: Guid;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationTemplateFormField {
+export default interface RegistrationTemplateFormField extends Entity {
     Id: number;
     AttributeId: number | null;
     FieldSource: number;

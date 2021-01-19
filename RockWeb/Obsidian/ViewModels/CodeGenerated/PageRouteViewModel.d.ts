@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PageRoute {
+export default interface PageRoute extends Entity {
     Id: number;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;

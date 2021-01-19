@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PersonSignal {
+export default interface PersonSignal extends Entity {
     Id: number;
     ExpirationDate: string | Date | null;
     ForeignGuid: Guid | null;

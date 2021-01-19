@@ -1,7 +1,7 @@
 ﻿import { defineComponent, inject, PropType } from '../Vendor/Vue/vue.js';
 import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
 import { BlockHttp } from './RockBlock.js';
-import DefinedValue from '../Types/Models/DefinedValue.js';
+import DefinedValue from '../ViewModels/CodeGenerated/DefinedValueViewModel.js';
 
 export default defineComponent({
     name: 'DefinedValuePicker',

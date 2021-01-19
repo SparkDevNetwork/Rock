@@ -5,7 +5,7 @@ import RockButton from '../../Elements/RockButton.js';
 import TextBox from '../../Elements/TextBox.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
-import Person from '../../Types/Models/Person.js';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 
 export default defineComponent({
     name: 'Example.PersonSecondary',
@@ -28,7 +28,7 @@ export default defineComponent({
         doPublish(): void {
             bus.publish('PersonSecondary:Message', this.messageToPublish);
             this.messageToPublish = '';
-            
+
         },
         doThrowError(): void {
             throw new Error('This is an uncaught error');
@@ -39,14 +39,10 @@ export default defineComponent({
             return store.state.currentPerson;
         },
         currentPersonName(): string {
-            return this.currentPerson ? this.currentPerson.FullName : 'anonymous';
+            return this.currentPerson?.FullName || 'anonymous';
         },
         imageUrl(): string {
-            if (this.currentPerson && this.currentPerson.PhotoUrl) {
-                return this.currentPerson.PhotoUrl;
-            }
-
-            return '/Assets/Images/person-no-photo-unknown.svg';
+            return this.currentPerson?.PhotoUrl || '/Assets/Images/person-no-photo-unknown.svg';
         },
         photoElementStyle(): string {
             return `background-image: url("${this.imageUrl}"); background-size: cover; background-repeat: no-repeat;`;
@@ -70,12 +66,12 @@ export default defineComponent({
                         <div class="photo-icon photo-round photo-round-sm" :style="photoElementStyle"></div>
                     </p>
                     <p>This is a secondary block. It respects the store's value indicating if secondary blocks are visible.</p>
-                    <RockButton class="btn-danger btn-sm" @click="doThrowError">Throw Error</RockButton>
+                    <RockButton danger sm @click="doThrowError">Throw Error</RockButton>
                 </div>
                 <div class="col-sm-6">
                     <div class="well">
                         <TextBox label="Message" v-model="messageToPublish" />
-                        <RockButton class="btn-primary btn-sm" @click="doPublish">Publish</RockButton>
+                        <RockButton primary sm @click="doPublish">Publish</RockButton>
                     </div>
                     <p>
                         <strong>Detail block says:</strong>

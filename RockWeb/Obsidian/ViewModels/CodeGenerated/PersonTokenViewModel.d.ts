@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PersonToken {
+export default interface PersonToken extends Entity {
     Id: number;
     ExpireDateTime: string | Date | null;
     ForeignGuid: Guid | null;

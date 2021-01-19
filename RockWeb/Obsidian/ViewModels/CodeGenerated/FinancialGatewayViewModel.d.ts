@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialGateway {
+export default interface FinancialGateway extends Entity {
     Id: number;
     Description: string | null;
     EntityTypeId: number | null;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Site {
+export default interface Site extends Entity {
     Id: number;
     AdditionalSettings: string | null;
     AllowedFrameDomains: string | null;

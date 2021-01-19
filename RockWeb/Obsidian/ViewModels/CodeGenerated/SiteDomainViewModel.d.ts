@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface SiteDomain {
+export default interface SiteDomain extends Entity {
     Id: number;
     Domain: string;
     ForeignGuid: Guid | null;

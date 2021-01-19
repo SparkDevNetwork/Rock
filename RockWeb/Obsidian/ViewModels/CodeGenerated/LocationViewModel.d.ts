@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Location {
+export default interface Location extends Entity {
     Id: number;
     AssessorParcelId: string | null;
     Barcode: string | null;

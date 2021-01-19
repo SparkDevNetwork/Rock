@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FollowingEventSubscription {
+export default interface FollowingEventSubscription extends Entity {
     Id: number;
     EventTypeId: number;
     ForeignGuid: Guid | null;

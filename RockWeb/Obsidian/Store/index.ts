@@ -1,9 +1,9 @@
 ﻿import { PageConfig } from '../Index.js';
-import Entity from '../Types/Models/Entity.js';
-import Group from '../Types/Models/Group.js';
-import Person from '../Types/Models/Person.js';
 import { Guid } from '../Util/Guid.js';
 import { createStore } from '../Vendor/Vuex/index.js';
+import Group from '../ViewModels/CodeGenerated/GroupViewModel.js';
+import Person from '../ViewModels/CodeGenerated/PersonViewModel.js';
+import Entity from '../ViewModels/Entity.js';
 import { commonEntities, commonEntityModules } from './CommonEntities.js';
 
 export interface RootState {

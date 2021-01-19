@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EventItemAudience {
+export default interface EventItemAudience extends Entity {
     Id: number;
     DefinedValueId: number;
     EventItemId: number;

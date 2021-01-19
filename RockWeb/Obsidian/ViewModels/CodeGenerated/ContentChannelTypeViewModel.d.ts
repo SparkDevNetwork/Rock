@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ContentChannelType {
+export default interface ContentChannelType extends Entity {
     Id: number;
     DateRangeType: number;
     DisableContentField: boolean;

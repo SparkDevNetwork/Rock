@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface IdentityVerification {
+export default interface IdentityVerification extends Entity {
     Id: number;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;

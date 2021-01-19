@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ScheduleCategoryExclusion {
+export default interface ScheduleCategoryExclusion extends Entity {
     Id: number;
     CategoryId: number;
     EndDate: string | Date;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationTemplateDiscount {
+export default interface RegistrationTemplateDiscount extends Entity {
     Id: number;
     AutoApplyDiscount: boolean;
     Code: string;

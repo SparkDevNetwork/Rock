@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Step {
+export default interface Step extends Entity {
     Id: number;
     CampusId: number | null;
     CompletedDateTime: string | Date | null;

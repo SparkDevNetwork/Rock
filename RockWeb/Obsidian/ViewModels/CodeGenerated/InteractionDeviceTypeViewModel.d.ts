@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface InteractionDeviceType {
+export default interface InteractionDeviceType extends Entity {
     Id: number;
     Application: string | null;
     ClientType: string | null;

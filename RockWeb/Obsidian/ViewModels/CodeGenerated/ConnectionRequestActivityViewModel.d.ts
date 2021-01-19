@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ConnectionRequestActivity {
+export default interface ConnectionRequestActivity extends Entity {
     Id: number;
     ConnectionActivityTypeId: number;
     ConnectionOpportunityId: number | null;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AttendanceOccurrence {
+export default interface AttendanceOccurrence extends Entity {
     Id: number;
     AcceptConfirmationMessage: string | null;
     AnonymousAttendanceCount: number | null;

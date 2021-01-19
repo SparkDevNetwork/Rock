@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ConnectionStatus {
+export default interface ConnectionStatus extends Entity {
     Id: number;
     AutoInactivateState: boolean;
     ConnectionTypeId: number | null;

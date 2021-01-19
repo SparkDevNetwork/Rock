@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Note {
+export default interface Note extends Entity {
     Id: number;
     ApprovalsSent: boolean;
     ApprovalStatus: number;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupDemographicType {
+export default interface GroupDemographicType extends Entity {
     Id: number;
     ComponentEntityTypeId: number;
     Description: string | null;

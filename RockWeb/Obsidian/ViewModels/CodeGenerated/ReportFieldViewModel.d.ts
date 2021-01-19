@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ReportField {
+export default interface ReportField extends Entity {
     Id: number;
     ColumnHeaderText: string | null;
     ColumnOrder: number;

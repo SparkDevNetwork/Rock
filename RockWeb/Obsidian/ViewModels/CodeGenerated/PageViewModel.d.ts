@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Page {
+export default interface Page extends Entity {
     Id: number;
     AdditionalSettings: string | null;
     AllowIndexing: boolean;

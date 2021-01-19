@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface NoteAttachment {
+export default interface NoteAttachment extends Entity {
     Id: number;
     BinaryFileId: number;
     ForeignGuid: Guid | null;

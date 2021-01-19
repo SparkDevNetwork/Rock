@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface SignatureDocument {
+export default interface SignatureDocument extends Entity {
     Id: number;
     AppliesToPersonAliasId: number | null;
     AssignedToPersonAliasId: number | null;

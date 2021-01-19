@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface CommunicationTemplate {
+export default interface CommunicationTemplate extends Entity {
     Id: number;
     BCCEmails: string | null;
     CategoryId: number | null;

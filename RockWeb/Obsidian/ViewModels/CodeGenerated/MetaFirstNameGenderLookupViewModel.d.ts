@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface MetaFirstNameGenderLookup {
+export default interface MetaFirstNameGenderLookup extends Entity {
     Id: number;
     Country: string | null;
     FemaleCount: number | null;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface StreakType {
+export default interface StreakType extends Entity {
     Id: number;
     Description: string | null;
     EnableAttendance: boolean;

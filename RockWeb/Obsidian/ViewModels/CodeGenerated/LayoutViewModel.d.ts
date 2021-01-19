@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Layout {
+export default interface Layout extends Entity {
     Id: number;
     Description: string | null;
     FileName: string;

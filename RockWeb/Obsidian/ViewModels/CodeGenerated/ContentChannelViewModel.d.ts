@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ContentChannel {
+export default interface ContentChannel extends Entity {
     Id: number;
     ChannelUrl: string | null;
     ChildItemsManuallyOrdered: boolean;

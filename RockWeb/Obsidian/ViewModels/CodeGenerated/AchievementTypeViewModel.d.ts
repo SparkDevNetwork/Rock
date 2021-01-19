@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AchievementType {
+export default interface AchievementType extends Entity {
     Id: number;
     AchievementFailureWorkflowTypeId: number | null;
     AchievementIconCssClass: string | null;

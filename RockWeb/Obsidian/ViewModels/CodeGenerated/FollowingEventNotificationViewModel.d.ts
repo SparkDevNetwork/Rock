@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FollowingEventNotification {
+export default interface FollowingEventNotification extends Entity {
     Id: number;
     EntityId: number;
     FollowingEventTypeId: number;

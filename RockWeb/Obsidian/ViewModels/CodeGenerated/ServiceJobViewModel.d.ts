@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ServiceJob {
+export default interface ServiceJob extends Entity {
     Id: number;
     Assembly: string | null;
     Class: string;

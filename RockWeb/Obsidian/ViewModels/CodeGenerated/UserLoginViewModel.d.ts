@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface UserLogin {
+export default interface UserLogin extends Entity {
     Id: number;
     ApiKey: string | null;
     EntityTypeId: number | null;

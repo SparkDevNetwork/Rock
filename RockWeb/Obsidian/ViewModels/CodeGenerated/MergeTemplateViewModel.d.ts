@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface MergeTemplate {
+export default interface MergeTemplate extends Entity {
     Id: number;
     CategoryId: number;
     Description: string | null;

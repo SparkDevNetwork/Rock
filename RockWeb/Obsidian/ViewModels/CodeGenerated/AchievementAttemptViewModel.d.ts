@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AchievementAttempt {
+export default interface AchievementAttempt extends Entity {
     Id: number;
     AchievementAttemptEndDateTime: string | Date | null;
     AchievementAttemptStartDateTime: string | Date;

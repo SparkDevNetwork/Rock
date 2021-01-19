@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Following {
+export default interface Following extends Entity {
     Id: number;
     EntityId: number;
     EntityTypeId: number;

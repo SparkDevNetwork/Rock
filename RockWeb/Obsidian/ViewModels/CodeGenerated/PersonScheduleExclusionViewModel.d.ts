@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PersonScheduleExclusion {
+export default interface PersonScheduleExclusion extends Entity {
     Id: number;
     EndDate: string | Date;
     ForeignGuid: Guid | null;

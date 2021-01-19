@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Attribute {
+export default interface Attribute extends Entity {
     Id: number;
     AbbreviatedName: string | null;
     AllowSearch: boolean;

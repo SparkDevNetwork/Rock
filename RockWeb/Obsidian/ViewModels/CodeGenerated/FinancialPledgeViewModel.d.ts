@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialPledge {
+export default interface FinancialPledge extends Entity {
     Id: number;
     AccountId: number | null;
     EndDate: string | Date;

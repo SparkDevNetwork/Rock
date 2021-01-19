@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EntityCampusFilter {
+export default interface EntityCampusFilter extends Entity {
     Id: number;
     CampusId: number;
     EntityId: number;

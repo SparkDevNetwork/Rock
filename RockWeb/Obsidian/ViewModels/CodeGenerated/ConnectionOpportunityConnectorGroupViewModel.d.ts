@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ConnectionOpportunityConnectorGroup {
+export default interface ConnectionOpportunityConnectorGroup extends Entity {
     Id: number;
     CampusId: number | null;
     ConnectionOpportunityId: number;

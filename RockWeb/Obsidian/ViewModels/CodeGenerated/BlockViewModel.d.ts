@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Block {
+export default interface Block extends Entity {
     Id: number;
     AdditionalSettings: string | null;
     BlockTypeId: number;

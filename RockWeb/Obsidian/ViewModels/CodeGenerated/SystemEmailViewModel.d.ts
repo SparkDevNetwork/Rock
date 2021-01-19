@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface SystemEmail {
+export default interface SystemEmail extends Entity {
     Id: number;
     Bcc: string | null;
     Body: string;

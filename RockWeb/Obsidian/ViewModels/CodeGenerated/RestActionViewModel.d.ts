@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RestAction {
+export default interface RestAction extends Entity {
     Id: number;
     ApiId: string | null;
     CacheControlHeaderSettings: string | null;

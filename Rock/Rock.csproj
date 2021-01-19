@@ -763,6 +763,7 @@
     <Compile Include="ViewModel\CodeGenerated\AttributeValueViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\AttributeViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\PersonViewModel.cs" />
+    <Compile Include="ViewModel\PersonViewModel.partial.cs" />
     <Compile Include="ViewModel\Util\ViewModel.cs" />
     <Compile Include="ViewModel\Util\ViewModelExcludeAttribute.cs" />
     <Compile Include="ViewModel\Util\ViewModelOfAttribute.cs" />

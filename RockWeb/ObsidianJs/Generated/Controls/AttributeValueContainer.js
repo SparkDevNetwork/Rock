@@ -25,7 +25,7 @@ System.register(["../Filters/String.js", "../Vendor/Vue/vue.js", "./RockField.js
                         type: Boolean,
                         default: false
                     },
-                    attributeValues: {
+                    attributeWithValues: {
                         type: Array,
                         required: true
                     },
@@ -39,22 +39,22 @@ System.register(["../Filters/String.js", "../Vendor/Vue/vue.js", "./RockField.js
                     }
                 },
                 methods: {
-                    getAttributeLabel: function (attributeValue) {
+                    getAttributeLabel: function (attributeWithValue) {
                         if (this.showAbbreviatedName) {
-                            return attributeValue.AttributeAbbreviatedName || attributeValue.AttributeName;
+                            return attributeWithValue.Attribute.AbbreviatedName || attributeWithValue.Attribute.Name;
                         }
-                        return attributeValue.AttributeName;
+                        return attributeWithValue.Attribute.Name;
                     }
                 },
                 computed: {
                     valuesToShow: function () {
                         if (this.showEmptyValues) {
-                            return this.attributeValues;
+                            return this.attributeWithValues;
                         }
-                        return this.attributeValues.filter(function (av) { return !String_js_1.isNullOrWhitespace(av.Value); });
+                        return this.attributeWithValues.filter(function (av) { return !String_js_1.isNullOrWhitespace(av.Value); });
                     }
                 },
-                template: "\n<div v-if=\"!isEditMode\" v-for=\"a in valuesToShow\" class=\"form-group static-control\">\n    <label class=\"control-label\">\n        {{ getAttributeLabel(a) }}\n    </label>\n    <div class=\"control-wrapper\">\n        <div class=\"form-control-static\">\n            <RockField :fieldTypeGuid=\"a.AttributeFieldTypeGuid\" v-model=\"a.Value\" />\n        </div>\n    </div>\n</div>\n<template v-else>\n    <template v-for=\"a in attributeValues\">\n        <RockField\n            isEditMode\n            :fieldTypeGuid=\"a.AttributeFieldTypeGuid\"\n            v-model=\"a.Value\"\n            :label=\"getAttributeLabel(a)\"\n            :help=\"a.AttributeDescription\"\n            :rules=\"a.AttributeIsRequired ? 'required' : ''\"\n            :configurationValues=\"a.AttributeQualifierValues\"  />\n    </template>\n</template>"
+                template: "\n<div v-if=\"!isEditMode\" v-for=\"a in valuesToShow\" class=\"form-group static-control\">\n    <label class=\"control-label\">\n        {{ getAttributeLabel(a) }}\n    </label>\n    <div class=\"control-wrapper\">\n        <div class=\"form-control-static\">\n            <RockField :fieldTypeGuid=\"a.AttributeFieldTypeGuid\" v-model=\"a.Value\" />\n        </div>\n    </div>\n</div>\n<template v-else>\n    <template v-for=\"a in attributeValues\">\n        <RockField\n            isEditMode\n            :fieldTypeGuid=\"a.Attribute.FieldTypeGuid\"\n            v-model=\"a.Value\"\n            :label=\"getAttributeLabel(a)\"\n            :help=\"a.Attribute.Description\"\n            :rules=\"a.Attribute.IsRequired ? 'required' : ''\"\n            :configurationValues=\"a.Attribute.QualifierValues\"  />\n    </template>\n</template>"
             }));
         }
     };

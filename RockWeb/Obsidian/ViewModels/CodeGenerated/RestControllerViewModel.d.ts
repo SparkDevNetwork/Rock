@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RestController {
+export default interface RestController extends Entity {
     Id: number;
     ClassName: string | null;
     ForeignGuid: Guid | null;

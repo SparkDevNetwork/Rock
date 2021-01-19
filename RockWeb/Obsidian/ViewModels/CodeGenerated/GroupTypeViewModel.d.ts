@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupType {
+export default interface GroupType extends Entity {
     Id: number;
     AdministratorTerm: string | null;
     AllowAnyChildGroupType: boolean;

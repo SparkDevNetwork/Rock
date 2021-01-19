@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationTemplate {
+export default interface RegistrationTemplate extends Entity {
     Id: number;
     AddPersonNote: boolean;
     AllowExternalRegistrationUpdates: boolean;

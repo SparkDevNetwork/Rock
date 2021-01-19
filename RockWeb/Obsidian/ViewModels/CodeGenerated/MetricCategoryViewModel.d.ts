@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface MetricCategory {
+export default interface MetricCategory extends Entity {
     Id: number;
     CategoryId: number;
     ForeignGuid: Guid | null;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PersonAlias {
+export default interface PersonAlias extends Entity {
     Id: number;
     AliasPersonGuid: Guid | null;
     AliasPersonId: number | null;

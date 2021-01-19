@@ -2,9 +2,9 @@
 import RockBlock from './Controls/RockBlock.js';
 import store from './Store/Index.js';
 import { Guid } from './Util/Guid.js';
-import Person from './Types/Models/Person.js';
-import Entity from './Types/Models/Entity.js';
 import './Rules/Index.js';
+import Person from './ViewModels/CodeGenerated/PersonViewModel.js';
+import Entity from './ViewModels/Entity.js';
 
 export type BlockSettings = Record<string, unknown>;
 

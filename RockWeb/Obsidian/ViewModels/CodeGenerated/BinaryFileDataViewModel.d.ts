@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface BinaryFileData {
+export default interface BinaryFileData extends Entity {
     Id: number;
     Content: Record<string, unknown>;
     ForeignGuid: Guid | null;

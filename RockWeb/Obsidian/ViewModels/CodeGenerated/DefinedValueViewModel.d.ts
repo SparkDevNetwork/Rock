@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface DefinedValue {
+export default interface DefinedValue extends Entity {
     Id: number;
     DefinedTypeId: number;
     Description: string | null;

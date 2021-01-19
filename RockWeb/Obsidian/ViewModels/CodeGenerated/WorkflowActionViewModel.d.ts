@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface WorkflowAction {
+export default interface WorkflowAction extends Entity {
     Id: number;
     ActionTypeId: number;
     ActivityId: number;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface SignalType {
+export default interface SignalType extends Entity {
     Id: number;
     Description: string | null;
     ForeignGuid: Guid | null;

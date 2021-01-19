@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupRequirementType {
+export default interface GroupRequirementType extends Entity {
     Id: number;
     CanExpire: boolean;
     CheckboxLabel: string | null;

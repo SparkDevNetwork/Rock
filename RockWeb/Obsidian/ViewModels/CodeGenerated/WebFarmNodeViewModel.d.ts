@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface WebFarmNode {
+export default interface WebFarmNode extends Entity {
     Id: number;
     AddedDateTime: string | Date;
     ConfiguredLeadershipPollingIntervalSeconds: number | null;

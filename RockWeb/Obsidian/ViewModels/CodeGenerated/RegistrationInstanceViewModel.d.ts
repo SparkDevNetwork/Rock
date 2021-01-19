@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationInstance {
+export default interface RegistrationInstance extends Entity {
     Id: number;
     AccountId: number | null;
     AdditionalConfirmationDetails: string | null;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PhoneNumber {
+export default interface PhoneNumber extends Entity {
     Id: number;
     CountryCode: string | null;
     Description: string | null;

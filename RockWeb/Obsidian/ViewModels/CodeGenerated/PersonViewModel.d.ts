@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Person {
+export default interface Person extends Entity {
     Id: number;
     AgeClassification: number;
     AnniversaryDate: string | Date | null;
@@ -40,6 +41,7 @@ export default interface Person {
     FirstName: string | null;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;
+    FullName: string | null;
     Gender: number;
     GivingGroupId: number | null;
     GivingLeaderId: number;
@@ -54,6 +56,7 @@ export default interface Person {
     MiddleName: string | null;
     NickName: string | null;
     PhotoId: number | null;
+    PhotoUrl: string | null;
     PrimaryCampusId: number | null;
     PrimaryFamilyId: number | null;
     RecordStatusLastModifiedDateTime: string | Date | null;

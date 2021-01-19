@@ -4,10 +4,10 @@ import DefinedValuePicker from '../../Controls/DefinedValuePicker.js';
 import CampusPicker from '../../Controls/CampusPicker.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
-import Campus from '../../Types/Models/Campus.js';
-import DefinedType from '../../Types/Models/DefinedType.js';
-import DefinedValue from '../../Types/Models/DefinedValue.js';
 import TextBox from '../../Elements/TextBox.js';
+import DefinedValue from '../../ViewModels/CodeGenerated/DefinedValueViewModel.js';
+import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
+import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',

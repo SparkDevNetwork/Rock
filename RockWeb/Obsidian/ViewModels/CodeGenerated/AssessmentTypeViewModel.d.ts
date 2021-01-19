@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AssessmentType {
+export default interface AssessmentType extends Entity {
     Id: number;
     AssessmentPath: string;
     AssessmentResultsPath: string | null;

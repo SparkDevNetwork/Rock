@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AttributeMatrix {
+export default interface AttributeMatrix extends Entity {
     Id: number;
     AttributeMatrixTemplateId: number;
     ForeignGuid: Guid | null;

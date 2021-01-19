@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ExceptionLog {
+export default interface ExceptionLog extends Entity {
     Id: number;
     Cookies: string | null;
     Description: string | null;

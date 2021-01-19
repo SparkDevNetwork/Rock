@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupSync {
+export default interface GroupSync extends Entity {
     Id: number;
     AddUserAccountsDuringSync: boolean;
     ExitSystemCommunicationId: number | null;

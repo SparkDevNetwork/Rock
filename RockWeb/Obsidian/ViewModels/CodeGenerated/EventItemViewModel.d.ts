@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EventItem {
+export default interface EventItem extends Entity {
     Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedOnDateTime: string | Date | null;

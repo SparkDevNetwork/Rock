@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface LavaShortcode {
+export default interface LavaShortcode extends Entity {
     Id: number;
     Description: string | null;
     Documentation: string | null;

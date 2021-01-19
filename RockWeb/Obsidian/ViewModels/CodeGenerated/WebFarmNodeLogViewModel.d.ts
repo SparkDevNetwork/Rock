@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface WebFarmNodeLog {
+export default interface WebFarmNodeLog extends Entity {
     Id: number;
     EventDateTime: string | Date;
     EventType: string;

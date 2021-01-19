@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Auth {
+export default interface Auth extends Entity {
     Id: number;
     Action: string;
     AllowOrDeny: string;

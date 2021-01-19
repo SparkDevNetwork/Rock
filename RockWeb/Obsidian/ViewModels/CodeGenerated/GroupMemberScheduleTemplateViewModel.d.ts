@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupMemberScheduleTemplate {
+export default interface GroupMemberScheduleTemplate extends Entity {
     Id: number;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;

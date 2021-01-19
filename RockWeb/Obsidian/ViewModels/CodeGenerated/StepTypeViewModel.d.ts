@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface StepType {
+export default interface StepType extends Entity {
     Id: number;
     AllowManualEditing: boolean;
     AllowMultiple: boolean;

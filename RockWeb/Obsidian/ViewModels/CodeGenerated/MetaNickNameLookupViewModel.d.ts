@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface MetaNickNameLookup {
+export default interface MetaNickNameLookup extends Entity {
     Id: number;
     Count: number | null;
     FirstName: string;

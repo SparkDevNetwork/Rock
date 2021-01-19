@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface WorkflowTrigger {
+export default interface WorkflowTrigger extends Entity {
     Id: number;
     EntityTypeId: number;
     EntityTypeQualifierColumn: string | null;

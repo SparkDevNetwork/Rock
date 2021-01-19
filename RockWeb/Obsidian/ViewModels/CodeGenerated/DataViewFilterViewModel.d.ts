@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface DataViewFilter {
+export default interface DataViewFilter extends Entity {
     Id: number;
     DataViewId: number | null;
     EntityTypeId: number | null;

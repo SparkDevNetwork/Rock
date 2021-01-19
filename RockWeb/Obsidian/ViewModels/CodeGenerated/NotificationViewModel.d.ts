@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Notification {
+export default interface Notification extends Entity {
     Id: number;
     Classification: number;
     ForeignGuid: Guid | null;

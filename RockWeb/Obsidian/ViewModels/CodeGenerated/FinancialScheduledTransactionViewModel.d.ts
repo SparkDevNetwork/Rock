@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialScheduledTransaction {
+export default interface FinancialScheduledTransaction extends Entity {
     Id: number;
     AuthorizedPersonAliasId: number;
     CardReminderDate: string | Date | null;

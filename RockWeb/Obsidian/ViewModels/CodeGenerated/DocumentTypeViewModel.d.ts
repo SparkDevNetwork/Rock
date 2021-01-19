@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface DocumentType {
+export default interface DocumentType extends Entity {
     Id: number;
     BinaryFileTypeId: number;
     DefaultDocumentNameTemplate: string | null;

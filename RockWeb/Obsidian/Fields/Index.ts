@@ -1,8 +1,15 @@
 ﻿import { Component, PropType } from '../Vendor/Vue/vue.js';
 import { Guid, normalize } from '../Util/Guid.js';
-import { ConfigurationValues } from '../Types/Models/AttributeValue.js';
 
 const fieldTypeComponentPaths: Record<Guid, Component> = {};
+
+export interface ConfigurationValue {
+    Name: string;
+    Description: string;
+    Value: string;
+}
+
+export type ConfigurationValues = Record<string, ConfigurationValue>;
 
 export type FieldTypeModule = {
     fieldTypeGuid: Guid;

@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface MetricValuePartition {
+export default interface MetricValuePartition extends Entity {
     Id: number;
     EntityId: number | null;
     ForeignGuid: Guid | null;

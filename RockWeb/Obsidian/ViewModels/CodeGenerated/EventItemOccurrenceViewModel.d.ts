@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EventItemOccurrence {
+export default interface EventItemOccurrence extends Entity {
     Id: number;
     CampusId: number | null;
     ContactEmail: string | null;

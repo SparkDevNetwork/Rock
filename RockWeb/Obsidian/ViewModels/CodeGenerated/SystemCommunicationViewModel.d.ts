@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface SystemCommunication {
+export default interface SystemCommunication extends Entity {
     Id: number;
     Bcc: string | null;
     Body: string;

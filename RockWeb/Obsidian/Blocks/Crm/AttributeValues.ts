@@ -9,8 +9,7 @@ import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
 import RockForm from '../../Controls/RockForm.js';
 import TextBox from '../../Elements/TextBox.js';
 import RockButton from '../../Elements/RockButton.js';
-import AttributeValueContainer from '../../Controls/AttributeValueContainer.js';
-import AttributeValue from '../../ViewModels/CodeGenerated/AttributeValueViewModel.js';
+import AttributeValueContainer, { AttributeWithValue } from '../../Controls/AttributeValueContainer.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import Attribute from '../../ViewModels/CodeGenerated/AttributeViewModel.js';
 
@@ -125,12 +124,12 @@ export default defineComponent({
     </template>
     <template v-slot:default>
         <Loading :isLoading="isLoading">
-            <AttributeValueContainer v-if="!isEditMode" :attributeValues="viewModels" :showEmptyValues="false" />
+            <AttributeValueContainer v-if="!isEditMode" :attributeWithValues="viewModels" :showEmptyValues="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValueContainer :attributeValues="viewModels" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValueContainer :attributeWithValues="viewModels" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
-                    <RockButton class="btn-primary btn-xs" type="submit">Save</RockButton>
-                    <RockButton class="btn-link btn-xs" @click="goToViewMode">Cancel</RockButton>
+                    <RockButton primary xs type="submit">Save</RockButton>
+                    <RockButton link xs @click="goToViewMode">Cancel</RockButton>
                 </div>
             </RockForm>
         </Loading>

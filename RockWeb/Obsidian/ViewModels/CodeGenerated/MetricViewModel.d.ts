@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Metric {
+export default interface Metric extends Entity {
     Id: number;
     AdminPersonAliasId: number | null;
     DataViewId: number | null;

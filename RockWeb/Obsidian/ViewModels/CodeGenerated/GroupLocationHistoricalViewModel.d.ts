@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupLocationHistorical {
+export default interface GroupLocationHistorical extends Entity {
     Id: number;
     CurrentRowIndicator: boolean;
     EffectiveDateTime: string | Date;

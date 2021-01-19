@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Group {
+export default interface Group extends Entity {
     Id: number;
     AllowGuests: boolean | null;
     ArchivedByPersonAliasId: number | null;

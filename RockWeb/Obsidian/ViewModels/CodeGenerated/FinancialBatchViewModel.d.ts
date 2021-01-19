@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialBatch {
+export default interface FinancialBatch extends Entity {
     Id: number;
     AccountingSystemCode: string | null;
     BatchEndDateTime: string | Date | null;

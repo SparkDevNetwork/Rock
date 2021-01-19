@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EventItemOccurrenceChannelItem {
+export default interface EventItemOccurrenceChannelItem extends Entity {
     Id: number;
     ContentChannelItemId: number;
     EventItemOccurrenceId: number;

@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.ViewModel
@@ -28,6 +29,22 @@ namespace Rock.ViewModel
     /// </summary>
     public interface IViewModel
     {
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        Guid Guid { get; set; }
+
         /// <summary>
         /// Sets the properties from entity.
         /// </summary>

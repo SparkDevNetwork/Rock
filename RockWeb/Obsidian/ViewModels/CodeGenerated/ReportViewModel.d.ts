@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Report {
+export default interface Report extends Entity {
     Id: number;
     CategoryId: number | null;
     DataViewId: number | null;

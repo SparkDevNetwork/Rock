@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialAccount {
+export default interface FinancialAccount extends Entity {
     Id: number;
     AccountTypeValueId: number | null;
     CampusId: number | null;

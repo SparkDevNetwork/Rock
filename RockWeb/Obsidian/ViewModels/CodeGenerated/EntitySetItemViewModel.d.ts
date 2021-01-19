@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EntitySetItem {
+export default interface EntitySetItem extends Entity {
     Id: number;
     AdditionalMergeValuesJson: string | null;
     EntityId: number;

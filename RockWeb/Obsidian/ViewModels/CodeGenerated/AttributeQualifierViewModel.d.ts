@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AttributeQualifier {
+export default interface AttributeQualifier extends Entity {
     Id: number;
     AttributeId: number;
     ForeignGuid: Guid | null;

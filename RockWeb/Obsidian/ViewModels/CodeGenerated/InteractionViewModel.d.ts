@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Interaction {
+export default interface Interaction extends Entity {
     Id: number;
     Campaign: string | null;
     ChannelCustom1: string | null;

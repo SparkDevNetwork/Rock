@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialTransaction {
+export default interface FinancialTransaction extends Entity {
     Id: number;
     AuthorizedPersonAliasId: number | null;
     BatchId: number | null;

@@ -21,10 +21,13 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
+import Attribute from './AttributeViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface AttributeValue {
+export default interface AttributeValue extends Entity {
     Id: number;
+    Attribute: Attribute;
     AttributeId: number;
     EntityId: number | null;
     ForeignGuid: Guid | null;

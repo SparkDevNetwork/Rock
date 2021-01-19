@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Badge {
+export default interface Badge extends Entity {
     Id: number;
     BadgeComponentEntityTypeId: number;
     Description: string | null;

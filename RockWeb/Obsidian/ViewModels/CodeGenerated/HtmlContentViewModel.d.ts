@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface HtmlContent {
+export default interface HtmlContent extends Entity {
     Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedDateTime: string | Date | null;

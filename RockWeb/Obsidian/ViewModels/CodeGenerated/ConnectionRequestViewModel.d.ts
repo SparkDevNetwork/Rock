@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ConnectionRequest {
+export default interface ConnectionRequest extends Entity {
     Id: number;
     AssignedGroupId: number | null;
     AssignedGroupMemberAttributeValues: string | null;

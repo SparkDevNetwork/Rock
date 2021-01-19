@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface NoteType {
+export default interface NoteType extends Entity {
     Id: number;
     AllowsAttachments: boolean;
     AllowsReplies: boolean;

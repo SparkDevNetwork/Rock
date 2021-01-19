@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PageContext {
+export default interface PageContext extends Entity {
     Id: number;
     Entity: string;
     ForeignGuid: Guid | null;

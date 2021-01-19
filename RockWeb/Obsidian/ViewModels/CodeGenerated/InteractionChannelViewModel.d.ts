@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface InteractionChannel {
+export default interface InteractionChannel extends Entity {
     Id: number;
     ChannelData: string | null;
     ChannelDetailTemplate: string | null;

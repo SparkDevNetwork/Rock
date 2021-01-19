@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EventItemOccurrenceGroupMap {
+export default interface EventItemOccurrenceGroupMap extends Entity {
     Id: number;
     EventItemOccurrenceId: number | null;
     ForeignGuid: Guid | null;

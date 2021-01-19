@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface NoteWatch {
+export default interface NoteWatch extends Entity {
     Id: number;
     AllowOverride: boolean;
     EntityId: number | null;

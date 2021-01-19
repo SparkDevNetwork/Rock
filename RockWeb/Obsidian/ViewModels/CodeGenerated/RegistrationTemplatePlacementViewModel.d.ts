@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationTemplatePlacement {
+export default interface RegistrationTemplatePlacement extends Entity {
     Id: number;
     AllowMultiplePlacements: boolean;
     Cost: number | null;

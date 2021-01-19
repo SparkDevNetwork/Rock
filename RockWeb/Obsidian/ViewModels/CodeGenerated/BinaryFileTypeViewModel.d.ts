@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface BinaryFileType {
+export default interface BinaryFileType extends Entity {
     Id: number;
     AllowCaching: boolean;
     CacheControlHeaderSettings: string | null;

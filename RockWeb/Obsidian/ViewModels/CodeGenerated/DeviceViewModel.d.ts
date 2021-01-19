@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Device {
+export default interface Device extends Entity {
     Id: number;
     CameraBarcodeConfigurationType: number | null;
     Description: string | null;

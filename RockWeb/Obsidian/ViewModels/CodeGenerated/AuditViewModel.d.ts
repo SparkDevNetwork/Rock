@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Audit {
+export default interface Audit extends Entity {
     Id: number;
     AuditType: number;
     DateTime: string | Date | null;

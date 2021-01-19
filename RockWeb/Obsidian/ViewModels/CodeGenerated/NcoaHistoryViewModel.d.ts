@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface NcoaHistory {
+export default interface NcoaHistory extends Entity {
     Id: number;
     AddressInvalidReason: number;
     AddressStatus: number;

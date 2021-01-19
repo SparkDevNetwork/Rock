@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface GroupTypeRole {
+export default interface GroupTypeRole extends Entity {
     Id: number;
     CanEdit: boolean;
     CanManageMembers: boolean;

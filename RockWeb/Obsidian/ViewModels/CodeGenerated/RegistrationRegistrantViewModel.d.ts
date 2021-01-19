@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface RegistrationRegistrant {
+export default interface RegistrationRegistrant extends Entity {
     Id: number;
     Cost: number;
     DiscountApplies: boolean;

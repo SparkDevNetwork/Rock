@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface StepProgram {
+export default interface StepProgram extends Entity {
     Id: number;
     CategoryId: number | null;
     DefaultListView: number;

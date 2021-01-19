@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Attendance {
+export default interface Attendance extends Entity {
     Id: number;
     AttendanceCheckInSessionId: number | null;
     AttendanceCodeId: number | null;

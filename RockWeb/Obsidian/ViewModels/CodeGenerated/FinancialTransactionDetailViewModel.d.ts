@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface FinancialTransactionDetail {
+export default interface FinancialTransactionDetail extends Entity {
     Id: number;
     AccountId: number;
     Amount: number;

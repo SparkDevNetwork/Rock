@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface BenevolenceResult {
+export default interface BenevolenceResult extends Entity {
     Id: number;
     Amount: number | null;
     BenevolenceRequestId: number;

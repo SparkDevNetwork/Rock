@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface ContentChannelItemSlug {
+export default interface ContentChannelItemSlug extends Entity {
     Id: number;
     ContentChannelItemId: number;
     ForeignGuid: Guid | null;

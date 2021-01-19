@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface Streak {
+export default interface Streak extends Entity {
     Id: number;
     CurrentStreakCount: number;
     CurrentStreakStartDate: string | Date | null;

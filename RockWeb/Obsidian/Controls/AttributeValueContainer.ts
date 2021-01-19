@@ -1,7 +1,12 @@
 ﻿import { isNullOrWhitespace } from '../Filters/String.js';
-import AttributeValue from '../Types/Models/AttributeValue.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import Attribute from '../ViewModels/CodeGenerated/AttributeViewModel.js';
 import RockField from './RockField.js';
+
+export type AttributeWithValue = {
+    Attribute: Attribute,
+    Value: string
+};
 
 export default defineComponent({
     name: 'AttributeValueContainer',
@@ -13,8 +18,8 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        attributeValues: {
-            type: Array as PropType<AttributeValue[]>,
+        attributeWithValues: {
+            type: Array as PropType<AttributeWithValue[]>,
             required: true
         },
         showEmptyValues: {
@@ -27,21 +32,21 @@ export default defineComponent({
         }
     },
     methods: {
-        getAttributeLabel(attributeValue: AttributeValue) {
+        getAttributeLabel(attributeWithValue: AttributeWithValue) {
             if (this.showAbbreviatedName) {
-                return attributeValue.AttributeAbbreviatedName || attributeValue.AttributeName;
+                return attributeWithValue.Attribute.AbbreviatedName || attributeWithValue.Attribute.Name;
             }
 
-            return attributeValue.AttributeName;
+            return attributeWithValue.Attribute.Name;
         }
     },
     computed: {
-        valuesToShow(): AttributeValue[] {
+        valuesToShow(): AttributeWithValue[] {
             if (this.showEmptyValues) {
-                return this.attributeValues;
+                return this.attributeWithValues;
             }
 
-            return this.attributeValues.filter(av => !isNullOrWhitespace(av.Value));
+            return this.attributeWithValues.filter(av => !isNullOrWhitespace(av.Value));
         }
     },
     template: `
@@ -59,12 +64,12 @@ export default defineComponent({
     <template v-for="a in attributeValues">
         <RockField
             isEditMode
-            :fieldTypeGuid="a.AttributeFieldTypeGuid"
+            :fieldTypeGuid="a.Attribute.FieldTypeGuid"
             v-model="a.Value"
             :label="getAttributeLabel(a)"
-            :help="a.AttributeDescription"
-            :rules="a.AttributeIsRequired ? 'required' : ''"
-            :configurationValues="a.AttributeQualifierValues"  />
+            :help="a.Attribute.Description"
+            :rules="a.Attribute.IsRequired ? 'required' : ''"
+            :configurationValues="a.Attribute.QualifierValues"  />
     </template>
 </template>`
 });

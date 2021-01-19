@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface PrayerRequest {
+export default interface PrayerRequest extends Entity {
     Id: number;
     AllowComments: boolean | null;
     Answer: string | null;

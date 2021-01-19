@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface StreakTypeExclusion {
+export default interface StreakTypeExclusion extends Entity {
     Id: number;
     ExclusionMap: Record<string, unknown>;
     ForeignGuid: Guid | null;

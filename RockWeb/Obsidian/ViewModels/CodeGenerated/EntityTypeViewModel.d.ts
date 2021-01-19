@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface EntityType {
+export default interface EntityType extends Entity {
     Id: number;
     AssemblyName: string | null;
     AttributesSupportPrePostHtml: boolean;

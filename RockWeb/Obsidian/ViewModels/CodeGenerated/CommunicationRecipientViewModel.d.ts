@@ -21,9 +21,10 @@
 // </copyright>
 //
 
+import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
 
-export default interface CommunicationRecipient {
+export default interface CommunicationRecipient extends Entity {
     Id: number;
     AdditionalMergeValuesJson: string | null;
     CommunicationId: number;
