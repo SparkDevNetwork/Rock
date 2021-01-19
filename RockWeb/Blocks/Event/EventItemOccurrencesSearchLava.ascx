@@ -4,12 +4,15 @@
     <ContentTemplate>
         <div class="event-search-filters">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4" id="divCampus" runat="server">
                     <Rock:CampusPicker ID="cpCampusPicker" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="btnSearch_Click" />
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4" id="divDateRange" runat="server">
                     <Rock:DateRangePicker ID="pDateRange" runat="server" Label="" />
                     <asp:LinkButton ID="btnSearch" runat="server" Style="display: none" OnClick="btnSearch_Click" />
+                </div>
+                <div class="col-md-4">
+                    <Rock:RockCheckBoxList ID="cblAudience" runat="server" Label="Audiences" DataTextField="Value" DataValueField="Id" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="btnSearch_Click" />
                 </div>
             </div>
         </div> 
