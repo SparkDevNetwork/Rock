@@ -74,6 +74,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this IdentityVerification target, IdentityVerification source )
         {
             target.Id = source.Id;
+            target.FailedMatchAttemptCount = source.FailedMatchAttemptCount;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IdentityVerificationCodeId = source.IdentityVerificationCodeId;

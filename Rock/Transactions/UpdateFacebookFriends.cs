@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,6 +28,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Update Facebook Friend Relationships
     /// </summary>
+    [Obsolete( "Use UpdateFacebookFriendGroupMembers Task instead." )]
+    [RockObsolete( "1.13" )]
     public class UpdateFacebookFriends : ITransaction
     {
         /// <summary>

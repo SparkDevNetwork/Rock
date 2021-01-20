@@ -30,12 +30,14 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Utility.Settings;
 using Rock.VersionInfo;
 using Rock.Web.Cache;
+using Rock.WebFarm;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -190,6 +192,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void btnRestart_Click( object sender, EventArgs e )
         {
+            RockWebFarm.OnRestartRequested( CurrentPerson );
             RestartWebApplication();
         }
 

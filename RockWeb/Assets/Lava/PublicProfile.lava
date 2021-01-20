@@ -213,7 +213,7 @@
     {% if ShowFamilyMembers %}
 
         <div class="family-member-profiles">
-        	<h3 class="mb-0">{{ Family.Name }} {{ Family.GroupTypeId | FromCache:'GroupType' | Property:'GroupTerm' }}</h3>
+        	<h3 class="mb-0">{{ Family.Name }}</h3>
         	<hr class="mt-3 mb-5" />
         	{% for familyMember in FamilyMembers %}
         	    <div class="row {{ Family.GroupTypeId | FromCache:'GroupType' | Property:'GroupMemberTerm' | ToCssClass }} mb-3">

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Runs a job now
     /// </summary>
+    [Obsolete( "Use ProcessSendCommunicationApprovalEmail Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendCommunicationApprovalEmail : ITransaction
     {
 

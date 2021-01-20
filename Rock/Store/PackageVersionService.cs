@@ -27,8 +27,8 @@ namespace Rock.Store
         /// <summary>
         /// Initializes a new instance of the <see cref="Rock.Model.CategoryService"/> class.
         /// </summary>
-        public PackageVersionService() :base()
-        {}
+        public PackageVersionService() : base()
+        { }
 
         /// <summary>
         /// Gets a package version.
@@ -49,15 +49,7 @@ namespace Rock.Store
         public PackageVersion GetPackageVersion( int versionId, out string errorResponse )
         {
             errorResponse = string.Empty;
-            
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
-            request.Resource = string.Format( "api/Packages/GetPackageVersionDetails/{0}", versionId.ToString() );
-
-            var response = client.Execute<PackageVersion>( request );
+            var response = ExecuteRestGetRequest<PackageVersion>( $"api/Packages/GetPackageVersionDetails/{versionId}" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

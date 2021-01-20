@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a connection request change workflow
     /// </summary>
+    [Obsolete( "Use ProcessConnectionRequestActivityChange Task instead." )]
+    [RockObsolete( "1.13" )]
     public class ConnectionRequestActivityChangeTransaction : ITransaction
     {
         private Guid? ConnectionRequestActivityGuid;

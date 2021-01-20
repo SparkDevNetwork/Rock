@@ -30,6 +30,7 @@ using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Field.Types;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -986,27 +987,24 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            var workflowAttributeValues = new Dictionary<string, string>();
-            workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
+            var message = new LaunchWorkflow.Message
+            {
+                WorkflowTypeId = workflowType.Id,
+                InitiatorPersonAliasId = CurrentPersonAliasId,
+                WorkflowAttributeValues = new Dictionary<string, string>
+                {
+                    { "ContentChannelItem", contentChannelItem.Guid.ToString() }
+                }
+            };
 
-            LaunchWorkflowTransaction launchWorkflowTransaction;
             if ( this.CurrentPersonId.HasValue )
             {
-                workflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
-                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, this.CurrentPersonId.Value );
-            }
-            else
-            {
-                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
+                message.WorkflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
+                message.WorkflowTypeId = workflowType.Id;
+                message.EntityId = CurrentPersonId.Value;
             }
 
-            if ( workflowAttributeValues != null )
-            {
-                launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
-            }
-
-            launchWorkflowTransaction.InitiatorPersonAliasId = this.CurrentPersonAliasId;
-            launchWorkflowTransaction.Enqueue();
+            message.Send();
         }
 
         /// <summary>
