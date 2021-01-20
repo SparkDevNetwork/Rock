@@ -32,6 +32,7 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -146,6 +147,7 @@ namespace Rock.Model
                 _isDeceased = value;
             }
         }
+
         private bool _isDeceased = false;
 
         /// <summary>
@@ -367,6 +369,7 @@ namespace Rock.Model
             get { return _isEmailActive; }
             set { _isEmailActive = value; }
         }
+
         private bool _isEmailActive = true;
 
         /// <summary>
@@ -518,6 +521,7 @@ namespace Rock.Model
                 _isLockedAsChild = value;
             }
         }
+
         private bool _isLockedAsChild = false;
 
         /// <summary>
@@ -2064,8 +2068,13 @@ namespace Rock.Model
 
             if ( this.IsValid )
             {
-                var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var addNewMetaphonesMsg = new AddNewMetaphones.Message()
+                {
+                    FirstName = this.FirstName,
+                    LastName = this.LastName,
+                    NickName = this.NickName
+                };
+                addNewMetaphonesMsg.Send();
             }
 
             HistoryChanges = new History.HistoryChangeList();
@@ -2629,10 +2638,12 @@ namespace Rock.Model
                         {
                             return "Assets/Images/person-no-photo-female.svg?";
                         }
+
                     case Gender.Male:
                         {
                             return "Assets/Images/person-no-photo-male.svg?";
                         }
+
                     default:
                         {
                             return "Assets/Images/person-no-photo-unknown.svg?";
@@ -2646,10 +2657,12 @@ namespace Rock.Model
                     {
                         return "Assets/Images/person-no-photo-child-female.svg?";
                     }
+
                 case Gender.Male:
                     {
                         return "Assets/Images/person-no-photo-child-male.svg?";
                     }
+
                 default:
                     {
                         return "Assets/Images/person-no-photo-child-unknown.svg?";
@@ -2789,7 +2802,8 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrWhiteSpace( signalColor ) )
             {
-                return string.Format( "<i class='{1}' style='color: {0};'></i>",
+                return string.Format(
+                    "<i class='{1}' style='color: {0};'></i>",
                     signalColor,
                     !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "fa fa-flag" );
             }
@@ -2965,7 +2979,6 @@ namespace Rock.Model
 
             if ( personIds != null )
             {
-
                 rockContext = rockContext ?? new RockContext();
 
                 Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
@@ -3132,7 +3145,7 @@ namespace Rock.Model
         /// <returns></returns>
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+            return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
         }
 
         /// <summary>
@@ -3418,11 +3431,11 @@ namespace Rock.Model
                     phoneObject.IsUnlisted = isUnlisted ?? phoneObject.IsUnlisted;
                 }
             }
-
-            // they don't have a number of this type. If one is being added, we'll add it.
-            // (otherwise we'll just do nothing, leaving it as it)
             else if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
             {
+                // they don't have a number of this type. If one is being added, we'll add it.
+                // (otherwise we'll just do nothing, leaving it as it)
+
                 // create a new phone number and add it to their list.
                 phoneObject = new PhoneNumber();
                 person.PhoneNumbers.Add( phoneObject );
@@ -3431,7 +3444,7 @@ namespace Rock.Model
                 phoneNumberService.Add( phoneObject );
 
                 // get the typeId for this phone number so we set it correctly
-                //var numberType = DefinedValueCache.Get( phoneTypeGuid );
+                // var numberType = DefinedValueCache.Get( phoneTypeGuid );
                 phoneObject.NumberTypeValueId = numberTypeValueId;
 
                 phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );
@@ -3575,9 +3588,9 @@ namespace Rock.Model
                       p => new
                       {
                           Person = p,
-                          Age = ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                          Age = p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
                             ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
                       } );
 
             if ( includePeopleWithNoAge )

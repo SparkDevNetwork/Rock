@@ -29,6 +29,7 @@ using Humanizer;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
@@ -393,7 +394,6 @@ namespace Rock.Model
 
                     return canEditMembers;
                 }
-
             }
 
             return base.IsAuthorized( action, person );
@@ -430,8 +430,50 @@ namespace Rock.Model
                 }
             }
 
-            var changeTransaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( changeTransaction );
+            var updateGroupMemberMsg = new UpdateGroupMember.Message
+            {
+                State = entry.State,
+                GroupId = this.GroupId,
+                PersonId = this.PersonId,
+                GroupMemberStatus = this.GroupMemberStatus,
+                GroupMemberRoleId = this.GroupRoleId,
+                IsArchived = this.IsArchived
+            };
+
+            if ( this.Group != null )
+            {
+                updateGroupMemberMsg.GroupTypeId = this.Group.GroupTypeId;
+            }
+
+            // If this isn't a new group member, get the previous status and role values
+            if ( entry.State != EntityState.Added )
+            {
+                var dbStatusProperty = entry.Property( "GroupMemberStatus" );
+                if ( dbStatusProperty != null )
+                {
+                    updateGroupMemberMsg.PreviousGroupMemberStatus = ( GroupMemberStatus ) dbStatusProperty.OriginalValue;
+                }
+
+                var dbRoleProperty = entry.Property( "GroupRoleId" );
+                if ( dbRoleProperty != null )
+                {
+                    updateGroupMemberMsg.PreviousGroupMemberRoleId = ( int ) dbRoleProperty.OriginalValue;
+                }
+
+                var dbIsArchived = entry.Property( "IsArchived" );
+                if ( dbIsArchived != null )
+                {
+                    updateGroupMemberMsg.PreviousIsArchived = ( bool ) dbIsArchived.OriginalValue;
+                }
+            }
+
+            // If this isn't a deleted group member, get the group member guid
+            if ( entry.State != EntityState.Deleted )
+            {
+                updateGroupMemberMsg.GroupMemberGuid = this.Guid;
+            }
+
+            updateGroupMemberMsg.Send();
 
             int? oldPersonId = null;
             int? newPersonId = null;
@@ -677,7 +719,6 @@ namespace Rock.Model
 
                     new SaveHistoryTransaction( groupMemberChanges ).Enqueue();
                 }
-
             }
 
             base.PostSaveChanges( dbContext );
@@ -757,6 +798,7 @@ namespace Rock.Model
             }
 
             bool isNewOrChangedGroupMember = this.IsNewOrChangedGroupMember( rockContext );
+
             // if this isn't a new group member, then we can't really do anything about a duplicate record since it already existed before editing this record, so treat it as valid
             if ( !isNewOrChangedGroupMember )
             {
@@ -984,8 +1026,8 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null && entry.State != EntityState.Detached )
                     {
-                        var originalStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
-                        var newStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
+                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"];
 
                         hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
                         || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true

@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Data
@@ -499,12 +500,14 @@ namespace Rock.Data
         {
             if ( workflowTypeGuid.HasValue )
             {
-                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeGuid.Value, workflowName, Id );
-                if ( workflowAttributeValues != null )
+                new LaunchWorkflow.Message
                 {
-                    transaction.WorkflowAttributeValues = workflowAttributeValues;
-                }
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    WorkflowTypeGuid = workflowTypeGuid.Value,
+                    WorkflowName = workflowName,
+                    EntityId = Id,
+                    EntityTypeId = TypeId,
+                    WorkflowAttributeValues = workflowAttributeValues
+                }.Send();
             }
         }
 
@@ -518,12 +521,14 @@ namespace Rock.Data
         {
             if ( workflowTypeId.HasValue )
             {
-                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeId.Value, workflowName, Id );
-                if ( workflowAttributeValues != null )
+                new LaunchWorkflow.Message
                 {
-                    transaction.WorkflowAttributeValues = workflowAttributeValues;
-                }
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    WorkflowTypeId = workflowTypeId.Value,
+                    WorkflowName = workflowName,
+                    EntityId = Id,
+                    EntityTypeId = TypeId,
+                    WorkflowAttributeValues = workflowAttributeValues
+                }.Send();
             }
         }
 

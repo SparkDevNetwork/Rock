@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -23,6 +24,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes entity audits 
     /// </summary>
+    [Obsolete( "Use ProcessSendCommunication Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendCommunicationTransaction : ITransaction
     {
         /// <summary>

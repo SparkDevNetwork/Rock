@@ -104,6 +104,9 @@ namespace Rock.Model
             target.Order = source.Order;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
+            target.ShowCampusOnTransfer = source.ShowCampusOnTransfer;
+            target.ShowConnectButton = source.ShowConnectButton;
+            target.ShowStatusOnTransfer = source.ShowStatusOnTransfer;
             target.Summary = source.Summary;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

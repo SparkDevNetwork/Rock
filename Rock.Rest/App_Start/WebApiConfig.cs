@@ -28,6 +28,7 @@ using System.Web.Http.OData.Routing.Conventions;
 using System.Web.Routing;
 
 using Rock;
+using Rock.Tasks;
 
 namespace Rock.Rest
 {
@@ -347,7 +348,7 @@ namespace Rock.Rest
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
 
-            new Transactions.RegisterControllersTransaction().Enqueue();
+            new RegisterRestControllers.Message().Send();
         }
     }
 }

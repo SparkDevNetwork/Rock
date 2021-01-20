@@ -142,12 +142,23 @@ namespace RockWeb.Blocks.CheckIn
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var person = e.Item.DataItem as CheckInPerson;
+            string buttonText = person.Person.FullName;
+            var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
 
             if ( ! string.IsNullOrEmpty( person.SecurityCode ) )
             {
-                var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
                 linkButton.AddCssClass( "btn-dimmed" );
             }
+
+            var personSelectLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectAdditionalInfoLavaTemplate;
+            if ( personSelectLavaTemplate.IsNotNullOrWhiteSpace() )
+            {
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                mergeFields.Add( "Person", person );
+                buttonText += string.Format( "<br /><span class='text-light'>{0}</span>", personSelectLavaTemplate.ResolveMergeFields( mergeFields ) );
+            }
+
+            linkButton.Text = buttonText;
         }
 
         protected void ProcessSelection()
