@@ -60,6 +60,7 @@
     <Compile Include="Controllers\CommonEntities\CachedModelController.cs" />
     <Compile Include="Controllers\CommonEntities\CampusesController.cs" />
     <Compile Include="Controllers\CommonEntities\DefinedTypesController.cs" />
+    <Compile Include="Controllers\Controls\EntityAttributeValuesContainerController.cs" />
     <Compile Include="Controllers\Controls\DefinedValuePickerController.cs" />
     <Compile Include="Controllers\ObsidianController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

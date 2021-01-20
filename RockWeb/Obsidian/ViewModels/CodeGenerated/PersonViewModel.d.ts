@@ -22,12 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Person extends Entity {
     Id: number;
     AgeClassification: number;
     AnniversaryDate: string | Date | null;
+    Attributes: Record<string, AttributeValue> | null;
     BirthDay: number | null;
     BirthMonth: number | null;
     BirthYear: number | null;

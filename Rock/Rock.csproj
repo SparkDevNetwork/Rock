@@ -760,12 +760,15 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\AttributeViewModel.partial.cs" />
     <Compile Include="ViewModel\CodeGenerated\AttributeValueViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\AttributeViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\PersonViewModel.cs" />
+    <Compile Include="ViewModel\AttributeValueViewModel.partial.cs" />
     <Compile Include="ViewModel\PersonViewModel.partial.cs" />
     <Compile Include="ViewModel\Util\ViewModel.cs" />
     <Compile Include="ViewModel\Util\ViewModelExcludeAttribute.cs" />
+    <Compile Include="ViewModel\Util\TypeScriptTypeAttribute.cs" />
     <Compile Include="ViewModel\Util\ViewModelOfAttribute.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />

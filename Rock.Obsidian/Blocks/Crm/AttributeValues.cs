@@ -221,7 +221,7 @@ namespace Rock.Obsidian.Blocks.Crm
             return new ViewModel
             {
                 Value = person.GetAttributeValue( attribute.Key ),
-                Attribute = attribute.ToViewModel()
+                Attribute = attribute.ToViewModel() as AttributeViewModel
             };
         }
 
@@ -326,7 +326,7 @@ namespace Rock.Obsidian.Blocks.Crm
             /// <value>
             /// The attribute.
             /// </value>
-            public IViewModel Attribute { get; set; }
+            public AttributeViewModel Attribute { get; set; }
 
             /// <summary>
             /// Gets or sets the value.

@@ -38,6 +38,7 @@ using Rock.Net;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using static Rock.Security.Authorization;
@@ -1137,8 +1138,8 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
         pageId: {_pageCache.Id},
         pageGuid: '{_pageCache.Guid}',
         pageParameters: {PageParameters().ToJson()},
-        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToJson() )},
-        contextEntities: {GetContextEntities().ToJson()}
+        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel().ToJson() )},
+        contextEntities: {GetContextViewModels().ToJson()}
     }});
 }});";
 
@@ -2178,6 +2179,14 @@ Sys.Application.add_load(function () {
             }
 
             return resolvedUrl;
+        }
+
+        /// <summary>
+        /// Gets the context view models.
+        /// </summary>
+        /// <returns></returns>
+        internal Dictionary<string, IViewModel> GetContextViewModels() {
+            return GetContextEntities().ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToViewModel() );
         }
 
         /// <summary>

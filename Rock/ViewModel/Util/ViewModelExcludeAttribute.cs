@@ -18,12 +18,11 @@ using System;
 
 namespace Rock
 {
-
     /// <summary>
     /// Exclude the property from the generated view model
     /// </summary>
     /// <seealso cref="System.Attribute" />
-    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Class )]
+    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = false, Inherited = true )]
     public class ViewModelExcludeAttribute : System.Attribute
     {
     }

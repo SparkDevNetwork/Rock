@@ -29,16 +29,8 @@ namespace Rock.ViewModel
     /// StreakType View Model
     /// </summary>
     [ViewModelOf( typeof( Rock.Model.StreakType ) )]
-    public partial class StreakTypeViewModel : IViewModel
+    public partial class StreakTypeViewModel : ViewModelBase
     {
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        /// <value>
-        /// The Id.
-        /// </value>
-        public int Id { get; set; }
-
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -176,14 +168,6 @@ namespace Rock.ViewModel
         public int? ModifiedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Guid.
-        /// </summary>
-        /// <value>
-        /// The Guid.
-        /// </value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
         /// Gets or sets the ForeignId.
         /// </summary>
         /// <value>
@@ -191,13 +175,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ForeignId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from entity.
-        /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        public virtual void SetPropertiesFrom( Object entity )
-        {
-            entity.CopyPropertiesTo( this );
-        }
     }
 }

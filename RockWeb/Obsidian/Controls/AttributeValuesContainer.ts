@@ -1,15 +1,10 @@
 ﻿import { isNullOrWhitespace } from '../Filters/String.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import Attribute from '../ViewModels/CodeGenerated/AttributeViewModel.js';
+import AttributeValue from '../ViewModels/CodeGenerated/AttributeValueViewModel.js';
 import RockField from './RockField.js';
 
-export type AttributeWithValue = {
-    Attribute: Attribute,
-    Value: string
-};
-
 export default defineComponent({
-    name: 'AttributeValueContainer',
+    name: 'AttributeValuesContainer',
     components: {
         RockField
     },
@@ -18,8 +13,8 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        attributeWithValues: {
-            type: Array as PropType<AttributeWithValue[]>,
+        attributeValues: {
+            type: Array as PropType<AttributeValue[]>,
             required: true
         },
         showEmptyValues: {
@@ -32,21 +27,24 @@ export default defineComponent({
         }
     },
     methods: {
-        getAttributeLabel(attributeWithValue: AttributeWithValue) {
-            if (this.showAbbreviatedName) {
-                return attributeWithValue.Attribute.AbbreviatedName || attributeWithValue.Attribute.Name;
+        getAttributeLabel(attributeValue: AttributeValue) {
+            if (this.showAbbreviatedName && attributeValue.Attribute?.AbbreviatedName) {
+                return attributeValue.Attribute.AbbreviatedName;
             }
 
-            return attributeWithValue.Attribute.Name;
+            return attributeValue.Attribute?.Name || '';
         }
     },
     computed: {
-        valuesToShow(): AttributeWithValue[] {
+        validAttributeValues(): AttributeValue[] {
+            return this.attributeValues.filter(av => av.Attribute);
+        },
+        valuesToShow(): AttributeValue[] {
             if (this.showEmptyValues) {
-                return this.attributeWithValues;
+                return this.validAttributeValues;
             }
 
-            return this.attributeWithValues.filter(av => !isNullOrWhitespace(av.Value));
+            return this.validAttributeValues.filter(av => !isNullOrWhitespace(av.Value));
         }
     },
     template: `
@@ -61,7 +59,7 @@ export default defineComponent({
     </div>
 </div>
 <template v-else>
-    <template v-for="a in attributeValues">
+    <template v-for="a in validAttributeValues">
         <RockField
             isEditMode
             :fieldTypeGuid="a.Attribute.FieldTypeGuid"

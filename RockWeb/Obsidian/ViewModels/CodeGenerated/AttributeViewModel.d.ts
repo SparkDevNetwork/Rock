@@ -22,12 +22,15 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Attribute extends Entity {
     Id: number;
     AbbreviatedName: string | null;
     AllowSearch: boolean;
+    Attributes: Record<string, AttributeValue> | null;
+    CategoryNames: (string | null)[];
     DefaultValue: string | null;
     Description: string | null;
     EnableHistory: boolean;

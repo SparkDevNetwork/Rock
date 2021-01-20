@@ -49,6 +49,7 @@ namespace Rock.Data
         [Key]
         [DataMember]
         [IncludeForReporting]
+        [ViewModelExclude]
         public int Id { get; set; }
 
         /// <summary>
@@ -68,6 +69,7 @@ namespace Rock.Data
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]
+        [ViewModelExclude]
         public Guid Guid
         {
             get { return _guid; }

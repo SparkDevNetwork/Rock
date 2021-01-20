@@ -29,16 +29,8 @@ namespace Rock.ViewModel
     /// MetaFirstNameGenderLookup View Model
     /// </summary>
     [ViewModelOf( typeof( Rock.Model.MetaFirstNameGenderLookup ) )]
-    public partial class MetaFirstNameGenderLookupViewModel : IViewModel
+    public partial class MetaFirstNameGenderLookupViewModel : ViewModelBase
     {
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        /// <value>
-        /// The Id.
-        /// </value>
-        public int Id { get; set; }
-
         /// <summary>
         /// Gets or sets the Country.
         /// </summary>
@@ -120,14 +112,6 @@ namespace Rock.ViewModel
         public int? TotalCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the Guid.
-        /// </summary>
-        /// <value>
-        /// The Guid.
-        /// </value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
         /// Gets or sets the ForeignId.
         /// </summary>
         /// <value>
@@ -135,13 +119,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ForeignId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from entity.
-        /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        public virtual void SetPropertiesFrom( Object entity )
-        {
-            entity.CopyPropertiesTo( this );
-        }
     }
 }

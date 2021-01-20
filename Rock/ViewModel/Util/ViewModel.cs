@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Rock.Data;
+using Rock.Attribute;
 using Rock.Web.Cache;
 
 namespace Rock.ViewModel
@@ -46,11 +46,78 @@ namespace Rock.ViewModel
         Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the attributes.
+        /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
+        Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+
+        /// <summary>
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity, cache, or other object to copy properties from.</param>
-        /// <returns></returns>
-        void SetPropertiesFrom( object entity );
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        void SetPropertiesFrom( object entity, bool loadAttributes = true );
+    }
+
+    /// <summary>
+    /// View Model Base
+    /// </summary>
+    /// <seealso cref="Rock.ViewModel.IViewModel" />
+    public abstract class ViewModelBase : IViewModel
+    {
+        /// <summary>
+        /// Gets or sets the Id.
+        /// </summary>
+        /// <value>
+        /// The Id.
+        /// </value>
+        public int Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Guid.
+        /// </summary>
+        /// <value>
+        /// The Guid.
+        /// </value>
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes.
+        /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
+        [TypeScriptType( "Record<string, AttributeValue> | null", "import AttributeValue from './AttributeValueViewModel.js';" )]
+        public Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+
+        /// <summary>
+        /// Sets the properties from entity.
+        /// </summary>
+        /// <param name="entity">The entity, cache item, or some object.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public virtual void SetPropertiesFrom( object entity, bool loadAttributes = true )
+        {
+            if ( entity == null )
+            {
+                return;
+            }
+
+            entity.CopyPropertiesTo( this );
+
+            if ( loadAttributes && entity is IHasAttributes hasAttributes )
+            {
+                if ( hasAttributes.Attributes == null )
+                {
+                    hasAttributes.LoadAttributes();
+                }
+
+                Attributes = hasAttributes.AttributeValues.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() );
+            }
+        }
     }
 
     /// <summary>
@@ -96,9 +163,9 @@ namespace Rock.ViewModel
                 entityType = entityType.BaseType;
             }
 
-            if ( entityType.BaseType == typeof( ModelCache<,> ) )
+            if ( entityType.BaseType.IsGenericType && entityType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
             {
-                entityType = entityType.GenericTypeArguments[1];
+                entityType = entityType.BaseType.GenericTypeArguments[1];
             }
 
             return _viewModelTypeMap.GetValueOrNull( entityType );
@@ -134,9 +201,15 @@ namespace Rock.ViewModel
         /// Converts to viewmodel.
         /// </summary>
         /// <param name="entity">The entity, cache, or other item.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public static IViewModel ToViewModel( this object entity )
+        public static IViewModel ToViewModel( this object entity, bool loadAttributes = true )
         {
+            if ( entity == null )
+            {
+                return null;
+            }
+
             var entityType = entity.GetType();
             var viewModelType = GetViewModelType( entityType );
 
@@ -146,7 +219,7 @@ namespace Rock.ViewModel
             }
 
             var methodInfo = GetToViewModelMethod( viewModelType );
-            var viewModel = methodInfo.Invoke( null, new[] { entity } ) as IViewModel;
+            var viewModel = methodInfo.Invoke( null, new[] { entity, loadAttributes } ) as IViewModel;
 
             return viewModel;
         }
@@ -154,13 +227,19 @@ namespace Rock.ViewModel
         /// <summary>
         /// Converts to viewmodel.
         /// </summary>
-        /// <typeparam name="TViewModel"></typeparam>
+        /// <typeparam name="TViewModel">The type of the view model.</typeparam>
         /// <param name="entity">The entity.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public static TViewModel ToViewModel<TViewModel>( this object entity ) where TViewModel : IViewModel
+        public static TViewModel ToViewModel<TViewModel>( this object entity, bool loadAttributes = true ) where TViewModel : IViewModel
         {
+            if ( entity == null )
+            {
+                return default;
+            }
+
             var viewModel = Activator.CreateInstance<TViewModel>();
-            viewModel.SetPropertiesFrom( entity );
+            viewModel.SetPropertiesFrom( entity, loadAttributes );
             return viewModel;
         }
 
@@ -172,6 +251,11 @@ namespace Rock.ViewModel
         /// <param name="dest">The dest.</param>
         public static void CopyPropertiesTo( this object source, object dest )
         {
+            if ( source == null || dest == null )
+            {
+                return;
+            }
+
             var sourceProps = source.GetType().GetProperties().Where( x => x.CanRead ).ToList();
             var destProps = dest.GetType().GetProperties().Where( x => x.CanWrite ).ToList();
 
@@ -179,11 +263,12 @@ namespace Rock.ViewModel
             {
                 if ( destProps.Any( x => x.Name == sourceProp.Name ) )
                 {
-                    var p = destProps.First( x => x.Name == sourceProp.Name );
-                    if ( p.CanWrite )
+                    var destType = destProps.First( x => x.Name == sourceProp.Name );
+
+                    if ( destType.CanWrite && destType.PropertyType.IsAssignableFrom( sourceProp.PropertyType ) )
                     {
                         // check if the property can be set or no.
-                        p.SetValue( dest, sourceProp.GetValue( source, null ), null );
+                        destType.SetValue( dest, sourceProp.GetValue( source, null ), null );
                     }
                 }
             }

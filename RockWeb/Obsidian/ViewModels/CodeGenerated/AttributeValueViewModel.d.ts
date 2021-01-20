@@ -27,8 +27,9 @@ import { Guid } from '../../Util/Guid.js';
 
 export default interface AttributeValue extends Entity {
     Id: number;
-    Attribute: Attribute;
+    Attribute: Attribute | null;
     AttributeId: number;
+    Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;
