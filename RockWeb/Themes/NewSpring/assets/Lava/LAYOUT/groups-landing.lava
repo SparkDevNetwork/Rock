@@ -84,6 +84,7 @@ WHERE gm.PersonId = {{ personId }}
 AND gm2.PersonId != {{ personId }} -- Omit Self From List
 AND g.GroupTypeId = 156 -- Coaching Group
 AND gm.GroupRoleId = 436 -- Is Coach
+AND gm.IsArchived = 0
 AND g.IsArchived = 0
 AND g.IsActive = 1
 AND gm2.GroupRoleId != 382
