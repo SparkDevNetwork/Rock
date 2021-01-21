@@ -799,33 +799,22 @@ namespace Rock.Utility
                                         {
                                             if ( movedAway )
                                             {
-                                                History.HistoryChangeList personChanges;
-
-                                                personService.InactivatePerson( fm.Person, inactiveReason,
-                                                    $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away.", out personChanges );
-
-                                                if ( personChanges.Any() )
-                                                {
-                                                    HistoryService.SaveChanges(
-                                                        rockContext,
-                                                        typeof( Person ),
-                                                        SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                        fm.PersonId,
-                                                        personChanges,
-                                                        false );
-                                                }
+                                                personService.InactivatePerson(
+                                                    fm.Person,
+                                                    inactiveReason,
+                                                    $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away." );
                                             }
 
                                             HistoryService.SaveChanges(
-                                            rockContext,
-                                            typeof( Person ),
-                                            SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                                            fm.PersonId,
-                                            familyChanges,
-                                            family.Name,
-                                            typeof( Group ),
-                                            family.Id,
-                                            false );
+                                                rockContext,
+                                                typeof( Person ),
+                                                SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                                                fm.PersonId,
+                                                familyChanges,
+                                                family.Name,
+                                                typeof( Group ),
+                                                family.Id,
+                                                false );
                                         }
                                     }
                                 }
@@ -936,21 +925,10 @@ namespace Rock.Utility
 
                                             if ( movedAway )
                                             {
-                                                History.HistoryChangeList personChanges;
-
-                                                personService.InactivatePerson( familyMember.Person, inactiveReason,
-                                                    $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away.", out personChanges );
-
-                                                if ( personChanges.Any() )
-                                                {
-                                                    HistoryService.SaveChanges(
-                                                        rockContext,
-                                                        typeof( Person ),
-                                                        SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                        familyMember.PersonId,
-                                                        personChanges,
-                                                        false );
-                                                }
+                                                personService.InactivatePerson(
+                                                    familyMember.Person,
+                                                    inactiveReason,
+                                                    $"Received a Change of Address (NCOA) notice that was for more than {minMoveDistance} miles away." );
                                             }
 
                                             HistoryService.SaveChanges(
