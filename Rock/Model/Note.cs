@@ -482,8 +482,17 @@ namespace Rock.Model
                 {
                     return true;
                 }
-                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals == false )
+                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals != true )
                 {
+                    /*
+                    1/21/2021 - Shaun
+                    If this Note does not have an assigned NoteType, it should be assumed that the NoteType does not
+                    require approvals.  This is likely because a new instance of a Note entity was created to check
+                    authorization for viewing Note entities in general, and in this case the first check (to
+                    base.IsAuthorized) is sufficient to permit access.
+
+                    Reason:  Notes should be available for DataViews.
+                    */
                     return true;
                 }
                 else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
