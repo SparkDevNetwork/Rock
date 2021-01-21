@@ -88,6 +88,7 @@
     <Compile Include="Utility\Extension Methods\BemaServices_AttributeMatrix_Extensions.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SelectExtendedPicker.cs" />
     <Compile Include="Workflow\Action\Finance\CancelScheduledTransaction.cs" />
+    <Compile Include="Workflow\Action\Person\ResetPassword.cs" />
     <Compile Include="Workflow\Action\Person\AddNewPersonToFamily.cs" />
     <Compile Include="Workflow\Action\Utility\SetEntityAttributes.cs" />
     <Compile Include="Workflow\Action\Utility\AddMetricValue.cs" />
