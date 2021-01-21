@@ -37,6 +37,7 @@ export default interface Attribute extends Entity {
     EntityTypeId: number | null;
     EntityTypeQualifierColumn: string | null;
     EntityTypeQualifierValue: string | null;
+    FieldTypeGuid: Guid;
     FieldTypeId: number;
     ForeignGuid: Guid | null;
     ForeignKey: string | null;

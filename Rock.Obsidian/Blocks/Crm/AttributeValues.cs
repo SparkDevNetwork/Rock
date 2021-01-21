@@ -180,7 +180,7 @@ namespace Rock.Obsidian.Blocks.Crm
                 var person = personService.Get( personGuid );
 
                 var categories = GetCategoryGuids();
-                var viewModels = new List<ViewModel>();
+                var viewModels = new List<AttributeValueViewModel>();
 
                 if ( !categories.Any() || person == null || currentPerson == null )
                 {
@@ -217,12 +217,9 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <param name="attribute">The attribute.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        private ViewModel GetViewModel( AttributeCache attribute, Person person ) {
-            return new ViewModel
-            {
-                Value = person.GetAttributeValue( attribute.Key ),
-                Attribute = attribute.ToViewModel() as AttributeViewModel
-            };
+        private AttributeValueViewModel GetViewModel( AttributeCache attribute, Person person ) {
+            var attributeValue = person.AttributeValues.GetValueOrNull( attribute.Key );
+            return attributeValue.ToViewModel<AttributeValueViewModel>();
         }
 
         /// <summary>
@@ -312,31 +309,5 @@ namespace Rock.Obsidian.Blocks.Crm
         }
 
         #endregion Data Access
-
-        #region View Models
-
-        /// <summary>
-        /// View Model
-        /// </summary>
-        public sealed class ViewModel
-        {
-            /// <summary>
-            /// Gets or sets the attribute.
-            /// </summary>
-            /// <value>
-            /// The attribute.
-            /// </value>
-            public AttributeViewModel Attribute { get; set; }
-
-            /// <summary>
-            /// Gets or sets the value.
-            /// </summary>
-            /// <value>
-            /// The value.
-            /// </value>
-            public string Value { get; set; }
-        }
-
-        #endregion ViewModels
     }
 }

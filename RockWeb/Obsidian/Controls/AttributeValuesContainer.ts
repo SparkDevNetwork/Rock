@@ -54,7 +54,7 @@ export default defineComponent({
     </label>
     <div class="control-wrapper">
         <div class="form-control-static">
-            <RockField :fieldTypeGuid="a.AttributeFieldTypeGuid" v-model="a.Value" />
+            <RockField :fieldTypeGuid="a.Attribute.FieldTypeGuid" v-model="a.Value" />
         </div>
     </div>
 </div>

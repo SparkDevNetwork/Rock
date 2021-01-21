@@ -9,14 +9,10 @@ import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
 import RockForm from '../../Controls/RockForm.js';
 import TextBox from '../../Elements/TextBox.js';
 import RockButton from '../../Elements/RockButton.js';
-import AttributeValueContainer, { AttributeWithValue } from '../../Controls/AttributeValueContainer.js';
+import AttributeValuesContainer from '../../Controls/AttributeValuesContainer.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import Attribute from '../../ViewModels/CodeGenerated/AttributeViewModel.js';
-
-type ViewModel = {
-    Attribute: Attribute,
-    Value: string | null
-};
+import AttributeValue from '../../ViewModels/CodeGenerated/AttributeValueViewModel.js';
 
 export default defineComponent({
     name: 'Crm.AttributeValues',
@@ -27,7 +23,7 @@ export default defineComponent({
         RockForm,
         TextBox,
         RockButton,
-        AttributeValueContainer
+        AttributeValuesContainer
     },
     setup() {
         return {
@@ -39,7 +35,7 @@ export default defineComponent({
         return {
             isLoading: true,
             isEditMode: false,
-            viewModels: [] as ViewModel[]
+            viewModels: [] as AttributeValue[]
         };
     },
     computed: {
@@ -66,7 +62,7 @@ export default defineComponent({
 
             try {
                 this.isLoading = true;
-                const result = await this.blockAction<ViewModel[]>('GetAttributeValueList', {
+                const result = await this.blockAction<AttributeValue[]>('GetAttributeValueList', {
                     PersonGuid: this.personGuid
                 });
 
@@ -84,7 +80,9 @@ export default defineComponent({
             const keyValueMap = {};
 
             for (const a of this.viewModels) {
-                keyValueMap[a.Attribute.Key] = a.Value;
+                if (a.Attribute) {
+                    keyValueMap[a.Attribute.Key] = a.Value;
+                }
             }
 
             await this.blockAction('SaveAttributeValues', {
@@ -124,9 +122,9 @@ export default defineComponent({
     </template>
     <template v-slot:default>
         <Loading :isLoading="isLoading">
-            <AttributeValueContainer v-if="!isEditMode" :attributeWithValues="viewModels" :showEmptyValues="false" />
+            <AttributeValuesContainer v-if="!isEditMode" :attributeValues="viewModels" :showEmptyValues="false" />
             <RockForm v-else @submit="doSave">
-                <AttributeValueContainer :attributeWithValues="viewModels" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
+                <AttributeValuesContainer :attributeValues="viewModels" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
                     <RockButton primary xs type="submit">Save</RockButton>
                     <RockButton link xs @click="goToViewMode">Cancel</RockButton>

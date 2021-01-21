@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+using System;
 using System.Linq;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -40,6 +41,14 @@ namespace Rock.ViewModel
         /// The category names.
         /// </value>
         public string[] CategoryNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The field type unique identifier.
+        /// </value>
+        public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
         /// Sets the properties from entity.
@@ -63,6 +72,15 @@ namespace Rock.ViewModel
                 {
                     CategoryNames = attribute.Categories.Select( c => c.Name ).ToArray();
                 }
+            }
+
+            if ( entity is AttributeCache attributeCache )
+            {
+                FieldTypeGuid = attributeCache.FieldType.Guid;
+            }
+            else if ( entity is Rock.Model.Attribute attributeModel )
+            {
+                FieldTypeGuid = FieldTypeCache.Get( attributeModel.FieldTypeId ).Guid;
             }
         }
     }
