@@ -4493,6 +4493,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
+            // If there isn't a RegistrationTemplate to load then skip this
+            if ( RegistrationTemplate == null )
+            {
+                return;
+            }
+
             RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             var controlFamilyGuid = Guid.Empty;
@@ -4620,6 +4626,7 @@ namespace RockWeb.Blocks.Event
             , rblFamilyOptions.ClientID              // {12}
             , pnlFamilyMembers.ClientID              // {13}
             , controlFamilyGuid                      // {14}
+            // NULL check not needed here because it is checked at the start of this method.
             , RegistrationTemplate.ShowCurrentFamilyMembers.ToString().ToLower() // {15}
 );
 
