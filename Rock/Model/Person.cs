@@ -2229,7 +2229,17 @@ namespace Rock.Model
         {
             if ( HistoryChanges?.Any() == true )
             {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges(
+                    ( RockContext ) dbContext,
+                    typeof( Person ),
+                    SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                    this.Id,
+                    HistoryChanges,
+                    this.FullName,
+                    null,
+                    null,
+                    true,
+                    this.ModifiedByPersonAliasId );
             }
 
             base.PostSaveChanges( dbContext );

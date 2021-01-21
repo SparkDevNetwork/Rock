@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Communication
         AllowHtml = true,
         Order = 0,
         Key =  AttributeKey.UnsubscribefromListsText )]
+
     [MemoField(
         "Update Email Address Text",
         Description = "Text to display for the 'Update Email Address' option.",
@@ -68,6 +69,7 @@ namespace RockWeb.Blocks.Communication
         NumberOfRows = 3,
         AllowHtml = true,
         Key = AttributeKey.EmailsAllowedText )]
+
     [MemoField(
         "No Mass Emails Text",
         Description = "Text to display for the 'No Mass Emails' option.",
@@ -77,6 +79,7 @@ namespace RockWeb.Blocks.Communication
         NumberOfRows = 3,
         AllowHtml = true,
         Key = AttributeKey.NoMassEmailsText )]
+
     [MemoField(
         "No Emails Text",
         Description = "Text to display for the 'No Emails' option.",
@@ -86,6 +89,7 @@ namespace RockWeb.Blocks.Communication
         NumberOfRows = 3,
         AllowHtml = true,
         Key = AttributeKey.NoEmailsText )]
+
     [MemoField(
         "Not Involved Text",
         Description = "Text to display for the 'Not Involved' option.",
@@ -95,12 +99,14 @@ namespace RockWeb.Blocks.Communication
         NumberOfRows = 3,
         AllowHtml = true,
         Key = AttributeKey.NotInvolvedText )]
+
     [WorkflowTypeField(
         "Unsubscribe from List Workflow",
         Description = "The workflow type to launch for person who wants to unsubscribe from one or more Communication Lists. The person will be passed in as the Entity and the communication list Ids will be passed as a comma delimited string to the workflow 'CommunicationListIds' attribute if it exists.",
         AllowMultiple = false,
         IsRequired = false,
         Key = AttributeKey.UnsubscribeWorkflow )]
+
     [MemoField(
         "Success Text",
         Description = "Text to display after user submits selection.",
@@ -110,6 +116,7 @@ namespace RockWeb.Blocks.Communication
         NumberOfRows = 3,
         AllowHtml = true,
         Key = AttributeKey.SuccessText )]
+
     [CodeEditorField(
         "Unsubscribe Success Text",
         Description = "Text to display after user unsubscribes from communication lists.",
@@ -120,6 +127,7 @@ namespace RockWeb.Blocks.Communication
         DefaultValue = UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE,
         Order = 7,
         Key = AttributeKey.UnsubscribeSuccessText )]
+
     [TextField(
         "Reasons to Exclude",
         Description = "A delimited list of the Inactive Reasons to exclude from Reason list",
@@ -127,6 +135,7 @@ namespace RockWeb.Blocks.Communication
         DefaultValue = "No Activity,Deceased",
         Order = 8,
         Key = AttributeKey.ReasonstoExclude )]
+
     [GroupCategoryField(
         "Communication List Categories",
         Description = "Select the categories of the communication lists to display for unsubscribe, or select none to show all that the user is authorized to view.",
@@ -136,6 +145,7 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 9,
         Key = AttributeKey.CommunicationListCategories )]
+
     [CustomCheckboxListField(
         "Available Options",
         Description = "Select the options that should be available to a user when they are updating their email preference.",
@@ -144,6 +154,13 @@ namespace RockWeb.Blocks.Communication
         DefaultValue = "Unsubscribe,Update Email Address,Emails Allowed,No Mass Emails,No Emails,Not Involved",
         Key = AttributeKey.AvailableOptions,
         Order = 10 )]
+
+    [BooleanField(
+        "Allow Inactivating Family",
+        Description = "If the person chooses the 'Not Involved' choice show the option of inactivating the whole family. This will not show if the person is a member of more than one family or is not an adult.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.AllowInactivatingFamily,
+        Order = 11)]
 
     #endregion Block Attributes
     public partial class EmailPreferenceEntry : RockBlock
@@ -167,6 +184,7 @@ namespace RockWeb.Blocks.Communication
             public const string ReasonstoExclude = "ReasonstoExclude";
             public const string CommunicationListCategories = "CommunicationListCategories";
             public const string AvailableOptions = "AvailableOptions";
+            public const string AllowInactivatingFamily = "AllowInactivatingFamily";
         }
 
         #endregion Attribute Keys
@@ -246,6 +264,7 @@ We have unsubscribed you from the following lists:
             }
 
             LoadDropdowns( mergeFields );
+            ShowOrHideInactFamily();
 
             if ( _person != null )
             {
@@ -342,8 +361,6 @@ We have unsubscribed you from the following lists:
                 }
             }
 
-
-
             divNotInvolved.Attributes["Style"] = rbNotInvolved.Checked ? "display:block" : "display:none";
             divUpdateEmail.Attributes["Style"] = rbUpdateEmailAddress.Checked ? "display:block" : "display:none";
         }
@@ -409,8 +426,8 @@ We have unsubscribed you from the following lists:
 
             if ( _person != null )
             {
-                var service = new PersonService( rockContext );
-                var person = service.Get( _person.Id );
+                var personService = new PersonService( rockContext );
+                var person = personService.Get( _person.Id );
                 if ( person != null )
                 {
                     EmailPreference emailPreference = EmailPreference.EmailAllowed;
@@ -427,31 +444,28 @@ We have unsubscribed you from the following lists:
 
                     if ( rbNotInvolved.Checked )
                     {
-                        var newRecordStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
-                        if ( newRecordStatus != null )
-                        {
-                            person.RecordStatusValueId = newRecordStatus.Id;
-                        }
-
-                        var newInactiveReason = DefinedValueCache.Get( ddlInactiveReason.SelectedValue.AsInteger() );
-                        if ( newInactiveReason != null )
-                        {
-                            person.RecordStatusReasonValueId = newInactiveReason.Id;
-                        }
-
-                        var newReviewReason = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
-                        if ( newReviewReason != null )
-                        {
-                            person.ReviewReasonValueId = newReviewReason.Id;
-                        }
+                        var inactiveReasonDefinedValue = DefinedValueCache.Get( ddlInactiveReason.SelectedValue.AsInteger() );
+                        var selfInactivatedDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED );
 
                         // If the inactive reason note is the same as the current review reason note, update it also.
-                        if ( ( person.InactiveReasonNote ?? string.Empty ) == ( person.ReviewReasonNote ?? string.Empty ) )
-                        {
-                            person.InactiveReasonNote = tbInactiveNote.Text;
-                        }
+                        string inactiveReasonNote = ( person.InactiveReasonNote ?? string.Empty ) == ( person.ReviewReasonNote ?? string.Empty )
+                            ? tbInactiveNote.Text
+                            : person.InactiveReasonNote;
 
-                        person.ReviewReasonNote = tbInactiveNote.Text;
+                        // See if inactivating just one person or the whole family
+                        if ( !cbInactFamily.Checked )
+                        {
+                            personService.InactivatePerson( person, inactiveReasonDefinedValue, inactiveReasonNote, selfInactivatedDefinedValue, tbInactiveNote.Text );
+                        }
+                        else
+                        {
+                            // Update each person
+                            var inactivatePersonList = personService.GetFamilyMembers( _person.Id, true ).Select( m => m.Person );
+                            foreach ( var inactivatePerson in inactivatePersonList )
+                            {
+                                personService.InactivatePerson( inactivatePerson, inactiveReasonDefinedValue, inactiveReasonNote, selfInactivatedDefinedValue, tbInactiveNote.Text );
+                            }
+                        }
                     }
                     else
                     {
@@ -467,7 +481,6 @@ We have unsubscribed you from the following lists:
                     rockContext.SaveChanges();
 
                     nbEmailPreferenceSuccessMessage.Visible = true;
-                    return;
                 }
             }
         }
@@ -581,6 +594,39 @@ We have unsubscribed you from the following lists:
         #endregion
 
         #region Methods
+
+        private void ShowOrHideInactFamily()
+        {
+            // Hide by default
+            cbInactFamily.Visible = false;
+
+            // First check the block setting to see if it should be shown under any conditions
+            if ( !GetAttributeValue( AttributeKey.AllowInactivatingFamily ).AsBooleanOrNull() ?? true )
+            {
+                return;
+            }
+
+            // If there is no person there is nothing to show.
+            if ( _person == null )
+            {
+                return;
+            }
+
+            // If the person is a member of more than one family then do not show
+            if ( _person.GetFamilies().Count() > 1 )
+            {
+                return;
+            }
+
+            // Only an adult can do this
+            if ( _person.AgeClassification != AgeClassification.Adult )
+            {
+                return;
+            }
+
+            // Show the control since the person and block condtions allow it
+            cbInactFamily.Visible = true;
+        }
 
         /// <summary>
         /// Loads the dropdowns.
