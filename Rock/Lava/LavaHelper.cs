@@ -447,6 +447,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string RemoveLavaComments( string lavaTemplate )
         {
+            if ( string.IsNullOrEmpty( lavaTemplate ) )
+            {
+               return string.Empty;
+            }
+
             // Remove comments from the content.
             var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
                 me => {
