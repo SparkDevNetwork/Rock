@@ -257,8 +257,9 @@
 			    [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			    AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	      )
-	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	    SELECT * FROM 
+	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
+	    SELECT [PersonId], [AttributeId], [GiftCountDurationShort], [IsSystem], [Guid], [CreateDate], [GiftCountDurationShort]
+        FROM 
 		    (SELECT 
 			    [PersonId]
 			    , @GiftCountShortAttributeId AS [AttributeId]
@@ -303,8 +304,9 @@
 			    [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			    AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	      )
-	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	    SELECT * FROM 
+	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
+	    SELECT [PersonId], [AttributeId], [GiftCountDurationShort], [IsSystem], [Guid], [CreateDate], [GiftCountDurationShort]
+        FROM 
 		    (SELECT 
 			    [PersonId]
 			    , @GiftCountShortAttributeId AS [AttributeId]
@@ -352,8 +354,9 @@
 			    [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			    AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	      )
-	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	    SELECT * FROM 
+	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
+	    SELECT [PersonId], [AttributeId], [GiftCountDurationLong], [IsSystem], [Guid], [CreateDate], [GiftCountDurationLong]
+        FROM 
 		    (SELECT 
 			    [PersonId]
 			    , @GiftCountLongAttributeId AS [AttributeId]
@@ -398,8 +401,9 @@
 			    [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			    AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	      )
-	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	    SELECT * FROM 
+	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
+	    SELECT [PersonId], [AttributeId], [GiftCountDurationLong], [IsSystem], [Guid], [CreateDate], [GiftCountDurationLong]
+        FROM 
 		    (SELECT 
 			    [PersonId]
 			    , @GiftCountLongAttributeId AS [AttributeId]
