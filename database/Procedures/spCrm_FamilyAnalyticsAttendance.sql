@@ -188,8 +188,9 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	SELECT * FROM 
+	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric])
+	SELECT [PersonId], [AttributeId], [CheckinCount], [IsSystem], [Guid], [CreateDate], [CheckinCount]
+    FROM 
 		(SELECT 
 			i.[PersonId]
 			, @TimesAttendedAttributeId AS [AttributeId]
