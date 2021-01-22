@@ -45,15 +45,16 @@ namespace Rock.ViewModel
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity, cache item, or some object.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void SetPropertiesFrom( object entity, bool loadAttributes = true )
+        public override void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( entity == null )
             {
                 return;
             }
 
-            base.SetPropertiesFrom( entity, loadAttributes );
+            base.SetPropertiesFrom( entity, currentPerson, loadAttributes );
 
             if ( entity is AttributeValueCache attributeValueCache )
             {

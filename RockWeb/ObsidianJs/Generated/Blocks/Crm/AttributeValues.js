@@ -1,4 +1,4 @@
-System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplate.js", "../../Controls/Loading.js", "../../Store/Index.js", "../../Elements/JavaScriptAnchor.js", "../../Controls/RockForm.js", "../../Elements/TextBox.js", "../../Elements/RockButton.js", "../../Controls/AttributeValuesContainer.js"], function (exports_1, context_1) {
+System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplate.js", "../../Controls/Loading.js", "../../Store/Index.js", "../../Util/Guid.js", "../../Elements/JavaScriptAnchor.js", "../../Controls/RockForm.js", "../../Elements/TextBox.js", "../../Elements/RockButton.js", "../../Controls/AttributeValuesContainer.js"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, PaneledBlockTemplate_js_1, Loading_js_1, Index_js_1, JavaScriptAnchor_js_1, RockForm_js_1, TextBox_js_1, RockButton_js_1, AttributeValuesContainer_js_1;
+    var vue_js_1, PaneledBlockTemplate_js_1, Loading_js_1, Index_js_1, Guid_js_1, JavaScriptAnchor_js_1, RockForm_js_1, TextBox_js_1, RockButton_js_1, AttributeValuesContainer_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -51,6 +51,9 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             },
             function (Index_js_1_1) {
                 Index_js_1 = Index_js_1_1;
+            },
+            function (Guid_js_1_1) {
+                Guid_js_1 = Guid_js_1_1;
             },
             function (JavaScriptAnchor_js_1_1) {
                 JavaScriptAnchor_js_1 = JavaScriptAnchor_js_1_1;
@@ -88,18 +91,57 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                 },
                 data: function () {
                     return {
-                        isLoading: true,
-                        isEditMode: false,
-                        viewModels: []
+                        isLoading: false,
+                        isEditMode: false
                     };
                 },
                 computed: {
+                    person: function () {
+                        return (Index_js_1.default.getters.personContext || null);
+                    },
                     personGuid: function () {
-                        var person = (Index_js_1.default.getters.personContext || null);
-                        return person ? person.Guid : null;
+                        var _a;
+                        return ((_a = this.person) === null || _a === void 0 ? void 0 : _a.Guid) || null;
+                    },
+                    categoryGuids: function () {
+                        return this.blockSettings.CategoryGuids || [];
                     },
                     useAbbreviatedNames: function () {
                         return this.blockSettings.UseAbbreviatedNames;
+                    },
+                    attributeValues: function () {
+                        var _this = this;
+                        var _a;
+                        var attributes = ((_a = this.person) === null || _a === void 0 ? void 0 : _a.Attributes) || {};
+                        var attributeValues = [];
+                        for (var key in attributes) {
+                            var attributeValue = attributes[key];
+                            var attribute = attributeValue.Attribute;
+                            if (this.categoryGuids && !attribute) {
+                                continue;
+                            }
+                            if (this.categoryGuids && !(attribute === null || attribute === void 0 ? void 0 : attribute.CategoryGuids.some(function (g1) { return _this.categoryGuids.some(function (g2) { return Guid_js_1.areEqual(g1, g2); }); }))) {
+                                continue;
+                            }
+                            attributeValues.push(attributeValue);
+                        }
+                        attributeValues.sort(function (a, b) {
+                            var _a, _b, _c, _d;
+                            var aOrder = ((_a = a.Attribute) === null || _a === void 0 ? void 0 : _a.Order) || 0;
+                            var bOrder = ((_b = b.Attribute) === null || _b === void 0 ? void 0 : _b.Order) || 0;
+                            if (aOrder === bOrder) {
+                                var aName = ((_c = a.Attribute) === null || _c === void 0 ? void 0 : _c.Name) || '';
+                                var bName = ((_d = b.Attribute) === null || _d === void 0 ? void 0 : _d.Name) || '';
+                                if (aName > bName) {
+                                    return 1;
+                                }
+                                if (aName < bName) {
+                                    return -1;
+                                }
+                            }
+                            return aOrder - bOrder;
+                        });
+                        return attributeValues;
                     }
                 },
                 methods: {
@@ -109,37 +151,6 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                     goToEditMode: function () {
                         this.isEditMode = true;
                     },
-                    loadData: function () {
-                        return __awaiter(this, void 0, void 0, function () {
-                            var result;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        if (!this.personGuid) {
-                                            this.viewModels = [];
-                                            return [2 /*return*/];
-                                        }
-                                        _a.label = 1;
-                                    case 1:
-                                        _a.trys.push([1, , 3, 4]);
-                                        this.isLoading = true;
-                                        return [4 /*yield*/, this.blockAction('GetAttributeValueList', {
-                                                PersonGuid: this.personGuid
-                                            })];
-                                    case 2:
-                                        result = _a.sent();
-                                        if (result.data) {
-                                            this.viewModels = result.data;
-                                        }
-                                        return [3 /*break*/, 4];
-                                    case 3:
-                                        this.isLoading = false;
-                                        return [7 /*endfinally*/];
-                                    case 4: return [2 /*return*/];
-                                }
-                            });
-                        });
-                    },
                     doSave: function () {
                         return __awaiter(this, void 0, void 0, function () {
                             var keyValueMap, _i, _a, a;
@@ -148,7 +159,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                                     case 0:
                                         this.isLoading = true;
                                         keyValueMap = {};
-                                        for (_i = 0, _a = this.viewModels; _i < _a.length; _i++) {
+                                        for (_i = 0, _a = this.attributeValues; _i < _a.length; _i++) {
                                             a = _a[_i];
                                             if (a.Attribute) {
                                                 keyValueMap[a.Attribute.Key] = a.Value;
@@ -168,27 +179,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         });
                     }
                 },
-                watch: {
-                    personGuid: {
-                        immediate: true,
-                        handler: function () {
-                            return __awaiter(this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            if (!this.personGuid) return [3 /*break*/, 2];
-                                            return [4 /*yield*/, this.loadData()];
-                                        case 1:
-                                            _a.sent();
-                                            _a.label = 2;
-                                        case 2: return [2 /*return*/];
-                                    }
-                                });
-                            });
-                        }
-                    }
-                },
-                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValuesContainer v-if=\"!isEditMode\" :attributeValues=\"viewModels\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValuesContainer :attributeValues=\"viewModels\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton primary xs type=\"submit\">Save</RockButton>\n                    <RockButton link xs @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValuesContainer v-if=\"!isEditMode\" :attributeValues=\"attributeValues\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton primary xs type=\"submit\">Save</RockButton>\n                    <RockButton link xs @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

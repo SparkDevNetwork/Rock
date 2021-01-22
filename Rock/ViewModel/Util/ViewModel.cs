@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.ViewModel
@@ -57,8 +58,9 @@ namespace Rock.ViewModel
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity, cache, or other object to copy properties from.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        void SetPropertiesFrom( object entity, bool loadAttributes = true );
+        void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true );
     }
 
     /// <summary>
@@ -96,8 +98,9 @@ namespace Rock.ViewModel
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity, cache item, or some object.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( object entity, bool loadAttributes = true )
+        public virtual void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( entity == null )
             {
@@ -113,7 +116,11 @@ namespace Rock.ViewModel
                     hasAttributes.LoadAttributes();
                 }
 
-                Attributes = hasAttributes.AttributeValues.ToDictionary(
+                Attributes = hasAttributes.AttributeValues.Where( av =>
+                {
+                    var attribute = AttributeCache.Get( av.Value.AttributeId );
+                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
+                } ).ToDictionary(
                     kvp => kvp.Key,
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() );
             }
@@ -201,9 +208,10 @@ namespace Rock.ViewModel
         /// Converts to viewmodel.
         /// </summary>
         /// <param name="entity">The entity, cache, or other item.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public static IViewModel ToViewModel( this object entity, bool loadAttributes = true )
+        public static IViewModel ToViewModel( this object entity, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( entity == null )
             {
@@ -219,7 +227,7 @@ namespace Rock.ViewModel
             }
 
             var methodInfo = GetToViewModelMethod( viewModelType );
-            var viewModel = methodInfo.Invoke( null, new[] { entity, loadAttributes } ) as IViewModel;
+            var viewModel = methodInfo.Invoke( null, new[] { entity, currentPerson, loadAttributes } ) as IViewModel;
 
             return viewModel;
         }
@@ -229,9 +237,10 @@ namespace Rock.ViewModel
         /// </summary>
         /// <typeparam name="TViewModel">The type of the view model.</typeparam>
         /// <param name="entity">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public static TViewModel ToViewModel<TViewModel>( this object entity, bool loadAttributes = true ) where TViewModel : IViewModel
+        public static TViewModel ToViewModel<TViewModel>( this object entity, Person currentPerson = null, bool loadAttributes = true ) where TViewModel : IViewModel
         {
             if ( entity == null )
             {
@@ -239,7 +248,7 @@ namespace Rock.ViewModel
             }
 
             var viewModel = Activator.CreateInstance<TViewModel>();
-            viewModel.SetPropertiesFrom( entity, loadAttributes );
+            viewModel.SetPropertiesFrom( entity, currentPerson, loadAttributes );
             return viewModel;
         }
 

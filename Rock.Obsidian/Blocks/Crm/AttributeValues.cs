@@ -119,7 +119,8 @@ namespace Rock.Obsidian.Blocks.Crm
                 BlockIconCssClass = GetBlockIconCssClass(),
                 BlockTitle = GetBlockTitle(),
                 ShowCategoryNamesAsSeparators = GetAttributeValue( AttributeKey.ShowCategoryNamesAsSeparators ).AsBoolean(),
-                UseAbbreviatedNames = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean()
+                UseAbbreviatedNames = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean(),
+                CategoryGuids = GetCategoryGuids()
             };
         }
 
@@ -162,64 +163,6 @@ namespace Rock.Obsidian.Blocks.Crm
                 person.SaveAttributeValues( rockContext );
                 return new BlockActionResult( HttpStatusCode.NoContent );
             }
-        }
-
-        /// <summary>
-        /// Get data based on the configured category setting.
-        /// </summary>
-        /// <param name="personGuid">The person unique identifier.</param>
-        /// <returns></returns>
-        [BlockAction]
-        public BlockActionResult GetAttributeValueList( Guid personGuid )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var currentPerson = GetCurrentPerson();
-
-                var personService = new PersonService( rockContext );
-                var person = personService.Get( personGuid );
-
-                var categories = GetCategoryGuids();
-                var viewModels = new List<AttributeValueViewModel>();
-
-                if ( !categories.Any() || person == null || currentPerson == null )
-                {
-                    return new BlockActionResult( HttpStatusCode.OK, viewModels );
-                }
-
-                person.LoadAttributes();
-                var orderOverride = GetAttributeValue( AttributeKey.AttributeOrder ).SplitDelimitedValues().AsIntegerList();
-                var orderedAttributeList = GetAttributes( currentPerson, Rock.Security.Authorization.VIEW );
-
-                foreach ( var attributeId in orderOverride )
-                {
-                    var attribute = orderedAttributeList.FirstOrDefault( a => a.Id == attributeId );
-
-                    if ( attribute != null )
-                    {
-                        viewModels.Add( GetViewModel( attribute, person ) );
-                    }
-                }
-
-                foreach ( var attribute in orderedAttributeList.Where( a => !orderOverride.Contains( a.Id ) ) )
-                {
-                    viewModels.Add( GetViewModel( attribute, person ) );
-                }
-
-                viewModels = viewModels.Where( a => a != null ).ToList();
-                return new BlockActionResult( HttpStatusCode.OK, viewModels );
-            }
-        }
-
-        /// <summary>
-        /// Gets the view model.
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        private AttributeValueViewModel GetViewModel( AttributeCache attribute, Person person ) {
-            var attributeValue = person.AttributeValues.GetValueOrNull( attribute.Key );
-            return attributeValue.ToViewModel<AttributeValueViewModel>();
         }
 
         /// <summary>

@@ -1138,7 +1138,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
         pageId: {_pageCache.Id},
         pageGuid: '{_pageCache.Guid}',
         pageParameters: {PageParameters().ToJson()},
-        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel().ToJson() )},
+        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
         contextEntities: {GetContextViewModels().ToJson()}
     }});
 }});";
@@ -2186,7 +2186,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <returns></returns>
         internal Dictionary<string, IViewModel> GetContextViewModels() {
-            return GetContextEntities().ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToViewModel() );
+            return GetContextEntities().ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToViewModel( CurrentPerson ) );
         }
 
         /// <summary>

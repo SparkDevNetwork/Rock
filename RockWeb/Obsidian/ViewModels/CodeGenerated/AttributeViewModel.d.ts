@@ -30,7 +30,7 @@ export default interface Attribute extends Entity {
     AbbreviatedName: string | null;
     AllowSearch: boolean;
     Attributes: Record<string, AttributeValue> | null;
-    CategoryNames: (string | null)[];
+    CategoryGuids: (Guid)[];
     DefaultValue: string | null;
     Description: string | null;
     EnableHistory: boolean;

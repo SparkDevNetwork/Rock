@@ -56,7 +56,8 @@ namespace Rock.Obsidian.Blocks.Example
                     return new BlockActionResult( HttpStatusCode.NotFound );
                 }
 
-                var personViewModel = person.ToViewModel();
+                var currentPerson = GetCurrentPerson();
+                var personViewModel = person.ToViewModel( currentPerson );
                 return new BlockActionResult( HttpStatusCode.OK, personViewModel );
             }
         }

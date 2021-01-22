@@ -24,6 +24,7 @@
 using System;
 using System.Linq;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.ViewModel
@@ -35,12 +36,12 @@ namespace Rock.ViewModel
     public partial class AttributeViewModel
     {
         /// <summary>
-        /// Gets or sets the category names.
+        /// Gets or sets the category Guids.
         /// </summary>
         /// <value>
-        /// The category names.
+        /// The category Guids.
         /// </value>
-        public string[] CategoryNames { get; set; }
+        public Guid[] CategoryGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the field type unique identifier.
@@ -54,33 +55,31 @@ namespace Rock.ViewModel
         /// Sets the properties from entity.
         /// </summary>
         /// <param name="entity">The entity, cache item, or some object.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void SetPropertiesFrom( object entity, bool loadAttributes = true )
+        public override void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( entity == null )
             {
                 return;
             }
 
-            base.SetPropertiesFrom( entity, loadAttributes );
+            base.SetPropertiesFrom( entity, currentPerson, loadAttributes );
+            AttributeCache attributeCache = null;
 
             if ( entity is IEntity entityWithId )
             {
-                var attribute = AttributeCache.Get( entityWithId.Id );
-
-                if ( attribute != null )
-                {
-                    CategoryNames = attribute.Categories.Select( c => c.Name ).ToArray();
-                }
+                attributeCache = AttributeCache.Get( entityWithId.Id );
+            }
+            else if ( entity is AttributeCache asAttributeCache )
+            {
+                attributeCache = asAttributeCache;
             }
 
-            if ( entity is AttributeCache attributeCache )
+            if ( attributeCache != null )
             {
-                FieldTypeGuid = attributeCache.FieldType.Guid;
-            }
-            else if ( entity is Rock.Model.Attribute attributeModel )
-            {
-                FieldTypeGuid = FieldTypeCache.Get( attributeModel.FieldTypeId ).Guid;
+                FieldTypeGuid = FieldTypeCache.Get( attributeCache.FieldTypeId ).Guid;
+                CategoryGuids = attributeCache.Categories.Select( c => c.Guid ).ToArray();
             }
         }
     }
