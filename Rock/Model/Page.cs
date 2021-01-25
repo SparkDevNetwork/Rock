@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -670,7 +671,10 @@ namespace Rock.Model
 
             if ( _didNameChange )
             {
-                new PageRenameTransaction( Guid ).Enqueue();
+                new AddPageRenameInteraction.Message()
+                {
+                    PageGuid = Guid
+                }.Send();
             }
         }
 

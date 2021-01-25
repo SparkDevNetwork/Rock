@@ -17,20 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Store;
-using System.Text;
-using Rock.Utility;
 
 namespace RockWeb.Blocks.Store
 {
@@ -51,7 +44,23 @@ namespace RockWeb.Blocks.Store
         #region Properties
 
         // used for public / protected properties
+        private string Password
+        {
+            get
+            {
+                var password = ViewState["password"].ToString();
+                if ( password.IsNotNullOrWhiteSpace() )
+                {
+                    password = Rock.Security.Encryption.DecryptString( password );
+                }
 
+                return password;
+            }
+            set
+            {
+                ViewState["password"] = Rock.Security.Encryption.EncryptString( value );
+            }
+        }
         #endregion
 
         #region Base Control Methods
@@ -81,7 +90,7 @@ namespace RockWeb.Blocks.Store
 
             if ( !Page.IsPostBack )
             {
-                
+
             }
         }
 
@@ -98,7 +107,7 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            
+
         }
 
         protected void btnRetrieveOrganization_Click( object sender, EventArgs e )
@@ -107,20 +116,32 @@ namespace RockWeb.Blocks.Store
             string errorMessage = string.Empty;
 
             OrganizationService organizationService = new OrganizationService();
-            List<Organization> organizations = organizationService.GetOrganizations(txtUsername.Text, txtPassword.Text, out errorMessage).ToList();
-
-            switch ( organizations.Count )
+            Password = txtPassword.Text;
+            var organizations = organizationService.GetOrganizations( txtUsername.Text, Password, out errorMessage ).ToList();
+            if ( organizations.Count == 0 )
             {
-                case 1:
-                    SetOrganization(organizations.First());
-                    break;
-                case 0:
-                    ProcessNoResults();
-                    break;
-                default:
-                    ProcessMultipleOrganizations(organizations);
-                    break;
+                ProcessNoResults();
+                return;
             }
+
+            var organizationKey = StoreService.GetOrganizationKey();
+            Organization selectedOrganization = null;
+            if ( organizationKey.IsNotNullOrWhiteSpace() )
+            {
+                selectedOrganization = organizations.FirstOrDefault( o => o.Key == organizationKey );
+            }
+            else if ( organizations.Count == 1 )
+            {
+                selectedOrganization = organizations.FirstOrDefault();
+            }
+
+            if ( selectedOrganization == null )
+            {
+                ProcessMultipleOrganizations( organizations );
+                return;
+            }
+
+            SetOrganization( selectedOrganization );
         }
 
         protected void rblOrganizations_SelectedIndexChanged( object sender, EventArgs e )
@@ -144,13 +165,14 @@ namespace RockWeb.Blocks.Store
 
         protected void btnContinue_Click( object sender, EventArgs e )
         {
-            if ( PageParameter( "ReturnUrl" ) != string.Empty )
+            var returnUrl = PageParameter( "ReturnUrl" );
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
             {
-                Response.Redirect( PageParameter( "ReturnUrl" ) );
+                Response.Redirect( returnUrl );
             }
             else
             {
-                Response.Redirect( Server.MapPath("~/Store") );
+                Response.Redirect( "/RockShop" );
             }
         }
 
@@ -158,23 +180,22 @@ namespace RockWeb.Blocks.Store
 
         #region Methods
 
-        private void SetOrganization(Organization organization)
+        private void SetOrganization( Organization organization )
         {
             StoreService.SetOrganizationKey( organization.Key );
-            
+
             pnlAuthenicate.Visible = false;
             pnlSelectOrganization.Visible = false;
-            pnlComplete.Visible = true;
-
-            lCompleteMessage.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Success!</strong> We were able to configure the store for use by {0}.</div>", organization.Name );
+            pnlAverageWeeklyAttendance.Visible = true;
+            pnlComplete.Visible = false;
         }
 
         private void ProcessNoResults()
         {
             string errorMessage = string.Empty;
-            
+
             // first check that the username/password they provided are correct
-            bool canAuthicate = new StoreService().AuthenicateUser( txtUsername.Text, txtPassword.Text);
+            bool canAuthicate = new StoreService().AuthenicateUser( txtUsername.Text, Password );
 
             if ( canAuthicate )
             {
@@ -202,5 +223,31 @@ namespace RockWeb.Blocks.Store
         }
 
         #endregion
+
+        protected void btnSaveAttendance_Click( object sender, EventArgs e )
+        {
+            var averageWeeklyAttendance = nbAverageWeeklyAttendance.IntegerValue;
+
+            if ( averageWeeklyAttendance == null )
+            {
+                // error message
+                return;
+            }
+
+            var result = new OrganizationService().SetOrganizationSize( txtUsername.Text, Password, StoreService.GetOrganizationKey(), averageWeeklyAttendance.Value );
+            if ( result.HasError )
+            {
+                // Show error
+                return;
+            }
+
+            lCompleteMessage.Text = string.Format( "<div class='alert alert-success margin-t-md'><strong>Success!</strong> We were able to configure the store for use by {0}.</div>", result.Result.Name );
+
+            pnlAuthenicate.Visible = false;
+            pnlSelectOrganization.Visible = false;
+            pnlAverageWeeklyAttendance.Visible = false;
+            pnlComplete.Visible = true;
+
+        }
     }
 }

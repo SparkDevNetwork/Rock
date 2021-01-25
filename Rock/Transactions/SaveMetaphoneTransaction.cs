@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,6 +26,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Updates metaphone data when a person is added or updated.
     /// </summary>
+    [Obsolete( "Use AddNewMetaphones Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SaveMetaphoneTransaction : ITransaction
     {
         private List<string> names = new List<string>();

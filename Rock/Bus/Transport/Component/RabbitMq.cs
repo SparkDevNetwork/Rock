@@ -78,7 +78,7 @@ namespace Rock.Bus.Transport
             return MassTransit.Bus.Factory.CreateUsingRabbitMq( configurator =>
             {
                 var user = GetUser();
-                var url = $"amqps://{user}:{GetPassword()}@{GetHost()}/{user}";
+                var url = $"rabbitmq://{user}:{GetPassword()}@{GetHost()}/{user}";
                 configurator.Host( new Uri( url ), host => { } );
                 configureEndpoints( configurator );
             } );

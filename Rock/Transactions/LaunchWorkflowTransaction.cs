@@ -26,6 +26,8 @@ namespace Rock.Transactions
     /// Launches a workflow and optionally sets the name and attribute values
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use LaunchWorkflow Task instead." )]
+    [RockObsolete( "1.13" )]
     public class LaunchWorkflowTransaction : ITransaction
     {
         /// <summary>
@@ -155,6 +157,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes any entity chnages that are configured to be tracked
     /// </summary>
+    [Obsolete( "Use LaunchWorkflow Task instead." )]
+    [RockObsolete( "1.13" )]
     public class LaunchWorkflowTransaction<T> : LaunchWorkflowTransaction
     where T : Rock.Data.Entity<T>, new()
     {

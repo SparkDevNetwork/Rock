@@ -29,8 +29,8 @@ namespace Rock.Store
         /// <summary>
         /// 
         /// </summary>
-        public PackageVersionRatingService() :base()
-        {}
+        public PackageVersionRatingService() : base()
+        { }
 
         /// <summary>
         /// Gets list of ratings for a specific version.
@@ -51,15 +51,8 @@ namespace Rock.Store
         public List<PackageVersionRating> GetPackageVersionRatings( int versionId, out string errorResponse )
         {
             errorResponse = string.Empty;
-            
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
-            request.Resource = string.Format( "api/PackageVersionRatings?$filter=PackageVersionId eq {0}&$expand=PersonAlias/Person", versionId.ToString() );
 
-            var response = client.Execute<List<PackageVersionRating>>( request );
+            var response = ExecuteRestGetRequest<List<PackageVersionRating>>( $"api/PackageVersionRatings?$filter=PackageVersionId eq {versionId}&$expand=PersonAlias/Person" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

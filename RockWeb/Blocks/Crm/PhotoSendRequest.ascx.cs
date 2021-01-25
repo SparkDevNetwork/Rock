@@ -30,6 +30,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Communication;
 using System.Data.Entity;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -291,10 +292,11 @@ namespace RockWeb.Blocks.Crm
 
                     if ( communication.Status == CommunicationStatus.Approved )
                     {
-                        var transaction = new Rock.Transactions.SendCommunicationTransaction();
-                        transaction.CommunicationId = communication.Id;
-                        transaction.PersonAlias = CurrentPersonAlias;
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        var processSendCommunicationMsg = new ProcessSendCommunication.Message
+                        {
+                            CommunicationId = communication.Id
+                        };
+                        processSendCommunicationMsg.Send();
                     }
 
                     pnlSuccess.Visible = true;

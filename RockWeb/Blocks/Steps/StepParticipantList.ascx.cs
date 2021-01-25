@@ -837,9 +837,12 @@ namespace RockWeb.Blocks.Steps
             // Add Link to Profile Page Column
             if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
             {
-                var column = CreatePersonProfileLinkColumn( "PersonId" );
+                var personProfileLinkField = new PersonProfileLinkField
+                {
+                    LinkedPageAttributeKey = "PersonProfilePage"
+                };
 
-                gSteps.Columns.Add( column );
+                gSteps.Columns.Add( personProfileLinkField );
             }
 
             // Add delete column
@@ -848,23 +851,6 @@ namespace RockWeb.Blocks.Steps
             gSteps.Columns.Add( deleteField );
 
             deleteField.Click += DeleteStep_Click;
-        }
-
-        /// <summary>
-        /// Creates a grid column with a link to the person profile page.
-        /// </summary>
-        private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
-        {
-            HyperLinkField hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
-            hlPersonProfileLink.DataTextField = fieldName;
-
-            return hlPersonProfileLink;
         }
 
         /// <summary>

@@ -36,5 +36,37 @@ namespace Rock.Store
         /// A <see cref="System.String"/> representing the Name of the Organization.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logo URL.
+        /// </summary>
+        /// <value>
+        /// The logo URL.
+        /// </value>
+        public string LogoUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        public string State { get; set; }
+
+        /// <summary>
+        /// Gets or sets the city.
+        /// </summary>
+        /// <value>
+        /// The city.
+        /// </value>
+        public string City { get; set; }
+
+        /// <summary>
+        /// Gets or sets the average weekly attendance.
+        /// </summary>
+        /// <value>
+        /// The average weekly attendance.
+        /// </value>
+        public int AverageWeeklyAttendance { get; set; }
     }
 }

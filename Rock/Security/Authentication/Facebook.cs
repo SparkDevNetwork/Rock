@@ -32,6 +32,7 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Security.ExternalAuthentication
@@ -509,8 +510,13 @@ namespace Rock.Security.ExternalAuthentication
                                     }
 
                                     // Queue a transaction to add/remove friend relationships in Rock
-                                    var transaction = new Rock.Transactions.UpdateFacebookFriends( person.Id, facebookIds );
-                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                                    var facebookFriendGroupMembers = new UpdateFacebookFriendGroupMembers.Message
+                                    {   
+                                        FacebookIds = facebookIds,
+                                        PersonId = person.Id,
+                                    };
+
+                                    facebookFriendGroupMembers.Send();
                                 }
                             }
                         }

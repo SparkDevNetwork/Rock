@@ -293,7 +293,8 @@ SELECT
 				INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
 				AND indexstats.index_id = dbindexes.index_id
 			WHERE 
-				indexstats.database_id = DB_ID() 
+				indexstats.database_id = DB_ID()
+                AND dbindexes.[name] IS NOT NULL
 				AND indexstats.page_count > @PageCountLimit
 				AND indexstats.avg_fragmentation_in_percent > @MinFragmentation
 ";
