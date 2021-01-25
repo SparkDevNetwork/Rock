@@ -26,6 +26,7 @@ namespace com.bemaservices.RemoteCheckDeposit.FileFormatTypes
     [CodeEditorField( "Deposit Slip Template", "The template for the deposit slip that will be generated. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, defaultValue: @"Customer: {{ FileFormat | Attribute:'OriginName' }}
 Account: {{ FileFormat | Attribute:'AccountNumber' }}
 Amount: {{ Amount }}", order: 20 )]
+    [BooleanField( "Add Settlement Date", "Set to True to insert the manually selected date as Record 90 Field 7 Settlement date. Defaults to blank.", order: 21, defaultValue: false)]
     public class BankOfTheWest : X937DSTU
     {
         #region System Setting Keys
@@ -127,7 +128,7 @@ Amount: {{ Amount }}", order: 20 )]
         /// </returns>
         protected override CashLetterHeader GetCashLetterHeaderRecord( ExportOptions options )
         {
-            int cashHeaderId = GetSystemSetting( SystemSettingNextCashHeaderId ).AsIntegerOrNull() ?? 0;
+            int cashHeaderId = GetSystemSetting( SystemSettingNextCashHeaderId ).AsIntegerOrNull() ?? 10000001;
 
             var header = base.GetCashLetterHeaderRecord( options );
             header.ID = cashHeaderId.ToString( "D8" );
@@ -240,6 +241,9 @@ Amount: {{ Amount }}", order: 20 )]
             var controlRecord = base.GetCashLetterControlRecord( options, records );
             //count deposit records as well as items
             controlRecord.ItemCount = records.Where( r => r.RecordType == 25 || r.RecordType == 61 ).Count();
+
+            //Bank of the West: Modified 1/18/2021. SC.
+            controlRecord.SettlementDate = GetAttributeValue( options.FileFormat, "AddSettlementDate" ).AsBoolean() ? controlRecord.SettlementDate : null;
 
             return controlRecord;
         }
