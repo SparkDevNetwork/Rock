@@ -206,10 +206,10 @@ iframe.email-body {
 
   .conversation-list {
     position: relative;
-    display: flex;
-    flex-direction: column;
     flex-grow: 0;
     min-width: 100%;
+    height: ~"calc(100vh - 200px)";
+    min-height: 300px;
     border-right: 1px solid rgba(0,0,0, .2);
 
     @media (min-width: 599px) {
@@ -227,6 +227,7 @@ iframe.email-body {
     }
 
     .overflow-scroll {
+      flex: 1 1 0;
       width: 100%;
       overflow: hidden;
       overflow-y: scroll;
