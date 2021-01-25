@@ -64,8 +64,19 @@ namespace Rock.Communication.Transport
         DefaultIntegerValue = 10,
         Order = 4,
         Key = TwilioAttributeKey.MaxParallelization )]
-    public class Twilio : TransportComponent, IAsyncTransport
+    public class Twilio : TransportComponent, IAsyncTransport, ISmsPipelineWebhook
     {
+        /// <summary>
+        /// Gets the sms pipeline webhook path that should be used by this transport.
+        /// </summary>
+        /// <value>
+        /// The sms pipeline webhook path.
+        /// </value>
+        /// <note>
+        /// This should be from the application root (https://www.rocksolidchurch.com/).
+        /// </note>
+        public string SmsPipelineWebhookPath => "Webhooks/TwilioSms.ashx";
+
         #region IAsyncTransport Implementation
         /// <summary>
         /// Gets the maximum parallelization.

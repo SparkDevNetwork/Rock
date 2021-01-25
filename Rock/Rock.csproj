@@ -600,6 +600,7 @@
     <Compile Include="Communication\IAsyncTransport.cs" />
     <Compile Include="Communication\IAsyncMediumComponent.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
+    <Compile Include="Communication\ISmsPipelineWebhook.cs" />
     <Compile Include="Communication\PushData.cs" />
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
