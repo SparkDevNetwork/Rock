@@ -657,22 +657,14 @@ namespace RockWeb.Blocks.Communication
                     using ( var rockContext = new RockContext() )
                     {
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                        var testCommunication = communication.Clone( false );
-                        testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.NewGuid();
+                        var testCommunication = communication.CloneWithoutIdentity();
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                         testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
-
                         testCommunication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                        testCommunication.ForeignGuid = null;
-                        testCommunication.ForeignId = null;
-                        testCommunication.ForeignKey = null;
-
                         testCommunication.FutureSendDateTime = null;
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
                         testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
 
                         foreach ( var attachment in communication.Attachments )
