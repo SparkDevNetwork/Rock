@@ -118,7 +118,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// The keys used in page parameters.
         /// </summary>
-        private class PageParameterKeys
+        public static class PageParameterKeys
         {
             /// <summary>
             /// The group identifier key.
