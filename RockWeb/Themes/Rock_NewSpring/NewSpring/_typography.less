@@ -1,0 +1,83 @@
+h1, h2, h3, h4, h5, h6, ul, ol, p {
+	margin-bottom: @base-spacing-unit/2;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 700;
+	margin-top: 0;
+}
+
+hr {
+	margin-top: @base-spacing-unit;
+	margin-bottom: @base-spacing-unit;
+	border: 0;
+	border-bottom: 3px solid @theme-5;
+}
+
+// LOGIN STATUS
+.navbar-nav > li > a {
+	padding-top: 15px;
+	padding-bottom: 13px;
+}
+.loginstatus > li {
+	min-width: 170px;
+}
+
+.navbar-nav.loginstatus {
+	margin: 0;
+}
+
+.loginstatus .dropdown-toggle {
+	padding-left: 10px;
+}
+
+#content-wrapper header .navbar-default .navbar-nav > li > a {
+	font-weight: 500;
+}
+
+// PAGE TITLES
+#content-wrapper #page-title {
+	background-color: @brand-secondary;
+	padding: 25px;
+
+	h1 {
+		font-weight: 700;
+		color: @theme-1-text;
+
+		i {
+			display: none;
+		}
+	}
+
+	.breadcrumb li, .breadcrumb > .active {
+		font-weight: 500;
+		color: @theme-8-text;
+
+		a {
+			color: @theme-1;
+
+			&:hover {
+				color: @theme-1-text;
+			}
+		}
+
+		& + li:before {
+			color: @theme-8-text;
+			opacity: .3;
+			font-weight: 300;
+		}
+	}
+
+	@media (min-width: @screen-md-min) {
+		h1 {
+			font-size: 36px;
+		}
+	}
+}
+
+@media (min-width: @screen-md-min) {
+	.text-larger {
+		font-size: 115%;
+		letter-spacing: -.2px;
+	}
+}

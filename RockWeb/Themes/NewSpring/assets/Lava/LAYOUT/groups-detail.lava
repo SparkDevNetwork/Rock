@@ -1,0 +1,407 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign groupId = 'Global' | PageParameter:'GroupId' %}
+{% assign Group = groupId | GroupById %}
+{% assign groupAttendanceSuccessThreshold = 'Global' | Attribute:'GroupAttendanceSuccessThreshold' %}
+{% assign groupAttendanceWarningThreshold = 'Global' | Attribute:'GroupAttendanceWarningThreshold' %}
+{% assign pulseLookBack = 'Global' | Attribute:'GroupPulseLookBack' %}
+{% assign pulseLookAhead = 'Global' | Attribute:'GroupPulseLookForward' %}
+{% assign groupPulseAttendanceAlert = 'Global' | Attribute:'GroupPulseAttendanceAlert' | Times:-1 %}
+
+<style>
+  .group-pulse .list-group-item {
+    position: relative;
+    padding: 15px 30px;
+    padding-left: 60px;
+  }
+  .group-pulse .list-group-item i {
+    position: absolute;
+    left: 17px;
+    top: 5px;
+    display: none;
+  }
+  .group-pulse .list-group-item .pulse-image {
+    width: 30px;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    margin-top: -17px;
+  }
+</style>
+
+
+{%- comment -%}
+  GROUP PULSE
+{%- endcomment -%}
+{% sql return:'groupPulse' %}
+  SELECT
+    gm.PersonId 'PersonId',
+    a.Name 'Name',
+    a.Id 'Id',
+    p.NickName,
+    p.LastName,
+    CASE
+      WHEN a.Id = 4055 THEN 'was baptized'
+      WHEN a.Id = 4056 THEN 'was saved'
+      WHEN a.Id IN (74894,74895,74896,74897) THEN 'completed "' + a.Name + '" of Connect'
+      WHEN a.Id = 19882 THEN 'completed Connect'
+      WHEN a.Id = 52311 THEN 'started serving'
+    END 'Action',
+    a.IconCSSClass 'IconCSSClass',
+    av.ValueAsDateTime 'Date'
+  FROM GroupMember gm
+  JOIN Person p
+  ON gm.PersonId = p.Id
+  JOIN AttributeValue av
+  ON av.EntityId = gm.PersonId
+  JOIN Attribute a
+  ON av.AttributeId = a.Id
+  WHERE gm.GroupId = {{ groupId }}
+  AND gm.GroupMemberStatus = 1
+  AND gm.IsArchived = 0
+  AND av.AttributeId IN (4055,4048,19882,74894,74895,74896,74897,52311)
+  AND av.ValueAsDateTime >= DATEADD(day,-{{ pulseLookBack }},GETDATE())
+  ORDER BY av.Value DESC
+{% endsql %}
+
+{% sql return:'birthdays' %}
+  SELECT
+    p.Id 'PersonId',
+    'BirthDate',
+    NULL,
+    p.NickName,
+    p.LastName,
+    'birthday is' 'Action',
+    'fas fa-birthday-cake' 'IconCSSClass',
+    CONVERT(datetime, CONCAT(YEAR(GETDATE()), '-', p.BirthMonth,'-', p.BirthDay)) 'Date'
+  FROM GroupMember gm
+  JOIN Person p
+  ON gm.PersonId = p.Id
+  WHERE gm.GroupId = {{ groupId }}
+  AND gm.GroupMemberStatus = 1
+  AND gm.IsArchived = 0
+  AND p.BirthDate IS NOT NULL
+  AND CONVERT(datetime, CONCAT(YEAR(GETDATE()), '-', p.BirthMonth,'-', p.BirthDay)) > GETDATE()
+  AND CONVERT(datetime, CONCAT(YEAR(GETDATE()), '-', p.BirthMonth,'-', p.BirthDay)) <= DATEADD(day,+{{ pulseLookAhead }},GETDATE())
+{% endsql %}
+
+{% sql return:'anniversaries' %}
+  SELECT
+    p.Id 'PersonId',
+    'AnniversaryDate',
+    NULL,
+    p.NickName,
+    p.LastName,
+    'anniversary is' 'Action',
+    'fas fa-heart' 'IconCSSClass',
+    CASE
+      WHEN p.AnniversaryDate IS NOT NULL THEN CONVERT(datetime, CONCAT(YEAR(GETDATE()), SUBSTRING(CONVERT(varchar, p.AnniversaryDate), 5, 10)))
+      ELSE NULL
+    END 'Date'
+  FROM GroupMember gm
+  JOIN Person p
+  ON gm.PersonId = p.Id
+  WHERE gm.GroupId = {{ groupId }}
+  AND gm.GroupMemberStatus = 1
+  AND gm.IsArchived = 0
+  AND p.AnniversaryDate IS NOT NULL
+  AND CONVERT(datetime, CONCAT(YEAR(GETDATE()), SUBSTRING(CONVERT(varchar, p.AnniversaryDate), 5, 10))) > GETDATE()
+  AND CONVERT(datetime, CONCAT(YEAR(GETDATE()), SUBSTRING(CONVERT(varchar, p.AnniversaryDate), 5, 10))) <= DATEADD(day,+{{ pulseLookAhead }},GETDATE())
+  ORDER BY CONVERT(datetime, CONCAT(YEAR(GETDATE()), SUBSTRING(CONVERT(varchar, p.AnniversaryDate), 5, 10))) ASC
+{% endsql %}
+
+{% sql return:'attendances' %}
+SELECT
+    gm.PersonId,
+    p.NickName,
+    p.LastName,
+    'last attended' 'Action',
+    (
+        SELECT TOP 1
+            ao.OccurrenceDate
+        FROM AttendanceOccurrence ao
+        JOIN Attendance a
+        ON a.OccurrenceId = ao.Id
+        JOIN PersonAlias pa
+        ON a.PersonAliasId = pa.Id
+        WHERE ao.GroupId = gm.GroupId
+        AND ao.DidNotOccur = 0
+        AND pa.PersonId = p.Id
+        AND a.DidAttend = 1
+        ORDER BY ao.OccurrenceDate DESC
+    ) 'Date'
+FROM GroupMember gm
+JOIN Person p
+ON gm.PersonId = p.Id
+WHERE gm.GroupId = {{ groupId }}
+AND gm.GroupMemberStatus = 1
+AND gm.IsArchived = 0
+ORDER BY (
+        SELECT TOP 1
+            ao.OccurrenceDate
+        FROM AttendanceOccurrence ao
+        JOIN Attendance a
+        ON a.OccurrenceId = ao.Id
+        JOIN PersonAlias pa
+        ON a.PersonAliasId = pa.Id
+        WHERE ao.GroupId = gm.GroupId
+        AND ao.DidNotOccur = 0
+        AND pa.PersonId = p.Id
+        AND a.DidAttend = 1
+        ORDER BY ao.OccurrenceDate DESC
+    ) asc
+{% endsql %}
+
+{% assign pulseCount = groupPulse | Size %}
+{% assign birthdaysCount = birthdays | Size %}
+{% assign anniversariesCount = anniversaries | Size %}
+
+{% capture groupPulseString %}[
+  {% if pulseCount >= 1 %}{{ groupPulse | ToJSON | Replace:'[','' | Replace:']','' | Append:',' }}{% endif %}
+  {% if birthdaysCount >= 1 %}{{ birthdays | ToJSON | Replace:'[','' | Replace:']','' | Append:',' }}{% endif %}
+  {% if anniversariesCount >= 1 %}{{ anniversaries | ToJSON | Replace:'[','' | Replace:']','' }}{% endif %}
+]{% endcapture %}
+{% assign groupPulse = groupPulseString | FromJSON | OrderBy:'Date asc' %}
+
+{%- comment -%}
+  GROUP HEADER
+{%- endcomment -%}
+{[ groupsHeader groupid:groupId ]}
+
+<div class="row">
+  <div class="col-md-4 col-sm-12 col-xs-12">
+
+    <div class="row">
+
+    {%- comment -%}
+      GROUP PULSE
+    {%- endcomment -%}
+    <div class="col-md-12 col-sm-6 col-xs-12">
+
+      {% if AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'EditGroup' }}" class="btn btn-primary btn-block shadowed push-bottom xs-push-half-bottom">
+          <i class="fal fa-pencil push-quarter-right"></i> Edit Group
+        </a>
+      {% endif %}
+
+      {% if groupPulse and groupPulse != empty %}
+        <h2 class="h4 xs-h5 text-uppercase strongest">Group Pulse</h2>
+
+        <ul class="list-group group-pulse rounded shadowed push-double-bottom sm-flush-bottom xs-push-double-bottom">
+          {% if attendances and attendances != emtpy %}
+            {% assign attendanceLookbackDate = 'Now' | DateAdd:groupPulseAttendanceAlert,'d' %}
+            {% for attendance in attendances %}
+              {% if attendance.Date <= attendanceLookbackDate and attendance.Date != NULL %}
+                <li class="list-group-item">
+                  <div class="flush">
+                    <div class="pulse-image">
+                      <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ attendance.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
+                    </div>
+                    <a href="{{ currentUrl | Append:'/' | Append:attendance.PersonId }}" class="text-decoration-none"><b>{{ attendance.NickName }} {{ attendance.LastName }}</b></a> {{ attendance.Action }} on {{ attendance.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ attendance.Date }}' ]} {% assign daysFromNow = attendance.Date | DaysFromNow %}<span class="text-danger"> {{ daysFromNow }}.</span></div>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+          {% endif %}
+
+          {% for item in groupPulse %}
+            <li class="list-group-item">
+              <div class="flush">
+                <div class="pulse-image">
+                  <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ item.PersonId | PersonById | Property:'PhotoUrl' }}');"></div>
+                </div>
+                <a href="{{ currentUrl | Append:'/' | Append:item.PersonId }}" class="text-decoration-none"><b>{{ item.NickName }} {% if item.Action contains 'birthday' or item.Action contains 'anniversary' %}{{ item.LastName | Possessive }}{% else %}{{ item.LastName }}{% endif %}</b></a> {{ item.Action }} on {{ item.Date | Date:'dddd' | Append:',' }} {[ formatDate date:'{{ item.Date }}' ]} {% assign daysFromNow = item.Date | DaysFromNow %}<span class="text-gray-light"> {{ daysFromNow }}.</span></div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div><div class="col-md-12 col-sm-6 col-xs-12">
+
+        {%- comment -%}
+          GROUP COMMUNICATION
+        {%- endcomment -%}
+        <h2 class="h4 xs-h5 text-uppercase strongest">Group Communication</h2>
+
+        <p class="push-half-bottom"><a href="#" class="btn btn-primary btn-block shadowed js-copy"><i class="fal fa-copy push-quarter-right"></i> Copy Numbers for SMS</a></p>
+
+        <p class="flush-bottom"><a href="mailto:{{ Group.Members | Map:'Person' | Select:'Email' | Join:',' }}" class="btn btn-primary btn-block shadowed"><i class="fal fa-envelope push-quarter-right"></i> Email Group</a></p>
+
+      </div>
+    </div>
+
+    {% capture groupMobilesWithMessaging %}{% for member in Group.Members %}{% assign mobileNumber = member.Person.PhoneNumbers | Where:'NumberTypeValueId',12 | Where:'IsMessagingEnabled',true | Select:'NumberFormattedWithCountryCode' %}{% if mobileNumber and mobileNumber != empty %}{{ mobileNumber }}{% endif %}{% unless mobileNumber == empty or forloop.last %}, {% endunless %}{% endfor %}{% endcapture %}
+
+    <input type="text" class="form-control js-copy-source hidden" value="{{ groupMobilesWithMessaging }}" title="Click to Copy to Clipboard">
+
+    <script>
+      function copyPhoneNumbersForSMS() {
+        // Copies input value to clipboard on button click
+        var copyLink = document.querySelector('.js-copy');
+
+        if(copyLink) {
+          copyLink.addEventListener('click',function(e){
+            e.preventDefault();
+            copyLink = e.target;
+            var copyTarget = $('.js-copy-source')[0];
+            var copyLinkInnerHTML = copyLink.innerHTML;
+            copyTarget.setSelectionRange(0, copyTarget.value.length);
+            navigator.clipboard.writeText(copyTarget.value);
+            copyLink.innerHTML = '<i class="fal fa-check push-quarter-right"></i> Copied!';
+            copyLink.classList.toggle('btn-primary');
+            copyLink.classList.toggle('btn-gray-dark');
+            setTimeout(function(){
+              copyLink.innerHTML = copyLinkInnerHTML;
+              copyLink.classList.toggle('btn-primary');
+              copyLink.classList.toggle('btn-gray-dark');
+            }, 1500);
+          });
+        }
+      }
+
+      $(document).ready(function(){
+        copyPhoneNumbersForSMS();
+      });
+
+      // Handles re-binding event handlers after a postback (editing group, add/edit members, etc)
+      var prm = Sys.WebForms.PageRequestManager.getInstance();
+      if(prm){
+        prm.add_endRequest(function() {
+          copyPhoneNumbersForSMS();
+        });
+      }
+    </script>
+
+    {%- comment -%}
+      GROUP ATTENDANCE
+    {%- endcomment -%}
+    {% if Group.GroupType.TakesAttendance %}
+
+      <h2 class="h4 xs-h5 text-uppercase strongest push-double-top">Group Attendance</h2>
+      <div class="row sm-push-bottom">
+        <div class="col-md-12 col-sm-6 col-xs-12">
+
+          {[ cardBlock ]}
+            {[ groupAttendanceChart groupid:'{{ groupId }}' showaverage:'true' ]}
+          {[ endcardBlock ]}
+
+        </div><div class="col-md-12 col-sm-6 col-xs-12">
+
+          <p class="push-half-bottom"><a href="{{ currentUrl | Append:'/attendance/detail' }}" class="btn btn-block btn-primary shadowed"><i class="fal fa-check push-quarter-right"></i> Take Attendance</a></p>
+          <p><a href="{{ currentUrl | Append:'/attendance' }}" class="btn btn-block btn-default shadowed"><i class="fal fa-history push-quarter-right"></i> Attendance History</a></p>
+
+        </div>
+      </div>
+
+    {% endif %}
+
+</div><div class="col-md-8 col-sm-12 col-xs-12">
+
+    {%- comment -%}
+      GROUP MEMBER ROSTER
+    {%- endcomment -%}
+    <h2 class="h4 xs-h5 text-uppercase strongest xs-push-top">Group Members</h2>
+
+    {% capture addGroupMemberButton %}
+      {% if AllowedActions.Edit == true %}
+        <a href="#" onclick="{{ '' | Postback:'AddGroupMember' }}" class="btn btn-primary xs-btn-block shadowed push-bottom xs-push-half-bottom">
+          <i class="fal fa-plus push-quarter-right"></i> Add Group Member
+        </a>
+      {% endif %}
+    {% endcapture %}
+
+    {{ addGroupMemberButton }}
+
+    {% assign members = Group.Members | OrderBy:'GroupRole.Order, GroupMemberStatus desc, Person.LastName, Person.NickName' %}
+    <div class="row">
+      {% for member in members %}<div class="col-md-6 col-sm-6 col-xs-12">
+
+        {% assign linkurl = currentUrl | Append:'/' | Append:member.PersonId %}
+        {% assign person = member.PersonId | PersonById %}
+        {% assign groupTypeId = group.GroupTypeId | AsString %}
+        {% assign mobile = person | PhoneNumber:'Mobile', true %}
+        {% assign home = person | PhoneNumber:'Home', true %}
+        {% assign work = person | PhoneNumber:'Work', true %}
+        {% assign phone = mobile | WithFallback:'',home | WithFallback:'',work %}
+        {% assign sms = person.PhoneNumbers | Where:'IsMessagingEnabled',true | First | Property:'NumberFormattedWithCountryCode' %}
+
+        {% if member.GroupRole.IsLeader == true %}
+          {% assign cardtype = 'primary' %}
+          {% assign texttype = 'primary' %}
+          {% assign note = member.GroupRole.Name %}
+        {% elseif member.GroupMemberStatus == 'Pending' %}
+          {% assign cardtype = 'info' %}
+          {% assign texttype = 'info' %}
+          {% assign note = 'Pending' %}
+        {% elseif member.GroupMemberStatus == 'Inactive' %}
+          {% assign cardtype = 'danger' %}
+          {% assign texttype = 'danger' %}
+          {% assign note = 'Inactive' %}
+        {% else %}
+          {% assign cardtype = '' %}
+          {% assign texttype = 'gray-light' %}
+          {% assign note = member.GroupRole.Name %}
+        {% endif %}
+
+        {% capture actionsString %}[
+          {
+            "IconCSSClass": "fal fa-lg fa-user",
+            "Url": {{ linkurl | ToJSON }},
+            "OnClick": "",
+            "Title": "View Group Member Profile",
+            "NewWindow": false
+          },
+          {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+            {
+              "IconCSSClass": "fal fa-lg fa-pencil",
+              "ButtonClass": "",
+              "Url": "#",
+              "OnClick": "{{ member.Id | Postback:'EditGroupMember' }}",
+              "Title": "Edit Group Member",
+              "NewWindow": false
+            },
+            {
+              "IconCSSClass": "fal fa-lg fa-times text-danger",
+              "ButtonClass": "",
+              "Url": "#",
+              "OnClick": "{{ member.Id | Postback:'DeleteGroupMember' }}",
+              "Title": "Archive Group Member",
+              "NewWindow": false
+            },
+          {% endif %}
+          {
+            "IconCSSClass": "fal fa-lg fa-envelope",
+            "Url": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}mailto:{{ person.Email }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if person.EmailPreference != 'DoNotEmail' and person.Email and person.Email != empty %}Email Group Member{% else %}Person has no email address or they do not wish to be emailed.{% endif %}",
+            "NewWindow": false
+          },
+          {
+            "IconCSSClass": "fal fa-lg fa-phone",
+            "Url": "{% if phone and phone != empty %}tel:{{ phone }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if phone and phone != empty %}Call Group Member{% else %}Person has no phone number.{% endif %}",
+            "NewWindow": false
+          },
+          {
+            "IconCSSClass": "fal fa-lg fa-comments",
+            "Url": "{% if sms and sms != empty %}sms:{{ sms }}{% endif %}",
+            "OnClick": "",
+            "Title": "{% if sms and sms != empty %}Text Group Member{% else %}Person has no SMS-enabled number.{% endif %}",
+            "NewWindow": false
+          }
+        ]{% endcapture %}
+        {% assign cardactions = actionsString | FromJSON %}
+        {% assign firstName = person.NickName | WithFallback:'', null | Replace:"'","’" %}
+        {% assign lastName = person.LastName | WithFallback:'', null | Replace:"'","’" %}
+        {[ cardAction cardtype:'{{ cardtype }}' title:'{{ firstName }}<br>{{ lastName }}' imageurl:'{{ person.PhotoUrl }}&maxwidth=200&maxheight=200' linkurl:linkurl cardactions:cardactions ]}
+          {% if note and note != empty %}
+            <p class="sans-serif letter-spacing-condensed strong text-{{ texttype }} flush-bottom"><small>{{ note }}</small></p>
+          {% endif %}
+        {[ endcardAction ]}
+
+      </div>{% endfor %}
+    </div>
+
+    {{ addGroupMemberButton }}
+
+  </div>
+</div>

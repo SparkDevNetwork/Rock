@@ -1,48 +1,20 @@
+## DESCRIPTION
 
-## Notice
+### What does this PR do, or why is it needed?
 
-**We cannot guarantee that your pull request will be accepted.**  There are many factors involved.  We take into consideration whether or not the Rock system you run is a standard, main-line build.  If it is not, there is a lower chance we will accept your request (since it may impact a part of the system you don't regularly use).  Features that would be used by less than 80% of Rock organizations, or ones that don't match the goals of Rock, are other important factors.
+### How do I test this PR?
 
-## Proposed Changes
+## TODO
 
-<!--
-Describe the big picture of your changes here to communicate to the maintainers why we should accept this pull request. If it fixes a bug or resolves a feature request, be sure to link to that issue.
+- [ ] I am affirming this is my _best_ work ([Ecclesiastes 9:10](https://www.bible.com/bible/97/ECC.9.10.MSG))
+- [ ] PR has a relevant title that will be understandable in a public changelog (ie...non developers)
+- [ ] Testing info includes any items that need to be added to a local Rock instance in order to test and/or the database against which it can be tested.
+- [ ] Upload GIF(s) of relevant changes
+- [ ] Set a relevant reviewer
 
-Include screenshots if your pull request either alters existing UI or provides new UI. Arrows and labels are helpful.
--->
+## REVIEW
 
-Fixes: #
+- [ ] Review code through the lens of being concise, simple, and well-documented
+- [ ] Manual QA to ensure the changes look/behave as expected
 
-## Types of changes
-
-What types of changes does your code introduce to Rock?
-_Put an `x` in the boxes that apply_
-
-- [ ] Bugfix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality, which has been approved by the core team)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-
-## Checklist
-
-_Put an `x` in the boxes that apply. You can also fill these out after creating the PR. If you're unsure about any of them, don't hesitate to ask. We're here to help! This is simply a reminder of what we are going to look for before merging your code._
-
-- [ ] This is a single-commit PR. (If not, please squash your commit and re-submit it.)
-- [ ] I verified my PR does not include whitespace/formatting changes -- because if it does it will be closed without merging.	
-- [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
-- [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)
-- [ ] Unit tests pass locally with my changes
-- [ ] I have added [required tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/README.md) that prove my fix is effective or that my feature works
-- [ ] I have included updated language for the [Rock Documentation](https://www.rockrms.com/Learn/Documentation) (if appropriate)
-
-## Further comments
-<!--
-If this is a relatively large or complex change, kick off the discussion by explaining why you chose the solution you did and what alternatives you considered, etc...
--->
-
-## Documentation
-<!--
-If your change effects the UI or needs to be documented in one of the existing docs http://www.rockrms.com/Learn/Documentation, please provide the brief write-up here.
--->
-
-## Migrations
-If your pull request requires a migration, please *exclude the migration from the Rock.Migration project*, but submit it with your pull request. Please add a note to your pull request that provides a heads up that a migration file is present.
+> The purpose of PR Review is to _improve the quality of the software._
