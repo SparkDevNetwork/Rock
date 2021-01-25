@@ -1,15 +1,15 @@
 <template>
-  <div id="Modal">
+  <div id="Modal"  @click.self="closeModal">
     <div class="card">
         <div class="top">
-          <i class="fal fa-times fa-2x" style="font-weight:normal." @click="closeModal"></i>
+          <i class="fal fa-times fa-2x" style="font-weight:normal." @click.stop="closeModal"></i>
         </div>
  <v-card
     class="mx-auto flex-Card"
     height="100%"
     max-width="100%"
     rounded
-    elevation="2"
+    elevation="0"
   >
   <div>
     <div style="position:relative">
@@ -55,7 +55,7 @@
               <li v-for="registration in Event.RegistrationInformation" :key="registration.RegistrationInstanceId">
                 <span>{{registration.RegistrationPublicName}} - Register Between {{formatDate(registration.RegistrationStartDate) }} and {{formatDate(registration.RegistrationEndDate) }}</span><br />
                 <span vif="!registrationSpotsRemaining(registration).LimitedSpots || registrationSpotsRemaining(registration).SpotsRemaining > 0">
-                  <a :href="registration.RegistrationPublicSlug != '' ? `https://voxchurch.org/registration/${registration.RegistrationPublicSlug}` : `https://voxchurch.org/registration?RegistrationInstance=${registration.RegistrationInstanceId}`" class="btn btn-primary" style="color:white;">Register</a>
+                  <a :href="registration.RegistrationPublicSlug != '' ? `https://voxchurch.org/registration/${registration.RegistrationPublicSlug}` : `https://voxchurch.org/registration?RegistrationInstanceId=${registration.RegistrationInstanceId}`" class="btn btn-primary" style="color:white;">Register</a>
                 </span>
               </li>
             </ul>

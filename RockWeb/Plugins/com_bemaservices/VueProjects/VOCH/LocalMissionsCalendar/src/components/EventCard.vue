@@ -61,7 +61,7 @@
         color="#34aeb7"
         text
         v-if="!!Event.RegistrationInformation && Event.RegistrationInformation.length == 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
-        :href="!!registration.RegistrationPublicSlug ? 'https://voxchurch.org/registration/' + registration.RegistrationPublicSlug : 'https://voxchurch.org/registration?RegistrationInstance=' + registration.RegistrationInstanceId"
+        :href="!!registration.RegistrationPublicSlug ? 'https://voxchurch.org/registration/' + registration.RegistrationPublicSlug : 'https://voxchurch.org/registration?RegistrationInstanceId=' + registration.RegistrationInstanceId"
       >
         Register
       </v-btn>
@@ -167,6 +167,8 @@ export default {
     -webkit-hyphens: auto;
     -moz-hyphens: auto;
     hyphens: auto;
+    white-space: break-spaces;
+    word-break: inherit;
 
  }
  .campusBox {
