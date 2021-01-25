@@ -1646,21 +1646,16 @@ function onTaskCompleted( resultData )
 
                     try
                     {
-                        testCommunication = communication.Clone( false );
-                        testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.NewGuid();
+                        testCommunication = communication.CloneWithoutIdentity();
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
-                        // removed the AsNoTracking() from the next line because otherwise the Person/PersonAlias is attempted (but fails) to be added as new.
                         testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
                         testCommunication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                        testCommunication.ForeignGuid = null;
-                        testCommunication.ForeignId = null;
-                        testCommunication.ForeignKey = null;
-
                         testCommunication.FutureSendDateTime = null;
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
+
+
                         foreach ( var attachment in communication.Attachments )
                         {
                             var cloneAttachment = attachment.Clone( false );

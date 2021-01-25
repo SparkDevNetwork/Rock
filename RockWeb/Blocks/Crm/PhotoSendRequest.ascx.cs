@@ -178,14 +178,10 @@ namespace RockWeb.Blocks.Crm
                     {
 
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                        var testCommunication = communication.Clone( false );
-                        testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.Empty;
+                        var testCommunication = communication.CloneWithoutIdentity();
                         testCommunication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
-                        testCommunication.ForeignGuid = null;
-                        testCommunication.ForeignId = null;
-                        testCommunication.ForeignKey = null;
-
+                        testCommunication.CreatedByPersonAliasId = CurrentPersonAliasId.Value;
+                        testCommunication.ModifiedByPersonAliasId = CurrentPersonAliasId.Value;
                         testCommunication.FutureSendDateTime = null;
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;

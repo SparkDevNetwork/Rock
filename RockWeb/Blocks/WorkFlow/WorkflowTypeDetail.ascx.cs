@@ -323,15 +323,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 LoadStateDetails( workflowType, rockContext );
 
                 // clone the workflow type
-                var newWorkflowType = workflowType.Clone( false );
-                newWorkflowType.CreatedByPersonAlias = null;
-                newWorkflowType.CreatedByPersonAliasId = null;
-                newWorkflowType.CreatedDateTime = RockDateTime.Now;
-                newWorkflowType.ModifiedByPersonAlias = null;
-                newWorkflowType.ModifiedByPersonAliasId = null;
-                newWorkflowType.ModifiedDateTime = RockDateTime.Now;
-                newWorkflowType.Id = 0;
-                newWorkflowType.Guid = Guid.NewGuid();
+                var newWorkflowType = workflowType.CloneWithoutIdentity();
                 newWorkflowType.IsSystem = false;
                 newWorkflowType.Name = workflowType.Name + " - Copy";
 
