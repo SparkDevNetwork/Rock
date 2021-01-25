@@ -96,7 +96,11 @@ export default defineComponent({
             {{label}}
         </RockLabel>
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" />
+            <div class="input-group">
+                <slot name="preFormControl" />
+                <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" />
+                <slot name="postFormControl" />
+            </div>
         </div>
     </div>
 </Field>`
