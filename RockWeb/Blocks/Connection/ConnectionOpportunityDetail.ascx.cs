@@ -67,7 +67,6 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private int _connectionTypeId = 0;
-        private bool _canEdit = false;
 
         #endregion
 
