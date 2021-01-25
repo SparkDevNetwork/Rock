@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -65,19 +66,25 @@ namespace RockWeb.Blocks.Connection
 
         #region Fields
 
-        public int _connectionTypeId = 0;
-        public bool _canEdit = false;
+        private int _connectionTypeId = 0;
+        private bool _canEdit = false;
 
         #endregion
 
         #region Properties
 
         public List<GroupConfigStateObj> GroupConfigsState { get; set; }
+
         public List<GroupStateObj> GroupsState { get; set; }
+
         public List<GroupStateObj> ConnectorGroupsState { get; set; }
+
         public Dictionary<int, int> DefaultConnectors { get; set; }
+
         public List<WorkflowTypeStateObj> WorkflowsState { get; set; }
+
         private List<Attribute> ConnectionRequestAttributesState { get; set; }
+
         private List<InheritedAttribute> ConnectionRequestAttributesInheritedState { get; set; }
 
         #endregion
@@ -205,16 +212,16 @@ namespace RockWeb.Blocks.Connection
 
             _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
 
-            string script = string.Format( @"
+            string script = string.Format(
+                @"
     $('a.js-toggle-on').on('click', function( e ){{
         $('#{0}').show();
     }});
     $('a.js-toggle-off').on('click', function( e ){{
         $('#{0}').hide();
-    }});
-", divUseGroupsOfTypeNote.ClientID );
+    }});",
+                divUseGroupsOfTypeNote.ClientID );
             ScriptManager.RegisterStartupScript( tglUseAllGroupsOfGroupType, tglUseAllGroupsOfGroupType.GetType(), "ConfirmRemoveAll", script, true );
-
         }
 
         /// <summary>
@@ -409,6 +416,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     orphanedPhotoId = connectionOpportunity.PhotoId;
                 }
+
                 connectionOpportunity.PhotoId = imgupPhoto.BinaryFileId;
 
                 // remove any workflows that removed in the UI
@@ -428,6 +436,7 @@ namespace RockWeb.Blocks.Connection
                         connectionOpportunityWorkflow = new ConnectionWorkflow();
                         connectionOpportunity.ConnectionWorkflows.Add( connectionOpportunityWorkflow );
                     }
+
                     connectionOpportunityWorkflow.Id = workflowTypeStateObj.Id;
                     connectionOpportunityWorkflow.Guid = workflowTypeStateObj.Guid;
                     connectionOpportunityWorkflow.ConnectionTypeId = workflowTypeStateObj.ConnectionTypeId;
@@ -579,6 +588,7 @@ namespace RockWeb.Blocks.Connection
                                 binaryFile.IsTemporary = false;
                             }
                         }
+
                         rockContext.SaveChanges();
                     }
                 } );
@@ -794,7 +804,6 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionRequestAttributesGrid()
         {
-            
             gConnectionRequestAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( ConnectionRequestAttributesState );
             gConnectionRequestAttributes.DataSource = ConnectionRequestAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -871,6 +880,7 @@ namespace RockWeb.Blocks.Connection
             {
                 GroupsState.Remove( groupStateObj );
             }
+
             nbArchivedPlacementGroupWarning.Visible = GroupsState.Where( g => g.IsArchived ).Any();
             BindGroupGrid();
         }
@@ -950,7 +960,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
-        void lvDefaultConnectors_ItemDataBound( object sender, ListViewItemEventArgs e )
+        protected void lvDefaultConnectors_ItemDataBound( object sender, ListViewItemEventArgs e )
         {
             var defaultConnector = e.Item.DataItem as DefaultConnector;
             if ( defaultConnector != null )
@@ -963,7 +973,7 @@ namespace RockWeb.Blocks.Connection
                     ddlDefaultConnector.Label = defaultConnector.CampusName + " Default Connector";
                     ddlDefaultConnector.DataSource = defaultConnector.Options;
                     ddlDefaultConnector.DataBind();
-                    ddlDefaultConnector.Items.Insert( 0, new ListItem( "", "" ) );
+                    ddlDefaultConnector.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                     ddlDefaultConnector.SetValue( defaultConnector.PersonAliasId );
                 }
             }
@@ -998,6 +1008,7 @@ namespace RockWeb.Blocks.Connection
             {
                 GroupConfigsState.Remove( groupConfigStateObj );
             }
+
             BindGroupConfigsGrid();
         }
 
@@ -1150,6 +1161,7 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectorGroupsState.Remove( groupStateObj );
             }
+
             nbArchivedConnectorGroupWarning.Visible = ConnectorGroupsState.Where( g => g.IsArchived ).Any();
             BindConnectorGroupsGrid();
         }
@@ -1307,10 +1319,10 @@ namespace RockWeb.Blocks.Connection
                             defaultConnector.PersonAliasId = DefaultConnectors.ContainsKey( campusId ) ? DefaultConnectors[campusId] : (int?)null;
                             defaultConnector.Options = new Dictionary<int, string>();
 
-                            foreach( var person in people )
+                            foreach ( var person in people )
                             {
                                 int? personAliasId = person.PrimaryAliasId;
-                                if( personAliasId.HasValue )
+                                if ( personAliasId.HasValue )
                                 {
                                     defaultConnector.Options.AddOrIgnore(personAliasId.Value, person.FullName);
                                 }
@@ -1397,7 +1409,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             workflowTypeStateObj.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
-            workflowTypeStateObj.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
+            workflowTypeStateObj.QualifierValue = string.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
 
             BindWorkflowGrid();
             HideDialog();
@@ -1477,7 +1489,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
-
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( workflowTypeStateObj != null )
             {
@@ -1516,7 +1527,7 @@ namespace RockWeb.Blocks.Connection
         private void UpdateTriggerQualifiers()
         {
             RockContext rockContext = new RockContext();
-            String[] qualifierValues = new String[2];
+            string[] qualifierValues = new string[2];
 
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( hfWorkflowGuid.Value.AsGuid() ) );
             ConnectionWorkflowTriggerType connectionWorkflowTriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
@@ -1556,6 +1567,7 @@ namespace RockWeb.Blocks.Connection
                             ddlPrimaryQualifier.Items.RemoveAt( 3 );
                             ddlSecondaryQualifier.Items.RemoveAt( 3 );
                         }
+
                         break;
                     }
 
@@ -1570,6 +1582,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             ddlPrimaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
                         }
+
                         ddlSecondaryQualifier.Label = "To";
                         ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = true;
                         ddlSecondaryQualifier.Items.Clear();
@@ -1578,6 +1591,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             ddlSecondaryQualifier.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
                         }
+
                         break;
                     }
 
@@ -1596,6 +1610,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             ddlPrimaryQualifier.Items.Add( new ListItem( activity.Name, activity.Id.ToString().ToUpper() ) );
                         }
+
                         ddlSecondaryQualifier.Visible = isSecondaryQualifierVisible = false;
                         ddlSecondaryQualifier.Items.Clear();
                         break;
@@ -1695,7 +1710,7 @@ namespace RockWeb.Blocks.Connection
             {
                 int connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
 
-                connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = "" };
+                connectionOpportunity = new ConnectionOpportunity { Id = 0, IsActive = true, Name = string.Empty };
                 connectionOpportunity.ConnectionTypeId = _connectionTypeId;
                 connectionOpportunity.ConnectionType = new ConnectionTypeService( rockContext ).Get( _connectionTypeId );
 
@@ -1779,6 +1794,7 @@ namespace RockWeb.Blocks.Connection
             {
                 WorkflowsState.Add( new WorkflowTypeStateObj( connectionWorkflow ) );
             }
+
             foreach ( var connectionWorkflow in connectionOpportunity.ConnectionType.ConnectionWorkflows )
             {
                 WorkflowsState.Add( new WorkflowTypeStateObj( connectionWorkflow ) );
@@ -1817,6 +1833,7 @@ namespace RockWeb.Blocks.Connection
                         opportunityGroup.Group = archivedGroup;
                     }
                 }
+
                 GroupsState.Add( new GroupStateObj( opportunityGroup ) );
             }
 
@@ -1827,7 +1844,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             ConnectorGroupsState = new List<GroupStateObj>();
-            foreach( var connectorGroup in connectionOpportunity.ConnectionOpportunityConnectorGroups )
+            foreach ( var connectorGroup in connectionOpportunity.ConnectionOpportunityConnectorGroups )
             {
                 if (connectorGroup.ConnectorGroup == null )
                 {
@@ -1842,13 +1859,14 @@ namespace RockWeb.Blocks.Connection
                         connectorGroup.ConnectorGroup = archivedGroup;
                     }
                 }
+
                 ConnectorGroupsState.Add( new GroupStateObj( connectorGroup ) );
             }
 
             imgupPhoto.BinaryFileId = connectionOpportunity.PhotoId;
 
             DefaultConnectors = new Dictionary<int, int>();
-            foreach( var campus in connectionOpportunity.ConnectionOpportunityCampuses
+            foreach ( var campus in connectionOpportunity.ConnectionOpportunityCampuses
                 .Where( c =>
                     c.DefaultConnectorPersonAlias != null &&
                     c.DefaultConnectorPersonAlias.Person != null ) )
@@ -2102,18 +2120,23 @@ namespace RockWeb.Blocks.Connection
         public class GroupConfigStateObj
         {
             public int Id { get; set; }
-            public Guid Guid { get; set; }
-            public int GroupTypeId { get; set; }
-            public string GroupTypeName { get; set; }
-            public int? GroupMemberRoleId { get; set; }
-            public string GroupMemberRoleName { get; set; }
-            public GroupMemberStatus GroupMemberStatus { get; set; }
-            public bool UseAllGroupsOfType { get; set; }
 
+            public Guid Guid { get; set; }
+
+            public int GroupTypeId { get; set; }
+
+            public string GroupTypeName { get; set; }
+
+            public int? GroupMemberRoleId { get; set; }
+
+            public string GroupMemberRoleName { get; set; }
+
+            public GroupMemberStatus GroupMemberStatus { get; set; }
+
+            public bool UseAllGroupsOfType { get; set; }
 
             public GroupConfigStateObj()
             {
-
             }
 
             public GroupConfigStateObj( ConnectionOpportunityGroupConfig groupConfig )
@@ -2133,18 +2156,25 @@ namespace RockWeb.Blocks.Connection
         public class GroupStateObj
         {
             public int Id { get; set; }
+
             public Guid Guid { get; set; }
+
             public int? CampusId { get; set; }
+
             public int GroupId { get; set; }
+
             public string GroupName { get; set; }
+
             public string GroupTypeName { get; set; }
+
             public string CampusName { get; set; }
+
             public int GroupTypeId { get; set; }
+
             public bool IsArchived { get; set; }
 
             public GroupStateObj()
             {
-
             }
 
             public GroupStateObj( ConnectionOpportunityGroup opportunityGroup )
@@ -2175,6 +2205,7 @@ namespace RockWeb.Blocks.Connection
                     GroupTypeId = connectorGroup.ConnectorGroup.GroupTypeId;
                     IsArchived = connectorGroup.ConnectorGroup.IsArchived;
                 }
+
                 if ( connectorGroup.Campus != null )
                 {
                     CampusId = connectorGroup.CampusId;
@@ -2191,16 +2222,21 @@ namespace RockWeb.Blocks.Connection
         public class WorkflowTypeStateObj
         {
             public int Id { get; set; }
+
             public Guid Guid { get; set; }
+
             public int? ConnectionTypeId { get; set; }
+
             public int? WorkflowTypeId { get; set; }
+
             public ConnectionWorkflowTriggerType TriggerType { get; set; }
+
             public string QualifierValue { get; set; }
+
             public string WorkflowTypeName { get; set; }
 
             public WorkflowTypeStateObj()
             {
-
             }
 
             public WorkflowTypeStateObj( ConnectionWorkflow connectionWorkflow )
@@ -2221,12 +2257,14 @@ namespace RockWeb.Blocks.Connection
         public class DefaultConnector
         {
             public int CampusId { get; set; }
+
             public string CampusName { get; set; }
+
             public int? PersonAliasId { get; set; }
+
             public Dictionary<int, string> Options { get; set; }
         }
 
         #endregion
-
     }
 }
