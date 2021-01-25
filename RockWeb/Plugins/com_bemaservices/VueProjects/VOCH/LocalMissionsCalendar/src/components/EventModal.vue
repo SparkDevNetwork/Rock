@@ -206,6 +206,8 @@ box-shadow: 0 5px 3px rgba(0,0,0,.25);
  .titleFont {
    font-size:clamp(1.5rem, 2vw, 3rem);
    /* padding-left:0; */
+    white-space: break-spaces;
+    word-break: inherit;
  }
  .gradient {
    background: rgb(255,255,255);
