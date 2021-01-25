@@ -31,6 +31,8 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Communication.SmsActions;
+using Rock.Communication.Medium;
+using Rock.Communication;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -163,9 +165,16 @@ namespace RockWeb.Blocks.Communication
             lSmsPipelineDescription.Text = smsPipeline.Description;
             lSmsName.Text = smsPipeline.Name;
 
-            var globalAttributes = GlobalAttributesCache.Get();
-            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
-            lWebhookUrl.Text = string.Format( "{0}{1}?{2}={3}", publicAppRoot, "Webhooks/TwilioSms.ashx", PageParameterKey.EntityId, GetSmsPipelineId() );
+            var smsMedium = new Sms();
+            var smsTransport = smsMedium.Transport as ISmsPipelineWebhook;
+            lWebhookUrl.Visible = false;
+            if ( smsTransport != null )
+            {
+                var globalAttributes = GlobalAttributesCache.Get();
+                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
+                lWebhookUrl.Text = string.Format( "{0}{1}?{2}={3}", publicAppRoot, smsTransport.SmsPipelineWebhookPath, PageParameterKey.EntityId, GetSmsPipelineId() );
+                lWebhookUrl.Visible = true;
+            }
         }
 
         /// <summary>
