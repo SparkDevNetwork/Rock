@@ -2612,6 +2612,8 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.LastName = tbLastName.Text;
             }
 
+            paymentInfo.IPAddress = GetClientIpAddress();
+
             paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
 
             // get the payment comment

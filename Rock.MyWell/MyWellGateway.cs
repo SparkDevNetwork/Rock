@@ -515,6 +515,8 @@ namespace Rock.MyWell
                 Amount = amount
             };
 
+            transaction.IPAddress = referencedPaymentInfo.IPAddress;
+
             if ( customerId.IsNotNullOrWhiteSpace() )
             {
                 transaction.PaymentMethodRequest = new Rock.MyWell.PaymentMethodRequest( new Rock.MyWell.PaymentMethodCustomer( customerId ) );

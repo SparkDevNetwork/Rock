@@ -232,7 +232,7 @@ namespace Rock.Model
         public GroupMember()
             : base()
         {
-            CommunicationPreference = CommunicationType.Email;
+            CommunicationPreference = CommunicationType.RecipientPreference;
         }
 
         #endregion
