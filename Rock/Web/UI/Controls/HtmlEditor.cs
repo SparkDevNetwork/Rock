@@ -588,6 +588,7 @@ namespace Rock.Web.UI.Controls
             _ceEditor = new CodeEditor();
             _ceEditor.ID = this.ID + "_codeEditor";
             _ceEditor.EditorMode = CodeEditorMode.Lava;
+            _ceEditor.EditorHeight = "300";
             if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
