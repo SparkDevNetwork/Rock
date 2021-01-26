@@ -17,19 +17,19 @@
       <v-img
         class="white--text align-end gradient"
         aspect-ratio="1.7778"
-        
+
         @load="showTitle = false"
         @error="showTitle = true"
         width="100%"
       :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
       >
-      
+
       </v-img>
-      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>   
+      <div class="campusBox">{{formatDate(Event.EventNextStartDate.StartDateTime)}}</div>
     </div>
   <v-card-title class="titleFont">{{Event.EventName}}</v-card-title>
     <v-card-subtitle class="pb-0" style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:space-between; align-items:top; flex-shirnk:1">
-        
+
         <div style="flex-shrink:1;">
           {{ formatDate(Event.EventNextStartDate.StartDateTime) }} at {{ formatTime(Event.EventNextStartDate.StartDateTime) }}
           <div>{{ Event.OccurrenceLocation }}</div>
@@ -54,14 +54,14 @@
         @click="$emit('ShowModal',Event)"
       >
         <span v-if="!ShowDetails">View Details</span>
-       
+
       </v-btn>
 
       <v-btn
         color="#34aeb7"
         text
         v-if="!!Event.RegistrationInformation && Event.RegistrationInformation.length == 1 && calculateSpotsRemaining.LimitedSpots && calculateSpotsRemaining.SpotsRemaining > 0"
-        :href="!!registration.RegistrationPublicSlug ? 'https://voxchurch.org/registration/' + registration.RegistrationPublicSlug : 'https://voxchurch.org/registration?RegistrationInstance=' + registration.RegistrationInstanceId"
+        :href="!!registration.RegistrationPublicSlug ? 'https://voxchurch.org/registration/' + registration.RegistrationPublicSlug : 'https://voxchurch.org/registration?RegistrationInstanceId=' + registration.RegistrationInstanceId"
       >
         Register
       </v-btn>
@@ -81,19 +81,19 @@
 </template>
 
 <script>
- 
+
 export default {
- 
+
   props: {
     Event: {
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   data: () => ({
     ShowDetails: false,
-    showTitle:false,
-      }),
+    showTitle: false,
+  }),
 
   methods: {
     formatDate(dateItem) {
@@ -167,15 +167,17 @@ export default {
     -webkit-hyphens: auto;
     -moz-hyphens: auto;
     hyphens: auto;
-   
+    white-space: break-spaces;
+    word-break: inherit;
+
  }
  .campusBox {
-    position:absolute; 
-    right:0; 
-    bottom:0; 
-    background-color:rgba(0,0,0,.75); 
-    color:white; 
+    position:absolute;
+    right:0;
+    bottom:0;
+    background-color:rgba(0,0,0,.75);
+    color:white;
     padding:5px 10px 5px 20px;
-    
+
  }
 </style>

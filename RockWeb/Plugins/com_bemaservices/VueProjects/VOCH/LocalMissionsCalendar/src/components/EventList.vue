@@ -1,33 +1,33 @@
 <template>
-  
+
     <div id="eventCardList">
-      <Observer @intersect="$emit('SetFocus')"/>
-      
+      <!-- <Observer @intersect="$emit('SetFocus')"/> -->
+
         <EventCard v-for="(event,index) in Events" :key="index" :Event="event" v-on="$listeners"/>
-      
-      <Observer @intersect="$emit('Next')"/>
+
+      <!-- <Observer @intersect="$emit('Next')"/> -->
     </div>
-  
+
 </template>
 
 <script>
-  import EventCard from './EventCard'
-  import Observer from './Observer'
+import EventCard from './EventCard';
+// import Observer from './Observer'
 
 export default {
 
-components: {
-EventCard,
-Observer
-},
+  components: {
+    EventCard,
+    // Observer
+  },
 
-props:{
-  Events: {
-    type: Array, 
-    required: true,
-  }
-}
-}
+  props: {
+    Events: {
+      type: Array,
+      required: true,
+    },
+  },
+};
 </script>
 
 <style >
@@ -45,15 +45,15 @@ props:{
 #eventCardList{
   display:flex;
   flex-wrap:wrap;
-  max-width:100%;
+  width:100%;
   flex-direction:row;
   position:relative;
-  
+
   /* gap:20px;
   grid-auto-flow: row; */
 }
 
-/* 
+/*
 @media (min-width: 768px) {
   #eventCardList {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
