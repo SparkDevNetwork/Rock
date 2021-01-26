@@ -327,6 +327,15 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// If this GroupType is a Checkin Area, returns the specified attribute value for the Check-in Configuration (Weekly Service Check-in, Volunteer Check-in, etc) associated with this GroupType
+        /// </summary>
+        /// <returns></returns>
+        public string GetCheckInConfigurationAttributeValue( string attributeKey )
+        {
+            return GetCheckInConfigurationType()?.GetAttributeValue( attributeKey );
+        }
+
+        /// <summary>
         /// Gets the parent with group type purpose.
         /// </summary>
         /// <param name="purposeGuid">The purpose unique identifier.</param>

@@ -270,6 +270,11 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_MANAGER = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B";
 
         /// <summary>
+        /// The check in manager attendance detail
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ATTENDANCE_DETAIL = "758ECFCD-9E20-48B5-827B-973492E39C0D";
+
+        /// <summary>
         /// The Check-in Manager Live Metrics page
         /// </summary>
         public const string CHECK_IN_MANAGER_LIVE_METRICS = "04F70D50-5D27-4C12-A76D-B25E6E4CB177";
@@ -293,6 +298,11 @@ namespace Rock.SystemGuid
         /// The Check-in Manager search page
         /// </summary>
         public const string CHECK_IN_MANAGER_SEARCH = "5BB14114-BE20-4330-943A-5BC7E367116E";
+
+        /// <summary>
+        /// The check in manager room list page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ROOM_LIST = "CF03D854-AC02-412C-9B21-FB27B9F56BAB";
 
         /// <summary>
         /// The Check-in Manager room manager page

@@ -110,6 +110,20 @@ namespace Rock.SystemKey
 
         #endregion Registration Specific
 
+        #region Checkin
+
+        /// <summary>
+        /// Attribute key for GroupTypes that allow checkout
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";
+
+        /// <summary>
+        /// Attribute key for GroupTypes that have presence enabled
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ENABLE_PRESENCE = "core_checkin_EnablePresence";
+
+        #endregion
+
         #region Display
 
         /// <summary>
