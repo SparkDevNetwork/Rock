@@ -57,8 +57,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.StatementGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cc.newspring.AttendedCheckIn", "..\rock-attended-checkin\cc.newspring.AttendedCheckIn.csproj", "{BC36CAC2-1F25-4190-9297-157DDD2E4960}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.shepherdchurch.Misc", "..\rock-misc\com.shepherdchurch.Misc.csproj", "{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.WebStartup", "Rock.WebStartup\Rock.WebStartup.csproj", "{515E22E4-4B9B-4886-8477-E5B312B75EB4}"
