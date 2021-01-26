@@ -27,7 +27,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4">
-                        `<Rock:RockCheckBox ID="cbHideFullyPaidRegistrations" runat="server" Text="Hide Fully Paid Registrations" AutoPostBack="true" OnCheckedChanged="cbHideFullyPaidRegistrations_CheckedChanged" />
+                        <Rock:RockCheckBox ID="cbHideFullyPaidRegistrations" runat="server" Text="Hide Fully Paid Registrations" AutoPostBack="true" OnCheckedChanged="cbHideFullyPaidRegistrations_CheckedChanged" />
                     </div>
                 </div>
                 <div class="grid grid-panel margin-t-md">

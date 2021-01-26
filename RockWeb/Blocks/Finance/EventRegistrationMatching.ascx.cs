@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
             ddlRegistrationInstance.Items.Clear();
             if ( RegistrationTemplateId.HasValue )
             {
-                var registrationInstanceId = RegistrationInstanceId.Value;
+                var registrationInstanceId = RegistrationInstanceId;
                 ddlRegistrationInstance.Items.Add( new ListItem() );
 
                 var registrationInstanceService = new Rock.Model.RegistrationInstanceService( new RockContext() );
@@ -411,12 +411,14 @@ namespace RockWeb.Blocks.Finance
                                 var primaryImage = financialTransactionDetail.Transaction.Images
                                     .OrderBy( i => i.Order )
                                     .FirstOrDefault();
+                                string imageTag = string.Empty;
                                 if ( primaryImage != null )
                                 {
                                     var imageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
-                                    var imageTag = string.Format( "<div class='photo transaction-image' style='max-width: 400px;'><a href='{0}'><img src='{0}'/></a></div>", ResolveRockUrl( imageUrl ) );
-                                    literalControl.Text = string.Format( "<td>{0}</td>", imageTag );
+                                    imageTag = string.Format( "<div class='photo transaction-image' style='max-width: 400px;'><a href='{0}'><img src='{0}'/></a></div>", ResolveRockUrl( imageUrl ) );
                                 }
+
+                                literalControl.Text = string.Format( "<td>{0}</td>", imageTag );
                             }
                             else if ( literalTableColumn.ID == "lTransactionType" )
                             {
@@ -490,7 +492,7 @@ namespace RockWeb.Blocks.Finance
                 .Where( r => r.PersonAlias != null && r.PersonAlias.Person != null );
             if ( isEdit )
             {
-                registrationName += string.Format( "- {0} - {1}", registration.CreatedDateTime, registrantNames.Select( a => a.Person.NickName ).ToList().AsDelimited( "," ) );
+                registrationName += string.Format( "- {0} - {1}", registration.CreatedDateTime.ToShortDateString(), registrantNames.Select( a => a.Person.NickName ).ToList().AsDelimited( "," ) );
             }
             else
             {
