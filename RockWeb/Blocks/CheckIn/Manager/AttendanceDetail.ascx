@@ -36,7 +36,7 @@
                 </div>
             </asp:Panel>
 
-            <asp:Panel ID="pnlCheckedOutDetails" runat="server" CssClass="row margin-all-none">
+            <asp:Panel ID="pnlCheckedOutDetails" runat="server" CssClass="row">
                 <div class="col-sm-6">
                     <Rock:RockLiteral ID="lCheckedOutTime" runat="server" Label="Checked-out" />
                 </div>
