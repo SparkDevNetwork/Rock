@@ -34,8 +34,8 @@
 
             </div>
 
-            <div class="sms-conversations-container">
-                <div class="conversation-list">
+            <div class="sms-conversations-container styled-scroll">
+                <div class="conversation-list d-flex flex-column">
                     <div class="header">
                         <div class="clearfix">
                         <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
@@ -45,7 +45,7 @@
                             <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
                         </div>
                     </div>
-                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll d-flex flex-grow-1">
+                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
                         <ContentTemplate>
                             <Rock:Grid ID="gRecipients" runat="server" OnRowSelected="gRecipients_RowSelected" OnRowDataBound="gRecipients_RowDataBound" ShowHeader="false" ShowActionRow="false" DisplayType="Light" EnableResponsiveTable="False">
                                 <Columns>
