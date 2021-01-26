@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected void upnlContent_OnPostBack( object sender, PostBackEventArgs e )
         {
             var checkinAreaGuid = e.EventArgument.AsGuid();
-            CheckinManagerHelper.SetSelectedCheckinAreaGuidToCookie( checkinAreaGuid );
+            CheckinManagerHelper.SaveSelectedCheckinAreaGuidToCookie( checkinAreaGuid );
             NavigateToLinkedPage( AttributeKey.ManagerPage );
         }
 

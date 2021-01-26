@@ -659,6 +659,16 @@ namespace Rock.Web.UI.Controls
 
             if ( DisplayType == NoteDisplayType.Full && UsePersonIcon )
             {
+                var getPersonPhotoImageTagArgs = new GetPersonPhotoImageTagArgs()
+                {
+                    PhotoId = CreatedByPhotoId,
+                    Gender = CreatedByGender,
+                    MaxHeight = 50,
+                    MaxWidth = 50
+                };
+
+                writer.Write( Rock.Model.Person.GetPersonPhotoImageTag( this.CreatedByPersonId, getPersonPhotoImageTagArgs ) );
+
                 writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50) );
             }
 

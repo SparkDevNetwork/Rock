@@ -33,6 +33,14 @@ namespace Rock.CheckIn
         private Person _person;
 
         /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        public Person Person => _person;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RosterAttendee"/> class.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -91,6 +99,22 @@ namespace Rock.CheckIn
         /// The full name.
         /// </value>
         public string FullName => _person.FullName;
+
+        /// <summary>
+        /// Gets the name of the nick.
+        /// </summary>
+        /// <value>
+        /// The name of the nick.
+        /// </value>
+        public string NickName => _person.NickName;
+
+        /// <summary>
+        /// Gets the last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
+        public string LastName => _person.LastName;
 
         /// <summary>
         /// Gets the parent names (if attendee is a child)
@@ -177,6 +201,9 @@ namespace Rock.CheckIn
         ///   <c>true</c> if this instance has legal note; otherwise, <c>false</c>.
         /// </value>
         public bool HasLegalNote { get; private set; }
+
+        /// <inheritdoc cref="Attendance.IsFirstTime"/>
+        public bool IsFirstTime { get; private set; }
 
         /// <summary>
         /// Gets the unique tags.
@@ -268,6 +295,46 @@ namespace Rock.CheckIn
         /// </value>
         public DateTime CheckInTime { get; private set; }
 
+        /// <summary>
+        /// Gets the GroupTypeId (Checkin Area) of the group for the attendance
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        public int? GroupTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets the ScheduleId for the attendance's occurrence
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int ScheduleId { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the room (Occurrence Location.Name)
+        /// </summary>
+        /// <value>
+        /// The name of the room.
+        /// </value>
+        public string RoomName { get; private set; }
+
+        /// <summary>
+        /// Gets the name of Checkin Group of the attendance
+        /// </summary>
+        /// <value>
+        /// The name of the group.
+        /// </value>
+        public string GroupName { get; private set; }
+
+        /// <summary>
+        /// Gets the group type path ( Area1 > Area2 > Area51 )
+        /// </summary>
+        /// <value>
+        /// The group type path.
+        /// </value>
+        public string GroupTypePath { get; private set; }
+
         #endregion Properties
 
         #region HTML
@@ -278,7 +345,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetPersonPhotoImageHtmlTag()
         {
-            var imgTag = Rock.Model.Person.GetPersonPhotoImageTag( this.PersonId, this.PhotoId, this.Age, this.Gender, null, 50, 50, this.FullName, "avatar avatar-lg" );
+            var imgTag = Rock.Model.Person.GetPersonPhotoImageTag( this._person, 50, 50, className: "avatar avatar-lg" );
 
             return imgTag;
         }
@@ -327,7 +394,7 @@ namespace Rock.CheckIn
             var result = $@"
 <div class='name'>
     <span class='js-checkin-person-name'>{this.FullName}</span>
-     <span class='badges d-sm-none'>{this.GetBadgesHtml( true )}</span>
+     <span class='badges d-sm-none d-print-inline'>{this.GetBadgesHtml( true )}</span>
 </div>
 <div class='parent-name small text-muted text-wrap'>{this.ParentNames}</div>";
 
@@ -370,15 +437,29 @@ namespace Rock.CheckIn
 
             if ( this.HasHealthNote )
             {
-                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-notes-medical{fa2x} text-danger'></i>{openDiv}" );
+                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-notes-medical{fa2x} text-danger' title='Health Note'></i>{openDiv}" );
             }
 
             if ( this.HasLegalNote )
             {
-                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-clipboard{fa2x}'></i>{closeDiv}" );
+                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-clipboard{fa2x}' title='Legal Note'></i>{closeDiv}" );
+            }
+
+            if ( this.IsFirstTime )
+            {
+                badgesSb.Append( $"{openDiv}&nbsp;<i class='fa fa-star{fa2x} text-warning' title='First Time'></i>{closeDiv}" );
             }
 
             return badgesSb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the group name and path HTML. Group Name with GroupType Path underneath.
+        /// </summary>
+        /// <returns></returns>
+        public string GetGroupNameAndPathHtml()
+        {
+            return $@"<div class='group-name'>{this.GroupName}</div> <div class='small text-muted text-wrap'>{this.GroupTypePath}</div>";
         }
 
         #endregion HTML
@@ -389,7 +470,8 @@ namespace Rock.CheckIn
         /// Sets the attendance-specific properties.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        private void SetAttendanceInfo( Attendance attendance )
+        /// <param name="checkinAreaPathsLookup">The checkin area paths lookup.</param>
+        private void SetAttendanceInfo( Attendance attendance, Dictionary<int, CheckinAreaPath> checkinAreaPathsLookup )
         {
             // Keep track of each Attendance ID tied to this Attendee so we can manage them all as a group.
             this.Attendances.Add( attendance, true );
@@ -413,21 +495,48 @@ namespace Rock.CheckIn
             // Status: if this Attendee has multiple AttendanceOccurrences, the highest AttendeeStatus value among them wins.
             var latestAttendance = this.Attendances.OrderByDescending( a => a.StartDateTime ).First();
 
-            if ( latestAttendance.EndDateTime.HasValue )
-            {
-                this.Status = RosterAttendeeStatus.CheckedOut;
-            }
-            else if ( latestAttendance.PresentDateTime.HasValue )
-            {
-                this.Status = RosterAttendeeStatus.Present;
-            }
-            else
-            {
-                this.Status = RosterAttendeeStatus.CheckedIn;
-            }
+            this.Status = GetRosterAttendeeStatus( latestAttendance.EndDateTime, latestAttendance.PresentDateTime );
 
             // Check-in Time: if this Attendee has multiple AttendanceOccurrences, the latest StartDateTime value among them wins.
             this.CheckInTime = latestAttendance.StartDateTime;
+
+            this.GroupTypeId = latestAttendance.Occurrence?.Group?.GroupTypeId;
+
+            this.GroupName = latestAttendance.Occurrence?.Group?.Name;
+
+            if ( GroupTypeId.HasValue )
+            {
+                this.GroupTypePath = checkinAreaPathsLookup.GetValueOrNull( GroupTypeId.Value )?.Path;
+            }
+
+            this.IsFirstTime = latestAttendance?.IsFirstTime ?? false;
+
+            // ScheduleId should have a value, but just in case, we'll do some null safety
+            this.ScheduleId = latestAttendance.Occurrence?.ScheduleId ?? 0;
+
+            this.RoomName = latestAttendance.Occurrence?.Location?.Name;
+        }
+
+        /// <summary>
+        /// Gets the roster attendee status.
+        /// </summary>
+        /// <param name="endDateTime">The <see cref="Attendance.EndDateTime"/></param>
+        /// <param name="presentDateTime">The <see cref="Attendance.PresentDateTime"/></param>
+        /// <returns></returns>
+        public static RosterAttendeeStatus GetRosterAttendeeStatus( DateTime? endDateTime, DateTime? presentDateTime )
+        {
+            if ( endDateTime.HasValue )
+            {
+                return RosterAttendeeStatus.CheckedOut;
+            }
+            else if ( presentDateTime.HasValue )
+            {
+                return RosterAttendeeStatus.Present;
+            }
+            else
+            {
+                return RosterAttendeeStatus.CheckedIn;
+            }
         }
 
         /// <summary>
@@ -456,12 +565,6 @@ namespace Rock.CheckIn
 
         #region Static methods
 
-        private class EntityAttributeValueKey
-        {
-            public const string GroupType_AllowCheckout = "core_checkin_AllowCheckout";
-            public const string GroupType_EnablePresence = "core_checkin_EnablePresence";
-        }
-
         /// <summary>
         /// Returns a list of <see cref="RosterAttendee"/> from the attendance list
         /// </summary>
@@ -473,24 +576,16 @@ namespace Rock.CheckIn
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null );
 
             var groupTypeIdsWithAllowCheckout = groupTypes
-                .Where( gt =>
-                {
-                    var checkinConfigurationType = gt.GetCheckInConfigurationType();
-                    var allowCheckout = checkinConfigurationType?.GetAttributeValue( EntityAttributeValueKey.GroupType_AllowCheckout ).AsBoolean() ?? false;
-                    return allowCheckout;
-                } )
+                .Where( a => a.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
                 .Select( a => a.Id )
                 .Distinct();
 
             var groupTypeIdsWithEnablePresence = groupTypes
-                .Where( gt =>
-                {
-                    var checkinConfigurationType = gt.GetCheckInConfigurationType();
-                    var enablePresence = checkinConfigurationType?.GetAttributeValue( EntityAttributeValueKey.GroupType_EnablePresence ).AsBoolean() ?? false;
-                    return enablePresence;
-                } )
+                .Where( a => a.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() )
                 .Select( a => a.Id )
                 .Distinct();
+
+            var checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths().ToDictionary( k => k.GroupTypeId, v => v );
 
             var attendees = new List<RosterAttendee>();
             foreach ( var attendance in attendanceList )
@@ -509,7 +604,7 @@ namespace Rock.CheckIn
                 attendee.RoomHasEnablePresence = groupTypeIdsWithEnablePresence.Contains( attendance.Occurrence.Group.GroupTypeId );
 
                 // Add the attendance-specific property values.
-                attendee.SetAttendanceInfo( attendance );
+                attendee.SetAttendanceInfo( attendance, checkinAreaPathsLookup );
             }
 
             return attendees;

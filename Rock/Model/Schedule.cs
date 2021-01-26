@@ -1269,7 +1269,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.ToFriendlyScheduleText();
+            if (this.Name.IsNotNullOrWhiteSpace())
+            {
+                return this.Name;
+            }
+            else
+            {
+                return this.ToFriendlyScheduleText();
+            }
         }
 
         #endregion
