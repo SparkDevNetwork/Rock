@@ -2393,14 +2393,14 @@ namespace Rock.Model
 
             var familyMembersQry = person.GetFamilyMembers( true ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
 
-            // filter for inactive
+            // Filter for inactive.
             if ( !includeInactive )
             {
                 var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
                 familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId );
             }
 
-            // filter out kids if not needed
+            // Filter out kids if not needed.
             if ( !includeChildren )
             {
                 familyMembersQry = familyMembersQry.Where( f => f.GroupRoleId == _adultRole.Id );
@@ -2416,18 +2416,18 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            // check that a family even existed if not return their name
+            // Check that a family even existed. If not, return their name.
             if ( !familyMembersList.Any() )
             {
                 return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
             }
 
-            // determine if more than one last name is at play
+            // Determine if more than one last name is at play.
             var multipleLastNamesExist = familyMembersList.Select( f => f.LastName ).Distinct().Count() > 1;
 
-            // add adults and children separately as adults need to be sorted by gender and children by age
+            // Add adults and children separately as adults need to be sorted by gender and children by age.
 
-            // adults
+            // Adults:
             var adults = familyMembersList.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Gender );
 
             if ( adults.Count() > 0 )
@@ -2454,7 +2454,7 @@ namespace Rock.Model
                 }
             }
 
-            // children
+            // Children:
             if ( includeChildren )
             {
                 var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
@@ -2755,8 +2755,6 @@ namespace Rock.Model
 
             return GetPersonPhotoImageTag( personId, personPhotoImageTagArgs );
         }
-
-
 
         /// <summary>
         /// Gets the person photo image tag.

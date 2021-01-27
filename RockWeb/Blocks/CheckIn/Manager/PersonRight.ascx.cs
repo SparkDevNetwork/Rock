@@ -160,7 +160,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
@@ -172,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var leftBadges = leftBadgeGuids.Select( a => BadgeCache.Get( a ) ).Where( a => a != null ).OrderBy( a => a.Order ).ToList();
             var rightBadges = rightBadgeGuids.Select( a => BadgeCache.Get( a ) ).Where( a => a != null ).OrderBy( a => a.Order ).ToList();
 
-            // set BadgeEntity using a new RockContext that won't get manually disposed
+            // Set BadgeEntity using a new RockContext that won't get manually disposed.
             var badgesEntity = new PersonService( new RockContext() ).Get( GetPersonGuid() );
             blBadgesLeft.Entity = badgesEntity;
             blBadgesRight.Entity = badgesEntity;
@@ -199,8 +198,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var personId = this.PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
             if ( !personId.HasValue )
             {
-                // if a PersonId wasn't  specified, but an AttendanceId parameter was, reload page with the PersonId in the URL
-                // this will help any other blocks on this page that need to know the PersonId
+                // If a PersonId wasn't specified, but an AttendanceId parameter was, reload page with the PersonId
+                // in the URL this will help any other blocks on this page that need to know the PersonId.
                 var attendanceId = this.PageParameter( PageParameterKey.AttendanceId ).AsIntegerOrNull();
                 if ( attendanceId.HasValue )
                 {
@@ -356,7 +355,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             cblLabels.DataSource = ZebraPrint.GetLabelTypesForPerson( personId, attendanceIds ).OrderBy( l => l.Name );
             cblLabels.DataBind();
 
-            // Bind the printers list
+            // Bind the printers list.
             var printers = new DeviceService( rockContext )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
                 .OrderBy( d => d.Name )
@@ -404,7 +403,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return;
             }
 
-            // Get the person Id from the Guid
+            // Get the person Id from the Guid.
             var selectedAttendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
@@ -502,14 +501,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 string[] gradeParts = grade.Split( ' ' );
                 if ( gradeParts.Length >= 2 )
                 {
-                    // Note that Grade names might be different in other countries. See  https://separatedbyacommonlanguage.blogspot.com/2006/12/types-of-schools-school-years.html for examples
+                    // Note that Grade names might be different in other countries.
+                    // See  https://separatedbyacommonlanguage.blogspot.com/2006/12/types-of-schools-school-years.html for examples.
                     var firstWord = gradeParts[0];
                     var remainderWords = gradeParts.Skip( 1 ).ToList().AsDelimited( " " );
                     if ( firstWord.Equals( "Year", StringComparison.OrdinalIgnoreCase ) )
                     {
                         // MDP 2020-10-21 (at request of GJ)
                         // Special case if formatted grade is 'Year 1', 'Year 2', etc (see https://separatedbyacommonlanguage.blogspot.com/2006/12/types-of-schools-school-years.html)
-                        // Make the word Year on the top
+                        // Make the word Year on the top.
                         grade = string.Format( @"<div class=""text-semibold"">{0}</div><div class=""text-sm text-muted"">{1}</div>", remainderWords, firstWord );
                     }
                     else
@@ -568,7 +568,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         };
                     } ).ToList();
 
-                // Set active locations to be a link to the room in manager page
+                // Set active locations to be a link to the room in manager page.
                 var qryParams = new Dictionary<string, string>
                 {
                     { PageParameterKey.LocationId, string.Empty }

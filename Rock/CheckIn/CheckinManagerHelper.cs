@@ -85,13 +85,13 @@ namespace Rock.CheckIn
                 }
             }
 
-            // if ShowAllAreas is enabled, we won't filter by Check-in Area (unless there was a page parameter)
+            // If ShowAllAreas is enabled, we won't filter by Check-in Area (unless there was a page parameter).
             if ( rockBlock.GetAttributeValue( BlockAttributeKey.ShowAllAreas ).AsBoolean() )
             {
                 return null;
             }
 
-            // we ShowAllAreas is false, get the area filter from the cookie
+            // If ShowAllAreas is false, get the area filter from the cookie.
             var checkinManagerCookieCheckinAreaGuid = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().CheckinAreaGuid;
             if ( checkinManagerCookieCheckinAreaGuid != null )
             {
@@ -197,7 +197,7 @@ namespace Rock.CheckIn
             }
             else
             {
-                // If still not defined, check for cookie setting
+                // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
 
                 if ( locationId <= 0 )
@@ -283,8 +283,8 @@ namespace Rock.CheckIn
             var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( Newtonsoft.Json.Formatting.None );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson, RockDateTime.Now.AddYears( 1 ) );
 
-            // Also save the Configuration in the Request.Items so that we can grab the configuration from there instead of the Cookie if the configuration changes
-            // from what is in the request cookie
+            // Also save the Configuration in the Request.Items so that we can grab the configuration from there instead
+            // of the Cookie if the configuration changes from what is in the request cookie.
             HttpContext.Current.AddOrReplaceItem( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson );
         }
 
@@ -297,7 +297,7 @@ namespace Rock.CheckIn
         {
             CheckinManagerConfiguration checkinManagerConfiguration = null;
 
-            // First check Request.Items in case we have changed the configuration during this request
+            // First check Request.Items in case we have changed the configuration during this request.
             var currentlySavedCheckinManagerConfigurationJson = HttpContext.Current.Items[CheckInManagerCookieKey.CheckinManagerConfiguration] as string;
             if ( currentlySavedCheckinManagerConfigurationJson.IsNotNullOrWhiteSpace() )
             {
@@ -305,7 +305,7 @@ namespace Rock.CheckIn
             }
             else
             {
-                // if we haven't changed the configuration in this request yet, get it from the cookie
+                // If we haven't changed the configuration in this request yet, get it from the cookie.
                 var checkinManagerRosterConfigurationRequestCookie = HttpContext.Current.Request.Cookies[CheckInManagerCookieKey.CheckinManagerConfiguration];
                 if ( checkinManagerRosterConfigurationRequestCookie != null )
                 {
@@ -337,7 +337,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// If an attendence's GroupType' AllowCheckout is false, remove all Attendees whose schedules are not currently active.
+        /// If an attendance's GroupType' AllowCheckout is false, remove all Attendees whose schedules are not currently active.
         /// </summary>
         /// <param name="currentDateTime">The current date time.</param>
         /// <param name="attendanceList">The attendance list.</param>
