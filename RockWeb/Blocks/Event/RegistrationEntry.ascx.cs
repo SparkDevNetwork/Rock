@@ -2337,11 +2337,11 @@ namespace RockWeb.Blocks.Event
                     }
                     catch { }
 
-                    return (int?)null;
+                    return ( int? ) null;
                 }
             }
 
-            return registration != null ? registration.Id : (int?)null;
+            return registration != null ? registration.Id : ( int? ) null;
         }
 
         /// <summary>
@@ -2635,7 +2635,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 registrar = SavePerson( rockContext, person, RegistrationState.FamilyGuid, CampusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : (int?)null;
+                registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
 
                 History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
             }
@@ -3400,7 +3400,7 @@ namespace RockWeb.Blocks.Event
 
                         rockContext.SaveChanges();
 
-                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
+                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : ( int? ) null;
                         rockContext.SaveChanges();
 
                         // Set any of the template's group member attributes
@@ -5774,7 +5774,7 @@ namespace RockWeb.Blocks.Event
 
             // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registration and the cost has not been calculated yet.
             decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
-            if ( ( balanceDue <= (decimal)0.00 ) && ( RegistrationState.RegistrationId != null ) )
+            if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
             {
                 return false;
             }
