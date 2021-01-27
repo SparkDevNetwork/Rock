@@ -39,6 +39,10 @@ export default defineComponent({
         help: {
             type: String as PropType<string>,
             default: ''
+        },
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     },
     emits: [
@@ -47,7 +51,7 @@ export default defineComponent({
     data: function () {
         return {
             uniqueId: `rock-dropdownlist-${newGuid()}`,
-            internalValue: this.modelValue
+            internalValue: ''
         };
     },
     computed: {
@@ -56,19 +60,34 @@ export default defineComponent({
         }
     },
     methods: {
-        onInput: function () {
-            this.$emit('update:modelValue', this.internalValue);
+        syncValue() {
+            this.internalValue = this.modelValue;
+            if (!this.showBlankItem && !this.internalValue && this.options.length) {
+                this.internalValue = this.options[0].value;
+                this.$emit('update:modelValue', this.internalValue);
+            }
         }
     },
     watch: {
-        value: function () {
-            this.internalValue = this.modelValue;
+        modelValue: {
+            immediate: true,
+            handler() {
+                this.syncValue();
+            }
+        },
+        options: {
+            immediate: true,
+            handler() {
+                this.syncValue();
+            }
+        },
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
         }
     },
     template: `
 <Field
     v-model="internalValue"
-    @input="onInput"
     :name="label"
     :rules="rules"
     #default="{field, errors}">
@@ -76,7 +95,7 @@ export default defineComponent({
         <RockLabel :for="uniqueId" :help="help">{{label}}</RockLabel>
         <div class="control-wrapper">
             <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field">
-                <option value=""></option>
+                <option v-if="showBlankItem" value=""></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
         </div>

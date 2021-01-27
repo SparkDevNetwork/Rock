@@ -97,7 +97,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
         blockFileUrl: '{BlockFileUrl}',
         rootElement: document.getElementById('{rootElementId}'),
         blockGuid: '{BlockCache.Guid}',
-        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() )}
+        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() ?? new object() )}
     }});
 }});
 </script>";

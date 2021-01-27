@@ -3,7 +3,7 @@ import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import TextBox from './TextBox.js';
 
 export default defineComponent({
-    name: 'EmailInput',
+    name: 'EmailBox',
     components: {
         TextBox
     },
@@ -44,7 +44,7 @@ export default defineComponent({
         internalValue() {
             this.$emit('update:modelValue', this.internalValue);
         },
-        value () {
+        modelValue () {
             this.internalValue = this.modelValue;
         }
     },

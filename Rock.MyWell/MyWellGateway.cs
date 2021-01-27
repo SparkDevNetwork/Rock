@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer
 using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
+using Rock.Obsidian.Util;
 
 namespace Rock.MyWell
 {
@@ -69,7 +70,7 @@ namespace Rock.MyWell
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IHasObsidianControl
     {
         #region Attribute Keys
 
@@ -95,6 +96,37 @@ namespace Rock.MyWell
         }
 
         #endregion Attribute Keys
+
+        #region Obsidian
+
+        /// <summary>
+        /// Gets the Obsidian control file URL.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The control file URL.
+        /// </value>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/ObsidianJs/Generated/Controls/MyWell.js";
+        }
+
+        /// <summary>
+        /// Gets the obsidian control settings.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        {
+            return new
+            {
+                PublicApiKey = GetPublicApiKey( financialGateway ),
+                GatewayUrl = GetGatewayUrl( financialGateway )
+            };
+        }
+
+        #endregion Obsidian
 
         /// <summary>
         /// Gets the gateway URL.

@@ -65,10 +65,6 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], functio
                     definedTypeGuid: {
                         type: String,
                         default: ''
-                    },
-                    required: {
-                        type: Boolean,
-                        default: false
                     }
                 },
                 setup: function () {
@@ -99,14 +95,6 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], functio
                         }); });
                     }
                 },
-                methods: {
-                    onChange: function () {
-                        var _this = this;
-                        this.$emit('update:modelValue', this.internalValue);
-                        var definedValue = this.definedValues.find(function (dv) { return dv.Guid === _this.internalValue; }) || null;
-                        this.$emit('update:model', definedValue);
-                    }
-                },
                 watch: {
                     value: function () {
                         this.internalValue = this.modelValue;
@@ -134,15 +122,20 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], functio
                                             _a.label = 3;
                                         case 3:
                                             this.internalValue = '';
-                                            this.onChange();
                                             return [2 /*return*/];
                                     }
                                 });
                             });
                         }
+                    },
+                    internalValue: function () {
+                        var _this = this;
+                        this.$emit('update:modelValue', this.internalValue);
+                        var definedValue = this.definedValues.find(function (dv) { return dv.Guid === _this.internalValue; }) || null;
+                        this.$emit('update:model', definedValue);
                     }
                 },
-                template: "<DropDownList v-model=\"internalValue\" @change=\"onChange\" :disabled=\"!isEnabled\" :label=\"label\" :options=\"options\" />"
+                template: "\n<DropDownList v-model=\"internalValue\" :disabled=\"!isEnabled\" :label=\"label\" :options=\"options\" />"
             }));
         }
     };

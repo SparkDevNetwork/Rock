@@ -38,18 +38,30 @@ namespace Rock.Obsidian.Controllers.Controls
         /// <param name="IsActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
-        [Authenticate, Secured]
+        [Authenticate]
         [HttpGet]
         [System.Web.Http.Route( "api/obsidian/v1/controls/definedvaluepicker/{definedTypeGuid}" )]
         public IEnumerable<DefinedValueViewModel> GetDefinedValues( Guid definedTypeGuid, [FromUri] bool IsActive = true )
         {
-            IEnumerable<DefinedValueCache> viewModels = DefinedTypeCache.Get(definedTypeGuid)?.DefinedValues;
+            var definedType = DefinedTypeCache.Get( definedTypeGuid );
 
-            if ( viewModels == null )
+            if ( definedType == null )
             {
                 var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The defined type was not found" );
                 throw new HttpResponseException( errorResponse );
             }
+
+            var currentPerson = GetPerson();
+
+            if ( !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "Unauthorized" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            IEnumerable<DefinedValueCache> viewModels = definedType
+                .DefinedValues
+                .Where( dv => dv.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) );
 
             if ( IsActive )
             {

@@ -1,24 +1,25 @@
-﻿const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-});
-
-/**
- * Get a formatted currency string.
- * Ex: 1.2 => $1.20
+﻿/**
+ * Get a formatted string.
+ * Ex: 10001.2 => 10,001.2
  * @param num
  */
-export function asFormattedString(num: number | null) {
+export function asFormattedString(num: number | null, digits = 2) {
     if (num === null) {
         return '';
     }
 
-    return formatter.format(num);
+    return num.toLocaleString(
+        'en-US',
+        {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits
+        }
+    );
 }
 
 /**
  * Get a number value from a formatted string.
- * Ex: $1.20 => 1.2
+ * Ex: $1,000.20 => 1000.2
  * @param str
  */
 export function toNumberOrNull(str: string | null) {

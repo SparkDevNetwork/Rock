@@ -32,26 +32,14 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
         props: {
             modelValue: {
                 type: String as PropType<Guid>,
-                default: ''
-            },
-            id: {
-                type: Number as PropType<number>,
-                default: 0
+                required: true
             },
             label: {
                 type: String,
                 default: entityNameForDisplay
-            },
-            required: {
-                type: Boolean,
-                default: false
             }
         },
-        emits: [
-            'update:modelValue',
-            'update:id'
-        ],
-        data: function () {
+        data() {
             return {
                 providedOptions: getOptionsFunc(),
                 selectedGuid: '',
@@ -65,34 +53,24 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
                     text: o.Text,
                     value: o.Guid
                 } as DropDownListOption));
-            },
-            currentCommonEntity(): CommonEntityOption | null {
-                return this.providedOptions.find(o => o.Guid === this.selectedGuid) || null;
-            }
-        },
-        methods: {
-            onChange: function () {
-                this.$emit('update:modelValue', this.selectedGuid);
-                this.$emit('update:id', this.currentCommonEntity ? this.currentCommonEntity.Id : null);
             }
         },
         watch: {
-            value: {
+            modelValue: {
                 immediate: true,
                 handler() {
                     this.selectedGuid = this.modelValue;
                 }
             },
-            id: {
+            selectedGuid: {
                 immediate: true,
                 handler() {
-                    const option = this.providedOptions.find(o => o.Id === this.id) || null;
-                    this.selectedGuid = option ? option.Guid : '';
+                    this.$emit('update:modelValue', this.selectedGuid);
                 }
             }
         },
         template: `
-<DropDownList v-model="selectedGuid" @change="onChange" :disabled="isLoading" :label="label" :options="options" />`
+<DropDownList v-model="selectedGuid" :disabled="isLoading" :label="label" :options="options" />`
     });
 }
 

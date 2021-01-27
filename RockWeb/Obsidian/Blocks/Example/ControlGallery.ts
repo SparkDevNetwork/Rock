@@ -5,9 +5,11 @@ import CampusPicker from '../../Controls/CampusPicker.js';
 import { defineComponent } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
 import TextBox from '../../Elements/TextBox.js';
+import EmailBox from '../../Elements/EmailBox.js';
 import DefinedValue from '../../ViewModels/CodeGenerated/DefinedValueViewModel.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
+import CurrencyBox from '../../Elements/CurrencyBox.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -31,16 +33,19 @@ export default defineComponent({
         DefinedValuePicker,
         CampusPicker,
         GalleryAndResult,
-        TextBox
+        TextBox,
+        CurrencyBox,
+        EmailBox
     },
     data() {
         return {
             definedTypeGuid: '',
             definedValueGuid: '',
             campusGuid: '',
-            campusId: 0 as number | null,
             definedValue: null as DefinedValue | null,
-            text: 'Some two-way bound text'
+            text: 'Some two-way bound text',
+            currency: 1.234,
+            email: 'joe@joes.co'
         };
     },
     methods: {
@@ -54,6 +59,9 @@ export default defineComponent({
         },
         campusName(): string {
             return this.campus ? this.campus.Name : '';
+        },
+        campusId(): number | null {
+            return this.campus ? this.campus.Id : null;
         },
         definedTypeName(): string {
             const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid) as DefinedType;
@@ -81,6 +89,24 @@ export default defineComponent({
         </GalleryAndResult>
         <GalleryAndResult>
             <template #gallery>
+                <CurrencyBox label="Currency 1" v-model="currency" />
+                <CurrencyBox label="Currency 2" v-model="currency" />
+            </template>
+            <template #result>
+                {{currency}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #gallery>
+                <EmailBox label="EmailBox 1" v-model="email" />
+                <EmailBox label="EmailBox 2" v-model="email" />
+            </template>
+            <template #result>
+                {{email}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #gallery>
                 <DefinedTypePicker v-model="definedTypeGuid" />
                 <DefinedValuePicker v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
             </template>
@@ -99,7 +125,8 @@ export default defineComponent({
         </GalleryAndResult>
         <GalleryAndResult>
             <template #gallery>
-                <CampusPicker v-model="campusGuid" v-model:id="campusId" />
+                <CampusPicker v-model="campusGuid" />
+                <CampusPicker v-model="campusGuid" label="Campus 2" />
             </template>
             <template #result>
                 <p>

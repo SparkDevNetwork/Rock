@@ -48,6 +48,10 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     help: {
                         type: String,
                         default: ''
+                    },
+                    showBlankItem: {
+                        type: Boolean,
+                        default: true
                     }
                 },
                 emits: [
@@ -56,7 +60,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 data: function () {
                     return {
                         uniqueId: "rock-dropdownlist-" + Guid_js_1.newGuid(),
-                        internalValue: this.modelValue
+                        internalValue: ''
                     };
                 },
                 computed: {
@@ -65,16 +69,32 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     }
                 },
                 methods: {
-                    onInput: function () {
-                        this.$emit('update:modelValue', this.internalValue);
+                    syncValue: function () {
+                        this.internalValue = this.modelValue;
+                        if (!this.showBlankItem && !this.internalValue && this.options.length) {
+                            this.internalValue = this.options[0].value;
+                            this.$emit('update:modelValue', this.internalValue);
+                        }
                     }
                 },
                 watch: {
-                    value: function () {
-                        this.internalValue = this.modelValue;
+                    modelValue: {
+                        immediate: true,
+                        handler: function () {
+                            this.syncValue();
+                        }
+                    },
+                    options: {
+                        immediate: true,
+                        handler: function () {
+                            this.syncValue();
+                        }
+                    },
+                    internalValue: function () {
+                        this.$emit('update:modelValue', this.internalValue);
                     }
                 },
-                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"onInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-drop-down-list\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">{{label}}</RockLabel>\n        <div class=\"control-wrapper\">\n            <select :id=\"uniqueId\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\">\n                <option value=\"\"></option>\n                <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n            </select>\n        </div>\n    </div>\n</Field>"
+                template: "\n<Field\n    v-model=\"internalValue\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-drop-down-list\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">{{label}}</RockLabel>\n        <div class=\"control-wrapper\">\n            <select :id=\"uniqueId\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\">\n                <option v-if=\"showBlankItem\" value=\"\"></option>\n                <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n            </select>\n        </div>\n    </div>\n</Field>"
             }));
         }
     };

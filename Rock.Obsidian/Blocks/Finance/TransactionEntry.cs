@@ -17,7 +17,10 @@
 
 using System.ComponentModel;
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
+using Rock.Obsidian.Util;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Obsidian.Blocks.Finance
@@ -793,5 +796,75 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion enums
+
+        #region Gateway
+
+        /// <summary>
+        /// Gets the financial gateway (model) that is configured for this block
+        /// </summary>
+        /// <returns></returns>
+        private FinancialGateway FinancialGateway
+        {
+            get
+            {
+                if ( _financialGateway == null )
+                {
+                    var rockContext = new RockContext();
+                    var financialGatewayGuid = GetAttributeValue( AttributeKey.FinancialGateway ).AsGuid();
+                    _financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayGuid );
+                }
+
+                return _financialGateway;
+            }
+        }
+        private FinancialGateway _financialGateway = null;
+
+        /// <summary>
+        /// Gets the financial gateway component that is configured for this block
+        /// </summary>
+        /// <returns></returns>
+        private IHasObsidianControl FinancialGatewayComponent
+        {
+            get
+            {
+                if ( _financialGatewayComponent == null )
+                {
+                    var financialGateway = FinancialGateway;
+                    if ( financialGateway != null )
+                    {
+                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IHasObsidianControl;
+                    }
+                }
+
+                return _financialGatewayComponent;
+            }
+        }
+        private IHasObsidianControl _financialGatewayComponent = null;
+
+        #endregion Gateway
+
+        #region Obsidian Overrides
+
+        /// <summary>
+        /// Gets the property values that will be sent to the browser.
+        /// </summary>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public override object GetBlockSettings()
+        {
+            if ( FinancialGateway == null || FinancialGatewayComponent == null )
+            {
+                return null;
+            }
+
+            return new
+            {
+                GatewayControlFileUrl = FinancialGatewayComponent.GetObsidianControlFileUrl( FinancialGateway ),
+                GatewayControlSettings = FinancialGatewayComponent.GetObsidianControlSettings( FinancialGateway )
+            };
+        }
+
+        #endregion Obsidian Overrides
     }
 }

@@ -16,7 +16,7 @@ System.register(["../Rules/Index.js", "../Vendor/Vue/vue.js", "./TextBox.js"], f
         ],
         execute: function () {
             exports_1("default", vue_js_1.defineComponent({
-                name: 'EmailInput',
+                name: 'EmailBox',
                 components: {
                     TextBox: TextBox_js_1.default
                 },
@@ -55,7 +55,7 @@ System.register(["../Rules/Index.js", "../Vendor/Vue/vue.js", "./TextBox.js"], f
                     internalValue: function () {
                         this.$emit('update:modelValue', this.internalValue);
                     },
-                    value: function () {
+                    modelValue: function () {
                         this.internalValue = this.modelValue;
                     }
                 },
@@ -64,4 +64,4 @@ System.register(["../Rules/Index.js", "../Vendor/Vue/vue.js", "./TextBox.js"], f
         }
     };
 });
-//# sourceMappingURL=EmailInput.js.map
+//# sourceMappingURL=EmailBox.js.map

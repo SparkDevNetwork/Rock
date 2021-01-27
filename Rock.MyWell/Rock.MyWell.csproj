@@ -82,6 +82,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rock.Obsidian\Rock.Obsidian.csproj">
+      <Project>{e8c5f154-201f-4c67-bcdc-34787deffeae}</Project>
+      <Name>Rock.Obsidian</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>
       <Name>Rock</Name>

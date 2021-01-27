@@ -54,25 +54,13 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js", "../Util
             props: {
                 modelValue: {
                     type: String,
-                    default: ''
-                },
-                id: {
-                    type: Number,
-                    default: 0
+                    required: true
                 },
                 label: {
                     type: String,
                     default: entityNameForDisplay
-                },
-                required: {
-                    type: Boolean,
-                    default: false
                 }
             },
-            emits: [
-                'update:modelValue',
-                'update:id'
-            ],
             data: function () {
                 return {
                     providedOptions: getOptionsFunc(),
@@ -87,35 +75,23 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js", "../Util
                         text: o.Text,
                         value: o.Guid
                     }); });
-                },
-                currentCommonEntity: function () {
-                    var _this = this;
-                    return this.providedOptions.find(function (o) { return o.Guid === _this.selectedGuid; }) || null;
-                }
-            },
-            methods: {
-                onChange: function () {
-                    this.$emit('update:modelValue', this.selectedGuid);
-                    this.$emit('update:id', this.currentCommonEntity ? this.currentCommonEntity.Id : null);
                 }
             },
             watch: {
-                value: {
+                modelValue: {
                     immediate: true,
                     handler: function () {
                         this.selectedGuid = this.modelValue;
                     }
                 },
-                id: {
+                selectedGuid: {
                     immediate: true,
                     handler: function () {
-                        var _this = this;
-                        var option = this.providedOptions.find(function (o) { return o.Id === _this.id; }) || null;
-                        this.selectedGuid = option ? option.Guid : '';
+                        this.$emit('update:modelValue', this.selectedGuid);
                     }
                 }
             },
-            template: "\n<DropDownList v-model=\"selectedGuid\" @change=\"onChange\" :disabled=\"isLoading\" :label=\"label\" :options=\"options\" />"
+            template: "\n<DropDownList v-model=\"selectedGuid\" :disabled=\"isLoading\" :label=\"label\" :options=\"options\" />"
         });
     }
     exports_1("createCommonEntityPicker", createCommonEntityPicker);

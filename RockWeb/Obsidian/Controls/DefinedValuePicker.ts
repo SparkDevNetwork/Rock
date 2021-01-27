@@ -20,10 +20,6 @@ export default defineComponent({
         definedTypeGuid: {
             type: String as PropType<string>,
             default: ''
-        },
-        required: {
-            type: Boolean as PropType<boolean>,
-            default: false
         }
     },
     setup() {
@@ -54,14 +50,6 @@ export default defineComponent({
             } as DropDownListOption));
         }
     },
-    methods: {
-        onChange: function (): void {
-            this.$emit('update:modelValue', this.internalValue);
-
-            const definedValue = this.definedValues.find(dv => dv.Guid === this.internalValue) || null;
-            this.$emit('update:model', definedValue);
-        }
-    },
     watch: {
         value: function (): void {
             this.internalValue = this.modelValue;
@@ -84,10 +72,15 @@ export default defineComponent({
                 }
 
                 this.internalValue = '';
-                this.onChange();
             }
+        },
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
+
+            const definedValue = this.definedValues.find(dv => dv.Guid === this.internalValue) || null;
+            this.$emit('update:model', definedValue);
         }
     },
-    template:
-        `<DropDownList v-model="internalValue" @change="onChange" :disabled="!isEnabled" :label="label" :options="options" />`
+    template: `
+<DropDownList v-model="internalValue" :disabled="!isEnabled" :label="label" :options="options" />`
 });

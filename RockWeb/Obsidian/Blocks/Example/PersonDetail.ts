@@ -4,7 +4,7 @@ import RockButton from '../../Elements/RockButton.js';
 import TextBox from '../../Elements/TextBox.js';
 import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
 import store from '../../Store/Index.js';
-import EmailInput from '../../Elements/EmailInput.js';
+import EmailBox from '../../Elements/EmailBox.js';
 import RockValidation from '../../Controls/RockValidation.js';
 import RockForm from '../../Controls/RockForm.js';
 import CampusPicker from '../../Controls/CampusPicker.js';
@@ -31,7 +31,7 @@ export default defineComponent({
         PaneledBlockTemplate,
         RockButton,
         TextBox,
-        EmailInput,
+        EmailBox,
         RockValidation,
         RockForm,
         CampusPicker,
@@ -157,7 +157,7 @@ export default defineComponent({
                             <TextBox label="Last Name" v-model="personForEditing.LastName" rules="required" />
                         </div>
                         <div class="col-sm-6">
-                            <EmailInput v-model="personForEditing.Email" />
+                            <EmailBox v-model="personForEditing.Email" />
                             <CampusPicker v-model:id="personForEditing.PrimaryCampusId" />
                         </div>
                     </div>
