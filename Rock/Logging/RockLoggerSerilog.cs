@@ -814,6 +814,9 @@ namespace Rock.Logging
             _ConfigurationLastLoaded = DateTime.Now;
         }
 
+        /// <summary>
+        /// Ensures the logger exists and updated.
+        /// </summary>
         private void EnsureLoggerExistsAndUpdated()
         {
             if ( _ConfigurationLastLoaded < LogConfiguration.LastUpdated || _logger == null )
@@ -823,7 +826,25 @@ namespace Rock.Logging
             }
         }
 
-        private bool ShouldLogEntry( RockLogLevel logLevel, string domain )
+        /// <summary>
+        /// Reloads the configuration.
+        /// </summary>
+        public void ReloadConfiguration()
+        {
+            Close();
+            
+            // The ctor loads up all the settings from the DB.
+            LogConfiguration = new RockLogConfiguration();
+            LoadConfiguration( LogConfiguration );
+        }
+
+        /// <summary>
+        /// Determins if the logger is enabled for the specified RockLogLevel and Domain.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="domain">The domain.</param>
+        /// <returns></returns>
+        public bool ShouldLogEntry( RockLogLevel logLevel, string domain )
         {
             if ( logLevel > LogConfiguration.LogLevel || logLevel == RockLogLevel.Off )
             {

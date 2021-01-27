@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Tasks;
 
 namespace Rock.Model
 {
@@ -34,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ConnectionRequestActivity : Model<ConnectionRequestActivity>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -139,8 +139,18 @@ namespace Rock.Model
         {
             if ( entry.State == EntityState.Added )
             {
-                var transaction = new Rock.Transactions.ConnectionRequestActivityChangeTransaction( entry );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var connectionRequestActivity = entry.Entity as ConnectionRequestActivity;
+                if ( connectionRequestActivity != null )
+                {
+                    var processConnectionRequestActivityChangeMsg = new ProcessConnectionRequestActivityChange.Message()
+                    {
+                        ConnectionRequestActivityGuid = connectionRequestActivity.Guid,
+                        ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId,
+                        ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId
+                    };
+
+                    processConnectionRequestActivityChangeMsg.Send();
+                }
             }
 
             base.PreSaveChanges( dbContext, entry );

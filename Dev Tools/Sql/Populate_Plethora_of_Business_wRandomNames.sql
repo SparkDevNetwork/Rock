@@ -3757,7 +3757,7 @@ CREATE TABLE #businessTypeName (
         select @businessTypeName = (select top 1 TypeName from #businessTypeName order by NEWID());
 
         -- add first member of family
-        SET @email = REPLACE(@lastName, ' ', '.') + '@nowhere.com';
+        SET @email = REPLACE(@lastName, ' ', '.') + '@nowhere.test';
         SET @phoneNumber = cast(convert(BIGINT, ROUND(rand() * 0095551212, 0) + 6230000000) AS NVARCHAR(20));
         SET @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' + substring(@phoneNumber, 7, 4);
         SET @personGuid = NEWID();

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,6 +27,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a Group Member PlacedElsewhere workflow
     /// </summary>
+    [Obsolete( "Use LaunchGroupMemberPlacedElsewhereWorkflow Task instead." )]
+    [RockObsolete( "1.13" )]
     public class GroupMemberPlacedElsewhereTransaction : ITransaction
     {
         private GroupMemberWorkflowTrigger Trigger { get; set; }

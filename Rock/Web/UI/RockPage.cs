@@ -34,6 +34,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -749,11 +750,13 @@ namespace Rock.Web.UI
             {
                 if ( CurrentUser != null )
                 {
-                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                    transaction.UserId = CurrentUser.Id;
-                    transaction.LastActivityDate = RockDateTime.Now;
-                    transaction.IsOnLine = false;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var message = new UpdateUserLastActivity.Message
+                    {
+                        UserId = CurrentUser.Id,
+                        LastActivityDate = RockDateTime.Now,
+                        IsOnline = false
+                    };
+                    message.Send();
                 }
 
                 Authorization.SignOut();
@@ -2820,7 +2823,14 @@ Sys.Application.add_load(function () {
             {
                 if ( param != null )
                 {
-                    parameters.Add( param, Request.QueryString[param] );
+                    /*
+                        2021-01-07 ETD
+                        It is possible to get a route included in the list of QueryString.Keys when using a Page Route and the PageParameterFilter block.
+                        When this occurs then the Dictionary.Add() will get a duplicate key exception. Since this is a route we should keep it as such
+                        and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
+                        Route Key and QueryString Key the Route will take precedence.
+                    */
+                    parameters.AddOrIgnore( param, Request.QueryString[param] );
                 }
             }
 

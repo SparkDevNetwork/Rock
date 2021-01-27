@@ -33,8 +33,8 @@
                             <Rock:RockBoundField DataField="DateTime" HeaderText="Date" SortExpression="DateTime" />
                             <Rock:RockBoundField DataField="WriterNodeName" HeaderText="Writer Node Name" SortExpression="WriterNodeName" />
                             <Rock:RockBoundField DataField="NodeName" HeaderText="Node Name" SortExpression="NodeName" />
-                            <Rock:RockBoundField DataField="Severity" HeaderText="Severity" SortExpression="Severity" />
-                            <Rock:RockBoundField DataField="EventType" HeaderText="Type" SortExpression="EventType" />
+                            <Rock:RockLiteralField HeaderText="Severity" ID="lSeverity" SortExpression="Severity" OnDataBound="lSeverity_DataBound" />
+                            <Rock:RockLiteralField HeaderText="Type" ID="lEventType" SortExpression="EventType" OnDataBound="lEventType_DataBound" />
                             <Rock:RockBoundField DataField="Text" HeaderText="Details" SortExpression="Text" />
                         </Columns>
                     </Rock:Grid>

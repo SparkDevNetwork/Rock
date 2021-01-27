@@ -338,7 +338,7 @@ namespace Rock.Data
                 ELSE
                 BEGIN
 	                INSERT INTO [BlockType]([IsSystem],[Category],[Name],[Description],[Guid], EntityTypeId)
-	                VALUES(1,'Mobile','{name}','{description.Replace( "'", "''" )}','{guid.ToUpper()}', @entityTypeId)
+	                VALUES(1,'{category}','{name}','{description.Replace( "'", "''" )}','{guid.ToUpper()}', @entityTypeId)
                 END" );
         }
 
@@ -7752,8 +7752,8 @@ END
         /// <param name="includes">The includes.</param>
         public void CreateIndexIfNotExists( string tableName, string[] keys, string[] includes )
         {
-            var indexName = $"IX_{keys.JoinStrings( "_" )}";
-            CreateIndexIfNotExists( tableName, indexName, keys, includes);
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, keys, includes );
+            Migration.Sql( sql );
         }
 
         /// <summary>
@@ -7765,13 +7765,8 @@ END
         /// <param name="includes">The includes.</param>
         public void CreateIndexIfNotExists( string tableName, string indexName, string[] keys, string[] includes )
         {
-            Migration.Sql(
-$@"IF NOT EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
-BEGIN
-    CREATE INDEX [{indexName}]
-    ON [{tableName}] ( {keys.JoinStrings( "," )} )
-    { ( includes.Length > 0 ? $"INCLUDE ( {includes.JoinStrings( "," )} )" : "" ) };
-END" );
+            var sql = MigrationIndexHelper.GenerateCreateIndexIfNotExistsSql( tableName, indexName, keys, includes );
+            Migration.Sql( sql );
         }
 
         /// <summary>
@@ -7781,12 +7776,8 @@ END" );
         /// <param name="indexName">Name of the index.</param>
         public void DropIndexIfExists( string tableName, string indexName )
         {
-            Migration.Sql(
-$@"IF EXISTS( SELECT * FROM sys.indexes WHERE NAME = '{indexName}' AND object_id = OBJECT_ID( '{tableName}' ) )
-BEGIN
-    DROP INDEX [{indexName}]
-    ON [{tableName}];
-END" );
+            var sql = MigrationIndexHelper.GenerateDropIndexIfExistsSql( tableName, indexName );
+            Migration.Sql( sql );
         }
 
         #endregion Index Helpers

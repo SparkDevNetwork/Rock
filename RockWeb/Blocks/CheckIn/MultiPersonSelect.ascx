@@ -41,7 +41,10 @@
                                                             <asp:Panel ID="pnlPhoto" runat="server" CssClass="photo-container">
                                                                 <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                                             </asp:Panel>
-                                                            <asp:Panel ID="pnlPerson" CssClass="name-container" runat="server"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
+                                                            <asp:Panel ID="pnlPerson" CssClass="name-container" runat="server">
+                                                                <asp:Literal ID="lPersonButton" runat="server"></asp:Literal>
+                                                                <div class='text-light text-left'><asp:Literal ID="lPersonSelectLava" runat="server"></asp:Literal></div>
+                                                            </asp:Panel>
                                                         </div>
                                                     </a>
                                                 </asp:Panel>
