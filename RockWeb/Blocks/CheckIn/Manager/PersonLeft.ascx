@@ -94,6 +94,7 @@
                     <a class="group-member text-sm text-center text-color rounded p-2" href='<%# Eval("Url") %>'>
                         <asp:Literal ID="lRelationshipPhoto" runat="server" />
                         <span><%# Eval("NickName") %></span>
+                        <small><asp:Literal ID="lRelationshipName" runat="server" /></small>
                     </a>
                 </ItemTemplate>
             </asp:Repeater>

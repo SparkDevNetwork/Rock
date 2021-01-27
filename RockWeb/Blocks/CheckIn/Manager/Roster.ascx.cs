@@ -1167,7 +1167,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 && rosterStatusFilter == RosterStatusFilter.Present;
 
             mobileIconField.Visible = rosterStatusFilter == RosterStatusFilter.All;
-            serviceTimesField.Visible = rosterStatusFilter == RosterStatusFilter.All || rosterStatusFilter == RosterStatusFilter.Present || rosterStatusFilter == RosterStatusFilter.CheckedOut;
+            serviceTimesField.Visible = true;
             statusTagField.Visible = rosterStatusFilter == RosterStatusFilter.All;
 
             lElapsedCheckInTimeField.Visible = rosterStatusFilter == RosterStatusFilter.CheckedIn;

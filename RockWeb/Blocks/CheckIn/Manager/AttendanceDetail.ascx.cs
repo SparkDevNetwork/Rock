@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Manager
 {
@@ -158,6 +159,36 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         /// <summary>
+        /// Sets the checkin person label (Name, PhoneNumber, etc)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="rockLiteral">The rock literal.</param>
+        private static void SetCheckinPersonLabel( RockContext rockContext, int? personAliasId, RockLiteral rockLiteral )
+        {
+            if ( !personAliasId.HasValue )
+            {
+                rockLiteral.Visible = false;
+                return;
+            }
+
+            var personAliasService = new PersonAliasService( rockContext );
+            var person = personAliasService.GetSelect( personAliasId.Value, s => s.Person );
+
+            if ( person == null )
+            {
+                rockLiteral.Visible = false;
+                return;
+            }
+
+            rockLiteral.Visible = true;
+
+            var checkedInByPersonName = person.FullName;
+            var checkedInByPersonPhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+            rockLiteral.Text = string.Format( "{0} {1}", checkedInByPersonName, checkedInByPersonPhone );
+        }
+
+        /// <summary>
         /// Shows the attendance details.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
@@ -166,22 +197,33 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var occurrence = attendance.Occurrence;
 
             var groupType = GroupTypeCache.Get( occurrence.Group.GroupTypeId );
-            var groupPath = new GroupTypeService( new RockContext() ).GetAllCheckinAreaPaths().FirstOrDefault( a => a.GroupTypeId == occurrence.Group.GroupTypeId );
+            var rockContext = new RockContext();
+            var groupPath = new GroupTypeService( rockContext ).GetAllCheckinAreaPaths().FirstOrDefault( a => a.GroupTypeId == occurrence.Group.GroupTypeId );
 
             lGroupName.Text = string.Format( "{0} > {1}", groupPath, occurrence.Group );
-            lLocationName.Text = occurrence.Location.Name;
+            if ( occurrence.Location != null )
+            {
+                lLocationName.Text = occurrence.Location.Name;
+            }
+
             if ( attendance.AttendanceCode != null )
             {
                 lTag.Text = attendance.AttendanceCode.Code;
             }
 
-            lScheduleName.Text = occurrence.Schedule.Name;
+            if ( occurrence.Schedule != null )
+            {
+                lScheduleName.Text = occurrence.Schedule.Name;
+            }
+
+            SetCheckinPersonLabel( rockContext, attendance.CheckedInByPersonAliasId, lCheckinByPerson );
             lCheckinTime.Text = attendance.StartDateTime.ToString();
 
             if ( attendance.PresentDateTime.HasValue )
             {
                 lPresentTime.Visible = true;
                 lPresentTime.Text = attendance.PresentDateTime.ToString();
+                SetCheckinPersonLabel( rockContext, attendance.PresentByPersonAliasId, lPresentByPerson );
             }
             else
             {
@@ -193,13 +235,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 lCheckedOutTime.Visible = true;
                 lCheckedOutTime.Text = attendance.EndDateTime.ToString();
+                SetCheckinPersonLabel( rockContext, attendance.CheckedOutByPersonAliasId, lCheckedOutByPerson );
             }
             else
             {
-                pnlCheckedOutDetails.Visible = false;
                 lCheckedOutTime.Visible = false;
+                pnlCheckedOutDetails.Visible = false;
             }
-            
         }
 
         #endregion Methods

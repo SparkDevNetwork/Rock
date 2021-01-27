@@ -123,16 +123,10 @@ WHERE a.EntityTypeId = @entityTypeIdSite AND a.EntityId = @siteIdCheckinManager 
             // Add Block Attendance Detail to Page: Attendance Detail, Site: Rock Check-in Manager
             RockMigrationHelper.AddBlock( true, "758ECFCD-9E20-48B5-827B-973492E39C0D".AsGuid(), null, "A5FA7C3C-A238-4E0B-95DE-B540144321EC".AsGuid(), "CA59CE67-9313-4B9F-8593-380044E5AE6A".AsGuid(), "Attendance Detail", "Main", @"", @"", 0, "8A9E16B9-B909-4897-A853-AE9F572A7AE8" );
 
-            // Add Block Person Detail Attribute Values to Page: Attendance Detail, Site: Rock Check-in Manager
-            RockMigrationHelper.AddBlock( true, "758ECFCD-9E20-48B5-827B-973492E39C0D".AsGuid(), null, "A5FA7C3C-A238-4E0B-95DE-B540144321EC".AsGuid(), "D70A59DC-16BE-43BE-9880-59598FA7A94C".AsGuid(), "Person Detail Attribute Values", "Main", @"", @"", 3, "46E06CF9-80BB-478B-88C4-C01381631575" );
-
             // update block order for pages with new blocks if the page,zone has multiple blocks
 
             // Update Order for Page: Attendance Detail,  Zone: Main,  Block: Attendance Detail
             Sql( @"UPDATE [Block] SET [Order] = 0 WHERE [Guid] = '8A9E16B9-B909-4897-A853-AE9F572A7AE8'" );
-
-            // Update Order for Page: Attendance Detail,  Zone: Main,  Block: Person Detail Attribute Values
-            Sql( @"UPDATE [Block] SET [Order] = 3 WHERE [Guid] = '46E06CF9-80BB-478B-88C4-C01381631575'" );
 
             // Update Order for Page: Attendance Detail,  Zone: Sidebar1,  Block: Person Profile
             Sql( @"UPDATE [Block] SET [Order] = 0 WHERE [Guid] = '296190D4-6702-499C-A434-9F49F61FBE54'" );
@@ -251,8 +245,6 @@ WHERE a.EntityTypeId = @entityTypeIdSite AND a.EntityId = @siteIdCheckinManager 
 
             // Add/Update PageContext for Page:Attendance Detail, Entity: Rock.Model.Person, Parameter: Person
             RockMigrationHelper.UpdatePageContext( "758ECFCD-9E20-48B5-827B-973492E39C0D", "Rock.Model.Person", "Person", "6B77984D-7113-4412-AF12-27C13F28049B" );
-
-
         }
 
         /// <summary>
@@ -372,9 +364,6 @@ WHERE [Guid] = '{Rock.SystemGuid.Page.PERSON_PROFILE_CHECK_IN_MANAGER}'" );
 
             // Remove Block: Person Profile, from Page: Person Profile, Site: Rock Check-in Manager
             RockMigrationHelper.DeleteBlock( "02B35C67-CA4C-4E0B-968E-CD23EBB6B1B6" );
-
-            // Remove Block: Person Detail Attribute Values, from Page: Attendance Detail, Site: Rock Check-in Manager
-            RockMigrationHelper.DeleteBlock( "46E06CF9-80BB-478B-88C4-C01381631575" );
 
             // Remove Block: Attendance Detail, from Page: Attendance Detail, Site: Rock Check-in Manager
             RockMigrationHelper.DeleteBlock( "8A9E16B9-B909-4897-A853-AE9F572A7AE8" );

@@ -36,7 +36,7 @@
                     <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
-                    <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" CssClass="btn btn-default btn-sm my-2">Reprint Labels</asp:LinkButton>
+                    <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-2"><i class="fa fa-print"></i></asp:LinkButton>
                     <Rock:ModalDialog ID="mdReprintLabels" runat="server" ValidationGroup="vgReprintLabels" Title="Label Reprints" OnSaveClick="mdReprintLabels_PrintClick" SaveButtonText="Print" Visible="false">
                         <Content>
                             <Rock:NotificationBox ID="nbReprintLabelMessages" runat="server" NotificationBoxType="Validation"></Rock:NotificationBox>
@@ -84,7 +84,7 @@
                             <asp:Literal ID="lActiveLabel" runat="server" /><br />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
-                    <Rock:DeleteField OnClick="gAttendanceHistory_Delete" ButtonCssClass="js-cancel-checkin btn btn-xs btn-danger" Tooltip="Delete This Checkin" />
+                    <Rock:RockLiteralField ID="lChevronRight" Text="<i class='fa fa-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" />
                 </Columns>
             </Rock:Grid>
         </asp:Panel>
