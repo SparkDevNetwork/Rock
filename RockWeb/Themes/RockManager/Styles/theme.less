@@ -9,7 +9,6 @@
 @import "../../../Styles/Bootstrap/variables.less";
 
 @import "../../../Styles/_rock-core.less";
-@import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
 @import "_variables.less";
 @import "_variable-overrides.less";
@@ -182,6 +181,10 @@ textarea,
 // 2. Bootstrap Overrides    */
 // -------------------------
 
+.overflow-visible {
+  overflow: visible !important;
+}
+
 .well {
   .box-shadow(none);
 }
@@ -198,6 +201,11 @@ textarea,
 
 .btn-square,
 .btn-security {
+  width: 38px;
+  height: 38px;
+  padding-right: 0;
+  padding-left: 0;
+
   &.btn-xs {
     width: 25px;
     height: 25px;
@@ -517,7 +525,6 @@ textarea,
 
 .modal {
   .box-shadow(@shadow-modal);
-  border-radius: 0;
 
   .modal-content {
     .box-shadow(none);

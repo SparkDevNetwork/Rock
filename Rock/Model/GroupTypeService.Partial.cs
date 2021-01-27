@@ -541,7 +541,7 @@ namespace Rock.Model
         public int GroupTypeId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the full associated ancestor path of the parent checkin areas (group types).
+        /// Gets or sets the full associated ancestor path ('Area 1 > Area2 > Area51') of the parent checkin areas (group types).
         /// </summary>
         /// <value>
         /// The path.

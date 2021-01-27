@@ -210,7 +210,6 @@
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
-    <Compile Include="Handler\RockAssembliesResolver.cs" />
     <Compile Include="HeaderTokens.cs" />
     <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Jwt\JwtHelper.cs" />

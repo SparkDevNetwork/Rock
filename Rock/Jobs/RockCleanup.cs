@@ -121,19 +121,7 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
         }
-
-        #region Entity Attribute Value Keys
-
-        /// <summary>
-        /// Keys to use for entity attribute values.
-        /// </summary>
-        private class EntityAttributeValueKey
-        {
-            public const string GroupType_EnablePresence = "core_checkin_EnablePresence";
-        }
-
-        #endregion Entity Attribute Value Keys
-
+       
         /// <summary>
         /// Empty constructor for job initialization
         /// <para>
@@ -1807,7 +1795,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 
             checkInAreas.LoadAttributes();
 
-            foreach ( var checkInArea in checkInAreas.Where( a => a.GetAttributeValue( EntityAttributeValueKey.GroupType_EnablePresence ).AsBoolean() ) )
+            foreach ( var checkInArea in checkInAreas.Where( a => a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() ) )
             {
                 var groupTypeIds = new List<int>() { checkInArea.Id };
                 groupTypeIds.AddRange( checkInArea.ChildGroupTypes.Select( a => a.Id ) );
