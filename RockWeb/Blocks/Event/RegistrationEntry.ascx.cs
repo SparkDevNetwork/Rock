@@ -2337,11 +2337,11 @@ namespace RockWeb.Blocks.Event
                     }
                     catch { }
 
-                    return ( int? ) null;
+                    return (int?)null;
                 }
             }
 
-            return registration != null ? registration.Id : ( int? ) null;
+            return registration != null ? registration.Id : (int?)null;
         }
 
         /// <summary>
@@ -2635,7 +2635,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 registrar = SavePerson( rockContext, person, RegistrationState.FamilyGuid, CampusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
+                registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : (int?)null;
 
                 History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
             }
@@ -3188,7 +3188,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
-            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            if ( !person.PrimaryCampusId.HasValue && campusId.HasValue )
             {
                 person.PrimaryCampusId = campusId;
                 rockContext.SaveChanges();
@@ -3400,7 +3400,7 @@ namespace RockWeb.Blocks.Event
 
                         rockContext.SaveChanges();
 
-                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : ( int? ) null;
+                        registrant.GroupMemberId = groupMember != null ? groupMember.Id : (int?)null;
                         rockContext.SaveChanges();
 
                         // Set any of the template's group member attributes
@@ -5011,6 +5011,10 @@ namespace RockWeb.Blocks.Event
                         {
                             registrant.FeeValues.AddOrReplace( fee.Id, feeValues );
                         }
+                        else
+                        {
+                            registrant.FeeValues.Remove( fee.Id );
+                        }
                     }
                 }
             }
@@ -5748,6 +5752,8 @@ namespace RockWeb.Blocks.Event
 
                     RegistrationState.TotalCost = 0.0m;
                     RegistrationState.DiscountedCost = 0.0m;
+                    RegistrationState.PaymentAmount = 0.0m;
+                    nbAmountPaid.Text = string.Empty;
                     pnlCostAndFees.Visible = false;
                     pnlPaymentInfo.Visible = false;
                 }
@@ -5768,7 +5774,7 @@ namespace RockWeb.Blocks.Event
 
             // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registration and the cost has not been calculated yet.
             decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
-            if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
+            if ( ( balanceDue <= (decimal)0.00 ) && ( RegistrationState.RegistrationId != null ) )
             {
                 return false;
             }
@@ -5970,10 +5976,10 @@ namespace RockWeb.Blocks.Event
                     }
 
                     string discountTypeAndAmountString = discount.DiscountPercentage > 0.0m ? discount.DiscountPercentage.FormatAsPercent() : discount.DiscountAmount.FormatAsCurrency();
-                    
+
                     nbDiscountCode.Visible = true;
                     nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code,  discountTypeAndAmountString, discountRegistrantNumberString );
+                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code, discountTypeAndAmountString, discountRegistrantNumberString );
                     return true;
                 }
             }
