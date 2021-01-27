@@ -118,9 +118,9 @@
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
                 $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle(selectedOptionIsSelectConnector);
             };
-
+                        
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
-        syncTransferConnectorControls();
+        $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
     });
 
     const toggleFilterDrawer = function () {
@@ -575,6 +575,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeStatus" runat="server" Label="Status" />
+                                        <Rock:CampusPicker ID="cpTransferCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpTransferCampus_SelectedIndexChanged" />
                                     </div>
                                 </div>
                                 <Rock:RockTextBox ID="tbRequestModalViewModeTransferModeNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />

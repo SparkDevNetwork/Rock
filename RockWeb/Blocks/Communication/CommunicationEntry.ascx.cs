@@ -33,6 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -807,9 +808,11 @@ namespace RockWeb.Blocks.Communication
                         // send approval email if needed (now that we have a communication id)
                         if ( communication.Status == CommunicationStatus.PendingApproval )
                         {
-                            var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
-                            approvalTransaction.CommunicationId = communication.Id;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
+                            var approvalTransactionMsg = new ProcessSendCommunicationApprovalEmail.Message()
+                            {
+                                CommunicationId = communication.Id
+                            };
+                            approvalTransactionMsg.Send();
                         }
 
                         if ( communication.Status == CommunicationStatus.Approved &&
@@ -817,10 +820,11 @@ namespace RockWeb.Blocks.Communication
                         {
                             if ( GetAttributeValue( AttributeKey.SendWhenApproved ).AsBoolean() )
                             {
-                                var transaction = new Rock.Transactions.SendCommunicationTransaction();
-                                transaction.CommunicationId = communication.Id;
-                                transaction.PersonAlias = CurrentPersonAlias;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                                var transactionMsg = new ProcessSendCommunication.Message()
+                                {
+                                    CommunicationId = communication.Id
+                                };
+                                transactionMsg.Send();
                             }
                         }
 

@@ -204,6 +204,17 @@
                             </div>
                         </Rock:PanelWidget>
 
+                        <Rock:PanelWidget ID="wpAdvanceSettings" runat="server" Title="Advance Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbShowStatusOnTransfer" runat="server" Label="Show Status On Transfer"/>
+                                    <Rock:RockCheckBox ID="cbShowCampusOnTransfer" runat="server" Label="Show Campus On Transfer"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbShowConnectButton" runat="server" Label="Show Connect Button"/>
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

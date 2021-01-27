@@ -28,6 +28,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -477,8 +478,12 @@ namespace Rock.Model
             {
                 if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
                 {
-                    var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
+                    {
+                        BinaryFileGuid = oldBinaryFileGuid.Value
+                    };
+
+                    deleteBinaryFileAttributeMsg.Send();
                 }
             }
 
@@ -782,17 +787,16 @@ namespace Rock.Model
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId )
-            ).Select( am => am.Guid.ToString() );
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
+                .Select( am => am.Guid.ToString() );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
-                a.FieldTypeId == matrixFieldType.Id
-            ).Select( a => a.Id );
+                a.FieldTypeId == matrixFieldType.Id )
+                .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value )
-            );
+                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }

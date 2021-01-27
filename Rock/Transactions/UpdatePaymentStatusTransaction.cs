@@ -26,6 +26,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Update the status of scheduled transactions
     /// </summary>
+    [Obsolete( "Use UpdatePaymentStatusFinancialScheduledTransactions Task instead." )]
+    [RockObsolete( "1.13" )]
     public class UpdatePaymentStatusTransaction : ITransaction
     {
         /// <summary>

@@ -24,6 +24,7 @@
                         <Rock:DateRangePicker ID="drpCreatedDates" runat="server" Label="Created Date Range" Help="Note: Leaving dates blank will default to last 7 days." />
                         <Rock:DateRangePicker ID="drpSentDates" runat="server" Label="Sent Date Range" />
                         <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
+                        <Rock:NumberRangeEditor ID="nreRecipientCount" runat="server" Label="Recipient Count" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound" PageSizes="50,500">
@@ -46,6 +47,7 @@
                                     <span class="badge badge-danger" title="Failed" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="gCommunication_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
                         </Columns>
                     </Rock:Grid>
