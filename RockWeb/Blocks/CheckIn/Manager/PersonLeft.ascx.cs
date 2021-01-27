@@ -186,7 +186,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -202,8 +201,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var personId = this.PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
             if ( !personId.HasValue )
             {
-                // if a PersonId wasn't  specified, but an AttendanceId parameter was, reload page with the PersonId in the URL
-                // this will help any other blocks on this page that need to know the PersonId
+                // If a PersonId wasn't specified, but an AttendanceId parameter was, reload page with the PersonId
+                // in the URL this will help any other blocks on this page that need to know the PersonId.
                 var attendanceId = this.PageParameter( PageParameterKey.AttendanceId ).AsIntegerOrNull();
                 if ( attendanceId.HasValue )
                 {
@@ -242,8 +241,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #endregion
 
         #region Events
-
-        // handlers called by the controls on your block
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -499,7 +496,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     SmsPhoneNumberId = 0;
                 }
 
-                // Get all family member from all families ( including self )
+                // Get all family member from all families ( including self ).
                 var allFamilyMembers = personService.GetFamilyMembers( person.Id, true ).ToList();
 
                 // Add flag for this person in each family indicating if they are a child in family.
@@ -510,7 +507,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     isFamilyChild.Add( thisPerson.GroupId, thisPerson.GroupRole.Guid.Equals( childGuid ) );
                 }
 
-                // Get the other family members and the info needed for rendering
+                // Get the other family members and the info needed for rendering.
                 var familyMembers = allFamilyMembers.Where( m => m.PersonId != person.Id )
                     .OrderBy( m => m.GroupId )
                     .ThenBy( m => m.Person.BirthDate )
@@ -625,7 +622,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         private void ResetSms()
         {
-            // If this method got called, we've already checked the person has a valid number
+            // If this method got called, we've already checked the person has a valid number.
             tbSmsMessage.Visible = btnSmsCancel.Visible = btnSmsSend.Visible = false;
             tbSmsMessage.Value = string.Empty;
         }

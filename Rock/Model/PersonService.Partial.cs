@@ -1916,7 +1916,7 @@ namespace Rock.Model
                 .OrderBy( a => a.PersonGroupOrder ?? int.MaxValue )
                 .Select( a => a.GroupMember );
 
-            if (!includeDeceased)
+            if ( !includeDeceased )
             {
                 groupMembersQry = groupMembersQry.Where( m => !m.Person.IsDeceased );
             }
