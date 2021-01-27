@@ -753,7 +753,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 var schedules = new List<Schedule>();
 
-                // Get all Attendance records for the current day and location, limited by the selected groups within the selected check-in area
+                // Get all Attendance records for the current day and location, limited by the selected groups
+                // within the selected check-in area.
                 var attendanceQry = new AttendanceService( rockContext ).Queryable()
                     .Where( a =>
                         a.Occurrence.ScheduleId.HasValue &&
