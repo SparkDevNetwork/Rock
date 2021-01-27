@@ -511,7 +511,7 @@ namespace Rock.CheckIn
 
             this.IsFirstTime = latestAttendance?.IsFirstTime ?? false;
 
-            // ScheduleId should have a value, but just in case, we'll do some null safety
+            // ScheduleId should have a value, but just in case, we'll do some null safety.
             this.ScheduleId = latestAttendance.Occurrence?.ScheduleId ?? 0;
 
             this.RoomName = latestAttendance.Occurrence?.Location?.Name;
