@@ -42,8 +42,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Obsolete: Use PersonLeft/PersonRight instead" )]
 
-    [SecurityAction( SecurityActionKey.ReprintLabels, "The roles and/or users that can reprint labels for the selected person." )]
-
     [LinkedPage(
         "Manager Page",
         Key = AttributeKey.ManagerPage,
