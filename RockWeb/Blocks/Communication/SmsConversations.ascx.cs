@@ -49,12 +49,14 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 2
          )]
+
     [BooleanField( "Hide personal SMS numbers",
         Key = AttributeKey.HidePersonalSmsNumbers,
         Description = "Only SMS Numbers that are not associated with a person. The numbers without a 'ResponseRecipient' attribute value.",
         DefaultBooleanValue = false,
         Order = 3
          )]
+
     [BooleanField( "Enable SMS Send",
         Key = AttributeKey.EnableSmsSend,
         Description = "Allow SMS messages to be sent from the block.",
