@@ -143,13 +143,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #endregion
 
-        #region Fields
-
-        // used for private variables
-        private int _deleteFieldIndex = 0;
-
-        #endregion
-
         #region Properties
 
         #endregion
@@ -276,12 +269,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var attendanceInfo = e.Row.DataItem as AttendanceInfo;
             if ( attendanceInfo == null )
             {
-                var cell = ( e.Row.Cells[_deleteFieldIndex] as DataControlFieldCell ).Controls[0];
-                if ( cell != null )
-                {
-                    cell.Visible = false;
-                }
-
                 return;
             }
 
@@ -314,27 +301,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 attendanceIds.Add( attendanceInfo.Id.ToStringSafe() );
                 hfCurrentAttendanceIds.Value = attendanceIds.AsDelimited( "," );
             }
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gAttendanceHistory control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gAttendanceHistory_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new AttendanceService( rockContext );
-                var attendance = service.Get( e.RowKeyId );
-                if ( attendance != null )
-                {
-                    service.Delete( attendance );
-                    rockContext.SaveChanges();
-                }
-            }
-
-            ShowDetail( GetPersonGuid() );
         }
 
         #region Reprint Labels
@@ -632,10 +598,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
 
                 pnlCheckinHistory.Visible = attendances.Any();
-
-                // Get the index of the delete column
-                var deleteField = gAttendanceHistory.Columns.OfType<Rock.Web.UI.Controls.DeleteField>().First();
-                _deleteFieldIndex = gAttendanceHistory.Columns.IndexOf( deleteField );
 
                 gAttendanceHistory.DataSource = attendances;
                 gAttendanceHistory.DataBind();

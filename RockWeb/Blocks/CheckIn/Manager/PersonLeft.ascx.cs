@@ -301,8 +301,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 PersonInfo relatedMember = e.Item.DataItem as PersonInfo;
 
-                Literal lRelationshipPhoto = ( Literal ) e.Item.FindControl( "lRelationshipPhoto" );
+                Literal lRelationshipPhoto = e.Item.FindControl( "lRelationshipPhoto" ) as Literal;
                 lRelationshipPhoto.Text = relatedMember.PhotoTag;
+
+                Literal lRelationshipName = e.Item.FindControl( "lRelationshipName" ) as Literal;
+                lRelationshipName.Text = relatedMember.RelationshipName;
             }
         }
 
@@ -560,6 +563,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 PhotoTag = Rock.Model.Person.GetPersonPhotoImageTag( m.Person, 50, 50, className: "rounded" ),
                                 Url = GetRelatedPersonUrl( person, m.Person.Guid, m.Person.Id ),
                                 NickName = m.Person.NickName,
+                                RelationshipName = m.GroupRole.Name
                             } )
                             .ToList();
 
@@ -649,6 +653,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public string Url { get; set; }
 
             public string NickName { get; set; }
+
+            public string RelationshipName { get; set; }
         }
 
         #endregion
