@@ -54,7 +54,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnInit( e );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -76,8 +75,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #endregion
 
         #region Events
-
-        // handlers called by the controls on your block
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -137,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
 
-            // fetch the attendance record and include all the details that we'll be displaying
+            // Fetch the attendance record and include all the details that we'll be displaying.
             var attendance = attendanceService.Queryable()
                 .Where( a => a.Guid == attendanceGuid.Value && a.PersonAliasId.HasValue )
                 .Include( a => a.PersonAlias.Person )

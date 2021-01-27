@@ -1269,7 +1269,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if (this.Name.IsNotNullOrWhiteSpace())
+            if ( this.Name.IsNotNullOrWhiteSpace() )
             {
                 return this.Name;
             }

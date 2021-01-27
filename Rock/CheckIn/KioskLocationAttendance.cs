@@ -206,7 +206,7 @@ namespace Rock.CheckIn
                     return;
                 }
 
-                // if we can get GroupName from kioskLocationAttendance.Groups, we can avoid lazy loading attendance.Occurrence.Group
+                // If we can get GroupName from kioskLocationAttendance.Groups, we can avoid lazy loading attendance.Occurrence.Group.
                 var groupName = kioskLocationAttendance.Groups.Where( g => g.GroupId == groupId.Value ).FirstOrDefault()?.GroupName;
                 if ( groupName == null )
                 {
@@ -273,13 +273,13 @@ namespace Rock.CheckIn
         {
             if ( attendance.GroupId == null && attendance.Schedule == null )
             {
-                // shouldn't happen but just in case
+                // Shouldn't happen, but just in case...
                 return;
             }
 
             if ( attendance.PersonId == null )
             {
-                // shouldn't happen but just in case
+                // Shouldn't happen, but just in case...
                 return;
             }
 
