@@ -13,7 +13,7 @@
         if (showMarkPresentConfirmation) {
             $('.js-mark-present').on('click', function (e) {
 
-                // make sure the element that triggered this event isn't disabled
+                // Make sure the element that triggered this event isn't disabled.
                 if (e.currentTarget && e.currentTarget.disabled) {
                     return false;
                 }

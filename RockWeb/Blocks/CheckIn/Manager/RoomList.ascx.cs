@@ -115,7 +115,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
             base.OnInit( e );
             gRoomList.GridRebind += gList_GridRebind;
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
@@ -187,7 +186,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 return true;
             }
 
-            // if ShowAllAreas is false, the CheckinAreaFilter is required
+            // If ShowAllAreas is false, the CheckinAreaFilter is required.
             if ( this.GetAttributeValue( AttributeKey.ShowAllAreas ).AsBoolean() == false )
             {
                 var checkinAreaFilter = CheckinManagerHelper.GetCheckinAreaFilter( this );
@@ -195,7 +194,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     if ( NavigateToLinkedPage( AttributeKey.AreaSelectPage ) )
                     {
-                        // we are navigating to get the Area Filter, which will get the Area cookie
+                        // We are navigating to get the Area Filter which will get the Area cookie.
                         return true;
                     }
                     else
@@ -254,7 +253,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var groupLocationService = new GroupLocationService( rockContext );
             var groupLocationsQuery = groupLocationService.Queryable().Where( gl => selectedGroupTypeIds.Contains( gl.Group.GroupTypeId ) );
 
-            // limit locations (rooms) to locations within the selected campus
+            // Limit locations (rooms) to locations within the selected campus.
             var campusLocationIds = new LocationService( rockContext ).GetAllDescendentIds( campus.LocationId.Value ).ToList();
             campusLocationIds.Add( campus.LocationId.Value, true );
             groupLocationsQuery = groupLocationsQuery.Where( a => campusLocationIds.Contains( a.LocationId ) );
@@ -288,7 +287,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 currentDateTime = RockDateTime.Now;
             }
 
-            // Get all Attendance records for the current day and location
+            // Get all Attendance records for the current day and location.
             var attendanceQuery = new AttendanceService( rockContext ).Queryable().Where( a =>
                 a.StartDateTime >= startDateTime
                 && a.DidAttend == true
@@ -298,7 +297,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 && a.Occurrence.LocationId.HasValue
                 && a.Occurrence.ScheduleId.HasValue );
 
-            // limit attendances (rooms) to locations within the selected campus
+            // Limit attendances (rooms) to locations within the selected campus.
             attendanceQuery = attendanceQuery.Where( a => campusLocationIds.Contains( a.Occurrence.LocationId.Value ) );
 
             attendanceQuery = attendanceQuery.Where( a => selectedGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
@@ -334,7 +333,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Select( a => a.Id )
                 .Distinct();
 
-            // if the same person is checked in multiple times, only count the most recent attendance
+            // If the same person is checked in multiple times, only count the most recent attendance.
             attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.GroupBy( a => a.PersonId )
                 .Select( s => s.OrderByDescending( o => o.StartDateTime ).FirstOrDefault() ).ToList();
 
@@ -420,12 +419,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
             checkedOutCountField.Visible = groupTypeIdsWithAllowCheckout.Any();
 
 
-            // Always show Present Count regardless of the 'Enable Presense' setting, (a person gets automatically marked present if 'Enable Presence' is disable)
+            // Always show Present Count regardless of the 'Enable Presence' setting. (A person gets automatically marked present if 'Enable Presence' is disabled.)
             presentCountField.Visible = true;
             if ( groupTypeIdsWithEnablePresence.Any() )
             {
                 // Presence is enabled, so records could be in the 'Checked-in' state
-                // and Present column should be labeled 'Present'
+                // and Present column should be labeled 'Present'.
                 checkedInCountField.Visible = true;
                 presentCountField.HeaderText = "Present";
             }
@@ -517,7 +516,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var selectedScheduleIds = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().RoomListScheduleIdsFilter;
 
-            // limit Schedules to ones that are Active, have a CheckInStartOffsetMinutes, and are Named schedules
+            // Limit Schedules to ones that are Active, have a CheckInStartOffsetMinutes, and are Named schedules.
             var scheduleQry = scheduleService.Queryable().Where( a => a.IsActive && a.CheckInStartOffsetMinutes != null && a.Name != null && a.Name != string.Empty );
 
             var scheduleList = scheduleQry.ToList().OrderBy( a => a.Name ).ToList();
