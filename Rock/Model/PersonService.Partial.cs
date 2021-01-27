@@ -1900,7 +1900,7 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
 
             // construct the linq in a way that will return the group members sorted by the GroupOrder setting of the person
-            var groupMembers = groupMemberService.Queryable( true )
+            var groupMembersQry = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupTypeId == groupTypeId )
@@ -1914,11 +1914,19 @@ namespace Rock.Model
                 } )
                 .SelectMany( x => x.SortedMembers )
                 .OrderBy( a => a.PersonGroupOrder ?? int.MaxValue )
-                .Select( a => a.GroupMember )
-                .Where( m => includeDeceased || !m.Person.IsDeceased )
-                .Where( m => includeSelf || m.PersonId != personId );
+                .Select( a => a.GroupMember );
 
-            return groupMembers.Include( a => a.Person ).Include( a => a.GroupRole );
+            if (!includeDeceased)
+            {
+                groupMembersQry = groupMembersQry.Where( m => !m.Person.IsDeceased );
+            }
+
+            if ( !includeSelf )
+            {
+                groupMembersQry = groupMembersQry.Where( m => m.PersonId != personId );
+            }
+
+            return groupMembersQry.Include( a => a.Person ).Include( a => a.GroupRole );
         }
 
         /// <summary>

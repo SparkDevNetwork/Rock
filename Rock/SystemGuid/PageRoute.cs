@@ -60,5 +60,10 @@ namespace Rock.SystemGuid
         /// The oidc logout route.
         /// </summary>
         public const string OIDC_LOGOUT = "5137F15D-61EA-4935-A9E1-16534959AEFA";
+
+        /// <summary>
+        /// The edit person route '/Person/{PersonId}/Edit'
+        /// </summary>
+        public const string EDIT_PERSON_ROUTE = "FCC0CCFF-8E18-48D8-A5EB-3D0F81D68280";
     }
 }
