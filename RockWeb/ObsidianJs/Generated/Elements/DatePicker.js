@@ -1,6 +1,6 @@
-System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValidate/vee-validate.js", "./RockLabel.js"], function (exports_1, context_1) {
+System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValidate/vee-validate.js", "./RockLabel.js", "../Filters/Date.js"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Guid_js_1, vee_validate_js_1, RockLabel_js_1;
+    var vue_js_1, Guid_js_1, vee_validate_js_1, RockLabel_js_1, Date_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -15,6 +15,9 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
             },
             function (RockLabel_js_1_1) {
                 RockLabel_js_1 = RockLabel_js_1_1;
+            },
+            function (Date_js_1_1) {
+                Date_js_1 = Date_js_1_1;
             }
         ],
         execute: function () {
@@ -52,7 +55,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 data: function () {
                     return {
                         uniqueId: "rock-textbox-" + Guid_js_1.newGuid(),
-                        internalValue: this.modelValue
+                        internalValue: Date_js_1.toDatePickerValue(this.modelValue)
                     };
                 },
                 computed: {
@@ -67,7 +70,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 },
                 watch: {
                     modelValue: function () {
-                        this.internalValue = this.modelValue;
+                        this.internalValue = Date_js_1.toDatePickerValue(this.modelValue);
                     }
                 },
                 template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"handleInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group date-picker\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"control-wrapper\">\n            <div class=\"input-group input-width-md date\">\n                <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\" onfocus=\"(this.type='date')\" onblur=\"(this.type='text')\" />\n                <label :for=\"uniqueId\" class=\"input-group-addon\" :disabled=\"disabled\">\n                    <i class=\"fa fa-calendar\"></i>\n                </label>\n            </div>\n        </div>\n    </div>\n</Field>"

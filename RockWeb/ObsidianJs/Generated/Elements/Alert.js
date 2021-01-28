@@ -76,7 +76,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                         return 'btn-default';
                     },
                 },
-                template: "<div class=\"alert\" :class=\"typeClass\">\n    <button v-if=\"dismissible\" type=\"button\" class=\"close\" @click=\"onDismiss\">\n        <span>&times;</span>\n    </button>\n    <slot />\n</div>"
+                template: "\n<div class=\"alert\" :class=\"typeClass\">\n    <button v-if=\"dismissible\" type=\"button\" class=\"close\" @click=\"onDismiss\">\n        <span>&times;</span>\n    </button>\n    <slot />\n</div>"
             }));
         }
     };

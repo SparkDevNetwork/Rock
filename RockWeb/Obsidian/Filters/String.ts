@@ -41,3 +41,25 @@ export function splitCamelCase(val: unknown) {
 
     return val;
 }
+
+/**
+ * Returns an English comma-and fragment.
+ * Ex: ['a', 'b', 'c'] => 'a, b, and c'
+ * @param strs
+ */
+export function asCommaAnd(strs: string[]) {
+    if (strs.length === 0) {
+        return '';
+    }
+
+    if (strs.length === 1) {
+        return strs[0];
+    }
+
+    if (strs.length === 2) {
+        return `${strs[0]} and ${strs[1]}`;
+    }
+
+    const last = strs.pop();
+    return `${strs.join(', ')}, and ${last}`;
+}

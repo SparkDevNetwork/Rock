@@ -31,6 +31,18 @@ System.register([], function (exports_1, context_1) {
     }
     exports_1("asDateOrNull", asDateOrNull);
     /**
+     * To a date picker value.  Mon Dec 2 => 2000-12-02
+     * @param val
+     */
+    function toDatePickerValue(val) {
+        var date = asDateOrNull(val);
+        if (date === null) {
+            return '';
+        }
+        return date.toISOString().split('T')[0];
+    }
+    exports_1("toDatePickerValue", toDatePickerValue);
+    /**
      * Transforms the value into a string like '9/13/2001'
      * @param val
      */

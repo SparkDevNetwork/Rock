@@ -1,4 +1,5 @@
-﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+﻿import { ProcessTransactionArgs } from '../Blocks/Finance/TransactionEntry.js';
+import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
 type Settings = {
     PublicApiKey: string;
@@ -24,6 +25,10 @@ export default defineComponent({
         submit: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+        args: {
+            type: Object as PropType<ProcessTransactionArgs>,
+            required: true
         }
     },
     data() {
@@ -35,7 +40,8 @@ export default defineComponent({
     methods: {
         handleResponse(resp: Response) {
             this.token = resp.token;
-            this.$emit('token', this.token);
+            this.args.ReferenceNumber = this.token;
+            this.$emit('done');
         }
     },
     computed: {

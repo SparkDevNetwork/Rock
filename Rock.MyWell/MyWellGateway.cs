@@ -70,7 +70,7 @@ namespace Rock.MyWell
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IHasObsidianControl
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IObsidianGateway
     {
         #region Attribute Keys
 

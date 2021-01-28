@@ -16,7 +16,7 @@ export default defineComponent({
         },
         label: {
             type: String as PropType<string>,
-            required: true
+            default: ''
         },
         help: {
             type: String as PropType<string>,
@@ -41,6 +41,10 @@ export default defineComponent({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        placeholder: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -92,11 +96,11 @@ export default defineComponent({
         {{charsRemaining}}
     </em>
     <div class="form-group rock-text-box" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
-        <RockLabel :for="uniqueId" :help="help">
+        <RockLabel v-if="label" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" />
+            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" />
         </div>
     </div>
 </Field>`

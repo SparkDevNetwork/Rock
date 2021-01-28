@@ -2,6 +2,7 @@
 import { newGuid } from '../Util/Guid.js';
 import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 import RockLabel from './RockLabel.js';
+import { toDatePickerValue } from '../Filters/Date.js';
 
 export default defineComponent({
     name: 'DatePicker',
@@ -37,7 +38,7 @@ export default defineComponent({
     data: function () {
         return {
             uniqueId: `rock-textbox-${newGuid()}`,
-            internalValue: this.modelValue
+            internalValue: toDatePickerValue(this.modelValue)
         };
     },
     computed: {
@@ -52,7 +53,7 @@ export default defineComponent({
     },
     watch: {
         modelValue: function () {
-            this.internalValue = this.modelValue;
+            this.internalValue = toDatePickerValue(this.modelValue);
         }
     },
     template: `

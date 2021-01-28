@@ -792,6 +792,7 @@
     <Compile Include="ViewModel\AttributeViewModel.partial.cs" />
     <Compile Include="ViewModel\CodeGenerated\AttributeValueViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\AttributeViewModel.cs" />
+    <Compile Include="ViewModel\CodeGenerated\FinancialAccountViewModel.cs" />
     <Compile Include="ViewModel\CodeGenerated\PersonViewModel.cs" />
     <Compile Include="ViewModel\AttributeValueViewModel.partial.cs" />
     <Compile Include="ViewModel\PersonViewModel.partial.cs" />

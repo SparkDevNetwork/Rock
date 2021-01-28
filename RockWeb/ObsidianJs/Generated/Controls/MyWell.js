@@ -19,6 +19,10 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                     submit: {
                         type: Boolean,
                         required: true
+                    },
+                    args: {
+                        type: Object,
+                        required: true
                     }
                 },
                 data: function () {
@@ -30,7 +34,8 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                 methods: {
                     handleResponse: function (resp) {
                         this.token = resp.token;
-                        this.$emit('token', this.token);
+                        this.args.ReferenceNumber = this.token;
+                        this.$emit('done');
                     }
                 },
                 computed: {
@@ -100,7 +105,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                 },
                 watch: {
                     submit: function () {
-                        if (this.submit && this.tokenizer) {
+                        if (!this.token && this.submit && this.tokenizer) {
                             this.tokenizer.submit();
                         }
                     }

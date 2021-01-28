@@ -15,12 +15,20 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Obsidian.Util;
+using Rock.Tasks;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Obsidian.Blocks.Finance
@@ -823,7 +831,7 @@ mission. We are so grateful for your commitment.</p>
         /// Gets the financial gateway component that is configured for this block
         /// </summary>
         /// <returns></returns>
-        private IHasObsidianControl FinancialGatewayComponent
+        private IObsidianGateway FinancialGatewayComponent
         {
             get
             {
@@ -832,14 +840,14 @@ mission. We are so grateful for your commitment.</p>
                     var financialGateway = FinancialGateway;
                     if ( financialGateway != null )
                     {
-                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IHasObsidianControl;
+                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IObsidianGateway;
                     }
                 }
 
                 return _financialGatewayComponent;
             }
         }
-        private IHasObsidianControl _financialGatewayComponent = null;
+        private IObsidianGateway _financialGatewayComponent = null;
 
         #endregion Gateway
 
@@ -853,18 +861,978 @@ mission. We are so grateful for your commitment.</p>
         /// </returns>
         public override object GetBlockSettings()
         {
-            if ( FinancialGateway == null || FinancialGatewayComponent == null )
-            {
-                return null;
-            }
-
             return new
             {
-                GatewayControlFileUrl = FinancialGatewayComponent.GetObsidianControlFileUrl( FinancialGateway ),
-                GatewayControlSettings = FinancialGatewayComponent.GetObsidianControlSettings( FinancialGateway )
+                FinancialAccounts = GetAccountViewModels(),
+                GatewayControlFileUrl = FinancialGatewayComponent?.GetObsidianControlFileUrl( FinancialGateway ),
+                GatewayControlSettings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway )
             };
         }
 
         #endregion Obsidian Overrides
+
+        #region Attribute Helpers
+
+        /// <summary>
+        /// Gets the account view models.
+        /// </summary>
+        /// <returns></returns>
+        private List<FinancialAccountViewModel> GetAccountViewModels() {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialAccountService( rockContext );
+                var allowedGuids = GetAttributeValue( AttributeKey.AccountsToDisplay ).SplitDelimitedValues().AsGuidList();
+                var accounts = service.GetByGuids( allowedGuids ).ToList();
+
+                return accounts
+                    .Select( a => a.ToViewModel<FinancialAccountViewModel>( null, false ) )
+                    .ToList();
+            }
+            
+        }
+
+        /// <summary>
+        /// Gets the transaction entity.
+        /// </summary>
+        /// <returns></returns>
+        private IEntity GetTransactionEntity( int? transactionEntityId )
+        {
+            IEntity transactionEntity = null;
+            Guid? transactionEntityTypeGuid = GetAttributeValue( AttributeKey.TransactionEntityType ).AsGuidOrNull();
+            if ( transactionEntityTypeGuid.HasValue )
+            {
+                var transactionEntityType = EntityTypeCache.Get( transactionEntityTypeGuid.Value );
+                if ( transactionEntityType != null )
+                {
+                    if ( transactionEntityId.HasValue )
+                    {
+                        transactionEntity = Reflection.GetIEntityForEntityType( transactionEntityType.GetEntityType(), transactionEntityId.Value );
+                    }
+                }
+            }
+
+            return transactionEntity;
+        }
+
+        #endregion Attribute Helpers
+
+        #region Transaction Helpers
+
+        /// <summary>
+        /// Populates the transaction details for a FinancialTransaction or ScheduledFinancialTransaction
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="transactionDetails">The transaction details.</param>
+        private void PopulateTransactionDetails<T>( ICollection<T> transactionDetails, ProcessTransactionArgs args )
+            where T : ITransactionDetail, new()
+        {
+            var transactionEntity = GetTransactionEntity( args.TransactionEntityId );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialAccountService( rockContext );
+                var allowedGuids = GetAttributeValue( AttributeKey.AccountsToDisplay ).SplitDelimitedValues().AsGuidList();
+                var accountGuidToIdMap = service.GetByGuids( allowedGuids ).ToDictionary( fa => fa.Guid, fa => fa.Id );
+
+                foreach ( var arg in args.AccountAmounts.Where( kvp => kvp.Value > 0 ) )
+                {
+                    var accountId = accountGuidToIdMap.GetValueOrNull( arg.Key );
+
+                    if ( !accountId.HasValue )
+                    {
+                        break;
+                    }
+
+                    var transactionDetail = new T
+                    {
+                        Amount = arg.Value,
+                        AccountId = accountId.Value,
+                        EntityTypeId = transactionEntity?.TypeId,
+                        EntityId = transactionEntity?.Id
+                    };
+
+                    transactionDetails.Add( transactionDetail );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Creates the target person from the information collected (Name, Phone, Email, Address), or returns a matching person if they already exist.
+        /// NOTE: Use <seealso cref="CreateBusiness" /> to creating a Business(Person) record
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Person CreateTargetPerson( ProcessTransactionArgs args )
+        {
+            var firstName = args.FirstName;
+            var lastName = args.LastName;
+            var email = args.Email;
+
+            if ( firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace() && email.IsNotNullOrWhiteSpace() )
+            {
+                var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, args.PhoneNumber );
+                var matchingPerson = new PersonService( new RockContext() ).FindPerson( personQuery, true );
+
+                if ( matchingPerson != null )
+                {
+                    return matchingPerson;
+                }
+            }
+
+            return CreatePersonOrBusiness( args );
+        }
+
+        /// <summary>
+        /// Creates the business contact person.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Person CreateBusinessContactPerson( ProcessTransactionArgs args )
+        {
+            var firstName = args.FirstName;
+            var lastName = args.LastName;
+            var email = args.Email;
+
+            if ( firstName.IsNotNullOrWhiteSpace() && lastName.IsNotNullOrWhiteSpace() && email.IsNotNullOrWhiteSpace() )
+            {
+                var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, args.PhoneNumber );
+                var matchingPerson = new PersonService( new RockContext() ).FindPerson( personQuery, true );
+
+                if ( matchingPerson != null )
+                {
+                    return matchingPerson;
+                }
+            }
+
+            return CreatePersonOrBusiness( args );
+        }
+
+        /// <summary>
+        /// Creates a business (or returns an existing business if the person already has a business with the same business name)
+        /// </summary>
+        /// <param name="contactPerson">The contact person.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Person CreateBusiness( Person contactPerson, ProcessTransactionArgs args )
+        {
+            var businessName = args.BusinessName;
+
+            // Try to find existing business for person that has the same name
+            var personBusinesses = contactPerson.GetBusinesses()
+                .Where( b => b.LastName == businessName )
+                .ToList();
+
+            if ( personBusinesses.Count() == 1 )
+            {
+                return personBusinesses.First();
+            }
+
+            var email = args.Email;
+            var business = CreatePersonOrBusiness( args );
+
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            personService.AddContactToBusiness( business.Id, contactPerson.Id );
+            rockContext.SaveChanges();
+
+            return business;
+        }
+
+        /// <summary>
+        /// Creates the person or business.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Person CreatePersonOrBusiness( ProcessTransactionArgs args )
+        {
+            var firstName = args.FirstName;
+            var lastName = args.LastName;
+            var email = args.Email;
+            var createBusiness = !args.IsGivingAsPerson;
+
+            var rockContext = new RockContext();
+            DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.PersonConnectionStatus ).AsGuid() );
+            DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.PersonRecordStatus ).AsGuid() );
+
+            // Create Person
+            var newPersonOrBusiness = new Person();
+            newPersonOrBusiness.FirstName = firstName;
+            newPersonOrBusiness.LastName = lastName;
+
+            newPersonOrBusiness.Email = email;
+            newPersonOrBusiness.IsEmailActive = true;
+            newPersonOrBusiness.EmailPreference = EmailPreference.EmailAllowed;
+            if ( createBusiness )
+            {
+                newPersonOrBusiness.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+            }
+            else
+            {
+                newPersonOrBusiness.RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
+            }
+
+            if ( dvcConnectionStatus != null )
+            {
+                newPersonOrBusiness.ConnectionStatusValueId = dvcConnectionStatus.Id;
+            }
+
+            if ( dvcRecordStatus != null )
+            {
+                newPersonOrBusiness.RecordStatusValueId = dvcRecordStatus.Id;
+            }
+
+            var campus = args.CampusGuid.HasValue ? CampusCache.Get( args.CampusGuid.Value ) : null;
+            var campusId = campus?.Id;
+
+            // Create Person and Family, and set their primary campus to the one they gave money to
+            PersonService.SaveNewPerson( newPersonOrBusiness, rockContext, campusId, false );
+
+            // SaveNewPerson should have already done this, but just in case
+            rockContext.SaveChanges();
+
+            return newPersonOrBusiness;
+        }
+
+        /// <summary>
+        /// Person Input Source
+        /// </summary>
+        private enum PersonInputSource
+        {
+            Person,
+            Business,
+            BusinessContact
+        }
+
+        /// <summary>
+        /// Updates the person/business from the information collected (Phone, Email, Address) and saves changes (if any) to the database.
+        /// </summary>
+        /// <param name="personOrBusiness">The person or business.</param>
+        /// <param name="personInputSource">The person input source.</param>
+        /// <param name="args">The arguments.</param>
+        /// <exception cref="Exception">Unexpected PersonInputSource</exception>
+        private void UpdatePersonOrBusinessFromInputInformation( Person personOrBusiness, PersonInputSource personInputSource, ProcessTransactionArgs args )
+        {
+            var promptForEmail = GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
+            var promptForPhone = GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
+            int numberTypeId;
+            Guid locationTypeGuid;
+
+            switch ( personInputSource )
+            {
+                case PersonInputSource.Business:
+                    numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                    locationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                    break;
+                case PersonInputSource.BusinessContact:
+                    numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                    locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                    break;
+                case PersonInputSource.Person:
+                    numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                    locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                    break;
+                default:
+                    throw new Exception( "Unexpected PersonInputSource" );
+            }
+
+            if ( promptForPhone && args.PhoneNumber.IsNotNullOrWhiteSpace() )
+            {
+                var phone = personOrBusiness.PhoneNumbers.FirstOrDefault( p => p.NumberTypeValueId == numberTypeId );
+
+                if ( phone == null )
+                {
+                    phone = new PhoneNumber();
+                    personOrBusiness.PhoneNumbers.Add( phone );
+                    phone.NumberTypeValueId = numberTypeId;
+                }
+
+                phone.CountryCode = PhoneNumber.CleanNumber( args.PhoneCountryCode );
+                phone.Number = PhoneNumber.CleanNumber( args.PhoneNumber );
+            }
+
+            var primaryFamily = personOrBusiness.GetFamily();
+
+            if ( primaryFamily != null )
+            {
+                var rockContext = new RockContext();
+
+                // fetch primaryFamily using rockContext so that any changes will get saved
+                primaryFamily = new GroupService( rockContext ).Get( primaryFamily.Id );
+
+                GroupService.AddNewGroupAddress(
+                    rockContext,
+                    primaryFamily,
+                    locationTypeGuid.ToString(),
+                    args.Street1,
+                    args.Street2,
+                    args.City,
+                    args.State,
+                    args.PostalCode,
+                    args.Country,
+                    true );
+            }
+        }
+
+        /// <summary>
+        /// Creates a business (or returns an existing business if the person already has a business with the same business name)
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="contactPerson">The contact person.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Person CreateBusiness( RockContext rockContext, Person contactPerson, ProcessTransactionArgs args )
+        {
+            var businessName = args.BusinessName;
+
+            // Try to find existing business for person that has the same name
+            var personBusinesses = contactPerson.GetBusinesses()
+                .Where( b => b.LastName == businessName )
+                .ToList();
+
+            if ( personBusinesses.Count() == 1 )
+            {
+                return personBusinesses.First();
+            }
+
+            var email = args.Email;
+            var business = CreatePersonOrBusiness( args );
+
+            var personService = new PersonService( rockContext );
+            personService.AddContactToBusiness( business.Id, contactPerson.Id );
+            rockContext.SaveChanges();
+
+            return business;
+        }
+
+        /// <summary>
+        /// Determines whether a scheduled giving frequency was selected
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is scheduled transaction]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsScheduledTransaction( ProcessTransactionArgs args )
+        {
+            var oneTimeFrequencyGuid = Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid();
+
+            if ( args.FrequencyValueGuid != oneTimeFrequencyGuid )
+            {
+                return true;
+            }
+            else
+            {
+                return args.GiftDate > RockDateTime.Now.Date;
+            }
+        }
+
+        /// <summary>
+        /// Saves the transaction.
+        /// </summary>
+        /// <param name="transactionGuid">The transaction unique identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="args">The arguments.</param>
+        private void SaveTransaction( Guid transactionGuid, int personId, PaymentInfo paymentInfo, FinancialTransaction transaction, ProcessTransactionArgs args )
+        {
+            var rockContext = new RockContext();
+
+            // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
+            transaction.Guid = transactionGuid;
+            transaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
+            transaction.ShowAsAnonymous = args.IsGiveAnonymously;
+            transaction.TransactionDateTime = RockDateTime.Now;
+            transaction.FinancialGatewayId = FinancialGateway.Id;
+
+            var txnType = DefinedValueCache.Get( this.GetAttributeValue( AttributeKey.TransactionType ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            transaction.TransactionTypeValueId = txnType.Id;
+            transaction.Summary = paymentInfo.Comment1;
+
+            if ( transaction.FinancialPaymentDetail == null )
+            {
+                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, FinancialGatewayComponent as GatewayComponent, rockContext );
+
+            var sourceGuid = GetAttributeValue( AttributeKey.FinancialSourceType ).AsGuidOrNull();
+
+            if ( sourceGuid.HasValue )
+            {
+                transaction.SourceTypeValueId = DefinedValueCache.GetId( sourceGuid.Value );
+            }
+
+            PopulateTransactionDetails( transaction.TransactionDetails, args );
+
+            var batchService = new FinancialBatchService( rockContext );
+
+            // Get the batch
+            var batch = batchService.Get(
+                GetAttributeValue( AttributeKey.BatchNamePrefix ),
+                paymentInfo.CurrencyTypeValue,
+                paymentInfo.CreditCardTypeValue,
+                transaction.TransactionDateTime.Value,
+                FinancialGateway.GetBatchTimeOffset() );
+
+            var batchChanges = new History.HistoryChangeList();
+
+            if ( batch.Id == 0 )
+            {
+                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+            }
+
+            transaction.LoadAttributes( rockContext );
+
+            var allowedTransactionAttributes = GetAttributeValue( AttributeKey.AllowedTransactionAttributesFromURL ).Split( ',' ).AsGuidList().Select( x => AttributeCache.Get( x ).Key );
+
+            /* TODO
+            foreach ( KeyValuePair<string, AttributeValueCache> attr in transaction.AttributeValues )
+            {
+                if ( PageParameters().ContainsKey( PageParameterKey.AttributeKeyPrefix + attr.Key ) && allowedTransactionAttributes.Contains( attr.Key ) )
+                {
+                    attr.Value.Value = Server.UrlDecode( PageParameter( PageParameterKey.AttributeKeyPrefix + attr.Key ) );
+                }
+            }
+            */
+
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0 )
+            {
+                rockContext.SaveChanges();
+            }
+
+            transaction.BatchId = batch.Id;
+
+            // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+            financialTransactionService.Add( transaction );
+            rockContext.SaveChanges();
+            transaction.SaveAttributeValues();
+
+            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+            rockContext.SaveChanges();
+
+            HistoryService.SaveChanges(
+                rockContext,
+                typeof( FinancialBatch ),
+                Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                batch.Id,
+                batchChanges );
+
+            SendReceipt( transaction.Id );
+        }
+
+        /// <summary>
+        /// Saves the scheduled transaction.
+        /// </summary>
+        /// <param name="transactionGuid">The transaction unique identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="args">The arguments.</param>
+        private void SaveScheduledTransaction(
+            Guid transactionGuid,
+            int personId,
+            PaymentInfo paymentInfo,
+            PaymentSchedule schedule,
+            FinancialScheduledTransaction scheduledTransaction,
+            ProcessTransactionArgs args )
+        {
+            var rockContext = new RockContext();
+
+            // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
+            scheduledTransaction.Guid = transactionGuid;
+
+            scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
+            scheduledTransaction.StartDate = schedule.StartDate;
+            scheduledTransaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId ).Value;
+            scheduledTransaction.FinancialGatewayId = FinancialGateway.Id;
+
+            scheduledTransaction.Summary = paymentInfo.Comment1;
+
+            if ( scheduledTransaction.FinancialPaymentDetail == null )
+            {
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, FinancialGatewayComponent as GatewayComponent, rockContext );
+
+            Guid? sourceGuid = GetAttributeValue( AttributeKey.FinancialSourceType ).AsGuidOrNull();
+            if ( sourceGuid.HasValue )
+            {
+                scheduledTransaction.SourceTypeValueId = DefinedValueCache.GetId( sourceGuid.Value );
+            }
+
+            PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails, args );
+
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            financialScheduledTransactionService.Add( scheduledTransaction );
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Sends the receipt.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        private void SendReceipt( int transactionId )
+        {
+            var receiptEmail = GetAttributeValue( AttributeKey.ReceiptEmail ).AsGuidOrNull();
+
+            if ( receiptEmail.HasValue )
+            {
+                // Queue a transaction to send receipts
+                new ProcessSendPaymentReceiptEmails.Message
+                {
+                    SystemEmailGuid = receiptEmail.Value,
+                    TransactionId = transactionId
+                }.Send();
+            }
+        }
+
+        #endregion Transaction Helpers
+
+        #region Block Actions
+
+        /// <summary>
+        /// Processes the transaction.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult ProcessTransaction( Guid transactionGuid, ProcessTransactionArgs args )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // to make duplicate transactions impossible, make sure that our Transaction hasn't already been processed as a regular or scheduled transaction
+                var transactionAlreadyExists =
+                    (
+                        new FinancialTransactionService( rockContext )
+                        .Queryable()
+                        .Any( a => a.Guid == transactionGuid )
+                    ) ||
+                    (
+                        new FinancialScheduledTransactionService( rockContext )
+                        .Queryable()
+                        .Any( a => a.Guid == transactionGuid )
+                    );
+
+                if ( transactionAlreadyExists )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "A transaction with the same unique identifier has already been created. This might occur when a duplicate charge was requested." );
+                }
+            }
+
+            // Validation
+            if ( args.AccountAmounts == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one account must be selected to designate the funds." );
+            }
+
+            if ( args.AccountAmounts.Any( kvp => kvp.Value < 0 ) )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "Amounts designated cannot be less than $0." );
+            }
+
+            var totalAmount = args.AccountAmounts.Sum( kvp => kvp.Value );
+
+            if ( totalAmount < 0 )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The total amount must be greater than $0" );
+            }
+
+            // Convert financial saved account Guid to id
+            FinancialPersonSavedAccount savedAccount = null;
+            var currentPerson = GetCurrentPerson();
+
+            if ( args.FinancialPersonSavedAccountGuid.HasValue && currentPerson != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new FinancialPersonSavedAccountService( rockContext );
+                    savedAccount = service
+                        .GetByPersonId( currentPerson.Id )
+                        .FirstOrDefault( sa => sa.Guid == args.FinancialPersonSavedAccountGuid.Value );
+                }
+
+                if ( savedAccount == null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The saved account unique identifier is not valid" );
+                }
+            }
+
+            // Build transaction details
+            var transactionDetails = new List<FinancialTransactionDetail>();
+            PopulateTransactionDetails( transactionDetails, args );
+
+            if ( transactionDetails.Sum( td => td.Amount ) != totalAmount )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "One of the designated account unique identifiers is not valid" );
+            }
+
+            // Build the payment info
+            var paymentInfo = new ReferencePaymentInfo
+            {
+                Amount = totalAmount,
+                Email = args.Email,
+                Phone = PhoneNumber.FormattedNumber( args.PhoneCountryCode, args.PhoneNumber, true ),
+                Street1 = args.Street1,
+                Street2 = args.Street2,
+                City = args.City,
+                State = args.State,
+                PostalCode = args.PostalCode,
+                Country = args.Country,
+                FirstName = args.FirstName,
+                LastName = args.LastName,
+                BusinessName = args.BusinessName,
+                FinancialPersonSavedAccountId = savedAccount?.Id
+            };
+
+            // get the payment comment
+            var transactionDateTime = RockDateTime.Now;
+            var mergeFields = LavaHelper.GetCommonMergeFields( null, currentPerson );
+            mergeFields.Add( "TransactionDateTime", transactionDateTime );
+            mergeFields.Add( "CurrencyType", paymentInfo.CurrencyTypeValue );
+            mergeFields.Add( "TransactionAccountDetails", transactionDetails );
+            var paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
+
+            // Add comments if enabled
+            if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
+            {
+                if ( paymentComment.IsNotNullOrWhiteSpace() )
+                {
+                    paymentInfo.Comment1 = string.Format( "{0}: {1}", paymentComment, args.Comment );
+                }
+                else
+                {
+                    paymentInfo.Comment1 = args.Comment;
+                }
+            }
+            else
+            {
+                paymentInfo.Comment1 = paymentComment;
+            }
+
+            // use the paymentToken as the reference number for creating the customer account
+            if ( savedAccount?.ReferenceNumber.IsNullOrWhiteSpace() == false )
+            {
+                paymentInfo.GatewayPersonIdentifier = savedAccount.ReferenceNumber;
+            }
+            else
+            {
+                paymentInfo.ReferenceNumber = args.ReferenceNumber;
+                paymentInfo.GatewayPersonIdentifier = FinancialGatewayComponent.CreateCustomerAccount( FinancialGateway, paymentInfo, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() || paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                }
+            }
+
+            // determine or create the Person record that this transaction is for
+            var targetPerson = currentPerson;
+            int transactionPersonId;
+
+            if ( targetPerson == null )
+            {
+                if ( !args.IsGivingAsPerson )
+                {
+                    targetPerson = CreateBusinessContactPerson( args );
+                }
+                else
+                {
+                    targetPerson = CreateTargetPerson( args );
+                }
+            }
+
+            UpdatePersonOrBusinessFromInputInformation(
+                targetPerson,
+                args.IsGivingAsPerson ? PersonInputSource.Person : PersonInputSource.BusinessContact,
+                args );
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !args.IsGivingAsPerson )
+                {
+                    var business = new PersonService( rockContext ).Get( args.BusinessGuid.Value );
+
+                    if ( business == null )
+                    {
+                        business = CreateBusiness( rockContext, targetPerson, args );
+                    }
+
+                    UpdatePersonOrBusinessFromInputInformation( business, PersonInputSource.Business, args );
+                    transactionPersonId = business.Id;
+                }
+                else
+                {
+                    transactionPersonId = targetPerson.Id;
+                }
+
+                // just in case anything about the person/business was updated (email or phone), save changes
+                rockContext.SaveChanges();
+            }
+
+            if ( IsScheduledTransaction( args ) )
+            {
+                string gatewayScheduleId = null;
+                try
+                {
+                    PaymentSchedule paymentSchedule = new PaymentSchedule
+                    {
+                        TransactionFrequencyValue = DefinedValueCache.Get( args.FrequencyValueGuid ),
+                        StartDate = args.GiftDate,
+                        PersonId = transactionPersonId
+                    };
+
+                    var financialScheduledTransaction = ( FinancialGatewayComponent as GatewayComponent ).AddScheduledPayment(
+                        FinancialGateway,
+                        paymentSchedule,
+                        paymentInfo,
+                        out var errorMessage );
+
+                    if ( financialScheduledTransaction == null )
+                    {
+                        return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                    }
+
+                    gatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
+                    SaveScheduledTransaction( transactionGuid, transactionPersonId, paymentInfo, paymentSchedule, financialScheduledTransaction, args );
+                }
+                catch ( Exception ex )
+                {
+                    if ( gatewayScheduleId.IsNotNullOrWhiteSpace() )
+                    {
+                        // if we didn't get the gatewayScheduleId from AddScheduledPayment, see if the gateway paymentInfo.TransactionCode before the exception occurred
+                        gatewayScheduleId = paymentInfo.TransactionCode;
+                    }
+
+                    // if an exception occurred, it is possible that an orphaned subscription might be on the Gateway server. Some gateway components will clean-up when there is exception, but log it just in case it needs to be resolved by a human
+                    throw new Exception( string.Format( "Error occurred when saving financial scheduled transaction for gateway scheduled payment with a gatewayScheduleId of {0} and FinancialScheduledTransaction with Guid of {1}.", gatewayScheduleId, transactionGuid ), ex );
+                }
+            }
+            else
+            {
+                string transactionCode = null;
+
+                try
+                {
+                    var financialTransaction = ( FinancialGatewayComponent as GatewayComponent ).Charge( FinancialGateway, paymentInfo, out var errorMessage );
+
+                    if ( financialTransaction == null )
+                    {
+                        return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                    }
+
+                    transactionCode = financialTransaction.TransactionCode;
+                    SaveTransaction( transactionGuid, transactionPersonId, paymentInfo, financialTransaction, args );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( string.Format( "Error occurred when saving financial transaction for gateway payment with a transactionCode of {0} and FinancialTransaction with Guid of {1}.", transactionCode, transactionGuid ), ex );
+                }
+            }
+
+            return new BlockActionResult( System.Net.HttpStatusCode.Created );
+        }
+
+        #endregion Block Actions
+
+        #region ViewModels
+
+        /// <summary>
+        /// Process Transaction Args
+        /// </summary>
+        public sealed class ProcessTransactionArgs
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is giving as person.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is giving as person; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsGivingAsPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the email.
+            /// </summary>
+            /// <value>
+            /// The email.
+            /// </value>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the phone number.
+            /// </summary>
+            /// <value>
+            /// The phone number.
+            /// </value>
+            public string PhoneNumber { get; set; }
+
+            /// <summary>
+            /// Gets or sets the phone country code.
+            /// </summary>
+            /// <value>
+            /// The phone country code.
+            /// </value>
+            public string PhoneCountryCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the account amount arguments.
+            /// </summary>
+            /// <value>
+            /// The account amount arguments.
+            /// </value>
+            public Dictionary<Guid, decimal> AccountAmounts { get; set; }
+
+            /// <summary>
+            /// Gets the street1.
+            /// </summary>
+            /// <value>
+            /// The street1.
+            /// </value>
+            public string Street1 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the street2.
+            /// </summary>
+            /// <value>
+            /// The street2.
+            /// </value>
+            public string Street2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets the city.
+            /// </summary>
+            /// <value>
+            /// The city.
+            /// </value>
+            public string City { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
+            public string State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the postal code.
+            /// </summary>
+            /// <value>
+            /// The postal code.
+            /// </value>
+            public string PostalCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the country.
+            /// </summary>
+            /// <value>
+            /// The country.
+            /// </value>
+            public string Country { get; set; }
+
+            /// <summary>
+            /// Gets or sets the first name.
+            /// </summary>
+            /// <value>
+            /// The first name.
+            /// </value>
+            public string FirstName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the last name.
+            /// </summary>
+            /// <value>
+            /// The last name.
+            /// </value>
+            public string LastName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the business.
+            /// </summary>
+            /// <value>
+            /// The name of the business.
+            /// </value>
+            public string BusinessName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the financial person saved account unique identifier.
+            /// </summary>
+            /// <value>
+            /// The financial person saved account unique identifier.
+            /// </value>
+            public Guid? FinancialPersonSavedAccountGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the comment.
+            /// </summary>
+            /// <value>
+            /// The comment.
+            /// </value>
+            public string Comment { get; set; }
+
+            /// <summary>
+            /// Gets or sets the transaction entity identifier.
+            /// </summary>
+            /// <value>
+            /// The transaction entity identifier.
+            /// </value>
+            public int? TransactionEntityId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the reference number.
+            /// </summary>
+            /// <value>
+            /// The reference number.
+            /// </value>
+            public string ReferenceNumber { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus unique identifier.
+            /// </summary>
+            /// <value>
+            /// The campus unique identifier.
+            /// </value>
+            public Guid? CampusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the business unique identifier.
+            /// </summary>
+            /// <value>
+            /// The business unique identifier.
+            /// </value>
+            public Guid? BusinessGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the frequency value unique identifier.
+            /// </summary>
+            /// <value>
+            /// The frequency value unique identifier.
+            /// </value>
+            public Guid FrequencyValueGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the gift date.
+            /// </summary>
+            /// <value>
+            /// The gift date.
+            /// </value>
+            public DateTime GiftDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is give anonymously.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is give anonymously; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsGiveAnonymously { get; set; }
+        }
+
+        #endregion ViewModels
     }
 }

@@ -31,7 +31,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     },
                     label: {
                         type: String,
-                        required: true
+                        default: ''
                     },
                     help: {
                         type: String,
@@ -56,6 +56,10 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                     disabled: {
                         type: Boolean,
                         default: false
+                    },
+                    placeholder: {
+                        type: String,
+                        default: ''
                     }
                 },
                 emits: [
@@ -94,7 +98,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"handleInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <em v-if=\"showCountDown\" class=\"pull-right badge\" :class=\"countdownClass\">\n        {{charsRemaining}}\n    </em>\n    <div class=\"form-group rock-text-box\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"control-wrapper\">\n            <input :id=\"uniqueId\" :type=\"type\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" :maxlength=\"maxLength\" />\n        </div>\n    </div>\n</Field>"
+                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"handleInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <em v-if=\"showCountDown\" class=\"pull-right badge\" :class=\"countdownClass\">\n        {{charsRemaining}}\n    </em>\n    <div class=\"form-group rock-text-box\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel v-if=\"label\" :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"control-wrapper\">\n            <input :id=\"uniqueId\" :type=\"type\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" :maxlength=\"maxLength\" :placeholder=\"placeholder\" />\n        </div>\n    </div>\n</Field>"
             }));
         }
     };

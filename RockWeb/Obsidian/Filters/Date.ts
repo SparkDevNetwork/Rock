@@ -34,6 +34,20 @@ export function asDateOrNull(val: unknown) {
 }
 
 /**
+ * To a date picker value.  Mon Dec 2 => 2000-12-02
+ * @param val
+ */
+export function toDatePickerValue(val: unknown) {
+    const date = asDateOrNull(val);
+
+    if (date === null) {
+        return '';
+    }
+
+    return date.toISOString().split('T')[0];
+}
+
+/**
  * Transforms the value into a string like '9/13/2001'
  * @param val
  */

@@ -73,8 +73,8 @@ export default defineComponent({
             return 'btn-default';
         },
     },
-    template:
-`<div class="alert" :class="typeClass">
+    template: `
+<div class="alert" :class="typeClass">
     <button v-if="dismissible" type="button" class="close" @click="onDismiss">
         <span>&times;</span>
     </button>

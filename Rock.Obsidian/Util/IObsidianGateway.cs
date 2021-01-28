@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Financial;
 using Rock.Model;
 
 namespace Rock.Obsidian.Util
@@ -22,7 +23,7 @@ namespace Rock.Obsidian.Util
     /// <summary>
     /// A class that has an Obsidian control
     /// </summary>
-    public interface IHasObsidianControl
+    public interface IObsidianGateway
     {
         /// <summary>
         /// Gets the obsidian control file URL.
@@ -37,5 +38,15 @@ namespace Rock.Obsidian.Util
         /// <param name="financialGateway">The financial gateway.</param>
         /// <returns></returns>
         object GetObsidianControlSettings( FinancialGateway financialGateway );
+
+        /// <summary>
+        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl" />
+        /// and returns a customer account token that can be used for future transactions.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage );
     }
 }
