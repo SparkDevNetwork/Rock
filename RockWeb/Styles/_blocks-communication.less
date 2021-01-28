@@ -42,20 +42,26 @@ iframe.email-body {
 
 // 2. Communication Entry
 // -------------------------
-.emaileditor-wrapper {
-  position: relative;
-  height: 900px;
-  margin: -15px;
+#emaileditor,
+.panel-fill-body {
+  margin: -15px -15px 0 -15px;
+  border-bottom: 1px solid @panel-border;
+  min-height: 300px;
+  height: ~"calc(100vh - var(--email-editor-offset,360px))";
 }
 
-#emaileditor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+.panel-actions-bordered {
+  border-top: 1px solid @panel-border;
+  margin: @panel-body-padding -@panel-body-padding 0;
+  padding: @panel-body-padding @panel-body-padding 0;
+}
+
+#emaileditor-properties {
+  width: 40%;
+  padding: (@grid-gutter-width / 2);
   background-color: @panel-heading-bg;
 }
+
 
 #section-email {
   position: absolute;
@@ -94,15 +100,6 @@ iframe.email-body {
   border: 0;
 }
 
-#emaileditor-properties {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 40%;
-  padding: 12px;
-}
-
 
 // 3. Communication Wizard
 // -------------------------
@@ -116,6 +113,7 @@ iframe.email-body {
   overflow: hidden;
   color: @text-color;
   border: 1px solid @panel-border;
+  outline-offset: -1px;
 
   &:focus {
     color: @text-color;
@@ -123,7 +121,7 @@ iframe.email-body {
 
   &:hover {
     color: @text-color;
-    border: 2px solid @alert-info-border;
+    outline: 2px solid @alert-info-border;
   }
 
   label {
@@ -132,10 +130,10 @@ iframe.email-body {
 }
 
 .template-selected {
-  border: 2px solid @alert-info-text;
+  outline: 2px solid @alert-info-text;
 
   &:hover {
-    border: 2px solid @alert-info-text;
+    outline: 2px solid @alert-info-text;
   }
 
   &::before {
