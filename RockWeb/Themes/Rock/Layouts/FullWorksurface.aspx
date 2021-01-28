@@ -17,13 +17,25 @@
 
 <asp:Content ID="ctFeature" ContentPlaceHolderID="feature" runat="server">
     <style>
-    .main-content {
+    body.is-fullscreen #content-wrapper > .row {
+	 padding: 0 !important;
+    }
+    body.is-fullscreen #content-wrapper > .row > .col-md-12 {
+        padding: 0;
+    }
+    body.is-fullscreen #content-wrapper, body.is-fullscreen .page-wrapper {
+        margin: 0;
+        padding: 0;
+    }
+    .main-content,
+    body.is-fullscreen #cms-admin-footer, body.is-fullscreen .navbar-static-side, body.is-fullscreen .rock-top-header {
         display: none;
     }
 
     .panel.panel-block {
         margin-bottom: 0;
-        height: calc(100vh - 152px); /* Where 152px is the height of the header and footer */
+        height: calc(100vh - 152px);
+        height: calc(100vh - var(--full-worksurface-offset, 152px)); /* Where 152px is the height of the header and footer */
         overflow-y: auto;
     }
 </style>
