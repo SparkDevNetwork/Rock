@@ -96,19 +96,21 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
                 var twilioMessage = new Twilio.TwiML.Message();
 
-                if ( smsResponse != null )
+                if ( smsResponse == null )
                 {
-                    if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
-                    {
-                        twilioMessage.Body( smsResponse.Message );
-                    }
+                    return null;
+                }
+                
+                if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
+                {
+                    twilioMessage.Body( smsResponse.Message );
+                }
 
-                    if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                {
+                    foreach ( var binaryFile in smsResponse.Attachments )
                     {
-                        foreach ( var binaryFile in smsResponse.Attachments )
-                        {
-                            twilioMessage.Media( binaryFile.Url );
-                        }
+                        twilioMessage.Media( binaryFile.Url );
                     }
                 }
 

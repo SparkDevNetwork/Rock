@@ -349,7 +349,7 @@
                                 <div class="emaileditor-propertypanels js-propertypanels">
                                     <!-- Text/Html Properties -->
                                     <div class="propertypanel propertypanel-text" data-component="text" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">Text</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">Text</h4>
 
                                         <Rock:HtmlEditor ID="htmlEditor" CssClass="js-component-text-htmlEditor" runat="server" Height="350" CallbackOnChangeScript="updateTextComponent(this, contents);" />
 
@@ -429,7 +429,7 @@
 
                                     <!-- Image Properties -->
                                     <div class="propertypanel propertypanel-image" data-component="image" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">Image</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">Image</h4>
 
                                         <div class="row">
                                             <div class="col-md-6">
@@ -561,7 +561,7 @@
 
                                     <!-- Section Properties -->
                                     <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">Section</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">Section</h4>
                                         <div id="component-section-column1">
                                             <span class="label label-default">Column 1</span>
                                             <div class="row">
@@ -710,7 +710,7 @@
 
                                     <!-- Divider Properties -->
                                     <div class="propertypanel propertypanel-divider" id="component-divider-panel" data-component="divider" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">Divider</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">Divider</h4>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -725,7 +725,9 @@
                                                         <input class="form-control" id="component-divider-margin-top" type="number"><span class="input-group-addon">px</span>
                                                     </div>
                                                 </div>
-                                                <Rock:RockCheckBox ID="cbComponentDividerDivideWithLine" CssClass="js-component-divider-divide-with-line" runat="server" Text="Divide With Line" />
+                                                <div class="form-group">
+                                                    <Rock:RockCheckBox ID="cbComponentDividerDivideWithLine" CssClass="js-component-divider-divide-with-line" runat="server" Text="Divide With Line" />
+                                                </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -747,7 +749,7 @@
 
                                     <!-- Code Properties -->
                                     <div class="propertypanel propertypanel-code" data-component="code" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">HTML</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">HTML</h4>
                                         <Rock:CodeEditor ID="codeEditor" CssClass="js-component-code-codeEditor" runat="server" Height="350" EditorTheme="Rock" EditorMode="Lava" OnChangeScript="updateCodeComponent(this, contents);" />
                                         <div class="alert alert-danger" id="component-code-codeEditor-error" style="display: none"></div>
 
@@ -786,7 +788,7 @@
 
                                     <!-- Button Properties -->
                                     <div id="component-button-panel" class="propertypanel propertypanel-button" data-component="button" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">Button</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">Button</h4>
                                         <hr />
                                         <div class="form-group">
                                             <label class="control-label" for="component-button-buttontext">Button Text</label>
@@ -906,7 +908,7 @@
 
                                     <!-- RSVP Properties -->
                                     <div id="component-rsvp-panel" class="propertypanel propertypanel-rsvp" data-component="rsvp" style="display: none;">
-                                        <h4 class="propertypanel-title mt-0">RSVP</h4>
+                                        <h4 class="propertypanel-title mt-0 font-weight-semibold">RSVP</h4>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group" id="component-rsvp-group">
@@ -1060,7 +1062,7 @@
 
                                     </div>
 
-                                    <div class="js-propertypanel-actions actions" style="display: none">
+                                    <div class="js-propertypanel-actions actions mt-2" style="display: none">
                                         <a href="#" class="btn btn-primary" onclick="clearPropertyPane(event); return false;">Complete</a>
                                         <a href="#" class="btn btn-link" onclick="deleteCurrentComponent(); return false;">Delete</a>
                                     </div>
@@ -1085,7 +1087,7 @@
                                         Image
                                     </div>
 
-                                    <div class="component component-divider" data-content="<hr style='margin-top: 0px; margin-bottom: 0px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
+                                    <div class="component component-divider" data-content="<hr style='margin-top: 20px; margin-bottom: 20px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
                                         <i class="fa fa-minus"></i>
                                         <br />
                                         Divider
@@ -1487,7 +1489,7 @@
 
         <script type="text/javascript">
             Sys.Application.add_load(function () {
-                Rock.controls.fullScreen.initialize();
+                Rock.controls.fullScreen.initialize('body');
 
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
                     loadEmailEditor()
@@ -1765,7 +1767,7 @@
 
                     $(contents).find('body').prepend(editorMarkup);
 
-                    $('#emaileditor-designer').delay(200).css('visibility', 'visible').css('opacity', '1');
+                    $('#emaileditor-designer').delay(500).css('visibility', 'visible').css('opacity', '1');
                 });
 
                 if ($editorIframe.length) {
