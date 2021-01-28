@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlertType" )]
     [DataContract]
-    public class FinancialTransactionAlertType : Model<FinancialTransactionAlertType>
+    public class FinancialTransactionAlertType : Model<FinancialTransactionAlertType>, IOrdered
     {
         #region Entity Properties
 
@@ -68,13 +68,13 @@ namespace Rock.Model
         public AlertType AlertType { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating to continue if matched.
+        /// Gets or sets a value indicating whether [continue if matched].
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> to continue if matched; otherwise <c>false</c>.
+        ///   <c>true</c> if [continue if matched]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? ContinueIfMatched { get; set; }
+        public bool ContinueIfMatched { get; set; }
 
         /// <summary>
         /// Gets or sets the repeat prevention duration.
@@ -189,6 +189,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool SendBusEvent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [Index]
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion Entity Properties
 
