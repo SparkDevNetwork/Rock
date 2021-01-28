@@ -173,6 +173,7 @@ namespace Rock.Model
         /// The alert date time.
         /// </value>
         [DataMember]
+        [Index]
         public DateTime AlertDateTime { get; set; }
 
         /// <summary>
