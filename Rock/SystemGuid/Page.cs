@@ -826,6 +826,12 @@ namespace Rock.SystemGuid
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
+        /// Gets the Mass Push Notifications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
+
+        /// <summary>
         /// Gets the Email Preference page guid
         /// ParentPage: Support Pages
         /// </summary>

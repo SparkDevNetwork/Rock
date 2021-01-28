@@ -517,6 +517,48 @@
                                         </div>
                                     </div>
 
+                                    <!-- Video Properties -->
+                                    <div class="propertypanel propertypanel-video" data-component="video" style="display: none;">
+						                <h4 class="propertypanel-title">Video</h4>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-video-url">
+                                                        Source Video URL
+                                                        <asp:LinkButton ID="lbVideoUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                            data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
+                                                            data-original-title="The URL to the source video. This will be used to generate the preview thumbnail and will be the default target link. Preview images are generated automatically for "/>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="component-video-addon-pre"><i class="fa fa-link"></i></span>
+                                                        <input class="form-control" id="component-video-url" type="url" />
+                                                        <span class="input-group-addon" id="component-video-addon"><i class="fa fa-arrow-right"></i></span>
+                                                    </div>
+                                                </div>
+                                                <div id="component-video-error" class="alert alert-warning" role="alert">
+                                                    Sorry, we couldn't generate a preview image for that URL. Please upload an image.
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <Rock:ImageUploader ID="componentVideoImageUploader" ClientIDMode="Static" runat="server" Label="Preview Image" UploadAsTemporary="false" DoneFunctionClientScript="handleVideoImageUpdate(e, data)" DeleteFunctionClientScript="handleVideoImageUpdate()" />
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-video-url">
+                                                        Link Target URL
+                                                        <asp:LinkButton ID="lbTargetUrlHelpText" Text="<i class='fa fa-info-circle'></i>" TabIndex="-1"  runat="server" CssClass="help"
+                                                            data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true"
+                                                            data-original-title="The URL the video will load when it is clicked. This can be different from the source video if you're embedding the video on your website."/>
+                                                    </label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-addon" id="component-target-addon"><i class="fa fa-link"></i></span>
+                                                        <input class="form-control" id="component-target-url" type="url" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+					                </div>
+
                                     <!-- Section Properties -->
                                     <div class="propertypanel propertypanel-section" data-component="section" style="display: none;">
                                         <h4 class="propertypanel-title mt-0 font-weight-semibold">Section</h4>
@@ -1737,6 +1779,7 @@
                     Rock.controls.emailEditor.codeComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.dividerComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.imageComponentHelper.initializeEventHandlers();
+                    Rock.controls.emailEditor.videoComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.textComponentHelper.initializeEventHandlers();
                     Rock.controls.emailEditor.sectionComponentHelper.initializeEventHandlers();
                 }
@@ -1919,6 +1962,9 @@
 
         <!-- Image Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/imageComponentHelper.js", true)%>'></script>
+
+        <!-- Video Component -->
+        <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/videoComponentHelper.js", true)%>' ></script>
 
         <!-- Divider Component -->
         <script src='<%=RockPage.ResolveRockUrl("~/Scripts/Rock/Controls/EmailEditor/dividerComponentHelper.js", true)%>'></script>
