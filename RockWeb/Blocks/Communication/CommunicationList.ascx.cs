@@ -25,13 +25,11 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -150,6 +148,11 @@ namespace RockWeb.Blocks.Communication
             }
             rFilter.SaveUserPreference( "Created Date Range", drpCreatedDates.DelimitedValues );
 
+            if ( nreRecipientCount.LowerValue.HasValue || nreRecipientCount.UpperValue.HasValue )
+            {
+                rFilter.SaveUserPreference( "Recipient Count", nreRecipientCount.DelimitedValues );
+            }
+
             rFilter.SaveUserPreference( "Sent Date Range", drpSentDates.DelimitedValues );
             rFilter.SaveUserPreference( "Content", tbContent.Text );
 
@@ -215,6 +218,11 @@ namespace RockWeb.Blocks.Communication
                 case "Sent Date Range":
                     {
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                case "Recipient Count":
+                    {
+                        e.Value = NumberRangeEditor.FormatDelimitedValues( e.Value );
                         break;
                     }
                 default:
@@ -353,6 +361,8 @@ namespace RockWeb.Blocks.Communication
                 rFilter.SaveUserPreference( "Created Date Range", drpCreatedDates.DelimitedValues );
             }
 
+            nreRecipientCount.DelimitedValues = rFilter.GetUserPreference( "Recipient Count" );
+
             drpSentDates.DelimitedValues = rFilter.GetUserPreference( "Sent Date Range" );
 
             tbContent.Text = rFilter.GetUserPreference( "Content" );
@@ -405,6 +415,16 @@ namespace RockWeb.Blocks.Communication
                     .Where( c =>
                         c.SenderPersonAlias != null &&
                         c.SenderPersonAlias.PersonId == CurrentPersonId );
+            }
+
+            if ( nreRecipientCount.LowerValue.HasValue )
+            {
+                communications = communications.Where( a => a.Recipients.Count() >= nreRecipientCount.LowerValue.Value );
+            }
+
+            if ( nreRecipientCount.UpperValue.HasValue )
+            {
+                communications = communications.Where( a => a.Recipients.Count() <= nreRecipientCount.UpperValue.Value );
             }
 
             if ( drpCreatedDates.LowerValue.HasValue )
@@ -555,5 +575,32 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        protected void gCommunication_Copy( object sender, RowEventArgs e )
+        {
+            int? newCommunicationId = null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var communicationService = new CommunicationService( rockContext );
+
+                var newCommunication = communicationService.Copy( e.RowKeyId, CurrentPersonAliasId );
+                if ( newCommunication != null )
+                {
+                    communicationService.Add( newCommunication );
+                    rockContext.SaveChanges();
+
+                    newCommunicationId = newCommunication.Id;
+                }
+            }
+
+            if ( newCommunicationId != null )
+            {
+                var pageParams = new Dictionary<string, string>
+                {
+                    { PageParameterKey.CommunicationId, newCommunicationId.ToString() }
+                };
+                NavigateToLinkedPage( AttributeKey.DetailPage, pageParams );
+            }
+        }
     }
 }

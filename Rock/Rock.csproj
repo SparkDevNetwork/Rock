@@ -538,6 +538,10 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
+    <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
+    <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
+    <Compile Include="Communication\VideoEmbed\YoutubeEmbed.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
     <Compile Include="Badge\Component\Achievement.cs" />
@@ -604,6 +608,7 @@
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Data\DecimalPrecisionAttribute.cs" />
     <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
+    <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\AttendanceFieldType.cs" />
@@ -619,6 +624,7 @@
     <Compile Include="Jobs\JobMigration.cs" />
     <Compile Include="Jobs\PostInstallDataMigrations.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
+    <Compile Include="Jobs\PostV122_UpdateInteractionIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />

@@ -226,7 +226,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "CurrentPage", PageCache );
                 mergeFields.AddOrReplace( "Communication", recipient.Communication );
-                mergeFields.AddOrReplace( "Person", recipient.PersonAlias.Person );
+                mergeFields.AddOrReplace( "Person", recipient.PersonAlias?.Person );
 
                 //
                 // Add in all the additional merge fields from grids.
