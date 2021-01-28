@@ -1489,7 +1489,7 @@
 
         <script type="text/javascript">
             Sys.Application.add_load(function () {
-                Rock.controls.fullScreen.initialize();
+                Rock.controls.fullScreen.initialize('body');
 
                 if ($('#<%=pnlEmailEditor.ClientID%>').length) {
                     loadEmailEditor()
