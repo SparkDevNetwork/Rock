@@ -22,10 +22,10 @@
     }
 
     .panel.panel-block {
-                margin-bottom: 0;
-                height: calc(100vh - 116px); /* Where 116px is the height of the header and footer */
-                overflow-y: auto;
-            }
+        margin-bottom: 0;
+        height: calc(100vh - 152px); /* Where 152px is the height of the header and footer */
+        overflow-y: auto;
+    }
 </style>
                 <!-- Ajax Error -->
             <div class="alert alert-danger ajax-error no-index" style="display:none">
