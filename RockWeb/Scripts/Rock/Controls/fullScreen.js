@@ -5,10 +5,13 @@
 
     Rock.controls.fullScreen = (function () {
         var exports = {
-            initialize: function (options) {
+            initialize: function (el) {
                 $('.js-fullscreen-trigger').on('click', function (e) {
                     e.preventDefault();
                     var elem = $(this).closest('.block-instance')[0] || document.documentElement
+                    if (el) {
+                        elem = $(el)[0];
+                    }
                     Rock.controls.fullScreen.toggleFullscreen(elem);
                 });
             },
