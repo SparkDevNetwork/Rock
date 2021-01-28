@@ -711,6 +711,15 @@ namespace RockWeb.Blocks.Communication
                 var lSMSMessage = ( Literal ) e.Item.FindControl( "lSMSMessage" );
                 lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
 
+                if ( communicationRecipientResponse.BinaryFileGuid != null )
+                {
+                    // Show the image thumnail by appending the html to lSMSMessage.Text
+                    string imageElement = string.Format( "<img src='~/GetImage.ashx?guid={0}&width=100&height=100' class='img-responsive'>", communicationRecipientResponse.BinaryFileGuid );
+
+                    // If there is a text portion then drop down a line before appending the image element
+                    lSMSMessage.Text += lSMSMessage.Text.IsNotNullOrWhiteSpace() ? @"<br \>" + imageElement : imageElement;
+                }
+
                 var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
                 lSenderName.Text = communicationRecipientResponse.FullName;
 

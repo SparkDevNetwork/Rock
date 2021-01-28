@@ -103,10 +103,13 @@
                                 </asp:Repeater>
                             </div>
                         </div>
-
+                        <div class="js-send-image" style="display: none;">
+                            <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" />
+                        </div>
                         <div class="footer">
                             <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
-                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
+                            <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default btn-md image-button btn-square pull-right" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
+                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
                         </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>

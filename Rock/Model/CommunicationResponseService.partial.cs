@@ -128,6 +128,14 @@ namespace Rock.Model
         public string SMSMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the binary file unique identifier.
+        /// </summary>
+        /// <value>
+        /// The binary file unique identifier.
+        /// </value>
+        public Guid? BinaryFileGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is read.
         /// </summary>
         /// <value>
@@ -284,7 +292,8 @@ namespace Rock.Model
                     MessageKey = mostRecentCommunicationResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
-                    SMSMessage = mostRecentCommunicationResponse.Response
+                    SMSMessage = mostRecentCommunicationResponse.Response,
+                    BinaryFileGuid = mostRecentCommunicationResponse.BinaryFile.Guid
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
