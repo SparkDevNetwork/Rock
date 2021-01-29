@@ -5,10 +5,10 @@
         <div class="event-search-filters">
             <div class="row">
                 <div class="col-md-4" id="divCampus" runat="server">
-                    <Rock:CampusPicker ID="cpCampusPicker" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="btnSearch_Click" />
+                    <Rock:CampusPicker ID="cpCampusPicker" runat="server" Label="&nbsp;" AutoPostBack="true" OnSelectedIndexChanged="btnSearch_Click" />
                 </div>
                 <div class="col-md-4" id="divDateRange" runat="server">
-                    <Rock:DateRangePicker ID="pDateRange" runat="server" Label="" />
+                    <Rock:DateRangePicker ID="pDateRange" runat="server" Label="&nbsp;" />
                     <asp:LinkButton ID="btnSearch" runat="server" Style="display: none" OnClick="btnSearch_Click" />
                 </div>
                 <div class="col-md-4">

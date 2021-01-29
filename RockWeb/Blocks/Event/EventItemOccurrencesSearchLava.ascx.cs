@@ -286,7 +286,6 @@ namespace RockWeb.Blocks.Event
                   .ToList();
 
                 cpCampusPicker.Campuses = CampusCache.All();
-                cpCampusPicker.Items[0].Text = "All";
 
                 if ( selectedCampusTypeIds.Any() )
                 {
@@ -317,7 +316,9 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            cpCampusPicker.Visible = divCampus.Visible = showCampus;
+            cpCampusPicker.Visible = divCampus.Visible = showCampus && cpCampusPicker.Items.Count > 2;
+            cpCampusPicker.Items[0].Text = "All";
+
             // Date Range Filter
             pDateRange.Visible = divDateRange.Visible = GetAttributeValue( AttributeKey.ShowDateRangeFilter ).AsBoolean();
 
@@ -343,7 +344,7 @@ namespace RockWeb.Blocks.Event
         {
             RockContext rockContext = new RockContext();
 
-            var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive );
+            var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItem.IsApproved );
 
             if ( EventCalendarId.HasValue )
             {
@@ -355,6 +356,7 @@ namespace RockWeb.Blocks.Event
                 if ( cpCampusPicker.SelectedCampusId.HasValue )
                 {
                     int campusId = cpCampusPicker.SelectedCampusId.Value;
+
                     // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                     qry = qry.Where( a => a.CampusId == null || a.CampusId == campusId );
                 }
@@ -395,6 +397,11 @@ namespace RockWeb.Blocks.Event
                     // default show all future
                     itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
                 }
+            }
+            else
+            {
+                // default show all future
+                itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
             }
 
             // sort results
