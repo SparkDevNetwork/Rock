@@ -165,11 +165,16 @@ export default defineComponent({
             this.pageIndex = 3;
         },
         async onPageThreeSubmit() {
-            await this.blockAction('ProcessTransaction', {
-                args: this.args,
-                transactionGuid: this.transactionGuid
-            });
-            this.pageIndex = 4;
+            try {
+                await this.blockAction('ProcessTransaction', {
+                    args: this.args,
+                    transactionGuid: this.transactionGuid
+                });
+                this.pageIndex = 4;
+            }
+            catch (e) {
+                console.log(e);
+            }
         }
     },
     watch: {
@@ -216,7 +221,7 @@ export default defineComponent({
         </p>
     </template>
     <template v-else-if="pageIndex === 1">
-        <h2>Your Generosity Changes Lives</h2>
+        <h2>Your Generosity Changes Lives (Vue)</h2>
         <template v-for="account in accounts">
             <CurrencyBox :label="account.PublicName" v-model="args.AccountAmounts[account.Guid]" />
         </template>
@@ -263,6 +268,9 @@ export default defineComponent({
             <RockButton default @click="goBack">Back</RockButton>
             <RockButton primary class="pull-right" @click="onPageThreeSubmit">Finish</RockButton>
         </div>
+    </template>
+    <template v-else-if="pageIndex === 4">
+        Last Page
     </template>
 </div>`
 });
