@@ -102,7 +102,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                 setup: function () {
                     return {
                         invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
-                        blockSettings: vue_js_1.inject('blockSettings')
+                        configurationValues: vue_js_1.inject('configurationValues')
                     };
                 },
                 data: function () {
@@ -153,14 +153,14 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                         return "$" + Number_js_1.asFormattedString(this.totalAmount);
                     },
                     gatewayControlSettings: function () {
-                        var blockSettings = this.blockSettings || {};
+                        var blockSettings = this.configurationValues || {};
                         return blockSettings['GatewayControlSettings'] || {};
                     },
                     currentPerson: function () {
                         return Index_js_1.default.state.currentPerson;
                     },
                     accounts: function () {
-                        return this.blockSettings['FinancialAccounts'] || [];
+                        return this.configurationValues['FinancialAccounts'] || [];
                     },
                     campus: function () {
                         return Index_js_1.default.getters['campuses/getByGuid'](this.args.CampusGuid) || null;
@@ -246,7 +246,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    controlPath = this.blockSettings['GatewayControlFileUrl'];
+                                    controlPath = this.configurationValues['GatewayControlFileUrl'];
                                     if (!controlPath) return [3 /*break*/, 2];
                                     return [4 /*yield*/, context_1.import(controlPath)];
                                 case 1:

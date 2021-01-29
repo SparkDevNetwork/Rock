@@ -22,42 +22,21 @@ using Rock.Obsidian.Util;
 namespace Rock.Obsidian.Blocks
 {
     /// <summary>
-    /// Defines the properties and methods that all Obsidian blocks must implement.
-    /// </summary>
-    /// <seealso cref="IRockBlockType" />
-    public interface IObsidianBlockType : IRockBlockType
-    {
-        /// <summary>
-        /// Gets the block markup file identifier.
-        /// </summary>
-        /// <value>
-        /// The block markup file identifier.
-        /// </value>
-        string BlockFileUrl { get; }
-
-        /// <summary>
-        /// Gets the property values that will be sent to the block.
-        /// </summary>
-        /// <returns>A collection of string/object pairs.</returns>
-        object GetBlockSettings();
-    }
-
-    /// <summary>
-    /// Obsidian Block Type
+    /// Client Block Type
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
-    /// <seealso cref="IObsidianBlockType" />
-    public abstract class ObsidianBlockType : RockBlockType, IObsidianBlockType
+    /// <seealso cref="IRockClientBlockType" />
+    public abstract class ObsidianBlockType : RockBlockType, IRockClientBlockType
     {
         #region Properties
 
         /// <summary>
-        /// Gets the block markup file identifier.
+        /// Gets the client block identifier.
         /// </summary>
         /// <value>
-        /// The block markup file identifier.
+        /// The client block identifier.
         /// </value>
-        public virtual string BlockFileUrl
+        public virtual string ClientBlockIdentifier
         {
             get
             {
@@ -66,6 +45,14 @@ namespace Rock.Obsidian.Blocks
                 return $"/ObsidianJs/Generated/Blocks/{lastNamespace}/{type.Name}";
             }
         }
+
+        /// <summary>
+        /// Gets the required client version.
+        /// </summary>
+        /// <value>
+        /// The required client version.
+        /// </value>
+        public string RequiredClientVersion => string.Empty;
 
         #endregion Properties
 
@@ -77,7 +64,8 @@ namespace Rock.Obsidian.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetBlockSettings() {
+        public virtual object GetConfigurationValues()
+        {
             return null;
         }
 
@@ -94,10 +82,10 @@ $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     Obsidian.initializeBlock({{
-        blockFileUrl: '{BlockFileUrl}',
+        blockFileUrl: '{ClientBlockIdentifier}',
         rootElement: document.getElementById('{rootElementId}'),
         blockGuid: '{BlockCache.Guid}',
-        blockSettings: {JavaScript.ToJavaScriptObject( GetBlockSettings() ?? new object() )}
+        configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() ?? new object() )}
     }});
 }});
 </script>";

@@ -65,7 +65,7 @@ export default defineComponent({
 
         provide('http', blockHttp);
         provide('invokeBlockAction', invokeBlockAction);
-        provide('blockSettings', props.config.blockSettings);
+        provide('configurationValues', props.config.configurationValues);
     },
     data() {
         return {

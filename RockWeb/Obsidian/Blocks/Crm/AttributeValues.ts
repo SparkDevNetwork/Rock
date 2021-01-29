@@ -2,7 +2,7 @@
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
 import Loading from '../../Controls/Loading.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import { BlockSettings } from '../../Index.js';
+import { ConfigurationValues } from '../../Index.js';
 import store from '../../Store/Index.js';
 import { areEqual, Guid } from '../../Util/Guid.js';
 import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
@@ -27,7 +27,7 @@ export default defineComponent({
     setup() {
         return {
             invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
-            blockSettings: inject('blockSettings') as BlockSettings
+            configurationValues: inject('configurationValues') as ConfigurationValues
         };
     },
     data() {
@@ -44,10 +44,10 @@ export default defineComponent({
             return this.person?.Guid || null;
         },
         categoryGuids(): Guid[] {
-            return (this.blockSettings.CategoryGuids as Guid[] | null) || [];
+            return (this.configurationValues.CategoryGuids as Guid[] | null) || [];
         },
         useAbbreviatedNames(): boolean {
-            return this.blockSettings.UseAbbreviatedNames as boolean;
+            return this.configurationValues.UseAbbreviatedNames as boolean;
         },
         attributeValues(): AttributeValue[] {
             const attributes = this.person?.Attributes || {};
@@ -120,8 +120,8 @@ export default defineComponent({
     template: `
 <PaneledBlockTemplate class="panel-persondetails">
     <template v-slot:title>
-        <i :class="blockSettings.BlockIconCssClass"></i>
-        {{ blockSettings.BlockTitle }}
+        <i :class="configurationValues.BlockIconCssClass"></i>
+        {{ configurationValues.BlockTitle }}
     </template>
     <template v-slot:titleAside>
         <div class="actions rollover-item pull-right">

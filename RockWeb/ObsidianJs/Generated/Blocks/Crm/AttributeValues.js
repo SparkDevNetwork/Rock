@@ -86,7 +86,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                 setup: function () {
                     return {
                         invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
-                        blockSettings: vue_js_1.inject('blockSettings')
+                        configurationValues: vue_js_1.inject('configurationValues')
                     };
                 },
                 data: function () {
@@ -104,10 +104,10 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         return ((_a = this.person) === null || _a === void 0 ? void 0 : _a.Guid) || null;
                     },
                     categoryGuids: function () {
-                        return this.blockSettings.CategoryGuids || [];
+                        return this.configurationValues.CategoryGuids || [];
                     },
                     useAbbreviatedNames: function () {
-                        return this.blockSettings.UseAbbreviatedNames;
+                        return this.configurationValues.UseAbbreviatedNames;
                     },
                     attributeValues: function () {
                         var _this = this;
@@ -179,7 +179,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                         });
                     }
                 },
-                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"blockSettings.BlockIconCssClass\"></i>\n        {{ blockSettings.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValuesContainer v-if=\"!isEditMode\" :attributeValues=\"attributeValues\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton primary xs type=\"submit\">Save</RockButton>\n                    <RockButton link xs @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate class=\"panel-persondetails\">\n    <template v-slot:title>\n        <i :class=\"configurationValues.BlockIconCssClass\"></i>\n        {{ configurationValues.BlockTitle }}\n    </template>\n    <template v-slot:titleAside>\n        <div class=\"actions rollover-item pull-right\">\n            <JavaScriptAnchor title=\"Order Attributes\" class=\"btn-link edit\">\n                <i class=\"fa fa-bars\"></i>\n            </JavaScriptAnchor>\n            <JavaScriptAnchor title=\"Edit Attributes\" class=\"btn-link edit\" @click=\"goToEditMode\">\n                <i class=\"fa fa-pencil\"></i>\n            </JavaScriptAnchor>\n        </div>\n    </template>\n    <template v-slot:default>\n        <Loading :isLoading=\"isLoading\">\n            <AttributeValuesContainer v-if=\"!isEditMode\" :attributeValues=\"attributeValues\" :showEmptyValues=\"false\" />\n            <RockForm v-else @submit=\"doSave\">\n                <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode :showAbbreviatedName=\"useAbbreviatedNames\" />\n                <div class=\"actions\">\n                    <RockButton primary xs type=\"submit\">Save</RockButton>\n                    <RockButton link xs @click=\"goToViewMode\">Cancel</RockButton>\n                </div>\n            </RockForm>\n        </Loading>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

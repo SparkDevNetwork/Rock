@@ -130,7 +130,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     var blockHttp = { get: get, post: post };
                     vue_js_1.provide('http', blockHttp);
                     vue_js_1.provide('invokeBlockAction', invokeBlockAction);
-                    vue_js_1.provide('blockSettings', props.config.blockSettings);
+                    vue_js_1.provide('configurationValues', props.config.configurationValues);
                 },
                 data: function () {
                     return {

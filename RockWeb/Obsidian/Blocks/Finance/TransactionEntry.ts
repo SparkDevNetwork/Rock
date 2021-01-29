@@ -9,7 +9,7 @@ import { areEqual, Guid, newGuid } from '../../Util/Guid.js';
 import Alert from '../../Elements/Alert.js';
 import { asFormattedString } from '../../Filters/Number.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import { BlockSettings } from '../../Index.js';
+import { ConfigurationValues } from '../../Index.js';
 import Toggle from '../../Elements/Toggle.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import store from '../../Store/Index.js';
@@ -60,7 +60,7 @@ export default defineComponent({
     setup() {
         return {
             invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
-            blockSettings: inject('blockSettings') as BlockSettings
+            configurationValues: inject('configurationValues') as ConfigurationValues
         };
     },
     data() {
@@ -113,14 +113,14 @@ export default defineComponent({
             return `$${asFormattedString(this.totalAmount)}`;
         },
         gatewayControlSettings(): unknown {
-            const blockSettings = this.blockSettings || {};
+            const blockSettings = this.configurationValues || {};
             return blockSettings['GatewayControlSettings'] || {};
         },
         currentPerson(): Person | null {
             return store.state.currentPerson;
         },
         accounts(): FinancialAccount[] {
-            return this.blockSettings['FinancialAccounts'] as FinancialAccount[] || [];
+            return this.configurationValues['FinancialAccounts'] as FinancialAccount[] || [];
         },
         campus(): Campus | null {
             return store.getters['campuses/getByGuid'](this.args.CampusGuid) || null;
@@ -192,7 +192,7 @@ export default defineComponent({
         }
     },
     async created() {
-        const controlPath = this.blockSettings['GatewayControlFileUrl'] as string | null;
+        const controlPath = this.configurationValues['GatewayControlFileUrl'] as string | null;
 
         if (controlPath) {
             const controlComponentModule = await import(controlPath);

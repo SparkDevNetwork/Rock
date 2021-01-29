@@ -6,13 +6,13 @@ import './Rules/Index.js';
 import Person from './ViewModels/CodeGenerated/PersonViewModel.js';
 import Entity from './ViewModels/Entity.js';
 
-export type BlockSettings = Record<string, unknown>;
+export type ConfigurationValues = Record<string, unknown>;
 
 export type BlockConfig = {
     blockFileUrl: string;
     rootElement: Element;
     blockGuid: Guid;
-    blockSettings: BlockSettings;
+    configurationValues: ConfigurationValues;
 };
 
 export type PageConfig = {
