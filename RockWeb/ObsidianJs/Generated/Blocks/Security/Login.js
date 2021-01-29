@@ -63,7 +63,7 @@ System.register(["../../Elements/TextBox.js", "../../Elements/CheckBox.js", "../
                 },
                 setup: function () {
                     return {
-                        blockAction: vue_js_1.inject('blockAction')
+                        invokeBlockAction: vue_js_1.inject('invokeBlockAction')
                     };
                 },
                 data: function () {
@@ -111,7 +111,7 @@ System.register(["../../Elements/TextBox.js", "../../Elements/CheckBox.js", "../
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, 4, 5]);
-                                        return [4 /*yield*/, this.blockAction('help', undefined)];
+                                        return [4 /*yield*/, this.invokeBlockAction('help', undefined)];
                                     case 2:
                                         result = _a.sent();
                                         if (result.isError) {
@@ -147,7 +147,7 @@ System.register(["../../Elements/TextBox.js", "../../Elements/CheckBox.js", "../
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, , 4]);
-                                        return [4 /*yield*/, this.blockAction('DoLogin', {
+                                        return [4 /*yield*/, this.invokeBlockAction('DoLogin', {
                                                 username: this.username,
                                                 password: this.password,
                                                 rememberMe: this.rememberMe

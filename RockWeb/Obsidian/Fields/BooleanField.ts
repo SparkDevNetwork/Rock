@@ -1,4 +1,4 @@
-﻿import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+﻿import { defineComponent } from '../Vendor/Vue/vue.js';
 import { Guid } from '../Util/Guid.js';
 import { getFieldTypeProps, registerFieldType } from './Index.js';
 import { asYesNoOrNull, asTrueFalseOrNull } from '../Filters/Boolean.js';

@@ -119,4 +119,4 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
         }
     };
 });
-//# sourceMappingURL=MyWell.js.map
+//# sourceMappingURL=MyWellGatewayControl.js.map

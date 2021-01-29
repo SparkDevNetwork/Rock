@@ -8,7 +8,7 @@ import RockButton from '../../Elements/RockButton.js';
 import { areEqual, Guid, newGuid } from '../../Util/Guid.js';
 import Alert from '../../Elements/Alert.js';
 import { asFormattedString } from '../../Filters/Number.js';
-import { BlockAction } from '../../Controls/RockBlock.js';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import { BlockSettings } from '../../Index.js';
 import Toggle from '../../Elements/Toggle.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
@@ -59,7 +59,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            blockAction: inject('blockAction') as BlockAction,
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
             blockSettings: inject('blockSettings') as BlockSettings
         };
     },
@@ -166,7 +166,7 @@ export default defineComponent({
         },
         async onPageThreeSubmit() {
             try {
-                await this.blockAction('ProcessTransaction', {
+                await this.invokeBlockAction('ProcessTransaction', {
                     args: this.args,
                     transactionGuid: this.transactionGuid
                 });

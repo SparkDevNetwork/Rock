@@ -85,7 +85,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                 },
                 setup: function () {
                     return {
-                        blockAction: vue_js_1.inject('blockAction'),
+                        invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
                         blockSettings: vue_js_1.inject('blockSettings')
                     };
                 },
@@ -165,7 +165,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                                                 keyValueMap[a.Attribute.Key] = a.Value;
                                             }
                                         }
-                                        return [4 /*yield*/, this.blockAction('SaveAttributeValues', {
+                                        return [4 /*yield*/, this.invokeBlockAction('SaveAttributeValues', {
                                                 personGuid: this.personGuid,
                                                 keyValueMap: keyValueMap
                                             })];

@@ -16,7 +16,7 @@ type Response = {
 };
 
 export default defineComponent({
-    name: 'MyWell',
+    name: 'MyWellGatewayControl',
     props: {
         settings: {
             type: Object as PropType<Settings>,

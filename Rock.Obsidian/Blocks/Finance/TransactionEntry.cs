@@ -831,7 +831,7 @@ mission. We are so grateful for your commitment.</p>
         /// Gets the financial gateway component that is configured for this block
         /// </summary>
         /// <returns></returns>
-        private IObsidianGateway FinancialGatewayComponent
+        private IObsidianFinancialGateway FinancialGatewayComponent
         {
             get
             {
@@ -840,14 +840,14 @@ mission. We are so grateful for your commitment.</p>
                     var financialGateway = FinancialGateway;
                     if ( financialGateway != null )
                     {
-                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IObsidianGateway;
+                        _financialGatewayComponent = financialGateway.GetGatewayComponent() as IObsidianFinancialGateway;
                     }
                 }
 
                 return _financialGatewayComponent;
             }
         }
-        private IObsidianGateway _financialGatewayComponent = null;
+        private IObsidianFinancialGateway _financialGatewayComponent = null;
 
         #endregion Gateway
 

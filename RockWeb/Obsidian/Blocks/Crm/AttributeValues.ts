@@ -1,7 +1,7 @@
 ﻿import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
 import Loading from '../../Controls/Loading.js';
-import { BlockAction } from '../../Controls/RockBlock.js';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import { BlockSettings } from '../../Index.js';
 import store from '../../Store/Index.js';
 import { areEqual, Guid } from '../../Util/Guid.js';
@@ -26,7 +26,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            blockAction: inject('blockAction') as BlockAction,
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
             blockSettings: inject('blockSettings') as BlockSettings
         };
     },
@@ -108,7 +108,7 @@ export default defineComponent({
                 }
             }
 
-            await this.blockAction('SaveAttributeValues', {
+            await this.invokeBlockAction('SaveAttributeValues', {
                 personGuid: this.personGuid,
                 keyValueMap
             });

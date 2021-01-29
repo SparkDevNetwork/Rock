@@ -70,7 +70,7 @@ namespace Rock.MyWell
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IObsidianGateway
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
 
@@ -109,7 +109,7 @@ namespace Rock.MyWell
         /// </value>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/ObsidianJs/Generated/Controls/MyWell.js";
+            return "/ObsidianJs/Generated/Controls/MyWellGatewayControl.js";
         }
 
         /// <summary>

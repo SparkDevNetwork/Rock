@@ -101,7 +101,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                 },
                 setup: function () {
                     return {
-                        blockAction: vue_js_1.inject('blockAction'),
+                        invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
                         blockSettings: vue_js_1.inject('blockSettings')
                     };
                 },
@@ -209,7 +209,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                                 switch (_a.label) {
                                     case 0:
                                         _a.trys.push([0, 2, , 3]);
-                                        return [4 /*yield*/, this.blockAction('ProcessTransaction', {
+                                        return [4 /*yield*/, this.invokeBlockAction('ProcessTransaction', {
                                                 args: this.args,
                                                 transactionGuid: this.transactionGuid
                                             })];

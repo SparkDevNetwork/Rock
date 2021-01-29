@@ -104,7 +104,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                 },
                 setup: function () {
                     return {
-                        blockAction: vue_js_1.inject('blockAction')
+                        invokeBlockAction: vue_js_1.inject('invokeBlockAction')
                     };
                 },
                 data: function () {
@@ -136,7 +136,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                                         if (!this.personForEditing) return [3 /*break*/, 2];
                                         this.person = __assign({}, this.personForEditing);
                                         this.isLoading = true;
-                                        return [4 /*yield*/, this.blockAction('EditPerson', {
+                                        return [4 /*yield*/, this.invokeBlockAction('EditPerson', {
                                                 personGuid: this.person.Guid,
                                                 personArgs: this.person
                                             })];
@@ -202,7 +202,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                                             // Sync the person with the guid
                                             this.isLoading = true;
                                             _a = this;
-                                            return [4 /*yield*/, this.blockAction('GetPersonViewModel', {
+                                            return [4 /*yield*/, this.invokeBlockAction('GetPersonViewModel', {
                                                     personGuid: this.currentPersonGuid
                                                 })];
                                         case 1:

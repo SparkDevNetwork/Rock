@@ -78,7 +78,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
                 },
                 setup: function () {
                     return {
-                        blockAction: vue_js_1.inject('blockAction')
+                        invokeBlockAction: vue_js_1.inject('invokeBlockAction')
                     };
                 },
                 data: function () {
@@ -112,7 +112,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, 4, 5]);
-                                        return [4 /*yield*/, this.blockAction('getGroupMemberList', {
+                                        return [4 /*yield*/, this.invokeBlockAction('getGroupMemberList', {
                                                 groupId: this.groupId,
                                                 filterOptions: {
                                                     Take: 50,

@@ -21,9 +21,9 @@ using Rock.Model;
 namespace Rock.Obsidian.Util
 {
     /// <summary>
-    /// A class that has an Obsidian control
+    /// A Financial Gateway that has an Obsidian control
     /// </summary>
-    public interface IObsidianGateway
+    public interface IObsidianFinancialGateway
     {
         /// <summary>
         /// Gets the obsidian control file URL.

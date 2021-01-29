@@ -6,7 +6,7 @@ import GridRow from '../../Controls/GridRow.js';
 import GridColumn from '../../Controls/GridColumn.js';
 import GridSelectColumn from '../../Controls/GridSelectColumn.js';
 import GridProfileLinkColumn from '../../Controls/GridProfileLinkColumn.js';
-import { BlockAction } from '../../Controls/RockBlock.js';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 
 type GroupMemberViewModel = {
     FullName: string;
@@ -33,7 +33,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            blockAction: inject('blockAction') as BlockAction
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc
         };
     },
     data() {
@@ -62,7 +62,7 @@ export default defineComponent({
             this.errorMessage = '';
 
             try {
-                const result = await this.blockAction<GetGroupMemberListResponse>('getGroupMemberList', {
+                const result = await this.invokeBlockAction<GetGroupMemberListResponse>('getGroupMemberList', {
                     groupId: this.groupId,
                     filterOptions: {
                         Take: 50,

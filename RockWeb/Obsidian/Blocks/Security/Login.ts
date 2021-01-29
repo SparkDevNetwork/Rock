@@ -2,7 +2,7 @@
 import CheckBox from '../../Elements/CheckBox.js';
 import RockButton from '../../Elements/RockButton.js';
 import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
-import { BlockAction } from '../../Controls/RockBlock.js';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 
 type AuthCookie = {
     Expires: string;
@@ -23,7 +23,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            blockAction: inject('blockAction') as BlockAction
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc
         };
     },
     data() {
@@ -69,7 +69,7 @@ export default defineComponent({
             this.errorMessage = '';
 
             try {
-                const result = await this.blockAction<string>('help', undefined);
+                const result = await this.invokeBlockAction<string>('help', undefined);
 
                 if (result.isError) {
                     this.errorMessage = result.errorMessage || 'An unknown error occurred communicating with the server';
@@ -94,7 +94,7 @@ export default defineComponent({
             this.isLoading = true;
 
             try {
-                const result = await this.blockAction<LoginResponse>('DoLogin', {
+                const result = await this.invokeBlockAction<LoginResponse>('DoLogin', {
                     username: this.username,
                     password: this.password,
                     rememberMe: this.rememberMe

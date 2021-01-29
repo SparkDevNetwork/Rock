@@ -116,7 +116,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                             });
                         });
                     };
-                    var blockAction = function (actionName, data) {
+                    var invokeBlockAction = function (actionName, data) {
                         if (data === void 0) { data = undefined; }
                         return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
@@ -129,7 +129,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     };
                     var blockHttp = { get: get, post: post };
                     vue_js_1.provide('http', blockHttp);
-                    vue_js_1.provide('blockAction', blockAction);
+                    vue_js_1.provide('invokeBlockAction', invokeBlockAction);
                     vue_js_1.provide('blockSettings', props.config.blockSettings);
                 },
                 data: function () {

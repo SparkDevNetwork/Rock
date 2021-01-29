@@ -11,7 +11,7 @@ import CampusPicker from '../../Controls/CampusPicker.js';
 import { Guid } from '../../Util/Guid.js';
 import Loading from '../../Controls/Loading.js';
 import PrimaryBlock from '../../Controls/PrimaryBlock.js';
-import { BlockAction } from '../../Controls/RockBlock.js';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 
@@ -40,7 +40,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            blockAction: inject('blockAction') as BlockAction
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc
         };
     },
     data() {
@@ -69,7 +69,7 @@ export default defineComponent({
                 this.person = { ...this.personForEditing };
                 this.isLoading = true;
 
-                await this.blockAction('EditPerson', {
+                await this.invokeBlockAction('EditPerson', {
                     personGuid: this.person.Guid,
                     personArgs: this.person
                 });
@@ -127,7 +127,7 @@ export default defineComponent({
 
                 // Sync the person with the guid
                 this.isLoading = true;
-                this.person = (await this.blockAction<PersonViewModel>('GetPersonViewModel', {
+                this.person = (await this.invokeBlockAction<PersonViewModel>('GetPersonViewModel', {
                     personGuid: this.currentPersonGuid
                 })).data;
                 this.isLoading = false;

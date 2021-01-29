@@ -5,7 +5,7 @@ import store from '../Store/Index.js';
 import { Guid } from '../Util/Guid.js';
 import Alert from '../Elements/Alert.js';
 
-export type BlockAction = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
+export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
 
 export type BlockHttp = {
     get: <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
@@ -57,14 +57,14 @@ export default defineComponent({
             return await httpCall<T>('POST', url, params, data);
         };
 
-        const blockAction: BlockAction = async <T>(actionName: string, data: HttpBodyData = undefined) => {
+        const invokeBlockAction: InvokeBlockActionFunc = async <T>(actionName: string, data: HttpBodyData = undefined) => {
             return await post<T>(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, data);
         };
 
         const blockHttp: BlockHttp = { get, post };
 
         provide('http', blockHttp);
-        provide('blockAction', blockAction);
+        provide('invokeBlockAction', invokeBlockAction);
         provide('blockSettings', props.config.blockSettings);
     },
     data() {
