@@ -61,65 +61,74 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202012091759168_Rollup_1209.cs" />
-    <Compile Include="Migrations\202012091759168_Rollup_1209.Designer.cs">
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.Designer.cs">
       <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.cs" />
-    <Compile Include="Migrations\202012092122418_KpiShortCodeEdit.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012092122418_KpiShortCodeEdit.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012092122418_KpiShortCodeEdit.Designer.cs">
       <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202012151955324_Rollup_1215.cs" />
-    <Compile Include="Migrations\202012151955324_Rollup_1215.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012151955324_Rollup_1215.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012151955324_Rollup_1215.Designer.cs">
       <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.cs" />
-    <Compile Include="Migrations\202012161922246_WebFarmNodeMetric.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012161922246_WebFarmNodeMetric.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012161922246_WebFarmNodeMetric.Designer.cs">
       <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.cs" />
-    <Compile Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012162125482_AddPushpayEventRegistrationSupportModels.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012162125482_AddPushpayEventRegistrationSupportModels.Designer.cs">
       <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202012222016408_Rollup_1222.cs" />
-    <Compile Include="Migrations\202012222016408_Rollup_1222.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012222016408_Rollup_1222.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012222016408_Rollup_1222.Designer.cs">
       <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101051713098_Rollup_0105.cs" />
-    <Compile Include="Migrations\202101051713098_Rollup_0105.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101051713098_Rollup_0105.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101051713098_Rollup_0105.Designer.cs">
       <DependentUpon>202101051713098_Rollup_0105.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.cs" />
-    <Compile Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101071910194_IdentityVerification_FailedMatchAttemptCount.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101071910194_IdentityVerification_FailedMatchAttemptCount.Designer.cs">
       <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.cs" />
-    <Compile Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101081818095_ConnectionOpportunityTranserProperties.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101081818095_ConnectionOpportunityTranserProperties.Designer.cs">
       <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101141614338_Rollup_0114.cs" />
-    <Compile Include="Migrations\202101141614338_Rollup_0114.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101141614338_Rollup_0114.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101141614338_Rollup_0114.Designer.cs">
       <DependentUpon>202101141614338_Rollup_0114.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101191818311_Rollup_0119.cs" />
-    <Compile Include="Migrations\202101191818311_Rollup_0119.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101191818311_Rollup_0119.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101191818311_Rollup_0119.Designer.cs">
       <DependentUpon>202101191818311_Rollup_0119.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101211627543_CheckinManagerEnhancements.cs" />
-    <Compile Include="Migrations\202101211627543_CheckinManagerEnhancements.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101211627543_CheckinManagerEnhancements.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101211627543_CheckinManagerEnhancements.Designer.cs">
       <DependentUpon>202101211627543_CheckinManagerEnhancements.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101281222548_FullWorksurfaceEmailEditorMigration.cs" />
-    <Compile Include="Migrations\202101281222548_FullWorksurfaceEmailEditorMigration.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101281222548_FullWorksurfaceEmailEditorMigration.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101281222548_FullWorksurfaceEmailEditorMigration.Designer.cs">
       <DependentUpon>202101281222548_FullWorksurfaceEmailEditorMigration.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101281654426_AddFinancialTransactionAlert.cs" />
-    <Compile Include="Migrations\202101281654426_AddFinancialTransactionAlert.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101281654426_AddFinancialTransactionAlert.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101281654426_AddFinancialTransactionAlert.Designer.cs">
       <DependentUpon>202101281654426_AddFinancialTransactionAlert.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101282021015_TransactionAlertUpdates.cs" />
-    <Compile Include="Migrations\202101282021015_TransactionAlertUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101282021015_TransactionAlertUpdates.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101282021015_TransactionAlertUpdates.Designer.cs">
       <DependentUpon>202101282021015_TransactionAlertUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101292141445_Rollup_01291.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202101292141445_Rollup_01291.Designer.cs">
+      <DependentUpon>202101292141445_Rollup_01291.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
@@ -136,11 +145,6 @@
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202011241949568_CheckinClientInstaller.Designer.cs">
       <DependentUpon>202011241949568_CheckinClientInstaller.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202007211806064_Rollup_0721.Designer.cs">
@@ -1563,50 +1567,53 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202012091759168_Rollup_1209.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.resx">
       <DependentUpon>202012091759168_Rollup_1209.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202012092122418_KpiShortCodeEdit.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012092122418_KpiShortCodeEdit.resx">
       <DependentUpon>202012092122418_KpiShortCodeEdit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202012151955324_Rollup_1215.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012151955324_Rollup_1215.resx">
       <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202012161922246_WebFarmNodeMetric.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012161922246_WebFarmNodeMetric.resx">
       <DependentUpon>202012161922246_WebFarmNodeMetric.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202012162125482_AddPushpayEventRegistrationSupportModels.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012162125482_AddPushpayEventRegistrationSupportModels.resx">
       <DependentUpon>202012162125482_AddPushpayEventRegistrationSupportModels.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202012222016408_Rollup_1222.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012222016408_Rollup_1222.resx">
       <DependentUpon>202012222016408_Rollup_1222.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101051713098_Rollup_0105.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101051713098_Rollup_0105.resx">
       <DependentUpon>202101051713098_Rollup_0105.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101071910194_IdentityVerification_FailedMatchAttemptCount.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101071910194_IdentityVerification_FailedMatchAttemptCount.resx">
       <DependentUpon>202101071910194_IdentityVerification_FailedMatchAttemptCount.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101081818095_ConnectionOpportunityTranserProperties.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101081818095_ConnectionOpportunityTranserProperties.resx">
       <DependentUpon>202101081818095_ConnectionOpportunityTranserProperties.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101141614338_Rollup_0114.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101141614338_Rollup_0114.resx">
       <DependentUpon>202101141614338_Rollup_0114.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101191818311_Rollup_0119.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101191818311_Rollup_0119.resx">
       <DependentUpon>202101191818311_Rollup_0119.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101211627543_CheckinManagerEnhancements.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101211627543_CheckinManagerEnhancements.resx">
       <DependentUpon>202101211627543_CheckinManagerEnhancements.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101281222548_FullWorksurfaceEmailEditorMigration.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101281222548_FullWorksurfaceEmailEditorMigration.resx">
       <DependentUpon>202101281222548_FullWorksurfaceEmailEditorMigration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101281654426_AddFinancialTransactionAlert.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101281654426_AddFinancialTransactionAlert.resx">
       <DependentUpon>202101281654426_AddFinancialTransactionAlert.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101282021015_TransactionAlertUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101282021015_TransactionAlertUpdates.resx">
       <DependentUpon>202101282021015_TransactionAlertUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202101292141445_Rollup_01291.resx">
+      <DependentUpon>202101292141445_Rollup_01291.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -2702,9 +2709,6 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\202012151955324_Rollup_1215_parallaxupdate.sql">
-      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
-    </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
@@ -2803,6 +2807,15 @@
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder.sql">
       <DependentUpon>202012022334116_spCrm_PersonDuplicateFinder.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.1\202012151955324_Rollup_1215_parallaxupdate.sql">
+      <DependentUpon>202012151955324_Rollup_1215.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.1\202101292141445_Rollup_01291_spCrm_FamilyAnalyticsAttendance.sql">
+      <DependentUpon>202101292141445_Rollup_01291.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.1\202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving.sql">
+      <DependentUpon>202101292141445_Rollup_01291.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>
