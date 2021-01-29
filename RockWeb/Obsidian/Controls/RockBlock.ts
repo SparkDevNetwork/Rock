@@ -58,7 +58,12 @@ export default defineComponent({
         };
 
         const invokeBlockAction: InvokeBlockActionFunc = async <T>(actionName: string, data: HttpBodyData = undefined) => {
-            return await post<T>(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, data);
+            return await post<T>(`/api/blocks/action/${props.config.blockGuid}/${actionName}`, undefined, {
+                __context: {
+                    pageParameters: store.state.pageParameters
+                },
+                ...data
+            });
         };
 
         const blockHttp: BlockHttp = { get, post };

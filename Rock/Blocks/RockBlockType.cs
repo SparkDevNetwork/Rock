@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -61,6 +62,14 @@ namespace Rock.Blocks
         /// The request context.
         /// </value>
         public RockRequestContext RequestContext { get; set; }
+
+        /// <summary>
+        /// Gets or sets the original (web page initial request) page parameters.
+        /// </summary>
+        /// <value>
+        /// The page parameters.
+        /// </value>
+        public Dictionary<string, string> OriginalPageParameters { get; set; }
 
         #endregion
 

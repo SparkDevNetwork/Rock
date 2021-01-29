@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Rock.Net;
 using Rock.Web.Cache;
 
@@ -61,5 +62,13 @@ namespace Rock.Blocks
         /// </summary>
         /// <returns></returns>
         string GetControlMarkup();
+
+        /// <summary>
+        /// Gets or sets the original (web page initial request) page parameters.
+        /// </summary>
+        /// <value>
+        /// The page parameters.
+        /// </value>
+        Dictionary<string, string> OriginalPageParameters { get; set; }
     }
 }

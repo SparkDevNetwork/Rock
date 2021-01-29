@@ -224,7 +224,15 @@ namespace Rock.Rest.Controllers
                     {
                         foreach ( var kvp in parameters.ToObject<Dictionary<string, JToken>>() )
                         {
-                            actionParameters.AddOrReplace( kvp.Key, kvp.Value );
+                            if ( kvp.Key == "__context" )
+                            {
+                                var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+                                rockBlock.OriginalPageParameters = pageParameters;
+                            }
+                            else
+                            {
+                                actionParameters.AddOrReplace( kvp.Key, kvp.Value );
+                            }
                         }
                     }
                     catch
