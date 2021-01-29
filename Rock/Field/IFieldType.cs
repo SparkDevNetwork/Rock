@@ -119,6 +119,14 @@ namespace Rock.Field
         object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
 
         /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues );
+
+        /// <summary>
         /// Returns the value that should be used for sorting, using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>

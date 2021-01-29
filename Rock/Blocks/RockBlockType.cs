@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -81,6 +81,36 @@ namespace Rock.Blocks
         public string GetAttributeValue( string key )
         {
             return BlockCache.GetAttributeValue( key );
+        }
+
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetAttributeValueAsFieldType( string key )
+        {
+            var stringValue = GetAttributeValue( key );
+            var attribute = BlockCache.Attributes.GetValueOrNull( key );
+            var field = attribute?.FieldType?.Field;
+
+            if ( field == null )
+            {
+                return stringValue;
+            }
+
+            return field.ValueAsFieldType( stringValue, attribute.QualifierValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T GetAttributeValueAsFieldType<T>( string key ) where T : class
+        {
+            var asObject = GetAttributeValueAsFieldType( key );
+            return asObject as T;
         }
 
         /// <summary>

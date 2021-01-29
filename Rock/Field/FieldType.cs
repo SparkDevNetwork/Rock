@@ -172,6 +172,18 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // by default, get the field type's value
+            return value;
+        }
+
+        /// <summary>
         /// Returns the value that should be used for sorting, using the most appropriate datatype
         /// </summary>
         /// <param name="parentControl">The parent control.</param>

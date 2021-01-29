@@ -248,7 +248,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <returns></returns>
         private List<Guid> GetCategoryGuids()
         {
-            return GetAttributeValue( AttributeKey.Category ).SplitDelimitedValues( false ).AsGuidList();
+            return GetAttributeValueAsFieldType<List<Guid>>( AttributeKey.Category );
         }
 
         #endregion Data Access
