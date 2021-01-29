@@ -908,10 +908,10 @@ namespace RockWeb.Blocks.Connection
 
             lRequestModalViewModeSideDescription.Text = rightDescList.Html;
 
-            // Build the description list that is on top of the buttons
-            var mainDescList = new DescriptionList();
-            mainDescList.Add( "Notes", viewModel.Comments );
-            lRequestModalViewModeMainDescription.Text = mainDescList.Html;
+            // Comments can have markdown
+            lRequestModalViewModeComments.Text = viewModel.Comments.IsNullOrWhiteSpace() ?
+                string.Empty :
+                viewModel.Comments.ConvertMarkdownToHtml();
 
             // Manual workflows
             BindManualWorkflows();
