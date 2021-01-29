@@ -170,8 +170,8 @@
                             <li id="liNavItem" runat="server" class="list-group-item cursor-pointer">
                                 <div class="content"><%# Eval("Name") %></div>
                                 <div class="pull-right d-flex align-items-center">
-                                    <asp:Label ID="lblCurrentCount" runat="server" CssClass="badge mr-3" />
-                                    <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
+                                    <asp:Label ID="lblCurrentCount" runat="server" CssClass="badge" />
+                                    <Rock:Toggle ID="tglRoom" runat="server" CssClass="ml-3" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
                                     <i class='fa fa-fw fa-chevron-right ml-3'></i>
                                 </div>
                             </li>
