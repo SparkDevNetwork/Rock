@@ -519,7 +519,7 @@
 
                                     <!-- Video Properties -->
                                     <div class="propertypanel propertypanel-video" data-component="video" style="display: none;">
-						                <h4 class="propertypanel-title">Video</h4>
+						                <h4 class="propertypanel-title font-weight-semibold mt-0">Video</h4>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
