@@ -1086,7 +1086,9 @@
                                         <br />
                                         Image
                                     </div>
-
+                                    <div class="component component-video" data-content="<a href=''><img src='<%= VirtualPathUtility.ToAbsolute("~/Assets/Images/video-placeholder.jpg") %>' style='width: 100%;' data-imgcsswidth='full' /></a>" data-state="template">
+					                    <i class="fa fa-play-circle-o"></i> <br /> Video
+				                    </div>
                                     <div class="component component-divider" data-content="<hr style='margin-top: 20px; margin-bottom: 20px; border: 0; height: 4px; background: #c4c4c4;' />" data-state="template">
                                         <i class="fa fa-minus"></i>
                                         <br />
@@ -1809,6 +1811,9 @@
                     case 'image':
                         Rock.controls.emailEditor.imageComponentHelper.setProperties($currentComponent);
                         break;
+                    case 'video':
+				        Rock.controls.emailEditor.videoComponentHelper.setProperties($currentComponent);
+				        break;
                     case 'section':
                         Rock.controls.emailEditor.sectionComponentHelper.setProperties($currentComponent);
                         break;
@@ -1861,6 +1866,11 @@
 
             function handleImageUpdate(e, data) {
                 Rock.controls.emailEditor.imageComponentHelper.handleImageUpdate(e, data);
+            }
+
+            function handleVideoImageUpdate(e, data)
+			{
+			    Rock.controls.emailEditor.videoComponentHelper.handleVideoImageUpdate(e, data);
             }
 
             // debouncing function from John Hann
