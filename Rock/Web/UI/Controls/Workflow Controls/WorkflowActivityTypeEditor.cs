@@ -362,7 +362,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _sbSecurity = new SecurityButton();
             Controls.Add( _sbSecurity );
             _sbSecurity.ID = this.ID + "_sbSecurity";
-            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
+            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs btn-square security pull-right";
             _sbSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowActivityType ) ).Id;
 
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };

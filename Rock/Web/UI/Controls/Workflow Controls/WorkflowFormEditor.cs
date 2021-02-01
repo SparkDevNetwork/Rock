@@ -724,7 +724,7 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow2Col2.Controls.Add( _ddlPersonEntryEmailEntryOption );
             pnlPersonEntryRow2Col3.Controls.Add( _ddlPersonEntryMobilePhoneEntryOption );
             pnlPersonEntryRow2Col4.Controls.Add( _ddlPersonEntryBirthdateEntryOption );
-            
+
             /* Person Entry - Row 3*/
             Panel pnlPersonEntryRow3 = new Panel
             {
@@ -767,7 +767,7 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow3Col2.Controls.Add( _ddlPersonEntryMaritalStatusEntryOption );
             pnlPersonEntryRow3Col3.Controls.Add( _tbPersonEntrySpouseLabel );
             pnlPersonEntryRow3Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
-            
+
             /* Person Entry - Row 4*/
             Panel pnlPersonEntryRow4 = new Panel
             {
@@ -958,9 +958,10 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "px-0" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-end" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
@@ -971,35 +972,35 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-end" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Visible" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Editable" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Required" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Hide Label" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Pre-HTML" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Post-HTML" );
                 writer.RenderEndTag();
