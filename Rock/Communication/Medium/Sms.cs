@@ -343,7 +343,7 @@ namespace Rock.Communication.Medium
         }
 
         /// <summary>
-        /// Creates the communication to the recipient's mobile device.
+        /// Creates the communication mobile without attachments
         /// </summary>
         /// <param name="fromPerson">From person.</param>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
@@ -353,6 +353,21 @@ namespace Rock.Communication.Medium
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCommunicationMobile( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext )
         {
+            CreateCommunicationMobile( fromPerson, toPersonAliasId, message, fromPhone, responseCode, rockContext, null );
+        }
+
+        /// <summary>
+        /// Creates the communication to the recipient's mobile device with attachments.
+        /// </summary>
+        /// <param name="fromPerson">From person.</param>
+        /// <param name="toPersonAliasId">To person alias identifier.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="responseCode">The response code.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attachments">The attachments.</param>
+        public static void CreateCommunicationMobile( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, Rock.Data.RockContext rockContext, List<BinaryFile> attachments )
+        {
             // NOTE: fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
             string communicationName = fromPerson != null ? string.Format( "From: {0}", fromPerson.FullName ) : "From: unknown person";
 
@@ -360,11 +375,30 @@ namespace Rock.Communication.Medium
             var communication = communicationService.CreateSMSCommunication( fromPerson, toPersonAliasId, message, fromPhone, responseCode, communicationName );
             rockContext.SaveChanges();
 
+            // Now that we have a communication ID we can add the attachments
+            if ( attachments.IsNotNull() && attachments.Any() )
+            {
+                foreach( var attachment in attachments )
+                {
+                    var communicationAttachment = new CommunicationAttachment
+                    {
+                        BinaryFileId = attachment.Id,
+                        CommunicationId = communication.Id,
+                        CommunicationType = CommunicationType.SMS
+                    };
+
+                    communication.AddAttachment( communicationAttachment, CommunicationType.SMS );
+                }
+
+                rockContext.SaveChanges();
+            }
+
             // queue the sending
             var transaction = new ProcessSendCommunication.Message()
             {
                 CommunicationId = communication.Id,
             };
+
             transaction.Send();
         }
 

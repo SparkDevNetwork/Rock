@@ -399,8 +399,21 @@ namespace RockWeb.Blocks.Communication
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
+                List<BinaryFile> photo = null;
+                if ( ImageUploaderConversation.BinaryFileId.IsNotNullOrZero() )
+                {
+                    var binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderConversation.BinaryFileId.Value );
+                    if ( binaryFile.IsNotNull() )
+                    {
+                        photo = new List<BinaryFile>();
+                        photo.Add( binaryFile );
+                    }
+                }
+
                 // Create and enqueue the communication
-                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext );
+                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext, photo );
+                ImageUploaderConversation.BinaryFileId = null;
+                
             }
         }
 
@@ -526,7 +539,7 @@ namespace RockWeb.Blocks.Communication
         {
             string message = tbNewMessage.Text.Trim();
 
-            if ( message.Length == 0 || hfSelectedRecipientPersonAliasId.Value == string.Empty )
+            if ( hfSelectedRecipientPersonAliasId.Value == string.Empty || ( message.Length == 0 && ImageUploaderConversation.BinaryFileId.IsNullOrZero() ) )
             {
                 return;
             }
@@ -714,7 +727,8 @@ namespace RockWeb.Blocks.Communication
                 if ( communicationRecipientResponse.BinaryFileGuid != null )
                 {
                     // Show the image thumnail by appending the html to lSMSMessage.Text
-                    string imageElement = string.Format( "<img src='~/GetImage.ashx?guid={0}&width=100&height=100' class='img-responsive'>", communicationRecipientResponse.BinaryFileGuid );
+                    string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+                    string imageElement = string.Format("<img src='{0}GetImage.ashx?guid={1}&width=100&height=100' class='img-responsive sms-image'>", applicationRoot, communicationRecipientResponse.BinaryFileGuid );
 
                     // If there is a text portion then drop down a line before appending the image element
                     lSMSMessage.Text += lSMSMessage.Text.IsNotNullOrWhiteSpace() ? @"<br \>" + imageElement : imageElement;
