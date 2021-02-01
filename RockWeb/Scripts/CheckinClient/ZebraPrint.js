@@ -37,13 +37,6 @@ var ZebraPrintPlugin = {
                     }, function (result) {
                         fail([result.Error, result.CanReprint]);
                     });
-            } else if (typeof window.chrome.webview.postMessage !== "undefined") {
-                console.log('Printing with Rock Windows Client 4.0');
-                var browserCommand = {
-                    eventName: "PRINT_LABELS",
-                    eventData: tagJson
-                };
-                window.chrome.webview.postMessage(browserCommand);
             } else if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
                 console.log('Printing with Rock iPad Client');
                 Cordova.exec(success, fail, "ZebraPrint", "printTags", [tagJson]);

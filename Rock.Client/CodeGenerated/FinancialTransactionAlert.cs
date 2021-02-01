@@ -27,24 +27,33 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for GroupMember that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for FinancialTransactionAlert that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class GroupMemberEntity
+    public partial class FinancialTransactionAlertEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? ArchivedByPersonAliasId { get; set; }
+        public int AlertDateKey { get; set; }
 
         /// <summary />
-        public DateTime? ArchivedDateTime { get; set; }
+        public DateTime AlertDateTime { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; }
+        public int AlertTypeId { get; set; }
 
         /// <summary />
-        public DateTime? DateTimeAdded { get; set; }
+        public decimal? Amount { get; set; }
+
+        /// <summary />
+        public decimal? AmountCurrentIqr { get; set; }
+
+        /// <summary />
+        public decimal? AmountCurrentMedian { get; set; }
+
+        /// <summary />
+        public decimal? AmountIqrMultiplier { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -53,31 +62,19 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public int GroupId { get; set; }
+        public decimal? FrequencyCurrentMean { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.GroupMemberStatus GroupMemberStatus { get; set; } = Rock.Client.Enums.GroupMemberStatus.Active;
+        public decimal? FrequencyCurrentStandardDeviation { get; set; }
 
         /// <summary />
-        public int? GroupOrder { get; set; }
+        public decimal? FrequencyDifferenceFromMean { get; set; }
 
         /// <summary />
-        public int GroupRoleId { get; set; }
+        public decimal? FrequencyZScore { get; set; }
 
         /// <summary />
-        public int? GuestCount { get; set; }
-
-        /// <summary />
-        public DateTime? InactiveDateTime { get; set; }
-
-        /// <summary />
-        public bool IsArchived { get; set; }
-
-        /// <summary />
-        public bool IsNotified { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
+        public string GivingId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -85,19 +82,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Note { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary />
-        public int PersonId { get; set; }
+        public string ReasonsKey { get; set; }
 
         /// <summary />
-        public int? ScheduleReminderEmailOffsetDays { get; set; }
-
-        /// <summary />
-        public DateTime? ScheduleStartDate { get; set; }
-
-        /// <summary />
-        public int? ScheduleTemplateId { get; set; }
+        public int? TransactionId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -126,33 +117,30 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source GroupMember object
+        /// Copies the base properties from a source FinancialTransactionAlert object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( GroupMember source )
+        public void CopyPropertiesFrom( FinancialTransactionAlert source )
         {
             this.Id = source.Id;
-            this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
-            this.ArchivedDateTime = source.ArchivedDateTime;
-            this.CommunicationPreference = source.CommunicationPreference;
-            this.DateTimeAdded = source.DateTimeAdded;
+            this.AlertDateKey = source.AlertDateKey;
+            this.AlertDateTime = source.AlertDateTime;
+            this.AlertTypeId = source.AlertTypeId;
+            this.Amount = source.Amount;
+            this.AmountCurrentIqr = source.AmountCurrentIqr;
+            this.AmountCurrentMedian = source.AmountCurrentMedian;
+            this.AmountIqrMultiplier = source.AmountIqrMultiplier;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.GroupId = source.GroupId;
-            this.GroupMemberStatus = source.GroupMemberStatus;
-            this.GroupOrder = source.GroupOrder;
-            this.GroupRoleId = source.GroupRoleId;
-            this.GuestCount = source.GuestCount;
-            this.InactiveDateTime = source.InactiveDateTime;
-            this.IsArchived = source.IsArchived;
-            this.IsNotified = source.IsNotified;
-            this.IsSystem = source.IsSystem;
+            this.FrequencyCurrentMean = source.FrequencyCurrentMean;
+            this.FrequencyCurrentStandardDeviation = source.FrequencyCurrentStandardDeviation;
+            this.FrequencyDifferenceFromMean = source.FrequencyDifferenceFromMean;
+            this.FrequencyZScore = source.FrequencyZScore;
+            this.GivingId = source.GivingId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Note = source.Note;
-            this.PersonId = source.PersonId;
-            this.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
-            this.ScheduleStartDate = source.ScheduleStartDate;
-            this.ScheduleTemplateId = source.ScheduleTemplateId;
+            this.PersonAliasId = source.PersonAliasId;
+            this.ReasonsKey = source.ReasonsKey;
+            this.TransactionId = source.TransactionId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -164,27 +152,18 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for GroupMember that includes all the fields that are available for GETs. Use this for GETs (use GroupMemberEntity for POST/PUTs)
+    /// Client model for FinancialTransactionAlert that includes all the fields that are available for GETs. Use this for GETs (use FinancialTransactionAlertEntity for POST/PUTs)
     /// </summary>
-    public partial class GroupMember : GroupMemberEntity
+    public partial class FinancialTransactionAlert : FinancialTransactionAlertEntity
     {
         /// <summary />
-        public PersonAlias ArchivedByPersonAlias { get; set; }
+        public FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary />
-        public ICollection<GroupMemberAssignment> GroupMemberAssignments { get; set; }
+        public FinancialTransactionAlertType FinancialTransactionAlertType { get; set; }
 
         /// <summary />
-        public ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; }
-
-        /// <summary />
-        public GroupTypeRole GroupRole { get; set; }
-
-        /// <summary />
-        public Person Person { get; set; }
-
-        /// <summary />
-        public GroupMemberScheduleTemplate ScheduleTemplate { get; set; }
+        public PersonAlias PersonAlias { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

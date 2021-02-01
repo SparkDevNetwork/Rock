@@ -293,7 +293,14 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                var stepTypeId = value ?? 0;
+
+                if ( value == null )
+                {
+                    _stpStepTypePicker.SelectedValue = string.Empty;
+                    return;
+                }
+
+                var stepTypeId = value;
 
                 if ( _stpStepTypePicker.SelectedValue != stepTypeId.ToString() )
                 {

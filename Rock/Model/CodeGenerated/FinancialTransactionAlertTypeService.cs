@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransactionAlertType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.AlertTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransactionAlertType.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -102,6 +108,7 @@ namespace Rock.Model
             target.MinimumGiftAmount = source.MinimumGiftAmount;
             target.MinimumMedianGiftAmount = source.MinimumMedianGiftAmount;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.RepeatPreventionDuration = source.RepeatPreventionDuration;
             target.SendBusEvent = source.SendBusEvent;
             target.SystemCommunicationId = source.SystemCommunicationId;

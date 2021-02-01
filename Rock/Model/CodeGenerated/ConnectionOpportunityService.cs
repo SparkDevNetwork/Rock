@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionOpportunity.FriendlyTypeName, ConnectionRequestActivity.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.ConnectionOpportunityId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionOpportunity.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
