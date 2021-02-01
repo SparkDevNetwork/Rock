@@ -478,7 +478,8 @@ namespace Rock.Mobile
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
                     CssStyles = additionalPageSettings.CssStyles,
-                    AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
+                    AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
+                    HideNavigationBar = additionalPageSettings.HideNavigationBar
                 };
 
                 package.Pages.Add( mobilePage );

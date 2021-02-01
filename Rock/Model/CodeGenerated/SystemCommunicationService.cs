@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupSync.FriendlyTypeName );

@@ -308,16 +308,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var loc = navItem as NavigationLocation;
 
-            if ( loc != null )
-            {
-                var lStatus = e.Item.FindControl( "lStatus" ) as Literal;
-                if ( lStatus != null )
-                {
-                    bool isOpen = loc.IsActive;
-                    lStatus.Text = string.Format( @"<span class=""label label-{0} mr-2"">{1}</span>", isOpen ? "success" : "danger", isOpen ? "open" : "closed" );
-                }
-            }
-
             var lbl = e.Item.FindControl( "lblCurrentCount" ) as Label;
             if ( lbl != null )
             {
@@ -343,6 +333,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         lbl.AddCssClass( "badge-success" );
                     }
+                }
+            }
+
+            var tgl = e.Item.FindControl( "tglRoom" ) as Toggle;
+            if ( tgl != null )
+            {
+                if ( loc != null )
+                {
+                    tgl.Visible = loc.HasGroups;
+                    tgl.Checked = loc.IsActive;
+                    tgl.Attributes["data-key"] = loc.Id.ToString();
+                }
+                else
+                {
+                    tgl.Visible = false;
                 }
             }
         }
@@ -437,12 +442,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 desktopStatus = "Checked-in";
             }
 
-            var lStatus = e.Item.FindControl( "lStatus" ) as Literal;
-            if ( lStatus != null )
-            {
-                lStatus.Text = string.Format( "<span class='badge badge-{0} d-sm-table d-none'>{1}</span>", statusClass, desktopStatus );
-            }
-
             // mobile only
             var lMobileStatus = e.Item.FindControl( "lMobileStatus" ) as Literal;
             if ( lMobileStatus != null )
@@ -495,6 +494,36 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     BuildNavigationControls();
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglRoom control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglRoom_CheckedChanged( object sender, EventArgs e )
+        {
+            var tgl = sender as Toggle;
+            if ( tgl != null )
+            {
+                int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
+                if ( id.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var location = new LocationService( rockContext ).Get( id.Value );
+                        if ( location != null && location.IsActive != tgl.Checked )
+                        {
+                            location.IsActive = tgl.Checked;
+                            rockContext.SaveChanges();
+                            Rock.CheckIn.KioskDevice.Clear();
+                        }
+                    }
+                    NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
+                }
+            }
+
+            BuildNavigationControls();
         }
 
         protected void lbUpdateThreshold_Click( object sender, EventArgs e )
@@ -1294,9 +1323,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var locationItem = item as NavigationLocation;
                 if ( locationItem != null && locationItem.HasGroups )
                 {
-                    lHeadingStatus.Visible = true;
-                    bool isOpen = locationItem.IsActive;
-                    lHeadingStatus.Text = string.Format( @"<span class=""label label-{0}"">{1}</span>", isOpen ? "success" : "danger", isOpen ? "open" : "closed" );
+                    tglHeadingRoom.Visible = true;
+                    tglHeadingRoom.Checked = locationItem.IsActive;
+                    tglHeadingRoom.Attributes["data-key"] = locationItem.Id.ToString();
+
                     pnlThreshold.Visible = locationItem.SoftThreshold.HasValue || locationItem.FirmThreshold.HasValue;
                     hfThreshold.Value = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString() : string.Empty;
                     lThreshold.Text = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString( "N0" ) : "none";
@@ -1371,7 +1401,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
                 else
                 {
-                    lHeadingStatus.Visible = false;
+                    tglHeadingRoom.Visible = false;
                     pnlThreshold.Visible = false;
                     rptPeople.Visible = false;
                 }
