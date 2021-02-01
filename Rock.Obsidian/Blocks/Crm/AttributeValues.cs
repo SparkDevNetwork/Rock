@@ -243,7 +243,7 @@ namespace Rock.Obsidian.Blocks.Crm
         }
 
         /// <summary>
-        /// Gets the category Guids.
+        /// Gets the attribute category Guids.
         /// </summary>
         /// <returns></returns>
         private List<Guid> GetCategoryGuids()
