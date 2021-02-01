@@ -91,7 +91,9 @@ export default defineComponent({
     data() {
         return {
             blockGuid: this.config.blockGuid,
-            error: ''
+            error: '',
+            startTimeMs: (new Date()).getTime(),
+            finishTimeMs: null as null | number
         };
     },
     methods: {
@@ -100,6 +102,13 @@ export default defineComponent({
         }
     },
     computed: {
+        renderTimeMs(): number | null {
+            if (!this.finishTimeMs || !this.startTimeMs) {
+                return null;
+            }
+
+            return this.finishTimeMs - this.startTimeMs;
+        },
         pageGuid(): Guid {
             return store.state.pageGuid;
         }
@@ -108,6 +117,9 @@ export default defineComponent({
         if (err instanceof Error) {
             this.error = err.message;
         }
+    },
+    mounted() {
+        this.finishTimeMs = (new Date()).getTime();
     },
     template:
 `<div class="obsidian-block">

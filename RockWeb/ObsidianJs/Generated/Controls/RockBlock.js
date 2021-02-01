@@ -148,7 +148,9 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                 data: function () {
                     return {
                         blockGuid: this.config.blockGuid,
-                        error: ''
+                        error: '',
+                        startTimeMs: (new Date()).getTime(),
+                        finishTimeMs: null
                     };
                 },
                 methods: {
@@ -157,6 +159,12 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     }
                 },
                 computed: {
+                    renderTimeMs: function () {
+                        if (!this.finishTimeMs || !this.startTimeMs) {
+                            return null;
+                        }
+                        return this.finishTimeMs - this.startTimeMs;
+                    },
                     pageGuid: function () {
                         return Index_js_1.default.state.pageGuid;
                     }
@@ -165,6 +173,9 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     if (err instanceof Error) {
                         this.error = err.message;
                     }
+                },
+                mounted: function () {
+                    this.finishTimeMs = (new Date()).getTime();
                 },
                 template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" class=\"alert-danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" :dismissible=\"true\" @dismiss=\"clearError\" class=\"alert-danger\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
             }));
