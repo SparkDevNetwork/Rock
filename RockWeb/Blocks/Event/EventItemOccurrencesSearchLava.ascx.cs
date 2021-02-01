@@ -257,23 +257,7 @@ namespace RockWeb.Blocks.Event
         {
             // show campus filter
             int? showCampusFilter = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsIntegerOrNull();
-            var showCampus = true;
-            if ( showCampusFilter.HasValue )
-            {
-                if ( showCampusFilter.Value == 1 )
-                {
-                    showCampus = false;
-                }
-                else if ( GetAttributeValue( AttributeKey.UseCampusContext ).AsBoolean() && showCampusFilter.Value == 2 )
-                {
-                    var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
-                    var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-                    if ( currentCampus != null )
-                    {
-                        showCampus = false;
-                    }
-                }
-            }
+            bool showCampus = IsCampusEnabled( showCampusFilter );
 
             if ( showCampus )
             {
@@ -314,10 +298,10 @@ namespace RockWeb.Blocks.Event
                         cpCampusPicker.SelectedCampusId = currentCampus.Id;
                     }
                 }
+                cpCampusPicker.Items[0].Text = "All";
             }
 
             cpCampusPicker.Visible = divCampus.Visible = showCampus && cpCampusPicker.Items.Count > 2;
-            cpCampusPicker.Items[0].Text = "All";
 
             // Date Range Filter
             pDateRange.Visible = divDateRange.Visible = GetAttributeValue( AttributeKey.ShowDateRangeFilter ).AsBoolean();
@@ -338,6 +322,32 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Determine if campus is enabled
+        /// </summary>
+        private bool IsCampusEnabled( int? showCampusFilter )
+        {
+            var showCampus = true;
+            if ( showCampusFilter.HasValue )
+            {
+                if ( showCampusFilter.Value == 1 )
+                {
+                    showCampus = false;
+                }
+                else if ( GetAttributeValue( AttributeKey.UseCampusContext ).AsBoolean() && showCampusFilter.Value == 2 )
+                {
+                    var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
+                    var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                    if ( currentCampus != null )
+                    {
+                        showCampus = false;
+                    }
+                }
+            }
+
+            return showCampus;
+        }
+
+        /// <summary>
         /// Shows the results.
         /// </summary>
         private void ShowResults()
@@ -351,14 +361,25 @@ namespace RockWeb.Blocks.Event
                 qry = qry.Where( e => e.EventItem.EventCalendarItems.Any( x => x.EventCalendarId == EventCalendarId.Value ) );
             }
 
-            if ( cpCampusPicker.Visible )
+            int? showCampusFilter = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsIntegerOrNull();
+            bool showCampus = IsCampusEnabled( showCampusFilter );
+            if ( showCampus )
             {
-                if ( cpCampusPicker.SelectedCampusId.HasValue )
+                if ( cpCampusPicker.Visible && cpCampusPicker.SelectedCampusId.HasValue )
                 {
                     int campusId = cpCampusPicker.SelectedCampusId.Value;
 
                     // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
                     qry = qry.Where( a => a.CampusId == null || a.CampusId == campusId );
+                }
+                else
+                {
+                    var campusIds = cpCampusPicker
+                        .Items
+                        .Cast<ListItem>()
+                        .Select( i => i.Value )
+                        .AsIntegerList();
+                    qry = qry.Where( a => a.CampusId == null || campusIds.Contains( a.CampusId.Value ) );
                 }
             }
             else if ( GetAttributeValue( AttributeKey.UseCampusContext ).AsBoolean() )
