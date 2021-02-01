@@ -16,7 +16,7 @@
 //
 import { PageConfig } from '../Index.js';
 import { Guid } from '../Util/Guid.js';
-import { createStore } from '../Vendor/Vuex/index.js';
+import { createStore, Store } from '../Vendor/Vuex/index.js';
 import Group from '../ViewModels/CodeGenerated/GroupViewModel.js';
 import Person from '../ViewModels/CodeGenerated/PersonViewModel.js';
 import Entity from '../ViewModels/Entity.js';
@@ -29,6 +29,13 @@ export interface RootState {
     contextEntities: Record<string, Entity>;
     pageId: number;
     pageGuid: Guid;
+}
+
+declare module '@vue/runtime-core' {
+    // provide typings for `this.$store`
+    interface ComponentCustomProperties {
+        $store: Store<RootState>
+    }
 }
 
 // Declare the Vuex store
