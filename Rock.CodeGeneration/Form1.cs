@@ -1946,7 +1946,7 @@ namespace Rock.ViewModel
         /// <summary>
         /// The ignore folders
         /// </summary>
-        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
+        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj", "\\Vendor" };
 
         /// <summary>
         /// Mains the specified args.
@@ -1959,6 +1959,7 @@ namespace Rock.ViewModel
             int updatedFileCount = 0;
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\Obsidian\\", "*.ts" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.DownhillCss\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
@@ -1990,7 +1991,9 @@ namespace Rock.ViewModel
         /// Fixups the copyright headers.
         /// </summary>
         /// <param name="searchDirectory">The search directory.</param>
-        private static int FixupCopyrightHeaders( string searchDirectory )
+        /// <param name="searchPattern">The search pattern.</param>
+        /// <returns></returns>
+        private static int FixupCopyrightHeaders( string searchDirectory, string searchPattern = "*.cs" )
         {
             int result = 0;
 
@@ -1999,7 +2002,7 @@ namespace Rock.ViewModel
                 return 0;
             }
 
-            List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
+            var sourceFilenames = Directory.GetFiles( searchDirectory, searchPattern, SearchOption.AllDirectories ).ToList();
 
             // exclude files that come from the localhistory VS extension
             sourceFilenames = sourceFilenames.Where( a => !a.Contains( ".localhistory" ) ).ToList();
