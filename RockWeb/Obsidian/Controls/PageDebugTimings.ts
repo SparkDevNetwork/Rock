@@ -16,6 +16,7 @@
 //
 import { asFormattedString } from '../Filters/Number.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import store from '../Store/Index.js';
 
 export type DebugTimingViewModel = {
     TimestampMs: number;
@@ -37,7 +38,7 @@ const PageDebugTimingRow = defineComponent({
             type: Number as PropType<number>,
             required: true
         },
-        endTimeMs: {
+        totalMs: {
             type: Number as PropType<number>,
             required: true
         }
@@ -47,6 +48,10 @@ const PageDebugTimingRow = defineComponent({
     },
     computed: {
         indentStyle(): string {
+            if (!this.viewModel.IndentLevel) {
+                return '';
+            }
+
             const pixels = this.viewModel.IndentLevel * 24;
             return `padding-left: ${pixels}px`;
         },
@@ -54,9 +59,6 @@ const PageDebugTimingRow = defineComponent({
             const timestampString = this.numberAsFormattedString(this.viewModel.TimestampMs, 2);
             const durationString = this.numberAsFormattedString(this.viewModel.DurationMs, 2);
             return `Started at ${timestampString} ms / Duration ${durationString} ms`;
-        },
-        totalMs(): number {
-            return this.endTimeMs - this.startTimeMs;
         },
         getPercentFromMs(): (ms: number) => number {
             return (ms: number) => {
@@ -78,9 +80,15 @@ const PageDebugTimingRow = defineComponent({
 <tr>
     <td class="debug-timestamp">{{numberAsFormattedString(viewModel.TimestampMs, 2)}} ms</td>
     <td :style="indentStyle">
-        <strong v-if="viewModel.IsTitleBold">{{viewModel.Title}}</strong>
-        <template v-else>{{viewModel.Title}}</template>
-        <small v-if="viewModel.SubTitle" style="color:#A4A4A4">{{viewModel.SubTitle}}</small>
+        <strong v-if="viewModel.IsTitleBold">
+            {{viewModel.Title}}
+        </strong>
+        <template v-else>
+            {{viewModel.Title}}
+        </template>
+        <small v-if="viewModel.SubTitle" style="color:#A4A4A4; padding-left: 3px;">
+            {{viewModel.SubTitle}}
+        </small>
     </td>
     <td class="debug-timestamp">{{numberAsFormattedString(viewModel.DurationMs, 2)}} ms</td>
     <td class="debug-waterfall">
@@ -95,27 +103,67 @@ export default defineComponent({
         PageDebugTimingRow
     },
     props: {
-        viewModels: {
+        serverViewModels: {
             type: Array as PropType<DebugTimingViewModel[]>,
             required: true
         }
     },
     computed: {
-        startTimeMs(): number {
-            if (!this.viewModels.length) {
+        serverStartTimeMs(): number {
+            if (!this.serverViewModels.length) {
                 return 0;
             }
 
-            return this.viewModels[0].TimestampMs;
+            return this.serverViewModels[0].TimestampMs;
         },
-        endTimeMs(): number {
-            if (!this.viewModels.length) {
+        serverEndTimeMs(): number {
+            if (!this.serverViewModels.length) {
                 return 0;
             }
 
-            const lastIndex = this.viewModels.length - 1;
-            const lastViewModel = this.viewModels[lastIndex];
+            const lastIndex = this.serverViewModels.length - 1;
+            const lastViewModel = this.serverViewModels[lastIndex];
             return lastViewModel.TimestampMs + lastViewModel.DurationMs;
+        },
+        firstClientRelativeStartTimeMs(): number {
+            if (!this.relativeClientViewModels.length) {
+                return 0;
+            }
+
+            const viewModel = this.relativeClientViewModels[0];
+            return viewModel.TimestampMs;
+        },
+        clientRelativeEndTimeMs(): number {
+            if (!this.relativeClientViewModels.length) {
+                return 0;
+            }
+
+            const lastIndex = this.relativeClientViewModels.length - 1;
+            const lastViewModel = this.relativeClientViewModels[lastIndex];
+            return lastViewModel.TimestampMs + lastViewModel.DurationMs;
+        },
+        totalMs(): number {
+            return this.clientRelativeEndTimeMs - this.serverStartTimeMs;
+        },
+        clientViewModels(): DebugTimingViewModel[] {
+            return store.state.debugTimings;
+        },
+        relativeClientViewModels(): DebugTimingViewModel[] {
+            // Add the server end time so they appear after the server
+            return this.clientViewModels.map(vm => ({
+                ...vm,
+                TimestampMs: this.serverEndTimeMs + vm.TimestampMs
+            } as DebugTimingViewModel));
+        },
+        clientHeader(): DebugTimingViewModel {
+            return {
+                DurationMs: this.firstClientRelativeStartTimeMs - this.serverEndTimeMs,
+                IndentLevel: 0,
+                IsTitleBold: true,
+                Title: 'Client Mount Blocks',
+                TimestampMs: this.serverEndTimeMs,
+                SubTitle: ''
+            };
         }
     },
     template: `
@@ -130,7 +178,9 @@ export default defineComponent({
             </tr>
         </thead>
         <tbody>
-            <PageDebugTimingRow v-for="(vm, i) in viewModels" :key="\`\${i}-\${vm.TimestampMs}\`" :viewModel="vm" :startTimeMs="startTimeMs" :endTimeMs="endTimeMs" />
+            <PageDebugTimingRow v-for="(vm, i) in serverViewModels" :key="\`s\${i}-\${vm.TimestampMs}\`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+            <PageDebugTimingRow :viewModel="clientHeader" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
+            <PageDebugTimingRow v-for="(vm, i) in relativeClientViewModels" :key="\`c\${i}-\${vm.TimestampMs}\`" :viewModel="vm" :startTimeMs="serverStartTimeMs" :totalMs="totalMs" />
         </tbody>
     </table>
 </span>`

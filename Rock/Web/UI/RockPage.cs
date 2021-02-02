@@ -70,6 +70,11 @@ namespace Rock.Web.UI
         private double _duration = 0;
 
         private PageStatePersister _PageStatePersister = null;
+
+        private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
+        private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
+        private Stopwatch _onLoadStopwatch = null;
+
         #endregion
 
         #region Protected Variables
@@ -670,7 +675,6 @@ namespace Rock.Web.UI
                 _previousTiming = _tsDuration.TotalMilliseconds;
             }
 
-            var debugTimingViewModels = new List<DebugTimingViewModel>();
             var stopwatchInitEvents = Stopwatch.StartNew();
 
             bool canAdministratePage = false;
@@ -679,7 +683,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                debugTimingViewModels.Add( GetDebugTimingOutput( "Start Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                _debugTimingViewModels.Add( GetDebugTimingOutput( "Server Start Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -743,7 +747,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                debugTimingViewModels.Add( GetDebugTimingOutput( "Check For Logout", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                _debugTimingViewModels.Add( GetDebugTimingOutput( "Check For Logout", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -801,7 +805,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                debugTimingViewModels.Add( GetDebugTimingOutput( "Create Rock Context", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                _debugTimingViewModels.Add( GetDebugTimingOutput( "Create Rock Context", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -819,7 +823,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current User", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                _debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current User", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -855,7 +859,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current Person", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                    _debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current Person", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -943,7 +947,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    debugTimingViewModels.Add( GetDebugTimingOutput( "Is Current Person Authorized", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                    _debugTimingViewModels.Add( GetDebugTimingOutput( "Is Current Person Authorized", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -1027,7 +1031,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             stopwatchInitEvents.Stop();
-                            debugTimingViewModels.Add( GetDebugTimingOutput( "Set Page Context(s)", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                            _debugTimingViewModels.Add( GetDebugTimingOutput( "Set Page Context(s)", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1085,7 +1089,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             stopwatchInitEvents.Stop();
-                            debugTimingViewModels.Add( GetDebugTimingOutput( "Check Page Contexts", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                            _debugTimingViewModels.Add( GetDebugTimingOutput( "Check Page Contexts", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1119,7 +1123,7 @@ namespace Rock.Web.UI
                     if ( _showDebugTimings )
                     {
                         stopwatchInitEvents.Stop();
-                        debugTimingViewModels.Add( GetDebugTimingOutput( "Can Administrate Page", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                        _debugTimingViewModels.Add( GetDebugTimingOutput( "Can Administrate Page", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1145,6 +1149,7 @@ Rock.settings.initialize({{
                         var script = $@"
 System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     Obsidian.initializePage({{
+        executionStartTime: new Date(),
         pageId: {_pageCache.Id},
         pageGuid: '{_pageCache.Guid}',
         pageParameters: {PageParameters().ToJson()},
@@ -1191,7 +1196,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                     if ( _showDebugTimings )
                     {
                         stopwatchInitEvents.Stop();
-                        debugTimingViewModels.Add( GetDebugTimingOutput( "Block OnInit", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1, true ) );
+                        _debugTimingViewModels.Add( GetDebugTimingOutput( "Server Block OnInit", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1, true ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1340,7 +1345,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                             {
 
                                 stopwatchBlockInit.Stop();
-                                debugTimingViewModels.Add( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
+                                _debugTimingViewModels.Add( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
                             }
                         }
                     }
@@ -1569,18 +1574,17 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    debugTimingViewModels.Add( GetDebugTimingOutput( "Complete Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
-                    debugTimingViewModels.Add( GetDebugTimingOutput( "Block OnLoad", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                    _debugTimingViewModels.Add( GetDebugTimingOutput( "Server Complete Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                    _debugTimingViewModels.Add( GetDebugTimingOutput( "Server Block OnLoad", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
                     stopwatchInitEvents.Restart();
                 }
 
                 if ( _showDebugTimings && canAdministratePage )
                 {
                     Page.Trace.Warn( "Initializing Obsidian Page Timings" );
-                    var obsidianPageTimingControlId = "lObsidianPageTimings";
                     Page.Form.Controls.Add( new Literal
                     {
-                        ID = obsidianPageTimingControlId,
+                        ID = _obsidianPageTimingControlId,
                         Text = $@"
 <span>
     <style>
@@ -1604,22 +1608,9 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
             margin-top: -0.5625em;
         }}
     </style>
-    <div id=""{obsidianPageTimingControlId}""></div>
+    <div id=""{_obsidianPageTimingControlId}""></div>
 </span>"
                     } );
-
-                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
-                    {
-                        var script = $@"
-System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
-    Obsidian.initializePageTimings({{
-        elementId: '{obsidianPageTimingControlId}',
-        debugTimingViewModels: { debugTimingViewModels.ToJson() }
-    }});
-}});";
-
-                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
-                    }
                 }
             }
         }
@@ -1651,21 +1642,20 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
             // Finalize the debug settings
             if ( _showDebugTimings )
             {
+                Page.Trace.Warn( "Finalizing Obsidian Page Timings" );
                 _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
-                var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
-                if ( lblShowDebugTimings != null )
+                if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
                 {
-                    var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
-                    if ( previousPointInTimeMS.HasValue )
-                    {
-                        var lastDurationMS = Math.Round( _tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
-                        lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
-                        lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
-                    }
+                    var script = $@"
+System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
+    Obsidian.initializePageTimings({{
+        elementId: '{_obsidianPageTimingControlId}',
+        debugTimingViewModels: { _debugTimingViewModels.ToJson() }
+    }});
+}});";
 
-
-                    lblShowDebugTimings.Text += "</table>";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
                 }
             }
         }
@@ -1803,7 +1793,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
         /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            Stopwatch onLoadStopwatch = Stopwatch.StartNew();
+            _onLoadStopwatch = Stopwatch.StartNew();
 
             base.OnLoad( e );
 
@@ -1812,14 +1802,14 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
             try
             {
                 bool showDebugTimings = this.PageParameter( "ShowDebugTimings" ).AsBoolean();
-                if ( showDebugTimings && onLoadStopwatch.Elapsed.TotalMilliseconds > 500 )
+                if ( showDebugTimings && _onLoadStopwatch.Elapsed.TotalMilliseconds > 500 )
                 {
                     if ( _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                     {
                         Page.Form.Controls.Add( new Literal
                         {
 
-                            Text = string.Format( "OnLoad [{0} ms]", onLoadStopwatch.Elapsed.TotalMilliseconds )
+                            Text = string.Format( "OnLoad [{0} ms]", _onLoadStopwatch.Elapsed.TotalMilliseconds )
                         } );
                     }
                 }
@@ -1898,6 +1888,7 @@ Sys.Application.add_load(function () {
         #endregion
 
         #region Private Methods
+
         /// <summary>
         /// Gets the debug timing view model.
         /// </summary>
@@ -1928,6 +1919,31 @@ Sys.Application.add_load(function () {
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Reports the debug timing.
+        /// </summary>
+        /// <param name="eventTitle">The event title.</param>
+        /// <param name="subtitle">The subtitle.</param>
+        /// <returns></returns>
+        internal void ReportOnLoadDebugTiming( string eventTitle, string subtitle = "" )
+        {
+            if ( !_showDebugTimings || _onLoadStopwatch == null )
+            {
+                return;
+            }
+
+            _onLoadStopwatch.Stop();
+
+            if ( !subtitle.IsNullOrWhiteSpace() && !subtitle.StartsWith( ")" ) )
+            {
+                subtitle = $"({subtitle})";
+            }
+
+            var duration = _onLoadStopwatch.Elapsed.TotalMilliseconds;
+            _debugTimingViewModels.Add( GetDebugTimingOutput( eventTitle, duration, 1, false, subtitle ) );
+            _onLoadStopwatch.Restart();
+        }
 
         /// <summary>
         /// Sets the page.

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+import { DebugTimingViewModel } from '../Controls/PageDebugTimings.js';
 import { PageConfig } from '../Index.js';
 import { Guid } from '../Util/Guid.js';
 import { createStore, Store } from '../Vendor/Vuex/index.js';
@@ -29,6 +30,8 @@ export interface RootState {
     contextEntities: Record<string, Entity>;
     pageId: number;
     pageGuid: Guid;
+    executionStartTime: Date;
+    debugTimings: DebugTimingViewModel[]
 }
 
 declare module '@vue/runtime-core' {
@@ -37,6 +40,13 @@ declare module '@vue/runtime-core' {
         $store: Store<RootState>
     }
 }
+
+export type ReportDebugTimingArgs = {
+    Title: string;
+    Subtitle: string;
+    StartTimeMs: number;
+    FinishTimeMs: number;
+};
 
 // Declare the Vuex store
 export default createStore<RootState>({
@@ -47,6 +57,8 @@ export default createStore<RootState>({
         contextEntities: {},
         pageId: 0,
         pageGuid: '' as Guid,
+        executionStartTime: new Date(),
+        debugTimings: []
     },
     getters: {
         isAuthenticated(state) {
@@ -75,6 +87,21 @@ export default createStore<RootState>({
             state.contextEntities = pageConfig.contextEntities || {};
             state.pageId = pageConfig.pageId || 0;
             state.pageGuid = pageConfig.pageGuid || '';
+            state.executionStartTime = pageConfig.executionStartTime;
+        },
+        reportOnLoadDebugTiming(state, payload: ReportDebugTimingArgs) {
+            const pageStartTime = state.executionStartTime.getTime();
+            const timestampMs = payload.StartTimeMs - pageStartTime;
+            const durationMs = payload.FinishTimeMs - payload.StartTimeMs;
+
+            state.debugTimings.push({
+                TimestampMs: timestampMs,
+                DurationMs: durationMs,
+                IndentLevel: 1,
+                IsTitleBold: false,
+                SubTitle: payload.Subtitle,
+                Title: payload.Title
+            });
         }
     },
     actions: {

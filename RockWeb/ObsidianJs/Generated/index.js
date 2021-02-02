@@ -46,7 +46,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
     */
     function initializeBlock(config) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockPath, blockComponent, blockComponentModule, e_1, name, app;
+            var blockPath, blockComponent, blockComponentModule, e_1, name, startTimeMs, app;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -69,6 +69,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
                         return [3 /*break*/, 4];
                     case 4:
                         name = "Root" + config.blockFileUrl.replace(/\//g, '.');
+                        startTimeMs = (new Date()).getTime();
                         app = vue_js_1.createApp({
                             name: name,
                             components: {
@@ -77,10 +78,11 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
                             data: function () {
                                 return {
                                     config: config,
-                                    blockComponent: blockComponent ? vue_js_1.markRaw(blockComponent) : null
+                                    blockComponent: blockComponent ? vue_js_1.markRaw(blockComponent) : null,
+                                    startTimeMs: startTimeMs
                                 };
                             },
-                            template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" />"
+                            template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" :startTimeMs=\"startTimeMs\" />"
                         });
                         app.use(Index_js_1.default);
                         app.mount(config.rootElement);
@@ -128,7 +130,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
                     viewModels: config.debugTimingViewModels
                 };
             },
-            template: "<PageDebugTimings :viewModels=\"viewModels\" />"
+            template: "<PageDebugTimings :serverViewModels=\"viewModels\" />"
         });
         app.use(Index_js_1.default);
         app.mount(rootElement);

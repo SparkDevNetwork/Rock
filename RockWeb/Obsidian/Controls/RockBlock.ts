@@ -17,7 +17,7 @@
 import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/http.js';
 import { Component, defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
 import { BlockConfig } from '../Index.js';
-import store from '../Store/Index.js';
+import store, { ReportDebugTimingArgs } from '../Store/Index.js';
 import { Guid } from '../Util/Guid.js';
 import Alert from '../Elements/Alert.js';
 
@@ -47,6 +47,10 @@ export default defineComponent({
         blockComponent: {
             type: Object as PropType<Component>,
             default: null
+        },
+        startTimeMs: {
+            type: Number as PropType<number>,
+            required: true
         }
     },
     setup(props) {
@@ -92,7 +96,6 @@ export default defineComponent({
         return {
             blockGuid: this.config.blockGuid,
             error: '',
-            startTimeMs: (new Date()).getTime(),
             finishTimeMs: null as null | number
         };
     },
@@ -120,6 +123,22 @@ export default defineComponent({
     },
     mounted() {
         this.finishTimeMs = (new Date()).getTime();
+        const componentName = this.blockComponent?.name || '';
+        const nameParts = componentName.split('.');
+        let subtitle = nameParts[0] || '';
+
+        if (subtitle && subtitle.indexOf('(') !== 0) {
+            subtitle = `(${subtitle})`;
+        }
+
+        if (nameParts.length) {
+            store.commit('reportOnLoadDebugTiming', {
+                Title: nameParts[1] || '<Unnamed>',
+                Subtitle: subtitle,
+                StartTimeMs: this.startTimeMs,
+                FinishTimeMs: this.finishTimeMs
+            } as ReportDebugTimingArgs);
+        }
     },
     template:
 `<div class="obsidian-block">

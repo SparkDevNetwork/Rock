@@ -78,6 +78,10 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     blockComponent: {
                         type: Object,
                         default: null
+                    },
+                    startTimeMs: {
+                        type: Number,
+                        required: true
                     }
                 },
                 setup: function (props) {
@@ -149,7 +153,6 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     return {
                         blockGuid: this.config.blockGuid,
                         error: '',
-                        startTimeMs: (new Date()).getTime(),
                         finishTimeMs: null
                     };
                 },
@@ -175,7 +178,22 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                     }
                 },
                 mounted: function () {
+                    var _a;
                     this.finishTimeMs = (new Date()).getTime();
+                    var componentName = ((_a = this.blockComponent) === null || _a === void 0 ? void 0 : _a.name) || '';
+                    var nameParts = componentName.split('.');
+                    var subtitle = nameParts[0] || '';
+                    if (subtitle && subtitle.indexOf('(') !== 0) {
+                        subtitle = "(" + subtitle + ")";
+                    }
+                    if (nameParts.length) {
+                        Index_js_1.default.commit('reportOnLoadDebugTiming', {
+                            Title: nameParts[1] || '<Unnamed>',
+                            Subtitle: subtitle,
+                            StartTimeMs: this.startTimeMs,
+                            FinishTimeMs: this.finishTimeMs
+                        });
+                    }
                 },
                 template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" class=\"alert-danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" :dismissible=\"true\" @dismiss=\"clearError\" class=\"alert-danger\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
             }));

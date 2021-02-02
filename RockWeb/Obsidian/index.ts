@@ -33,6 +33,7 @@ export type BlockConfig = {
 };
 
 export type PageConfig = {
+    executionStartTime: Date;
     pageId: number;
     pageGuid: Guid;
     pageParameters: Record<string, unknown>,
@@ -67,6 +68,7 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
     }
 
     const name = `Root${config.blockFileUrl.replace(/\//g, '.')}`;
+    const startTimeMs = (new Date()).getTime();
 
     const app = createApp({
         name,
@@ -76,10 +78,11 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
         data() {
             return {
                 config: config,
-                blockComponent: blockComponent ? markRaw(blockComponent) : null
+                blockComponent: blockComponent ? markRaw(blockComponent) : null,
+                startTimeMs
             };
         },
-        template: `<RockBlock :config="config" :blockComponent="blockComponent" />`
+        template: `<RockBlock :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" />`
     });
     app.use(store);
     app.mount(config.rootElement);
@@ -118,7 +121,7 @@ export function initializePageTimings(config: DebugTimingConfig) {
                 viewModels: config.debugTimingViewModels
             };
         },
-        template: `<PageDebugTimings :viewModels="viewModels" />`
+        template: `<PageDebugTimings :serverViewModels="viewModels" />`
     });
     app.use(store);
     app.mount(rootElement);

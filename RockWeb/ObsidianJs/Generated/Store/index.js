@@ -31,6 +31,8 @@ System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (ex
                     contextEntities: {},
                     pageId: 0,
                     pageGuid: '',
+                    executionStartTime: new Date(),
+                    debugTimings: []
                 },
                 getters: {
                     isAuthenticated: function (state) {
@@ -60,6 +62,20 @@ System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (ex
                         state.contextEntities = pageConfig.contextEntities || {};
                         state.pageId = pageConfig.pageId || 0;
                         state.pageGuid = pageConfig.pageGuid || '';
+                        state.executionStartTime = pageConfig.executionStartTime;
+                    },
+                    reportOnLoadDebugTiming: function (state, payload) {
+                        var pageStartTime = state.executionStartTime.getTime();
+                        var timestampMs = payload.StartTimeMs - pageStartTime;
+                        var durationMs = payload.FinishTimeMs - payload.StartTimeMs;
+                        state.debugTimings.push({
+                            TimestampMs: timestampMs,
+                            DurationMs: durationMs,
+                            IndentLevel: 1,
+                            IsTitleBold: false,
+                            SubTitle: payload.Subtitle,
+                            Title: payload.Title
+                        });
                     }
                 },
                 actions: {
