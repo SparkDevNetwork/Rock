@@ -611,12 +611,16 @@
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
     <Compile Include="Tasks\DeleteBinaryFileAttribute.cs" />
+    <Compile Include="Tasks\DeleteEntityTypeIndex.cs" />
     <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
     <Compile Include="Tasks\LaunchGroupMemberPlacedElsewhereWorkflow.cs" />
     <Compile Include="Tasks\LaunchGroupScheduleCancellationWorkflow.cs" />
     <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
+    <Compile Include="Tasks\LaunchWorkflows.cs" />
     <Compile Include="Tasks\ProcessConnectionRequestActivityChange.cs" />
     <Compile Include="Tasks\ProcesSendRegistrationNotification.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeBulkIndex.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeIndex.cs" />
     <Compile Include="Tasks\ProcessRunJobNow.cs" />
     <Compile Include="Tasks\ProcessRebuildStreakType.cs" />
     <Compile Include="Tasks\ProcessSendCommunication.cs" />
@@ -624,6 +628,7 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />
     <Compile Include="Tasks\UpdateDataViewStatistics.cs" />
     <Compile Include="Tasks\UpdateDigitalSignatureDocument.cs" />
