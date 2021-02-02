@@ -21,6 +21,7 @@ using System.Web;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
 using Rock;
@@ -92,6 +93,39 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
+
+                if ( request.Params["MediaUrl0"].IsNotNullOrWhiteSpace() )
+                {
+                    string imageUrl = request.Params["MediaUrl0"];
+                    System.IO.Stream stream = null;
+
+                    var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
+                    var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
+                    if (httpWebRequest.ContentLength > 0)
+                    {
+                        httpWebResponse.ContentLength = httpWebRequest.ContentLength;
+                        stream = httpWebResponse.GetResponseStream();
+
+                    }
+
+
+                    var binaryFile = new BinaryFile
+                    {
+                        IsTemporary = false,
+                        //BinaryFileTypeId = binaryFileType.Id,
+                        //MimeType = uploadedFile.ContentType,
+                        //FileName = Path.GetFileName( uploadedFile.FileName ),
+                        FileSize = stream.Length,
+                        ContentStream = stream
+                    };
+
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    binaryFileService.Add( binaryFile );
+                    rockContext.SaveChanges();
+
+                }
+
+
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
                 var twilioMessage = new Twilio.TwiML.Message();
