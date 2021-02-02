@@ -70,22 +70,8 @@ namespace Rock.Mobile
             if ( validateApiKey )
             {
                 var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
-                var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
-                //
-                // Ensure we have valid site configuration.
-                //
-                if ( additionalSettings == null || !additionalSettings.ApiKeyId.HasValue )
-                {
-                    return null;
-                }
-
-                rockContext = rockContext ?? new Data.RockContext();
-
-                // Get user login for the app and verify that it matches the request's key
-                var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
-
-                if ( appUserLogin != null && appUserLogin.ApiKey == requestApiKey )
+                if ( GetMobileApplicationUser( site, requestApiKey ) != null )
                 {
                     return site;
                 }
@@ -97,6 +83,61 @@ namespace Rock.Mobile
             else
             {
                 return site;
+            }
+        }
+
+        /// <summary>
+        /// Gets the mobile application user associated with the application identifier and api key.
+        /// </summary>
+        /// <param name="appId">The application (site) identifier.</param>
+        /// <param name="mobileApiKey">The mobile API key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="UserLogin"/> associated with the parameters or <c>null</c> if no match was found.</returns>
+        public static UserLogin GetMobileApplicationUser( int appId, string mobileApiKey, RockContext rockContext = null )
+        {
+            //
+            // Lookup the site from the App Id.
+            //
+            var site = SiteCache.Get( appId );
+            if ( site == null )
+            {
+                return null;
+            }
+
+            return GetMobileApplicationUser( site, mobileApiKey, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the mobile application user associated with the site and api key.
+        /// </summary>
+        /// <param name="site">The site.</param>
+        /// <param name="mobileApiKey">The mobile API key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The <see cref="UserLogin"/> associated with the parameters or <c>null</c> if no match was found.</returns>
+        private static UserLogin GetMobileApplicationUser( SiteCache site, string mobileApiKey, RockContext rockContext = null )
+        {
+            var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            //
+            // Ensure we have valid site configuration.
+            //
+            if ( additionalSettings == null || !additionalSettings.ApiKeyId.HasValue )
+            {
+                return null;
+            }
+
+            rockContext = rockContext ?? new Data.RockContext();
+
+            // Get user login for the app and verify that it matches the request's key
+            var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
+
+            if ( appUserLogin != null && appUserLogin.ApiKey == mobileApiKey )
+            {
+                return appUserLogin;
+            }
+            else
+            {
+                return null;
             }
         }
 
