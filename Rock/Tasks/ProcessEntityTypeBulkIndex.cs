@@ -14,34 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Reflection;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a person is viewed.
+    ///
     /// </summary>
-    [Obsolete( "Use ProcessEntityTypeBulkIndex Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class BulkIndexEntityTypeTransaction : ITransaction
+    public sealed class ProcessEntityTypeBulkIndex : BusStartedTask<ProcessEntityTypeBulkIndex.Message>
     {
         /// <summary>
-        /// Gets or sets the viewer person id.
+        /// Executes this instance.
         /// </summary>
-        /// <value>
-        /// The viewer person id.
-        /// </value>
-        public int EntityTypeId { get; set; }
-        
-        /// <summary>
-        /// Execute method to index the entity type.
-        /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
-            var entityType = EntityTypeCache.Get( EntityTypeId );
+            var entityType = EntityTypeCache.Get( message.EntityTypeId );
             Type type = entityType.GetEntityType();
 
             if ( type != null )
@@ -54,6 +49,20 @@ namespace Rock.Transactions
                     bulkItemsMethod.Invoke( classInstance, null );
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the viewer person id.
+            /// </summary>
+            /// <value>
+            /// The viewer person id.
+            /// </value>
+            public int EntityTypeId { get; set; }
         }
     }
 }

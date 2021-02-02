@@ -617,9 +617,18 @@ namespace Rock.Model
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
-                    var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
-                    var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                    var msg  = new LaunchWorkflows.Message
+                    {
+                        WorkflowTypeGuid = failedPaymentWorkflowType.Value
+                    };
+                    msg.WorkflowDetails = failedPayments
+                        .Select( p => new LaunchWorkflows.WorkflowDetail
+                        {
+                            EntityId = p.Id,
+                            EntityTypeId = p.TypeId
+                        }).ToList();
+
+                    msg.Send();
                 }
             }
 

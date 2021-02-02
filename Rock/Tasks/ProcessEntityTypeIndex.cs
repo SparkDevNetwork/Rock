@@ -14,43 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Reflection;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a person is viewed.
+    /// 
     /// </summary>
-    [Obsolete( "Use ProcessEntityTypeIndex Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class IndexEntityTransaction : ITransaction
+    public sealed class ProcessEntityTypeIndex : BusStartedTask<ProcessEntityTypeIndex.Message>
     {
-
         /// <summary>
-        /// Gets or sets the viewer person id.
+        /// Executes this instance.
         /// </summary>
-        /// <value>
-        /// The viewer person id.
-        /// </value>
-        public int EntityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the entity identifier.
-        /// </summary>
-        /// <value>
-        /// The entity identifier.
-        /// </value>
-        public int EntityId { get; set; }
-        
-        /// <summary>
-        /// Execute method to index the document.
-        /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
-            var entityType = EntityTypeCache.Get( EntityTypeId );
+            var entityType = EntityTypeCache.Get( message.EntityTypeId );
 
             if ( entityType != null )
             {
@@ -63,11 +49,33 @@ namespace Rock.Transactions
 
                     if ( classInstance != null && indexItemMethod != null )
                     {
-                        object[] parameters = { EntityId };
+                        object[] parameters = { message.EntityId };
                         indexItemMethod.Invoke( classInstance, parameters );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the viewer person id.
+            /// </summary>
+            /// <value>
+            /// The viewer person id.
+            /// </value>
+            public int EntityTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the entity identifier.
+            /// </summary>
+            /// <value>
+            /// The entity identifier.
+            /// </value>
+            public int EntityId { get; set; }
         }
     }
 }

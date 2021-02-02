@@ -664,11 +664,13 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    IndexEntityTransaction transaction = new IndexEntityTransaction();
-                    transaction.EntityTypeId = groupType.Id;
-                    transaction.EntityId = group.Id;
+                    var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                    {
+                        EntityTypeId = groupType.Id,
+                        EntityId = group.Id
+                    };
 
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    processEntityTypeIndexMsg.Send();
                 }
             }
 
