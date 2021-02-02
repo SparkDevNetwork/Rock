@@ -670,7 +670,7 @@ namespace Rock.Web.UI
                 _previousTiming = _tsDuration.TotalMilliseconds;
             }
 
-            var slDebugTimings = new StringBuilder();
+            var debugTimingViewModels = new List<DebugTimingViewModel>();
             var stopwatchInitEvents = Stopwatch.StartNew();
 
             bool canAdministratePage = false;
@@ -679,7 +679,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                slDebugTimings.Append( GetDebugTimingOutput( "Start Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                debugTimingViewModels.Add( GetDebugTimingOutput( "Start Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -743,7 +743,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                slDebugTimings.Append( GetDebugTimingOutput( "Check For Logout", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                debugTimingViewModels.Add( GetDebugTimingOutput( "Check For Logout", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -801,7 +801,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                slDebugTimings.Append( GetDebugTimingOutput( "Create Rock Context", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                debugTimingViewModels.Add( GetDebugTimingOutput( "Create Rock Context", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -819,7 +819,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 stopwatchInitEvents.Stop();
-                slDebugTimings.Append( GetDebugTimingOutput( "Get Current User", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current User", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -855,7 +855,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    slDebugTimings.Append( GetDebugTimingOutput( "Get Current Person", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                    debugTimingViewModels.Add( GetDebugTimingOutput( "Get Current Person", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -943,7 +943,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    slDebugTimings.Append( GetDebugTimingOutput( "Is Current Person Authorized", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                    debugTimingViewModels.Add( GetDebugTimingOutput( "Is Current Person Authorized", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -1027,7 +1027,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             stopwatchInitEvents.Stop();
-                            slDebugTimings.Append( GetDebugTimingOutput( "Set Page Context(s)", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                            debugTimingViewModels.Add( GetDebugTimingOutput( "Set Page Context(s)", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1085,7 +1085,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             stopwatchInitEvents.Stop();
-                            slDebugTimings.Append( GetDebugTimingOutput( "Check Page Contexts", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                            debugTimingViewModels.Add( GetDebugTimingOutput( "Check Page Contexts", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1119,7 +1119,7 @@ namespace Rock.Web.UI
                     if ( _showDebugTimings )
                     {
                         stopwatchInitEvents.Stop();
-                        slDebugTimings.Append( GetDebugTimingOutput( "Can Administrate Page", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
+                        debugTimingViewModels.Add( GetDebugTimingOutput( "Can Administrate Page", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1 ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1134,8 +1134,15 @@ Rock.settings.initialize({{
     pageId: {_pageCache.Id},
     layout: '{_pageCache.Layout.FileName}',
     baseUrl: '{ResolveUrl( "~" )}'
-}});
+}});";
 
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
+                    }
+
+                    Page.Trace.Warn( "Initializing Obsidian" );
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
+                    {
+                        var script = $@"
 System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     Obsidian.initializePage({{
         pageId: {_pageCache.Id},
@@ -1146,7 +1153,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
     }});
 }});";
 
-                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                     }
 
                     AddTriggerPanel();
@@ -1184,7 +1191,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                     if ( _showDebugTimings )
                     {
                         stopwatchInitEvents.Stop();
-                        slDebugTimings.Append( GetDebugTimingOutput( "Block OnInit", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1, true ) );
+                        debugTimingViewModels.Add( GetDebugTimingOutput( "Block OnInit", stopwatchInitEvents.Elapsed.TotalMilliseconds, 1, true ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1333,7 +1340,7 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                             {
 
                                 stopwatchBlockInit.Stop();
-                                slDebugTimings.Append( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
+                                debugTimingViewModels.Add( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
                             }
                         }
                     }
@@ -1562,20 +1569,57 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                 if ( _showDebugTimings )
                 {
                     stopwatchInitEvents.Stop();
-                    slDebugTimings.Append( GetDebugTimingOutput( "Complete Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
-                    slDebugTimings.Append( GetDebugTimingOutput( "Block OnLoad", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                    debugTimingViewModels.Add( GetDebugTimingOutput( "Complete Initialization", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
+                    debugTimingViewModels.Add( GetDebugTimingOutput( "Block OnLoad", stopwatchInitEvents.Elapsed.TotalMilliseconds, 0, true ) );
                     stopwatchInitEvents.Restart();
                 }
 
                 if ( _showDebugTimings && canAdministratePage )
                 {
-                    slDebugTimings.Append( "<script>$(document).ready(function(){if($('#lblShowDebugTimings').length){var t=$('#lblShowDebugTimings').data('pointintimems'),a=0;$('#lblShowDebugTimings .debug-chart-bar').each(function(i){var n=$(this).data('start-location'),s=$(this).data('duration');n=Math.max(a,n),a=n+s;var h=Math.max(100-100*(n/t+s/t),0);$(this).css('right',h+'%').css('width',s/t*100+'%').attr('title','Started at '+n+' ms / Duration '+s+' ms')})}});</script>" );
-
-                    Page.Form.Controls.Add( new Label
+                    Page.Trace.Warn( "Initializing Obsidian Page Timings" );
+                    var obsidianPageTimingControlId = "lObsidianPageTimings";
+                    Page.Form.Controls.Add( new Literal
                     {
-                        ID = "lblShowDebugTimings",
-                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped debug-timings' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
+                        ID = obsidianPageTimingControlId,
+                        Text = $@"
+<span>
+    <style>
+        .debug-timestamp {{
+            text-align: right;
+        }}
+
+        .debug-waterfall {{
+            width: 40%;
+            position: relative;
+            vertical-align: middle !important;
+            padding: 0 !important;
+        }}
+
+        .debug-chart-bar {{
+            position: absolute;
+            display: block;
+            min-width: 1px;
+            height: 1.125em;
+            background: #009ce3;
+            margin-top: -0.5625em;
+        }}
+    </style>
+    <div id=""{obsidianPageTimingControlId}""></div>
+</span>"
                     } );
+
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
+                    {
+                        var script = $@"
+System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
+    Obsidian.initializePageTimings({{
+        elementId: '{obsidianPageTimingControlId}',
+        debugTimingViewModels: { debugTimingViewModels.ToJson() }
+    }});
+}});";
+
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
+                    }
                 }
             }
         }
@@ -1855,7 +1899,7 @@ Sys.Application.add_load(function () {
 
         #region Private Methods
         /// <summary>
-        /// Gets the debug timing string to write out.
+        /// Gets the debug timing view model.
         /// </summary>
         /// <param name="eventTitle">The event title.</param>
         /// <param name="stepDuration">Duration of the step.</param>
@@ -1863,41 +1907,23 @@ Sys.Application.add_load(function () {
         /// <param name="boldTitle">if set to <c>true</c> [bold title].</param>
         /// <param name="subtitle">The subtitle.</param>
         /// <returns></returns>
-        private string GetDebugTimingOutput( string eventTitle, double stepDuration, int indentLevel = 0, bool boldTitle = false, string subtitle = "" )
+        private DebugTimingViewModel GetDebugTimingOutput( string eventTitle, double stepDuration, int indentLevel = 0, bool boldTitle = false, string subtitle = "" )
         {
-            var indentPaddingAmount = indentLevel * 24;
-
-            var titleStyle = string.Empty;
-
-            if ( indentPaddingAmount != 0 )
-            {
-                titleStyle = $"padding-left: {indentPaddingAmount}px;";
-            }
-
-            if ( boldTitle )
-            {
-                eventTitle = $"<strong>{eventTitle}</strong>";
-            }
-
-            if ( subtitle.IsNotNullOrWhiteSpace() )
-            {
-                eventTitle += $" <small><span style='color:#A4A4A4'>{subtitle}</span></small>";
-            }
-
             _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
             _duration = Math.Round( stepDuration, 2 );
 
-            var output = string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='{2}'>{3}</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n",
-                _duration,                          // 0
-                Math.Round( _previousTiming, 2 ),   // 1
-                titleStyle,                         // 2
-                eventTitle                          // 3
-                );
-            ;
+            var viewModel = new DebugTimingViewModel {
+                TimestampMs = _previousTiming,
+                DurationMs = _duration,
+                Title = eventTitle,
+                SubTitle = subtitle,
+                IsTitleBold = boldTitle,
+                IndentLevel = indentLevel
+            };
 
             _previousTiming += _duration;
 
-            return output;
+            return viewModel;
         }
         #endregion
 
@@ -3691,5 +3717,57 @@ Sys.Application.add_load(function () {
 
     #endregion
 
+    /// <summary>
+    /// Debug Timing
+    /// </summary>
+    public sealed class DebugTimingViewModel {
+        /// <summary>
+        /// Gets or sets the timestamp milliseconds.
+        /// </summary>
+        /// <value>
+        /// The timestamp.
+        /// </value>
+        public double TimestampMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the event title.
+        /// </summary>
+        /// <value>
+        /// The event HTML.
+        /// </value>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sub title.
+        /// </summary>
+        /// <value>
+        /// The sub title.
+        /// </value>
+        public string SubTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the indent level.
+        /// </summary>
+        /// <value>
+        /// The indent level.
+        /// </value>
+        public int IndentLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration ms.
+        /// </summary>
+        /// <value>
+        /// The duration ms.
+        /// </value>
+        public double DurationMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is title bold.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is title bold; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsTitleBold { get; set; }
+    }
 }
 

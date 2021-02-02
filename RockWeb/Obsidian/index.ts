@@ -21,6 +21,7 @@ import { Guid } from './Util/Guid.js';
 import './Rules/Index.js';
 import Person from './ViewModels/CodeGenerated/PersonViewModel.js';
 import Entity from './ViewModels/Entity.js';
+import PageDebugTimings, { DebugTimingViewModel } from './Controls/PageDebugTimings.js';
 
 export type ConfigurationValues = Record<string, unknown>;
 
@@ -37,6 +38,11 @@ export type PageConfig = {
     pageParameters: Record<string, unknown>,
     currentPerson: Person | null,
     contextEntities: Record<string, Entity>
+};
+
+type DebugTimingConfig = {
+    elementId: string;
+    debugTimingViewModels: DebugTimingViewModel[]
 };
 
 /**
@@ -88,4 +94,32 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
 */
 export async function initializePage(pageConfig: PageConfig) {
     await store.dispatch('initialize', { pageConfig });
+}
+
+/**
+ * Shows the Obsidian debug timings
+ * @param debugTimingConfig
+ */
+export function initializePageTimings(config: DebugTimingConfig) {
+    const rootElement = document.getElementById(config.elementId);
+
+    if (!rootElement) {
+        console.error('Could not show Obsidian debug timings because the HTML element did not resolve.');
+        return;
+    }
+
+    const app = createApp({
+        name: 'PageDebugTimingsRoot',
+        components: {
+            PageDebugTimings
+        },
+        data() {
+            return {
+                viewModels: config.debugTimingViewModels
+            };
+        },
+        template: `<PageDebugTimings :viewModels="viewModels" />`
+    });
+    app.use(store);
+    app.mount(rootElement);
 }

@@ -1,4 +1,4 @@
-System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js", "./Rules/Index.js"], function (exports_1, context_1) {
+System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js", "./Rules/Index.js", "./Controls/PageDebugTimings.js"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, RockBlock_js_1, Index_js_1;
+    var vue_js_1, RockBlock_js_1, Index_js_1, PageDebugTimings_js_1;
     var __moduleName = context_1 && context_1.id;
     /**
     * This should be called once per block on the page. The config contains configuration provided by the block's server side logic
@@ -108,6 +108,32 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
         });
     }
     exports_1("initializePage", initializePage);
+    /**
+     * Shows the Obsidian debug timings
+     * @param debugTimingConfig
+     */
+    function initializePageTimings(config) {
+        var rootElement = document.getElementById(config.elementId);
+        if (!rootElement) {
+            console.error('Could not show Obsidian debug timings because the HTML element did not resolve.');
+            return;
+        }
+        var app = vue_js_1.createApp({
+            name: 'PageDebugTimingsRoot',
+            components: {
+                PageDebugTimings: PageDebugTimings_js_1.default
+            },
+            data: function () {
+                return {
+                    viewModels: config.debugTimingViewModels
+                };
+            },
+            template: "<PageDebugTimings :viewModels=\"viewModels\" />"
+        });
+        app.use(Index_js_1.default);
+        app.mount(rootElement);
+    }
+    exports_1("initializePageTimings", initializePageTimings);
     return {
         setters: [
             function (vue_js_1_1) {
@@ -120,10 +146,13 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
                 Index_js_1 = Index_js_1_1;
             },
             function (_1) {
+            },
+            function (PageDebugTimings_js_1_1) {
+                PageDebugTimings_js_1 = PageDebugTimings_js_1_1;
             }
         ],
         execute: function () {
         }
     };
 });
-//# sourceMappingURL=Index.js.map
+//# sourceMappingURL=index.js.map
