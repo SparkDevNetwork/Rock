@@ -2266,6 +2266,16 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// </summary>
+        /// <param name="field">The tb single account fee amount.</param>
+        /// <param name="transactionDetail">The transaction detail.</param>
+        private void ApplyFeeValueToField( CurrencyBox field, FinancialTransactionDetail transactionDetail )
+        {
+            var hasFeeInfo = TransactionDetailsState.Any( d => d.FeeAmount.HasValue );
+            field.Visible = hasFeeInfo;
+            field.Text = transactionDetail == null ? string.Empty : GetFeeAsText( transactionDetail.FeeAmount );
+        }
+
         /// <summary>
         /// Gets the fee column.
         /// </summary>
