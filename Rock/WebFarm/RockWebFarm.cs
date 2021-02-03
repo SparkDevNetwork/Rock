@@ -375,6 +375,11 @@ namespace Rock.WebFarm
         /// <param name="currentPerson">The current person.</param>
         public static void OnRestartRequested( Person currentPerson )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             var personName = currentPerson == null ?
                 "Unknown" :
                 $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
@@ -395,6 +400,11 @@ namespace Rock.WebFarm
         /// <param name="senderNodeName">Name of the node that pinged.</param>
         internal static void OnReceivedPing( string senderNodeName )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
@@ -415,6 +425,11 @@ namespace Rock.WebFarm
         /// <param name="recipientNodeName">Name of the recipient node.</param>
         internal static void OnReceivedPong( string senderNodeName, string recipientNodeName )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
