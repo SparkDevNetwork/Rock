@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -37,7 +38,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ConnectionRequest : Model<ConnectionRequest>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -318,10 +318,83 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var transaction = new Rock.Transactions.ConnectionRequestChangeTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( entry );
+            processConnectionRequestChangeMessage.Send();
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        private ProcessConnectionRequestChange.Message GetProcessConnectionRequestChangeMessage( DbEntityEntry entry )
+        {
+            var transaction = new ProcessConnectionRequestChange.Message();
+
+            // If entity was a connection request, save the values
+            var connectionRequest = entry.Entity as ConnectionRequest;
+            if ( connectionRequest != null )
+            {
+                transaction.State = entry.State;
+
+                // If this isn't a deleted connection request, get the connection request guid
+                if ( transaction.State != EntityState.Deleted )
+                {
+                    transaction.ConnectionRequestGuid = connectionRequest.Guid;
+
+                    if ( connectionRequest.PersonAlias != null )
+                    {
+                        transaction.PersonId = connectionRequest.PersonAlias.PersonId;
+                    }
+                    else if ( connectionRequest.PersonAliasId != default )
+                    {
+                        transaction.PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
+                    }
+
+                    if ( connectionRequest.ConnectionOpportunity != null )
+                    {
+                        transaction.ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
+                    }
+
+                    ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                    ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                    ConnectionState = connectionRequest.ConnectionState;
+                    ConnectionStatusId = connectionRequest.ConnectionStatusId;
+                    AssignedGroupId = connectionRequest.AssignedGroupId;
+
+                    if ( transaction.State == EntityState.Modified )
+                    {
+                        var dbOpportunityIdProperty = entry.Property( "ConnectionOpportunityId" );
+                        if ( dbOpportunityIdProperty != null )
+                        {
+                            transaction.PreviousConnectionOpportunityId = dbOpportunityIdProperty.OriginalValue as int?;
+                        }
+
+                        var dbConnectorPersonAliasIdProperty = entry.Property( "ConnectorPersonAliasId" );
+                        if ( dbConnectorPersonAliasIdProperty != null )
+                        {
+                            transaction.PreviousConnectorPersonAliasId = dbConnectorPersonAliasIdProperty.OriginalValue as int?;
+                        }
+
+                        var dbStateProperty = entry.Property( "ConnectionState" );
+                        if ( dbStateProperty != null )
+                        {
+                            transaction.PreviousConnectionState = ( ConnectionState ) dbStateProperty.OriginalValue;
+                        }
+
+                        var dbStatusProperty = entry.Property( "ConnectionStatusId" );
+                        if ( dbStatusProperty != null )
+                        {
+                            transaction.PreviousConnectionStatusId = ( int ) dbStatusProperty.OriginalValue;
+                        }
+
+                        var dbAssignedGroupIdProperty = entry.Property( "AssignedGroupId" );
+                        if ( dbAssignedGroupIdProperty != null )
+                        {
+                            transaction.PreviousAssignedGroupId = dbAssignedGroupIdProperty.OriginalValue as int?;
+                        }
+                    }
+                }
+            }
+
+            return transaction;
         }
 
         /// <summary>
