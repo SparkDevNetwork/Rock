@@ -422,6 +422,7 @@ namespace Rock.Model
                                 transactionDetail.AccountId = detail.AccountId;
                                 transactionDetail.EntityTypeId = detail.EntityTypeId;
                                 transactionDetail.EntityId = detail.EntityId;
+                                transactionDetail.FeeCoverageAmount = detail.FeeCoverageAmount;
 
                                 if ( detail.Amount <= remainingAmount )
                                 {
