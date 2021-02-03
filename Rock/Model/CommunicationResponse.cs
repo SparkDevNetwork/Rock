@@ -119,15 +119,6 @@ namespace Rock.Model
         [DataMember]
         public string Response { get; set; }
 
-        /// <summary>
-        /// Gets or sets the binary file identifier.
-        /// </summary>
-        /// <value>
-        /// The binary file identifier.
-        /// </value>
-        [DataMember]
-        public int? BinaryFileId { get; set; }
-
         #endregion Entity Properties
 
         #region Virtual Properties
@@ -172,14 +163,6 @@ namespace Rock.Model
         /// </value>
         public virtual EntityType RelatedTransport { get; set; }
 
-        /// <summary>
-        /// Gets or sets the binary file.
-        /// </summary>
-        /// <value>
-        /// The binary file.
-        /// </value>
-        public virtual BinaryFile BinaryFile { get; set; }
-
         #endregion Virtual Properties
 
         #region Public Methods
@@ -209,9 +192,7 @@ namespace Rock.Model
             this.HasOptional( c => c.RelatedCommunication ).WithMany().HasForeignKey( c => c.RelatedCommunicationId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedMedium ).WithMany().HasForeignKey( c => c.RelatedMediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedTransport ).WithMany().HasForeignKey( c => c.RelatedTransportEntityTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( r => r.BinaryFile ).WithMany().HasForeignKey( r => r.BinaryFileId ).WillCascadeOnDelete( false );
         }
-
     }
     #endregion Entity Configuration
 
