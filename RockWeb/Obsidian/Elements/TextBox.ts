@@ -14,13 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import { newGuid } from '../Util/Guid.js';
-import { Field } from '../Vendor/VeeValidate/vee-validate.js';
-import RockLabel from './RockLabel.js';
+import { defineComponent, PropType } from 'vue';
+import { newGuid } from '../Util/Guid';
+import { Field } from 'vee-validate';
+import RockLabel from './RockLabel';
 
 export default defineComponent({
-    name: 'TextBox',
+    name: 'TextBox1',
     components: {
         Field,
         RockLabel

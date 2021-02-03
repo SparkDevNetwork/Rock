@@ -1,4 +1,4 @@
-System.register(["../../Elements/TextBox.js", "../../Elements/CheckBox.js", "../../Elements/RockButton.js", "../../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Elements/RockButton", "vue"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,34 +36,34 @@ System.register(["../../Elements/TextBox.js", "../../Elements/CheckBox.js", "../
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var TextBox_js_1, CheckBox_js_1, RockButton_js_1, vue_js_1;
+    var TextBox_1, CheckBox_1, RockButton_1, vue_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             },
-            function (CheckBox_js_1_1) {
-                CheckBox_js_1 = CheckBox_js_1_1;
+            function (CheckBox_1_1) {
+                CheckBox_1 = CheckBox_1_1;
             },
-            function (RockButton_js_1_1) {
-                RockButton_js_1 = RockButton_js_1_1;
+            function (RockButton_1_1) {
+                RockButton_1 = RockButton_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Security.Login',
                 components: {
-                    TextBox: TextBox_js_1.default,
-                    CheckBox: CheckBox_js_1.default,
-                    RockButton: RockButton_js_1.default
+                    TextBox: TextBox_1.default,
+                    CheckBox: CheckBox_1.default,
+                    RockButton: RockButton_1.default
                 },
                 setup: function () {
                     return {
-                        invokeBlockAction: vue_js_1.inject('invokeBlockAction')
+                        invokeBlockAction: vue_1.inject('invokeBlockAction')
                     };
                 },
                 data: function () {

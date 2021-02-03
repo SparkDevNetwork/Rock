@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import TextBox from '../../Elements/TextBox.js';
-import CheckBox from '../../Elements/CheckBox.js';
-import RockButton from '../../Elements/RockButton.js';
-import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
+import TextBox from '../../Elements/TextBox';
+import CheckBox from '../../Elements/CheckBox';
+import RockButton from '../../Elements/RockButton';
+import { defineComponent, inject } from 'vue';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
 
 type AuthCookie = {
     Expires: string;

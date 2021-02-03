@@ -1,28 +1,28 @@
-System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValidate/vee-validate.js", "./RockLabel.js"], function (exports_1, context_1) {
+System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Guid_js_1, vee_validate_js_1, RockLabel_js_1;
+    var vue_1, Guid_1, vee_validate_1, RockLabel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
-            function (vee_validate_js_1_1) {
-                vee_validate_js_1 = vee_validate_js_1_1;
+            function (vee_validate_1_1) {
+                vee_validate_1 = vee_validate_1_1;
             },
-            function (RockLabel_js_1_1) {
-                RockLabel_js_1 = RockLabel_js_1_1;
+            function (RockLabel_1_1) {
+                RockLabel_1 = RockLabel_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
-                name: 'TextBox',
+            exports_1("default", vue_1.defineComponent({
+                name: 'TextBox1',
                 components: {
-                    Field: vee_validate_js_1.Field,
-                    RockLabel: RockLabel_js_1.default
+                    Field: vee_validate_1.Field,
+                    RockLabel: RockLabel_1.default
                 },
                 props: {
                     modelValue: {
@@ -67,7 +67,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 ],
                 data: function () {
                     return {
-                        uniqueId: "rock-textbox-" + Guid_js_1.newGuid(),
+                        uniqueId: "rock-textbox-" + Guid_1.newGuid(),
                         internalValue: this.modelValue
                     };
                 },

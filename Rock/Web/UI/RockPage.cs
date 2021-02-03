@@ -1144,6 +1144,29 @@ Rock.settings.initialize({{
                     }
 
                     Page.Trace.Warn( "Initializing Obsidian" );
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-systemjs-map" ) )
+                    {
+                        var script = $@"
+<script type=""systemjs-importmap"">
+{{
+    ""imports"": {{
+        ""vue"": ""/ObsidianJs/Generated/Vendor/Vue/vue.js"",
+        ""vuex"": ""/ObsidianJs/Generated/Vendor/Vuex/index.js"",
+        ""vee-validate"": ""/ObsidianJs/Generated/Vendor/VeeValidate/vee-validate.js"",
+        ""axios"": ""/ObsidianJs/Generated/Vendor/Axios/index.js"",
+        ""mitt"": ""/ObsidianJs/Generated/Vendor/Mitt/index.js""
+    }},
+    ""packages"": {{
+        """": {{
+            ""defaultExtension"": ""js""
+        }}
+    }}
+}}
+</script>";
+
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-systemjs-map", script, false );
+                    }
+
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                     {
                         var script = $@"

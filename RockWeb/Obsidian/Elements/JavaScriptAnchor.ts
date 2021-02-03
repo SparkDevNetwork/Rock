@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'JavaScriptAnchor',
