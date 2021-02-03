@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Lava;
 
 namespace Rock.Utility.Settings
 {
@@ -113,6 +114,17 @@ namespace Rock.Utility.Settings
             get
             {
                 return Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public string LavaEngineName
+        {
+            get
+            {
+                return LavaEngine.CurrentEngine.EngineName;
             }
         }
     }

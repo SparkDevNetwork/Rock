@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -26,7 +27,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -969,7 +972,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         ///
         /// </summary>
-        private class DataRowDrop : DotLiquid.Drop
+        private class DataRowDrop : RockDynamic
         {
             private readonly DataRow _dataRow;
 
@@ -978,14 +981,16 @@ namespace RockWeb.Blocks.Reporting
                 _dataRow = dataRow;
             }
 
-            public override object BeforeMethod( string method )
+            public override bool TryGetMember( GetMemberBinder binder, out object result )
             {
-                if ( _dataRow.Table.Columns.Contains( method ) )
+                if ( _dataRow.Table.Columns.Contains( binder.Name ) )
                 {
-                    return _dataRow[method];
+                    result = _dataRow[binder.Name];
+                    return true;
                 }
 
-                return null;
+                result = null;
+                return false;
             }
         }
     }

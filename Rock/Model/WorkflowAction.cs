@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Web.Cache;
 using Rock.Workflow;
 
@@ -570,7 +571,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+        [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {
             /// <summary>

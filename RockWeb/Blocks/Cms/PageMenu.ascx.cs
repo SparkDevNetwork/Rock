@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -32,6 +30,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Model;
 using Rock.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -208,19 +207,24 @@ namespace RockWeb.Blocks.Cms
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-           
+
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
-                var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
+                var lavaContext = LavaEngine.CurrentEngine.NewContext( pageProperties );
 
-                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+                var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+                lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
+
+                IList<Exception> errors;
+
+                lavaTemplate.TryRender( lavaContext, out content, out errors );
 
                 // Check for Lava rendering errors.
-                if ( lavaTemplate.Errors.Any() )
+                if ( errors.Any() )
                 {
-                    throw lavaTemplate.Errors.First();
+                    throw errors.First();
                 }
 
                 phContent.Controls.Clear();
@@ -259,7 +263,7 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
-        private Template GetTemplate()
+        private ILavaTemplate GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;

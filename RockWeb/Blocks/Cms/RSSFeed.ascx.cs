@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.ServiceModel.Syndication;
 using System.Web.UI;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
@@ -30,6 +28,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -178,7 +177,7 @@ namespace RockWeb.Blocks.Cms
             LavaTemplateCache.Remove( TemplateCacheKey );
         }
 
-        private Template GetTemplate()
+        private ILavaTemplate GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;
@@ -327,7 +326,7 @@ namespace RockWeb.Blocks.Cms
 
                     string content = String.Empty;
 
-                    content = GetTemplate().Render( Hash.FromDictionary( feedDictionary ) );
+                    content = GetTemplate().Render( feedDictionary );
 
                     if ( content.Contains( "No such template" ) )
                     {

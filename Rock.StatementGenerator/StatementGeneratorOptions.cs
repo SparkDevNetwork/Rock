@@ -16,13 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
+using Rock.Utility;
 
 namespace Rock.StatementGenerator
 {
     /// <summary>
     /// 
     /// </summary>
-    public class StatementGeneratorOptions : DotLiquid.Drop
+    public class StatementGeneratorOptions : RockDynamic
     {
         /// <summary>
         /// Gets or sets the start date.
