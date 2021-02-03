@@ -615,9 +615,11 @@
     <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
     <Compile Include="Tasks\LaunchGroupMemberPlacedElsewhereWorkflow.cs" />
     <Compile Include="Tasks\LaunchGroupScheduleCancellationWorkflow.cs" />
+    <Compile Include="Tasks\LaunchMemberAttendedGroupWorkflow.cs" />
     <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
     <Compile Include="Tasks\LaunchWorkflows.cs" />
     <Compile Include="Tasks\ProcessConnectionRequestActivityChange.cs" />
+    <Compile Include="Tasks\ProcessConnectionRequestChange.cs" />
     <Compile Include="Tasks\ProcesSendRegistrationNotification.cs" />
     <Compile Include="Tasks\ProcessEntityTypeBulkIndex.cs" />
     <Compile Include="Tasks\ProcessEntityTypeIndex.cs" />
@@ -628,8 +630,10 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
     <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />
+    <Compile Include="Tasks\UpdateAchievementAttempt.cs" />
     <Compile Include="Tasks\UpdateDataViewStatistics.cs" />
     <Compile Include="Tasks\UpdateDigitalSignatureDocument.cs" />
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />

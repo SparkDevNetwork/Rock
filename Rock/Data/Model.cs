@@ -23,7 +23,7 @@ using System.Data.Services;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
+using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
@@ -273,7 +273,25 @@ namespace Rock.Data
         {
             if ( HistoryItems?.Any() == true )
             {
-                new SaveHistoryTransaction( HistoryItems ).Enqueue();
+                if ( HistoryItems.Any() )
+                {
+                    Task.Run( async () =>
+                    {
+                        // Wait 1 second to allow all post save actions to complete
+                        await Task.Delay( 1000 );
+                        try
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                rockContext.BulkInsert( HistoryItems );
+                            }
+                        }
+                        catch ( SystemException ex )
+                        {
+                            ExceptionLogService.LogException( ex, null );
+                        }
+                    } );
+                }
             }
         }
 

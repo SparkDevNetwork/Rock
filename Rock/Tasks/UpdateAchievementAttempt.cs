@@ -16,113 +16,51 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tasks;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Transaction to process changes that occur to an attempt
     /// </summary>
-    /// <seealso cref="Rock.Transactions.ITransaction" />
-    [Obsolete( "Use UpdateAchievementAttempt Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class AchievementAttemptChangeTransaction : ITransaction
+    public sealed class UpdateAchievementAttempt : BusStartedTask<UpdateAchievementAttempt.Message>
     {
-        /// <summary>
-        /// Gets the streak achievement attempt unique identifier.
-        /// </summary>
-        private Guid AchievementAttemptGuid { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is starting.
-        /// </summary>
-        private bool IsNowStarting { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is ending.
-        /// </summary>
-        private bool IsNowEnding { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is successful.
-        /// </summary>
-        private bool IsNowSuccessful { get; }
-
-        /// <summary>
-        /// Gets the achievement type identifier.
-        /// </summary>
-        private int AchievementTypeId { get; }
-
-        /// <summary>
-        /// Gets the start date.
-        /// </summary>
-        private DateTime StartDate { get; }
-
-        /// <summary>
-        /// Gets the end date.
-        /// </summary>
-        private DateTime? EndDate { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AchievementAttemptChangeTransaction"/> class.
-        /// </summary>
-        /// <param name="entry">The entry.</param>
-        public AchievementAttemptChangeTransaction( DbEntityEntry entry )
-        {
-            if ( entry.State != EntityState.Added && entry.State != EntityState.Modified )
-            {
-                return;
-            }
-
-            var achievementAttempt = entry.Entity as AchievementAttempt;
-
-            var wasClosed = entry.State != EntityState.Added && ( entry.Property( "IsClosed" )?.OriginalValue as bool? ?? false );
-            var wasSuccessful = entry.State != EntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
-
-            AchievementAttemptGuid = achievementAttempt.Guid;
-            IsNowStarting = entry.State == EntityState.Added;
-            IsNowEnding = !wasClosed && achievementAttempt.IsClosed;
-            IsNowSuccessful = !wasSuccessful && achievementAttempt.IsSuccessful;
-            AchievementTypeId = achievementAttempt.AchievementTypeId;
-            StartDate = achievementAttempt.AchievementAttemptStartDateTime;
-            EndDate = achievementAttempt.AchievementAttemptEndDateTime;
-        }
-
         /// <summary>
         /// Executes this instance.
         /// </summary>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
-            var achievementTypeCache = AchievementTypeCache.Get( AchievementTypeId );
+            var achievementTypeCache = AchievementTypeCache.Get( message.AchievementTypeId );
 
             if ( achievementTypeCache == null || !achievementTypeCache.IsActive )
             {
                 return;
             }
 
-            if ( IsNowStarting && achievementTypeCache.AchievementStartWorkflowTypeId.HasValue )
+            if ( message.IsNowStarting && achievementTypeCache.AchievementStartWorkflowTypeId.HasValue )
             {
-                LaunchWorkflow( achievementTypeCache.AchievementStartWorkflowTypeId.Value );
+                LaunchWorkflow( achievementTypeCache.AchievementStartWorkflowTypeId.Value, message );
             }
 
-            if ( IsNowEnding && !IsNowSuccessful && achievementTypeCache.AchievementFailureWorkflowTypeId.HasValue )
+            if ( message.IsNowEnding && !message.IsNowSuccessful && achievementTypeCache.AchievementFailureWorkflowTypeId.HasValue )
             {
-                LaunchWorkflow( achievementTypeCache.AchievementFailureWorkflowTypeId.Value );
+                LaunchWorkflow( achievementTypeCache.AchievementFailureWorkflowTypeId.Value, message );
             }
 
-            if ( IsNowSuccessful && achievementTypeCache.AchievementSuccessWorkflowTypeId.HasValue )
+            if ( message.IsNowSuccessful && achievementTypeCache.AchievementSuccessWorkflowTypeId.HasValue )
             {
-                LaunchWorkflow( achievementTypeCache.AchievementSuccessWorkflowTypeId.Value );
+                LaunchWorkflow( achievementTypeCache.AchievementSuccessWorkflowTypeId.Value, message );
             }
 
-            if ( IsNowSuccessful &&
+            if ( message.IsNowSuccessful &&
                 achievementTypeCache.AchievementStepStatusId.HasValue &&
                 achievementTypeCache.AchievementStepTypeId.HasValue )
             {
@@ -130,7 +68,7 @@ namespace Rock.Transactions
                 var achievementAttemptService = new AchievementAttemptService( rockContext );
                 var achieverEntityId = achievementAttemptService.Queryable()
                     .AsNoTracking()
-                    .Where( aa => aa.Guid == AchievementAttemptGuid )
+                    .Where( aa => aa.Guid == message.AchievementAttemptGuid )
                     .Select( s => s.AchieverEntityId )
                     .FirstOrDefault();
 
@@ -154,8 +92,11 @@ namespace Rock.Transactions
 
                 if ( personAliasId != default )
                 {
-                    AddStep( achievementTypeCache.AchievementStepTypeId.Value,
-                        achievementTypeCache.AchievementStepStatusId.Value, personAliasId );
+                    AddStep(
+                        achievementTypeCache.AchievementStepTypeId.Value,
+                        achievementTypeCache.AchievementStepStatusId.Value,
+                        personAliasId,
+                        message );
                 }
             }
         }
@@ -164,9 +105,10 @@ namespace Rock.Transactions
         /// Launches the workflow.
         /// </summary>
         /// <param name="workflowTypeId">The workflow type identifier.</param>
-        private void LaunchWorkflow( int workflowTypeId )
+        /// <param name="message"></param>
+        private void LaunchWorkflow( int workflowTypeId, Message message )
         {
-            var attempt = GetAchievementAttempt();
+            var attempt = GetAchievementAttempt( message );
 
             new LaunchWorkflow.Message
             {
@@ -179,8 +121,9 @@ namespace Rock.Transactions
         /// <summary>
         /// Gets the achievement attempt.
         /// </summary>
+        /// <param name="message"></param>
         /// <returns></returns>
-        private AchievementAttempt GetAchievementAttempt()
+        private AchievementAttempt GetAchievementAttempt( Message message )
         {
             if ( _achievementAttempt != null )
             {
@@ -189,9 +132,10 @@ namespace Rock.Transactions
 
             var rockContext = new RockContext();
             var service = new AchievementAttemptService( rockContext );
-            _achievementAttempt = service.Get( AchievementAttemptGuid );
+            _achievementAttempt = service.Get( message.AchievementAttemptGuid );
             return _achievementAttempt;
         }
+
         private AchievementAttempt _achievementAttempt = null;
 
         /// <summary>
@@ -200,7 +144,8 @@ namespace Rock.Transactions
         /// <param name="stepTypeId">The step type identifier.</param>
         /// <param name="stepStatusId">The step status identifier.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
-        private void AddStep( int stepTypeId, int stepStatusId, int personAliasId )
+        /// <param name="message"></param>
+        private void AddStep( int stepTypeId, int stepStatusId, int personAliasId, Message message )
         {
             var rockContext = new RockContext();
             var stepService = new StepService( rockContext );
@@ -231,9 +176,9 @@ namespace Rock.Transactions
             {
                 StepTypeId = stepTypeId,
                 StepStatusId = stepStatusId,
-                CompletedDateTime = stepStatus.IsCompleteStatus ? EndDate : null,
-                StartDateTime = StartDate,
-                EndDateTime = stepType.HasEndDate ? EndDate : null,
+                CompletedDateTime = stepStatus.IsCompleteStatus ? message.EndDate : null,
+                StartDateTime = message.StartDate,
+                EndDateTime = stepType.HasEndDate ? message.EndDate : null,
                 PersonAliasId = personAliasId
             };
 
@@ -245,6 +190,47 @@ namespace Rock.Transactions
             }
 
             rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the streak achievement attempt unique identifier.
+            /// </summary>
+            public Guid AchievementAttemptGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is starting.
+            /// </summary>
+            public bool IsNowStarting { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is ending.
+            /// </summary>
+            public bool IsNowEnding { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is successful.
+            /// </summary>
+            public bool IsNowSuccessful { get; set; }
+
+            /// <summary>
+            /// Gets or sets the achievement type identifier.
+            /// </summary>
+            public int AchievementTypeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date.
+            /// </summary>
+            public DateTime StartDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the end date.
+            /// </summary>
+            public DateTime? EndDate { get; set; }
         }
     }
 }

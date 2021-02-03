@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Rock.Model;
@@ -25,6 +26,8 @@ namespace Rock.Transactions
     /// Transaction to process changes that occur to a streak type exclusion
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use ProcessStreakTypeExclusionChange Task instead." )]
+    [RockObsolete( "1.13" )]
     public class StreakTypeExclusionChangeTransaction : ITransaction
     {
         /// <summary>

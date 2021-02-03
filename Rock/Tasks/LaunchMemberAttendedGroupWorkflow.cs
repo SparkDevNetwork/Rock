@@ -14,90 +14,32 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-
+using System.Text;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Transactions
+namespace Rock.Tasks
 {
     /// <summary>
     /// Launches a group attendance workflow
     /// </summary>
-    [Obsolete( "Use LaunchMemberAttendedGroupWorkflow Task instead." )]
-    [RockObsolete( "1.13" )]
-    public class GroupAttendedTransaction : ITransaction
+    public sealed class LaunchMemberAttendedGroupWorkflow : BusStartedTask<LaunchMemberAttendedGroupWorkflow.Message>
     {
-        private int? GroupTypeId;
-        private int? GroupId;
-        private int? PersonAliasId;
-        private DateTime? AttendanceDateTime;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupAttendedTransaction"/> class.
+        /// Executes this instance.
         /// </summary>
-        /// <param name="entry">The entry.</param>
-        public GroupAttendedTransaction( DbEntityEntry entry )
-        {
-            if ( entry.State != EntityState.Deleted )
-            {
-                // Get the attendance record
-                var attendance = entry.Entity as Attendance;
-
-                // If attendance record is valid and the DidAttend is true (not null or false)
-                if ( attendance != null && ( attendance.DidAttend == true ) )
-                {
-                    // Save for all adds
-                    bool valid = entry.State == EntityState.Added;
-
-                    // If not an add, check previous DidAttend value
-                    if ( !valid )
-                    {
-                        var dbProperty = entry.Property( "DidAttend" );
-                        if ( dbProperty != null )
-                        {
-                            // Only use changes where DidAttend was previously not true
-                            valid = !(dbProperty.OriginalValue as bool? ?? false);
-                        }
-                    }
-
-                    if ( valid )
-                    {
-                        var occ = attendance.Occurrence;
-                        if (occ == null )
-                        {
-                            occ = new AttendanceOccurrenceService(new RockContext()).Get(attendance.OccurrenceId);
-                        }
-
-                        if (occ != null)
-                        {
-                            // Save the values
-                            GroupId = occ.GroupId;
-                            AttendanceDateTime = occ.OccurrenceDate;
-                            PersonAliasId = attendance.PersonAliasId;
-
-                            if (occ.Group != null)
-                            {
-                                GroupTypeId = occ.Group.GroupTypeId;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Execute method to check for any workflows to launch.
-        /// </summary>
-        public void Execute()
+        /// <param name="message"></param>
+        public override void Execute( Message message )
         {
             // Verify that valid ids were saved
-            if ( GroupId.HasValue && PersonAliasId.HasValue )
+            if ( message.GroupId.HasValue && message.PersonAliasId.HasValue )
             {
                 // Get all the triggers from cache
                 var cachedTriggers = GroupMemberWorkflowTriggerService.GetCachedTriggers();
@@ -110,7 +52,7 @@ namespace Rock.Transactions
                         .Where( w =>
                             w.TriggerType == GroupMemberWorkflowTriggerType.MemberAttendedGroup &&
                             w.GroupId.HasValue &&
-                            w.GroupId.Value == GroupId.Value )
+                            w.GroupId.Value == message.GroupId.Value )
                         .OrderBy( w => w.Order )
                         .ToList();
 
@@ -131,11 +73,12 @@ namespace Rock.Transactions
                             if ( groupTypeTriggers.Any() )
                             {
                                 // Get the current txn's group type id
-                                if ( !GroupTypeId.HasValue )
+                                if ( !message.GroupTypeId.HasValue )
                                 {
-                                    GroupTypeId = new GroupService( rockContext )
-                                        .Queryable().AsNoTracking()
-                                        .Where( g => g.Id == GroupId.Value )
+                                    message.GroupTypeId = new GroupService( rockContext )
+                                        .Queryable()
+                                        .AsNoTracking()
+                                        .Where( g => g.Id == message.GroupId.Value )
                                         .Select( g => g.GroupTypeId )
                                         .FirstOrDefault();
                                 }
@@ -144,7 +87,7 @@ namespace Rock.Transactions
                                 groupTypeTriggers = groupTypeTriggers
                                     .Where( t =>
                                         t.GroupTypeId.HasValue &&
-                                        t.GroupTypeId.Equals( GroupTypeId ) )
+                                        t.GroupTypeId.Equals( message.GroupTypeId ) )
                                     .OrderBy( t => t.Order )
                                     .ToList();
                             }
@@ -160,7 +103,7 @@ namespace Rock.Transactions
                                 {
                                     bool launchIt = true;
 
-                                    var qualifierParts = ( trigger.TypeQualifier ?? "" ).Split( new char[] { '|' } );
+                                    var qualifierParts = ( trigger.TypeQualifier ?? string.Empty ).Split( new char[] { '|' } );
 
                                     // Check to see if trigger is only specific to first time visitors
                                     if ( qualifierParts.Length > 4 && qualifierParts[4].AsBoolean() )
@@ -168,19 +111,19 @@ namespace Rock.Transactions
                                         // Get the person from person alias
                                         int personId = new PersonAliasService( rockContext )
                                             .Queryable().AsNoTracking()
-                                            .Where( a => a.Id == PersonAliasId.Value )
+                                            .Where( a => a.Id == message.PersonAliasId.Value )
                                             .Select( a => a.PersonId )
                                             .FirstOrDefault();
 
                                         // Check if there are any other attendances for this group/person and if so, do not launch workflow
                                         if ( new AttendanceService( rockContext )
-                                            .Queryable().AsNoTracking(  )
-                                            .Count(a => a.Occurrence.GroupId.HasValue &&
-                                                a.Occurrence.GroupId.Value == GroupId.Value &&
-                                                a.PersonAlias != null &&
-                                                a.PersonAlias.PersonId == personId &&
-                                                a.DidAttend.HasValue &&
-                                                a.DidAttend.Value) > 1 )
+                                            .Queryable().AsNoTracking()
+                                            .Count( a => a.Occurrence.GroupId.HasValue &&
+                                                 a.Occurrence.GroupId.Value == message.GroupId.Value &&
+                                                 a.PersonAlias != null &&
+                                                 a.PersonAlias.PersonId == personId &&
+                                                 a.DidAttend.HasValue &&
+                                                 a.DidAttend.Value ) > 1 )
                                         {
                                             launchIt = false;
                                         }
@@ -189,7 +132,7 @@ namespace Rock.Transactions
                                     // If first time flag was not specified, or this is a first time visit, launch the workflow
                                     if ( launchIt )
                                     {
-                                        LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name );
+                                        LaunchWorkflow( rockContext, trigger.WorkflowTypeId, trigger.Name, message );
                                     }
                                 }
                             }
@@ -199,7 +142,7 @@ namespace Rock.Transactions
             }
         }
 
-        private void LaunchWorkflow( RockContext rockContext, int workflowTypeId, string name )
+        private void LaunchWorkflow( RockContext rockContext, int workflowTypeId, string name, Message message )
         {
             var workflowType = WorkflowTypeCache.Get( workflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
@@ -210,7 +153,7 @@ namespace Rock.Transactions
                 {
                     if ( workflow.AttributeValues.ContainsKey( "Group" ) )
                     {
-                        var group = new GroupService( rockContext ).Get( GroupId.Value );
+                        var group = new GroupService( rockContext ).Get( message.GroupId.Value );
                         if ( group != null )
                         {
                             workflow.AttributeValues["Group"].Value = group.Guid.ToString();
@@ -219,16 +162,16 @@ namespace Rock.Transactions
 
                     if ( workflow.AttributeValues.ContainsKey( "Person" ) )
                     {
-                        var personAlias = new PersonAliasService( rockContext ).Get( PersonAliasId.Value );
+                        var personAlias = new PersonAliasService( rockContext ).Get( message.PersonAliasId.Value );
                         if ( personAlias != null )
                         {
                             workflow.AttributeValues["Person"].Value = personAlias.Guid.ToString();
                         }
                     }
 
-                    if ( AttendanceDateTime.HasValue && workflow.AttributeValues.ContainsKey( "AttendanceDateTime" ) )
+                    if ( message.AttendanceDateTime.HasValue && workflow.AttributeValues.ContainsKey( "AttendanceDateTime" ) )
                     {
-                        workflow.AttributeValues["AttendanceDateTime"].Value = AttendanceDateTime.Value.ToString( "o" );
+                        workflow.AttributeValues["AttendanceDateTime"].Value = message.AttendanceDateTime.Value.ToString( "o" );
                     }
                 }
 
@@ -237,6 +180,30 @@ namespace Rock.Transactions
             }
         }
 
+        /// <summary>
+        /// Message Class
+        /// </summary>
+        public sealed class Message : BusStartedTaskMessage
+        {
+            /// <summary>
+            /// Gets or sets the group type identifier.
+            /// </summary>
+            public int? GroupTypeId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the group identifier.
+            /// </summary>
+            public int? GroupId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person alias identifier.
+            /// </summary>
+            public int? PersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the attendance date time.
+            /// </summary>
+            public DateTime? AttendanceDateTime { get; set; }
+        }
     }
 }

@@ -520,7 +520,6 @@ namespace Rock.Model
 
             set
             {
-
             }
         }
 
@@ -731,7 +730,8 @@ namespace Rock.Model
 
             if ( previousDidAttendValue == false && this.DidAttend == true )
             {
-                new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
+                var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage( entry );
+                launchMemberAttendedGroupWorkflowMsg.Send();
             }
 
             base.PreSaveChanges( dbContext, entry );
@@ -886,6 +886,61 @@ namespace Rock.Model
         }
 
         #endregion
+        #region Private Methods
+
+        private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage( DbEntityEntry entry )
+        {
+            var launchMemberAttendedGroupWorkflowMsg = new LaunchMemberAttendedGroupWorkflow.Message();
+            if ( entry.State != EntityState.Deleted )
+            {
+                // Get the attendance record
+                var attendance = entry.Entity as Attendance;
+
+                // If attendance record is valid and the DidAttend is true (not null or false)
+                if ( attendance != null && ( attendance.DidAttend == true ) )
+                {
+                    // Save for all adds
+                    bool valid = entry.State == EntityState.Added;
+
+                    // If not an add, check previous DidAttend value
+                    if ( !valid )
+                    {
+                        var dbProperty = entry.Property( "DidAttend" );
+                        if ( dbProperty != null )
+                        {
+                            // Only use changes where DidAttend was previously not true
+                            valid = !( dbProperty.OriginalValue as bool? ?? false );
+                        }
+                    }
+
+                    if ( valid )
+                    {
+                        var occ = attendance.Occurrence;
+                        if ( occ == null )
+                        {
+                            occ = new AttendanceOccurrenceService( new RockContext() ).Get( attendance.OccurrenceId );
+                        }
+
+                        if ( occ != null )
+                        {
+                            // Save the values
+                            launchMemberAttendedGroupWorkflowMsg.GroupId = occ.GroupId;
+                            launchMemberAttendedGroupWorkflowMsg.AttendanceDateTime = occ.OccurrenceDate;
+                            PersonAliasId = attendance.PersonAliasId;
+
+                            if ( occ.Group != null )
+                            {
+                                launchMemberAttendedGroupWorkflowMsg.GroupTypeId = occ.Group.GroupTypeId;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return launchMemberAttendedGroupWorkflowMsg;
+        }
+
+        #endregion Private Methods
     }
 
     #region Entity Configuration
@@ -917,7 +972,6 @@ namespace Rock.Model
     }
 
     #endregion
-
 
     #region Enumerations
 
