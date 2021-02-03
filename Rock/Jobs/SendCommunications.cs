@@ -125,7 +125,7 @@ namespace Rock.Jobs
                         cr.Communication.Status == CommunicationStatus.Approved &&
                         cr.Status == CommunicationRecipientStatus.Pending &&
                         (
-                            ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < expireDateTimeEndWindow && cr.Communication.CreatedDateTime > expireDateTimeBeginWindow )
+                            ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.ReviewedDateTime.HasValue && cr.Communication.ReviewedDateTime < expireDateTimeEndWindow && cr.Communication.ReviewedDateTime > expireDateTimeBeginWindow )
                             || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime > expireDateTimeBeginWindow )
                         ) );
 
