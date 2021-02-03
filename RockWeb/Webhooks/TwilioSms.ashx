@@ -94,34 +94,44 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
 
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
 
-                if ( request.Params["MediaUrl0"].IsNotNullOrWhiteSpace() )
-                {
-                    string imageUrl = request.Params["MediaUrl0"];
-                    System.IO.Stream stream = null;
+                int? numberOfAttachments = request.Params["NumMedia"].IsNotNullOrWhiteSpace() ? request.Params["NumMedia"].AsIntegerOrNull() : null;
 
-                    var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
-                    var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
-                    if (httpWebRequest.ContentLength > 0)
+                if ( numberOfAttachments != null )
+                {
+                    int? communicationAttachmentBinaryFileId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+
+                    for ( int i = 0; i < numberOfAttachments.Value; i++ )
                     {
-                        httpWebResponse.ContentLength = httpWebRequest.ContentLength;
+                        string imageUrl = request.Params[string.Format("MediaUrl{0}", i )];
+                        string mimeType = request.Params[string.Format("MediaContentType{0}", i )];
+
+                        System.IO.Stream stream = null;
+                        var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
+                        var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
+
+                        if ( httpWebResponse.ContentLength == 0 )
+                        {
+                            continue;
+                        }
+
+                        // probably use streamreader.
                         stream = httpWebResponse.GetResponseStream();
 
+                        var binaryFile = new BinaryFile
+                        {
+                            IsTemporary = false,
+                            BinaryFileTypeId = communicationAttachmentBinaryFileId,
+                            MimeType = mimeType,
+                            FileName = string.Format( "SMS-Attachment-{0}-{1}", message.FromNumber, i ),
+                            FileSize = stream.Length,
+                            ContentStream = stream
+                        };
+
+                        var binaryFileService = new BinaryFileService( rockContext );
+                        binaryFileService.Add( binaryFile );
+                        rockContext.SaveChanges();
+                        message.Attachments.Add( binaryFile );
                     }
-
-
-                    var binaryFile = new BinaryFile
-                    {
-                        IsTemporary = false,
-                        //BinaryFileTypeId = binaryFileType.Id,
-                        //MimeType = uploadedFile.ContentType,
-                        //FileName = Path.GetFileName( uploadedFile.FileName ),
-                        FileSize = stream.Length,
-                        ContentStream = stream
-                    };
-
-                    var binaryFileService = new BinaryFileService( rockContext );
-                    binaryFileService.Add( binaryFile );
-                    rockContext.SaveChanges();
 
                 }
 
