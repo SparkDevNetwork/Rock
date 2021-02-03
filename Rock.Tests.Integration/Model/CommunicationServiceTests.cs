@@ -150,7 +150,7 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         [DataRow( false )]
         [DataRow( true )]
-        public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectCreateDate( bool includePending )
+        public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectReviewedDate( bool includePending )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -163,9 +163,9 @@ namespace Rock.Tests.Integration.Model
 
                 var expectedBeginWindow = RockDateTime.Now.AddDays( 0 - _expirationDays );
                 var expectedEndWindow = RockDateTime.Now.AddMinutes( 0 - _delayMinutes );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime > expectedEndWindow && c.FutureSendDateTime == null ), "Query returned communications that are greater then the expected end window." );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime < expectedBeginWindow && c.FutureSendDateTime == null ), "Query returned communications that are less then the expected begin window." );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime == null && c.FutureSendDateTime == null ), "Query returned communications without a created date." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime > expectedEndWindow && c.FutureSendDateTime == null ), "Query returned communications that are greater then the expected end window." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime < expectedBeginWindow && c.FutureSendDateTime == null ), "Query returned communications that are less then the expected begin window." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime == null && c.FutureSendDateTime == null ), "Query returned communications without a created date." );
                 Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime > DateTime.Now ), "Query returned communications that are greater then the expected end window." );
                 Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime < expectedBeginWindow ), "Query returned communications that are less then the expected begin window." );
             }
@@ -174,7 +174,7 @@ namespace Rock.Tests.Integration.Model
         [TestMethod]
         [DataRow( false )]
         [DataRow( true )]
-        public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectCreateDateAndFutureDate( bool includePending )
+        public void GetQueuedShouldOnlyIncludeCommunicationsWithCorrectReviewedDateAndFutureDate( bool includePending )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -187,9 +187,9 @@ namespace Rock.Tests.Integration.Model
 
                 var expectedBeginWindow = RockDateTime.Now.AddDays( 0 - _expirationDays );
                 var expectedEndWindow = RockDateTime.Now.AddMinutes( 0 - _delayMinutes );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime > expectedEndWindow && c.FutureSendDateTime == null ), "Query returned communications that are greater then the expected end window." );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime < expectedBeginWindow && c.FutureSendDateTime == null ), "Query returned communications that are less then the expected begin window." );
-                Assert.That.IsFalse( qry.Any( c => c.CreatedDateTime == null && c.FutureSendDateTime == null ), "Query returned communications without a created date." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime > expectedEndWindow && c.FutureSendDateTime == null ), "Query returned communications that are greater then the expected end window." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime < expectedBeginWindow && c.FutureSendDateTime == null ), "Query returned communications that are less then the expected begin window." );
+                Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime == null && c.FutureSendDateTime == null ), "Query returned communications without a created date." );
                 Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime < expectedBeginWindow ), "Query returned communications that were out of range." );
             }
         }
@@ -240,18 +240,18 @@ namespace Rock.Tests.Integration.Model
             }
         }
 
-        private static List<Rock.Model.Communication> CreateCommunication( int sender, DateTime? createDateTime, DateTime? futureSendDateTime )
+        private static List<Rock.Model.Communication> CreateCommunication( int sender, DateTime? reviewedDateTime, DateTime? futureSendDateTime )
         {
             var communications = new List<Rock.Model.Communication>();
 
             foreach ( CommunicationStatus communicationStatus in Enum.GetValues( typeof( CommunicationStatus ) ) )
             {
-                communications.AddRange( CreateCommunications( sender, communicationStatus, createDateTime, futureSendDateTime, false, null ) );
-                communications.AddRange( CreateCommunications( sender, communicationStatus, createDateTime, futureSendDateTime, true, null ) );
+                communications.AddRange( CreateCommunications( sender, communicationStatus, reviewedDateTime, futureSendDateTime, false, null ) );
+                communications.AddRange( CreateCommunications( sender, communicationStatus, reviewedDateTime, futureSendDateTime, true, null ) );
 
                 var listGroupId = GetListGroupId();
-                communications.AddRange( CreateCommunications( sender, communicationStatus, createDateTime, futureSendDateTime, false, listGroupId ) );
-                communications.AddRange( CreateCommunications( sender, communicationStatus, createDateTime, futureSendDateTime, true, listGroupId ) );
+                communications.AddRange( CreateCommunications( sender, communicationStatus, reviewedDateTime, futureSendDateTime, false, listGroupId ) );
+                communications.AddRange( CreateCommunications( sender, communicationStatus, reviewedDateTime, futureSendDateTime, true, listGroupId ) );
             }
 
             return communications;
@@ -276,14 +276,13 @@ namespace Rock.Tests.Integration.Model
             }
         }
 
-        private static List<Rock.Model.Communication> CreateCommunications( int sender, CommunicationStatus communicationStatus, DateTime? createDateTime, DateTime? futureSendDateTime, bool AddPendingRecipient, int? listGroupId )
+        private static List<Rock.Model.Communication> CreateCommunications( int sender, CommunicationStatus communicationStatus, DateTime? reviewedDateTime, DateTime? futureSendDateTime, bool AddPendingRecipient, int? listGroupId )
         {
 
             // Create communication with no recipients.
             var communicationNoReciepients = new Rock.Model.Communication
             {
                 Name = $"Test Communication {Guid.NewGuid()}",
-                CreatedDateTime = createDateTime,
                 FutureSendDateTime = futureSendDateTime,
                 ListGroupId = listGroupId,
                 Message = $"Test Communication {Guid.NewGuid()}",
@@ -292,14 +291,14 @@ namespace Rock.Tests.Integration.Model
                 CommunicationType = CommunicationType.Email,
                 SenderPersonAliasId = sender,
                 IsBulkCommunication = false,
-                Status = communicationStatus
+                Status = communicationStatus,
+                ReviewedDateTime = reviewedDateTime
             };
 
             // Create communication with recipients.
             var communicationReciepients = new Rock.Model.Communication
             {
                 Name = $"Test Communication {Guid.NewGuid()}",
-                CreatedDateTime = createDateTime,
                 FutureSendDateTime = futureSendDateTime,
                 ListGroupId = listGroupId,
                 Message = $"Test Communication {Guid.NewGuid()}",
@@ -308,7 +307,8 @@ namespace Rock.Tests.Integration.Model
                 CommunicationType = CommunicationType.Email,
                 SenderPersonAliasId = sender,
                 IsBulkCommunication = false,
-                Status = communicationStatus
+                Status = communicationStatus,
+                ReviewedDateTime = reviewedDateTime
             };
             foreach ( CommunicationRecipientStatus communicationRecipientStatus in Enum.GetValues( typeof( CommunicationRecipientStatus ) ) )
             {

@@ -514,7 +514,7 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
+                            
                             dataContext.SaveChanges();
 
                             // TODO: Send notice to sender that communication was approved
