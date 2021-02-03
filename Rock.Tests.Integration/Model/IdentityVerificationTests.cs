@@ -111,6 +111,7 @@ namespace Rock.Tests.Integration.Model
         {
             var referenceNumber = "TEST-REFERENCE-NUMBER";
             var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
             using ( var rockContext = new RockContext() )
@@ -120,25 +121,29 @@ namespace Rock.Tests.Integration.Model
 
                 Assert.That.IsNotNull( verificationRecord );
 
-                Assert.That.IsTrue( service.VerifyIdentityVerificationCode( referenceNumber, 1, verificationRecord.IdentityVerificationCode.Code ) );
+                Assert.That.IsTrue( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
         [TestMethod]
-        public void VerifyIdentityVerificationCodeShouldNotValidateIfWrongReferenceNumber()
+        public void VerifyIdentityVerificationCodeShouldNotValidateIfWrongIdentityVerificationId()
         {
             var referenceNumber = "TEST-REFERENCE-NUMBER";
             var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
+
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
             using ( var rockContext = new RockContext() )
             {
                 var service = new IdentityVerificationService( rockContext );
-                var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
+                var verificationRecord1 = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
+                var verificationRecord2 = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
 
-                Assert.That.IsNotNull( verificationRecord );
+                Assert.That.IsNotNull( verificationRecord1 );
+                Assert.That.IsNotNull( verificationRecord2 );
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( $"{referenceNumber}-1", 1, verificationRecord.IdentityVerificationCode.Code ) );
+                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord1.Id, 1, verificationRecord2.IdentityVerificationCode.Code, validationAttempts ) );
             }
         }
 
@@ -147,6 +152,8 @@ namespace Rock.Tests.Integration.Model
         {
             var referenceNumber = "TEST-REFERENCE-NUMBER";
             var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
+
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
             using ( var rockContext = new RockContext() )
@@ -156,7 +163,7 @@ namespace Rock.Tests.Integration.Model
 
                 Assert.That.IsNotNull( verificationRecord );
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( referenceNumber, 1, "120003" ) );
+                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "120003", validationAttempts ) );
             }
         }
 
@@ -165,6 +172,8 @@ namespace Rock.Tests.Integration.Model
         {
             var referenceNumber = "TEST-REFERENCE-NUMBER";
             var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
+
             dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
 
             using ( var rockContext = new RockContext() )
@@ -177,7 +186,58 @@ namespace Rock.Tests.Integration.Model
                 verificationRecord.IssueDateTime = verificationRecord.IssueDateTime.AddSeconds( -61 );
                 rockContext.SaveChanges();
 
-                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( referenceNumber, 1, verificationRecord.IdentityVerificationCode.Code ) );
+                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIdentityVerificationCodeShouldNotValidateIfTooManyAttempts()
+        {
+            var referenceNumber = "TEST-REFERENCE-NUMBER";
+            var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
+
+            dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new IdentityVerificationService( rockContext );
+                var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
+
+                Assert.That.IsNotNull( verificationRecord );
+
+                verificationRecord.FailedMatchAttemptCount = 10;
+                rockContext.SaveChanges();
+
+                Assert.That.IsFalse( service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, verificationRecord.IdentityVerificationCode.Code, validationAttempts ) );
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIdentityVerificationCodeShouldCorrectlyIncrementFailedAttempts()
+        {
+            var referenceNumber = "TEST-REFERENCE-NUMBER";
+            var ipAddress = "TEST-IP-ADDRESS";
+            var validationAttempts = 10;
+
+            dataToCleanUp.Add( new string[] { referenceNumber, ipAddress } );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new IdentityVerificationService( rockContext );
+                var verificationRecord = service.CreateIdentityVerificationRecord( ipAddress, 10, referenceNumber );
+
+                Assert.That.IsNotNull( verificationRecord );
+
+                service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail1", validationAttempts );
+                service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail2", validationAttempts );
+                service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail3", validationAttempts );
+                service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail4", validationAttempts );
+                service.VerifyIdentityVerificationCode( verificationRecord.Id, 1, "Fail5", validationAttempts );
+
+                var actualVerificationRecord = service.Get( verificationRecord.Id );
+
+                Assert.That.AreEqual( 5, actualVerificationRecord.FailedMatchAttemptCount );
             }
         }
 

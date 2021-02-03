@@ -23,7 +23,6 @@ namespace Rock.Model
 {
     public partial class IdentityVerificationService
     {
-
         /// <summary>
         /// Verifies the identity verification code.
         /// </summary>
@@ -31,6 +30,8 @@ namespace Rock.Model
         /// <param name="timeLimit">The time limit.</param>
         /// <param name="verificationCode">The verification code.</param>
         /// <returns></returns>
+        [Obsolete("This method has been replaced by the method with four parameters.")]
+        [RockObsolete("1.12.2")]
         public bool VerifyIdentityVerificationCode( string referenceNumber, int timeLimit, string verificationCode )
         {
             var minDateTime = RockDateTime.Now.AddMinutes( -timeLimit );
@@ -43,6 +44,44 @@ namespace Rock.Model
 
             return identityVerification != null
                     && identityVerification.IdentityVerificationCode.Code == verificationCode;
+        }
+
+        /// <summary>
+        /// Verifies the identity verification code.
+        /// </summary>
+        /// <param name="identityVerificationId">The identity verification identifier.</param>
+        /// <param name="timeLimit">The time limit.</param>
+        /// <param name="verificationCode">The verification code.</param>
+        /// <param name="validationAttempts">The validation attempts.</param>
+        /// <returns></returns>
+        public bool VerifyIdentityVerificationCode( int identityVerificationId, int timeLimit, string verificationCode, int validationAttempts )
+        {
+            var minDateTime = RockDateTime.Now.AddMinutes( -timeLimit );
+            var identityVerification = Queryable()
+                                        .Include( c => c.IdentityVerificationCode )
+                                        .Where( ivs => ivs.Id == identityVerificationId )
+                                        .Where( ivs => ivs.IssueDateTime > minDateTime )
+                                        .OrderByDescending( ivs => ivs.IssueDateTime )
+                                        .FirstOrDefault();
+
+            var isVerificationCodeValid = identityVerification != null
+                    && identityVerification.IdentityVerificationCode.Code == verificationCode
+                    && ( identityVerification.FailedMatchAttemptCount == null || identityVerification.FailedMatchAttemptCount < validationAttempts );
+
+            if ( isVerificationCodeValid )
+            {
+                return true;
+            }
+
+            if ( identityVerification == null || identityVerification.FailedMatchAttemptCount >= validationAttempts )
+            {
+                return false;
+            }
+
+            identityVerification.FailedMatchAttemptCount = identityVerification.FailedMatchAttemptCount == null ? 1 : identityVerification.FailedMatchAttemptCount + 1;
+            Context.SaveChanges();
+
+            return false;
         }
 
         /// <summary>
