@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 
@@ -35,10 +36,10 @@ namespace Rock.Web.Cache
     /// <seealso cref="EntityCache{T, TT}" />
     /// <seealso cref="Rock.Security.ISecured" />
     /// <seealso cref="Rock.Attribute.IHasAttributes" />
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
+    /// <seealso cref="Rock.Lava.ILavaDataDictionary" />
     [Serializable]
     [DataContract]
-    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
+    public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, ILavaDataDictionary where T : IEntityCache, new()
         where TT : Model<TT>, new()
     {
 
@@ -410,6 +411,19 @@ namespace Rock.Web.Cache
         /// </value>
         [LavaIgnore]
         public virtual List<string> AvailableKeys => ( from propInfo in GetType().GetProperties() where propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() select propInfo.Name ).ToList();
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.

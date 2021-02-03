@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
@@ -31,7 +32,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject, Lava.ILiquidizable
+    public class IndexModelBase : DynamicObject, ILavaDataDictionary
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -371,6 +372,19 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
         }
 
         /// <summary>

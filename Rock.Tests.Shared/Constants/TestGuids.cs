@@ -178,5 +178,10 @@ namespace Rock.Tests.Shared
         {
             public const string PrayerCommentsNotification = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
         }
+
+        public static class Shortcodes
+        {
+            public const string ShortcodeTest1 = "B60A5547-FA5C-49C3-AC14-D631E54208AE";
+        }
     }
 }

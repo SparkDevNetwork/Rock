@@ -539,6 +539,8 @@ namespace RockWeb.Blocks.Administration
             
             lLastMigrations.Text = GetLastMigrationData();
 
+            lLavaEngine.Text = RockInstanceConfig.LavaEngineName;
+
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
