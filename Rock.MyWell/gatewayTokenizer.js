@@ -5,7 +5,8 @@ function initializeTokenizer(controlId) {
         // control hasn't been rendered so skip
         return;
     }
-    var postbackScript = $control.attr('data-postback-script');
+    var tokenizerPostbackScript = $control.attr('data-tokenizer-postback-script');
+    var currencyChangePostbackScript = $control.attr('data-currencychange-postback-script');
 
     var enabledPaymentTypes = JSON.parse($('.js-enabled-payment-types', $control).val());;
 
@@ -33,8 +34,8 @@ function initializeTokenizer(controlId) {
             $('.js-response-token', $control).val(resp.token);
             $('.js-tokenizer-raw-response', $control).val(JSON.stringify(resp, null, 2));
 
-            if (postbackScript) {
-                window.location = postbackScript;
+            if (tokenizerPostbackScript) {
+                window.location = tokenizerPostbackScript;
             }
         },
         settings: {
@@ -108,6 +109,9 @@ function initializeTokenizer(controlId) {
             $selectedPaymentType.val('card');
             $creditCardContainer.show();
             $achContainer.hide();
+            if (currencyChangePostbackScript) {
+                window.location = currencyChangePostbackScript;
+            }
         });
     };
 
@@ -129,9 +133,12 @@ function initializeTokenizer(controlId) {
             $selectedPaymentType.val('ach');
             $creditCardContainer.hide();
             $achContainer.show();
+            if (currencyChangePostbackScript) {
+                window.location = currencyChangePostbackScript;
+            }
         });
     };
-
+    
     var $paymentTypeSelector = $control.find('.js-gateway-paymenttype-selector');
     if (enabledPaymentTypes.length > 1) {
         $paymentTypeSelector.show();
@@ -146,15 +153,16 @@ function initializeTokenizer(controlId) {
     }
 
     if (selectedPaymentTypeVal == 'card' && enabledPaymentTypes.includes('card')) {
-        $paymentButtonACH.removeClass('active');
-        $paymentButtonCreditCard.addClass('active');
+        $paymentButtonACH.removeClass('active btn-primary').addClass('btn-default');
+        $paymentButtonCreditCard.removeClass('btn-default').addClass('btn-primary active');
         $selectedPaymentType.val('card');
         $creditCardContainer.show();
         $achContainer.hide();
     }
     else {
-        $paymentButtonCreditCard.removeClass('active');
-        $paymentButtonACH.addClass('active');
+        $paymentButtonCreditCard.removeClass('active btn-primary').addClass('btn-default');
+        $paymentButtonACH.removeClass('btn-default').addClass('btn-primary active')
+
         $selectedPaymentType.val('ach');
         $creditCardContainer.hide();
         $achContainer.show();
