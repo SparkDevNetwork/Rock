@@ -146,14 +146,14 @@
     .checkbox-inline {
       .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
       padding-top: 0;
-      margin-top: (@input-height-base - @max) / 2 !important;
-      margin-bottom: (@input-height-base - @max) / 2 !important;
+      margin-top: ((@input-height-base - @max) / 2) !important;
+      margin-bottom: ((@input-height-base - @max) / 2) !important;
     }
 
     .radio-inline + .radio-inline,
     .checkbox-inline + .checkbox-inline {
       .max(@line-height-computed, (@custom-control-indicator-offset + @custom-control-indicator-size));
-      margin-top: (@input-height-base - @max) / 2;
+      margin-top: ((@input-height-base - @max) / 2);
     }
   }
 

@@ -1100,6 +1100,48 @@ namespace Rock.MyWell
         }
 
         /// <summary>
+        /// Gets the processor response code.
+        /// </summary>
+        /// <value>
+        /// The processor response code.
+        /// </value>
+        internal string ProcessorResponseCode
+        {
+            get
+            {
+                var achResponseCode = Data?.PaymentMethodResponse?.ACH?.ProcessorResponseCode;
+                if ( achResponseCode.IsNotNullOrWhiteSpace() )
+                {
+                    return achResponseCode;
+                }
+
+                var cardResponseCode = Data?.PaymentMethodResponse?.Card?.ProcessorResponseCode;
+                return cardResponseCode;
+            }
+        }
+
+        /// <summary>
+        /// Gets the processor response text.
+        /// </summary>
+        /// <value>
+        /// The processor response text.
+        /// </value>
+        internal string ProcessorResponseText
+        {
+            get
+            {
+                var achResponseCode = Data?.PaymentMethodResponse?.ACH?.ProcessorResponseText;
+                if ( achResponseCode.IsNotNullOrWhiteSpace() )
+                {
+                    return achResponseCode;
+                }
+
+                var cardResponseCode = Data?.PaymentMethodResponse?.Card?.ProcessorResponseText;
+                return cardResponseCode;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data.
         /// </summary>
         /// <value>
@@ -2452,10 +2494,10 @@ namespace Rock.MyWell
                 // in the Dev sandbox, an example is https://sandbox.gotnpgateway.com/merchant/transaction/detail/bhrgr79erttu0kh14bs0
                 isFailure = true;
             }
-            else if ( FailureStatusCodes.Contains(this.Status, StringComparer.OrdinalIgnoreCase) )
+            else if ( FailureStatusCodes.Contains( this.Status, StringComparer.OrdinalIgnoreCase ) )
             {
                 // if ResponseCode is less than 200, but has a fail status code, it is also a failure
-                isFailure  =  true;
+                isFailure = true;
             }
             else
             {
@@ -2752,9 +2794,6 @@ namespace Rock.MyWell
         ach
     }
 
-
-
-
     /// <summary>
     /// 
     /// </summary>
@@ -2773,4 +2812,37 @@ namespace Rock.MyWell
     }
 
     #endregion Rock Wrapper Types
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public class MyWellGatewayException : Exception
+    {
+        string _stackTrace;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MyWellGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public MyWellGatewayException( string errorMessage ) : this( errorMessage, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MyWellGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public MyWellGatewayException( string errorMessage, Exception innerException ) : base( errorMessage, innerException )
+        {
+            // lets set the stacktrace manually to ensure we have one. Otherwise, it would usually be blank.
+            _stackTrace = new System.Diagnostics.StackTrace( true ).ToString();
+        }
+
+        /// <summary>
+        /// Gets a string representation of the immediate frames on the call stack.
+        /// </summary>
+        public override string StackTrace => this._stackTrace ?? base.StackTrace;
+    }
 }
