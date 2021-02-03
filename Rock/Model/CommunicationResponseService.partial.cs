@@ -292,8 +292,7 @@ namespace Rock.Model
                     MessageKey = mostRecentCommunicationResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = mostRecentCommunicationResponse.FromPersonAliasId,
-                    SMSMessage = mostRecentCommunicationResponse.Response,
-                    BinaryFileGuid = mostRecentCommunicationResponse.BinaryFile?.Guid
+                    SMSMessage = mostRecentCommunicationResponse.Response
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -378,8 +377,7 @@ namespace Rock.Model
                     IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
                     SMSMessage = communicationResponse.Response,
-                    MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
-                    BinaryFileGuid = communicationResponse.BinaryFile?.Guid
+                    MessageStatus = CommunicationRecipientStatus.Delivered // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );

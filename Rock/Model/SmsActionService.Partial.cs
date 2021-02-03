@@ -62,7 +62,7 @@ namespace Rock.Model
                     return CreateErrorOutcomesWithLogging( errorMessage );
                 }
 
-                return ProcessIncomingMessage( message, minSmsPipelineId.Value );
+                smsPipelineId = minSmsPipelineId;
             }
 
             return ProcessIncomingMessage( message, smsPipelineId.Value );

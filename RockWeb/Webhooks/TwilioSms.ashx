@@ -99,11 +99,11 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 if ( numberOfAttachments != null )
                 {
                     int? communicationAttachmentBinaryFileId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
-
+                    string imageNameGuid = new Guid().ToString();
                     for ( int i = 0; i < numberOfAttachments.Value; i++ )
                     {
-                        string imageUrl = request.Params[string.Format("MediaUrl{0}", i )];
-                        string mimeType = request.Params[string.Format("MediaContentType{0}", i )];
+                        string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
+                        string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
 
                         System.IO.Stream stream = null;
                         var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
@@ -114,27 +114,28 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                             continue;
                         }
 
-                        // probably use streamreader.
+                        string fileExension = Rock.Utility.FileUtilities.GetFileExtensionFromContentType( mimeType );
                         stream = httpWebResponse.GetResponseStream();
-
-                        var binaryFile = new BinaryFile
+                        using (var memoryStream = new System.IO.MemoryStream() )
                         {
-                            IsTemporary = false,
-                            BinaryFileTypeId = communicationAttachmentBinaryFileId,
-                            MimeType = mimeType,
-                            FileName = string.Format( "SMS-Attachment-{0}-{1}", message.FromNumber, i ),
-                            FileSize = stream.Length,
-                            ContentStream = stream
-                        };
+                            stream.CopyTo( memoryStream );
+                            var binaryFile = new BinaryFile
+                            {
+                                IsTemporary = false,
+                                BinaryFileTypeId = communicationAttachmentBinaryFileId,
+                                MimeType = mimeType,
+                                FileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageNameGuid, i, fileExension ),
+                                FileSize = httpWebResponse.ContentLength,
+                                ContentStream = memoryStream
+                            };
 
-                        var binaryFileService = new BinaryFileService( rockContext );
-                        binaryFileService.Add( binaryFile );
-                        rockContext.SaveChanges();
-                        message.Attachments.Add( binaryFile );
+                            var binaryFileService = new BinaryFileService( rockContext );
+                            binaryFileService.Add( binaryFile );
+                            rockContext.SaveChanges();
+                            message.Attachments.Add( binaryFile );
+                        }
                     }
-
                 }
-
 
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );

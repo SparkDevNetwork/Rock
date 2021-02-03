@@ -109,10 +109,6 @@
     <Compile Include="Migrations\202101211627543_CheckinManagerEnhancements.Designer.cs">
       <DependentUpon>202101211627543_CheckinManagerEnhancements.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202101290014054_CommunicationResponseAttachment.cs" />
-    <Compile Include="Migrations\202101290014054_CommunicationResponseAttachment.Designer.cs">
-      <DependentUpon>202101290014054_CommunicationResponseAttachment.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.Designer.cs">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>
@@ -1590,9 +1586,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202101211627543_CheckinManagerEnhancements.resx">
       <DependentUpon>202101211627543_CheckinManagerEnhancements.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202101290014054_CommunicationResponseAttachment.resx">
-      <DependentUpon>202101290014054_CommunicationResponseAttachment.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.0\202012011753406_Rollup_1201.resx">
       <DependentUpon>202012011753406_Rollup_1201.cs</DependentUpon>

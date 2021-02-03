@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <div class="js-send-image" style="display: none;">
-                            <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT %>" />
+                            <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" />
                         </div>
                         <div class="footer">
                             <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
