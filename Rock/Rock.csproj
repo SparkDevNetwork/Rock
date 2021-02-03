@@ -538,6 +538,7 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
