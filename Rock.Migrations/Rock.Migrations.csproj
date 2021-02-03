@@ -61,8 +61,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202102011629370_CoverTheFees.cs" />
-    <Compile Include="Migrations\202102011629370_CoverTheFees.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102011629370_CoverTheFees.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102011629370_CoverTheFees.Designer.cs">
       <DependentUpon>202102011629370_CoverTheFees.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
@@ -1571,7 +1571,7 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202102011629370_CoverTheFees.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102011629370_CoverTheFees.resx">
       <DependentUpon>202102011629370_CoverTheFees.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.resx">
