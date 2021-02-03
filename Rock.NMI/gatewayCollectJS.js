@@ -57,7 +57,8 @@
                     }
                 }
 
-                self.postbackScript = $control.attr('data-postback-script');
+                self.tokenizerPostbackScript = $control.attr('data-tokenizer-postback-script');
+                self.currencyChangePostbackScript = $control.attr('data-currencychange-postback-script');
                 var enabledPaymentTypes = JSON.parse($('.js-enabled-payment-types', $control).val());
 
                 self.$creditCardContainer = $('.js-gateway-creditcard-container', $control);
@@ -300,6 +301,9 @@
                         self.$selectedPaymentType.val('card');
                         self.$creditCardContainer.show();
                         self.$achContainer.hide();
+                        if (self.currencyChangePostbackScript) {
+                            window.location = self.currencyChangePostbackScript;
+                        }
                     });
                 };
 
@@ -315,6 +319,9 @@
                         self.$selectedPaymentType.val('ach');
                         self.$creditCardContainer.hide();
                         self.$achContainer.show();
+                        if (self.currencyChangePostbackScript) {
+                            window.location = self.currencyChangePostbackScript;
+                        }
                     });
                 };
 
@@ -345,15 +352,15 @@
                 }
 
                 if (selectedPaymentTypeVal == 'card' && enabledPaymentTypes.includes('card')) {
-                    self.$paymentButtonACH.removeClass('active');
-                    self.$paymentButtonCreditCard.addClass('active');
+                    self.$paymentButtonACH.removeClass('active btn-primary').addClass('btn-default');
+                    self.$paymentButtonCreditCard.removeClass('btn-default').addClass('btn-primary active');
                     self.$selectedPaymentType.val('card');
                     self.$creditCardContainer.show();
                     self.$achContainer.hide();
                 }
                 else {
-                    self.$paymentButtonCreditCard.removeClass('active');
-                    self.$paymentButtonACH.addClass('active');
+                    self.$paymentButtonCreditCard.removeClass('active btn-primary').addClass('btn-default');
+                    self.$paymentButtonACH.removeClass('btn-default').addClass('btn-primary active')
                     self.$selectedPaymentType.val('ach');
                     self.$creditCardContainer.hide();
                     self.$achContainer.show();
@@ -366,9 +373,9 @@
                 self.$responseToken.val(tokenResponse.token);
                 self.$rawResponseToken.val(JSON.stringify(tokenResponse, null, 2));
 
-                if (self.postbackScript) {
+                if (self.tokenizerPostbackScript) {
                     self.tokenResponseSent(true);
-                    window.location = self.postbackScript;
+                    window.location = self.tokenizerPostbackScript;
                 }
             },
 
