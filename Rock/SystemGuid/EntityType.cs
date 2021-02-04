@@ -248,6 +248,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_LOGIN_BLOCK_TYPE = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes
+        /// </summary>
+        public const string MOBILE_CORE_NOTES_BLOCK_TYPE = "2FED71D1-4A60-4EB5-B971-530B5D1FC041";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails
         /// </summary>
         public const string MOBILE_PROFILE_DETAILS_BLOCK_TYPE = "A1ED4948-0778-4E13-B434-E97795DDB68B";
