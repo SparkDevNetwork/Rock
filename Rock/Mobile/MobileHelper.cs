@@ -318,7 +318,8 @@ namespace Rock.Mobile
             var definedTypeGuids = new[]
             {
                 SystemGuid.DefinedType.LOCATION_COUNTRIES,
-                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE
+                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE,
+                SystemGuid.DefinedType.PERSON_MARITAL_STATUS
             };
             var definedValues = new List<MobileDefinedValue>();
             foreach ( var definedTypeGuid in definedTypeGuids )
