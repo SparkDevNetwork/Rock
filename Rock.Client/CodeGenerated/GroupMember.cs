@@ -41,7 +41,7 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; } = Rock.Client.Enums.CommunicationType.Email;
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; }
 
         /// <summary />
         public DateTime? DateTimeAdded { get; set; }

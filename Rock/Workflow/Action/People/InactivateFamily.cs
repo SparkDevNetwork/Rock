@@ -149,8 +149,8 @@ namespace Rock.Workflow.Action
                 inactiveNote = action.GetWorkflowAttributeValue( guid );
             }
 
+            var personService = new PersonService( rockContext );
             var multiFamilyLogic = GetAttributeValue( action, AttributeKey.MultiFamilyLogic ).AsInteger();
-
             if ( multiFamilyLogic == (int) LogicOption.InactivateIndividualsPrimaryFamily )
             {
                 if ( person.PrimaryFamily != null )
@@ -158,7 +158,7 @@ namespace Rock.Workflow.Action
                     var familyMembers = person.PrimaryFamily.Members.Select( a => a.Person );
                     foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                     {
-                        InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                        personService.InactivatePerson( familyMember, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
                     }
                 }
             }
@@ -167,36 +167,18 @@ namespace Rock.Workflow.Action
                 var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person ).Distinct();
                 foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                 {
-                    InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                    personService.InactivatePerson( familyMember, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
                 }
             }
             else
             {
-                InactivatePerson( person, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                personService.InactivatePerson( person, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
             }
 
             rockContext.SaveChanges();
 
             action.AddLogEntry( "Inactivate Family ran successfully." );
             return true;
-        }
-
-        /// <summary>
-        /// Update the person status to inactive.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="inactiveStatusValueId">The inactive status value identifier.</param>
-        /// <param name="inactiveReasonValueId">The inactive reason value identifier.</param>
-        /// <param name="inactiveNote">The inactive note.</param>
-        /// <returns></returns>
-        private void InactivatePerson( Person person, int inactiveStatusValueId, int inactiveReasonValueId, string inactiveNote )
-        {
-            person.RecordStatusValueId = inactiveStatusValueId;
-            person.RecordStatusReasonValueId = inactiveReasonValueId;
-            if ( inactiveNote.IsNotNullOrWhiteSpace() )
-            {
-                person.InactiveReasonNote = inactiveNote;
-            }
         }
 
         /// <summary>

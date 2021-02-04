@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -26,6 +25,7 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Manager
@@ -40,6 +40,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
         "Check-in Manager Page",
         Key = AttributeKey.ManagerPage,
         Order = 2 )]
+
+    [CheckinConfigurationTypeField(
+        "Check-in Areas",
+        Description = "Select the Check Areas to display, or select none to show all.",
+        Key = AttributeKey.CheckinConfigurationTypes,
+        Order = 3 )]
     public partial class SelectArea : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -48,6 +54,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             // this used to be called "LocationPage", so we'll keep it that way
             public const string ManagerPage = "LocationPage";
+            public const string CheckinConfigurationTypes = "CheckinConfigurationTypes";
         }
 
         #endregion
@@ -96,6 +103,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -106,7 +114,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         protected void upnlContent_OnPostBack( object sender, PostBackEventArgs e )
         {
             var checkinAreaGuid = e.EventArgument.AsGuid();
-            CheckinManagerHelper.SetSelectedCheckinAreaGuidToCookie( checkinAreaGuid );
+            CheckinManagerHelper.SaveSelectedCheckinAreaGuidToCookie( checkinAreaGuid );
             NavigateToLinkedPage( AttributeKey.ManagerPage );
         }
 
@@ -131,15 +139,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private void BindData()
         {
-            Guid guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+            int? groupTypePurposeCheckinTemplateValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
 
             using ( var rockContext = new RockContext() )
             {
-                rptNavItems.DataSource = new GroupTypeService( rockContext )
+                var checkinAreaTypeQuery = new GroupTypeService( rockContext )
                     .Queryable()
-                    .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid ) )
+                    .Where( g => g.GroupTypePurposeValueId.HasValue && g.GroupTypePurposeValueId.Value == groupTypePurposeCheckinTemplateValueId );
+
+                var checkinAreaTypeGuids = this.GetAttributeValues( AttributeKey.CheckinConfigurationTypes ).AsGuidList();
+                if ( checkinAreaTypeGuids.Any() )
+                {
+                    checkinAreaTypeQuery = checkinAreaTypeQuery.Where( a => checkinAreaTypeGuids.Contains( a.Guid ) );
+                }
+
+                rptNavItems.DataSource = checkinAreaTypeQuery.ToList()
                     .OrderBy( g => g.Name )
                     .ToList();
+
                 rptNavItems.DataBind();
             }
         }

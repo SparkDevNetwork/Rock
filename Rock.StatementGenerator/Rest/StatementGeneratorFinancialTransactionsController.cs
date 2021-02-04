@@ -708,11 +708,19 @@ namespace Rock.StatementGenerator.Rest
         /// lava. This defined value should be a part of the Statement Generator Lava Template defined
         /// type. If no ID is specified, then the default defined value for the Statement Generator Lava
         /// Template defined type is assumed.</param>
-        /// <returns>The rendered giving statement</returns>
+        /// <param name="hideRefundedTransactions">if set to <c>true</c> transactions that have any
+        /// refunds will be hidden.</param>
+        /// <returns>
+        /// The rendered giving statement
+        /// </returns>
         [System.Web.Http.Route( "api/GivingStatement/{personId}" )]
         [HttpGet]
         [Authenticate, Secured]
-        public HttpResponseMessage RenderGivingStatement( int personId, [FromUri] int? year = null, [FromUri] int? templateDefinedValueId = null )
+        public HttpResponseMessage RenderGivingStatement(
+            int personId,
+            [FromUri] int? year = null,
+            [FromUri] int? templateDefinedValueId = null,
+            [FromUri] bool hideRefundedTransactions = true )
         {
             // Assume the current year if no year is specified
             var currentYear = RockDateTime.Now.Year;
@@ -764,7 +772,8 @@ namespace Rock.StatementGenerator.Rest
                 EndDate = endDate,
                 LayoutDefinedValueGuid = templateValue.Guid,
                 StartDate = startDate,
-                ExcludeOptedOutIndividuals = false
+                ExcludeOptedOutIndividuals = false,
+                HideRefundedTransactions = hideRefundedTransactions
             };
 
             // Get the generator result

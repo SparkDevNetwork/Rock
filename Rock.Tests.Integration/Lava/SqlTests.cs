@@ -8,11 +8,12 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class SqlTests
     {
+        private static LavaTestHelper _helper;
+
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
         {
-            var sqlLava = new Sql();
-            sqlLava.OnStartup();
+            _helper = LavaTestHelper.New();
         }
 
         [TestMethod]
@@ -35,6 +36,7 @@ namespace Rock.Tests.Integration.Lava
             ]";
 
             var output = lavaScript.ResolveMergeFields( new Dictionary<string, object>(), null, "Sql" );
+
             Assert.That.Contains( output, "Liquid error: Execution Timeout Expired." );
         }
 

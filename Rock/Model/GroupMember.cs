@@ -24,7 +24,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Humanizer;
 
 using Rock.Data;
@@ -232,7 +232,7 @@ namespace Rock.Model
         public GroupMember()
             : base()
         {
-            CommunicationPreference = CommunicationType.Email;
+            CommunicationPreference = CommunicationType.RecipientPreference;
         }
 
         #endregion
@@ -664,11 +664,13 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    IndexEntityTransaction transaction = new IndexEntityTransaction();
-                    transaction.EntityTypeId = groupType.Id;
-                    transaction.EntityId = group.Id;
+                    var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                    {
+                        EntityTypeId = groupType.Id,
+                        EntityId = group.Id
+                    };
 
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    processEntityTypeIndexMsg.Send();
                 }
             }
 
@@ -704,7 +706,25 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( changes ).Enqueue();
+                    if ( changes.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( changes );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
 
                     var groupMemberChanges = HistoryService.GetChanges(
                         typeof( GroupMember ),
@@ -717,7 +737,25 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( groupMemberChanges ).Enqueue();
+                    if ( groupMemberChanges.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( groupMemberChanges );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
                 }
             }
 

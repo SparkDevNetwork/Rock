@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -34,7 +35,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, Lava.ILiquidizable
+    public abstract class Entity<T> : IEntity, ILavaDataDictionary
         where T : Entity<T>, new()
     {
         #region Entity Properties
@@ -386,6 +387,19 @@ namespace Rock.Data
 
                 return availableKeys;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
         }
 
         /// <summary>

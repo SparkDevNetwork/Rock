@@ -24,6 +24,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Tracks when a person is viewed.
     /// </summary>
+    [Obsolete( "Use ProcessEntityTypeIndex Task instead." )]
+    [RockObsolete( "1.13" )]
     public class IndexEntityTransaction : ITransaction
     {
 

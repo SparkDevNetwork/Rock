@@ -30,6 +30,7 @@
 
         <div id="divNotInvolved" runat="server" style="display: none">
             <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Label="Reason" />
+            <Rock:Switch ID="cbInactFamily" runat="server" Label="Inactivate all individuals in my family" TextAlign="Right" Checked="false" />
             <Rock:RockTextBox ID="tbInactiveNote" runat="server" Label="More Info (optional)" TextMode="MultiLine" Rows="3" MaxLength="1000" />
         </div>
 

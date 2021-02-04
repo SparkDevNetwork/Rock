@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for managing the system emails
     /// </summary>
-    [Obsolete( "Use SystemCommunicationList instead." )]
+    #pragma warning disable CS0618
     [RockObsolete( "1.10" )]
 
     [DisplayName( "System Email List (Obsolete. Use SystemCommunicationList instead)" )]

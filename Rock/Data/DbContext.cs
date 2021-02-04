@@ -22,6 +22,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
@@ -389,23 +390,37 @@ namespace Rock.Data
         {
             if ( enableAuditing )
             {
-                try
+                var audits = updatedItems
+                    .Where( a => a.Audit?.Details?.Any() == true )
+                    .Select( i => i.Audit )
+                    .ToList();
+
+                if ( audits.Any() )
                 {
-                    var audits = updatedItems.Where( a => a.Audit != null ).Select( i => i.Audit ).ToList();
-                    if ( audits.Any( a => a.Details.Any() ) )
+                    Task.Run( async () =>
                     {
-                        var transaction = new Rock.Transactions.AuditTransaction();
-                        transaction.Audits = audits.Where( a => a.Details.Any() == true ).ToList();
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                    }
-                }
-                catch ( SystemException ex )
-                {
-                    ExceptionLogService.LogException( ex, null );
+                        // Wait 1 second to allow all post save actions to complete
+                        await Task.Delay( 1000 );
+
+                        try
+                        {
+                            using ( var rockContext = new RockContext() )
+                            {
+                                var auditService = new AuditService( rockContext );
+                                auditService.AddRange( audits );
+                                rockContext.SaveChanges( true );
+                            }
+                        }
+                        catch ( SystemException ex )
+                        {
+                            ExceptionLogService.LogException( ex, null );
+                        }
+                    } );
                 }
             }
 
-            List<ITransaction> indexTransactions = new List<ITransaction>();
+            var processEntityTypeIndexMsgs = new List<ProcessEntityTypeIndex.Message>();
+            var deleteEntityTypeIndexMsgs = new List<DeleteEntityTypeIndex.Message>();
             foreach ( var item in updatedItems )
             {
                 // Publish on the message bus if the entity type is configured
@@ -437,19 +452,23 @@ namespace Rock.Data
                 {
                     if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
                     {
-                        DeleteIndexEntityTransaction transaction = new DeleteIndexEntityTransaction();
-                        transaction.EntityTypeId = item.Entity.TypeId;
-                        transaction.EntityId = item.Entity.Id;
+                        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
 
-                        indexTransactions.Add( transaction );
+                        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
                     }
                     else
                     {
-                        IndexEntityTransaction transaction = new IndexEntityTransaction();
-                        transaction.EntityTypeId = item.Entity.TypeId;
-                        transaction.EntityId = item.Entity.Id;
+                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
 
-                        indexTransactions.Add( transaction );
+                        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
                     }
                 }
 
@@ -460,14 +479,15 @@ namespace Rock.Data
             }
 
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
-            if ( indexTransactions.Any() )
+            if ( processEntityTypeIndexMsgs.Any() || deleteEntityTypeIndexMsgs.Any() )
             {
                 System.Threading.Tasks.Task.Run( () =>
                 {
                     var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
                     if ( indexingEnabled )
                     {
-                        indexTransactions.ForEach( t => RockQueue.TransactionQueue.Enqueue( t ) );
+                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
                     }
                 } );
             }
@@ -698,11 +718,14 @@ namespace Rock.Data
                     }
                     else
                     {
-                        var transaction = new Rock.Transactions.WorkflowTriggerTransaction();
-                        transaction.Trigger = trigger;
-                        transaction.Entity = entity.Clone();
-                        transaction.PersonAlias = personAlias;
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        var processWorkflowTriggerMsg = new ProcessWorkflowTrigger.Message
+                        {
+                            WorkflowTriggerGuid = trigger.Guid,
+                            EntityId = entity.Id,
+                            EntityTypeId = entity.TypeId
+                        };
+
+                        processWorkflowTriggerMsg.Send();
                     }
                 }
             }

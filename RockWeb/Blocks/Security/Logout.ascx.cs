@@ -20,6 +20,7 @@ using System.ComponentModel;
 using Rock;
 using Rock.Attribute;
 using Rock.Security;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Security
 {
@@ -79,11 +80,13 @@ namespace RockWeb.Blocks.Security
             {
                 if ( CurrentUser != null )
                 {
-                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                    transaction.UserId = CurrentUser.Id;
-                    transaction.LastActivityDate = RockDateTime.Now;
-                    transaction.IsOnLine = false;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var updateUserLastActivityMsg = new UpdateUserLastActivity.Message
+                    {
+                        UserId = CurrentUser.Id,
+                        LastActivityDate = RockDateTime.Now,
+                        IsOnline = false
+                    };
+                    updateUserLastActivityMsg.Send();
                 }
 
                 Authorization.SignOut();

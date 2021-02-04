@@ -26,7 +26,6 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
@@ -44,7 +43,7 @@ namespace Rock.WebStartup
     /// <summary>
     /// Helper that manages startup operations that need to run prior to RockWeb startup
     /// </summary>
-    public static class RockApplicationStartupHelper
+    public static partial class RockApplicationStartupHelper
     {
         #region Constants
 
@@ -154,8 +153,9 @@ namespace Rock.WebStartup
 
             RegisterHttpModules();
 
-            // Get Lava set up
+            // Initialize the Lava engine.
             InitializeLava();
+            ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaEngine.CurrentEngine.EngineName})" );
 
             ShowDebugTimingMessage( "Startup Components" );
 
@@ -591,27 +591,92 @@ namespace Rock.WebStartup
         /// </summary>
         private static void InitializeLava()
         {
-            // DotLiquid uses a RubyDateFormat by default,
-            // but since we aren't using Ruby, we want to disable that
-            Liquid.UseRubyDateFormat = false;
+            // Get the Lava Engine configuration settings.
+            LavaEngineTypeSpecifier? engineType = null;
 
-            /* 2020-05-20 MDP (actually this comment was here a long time ago)
-                NOTE: This means that all the built in template filters,
-                and the RockFilters, will use CSharpNamingConvention.
-            
-                For example the dotliquid documentation says to do this for formatting dates: 
-                {{ some_date_value | date:"MMM dd, yyyy" }}
-           
-                However, if CSharpNamingConvention is enabled, it needs to be: 
-                {{ some_date_value | Date:"MMM dd, yyyy" }}
-            */
+            var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK ).ToLower();
 
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            if ( string.IsNullOrWhiteSpace( liquidEngineTypeValue ) || liquidEngineTypeValue == "default" )
+            {
+                // If no engine specified, use default.
+                engineType = LavaEngineTypeSpecifier.DotLiquid;
+            }
+            else if ( liquidEngineTypeValue == "dotliquid" )
+            {
+                engineType = LavaEngineTypeSpecifier.DotLiquid;
+            }
+            else if ( liquidEngineTypeValue == "fluid" )
+            {
+                engineType = LavaEngineTypeSpecifier.Fluid;
+            }
 
-            Template.FileSystem = new LavaFileSystem();
-            Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
-            Template.RegisterSafeType( typeof( DBNull ), o => null );
-            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+            if ( engineType == null )
+            {
+                // Log an error for the invalid configuration setting, and continue with the default value.
+                ExceptionLogService.LogException( $"Invalid Lava Engine Type. The value \"{liquidEngineTypeValue}\" is not valid, must be [default|dotliquid|fluid]." );
+                engineType = LavaEngineTypeSpecifier.DotLiquid;
+            }
+
+            // Initialize the Lava engine.
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                FileSystem = new WebsiteLavaFileSystem(),
+                CacheService = new LavaTemplateCache()
+            };
+
+            LavaEngine.Initialize( engineType, engineOptions );
+
+            // Initialize Lava extensions.
+            var engine = LavaEngine.CurrentEngine;
+
+            engine.RegisterFilters( typeof( Rock.Lava.RockFilters ) );
+
+            InitializeLavaShortcodes( engine );
+            InitializeLavaBlocks( engine );
+        }
+
+        private static void InitializeLavaShortcodes( ILavaEngine engine )
+        {
+            // Register all of the shortcodes defined in the current database.
+            var shortCodes = LavaShortcodeCache.All();
+
+            foreach ( var shortcode in shortCodes )
+            {
+                engine.RegisterDynamicShortcode( shortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
+            }
+        }
+
+        private static void InitializeLavaBlocks( ILavaEngine engine )
+        {
+            // Get all blocks and call OnStartup methods
+            try
+            {
+                var blockTypes = Rock.Reflection.FindTypes( typeof( IRockLavaBlock ) ).Select( a => a.Value ).ToList();
+
+                foreach ( var blockType in blockTypes )
+                {
+                    var blockInstance = Activator.CreateInstance( blockType ) as IRockLavaBlock;
+
+                    engine.RegisterBlock( blockInstance.SourceElementName, ( blockName ) =>
+                    {
+                        return Activator.CreateInstance( blockType ) as IRockLavaBlock;
+                    } );
+
+                    try
+                    {
+                        blockInstance.OnStartup();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
+
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
         /// <summary>

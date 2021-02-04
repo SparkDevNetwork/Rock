@@ -30,6 +30,8 @@ namespace Rock.Transactions
     /// Transaction to process changes that occur to an attempt
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use UpdateAchievementAttempt Task instead." )]
+    [RockObsolete( "1.13" )]
     public class AchievementAttemptChangeTransaction : ITransaction
     {
         /// <summary>

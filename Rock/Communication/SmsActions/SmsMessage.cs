@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.Communication.SmsActions
@@ -24,8 +25,7 @@ namespace Rock.Communication.SmsActions
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
-    public class SmsMessage : Lava.ILiquidizable
+    public class SmsMessage : ILavaDataDictionary
     {
         /// <summary>
         /// Gets or sets the number the message was sent to.
@@ -75,16 +75,7 @@ namespace Rock.Communication.SmsActions
             Attachments = new List<BinaryFile>();
         }
 
-        #region ILiquidizable
-
-        /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public object ToLiquid()
-        {
-            return this;
-        }
+        #region ILavaDataDictionary implementation
 
         /// <summary>
         /// Gets the available keys (for debugging info).
@@ -106,6 +97,19 @@ namespace Rock.Communication.SmsActions
 
                 return availableKeys;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
         }
 
         /// <summary>
@@ -165,5 +169,14 @@ namespace Rock.Communication.SmsActions
 
         #endregion
 
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
+        /// </summary>
+        /// <returns>DotLiquid compatible dictionary.</returns>
+        [Obsolete]
+        public object ToLiquid()
+        {
+            return this;
+        }
     }
 }

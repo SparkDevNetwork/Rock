@@ -19,7 +19,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
@@ -1207,6 +1207,36 @@ namespace Rock.Model
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ProcessedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
             }  
  
@@ -2854,6 +2884,25 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this PersonAlias object to a new PersonAlias object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static PersonAlias CloneWithoutIdentity( this PersonAlias source )
+        {
+            var target = new PersonAlias();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+
+            return target;
         }
 
         /// <summary>

@@ -24,9 +24,10 @@ using Rock.Model;
 using Rock.Web.UI;
 using System.ComponentModel;
 using Rock.Security;
-using DotLiquid;
+
 using System.Web.UI.WebControls;
 using Rock.Lava.Shortcodes;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -144,7 +145,7 @@ namespace RockWeb.Blocks.Cms
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
-                Template.UnregisterShortcode( lavaShortcode.TagName );
+                LavaEngine.CurrentEngine.UnregisterShortcode( lavaShortcode.TagName );
 
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();
@@ -217,33 +218,10 @@ namespace RockWeb.Blocks.Cms
             var shortcodeList = lavaShortcodes.ToList();
 
             // Start with block items
-            foreach ( var shortcodeInCode in Rock.Reflection.FindTypes( typeof( Rock.Lava.Shortcodes.RockLavaShortcodeBlockBase ) ).ToList() )
-            {
-                var shortcode = shortcodeInCode.Value;
-                var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
-                
-                // ignore shortcodes with no metadata
-                if ( shortcodeMetadataAttribute == null )
-                {
-                    continue;
-                }
+            var shortcodeTypes = Rock.Reflection.FindTypes( typeof( IRockShortcode ) ).Values.ToList();
 
-                shortcodeList.Add( new LavaShortcode {
-                    Id = -1,
-                    Name = shortcodeMetadataAttribute.Name,
-                    TagName = shortcodeMetadataAttribute.TagName,
-                    TagType = TagType.Block,
-                    IsActive = true,
-                    IsSystem = true,
-                    Description = shortcodeMetadataAttribute.Description,
-                    Documentation = shortcodeMetadataAttribute.Documentation
-                } );
-            }
-
-            // Next add inline items
-            foreach ( var shortcodeInCode in Rock.Reflection.FindTypes( typeof( Rock.Lava.Shortcodes.RockLavaShortcodeBase ) ).ToList() )
+            foreach ( var shortcode in shortcodeTypes )
             {
-                var shortcode = shortcodeInCode.Value;
                 var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
 
                 // ignore shortcodes with no metadata
@@ -252,17 +230,29 @@ namespace RockWeb.Blocks.Cms
                     continue;
                 }
 
-                shortcodeList.Add( new LavaShortcode
+                try
                 {
-                    Id = -1,
-                    Name = shortcodeMetadataAttribute.Name,
-                    TagName = shortcodeMetadataAttribute.TagName,
-                    TagType = TagType.Inline,
-                    IsActive = true,
-                    IsSystem = true,
-                    Description = shortcodeMetadataAttribute.Description,
-                    Documentation = shortcodeMetadataAttribute.Documentation
-                } );
+                    var shortcodeInstance = Activator.CreateInstance( shortcode ) as IRockShortcode;
+
+                    var shortcodeType = shortcodeInstance.ElementType;
+
+                    shortcodeList.Add( new LavaShortcode
+                    {
+                        Id = -1,
+                        Name = shortcodeMetadataAttribute.Name,
+                        TagName = shortcodeMetadataAttribute.TagName,
+                        TagType = ( shortcodeType == LavaShortcodeTypeSpecifier.Inline ) ? TagType.Inline : TagType.Block,
+                        IsActive = true,
+                        IsSystem = true,
+                        Description = shortcodeMetadataAttribute.Description,
+                        Documentation = shortcodeMetadataAttribute.Documentation
+                    } );
+
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
             }
 
             rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );

@@ -122,18 +122,6 @@ namespace Rock.Jobs
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
         }
 
-        #region Entity Attribute Value Keys
-
-        /// <summary>
-        /// Keys to use for entity attribute values.
-        /// </summary>
-        private class EntityAttributeValueKey
-        {
-            public const string GroupType_EnablePresence = "core_checkin_EnablePresence";
-        }
-
-        #endregion Entity Attribute Value Keys
-
         /// <summary>
         /// Empty constructor for job initialization
         /// <para>
@@ -249,6 +237,8 @@ namespace Rock.Jobs
                 RunCleanupTask( "did attend attendance fix", () => FixDidAttendInAttendance() );
             }
 
+            RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
             //// ***********************
@@ -277,6 +267,32 @@ namespace Rock.Jobs
                 var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
                 throw new RockJobWarningException( "RockCleanup completed with warnings", exceptionList );
             }
+        }
+
+        private int UpdateSmsCommunicationPreferences()
+        {
+            var rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                var personService = new PersonService( rockContext );
+                var peopleToUpdate = personService
+                    .Queryable()
+                    .Where( p => p.CommunicationPreference == CommunicationType.SMS )
+                    .Where( p => !p.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) );
+
+                rowsUpdated = rockContext.BulkUpdate( peopleToUpdate, p => new Person { CommunicationPreference = CommunicationType.Email } );
+
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMembersToUpdate = groupMemberService
+                    .Queryable()
+                    .Where( gm => gm.CommunicationPreference == CommunicationType.SMS )
+                    .Where( gm => !gm.Person.PhoneNumbers.Any( pn => pn.IsMessagingEnabled ) );
+
+                rowsUpdated += rockContext.BulkUpdate( groupMembersToUpdate, p => new GroupMember { CommunicationPreference = CommunicationType.RecipientPreference } );
+            }
+            return rowsUpdated;
         }
 
         /// <summary>
@@ -1807,7 +1823,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 
             checkInAreas.LoadAttributes();
 
-            foreach ( var checkInArea in checkInAreas.Where( a => a.GetAttributeValue( EntityAttributeValueKey.GroupType_EnablePresence ).AsBoolean() ) )
+            foreach ( var checkInArea in checkInAreas.Where( a => a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() ) )
             {
                 var groupTypeIds = new List<int>() { checkInArea.Id };
                 groupTypeIds.AddRange( checkInArea.ChildGroupTypes.Select( a => a.Id ) );

@@ -210,7 +210,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the connection request detail page.
-        /// </summary>
+        /// +</summary>
         /// <value>
         /// The connection request detail page.
         /// </value>

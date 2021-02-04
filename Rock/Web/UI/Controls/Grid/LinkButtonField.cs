@@ -202,6 +202,7 @@ namespace Rock.Web.UI.Controls
                 LinkButtonField = linkButtonField;
                 ParentGrid = linkButtonField.ParentGrid;
                 LinkButton linkButton = new LinkButton();
+                linkButton.ID = linkButtonField.ID;
                 linkButton.CausesValidation = false;
                 linkButton.CssClass = linkButtonField.CssClass;
                 linkButton.Text = linkButtonField.Text;

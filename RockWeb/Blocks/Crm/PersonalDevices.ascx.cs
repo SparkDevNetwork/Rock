@@ -27,6 +27,7 @@ using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Collections.Generic;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -299,7 +300,7 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// A class to store personal device for lava
         /// </summary>
-        [DotLiquid.LiquidType( "PersonalDevice", "DeviceIconCssClass", "PlatformValue" )]
+        [LavaType( "PersonalDevice", "DeviceIconCssClass", "PlatformValue" )]
         public class PersonalDeviceItem
         {
             /// <summary>

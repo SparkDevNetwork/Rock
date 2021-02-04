@@ -39,6 +39,7 @@ using Rock.Web.UI.Controls;
 
 using System.Globalization;
 using System.Web;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -658,8 +659,13 @@ namespace RockWeb.Blocks.Examples
             foreach ( Person person in _personCache.Values )
             {
                 //var person = pair.Value as Person;
-                var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var addNewMetaphonesMsg = new AddNewMetaphones.Message
+                {
+                    FirstName = person.FirstName,
+                    LastName = person.LastName,
+                    NickName = person.NickName
+                };
+                addNewMetaphonesMsg.Send();
             }
         }
         

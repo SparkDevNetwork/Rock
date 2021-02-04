@@ -25,13 +25,12 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Web.UI;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -162,7 +161,7 @@ namespace RockWeb.Blocks.Cms
             RockCache.Remove( TemplateCacheKey );
         }
 
-        private Template GetTemplate()
+        private ILavaTemplate GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;
@@ -292,7 +291,7 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        string content = GetTemplate().Render( Hash.FromDictionary( feedFinal ) );
+                        string content = GetTemplate().Render( feedFinal );
 
                         if ( content.Contains( "No such template" ) )
                         {

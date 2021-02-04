@@ -121,7 +121,7 @@ namespace Rock.Store
             errorResponse = string.Empty;
 
             var storeKey = StoreService.GetOrganizationKey();
-            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}", null );
+            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}/true", null );
 
             var package = new Package();
 
@@ -171,7 +171,7 @@ namespace Rock.Store
                 return new List<Package>();
             }
 
-            var response = ExecuteRestGetRequest<List<Package>>( $"api/Packages/GetPurchasedPackages/{storeKey}" );
+            var response = ExecuteRestGetRequest<List<Package>>( $"api/Packages/GetPurchasedPackages/{storeKey}/true" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

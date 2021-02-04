@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,7 +28,7 @@ namespace Rock.CheckIn
     /// A schedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule : Lava.ILiquidizable
+    public class CheckInSchedule : ILavaDataDictionary
     {
         /// <summary>
         /// Gets or sets the schedule.
@@ -161,6 +162,19 @@ namespace Rock.CheckIn
                 }
                 return availableKeys;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
         }
 
         /// <summary>

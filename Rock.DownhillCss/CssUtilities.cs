@@ -876,6 +876,7 @@ icon {
     Control CSS
     -----------------------------------------------------------
 */
+/* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
 
 /* Flyout Styling */
 

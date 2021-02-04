@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// A group option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInGroup : Lava.ILiquidizable
+    public class CheckInGroup : ILavaDataDictionary
     {
         /// <summary>
         /// Gets or sets the group.
@@ -214,6 +214,20 @@ namespace Rock.CheckIn
                 }
                 return availableKeys;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [Rock.Data.LavaIgnore]
+        public object GetValue(object key)
+        {
+            return this[key];
         }
 
         /// <summary>
