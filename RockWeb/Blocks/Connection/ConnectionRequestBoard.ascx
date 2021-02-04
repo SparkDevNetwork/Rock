@@ -451,7 +451,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <asp:Literal ID="lRequestModalViewModeMainDescription" runat="server" />
+                                    <asp:Literal ID="lRequestModalViewModeComments" runat="server" />
                                 </div>
                             </div>
                             <asp:Literal ID="lRequestModalViewModeBadgeBar" runat="server" />

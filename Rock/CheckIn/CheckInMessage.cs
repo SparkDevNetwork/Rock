@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Rock.Lava;
 
 namespace Rock.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
     [DataContract]
-    public class CheckInMessage : Lava.ILiquidizable
+    public class CheckInMessage : ILavaDataDictionary
     {
         /// <summary>
         /// Gets or sets the message text.
@@ -41,6 +42,19 @@ namespace Rock.CheckIn
         /// The type of the message.
         /// </value>
         public MessageType MessageType { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -100,6 +114,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete]
         public object ToLiquid()
         {
             return this;

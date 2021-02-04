@@ -34,7 +34,6 @@ RockWeb/App_Data/MobileAppBundles
 .vs/
 .vshistory/
 .localhistory/
-.vshistory/
 TestResults/
 
 Packages/*
@@ -47,3 +46,4 @@ node_modules
 /Installers/CheckScannerInstall/UpgradeLog.htm
 /Installers/CheckScannerInstall/UpgradeLog2.htm
 /Installers/CheckScannerInstall_2017/CheckScannerInstall
+/Rock.Model/

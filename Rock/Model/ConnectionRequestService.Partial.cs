@@ -24,7 +24,6 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Connection Request Service
     /// </summary>
@@ -454,8 +453,7 @@ namespace Rock.Model
                     (
                         cr.FollowupDate.HasValue &&
                         cr.FollowupDate.Value < midnight
-                    )
-                );
+                    ) );
             }
 
             // Filter last activity
@@ -597,7 +595,7 @@ namespace Rock.Model
                 viewModel.IsUnassigned
             };
 
-            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", connectionType.DaysUntilRequestIdle ) );
             return template.ResolveMergeFields( mergeFields );
         }
@@ -846,11 +844,13 @@ namespace Rock.Model
             {
                 return _statusHighlightColor.IsNullOrWhiteSpace() ? ConnectionStatus.DefaultHighlightColor : _statusHighlightColor;
             }
+
             set
             {
                 _statusHighlightColor = value;
             }
         }
+
         private string _statusHighlightColor = null;
 
         /// <summary>
@@ -1009,9 +1009,10 @@ namespace Rock.Model
             {
                 if ( !LastActivityTypeName.IsNullOrWhiteSpace() && LastActivityDate.HasValue )
                 {
-                    return string.Format( "{0} (<span class='small'>{1}</small>)",
-                            LastActivityTypeName,
-                            LastActivityDate.ToRelativeDateString() );
+                    return string.Format(
+                        "{0} (<span class='small'>{1}</small>)",
+                        LastActivityTypeName,
+                        LastActivityDate.ToRelativeDateString() );
                 }
 
                 return string.Empty;
@@ -1078,7 +1079,8 @@ namespace Rock.Model
                     return string.Empty;
                 }
 
-                return string.Format( @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
+                return string.Format(
+                    @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
                     CampusName,
                     CampusCode );
             }

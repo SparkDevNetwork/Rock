@@ -308,16 +308,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var loc = navItem as NavigationLocation;
 
-            if ( loc != null )
-            {
-                var lStatus = e.Item.FindControl( "lStatus" ) as Literal;
-                if ( lStatus != null )
-                {
-                    bool isOpen = loc.IsActive;
-                    lStatus.Text = string.Format( @"<span class=""label label-{0} mr-2"">{1}</span>", isOpen ? "success" : "danger", isOpen ? "open" : "closed" );
-                }
-            }
-
             var lbl = e.Item.FindControl( "lblCurrentCount" ) as Label;
             if ( lbl != null )
             {
@@ -343,6 +333,21 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         lbl.AddCssClass( "badge-success" );
                     }
+                }
+            }
+
+            var tgl = e.Item.FindControl( "tglRoom" ) as Toggle;
+            if ( tgl != null )
+            {
+                if ( loc != null )
+                {
+                    tgl.Visible = loc.HasGroups;
+                    tgl.Checked = loc.IsActive;
+                    tgl.Attributes["data-key"] = loc.Id.ToString();
+                }
+                else
+                {
+                    tgl.Visible = false;
                 }
             }
         }
@@ -387,11 +392,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPeople_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var person = e.Item.DataItem as PersonResult;
-            if ( person == null )
+            var personResult = e.Item.DataItem as PersonResult;
+            if ( personResult == null && personResult.Person == null )
             {
                 return;
             }
+
+            var person = personResult.Person;
 
             var li = e.Item.FindControl( "liNavItem" ) as HtmlGenericControl;
             if ( li != null )
@@ -402,20 +409,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var img = e.Item.FindControl( "imgPerson" ) as Literal;
             if ( img != null )
             {
-                img.Text = Rock.Model.Person.GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age.AsIntegerOrNull(), person.Gender, null, 50, 50, person.Name, "avatar avatar-lg mr-3" );
+                img.Text = Rock.Model.Person.GetPersonPhotoImageTag( person, 50, 50, className: "avatar avatar-lg mr-3" );
             }
 
             string desktopStatus = string.Empty;
             string statusClass = string.Empty;
             string mobileIcon = @"<i class=""fa fa-{0}""></i>";
 
-            if ( NavData.AllowCheckout && person.CheckedOutDateTime.HasValue )
+            if ( NavData.AllowCheckout && personResult.CheckedOutDateTime.HasValue )
             {
                 statusClass = "danger";
                 mobileIcon = string.Format( mobileIcon, "minus" );
                 desktopStatus = "Checked-out";
             }
-            else if ( person.PresentDateTime.HasValue )
+            else if ( personResult.PresentDateTime.HasValue )
             {
                 statusClass = "success";
                 mobileIcon = string.Format( mobileIcon, "check" );
@@ -435,12 +442,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 desktopStatus = "Checked-in";
             }
 
-            var lStatus = e.Item.FindControl( "lStatus" ) as Literal;
-            if ( lStatus != null )
-            {
-                lStatus.Text = string.Format( "<span class='badge badge-{0} d-sm-table d-none'>{1}</span>", statusClass, desktopStatus );
-            }
-
             // mobile only
             var lMobileStatus = e.Item.FindControl( "lMobileStatus" ) as Literal;
             if ( lMobileStatus != null )
@@ -448,14 +449,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lMobileStatus.Text = string.Format( @"<span class=""badge badge-circle badge-{0} d-sm-none"">{1}</span>", statusClass, mobileIcon );
             }
 
-            if ( person.Age != string.Empty )
+            if ( person.Age.HasValue )
             {
                 var lAge = e.Item.FindControl( "lAge" ) as Literal;
                 if ( lAge != null )
                 {
                     lAge.Text = string.Format(
                         "{0}<span class='small text-muted'>(Age: {1})</span>",
-                        string.IsNullOrWhiteSpace( person.ScheduleGroupNames ) ? "<br/>" : " ",
+                        string.IsNullOrWhiteSpace( personResult.ScheduleGroupNames ) ? "<br/>" : " ",
                         person.Age );
                 }
             }
@@ -493,6 +494,36 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     BuildNavigationControls();
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglRoom control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglRoom_CheckedChanged( object sender, EventArgs e )
+        {
+            var tgl = sender as Toggle;
+            if ( tgl != null )
+            {
+                int? id = tgl.Attributes["data-key"].AsIntegerOrNull();
+                if ( id.HasValue )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var location = new LocationService( rockContext ).Get( id.Value );
+                        if ( location != null && location.IsActive != tgl.Checked )
+                        {
+                            location.IsActive = tgl.Checked;
+                            rockContext.SaveChanges();
+                            Rock.CheckIn.KioskDevice.Clear();
+                        }
+                    }
+                    NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
+                }
+            }
+
+            BuildNavigationControls();
         }
 
         protected void lbUpdateThreshold_Click( object sender, EventArgs e )
@@ -632,8 +663,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
 
-                var allowCheckedOut = parentGroupType.GetAttributeValue( "core_checkin_AllowCheckout" ).AsBoolean( true );
-                var enablePresence = parentGroupType.GetAttributeValue( "core_checkin_EnablePresence" ).AsBoolean();
+                var allowCheckedOut = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( true );
+                var enablePresence = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
                 NavData.AllowCheckout = allowCheckedOut;
                 NavData.EnablePresence = enablePresence;
                 pnlPending.Visible = enablePresence;
@@ -751,7 +782,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 var schedules = new List<Schedule>();
 
-                // Get all Attendance records for the current day and location, limited by the selected groups within the selected check-in area
+                // Get all Attendance records for the current day and location, limited by the selected groups
+                // within the selected check-in area.
                 var attendanceQry = new AttendanceService( rockContext ).Queryable()
                     .Where( a =>
                         a.Occurrence.ScheduleId.HasValue &&
@@ -761,6 +793,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.StartDateTime <= currentCampusDateTime &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
+                        a.PersonAliasId.HasValue &&
                         checkinAreaGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
                         groupIds.Contains( a.Occurrence.GroupId.Value ) &&
                         locationIds.Contains( a.Occurrence.LocationId.Value ) );
@@ -782,11 +815,27 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList();
                 }
 
-                var attendanceList = attendanceQry.AsNoTracking().ToList();
+                var attendanceList = attendanceQry
+                    .Select( s => new
+                    {
+                        s.PersonAliasId,
+                        PersonAliasPersonId = s.PersonAlias.PersonId,
+                        s.EndDateTime,
+                        s.StartDateTime,
+                        s.PresentDateTime,
+                        Occurrence = new
+                        {
+                            s.Occurrence.ScheduleId,
+                            s.Occurrence.GroupId,
+                            s.Occurrence.LocationId
+                        }
+                    }
+                    )
+                    .AsNoTracking().ToList();
 
                 foreach ( var groupLoc in attendanceList
                         .Where( a =>
-                            a.PersonAlias != null &&
+                            a.PersonAliasId.HasValue &&
                             schedules.Any( b => b.Id == a.Occurrence.ScheduleId.Value ) )
                         .GroupBy( a => new
                         {
@@ -798,10 +847,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     List<int> checkedInPeople = new List<int>();
                     List<int> checkedOutPeople = new List<int>();
 
-                    List<Attendance> groupAttendanceList = groupLoc.Select( gl => gl ).Where( a => a.PersonAliasId.HasValue ).ToList();
+                    var groupAttendanceList = groupLoc.Select( gl => gl ).Where( a => a.PersonAliasId.HasValue ).ToList();
                     foreach ( var attendance in groupAttendanceList )
                     {
-                        var personId = attendance.PersonAlias.PersonId;
+                        var personId = attendance.PersonAliasPersonId;
 
                         if ( attendance.EndDateTime.HasValue )
                         {
@@ -851,7 +900,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     foreach ( var groupLocSched in attendanceList
                         .Where( a =>
                             a.StartDateTime < chartTime &&
-                            a.PersonAlias != null &&
+                            a.PersonAliasId.HasValue &&
                             activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) )
                         .GroupBy( a => new
                         {
@@ -864,7 +913,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             ScheduleId = g.Key.ScheduleId,
                             GroupId = g.Key.GroupId,
                             LocationId = g.Key.LocationId,
-                            PersonIds = g.Select( a => a.PersonAlias.PersonId ).Distinct().ToList()
+                            PersonIds = g.Select( a => a.PersonAliasPersonId ).Distinct().ToList()
                         } ) )
                     {
                         AddGroupCount( chartTime, groupLocSched.GroupId, groupLocSched.PersonIds, current );
@@ -1126,245 +1175,253 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private void BuildNavigationControls()
         {
-            if ( NavData != null )
+            if ( NavData == null )
             {
-                if ( string.IsNullOrWhiteSpace( CurrentNavPath ) || !CurrentNavPath.StartsWith( _configuredMode ) )
-                {
-                    CurrentNavPath = _configuredMode;
-                }
+                return;
+            }
 
-                var pathParts = CurrentNavPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                int numParts = pathParts.Length;
+            if ( string.IsNullOrWhiteSpace( CurrentNavPath ) || !CurrentNavPath.StartsWith( _configuredMode ) )
+            {
+                CurrentNavPath = _configuredMode;
+            }
 
-                NavigationItem item = NavData.GetItem( pathParts[numParts - 1] );
-                while ( item == null && numParts > 1 )
-                {
-                    numParts--;
-                    item = NavData.GetItem( pathParts[numParts - 1] );
-                }
+            var pathParts = CurrentNavPath.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            int numParts = pathParts.Length;
 
-                CurrentNavPath = pathParts.Take( numParts ).ToList().AsDelimited( "|" );
+            NavigationItem item = NavData.GetItem( pathParts[numParts - 1] );
+            while ( item == null && numParts > 1 )
+            {
+                numParts--;
+                item = NavData.GetItem( pathParts[numParts - 1] );
+            }
 
-                string itemKey = pathParts[numParts - 1];
-                string itemType = itemKey.Left( 1 );
-                int? itemId = itemKey.Length > 1 ? itemKey.Substring( 1 ).AsIntegerOrNull() : null;
+            CurrentNavPath = pathParts.Take( numParts ).ToList().AsDelimited( "|" );
 
-                SetUserPreference( "CurrentNavPath", CurrentNavPath );
+            string itemKey = pathParts[numParts - 1];
+            string itemType = itemKey.Left( 1 );
+            int? itemId = itemKey.Length > 1 ? itemKey.Substring( 1 ).AsIntegerOrNull() : null;
 
-                var navItems = new List<NavigationItem>();
+            SetUserPreference( "CurrentNavPath", CurrentNavPath );
 
-                switch ( itemType )
-                {
-                    case "L":   // Location
-                        {
-                            // Add child locations
-                            NavData.Locations
-                                .Where( l => l.ParentId == itemId )
-                                .ToList()
-                                .ForEach( l => navItems.Add( l ) );
+            var navItems = new List<NavigationItem>();
 
-                            break;
-                        }
-
-                    case "T":   // Group Type
-                        {
-                            // Add child group types
-                            NavData.GroupTypes
-                                .Where( t => t.ParentId.Equals( itemId ) )
-                                .ToList().ForEach( t => navItems.Add( t ) );
-
-                            // Add child groups
-                            var groupIds = NavData.GroupTypes
-                                .Where( t => t.Id == itemId )
-                                .SelectMany( t => t.ChildGroupIds )
-                                .Distinct()
-                                .ToList();
-                            NavData.Groups
-                                .Where( g => groupIds.Contains( g.Id ) )
-                                .ToList()
-                                .ForEach( g => navItems.Add( g ) );
-
-                            break;
-                        }
-
-                    case "G":   // Group
-                        {
-                            // Add child groups
-                            var groupIds = NavData.Groups
-                                .Where( g => g.Id == itemId )
-                                .SelectMany( g => g.ChildGroupIds )
-                                .Distinct()
-                                .ToList();
-                            NavData.Groups
-                                .Where( g => groupIds.Contains( g.Id ) )
-                                .ToList()
-                                .ForEach( g => navItems.Add( g ) );
-
-                            // Add child locations
-                            var locations = NavData.Groups
-                                .Where( g => g.Id == itemId )
-                                .SelectMany( g => g.ChildLocationIds )
-                                .Distinct()
-                                .ToList();
-                            NavData.Locations
-                                .Where( l => locations.Contains( l.Id ) )
-                                .ToList()
-                                .ForEach( l => navItems.Add( l ) );
-
-                            break;
-                        }
-                }
-
-                // Get chart data
-                Dictionary<DateTime, List<int>> chartCounts = null;
-                if ( item != null )
-                {
-                    chartCounts = item.RecentPersonIds;
-                }
-                else
-                {
-                    chartCounts = new Dictionary<DateTime, List<int>>();
-                    foreach ( var navItem in navItems )
+            switch ( itemType )
+            {
+                case "L":   // Location
                     {
-                        foreach ( var kv in navItem.RecentPersonIds )
-                        {
-                            if ( !chartCounts.ContainsKey( kv.Key ) )
-                            {
-                                chartCounts.Add( kv.Key, new List<int>() );
-                            }
+                        // Add child locations
+                        NavData.Locations
+                            .Where( l => l.ParentId == itemId )
+                            .ToList()
+                            .ForEach( l => navItems.Add( l ) );
 
-                            chartCounts[kv.Key] = chartCounts[kv.Key].Union( kv.Value ).ToList();
-                        }
-                    }
-                }
-
-                var chartData = new Dictionary<DateTime, int>();
-
-                TimeSpan baseSpan = new TimeSpan( new DateTime( 1970, 1, 1 ).Ticks );
-                foreach ( var kv in chartCounts.OrderBy( c => c.Key ) )
-                {
-                    DateTime offsetTime = kv.Key.Subtract( baseSpan );
-                    chartData.Add( offsetTime, kv.Value.Count() );
-                }
-
-                // Format label values as 9AM or 9:15, and only show label value if minutes are 00, 15, 30, and 45
-                hfChartLabel.Value = JsonConvert.SerializeObject( chartData.Keys.Select( a => ( a.Minute == 0 ) ? a.ToString( @"htt" ) :
-                    ( a.Minute == 15 || a.Minute == 30 || a.Minute == 45 ) ? a.ToString( @"h\:mm" ) : string.Empty ).ToList() );
-                hfChartData.Value = JsonConvert.SerializeObject( chartData.Values.ToList() );
-                pnlChart.Attributes["onClick"] = upnlContent.GetPostBackEventReference( "R" );
-
-                pnlNavHeading.Visible = item != null;
-                int pendingPeople = navItems.SelectMany( a => a.PendingPeople ).Distinct().Count();
-                int checkedInPeople = navItems.SelectMany( a => a.CheckedInPeople ).Distinct().Count();
-                int checkedOutPeople = navItems.SelectMany( a => a.CheckedOutPeople ).Distinct().Count();
-
-                if ( item != null )
-                {
-                    if ( numParts > 0 )
-                    {
-                        pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
-                            pathParts.ToList().Take( numParts - 1 ).ToList().AsDelimited( "|" ) );
+                        break;
                     }
 
-                    lNavHeading.Text = item.Name;
-
-                    var locationItem = item as NavigationLocation;
-                    if ( locationItem != null && locationItem.HasGroups )
+                case "T":   // Group Type
                     {
-                        lHeadingStatus.Visible = true;
-                        bool isOpen = locationItem.IsActive;
-                        lHeadingStatus.Text = string.Format( @"<span class=""label label-{0}"">{1}</span>", isOpen ? "success" : "danger", isOpen ? "open" : "closed" );
-                        pnlThreshold.Visible = locationItem.SoftThreshold.HasValue || locationItem.FirmThreshold.HasValue;
-                        hfThreshold.Value = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString() : string.Empty;
-                        lThreshold.Text = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString( "N0" ) : "none";
-                        nbThreshold.MaximumValue = locationItem.FirmThreshold.HasValue ? locationItem.FirmThreshold.Value.ToString() : string.Empty;
-                        lbUpdateThreshold.Attributes["data-key"] = locationItem.Id.ToString();
+                        // Add child group types
+                        NavData.GroupTypes
+                            .Where( t => t.ParentId.Equals( itemId ) )
+                            .ToList().ForEach( t => navItems.Add( t ) );
 
-                        var rockContext = new RockContext();
+                        // Add child groups
+                        var groupIds = NavData.GroupTypes
+                            .Where( t => t.Id == itemId )
+                            .SelectMany( t => t.ChildGroupIds )
+                            .Distinct()
+                            .ToList();
+                        NavData.Groups
+                            .Where( g => groupIds.Contains( g.Id ) )
+                            .ToList()
+                            .ForEach( g => navItems.Add( g ) );
 
-                        List<int> checkinAreaGroupTypeIds = new List<int>();
+                        break;
+                    }
 
-                        Guid? groupTypeTemplateGuid = GetSelectedAreaGuid();
+                case "G":   // Group
+                    {
+                        // Add child groups
+                        var groupIds = NavData.Groups
+                            .Where( g => g.Id == itemId )
+                            .SelectMany( g => g.ChildGroupIds )
+                            .Distinct()
+                            .ToList();
+                        NavData.Groups
+                            .Where( g => groupIds.Contains( g.Id ) )
+                            .ToList()
+                            .ForEach( g => navItems.Add( g ) );
 
-                        if ( groupTypeTemplateGuid.HasValue )
+                        // Add child locations
+                        var locations = NavData.Groups
+                            .Where( g => g.Id == itemId )
+                            .SelectMany( g => g.ChildLocationIds )
+                            .Distinct()
+                            .ToList();
+                        NavData.Locations
+                            .Where( l => locations.Contains( l.Id ) )
+                            .ToList()
+                            .ForEach( l => navItems.Add( l ) );
+
+                        break;
+                    }
+            }
+
+            // Get chart data
+            Dictionary<DateTime, List<int>> chartCounts = null;
+            if ( item != null )
+            {
+                chartCounts = item.RecentPersonIds;
+            }
+            else
+            {
+                chartCounts = new Dictionary<DateTime, List<int>>();
+                foreach ( var navItem in navItems )
+                {
+                    foreach ( var kv in navItem.RecentPersonIds )
+                    {
+                        if ( !chartCounts.ContainsKey( kv.Key ) )
                         {
-                            var checkinAreaGroupTypeId = GroupTypeCache.GetId( groupTypeTemplateGuid.Value );
-                            if ( checkinAreaGroupTypeId != null )
-                            {
-                                checkinAreaGroupTypeIds = new GroupTypeService( new RockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
-                            }
+                            chartCounts.Add( kv.Key, new List<int>() );
                         }
 
-                        // Get all Attendance records for the current day and location, limited to groups within the selected check-in area
-                        var dayStart = RockDateTime.Today.AddDays( -1 );
-                        var currentCampusDateTime = GetCampusTime();
+                        chartCounts[kv.Key] = chartCounts[kv.Key].Union( kv.Value ).ToList();
+                    }
+                }
+            }
 
-                        var attendees = new AttendanceService( rockContext )
-                            .Queryable( "Occurrence.Group,PersonAlias.Person,Occurrence.Schedule,AttendanceCode" )
-                            .AsNoTracking()
-                            .Where( a =>
-                                a.PersonAliasId.HasValue &&
-                                a.StartDateTime > dayStart &&
-                                a.StartDateTime < currentCampusDateTime &&
-                                a.Occurrence.LocationId.HasValue &&
-                                a.Occurrence.LocationId == locationItem.Id &&
-                                a.Occurrence.GroupId.HasValue &&
-                                checkinAreaGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
-                                a.DidAttend.HasValue &&
-                                a.DidAttend.Value &&
-                                a.Occurrence.ScheduleId.HasValue )
+            var chartData = new Dictionary<DateTime, int>();
+
+            TimeSpan baseSpan = new TimeSpan( new DateTime( 1970, 1, 1 ).Ticks );
+            foreach ( var kv in chartCounts.OrderBy( c => c.Key ) )
+            {
+                DateTime offsetTime = kv.Key.Subtract( baseSpan );
+                chartData.Add( offsetTime, kv.Value.Count() );
+            }
+
+            // Format label values as 9AM or 9:15, and only show label value if minutes are 00, 15, 30, and 45
+            hfChartLabel.Value = JsonConvert.SerializeObject( chartData.Keys.Select( a => ( a.Minute == 0 ) ? a.ToString( @"htt" ) :
+                ( a.Minute == 15 || a.Minute == 30 || a.Minute == 45 ) ? a.ToString( @"h\:mm" ) : string.Empty ).ToList() );
+            hfChartData.Value = JsonConvert.SerializeObject( chartData.Values.ToList() );
+            pnlChart.Attributes["onClick"] = upnlContent.GetPostBackEventReference( "R" );
+
+            pnlNavHeading.Visible = item != null;
+            int pendingPeople = navItems.SelectMany( a => a.PendingPeople ).Distinct().Count();
+            int checkedInPeople = navItems.SelectMany( a => a.CheckedInPeople ).Distinct().Count();
+            int checkedOutPeople = navItems.SelectMany( a => a.CheckedOutPeople ).Distinct().Count();
+
+            if ( item != null )
+            {
+                if ( numParts > 0 )
+                {
+                    pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
+                        pathParts.ToList().Take( numParts - 1 ).ToList().AsDelimited( "|" ) );
+                }
+
+                lNavHeading.Text = item.Name;
+
+                var locationItem = item as NavigationLocation;
+                if ( locationItem != null && locationItem.HasGroups )
+                {
+                    tglHeadingRoom.Visible = true;
+                    tglHeadingRoom.Checked = locationItem.IsActive;
+                    tglHeadingRoom.Attributes["data-key"] = locationItem.Id.ToString();
+
+                    pnlThreshold.Visible = locationItem.SoftThreshold.HasValue || locationItem.FirmThreshold.HasValue;
+                    hfThreshold.Value = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString() : string.Empty;
+                    lThreshold.Text = locationItem.SoftThreshold.HasValue ? locationItem.SoftThreshold.Value.ToString( "N0" ) : "none";
+                    nbThreshold.MaximumValue = locationItem.FirmThreshold.HasValue ? locationItem.FirmThreshold.Value.ToString() : string.Empty;
+                    lbUpdateThreshold.Attributes["data-key"] = locationItem.Id.ToString();
+
+                    var rockContext = new RockContext();
+
+                    List<int> checkinAreaGroupTypeIds = new List<int>();
+
+                    Guid? groupTypeTemplateGuid = GetSelectedAreaGuid();
+
+                    if ( groupTypeTemplateGuid.HasValue )
+                    {
+                        var checkinAreaGroupTypeId = GroupTypeCache.GetId( groupTypeTemplateGuid.Value );
+                        if ( checkinAreaGroupTypeId != null )
+                        {
+                            checkinAreaGroupTypeIds = new GroupTypeService( new RockContext() ).GetCheckinAreaDescendants( checkinAreaGroupTypeId.Value ).Select( a => a.Id ).ToList();
+                        }
+                    }
+
+                    // Get all Attendance records for the current day and location, limited to groups within the selected check-in area
+                    var dayStart = RockDateTime.Today.AddDays( -1 );
+                    var currentCampusDateTime = GetCampusTime();
+
+                    var attendees = new AttendanceService( rockContext )
+                        .Queryable()
+                        .Include( s => s.Occurrence.Group )
+                        .Include( s => s.PersonAlias.Person )
+                        .Include( s => s.Occurrence.Schedule )
+                        .Include( s => s.AttendanceCode )
+                        .AsNoTracking()
+                        .Where( a =>
+                            a.PersonAliasId.HasValue &&
+                            a.StartDateTime > dayStart &&
+                            a.StartDateTime < currentCampusDateTime &&
+                            a.Occurrence.LocationId.HasValue &&
+                            a.Occurrence.LocationId == locationItem.Id &&
+                            a.Occurrence.GroupId.HasValue &&
+                            checkinAreaGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
+                            a.DidAttend.HasValue &&
+                            a.DidAttend.Value &&
+                            a.Occurrence.ScheduleId.HasValue )
+                        .ToList();
+
+                    int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+
+                    var people = new List<PersonResult>();
+                    foreach ( var personId in attendees
+                        .OrderBy( a => a.PersonAlias.Person.NickName )
+                        .ThenBy( a => a.PersonAlias.Person.LastName )
+                        .Select( a => a.PersonAlias.PersonId )
+                        .Distinct() )
+                    {
+                        var matchingAttendees = attendees
+                            .Where( a => a.PersonAlias.PersonId == personId )
                             .ToList();
 
-                        int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
-
-                        var people = new List<PersonResult>();
-                        foreach ( var personId in attendees
-                            .OrderBy( a => a.PersonAlias.Person.NickName )
-                            .ThenBy( a => a.PersonAlias.Person.LastName )
-                            .Select( a => a.PersonAlias.PersonId )
-                            .Distinct() )
+                        if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.Occurrence.ScheduleId == scheduleId.Value ) )
                         {
-                            var matchingAttendees = attendees
-                                .Where( a => a.PersonAlias.PersonId == personId )
-                                .ToList();
-
-                            if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.Occurrence.ScheduleId == scheduleId.Value ) )
-                            {
-                                people.Add( new PersonResult( matchingAttendees ) );
-                            }
+                            people.Add( new PersonResult( matchingAttendees ) );
                         }
-
-                        pendingPeople += item.PendingPeople.Count;
-                        checkedInPeople += item.CheckedInPeople.Count;
-                        checkedOutPeople += item.CheckedOutPeople.Count;
-
-                        rptPeople.Visible = true;
-                        rptPeople.DataSource = people;
-                        rptPeople.DataBind();
                     }
-                    else
-                    {
-                        lHeadingStatus.Visible = false;
-                        pnlThreshold.Visible = false;
-                        rptPeople.Visible = false;
-                    }
+
+                    pendingPeople += item.PendingPeople.Count;
+                    checkedInPeople += item.CheckedInPeople.Count;
+                    checkedOutPeople += item.CheckedOutPeople.Count;
+
+                    rptPeople.Visible = true;
+                    rptPeople.DataSource = people;
+                    rptPeople.DataBind();
                 }
                 else
                 {
+                    tglHeadingRoom.Visible = false;
+                    pnlThreshold.Visible = false;
                     rptPeople.Visible = false;
                 }
-
-                lCheckedInPeople.Text = checkedInPeople.ToString();
-                lPendingPeople.Text = pendingPeople.ToString();
-                lCheckedOutPeople.Text = checkedOutPeople.ToString();
-
-                rptNavItems.Visible = navItems.Any();
-                rptNavItems.DataSource = navItems
-                    .OrderBy( i => i.TypeKey )
-                    .ThenBy( i => i.Order )
-                    .ThenBy( i => i.Name );
-                rptNavItems.DataBind();
             }
+            else
+            {
+                rptPeople.Visible = false;
+            }
+
+            lCheckedInPeople.Text = checkedInPeople.ToString();
+            lPendingPeople.Text = pendingPeople.ToString();
+            lCheckedOutPeople.Text = checkedOutPeople.ToString();
+
+            rptNavItems.Visible = navItems.Any();
+            rptNavItems.DataSource = navItems
+                .OrderBy( i => i.TypeKey )
+                .ThenBy( i => i.Order )
+                .ThenBy( i => i.Name );
+            rptNavItems.DataBind();
+
         }
 
         /// <summary>
@@ -1584,19 +1641,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         public class PersonResult
         {
-            public int Id { get; set; }
+            public Rock.Model.Person Person { get; private set; }
 
-            public Guid Guid { get; set; }
-
-            public string Name { get; set; }
-
-            public Gender Gender { get; set; }
-
-            public int? PhotoId { get; set; }
+            public string Name
+            {
+                get
+                {
+                    if ( Person != null )
+                    {
+                        return Person.FullName;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
 
             public string ScheduleGroupNames { get; set; }
-
-            public string Age { get; set; }
 
             public DateTime? PresentDateTime { get; set; }
 
@@ -1613,13 +1675,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     return;
                 }
 
-                var person = attendances.First().PersonAlias.Person;
-                Id = person.Id;
-                Guid = person.Guid;
-                Name = person.FullName;
-                Gender = person.Gender;
-                Age = person.Age.ToString() ?? string.Empty;
-                PhotoId = person.PhotoId;
+                Person = attendances.First().PersonAlias.Person;
 
                 ScheduleGroupNames = attendances
                     .Select( a => string.Format(

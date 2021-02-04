@@ -678,12 +678,16 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeCareTeamId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( false, result );
         }
@@ -699,11 +703,17 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = 1,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeCareTeamId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = 1,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
+                ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( true, result );
         }
@@ -718,11 +728,17 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
+                ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( true, result );
         }
@@ -737,11 +753,16 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Inactive
-            }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Inactive
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( false, result );
         }

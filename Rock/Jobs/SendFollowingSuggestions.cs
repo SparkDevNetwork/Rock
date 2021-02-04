@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Follow;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -526,7 +527,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Helper class for following suggestion notifications
     /// </summary>
-    [DotLiquid.LiquidType( "SuggestionType", "Notices" )]
+    [LavaType( "SuggestionType", "Notices" )]
     public class FollowingSuggestionNotices
     {
         /// <summary>

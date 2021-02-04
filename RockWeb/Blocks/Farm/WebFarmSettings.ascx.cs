@@ -326,6 +326,8 @@ namespace RockWeb.Blocks.Farm
             {
                 ShowViewMode();
             }
+
+            nbInMemoryBus.Visible = Rock.Bus.RockMessageBus.IsInMemoryTransport;
         }
 
         /// <summary>

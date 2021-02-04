@@ -147,7 +147,7 @@
                                             <Rock:RockDropDownList ID="ddlGroupMemberScheduleTemplate" runat="server" Label="Current Schedule" OnSelectedIndexChanged="ddlGroupMemberScheduleTemplate_SelectedIndexChanged" AutoPostBack="true" />
                                         </div>
                                         <div class="col-md-6">
-                                            <Rock:DatePicker ID="dpGroupMemberScheduleTemplateStartDate" runat="server" Label="Starting On" OnValueChanged="dpGroupMemberScheduleTemplateStartDate_ValueChanged" AutoPostBack="true" />
+                                            <Rock:DatePicker ID="dpGroupMemberScheduleTemplateStartDate" runat="server" Label="Starting On" OnValueChanged="dpGroupMemberScheduleTemplateStartDate_ValueChanged" />
                                         </div>
                                     </div>
 

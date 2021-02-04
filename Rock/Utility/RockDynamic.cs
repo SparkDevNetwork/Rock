@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Utility
 {
@@ -29,8 +30,8 @@ namespace Rock.Utility
     /// It can also be used to create a Lava Proxy for C# objects that can't inherit from RockDynamic.
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
-    public class RockDynamic : DynamicObject, Lava.ILiquidizable
+    /// <seealso cref="Rock.Lava.ILavaDataDictionary" />
+    public class RockDynamic : DynamicObject, ILavaDataDictionary
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
 
@@ -287,41 +288,8 @@ namespace Rock.Utility
             return propertyNames;
         }
 
-        #region ILiquid Implementation
         /// <summary>
-        /// Gets the available keys (for debugging info).
-        /// </summary>
-        /// <value>
-        /// The available keys.
-        /// </value>
-        [LavaIgnore]
-        public List<string> AvailableKeys
-        {
-            get
-            {
-                return GetDynamicMemberNames().ToList();
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public object this[object key]
-        {
-            get
-            {
-                var propertyKey = key.ToStringSafe();
-                return this[propertyKey];
-            }
-        }
-
-        /// <summary>
-        /// Determines whether [contains] [the specified item].
+        /// Determines whether this object contains the specified key and value.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="includeInstanceProperties">if set to <c>true</c> [include instance properties].</param>
@@ -343,12 +311,48 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Returns liquid for the object
+        /// Gets the <see cref="System.Object"/> with the specified key.
         /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
         /// <returns></returns>
-        public object ToLiquid()
+        public object this[object key]
         {
-            return this;
+            get
+            {
+                var propertyKey = key.ToStringSafe();
+                return this[propertyKey];
+            }
+        }
+
+        #region ILavaDataDictionary Implementation
+
+        /// <summary>
+        /// Gets the available keys (for debugging info).
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public List<string> AvailableKeys
+        {
+            get
+            {
+                return GetDynamicMemberNames().ToList();
+            }
+        }
+
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object GetValue( object key )
+        {
+            var propertyKey = key.ToStringSafe();
+            return this[propertyKey];
         }
 
         /// <summary>

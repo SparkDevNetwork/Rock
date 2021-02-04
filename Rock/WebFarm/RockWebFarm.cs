@@ -148,12 +148,12 @@ namespace Rock.WebFarm
         /// <summary>
         /// The cpu counter
         /// </summary>
-        private static readonly PerformanceCounter _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+        private static PerformanceCounter _cpuCounter = null;
 
         /// <summary>
         /// The ram counter
         /// </summary>
-        private static readonly PerformanceCounter _ramCounter = new PerformanceCounter( "Memory", "Available MBytes" );
+        private static PerformanceCounter _ramCounter = null;
 
         /// <summary>
         /// The total ram mb
@@ -178,10 +178,6 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 1" );
 
-            // Start the performance counters
-            _cpuCounter.NextValue();
-            _ramCounter.NextValue();
-
             using ( var rockContext = new RockContext() )
             {
                 // Check that the WebFarmEnable = true.If yes, continue
@@ -197,6 +193,9 @@ namespace Rock.WebFarm
                 }
 
                 _isWebFarmEnabledAndUnlocked = true;
+
+                // Initialize the performance counters that will be used when logging metrics
+                InitializePerformanceCounters();
 
                 // Load upper and lower polling interval settings
                 var lowerLimitSeconds = GetLowerPollingLimitSeconds();
@@ -376,6 +375,11 @@ namespace Rock.WebFarm
         /// <param name="currentPerson">The current person.</param>
         public static void OnRestartRequested( Person currentPerson )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             var personName = currentPerson == null ?
                 "Unknown" :
                 $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
@@ -396,6 +400,11 @@ namespace Rock.WebFarm
         /// <param name="senderNodeName">Name of the node that pinged.</param>
         internal static void OnReceivedPing( string senderNodeName )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
@@ -416,6 +425,11 @@ namespace Rock.WebFarm
         /// <param name="recipientNodeName">Name of the recipient node.</param>
         internal static void OnReceivedPong( string senderNodeName, string recipientNodeName )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
@@ -581,33 +595,67 @@ namespace Rock.WebFarm
         #region Helper Methods
 
         /// <summary>
+        /// Initializes the performance counters.
+        /// </summary>
+        private static void InitializePerformanceCounters()
+        {
+            try
+            {
+                _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+                _ramCounter = new PerformanceCounter( "Memory", "Available MBytes" );
+
+                // Start the performance counters
+                _cpuCounter.NextValue();
+                _ramCounter.NextValue();
+            }
+            catch
+            {
+                // This may fail if the process doesn't have appropriate access to the stats needed
+                _cpuCounter = null;
+                _ramCounter = null;
+            }
+        }
+
+        /// <summary>
         /// Adds the metrics.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         private static void AddMetrics( RockContext rockContext )
         {
-            var cpuPercent = Convert.ToDecimal( _cpuCounter.NextValue() );
-            var ramAvailable = Convert.ToDecimal( _ramCounter.NextValue() );
-            var ramUsage = TotalRamMb - ramAvailable;
-
             var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 
-            webFarmNodeMetricService.AddRange( new[] {
-                new WebFarmNodeMetric
-                {
-                    WebFarmNodeId = _nodeId,
-                    MetricType = WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent,
-                    MetricValue = cpuPercent
-                },
-                new WebFarmNodeMetric
-                {
-                    WebFarmNodeId = _nodeId,
-                    MetricType = WebFarmNodeMetric.TypeOfMetric.MemoryUsageMegabytes,
-                    MetricValue = ramUsage
-                }
-            } );
+            if ( _cpuCounter != null )
+            {
+                var cpuPercent = Convert.ToDecimal( _cpuCounter.NextValue() );
 
-            Debug( $"Added metrics: CPU {cpuPercent:N0}% RAM {ramUsage:N0}MB" );
+                webFarmNodeMetricService.Add(
+                    new WebFarmNodeMetric
+                    {
+                        WebFarmNodeId = _nodeId,
+                        MetricType = WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent,
+                        MetricValue = cpuPercent
+                    }
+                );
+
+                Debug( $"Added metric: CPU {cpuPercent:N0}%" );
+            }
+
+            if ( _ramCounter != null )
+            {
+                var ramAvailable = Convert.ToDecimal( _ramCounter.NextValue() );
+                var ramUsage = TotalRamMb - ramAvailable;
+
+                webFarmNodeMetricService.Add(
+                    new WebFarmNodeMetric
+                    {
+                        WebFarmNodeId = _nodeId,
+                        MetricType = WebFarmNodeMetric.TypeOfMetric.MemoryUsageMegabytes,
+                        MetricValue = ramUsage
+                    }
+                );
+
+                Debug( $"Added metric: RAM {ramUsage:N0}MB" );
+            }
         }
 
         /// <summary>

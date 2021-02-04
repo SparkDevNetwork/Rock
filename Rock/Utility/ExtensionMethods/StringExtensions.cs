@@ -701,6 +701,7 @@ namespace Rock
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
+        [RockObsolete("1.12")]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {
             return str.SubstringSafe( startIndex, maxLength );
@@ -1225,6 +1226,16 @@ namespace Rock
         public static string RemoveSpaces( this string input )
         {
             return input.Replace( " ", string.Empty );
+        }
+
+        /// <summary>
+        /// Removes all whitespace in a string, including carriage return and line feed characters.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns></returns>
+        public static string RemoveWhiteSpace( this string input )
+        {
+            return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
         }
 
         /// <summary>

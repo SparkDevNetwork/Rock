@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using Rock.Extension;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
@@ -81,7 +82,7 @@ namespace Rock.MergeTemplates
         /// <returns></returns>
         public static string GetDefaultLavaDebugInfo( List<object> mergeObjectList, Dictionary<string, object> globalMergeFields, string preText = null )
         {
-            DotLiquid.Hash debugMergeFields = new DotLiquid.Hash();
+            var debugMergeFields = new LavaDataDictionary();
 
             if ( mergeObjectList.Count >= 1 )
             {

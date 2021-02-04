@@ -148,6 +148,26 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Creates a 403-Forbidden response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionForbidden( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Forbidden );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Forbidden )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
         /// Creates a 404-Not Found response with no content.
         /// </summary>
         /// <returns>A BlockActionResult instance.</returns>
