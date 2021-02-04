@@ -353,11 +353,11 @@ namespace Rock.Model
                         transaction.ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
                     }
 
-                    ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                    ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
-                    ConnectionState = connectionRequest.ConnectionState;
-                    ConnectionStatusId = connectionRequest.ConnectionStatusId;
-                    AssignedGroupId = connectionRequest.AssignedGroupId;
+                    transaction.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                    transaction.ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                    transaction.ConnectionState = connectionRequest.ConnectionState;
+                    transaction.ConnectionStatusId = connectionRequest.ConnectionStatusId;
+                    transaction.AssignedGroupId = connectionRequest.AssignedGroupId;
 
                     if ( transaction.State == EntityState.Modified )
                     {

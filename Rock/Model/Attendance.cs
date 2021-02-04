@@ -926,7 +926,7 @@ namespace Rock.Model
                             // Save the values
                             launchMemberAttendedGroupWorkflowMsg.GroupId = occ.GroupId;
                             launchMemberAttendedGroupWorkflowMsg.AttendanceDateTime = occ.OccurrenceDate;
-                            PersonAliasId = attendance.PersonAliasId;
+                            launchMemberAttendedGroupWorkflowMsg.PersonAliasId = attendance.PersonAliasId;
 
                             if ( occ.Group != null )
                             {
