@@ -1,4 +1,20 @@
-System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Index.js", "./Rules/Index.js", "./Controls/PageDebugTimings.js"], function (exports_1, context_1) {
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index.js", "./Controls/PageDebugTimings"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +52,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, RockBlock_js_1, Index_js_1, PageDebugTimings_js_1;
+    var vue_1, RockBlock_1, Index_1, PageDebugTimings_1;
     var __moduleName = context_1 && context_1.id;
     /**
     * This should be called once per block on the page. The config contains configuration provided by the block's server side logic
@@ -70,21 +86,21 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
                     case 4:
                         name = "Root" + config.blockFileUrl.replace(/\//g, '.');
                         startTimeMs = (new Date()).getTime();
-                        app = vue_js_1.createApp({
+                        app = vue_1.createApp({
                             name: name,
                             components: {
-                                RockBlock: RockBlock_js_1.default
+                                RockBlock: RockBlock_1.default
                             },
                             data: function () {
                                 return {
                                     config: config,
-                                    blockComponent: blockComponent ? vue_js_1.markRaw(blockComponent) : null,
+                                    blockComponent: blockComponent ? vue_1.markRaw(blockComponent) : null,
                                     startTimeMs: startTimeMs
                                 };
                             },
                             template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" :startTimeMs=\"startTimeMs\" />"
                         });
-                        app.use(Index_js_1.default);
+                        app.use(Index_1.default);
                         app.mount(config.rootElement);
                         return [2 /*return*/, app];
                 }
@@ -101,7 +117,7 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Index_js_1.default.dispatch('initialize', { pageConfig: pageConfig })];
+                    case 0: return [4 /*yield*/, Index_1.default.dispatch('initialize', { pageConfig: pageConfig })];
                     case 1:
                         _a.sent();
                         return [2 /*return*/];
@@ -120,10 +136,10 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
             console.error('Could not show Obsidian debug timings because the HTML element did not resolve.');
             return;
         }
-        var app = vue_js_1.createApp({
+        var app = vue_1.createApp({
             name: 'PageDebugTimingsRoot',
             components: {
-                PageDebugTimings: PageDebugTimings_js_1.default
+                PageDebugTimings: PageDebugTimings_1.default
             },
             data: function () {
                 return {
@@ -132,25 +148,25 @@ System.register(["./Vendor/Vue/vue.js", "./Controls/RockBlock.js", "./Store/Inde
             },
             template: "<PageDebugTimings :serverViewModels=\"viewModels\" />"
         });
-        app.use(Index_js_1.default);
+        app.use(Index_1.default);
         app.mount(rootElement);
     }
     exports_1("initializePageTimings", initializePageTimings);
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (RockBlock_js_1_1) {
-                RockBlock_js_1 = RockBlock_js_1_1;
+            function (RockBlock_1_1) {
+                RockBlock_1 = RockBlock_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
             function (_1) {
             },
-            function (PageDebugTimings_js_1_1) {
-                PageDebugTimings_js_1 = PageDebugTimings_js_1_1;
+            function (PageDebugTimings_1_1) {
+                PageDebugTimings_1 = PageDebugTimings_1_1;
             }
         ],
         execute: function () {

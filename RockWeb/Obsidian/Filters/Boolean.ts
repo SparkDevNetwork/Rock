@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 /**
  * Transform the value into true, false, or null
  * @param val

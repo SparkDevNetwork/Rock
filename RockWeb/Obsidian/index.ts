@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { App, Component, createApp, markRaw } from './Vendor/Vue/vue.js';
-import RockBlock from './Controls/RockBlock.js';
-import store from './Store/Index.js';
-import { Guid } from './Util/Guid.js';
+import { App, Component, createApp, markRaw } from 'vue';
+import RockBlock from './Controls/RockBlock';
+import store from './Store/Index';
+import { Guid } from './Util/Guid';
 import './Rules/Index.js';
-import Person from './ViewModels/CodeGenerated/PersonViewModel.js';
-import Entity from './ViewModels/Entity.js';
-import PageDebugTimings, { DebugTimingViewModel } from './Controls/PageDebugTimings.js';
+import Person from './ViewModels/CodeGenerated/PersonViewModel';
+import Entity from './ViewModels/Entity';
+import PageDebugTimings, { DebugTimingViewModel } from './Controls/PageDebugTimings';
 
 export type ConfigurationValues = Record<string, unknown>;
 
