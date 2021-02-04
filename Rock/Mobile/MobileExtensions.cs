@@ -49,4 +49,31 @@ namespace Rock.Mobile
 
         #endregion
     }
+
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.Gender"/>.
+    /// </summary>
+    public static class MobileExtensionsGender
+    {
+        /// <summary>
+        /// Converts to mobile <see cref="Gender"/> to a web native <see cref="Rock.Model.Gender"/>.
+        /// </summary>
+        /// <param name="gender">The gender to be converted.</param>
+        /// <returns>The local gender value.</returns>
+        public static Rock.Model.Gender ToNative( this Gender gender )
+        {
+            switch ( gender )
+            {
+                case Gender.Male:
+                    return Model.Gender.Male;
+
+                case Gender.Female:
+                    return Model.Gender.Female;
+
+                default:
+                    return Model.Gender.Unknown;
+            }
+        }
+
+    }
 }

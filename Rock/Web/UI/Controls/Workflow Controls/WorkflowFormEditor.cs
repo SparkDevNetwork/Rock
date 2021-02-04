@@ -305,6 +305,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             target.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
             target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
+            target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryMobilePhoneEntryOption = source.PersonEntryMobilePhoneEntryOption;
             target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;

@@ -22,7 +22,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Blocks.WorkflowEntry;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -328,6 +330,382 @@ namespace Rock.Blocks.Types.Mobile.Cms
         }
 
         /// <summary>
+        /// Gets the workflow attribute entity.
+        /// </summary>
+        /// <param name="action">The workflow action currently being processed.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns>The <see cref="WorkflowAction"/> or <see cref="WorkflowActivity"/> that owns the <paramref name="attribute"/>.</returns>
+        private static IHasAttributes GetWorkflowAttributeEntity( WorkflowAction action, AttributeCache attribute )
+        {
+            Rock.Attribute.IHasAttributes item = null;
+
+            if ( attribute.EntityTypeId == action.Activity.Workflow.TypeId )
+            {
+                item = action.Activity.Workflow;
+            }
+            else if ( attribute.EntityTypeId == action.Activity.TypeId )
+            {
+                item = action.Activity;
+            }
+
+            return item;
+        }
+
+        /// <summary>
+        /// Saves the person entry to attribute values.
+        /// </summary>
+        /// <param name="action">The workflow action currently being processed.</param>
+        /// <param name="personEntryPersonId">The person entry person identifier.</param>
+        /// <param name="personEntryPersonSpouseId">The person entry person spouse identifier.</param>
+        /// <param name="primaryFamily">The primary family.</param>
+        private static void SavePersonEntryToAttributeValues( WorkflowAction action, int personEntryPersonId, int? personEntryPersonSpouseId, Group primaryFamily )
+        {
+            var form = action.ActionTypeCache.WorkflowForm;
+            var personAliasService = new PersonAliasService( new RockContext() );
+
+            if ( form.PersonEntryPersonAttributeGuid.HasValue )
+            {
+                AttributeCache personEntryPersonAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryPersonAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
+                var item = GetWorkflowAttributeEntity( action, personEntryPersonAttribute );
+
+                if ( item != null )
+                {
+                    var primaryAliasGuid = personAliasService.GetPrimaryAliasGuid( personEntryPersonId );
+                    item.SetAttributeValue( personEntryPersonAttribute.Key, primaryAliasGuid );
+                }
+            }
+
+            if ( form.PersonEntryFamilyAttributeGuid.HasValue )
+            {
+                AttributeCache personEntryFamilyAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntryFamilyAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
+                var item = GetWorkflowAttributeEntity( action, personEntryFamilyAttribute );
+
+                if ( item != null )
+                {
+                    item.SetAttributeValue( personEntryFamilyAttribute.Key, primaryFamily.Guid );
+                }
+            }
+
+            if ( form.PersonEntrySpouseAttributeGuid.HasValue && personEntryPersonSpouseId.HasValue )
+            {
+                AttributeCache personEntrySpouseAttribute = form.FormAttributes.Where( a => a.Attribute.Guid == form.PersonEntrySpouseAttributeGuid.Value ).Select( a => a.Attribute ).FirstOrDefault();
+                var item = GetWorkflowAttributeEntity( action, personEntrySpouseAttribute );
+
+                if ( item != null )
+                {
+                    var primaryAliasGuid = personAliasService.GetPrimaryAliasGuid( personEntryPersonSpouseId.Value );
+                    item.SetAttributeValue( personEntrySpouseAttribute.Key, primaryAliasGuid );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the person from mobile person object.
+        /// </summary>
+        /// <param name="action">The action currently being processed.</param>
+        /// <param name="person">The person to be updated.</param>
+        /// <param name="mobilePerson">The mobile person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private static void UpdatePersonFromMobilePerson( WorkflowAction action, Person person, MobilePerson mobilePerson, RockContext rockContext )
+        {
+            var form = action?.ActionTypeCache?.WorkflowForm;
+
+            if ( form == null )
+            {
+                return;
+            }
+
+            person.FirstName = mobilePerson.FirstName;
+            person.NickName = mobilePerson.NickName.IsNotNullOrWhiteSpace() ? mobilePerson.NickName : mobilePerson.FirstName;
+            person.LastName = mobilePerson.LastName;
+
+            if ( form.PersonEntryEmailEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                person.Email = mobilePerson.Email;
+            }
+
+            if ( form.PersonEntryMobilePhoneEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                var existingMobilePhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+
+                var numberTypeMobile = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
+                var messagingEnabled = existingMobilePhone?.IsMessagingEnabled ?? true;
+                var isUnlisted = existingMobilePhone?.IsUnlisted ?? false;
+
+                person.UpdatePhoneNumber( numberTypeMobile.Id, string.Empty, mobilePerson.MobilePhone, messagingEnabled, isUnlisted, rockContext );
+            }
+
+            if ( form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                person.SetBirthDate( mobilePerson.BirthDate );
+            }
+
+            if ( form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                person.Gender = mobilePerson.Gender.ToNative();
+            }
+        }
+
+        /// <summary>
+        /// Creates or Updates person from person editor.
+        /// </summary>
+        /// <param name="action">The workflow action currently being processed.</param>
+        /// <param name="existingPersonId">The existing person identifier.</param>
+        /// <param name="limitMatchToFamily">Limit matches to people in specified family</param>
+        /// <param name="personValues">The person values.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private static Person CreateOrUpdatePersonFromPersonValues( WorkflowAction action, int? existingPersonId, Group limitMatchToFamily, MobilePerson personValues, RockContext rockContext )
+        {
+            var personService = new PersonService( rockContext );
+            Person personEntryPerson;
+            var form = action.ActionTypeCache.WorkflowForm;
+
+            // If we have an existing person, just update and return.
+            if ( existingPersonId.HasValue )
+            {
+                // Update Person from person personValues.
+                personEntryPerson = personService.Get( existingPersonId.Value );
+                UpdatePersonFromMobilePerson( action, personEntryPerson, personValues, rockContext );
+
+                return personEntryPerson;
+            }
+
+            // Match or Create Person from personValues
+            var personMatchQuery = new PersonService.PersonMatchQuery( personValues.FirstName, personValues.LastName, personValues.Email, personValues.MobilePhone )
+            {
+                Gender = form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden ? ( Rock.Model.Gender? ) personValues.Gender.ToNative() : null,
+                BirthDate = form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden ? personValues.BirthDate : null
+            };
+
+            bool updatePrimaryEmail = false;
+            personEntryPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
+
+            /*
+            2020-11-06 MDP
+            ** Special Logic when doing matches for Spouses**
+            * See discussion on https://app.asana.com/0/0/1198971294248209/f for more details
+            *
+            If we are trying to find a matching person record for the Spouse, only consider matches that are in the same family as the primary person.
+            If we find a matching person but they are in a different family, create a new person record instead.
+            We don't want to risk causing two person records from different families to get married due to our matching logic.
+
+            This avoids a problem such as these
+            #1
+            - Person1 fields match on Tom Miller (Existing Single guy)
+            - Spouse fields match on Cindy Decker (married to Ted Decker)
+
+            Instead of causing Tom Miller and the existing Cindy Decker to get married, create a new "duplicate" Cindy decker instead.
+
+            #2
+            - Person1 fields match on Tom Miller (Existing single guy)
+            - Spouse fields match on Mary Smith (an unmarried female in another family)
+
+            Even in case #2, create a duplicate Mary Smith instead.
+
+            The exception is a situation like this
+            #3
+            - Person1 Fields match on Steve Rogers. Steve Rogers' family contains a Sally Rogers, but Sally isn't his spouse because
+              one (or both) of them doesn't have a marital status of Married.
+            - Spouse Fields match on Sally Rogers (in Steve Rogers' family)
+
+            In case #3, use the matched Sally Rogers record, and change Steve and Sally's marital status to married
+
+            Note that in the case of matching on an existing person that has a spouse, for example
+            #4
+            - Person1 Fields match Bill Hills.
+            - Bill has a spouse named Jill Hills
+            -
+
+            In case #4, since Bill has a spouse, the data in the Spouse fields will be used to update Bill's spouse Jill Hills
+
+             */
+
+            if ( personEntryPerson != null && limitMatchToFamily != null )
+            {
+                if ( personEntryPerson.PrimaryFamilyId != limitMatchToFamily.Id )
+                {
+                    personEntryPerson = null;
+                }
+            }
+
+            if ( personEntryPerson != null )
+            {
+                // if a match was found, update that person
+                UpdatePersonFromMobilePerson( action, personEntryPerson, personValues, rockContext );
+            }
+            else
+            {
+                personEntryPerson = new Person();
+                UpdatePersonFromMobilePerson( action, personEntryPerson, personValues, rockContext );
+            }
+
+            return personEntryPerson;
+        }
+
+        /// <summary>
+        /// Gets the workflow form person entry values.
+        /// </summary>
+        /// <param name="personEntryRockContext">The person entry rock context.</param>
+        /// <param name="action">The action currently being processed.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <param name="personEntryValues">The person entry values.</param>
+        private static void SetFormPersonEntryValues( RockContext personEntryRockContext, WorkflowAction action, int? currentPersonId, WorkflowFormPersonEntryValues personEntryValues )
+        {
+            var form = action?.ActionTypeCache?.WorkflowForm;
+
+            if ( form == null || !form.AllowPersonEntry )
+            {
+                return;
+            }
+
+            int? campusId = null;
+            int? maritalStatusId = null;
+
+            action.GetPersonEntryPeople( personEntryRockContext, currentPersonId, out var existingPerson, out var existingSpouse );
+
+            // If we have a person and the person entry was set to hide if known, then
+            // we just store the current person and spouse values.
+            if ( currentPersonId.HasValue && form.PersonEntryHideIfCurrentPersonKnown )
+            {
+                SavePersonEntryToAttributeValues( action, existingPerson.Id, existingSpouse?.Id, existingPerson.PrimaryFamily );
+                return;
+            }
+
+            if ( personEntryValues == null )
+            {
+                return;
+            }
+
+            if ( personEntryValues.Person.CampusGuid.HasValue )
+            {
+                campusId = CampusCache.Get( personEntryValues.Person.CampusGuid.Value )?.Id;
+            }
+
+            if ( personEntryValues.MaritalStatusGuid.HasValue )
+            {
+                maritalStatusId = DefinedValueCache.Get( personEntryValues.MaritalStatusGuid.Value )?.Id;
+            }
+
+            var personEntryPerson = CreateOrUpdatePersonFromPersonValues( action, existingPerson?.Id, null, personEntryValues.Person, personEntryRockContext );
+            if ( personEntryPerson.Id == 0 )
+            {
+                personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
+                personEntryPerson.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, campusId );
+            }
+
+            // if we ended up matching an existing person, get their spouse as the selected spouse
+            var matchedPersonsSpouse = personEntryPerson.GetSpouse();
+
+            if ( matchedPersonsSpouse != null )
+            {
+                existingSpouse = matchedPersonsSpouse;
+            }
+
+            if ( form.PersonEntryMaritalStatusEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
+            {
+                personEntryPerson.MaritalStatusValueId = maritalStatusId;
+            }
+
+            // save person 1 to database and re-fetch to get any newly created family, or other things that would happen on PreSave changes, etc
+            personEntryRockContext.SaveChanges();
+
+            var personAliasService = new PersonAliasService( personEntryRockContext );
+
+            int personEntryPersonId = personEntryPerson.Id;
+            int? personEntryPersonSpouseId = null;
+
+            var personService = new PersonService( personEntryRockContext );
+            var primaryFamily = personService.GetSelect( personEntryPersonId, s => s.PrimaryFamily );
+
+            if ( personEntryValues.Spouse != null )
+            {
+                var personEntryPersonSpouse = CreateOrUpdatePersonFromPersonValues( action, existingSpouse?.Id, primaryFamily, personEntryValues.Spouse, personEntryRockContext );
+                if ( personEntryPersonSpouse.Id == 0 )
+                {
+                    personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
+                    personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+
+                    // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
+
+                    /* 2020-11-16 MDP
+                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them 
+                     *  from changing the Marital status on the two people. However, this should be considered a mis-use of this feature.
+                     *  Unexpected things could happen. 
+                     *  
+                     *  Example of what would happen if 'Daughter' was the label for 'Spouse':
+                     *  Ted Decker is Person1, and Cindy Decker gets auto-filled as Person2. but since the label is 'Daughter', he changes
+                     *  Cindy's information to Alex Decker's information, then sets Marital status to Single.
+                     *  
+                     *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
+                     *  and it was decided we shouldn't do anything to prevent this type of problem.
+                     
+                     */
+                    personEntryPersonSpouse.MaritalStatusValueId = maritalStatusId;
+                    personEntryPerson.MaritalStatusValueId = maritalStatusId;
+
+                    var groupRoleId = GroupTypeCache.GetFamilyGroupType().Roles
+                        .First( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
+                        .Id;
+                    PersonService.AddPersonToFamily( personEntryPersonSpouse, true, primaryFamily.Id, groupRoleId, personEntryRockContext );
+                }
+
+                personEntryRockContext.SaveChanges();
+
+                personEntryPersonSpouseId = personEntryPersonSpouse.Id;
+            }
+
+            SavePersonEntryToAttributeValues( action, personEntryPerson.Id, personEntryPersonSpouseId, primaryFamily );
+
+            if ( form.PersonEntryCampusIsVisible )
+            {
+                primaryFamily.CampusId = campusId;
+            }
+
+            if ( form.PersonEntryAddressEntryOption != WorkflowActionFormPersonEntryOption.Hidden && form.PersonEntryGroupLocationTypeValueId.HasValue && personEntryValues.Address != null )
+            {
+                // a Person should always have a PrimaryFamilyId, but check to make sure, just in case
+                if ( primaryFamily != null )
+                {
+                    var groupLocationService = new GroupLocationService( personEntryRockContext );
+                    var familyLocation = primaryFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == form.PersonEntryGroupLocationTypeValueId.Value ).FirstOrDefault();
+
+                    var newOrExistingLocation = new LocationService( personEntryRockContext ).Get(
+                            personEntryValues.Address.Street1,
+                            string.Empty,
+                            personEntryValues.Address.City,
+                            personEntryValues.Address.State,
+                            personEntryValues.Address.PostalCode,
+                            personEntryValues.Address.Country );
+
+                    if ( newOrExistingLocation != null )
+                    {
+                        if ( familyLocation == null )
+                        {
+                            familyLocation = new GroupLocation
+                            {
+                                GroupLocationTypeValueId = form.PersonEntryGroupLocationTypeValueId.Value,
+                                GroupId = primaryFamily.Id,
+                                IsMailingLocation = true,
+                                IsMappedLocation = true
+                            };
+
+                            groupLocationService.Add( familyLocation );
+                        }
+
+                        if ( newOrExistingLocation.Id != familyLocation.LocationId )
+                        {
+                            familyLocation.LocationId = newOrExistingLocation.Id;
+                        }
+                    }
+                }
+            }
+
+            personEntryRockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Completes the form action based on the action selected by the user.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -501,6 +879,108 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the person entry details to be sent to the shell.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The action currently being processed.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns>The object that will be included in the response that details the person entry part of the form.</returns>
+        private static WorkflowFormPersonEntry GetPersonEntryDetails( RockContext rockContext, WorkflowAction action, int? currentPersonId )
+        {
+            var form = action.ActionTypeCache.WorkflowForm;
+
+            if ( form == null || !form.AllowPersonEntry )
+            {
+                return null;
+            }
+
+            if ( form.PersonEntryHideIfCurrentPersonKnown && currentPersonId.HasValue )
+            {
+                return null;
+            }
+
+            var mobileSite = Rock.Mobile.MobileHelper.GetCurrentApplicationSite( true, rockContext );
+
+            action.GetPersonEntryPeople( rockContext, currentPersonId, out var personEntryPerson, out var personEntrySpouse );
+
+            var mobilePerson = personEntryPerson != null ? Rock.Mobile.MobileHelper.GetMobilePerson( personEntryPerson, mobileSite ) : null;
+            var mobileSpouse = personEntrySpouse != null ? Rock.Mobile.MobileHelper.GetMobilePerson( personEntrySpouse, mobileSite ) : null;
+
+            //
+            // Get the default address if it is supposed to show.
+            //
+            MobileAddress mobileAddress = null;
+            var promptForAddress = ( form.PersonEntryAddressEntryOption != WorkflowActionFormPersonEntryOption.Hidden ) && form.PersonEntryGroupLocationTypeValueId.HasValue;
+            if ( promptForAddress && ( personEntryPerson?.PrimaryFamilyId ).HasValue )
+            {
+                var personEntryGroupLocationTypeValueId = form.PersonEntryGroupLocationTypeValueId.Value;
+
+                var familyLocation = new GroupLocationService( rockContext ).Queryable()
+                    .Where( a => a.GroupId == personEntryPerson.PrimaryFamilyId.Value && a.GroupLocationTypeValueId == form.PersonEntryGroupLocationTypeValueId )
+                    .Select( a => a.Location )
+                    .FirstOrDefault();
+
+                mobileAddress = familyLocation != null ? Rock.Mobile.MobileHelper.GetMobileAddress( familyLocation ) : null;
+            }
+
+            Guid? maritalStatusGuid;
+
+            if ( personEntryPerson != null )
+            {
+                maritalStatusGuid = personEntryPerson.MaritalStatusValue?.Guid;
+            }
+            else
+            {
+                // default to Married if this is a new person
+                maritalStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+            }
+
+            return new WorkflowFormPersonEntry
+            {
+                PreHtml = form.PersonEntryPreHtml,
+                PostHtml = form.PersonEntryPostHtml,
+                CampusIsVisible = form.PersonEntryCampusIsVisible,
+                SpouseEntryOption = GetVisibility( form.PersonEntrySpouseEntryOption ),
+                GenderEntryOption = GetVisibility( form.PersonEntryGenderEntryOption ),
+                EmailEntryOption = GetVisibility( form.PersonEntryEmailEntryOption ),
+                MobilePhoneEntryOption = GetVisibility( form.PersonEntryMobilePhoneEntryOption ),
+                BirthdateEntryOption = GetVisibility( form.PersonEntryBirthdateEntryOption ),
+                AddressEntryOption = form.PersonEntryGroupLocationTypeValueId.HasValue ? GetVisibility( form.PersonEntryAddressEntryOption ) : VisibilityTriState.Hidden,
+                MaritalStatusEntryOption = GetVisibility( form.PersonEntryMaritalStatusEntryOption ),
+                SpouseLabel = form.PersonEntrySpouseLabel,
+                Values = new WorkflowFormPersonEntryValues
+                {
+                    Person = mobilePerson,
+                    Spouse = mobileSpouse,
+                    Address = mobileAddress,
+                    MaritalStatusGuid = maritalStatusGuid
+                }
+            };
+        }
+
+        /// <summary>
+        /// Converts the <see cref="WorkflowActionFormPersonEntryOption"/> value
+        /// into one understood by the mobile shell.
+        /// </summary>
+        /// <param name="option">The visibility option.</param>
+        /// <returns>The <see cref="VisibilityTriState"/> value that shows if the value should be hidden, optional or required.</returns>
+        private static VisibilityTriState GetVisibility( WorkflowActionFormPersonEntryOption option )
+        {
+            switch ( option )
+            {
+                case WorkflowActionFormPersonEntryOption.Optional:
+                    return VisibilityTriState.Optional;
+
+                case WorkflowActionFormPersonEntryOption.Required:
+                    return VisibilityTriState.Required;
+
+                case WorkflowActionFormPersonEntryOption.Hidden:
+                default:
+                    return VisibilityTriState.Hidden;
+            }
+        }
+
         #endregion
 
         #region Action Methods
@@ -508,9 +988,15 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <summary>
         /// Gets the current configuration for this block.
         /// </summary>
-        /// <returns>A collection of string/string pairs.</returns>
+        /// <param name="workflowGuid">The workflow unique identifier of the workflow being processed.</param>
+        /// <param name="formAction">The form action button that was pressed.</param>
+        /// <param name="formFields">The form field values.</param>
+        /// <param name="personEntryValues">The person entry values.</param>
+        /// <returns>
+        /// The data for the next form to be displayed.
+        /// </returns>
         [BlockAction]
-        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null )
+        public WorkflowForm GetNextForm( Guid? workflowGuid = null, string formAction = null, List<MobileField> formFields = null, WorkflowFormPersonEntryValues personEntryValues = null )
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
@@ -540,6 +1026,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
             //
             if ( !string.IsNullOrEmpty( formAction ) && formFields != null )
             {
+                if ( personEntryValues != null )
+                {
+                    using ( var personEntryRockContext = new RockContext() )
+                    {
+                        SetFormPersonEntryValues( personEntryRockContext, action, RequestContext.CurrentPerson?.Id, personEntryValues );
+                    }
+                }
+
                 SetFormValues( action, formFields );
                 var responseText = CompleteFormAction( action, formAction, currentPerson, rockContext );
 
@@ -568,7 +1062,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var mobileForm = new WorkflowForm
             {
-                WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null
+                WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null,
+                HeaderHtml = form.Header,
+                FooterHtml = form.Footer,
+                PersonEntry = GetPersonEntryDetails( rockContext, action, RequestContext.CurrentPerson?.Id )
             };
 
             //
