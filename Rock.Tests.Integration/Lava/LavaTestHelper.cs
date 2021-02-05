@@ -173,7 +173,7 @@ namespace Rock.Tests.Integration.Lava
             // Register dynamic shortcodes with a factory method to ensure that the latest definition is retrieved from the global cache each time the shortcode is used.
             Func<string, DynamicShortcodeDefinition> shortCodeFactory = ( shortcodeName ) =>
             {
-                var shortcodeDefinition = LavaShortcodeCache.All().Where( c => c.TagName == shortcodeName ).FirstOrDefault();
+                var shortcodeDefinition = LavaShortcodeCache.All().Where( c => c.TagName != null && c.TagName.Equals( shortcodeName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
                 if ( shortcodeDefinition == null )
                 {
