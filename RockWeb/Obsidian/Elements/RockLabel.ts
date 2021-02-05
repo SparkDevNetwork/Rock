@@ -28,11 +28,18 @@ export default defineComponent({
             default: ''
         }
     },
-    mounted() {
-        if (this.help) {
-            const helpAnchor = this.$refs.help as ComponentPublicInstance;
-            const jQuery = window['$'] as (el: unknown) => { tooltip: () => void };
-            jQuery(helpAnchor.$el).tooltip();
+    watch: {
+        help: {
+            immediate: true,
+            handler() {
+                if (this.help) {
+                    this.$nextTick(() => {
+                        const helpAnchor = this.$refs.help as ComponentPublicInstance;
+                        const jQuery = window['$'] as (el: unknown) => { tooltip: () => void };
+                        jQuery(helpAnchor.$el).tooltip();
+                    });
+                }
+            }
         }
     },
     template: `

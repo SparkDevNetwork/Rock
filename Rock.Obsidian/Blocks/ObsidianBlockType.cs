@@ -91,12 +91,14 @@ namespace Rock.Obsidian.Blocks
             return
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
-System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
-    Obsidian.initializeBlock({{
-        blockFileUrl: '{ClientBlockIdentifier}',
-        rootElement: document.getElementById('{rootElementId}'),
-        blockGuid: '{BlockCache.Guid}',
-        configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() ?? new object() )}
+Obsidian.whenReady(() => {{
+    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+        indexModule.initializeBlock({{
+            blockFileUrl: '{ClientBlockIdentifier}',
+            rootElement: document.getElementById('{rootElementId}'),
+            blockGuid: '{BlockCache.Guid}',
+            configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() ?? new object() )}
+        }});
     }});
 }});
 </script>";

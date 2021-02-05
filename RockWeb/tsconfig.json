@@ -19,5 +19,8 @@
   "include": [
     "Obsidian/**/*"
   ],
+  "exclude": [
+    "Obsidian/Tests/**/*"
+  ],
   "compileOnSave": true
 }

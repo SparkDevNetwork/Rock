@@ -1165,30 +1165,16 @@ Rock.settings.initialize({{
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                     {
                         var script = $@"
-// Configure SystemJS to append .js extension to files without an extension
-const origResolve = System.constructor.prototype.resolve;
-const defaultExtension = '.js';
-const expectedExtensions = [defaultExtension, '.ts', '.css', '.json'];
-
-System.constructor.prototype.resolve = function (moduleId, ...args) {{
-    const isPackage = moduleId.indexOf('/') === -1 && moduleId.indexOf('\\') === -1;
-    const hasExtension = expectedExtensions.some(ext => moduleId.endsWith(ext));
-
-    return origResolve.call(
-        this,
-        (hasExtension || isPackage) ? moduleId : `${{moduleId}}${{defaultExtension}}`,
-        ...args
-    );
-}};
-
-System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
-    Obsidian.initializePage({{
-        executionStartTime: new Date(),
-        pageId: {_pageCache.Id},
-        pageGuid: '{_pageCache.Guid}',
-        pageParameters: {PageParameters().ToJson()},
-        currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
-        contextEntities: {GetContextViewModels().ToJson()}
+Obsidian.whenReady(() => {{
+    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+        indexModule.initializePage({{
+            executionStartTime: new Date(),
+            pageId: {_pageCache.Id},
+            pageGuid: '{_pageCache.Guid}',
+            pageParameters: {PageParameters().ToJson()},
+            currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
+            contextEntities: {GetContextViewModels().ToJson()}
+        }});
     }});
 }});";
 
@@ -1682,10 +1668,12 @@ System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
                 {
                     var script = $@"
-System.import('/ObsidianJs/Generated/Index.js').then(Obsidian => {{
-    Obsidian.initializePageTimings({{
-        elementId: '{_obsidianPageTimingControlId}',
-        debugTimingViewModels: { _debugTimingViewModels.ToJson() }
+Obsidian.whenReady(() => {{
+    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+        indexModule.initializePageTimings({{
+            elementId: '{_obsidianPageTimingControlId}',
+            debugTimingViewModels: { _debugTimingViewModels.ToJson() }
+        }});
     }});
 }});";
 

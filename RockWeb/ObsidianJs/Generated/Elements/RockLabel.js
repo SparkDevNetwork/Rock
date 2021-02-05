@@ -23,11 +23,19 @@ System.register(["vue", "./JavaScriptAnchor"], function (exports_1, context_1) {
                         default: ''
                     }
                 },
-                mounted: function () {
-                    if (this.help) {
-                        var helpAnchor = this.$refs.help;
-                        var jQuery = window['$'];
-                        jQuery(helpAnchor.$el).tooltip();
+                watch: {
+                    help: {
+                        immediate: true,
+                        handler: function () {
+                            var _this = this;
+                            if (this.help) {
+                                this.$nextTick(function () {
+                                    var helpAnchor = _this.$refs.help;
+                                    var jQuery = window['$'];
+                                    jQuery(helpAnchor.$el).tooltip();
+                                });
+                            }
+                        }
                     }
                 },
                 template: "\n<label class=\"control-label\">\n    <slot />\n    <JavaScriptAnchor v-if=\"help\" ref=\"help\" class=\"help\" tabindex=\"-1\" data-toggle=\"tooltip\" data-placement=\"auto\" data-container=\"body\" data-html=\"true\" title=\"\" :data-original-title=\"help\">\n        <i class=\"fa fa-info-circle\"></i>\n    </JavaScriptAnchor>\n</label>"

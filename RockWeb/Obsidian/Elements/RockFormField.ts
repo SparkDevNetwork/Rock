@@ -14,32 +14,43 @@
 // limitations under the License.
 // </copyright>
 //
+
 import { defineComponent, PropType } from 'vue';
-import RockFormField from './RockFormField';
+import { newGuid } from '../Util/Guid';
+import { Field } from 'vee-validate';
+import RockLabel from './RockLabel';
 
 export default defineComponent({
-    name: 'TextBox',
+    name: 'RockFormField',
     components: {
-        RockFormField
+        Field,
+        RockLabel
     },
     props: {
         modelValue: {
+            required: true
+        },
+        name: {
             type: String as PropType<string>,
             required: true
         },
-        type: {
+        label: {
             type: String as PropType<string>,
-            default: 'text'
+            default: ''
         },
-        maxLength: {
-            type: Number as PropType<number>,
-            default: 524288
+        help: {
+            type: String as PropType<string>,
+            default: ''
         },
-        showCountDown: {
+        rules: {
+            type: String as PropType<string>,
+            default: ''
+        },
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
-        placeholder: {
+        formGroupClasses: {
             type: String as PropType<string>,
             default: ''
         }
@@ -49,23 +60,13 @@ export default defineComponent({
     ],
     data: function () {
         return {
+            uniqueId: `rock-${this.name}-${newGuid()}`,
             internalValue: this.modelValue
         };
     },
     computed: {
-        charsRemaining(): number {
-            return this.maxLength - this.modelValue.length;
-        },
-        countdownClass(): string {
-            if (this.charsRemaining >= 10) {
-                return 'badge-default';
-            }
-
-            if (this.charsRemaining >= 0) {
-                return 'badge-warning';
-            }
-
-            return 'badge-danger';
+        isRequired(): boolean {
+            return this.rules.includes('required');
         }
     },
     watch: {
@@ -77,19 +78,14 @@ export default defineComponent({
         }
     },
     template: `
-<RockFormField
-    v-model="internalValue"
-    formGroupClasses="rock-text-box"
-    name="textbox">
-    <template #pre>
-        <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
-            {{charsRemaining}}
-        </em>
-    </template>
-    <template #default="{uniqueId, field, errors, disabled}">
-        <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" />
-        </div>
-    </template>
-</RockFormField>`
+<Field v-model="internalValue" :name="label" :rules="rules" #default="{field, errors}">
+    <slot name="pre" />
+    <div class="form-group" :class="[formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']">
+        <RockLabel v-if="label || help" :for="uniqueId" :help="help">
+            {{label}}
+        </RockLabel>
+        <slot v-bind="{uniqueId, field, errors, disabled}" />
+    </div>
+    <slot name="post" />
+</Field>`
 });

@@ -94,6 +94,7 @@ public class BundleConfig
 
         // Add Obsidian scripts
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include(
+            "~/ObsidianJs/Obsidian.js",
             "~/ObsidianJs/Vendor/axios.js",
             "~/ObsidianJs/Vendor/mitt.js",
             "~/ObsidianJs/Vendor/system.js",
