@@ -182,6 +182,7 @@ namespace Rock.Tests.Shared
         public static class Shortcodes
         {
             public const string ShortcodeTest1 = "B60A5547-FA5C-49C3-AC14-D631E54208AE";
+            public const string ShortcodeTestSql1 = "E54149CC-06D0-4410-A0A3-5D7656F1F714";
         }
     }
 }
