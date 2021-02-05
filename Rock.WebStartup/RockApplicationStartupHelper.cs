@@ -637,7 +637,27 @@ namespace Rock.WebStartup
 
         private static void InitializeLavaShortcodes( ILavaEngine engine )
         {
-            // Register all of the shortcodes defined in the current database.
+            // Register shortcodes defined in the code base.
+            try
+            {
+                var shortcodeTypes = Rock.Reflection.FindTypes( typeof( IRockShortcode ) ).Select( a => a.Value ).ToList();
+
+                foreach ( var shortcodeType in shortcodeTypes )
+                {
+                    engine.RegisterStaticShortcode( shortcodeType.Name, ( shortcodeName ) =>
+                    {
+                        var shortcode = Activator.CreateInstance( shortcodeType ) as IRockShortcode;
+
+                        return shortcode;
+                    } );
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
+            // Register shortcodes defined in the current database.
             var shortCodes = LavaShortcodeCache.All();
 
             foreach ( var shortcode in shortCodes )
