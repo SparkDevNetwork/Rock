@@ -600,7 +600,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 .AsNoTracking()
                 .ToList()
                 .DistinctBy( a => a.Id )
-                .OrderBy( a => a.ToString() ).ToList();
+                .OrderBy( a => a.ToString( true ) ).ToList();
 
             // get any of the currently location ids, and reselect them if they still exist
             var selectedLocationIds = cblLocations.SelectedValues.AsIntegerList();
@@ -608,7 +608,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             foreach ( var location in locationList )
             {
-                var locationListItem = new ListItem( location.ToString(), location.Id.ToString() );
+                var locationListItem = new ListItem( location.ToString( true ), location.Id.ToString() );
                 locationListItem.Selected = selectedLocationIds.Contains( location.Id );
                 cblLocations.Items.Add( locationListItem );
             }
