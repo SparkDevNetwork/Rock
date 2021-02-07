@@ -2434,6 +2434,7 @@ Sys.Application.add_load(function () {
             var cookie = new HttpCookie( name )
             {
                 Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                HttpOnly = true,
                 Value = value
             };
 
