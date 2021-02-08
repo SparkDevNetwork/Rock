@@ -83,6 +83,7 @@ import Multiselect from 'vue-multiselect';
 import EventList from './components/EventList';
 import CalendarView from './components/CalendarView';
 import EventModal from './components/EventModal';
+import { getEvents } from './js/downloadEvents';
 
 export default {
   name: 'App',
@@ -131,21 +132,19 @@ export default {
       const startDate = new Date();
       const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1).toISOString();
 
-      const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
-        credentials: 'include',
-      });
-      const events = await response.json();
-
-      this.Events = events;
+      let response = getEvents(this.calendar, startDate.toISOString(), endDate)
+      
+      this.Events = await response;
     } catch (err) {
-
+      console.log(err)
     }
   },
   watch: {
     async focus(val) {
-      const daystoAdd = 30;
+      
+      const startDate = new Date(val).toISOString();
       let endDate = new Date(val.getFullYear(), val.getMonth() + 1, 1).toISOString();
-      const startDate = new Date(val);
+      
       switch (this.calendarType) {
         case 'day':
           endDate = new Date(startDate.setDate(startDate.getDate() + 1)).toISOString();
@@ -157,13 +156,14 @@ export default {
       try {
         let currentEvents = new Set()
         this.Events.map(e => currentEvents.add(e.OccurrenceId.toString() + ' ' + e.EventNextStartDate.StartDateTime.toString()))
-        console.log(currentEvents)
-        const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
-          credentials: 'include',
-        });
-        const events = await response.json();
+        
+        let response = getEvents(this.calendar, startDate, endDate)
+        // const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
+        //   credentials: 'include',
+        // });
+        const events = await response;
         const newEvents = [];
-        await events.forEach(
+         events.forEach(
           (newEvent) => {
             if (!currentEvents.has(newEvent.OccurrenceId.toString() + ' ' + newEvent.EventNextStartDate.StartDateTime.toString())) {
               newEvents.push(newEvent);
