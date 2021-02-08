@@ -89,7 +89,7 @@ namespace Rock.Lava
 
         public virtual void OnInitialize( string tagName, string markup, List<string> tokens )
         {
-            //
+            _attributesMarkup = markup;
         }
 
         /// <summary>
