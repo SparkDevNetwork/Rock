@@ -28,25 +28,4 @@ namespace Rock.Blocks
         /// <returns>A collection of string/object pairs.</returns>
         object GetConfigurationValues( RockClientType clientType );
     }
-
-    /// <summary>
-    /// Rock Client Type
-    /// </summary>
-    public enum RockClientType
-    {
-        /// <summary>
-        /// Web Forms
-        /// </summary>
-        WebForms = 0,
-
-        /// <summary>
-        /// Mobile
-        /// </summary>
-        Mobile = 1,
-
-        /// <summary>
-        /// Obsidian
-        /// </summary>
-        Obsidian = 2
-    }
 }

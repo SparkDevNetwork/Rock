@@ -21,6 +21,7 @@ using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
@@ -386,7 +387,7 @@ namespace Rock.Mobile
 
                     mobileBlockEntity.BlockCache = block;
                     mobileBlockEntity.PageCache = block.Page;
-                    mobileBlockEntity.RequestContext = new Net.RockRequestContext();
+                    mobileBlockEntity.RequestContext = new Net.RockRequestContext( RockClientType.Mobile );
 
                     var attributes = block.Attributes
                         .Select( a => a.Value )

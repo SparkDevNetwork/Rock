@@ -63,14 +63,6 @@ namespace Rock.Blocks
         /// </value>
         public RockRequestContext RequestContext { get; set; }
 
-        /// <summary>
-        /// Gets or sets the original (web page initial request) page parameters.
-        /// </summary>
-        /// <value>
-        /// The page parameters.
-        /// </value>
-        public Dictionary<string, string> OriginalPageParameters { get; set; }
-
         #endregion
 
         /// <summary>

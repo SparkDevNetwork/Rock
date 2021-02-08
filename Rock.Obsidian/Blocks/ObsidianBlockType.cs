@@ -51,14 +51,13 @@ namespace Rock.Obsidian.Blocks
         #region Methods
 
         /// <summary>
-        /// Returns the specified page parameter value.  The <see cref="Rock.Model.Page">page's</see> <see cref="Rock.Model.PageRoute"/>
-        /// is checked first and then query string values.  If a match is not found an empty string is returned.
+        /// Returns a page paramter.
         /// </summary>
-        /// <param name="name">A <see cref="System.String"/> representing the name of the specified page parameter.</param>
-        /// <returns>A <see cref="System.String"/> representing the value of the page parameter. If a match is not found, an empty string is returned.</returns>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
         public string PageParameter( string name )
         {
-            return OriginalPageParameters?.GetValueOrNull( name );
+            return RequestContext?.OriginalPageParameters?.GetValueOrNull( name );
         }
 
         /// <summary>

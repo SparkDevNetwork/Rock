@@ -26,7 +26,7 @@ using System.Web.Http;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using Rock.Blocks;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -203,7 +203,8 @@ namespace Rock.Rest.Controllers
                     return NotFound();
                 }
 
-                var requestContext = new Net.RockRequestContext( Request );
+                var clientType = rockBlock.GetRockClientType();
+                var requestContext = new Net.RockRequestContext( Request, clientType );
                 requestContext.AddContextEntitiesForPage( blockCache.Page );
 
                 //
@@ -227,7 +228,11 @@ namespace Rock.Rest.Controllers
                             if ( kvp.Key == "__context" )
                             {
                                 var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
-                                rockBlock.OriginalPageParameters = pageParameters;
+
+                                foreach ( var pageParam in pageParameters )
+                                {
+                                    rockBlock.RequestContext.OriginalPageParameters[pageParam.Key] = pageParam.Value;
+                                }
                             }
                             else
                             {

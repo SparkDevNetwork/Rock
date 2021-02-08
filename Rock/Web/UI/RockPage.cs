@@ -31,6 +31,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -1279,9 +1280,10 @@ Obsidian.whenReady(() => {{
                                     {
                                         var blockEntity = Activator.CreateInstance( block.BlockType.EntityType.GetEntityType() );
 
-                                        if ( blockEntity is Rock.Blocks.IRockBlockType rockBlockEntity )
+                                        if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
-                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
+                                            var clientType = rockBlockEntity.GetRockClientType();
+                                            rockBlockEntity.RequestContext = new RockRequestContext( Request, clientType );
                                             rockBlockEntity.RequestContext.AddContextEntitiesForPage( _pageCache );
 
                                             var wrapper = new RockBlockTypeWrapper
