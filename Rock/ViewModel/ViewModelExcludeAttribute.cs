@@ -16,7 +16,7 @@
 //
 using System;
 
-namespace Rock
+namespace Rock.ViewModel
 {
     /// <summary>
     /// Exclude the property from the generated view model

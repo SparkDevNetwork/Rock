@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {

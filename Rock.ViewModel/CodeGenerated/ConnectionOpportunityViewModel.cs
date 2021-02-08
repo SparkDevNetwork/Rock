@@ -112,6 +112,30 @@ namespace Rock.ViewModel
         public string PublicName { get; set; }
 
         /// <summary>
+        /// Gets or sets the ShowCampusOnTransfer.
+        /// </summary>
+        /// <value>
+        /// The ShowCampusOnTransfer.
+        /// </value>
+        public bool ShowCampusOnTransfer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ShowConnectButton.
+        /// </summary>
+        /// <value>
+        /// The ShowConnectButton.
+        /// </value>
+        public bool ShowConnectButton { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ShowStatusOnTransfer.
+        /// </summary>
+        /// <value>
+        /// The ShowStatusOnTransfer.
+        /// </value>
+        public bool ShowStatusOnTransfer { get; set; }
+
+        /// <summary>
         /// Gets or sets the Summary.
         /// </summary>
         /// <value>

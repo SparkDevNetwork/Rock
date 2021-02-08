@@ -78,6 +78,10 @@
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+      <Project>{90545602-ee57-44bb-a79d-3bda60b166b0}</Project>
+      <Name>Rock.ViewModel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>

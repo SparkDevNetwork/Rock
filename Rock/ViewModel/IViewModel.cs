@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -52,7 +51,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The attributes.
         /// </value>
-        Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+        Dictionary<string, object> Attributes { get; set; }
 
         /// <summary>
         /// Sets the properties from entity.
@@ -61,70 +60,6 @@ namespace Rock.ViewModel
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true );
-    }
-
-    /// <summary>
-    /// View Model Base
-    /// </summary>
-    /// <seealso cref="Rock.ViewModel.IViewModel" />
-    public abstract class ViewModelBase : IViewModel
-    {
-        /// <summary>
-        /// Gets or sets the Id.
-        /// </summary>
-        /// <value>
-        /// The Id.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Guid.
-        /// </summary>
-        /// <value>
-        /// The Guid.
-        /// </value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attributes.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        [TypeScriptType( "Record<string, AttributeValue> | null", "import AttributeValue from './AttributeValueViewModel.js';" )]
-        public Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
-
-        /// <summary>
-        /// Sets the properties from entity.
-        /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( entity == null )
-            {
-                return;
-            }
-
-            entity.CopyPropertiesTo( this );
-
-            if ( loadAttributes && entity is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() );
-            }
-        }
     }
 
     /// <summary>

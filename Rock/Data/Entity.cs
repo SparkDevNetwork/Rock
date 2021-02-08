@@ -18,13 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-using Rock.Model;
 using Rock.Tasks;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 
 namespace Rock.Data

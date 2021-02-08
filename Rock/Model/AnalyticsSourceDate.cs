@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using EntityFramework.Utilities;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {

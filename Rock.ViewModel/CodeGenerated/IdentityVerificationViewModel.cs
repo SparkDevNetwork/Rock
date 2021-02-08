@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class IdentityVerificationViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the FailedMatchAttemptCount.
+        /// </summary>
+        /// <value>
+        /// The FailedMatchAttemptCount.
+        /// </value>
+        public int? FailedMatchAttemptCount { get; set; }
+
+        /// <summary>
         /// Gets or sets the ForeignGuid.
         /// </summary>
         /// <value>

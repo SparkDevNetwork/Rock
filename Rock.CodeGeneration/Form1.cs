@@ -74,7 +74,7 @@ namespace Rock.CodeGeneration
             var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
             tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
-            tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName, "ViewModel" );
+            tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".ViewModel" );
             tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, projectName + "Web", "Obsidian", "ViewModels" );
             tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
