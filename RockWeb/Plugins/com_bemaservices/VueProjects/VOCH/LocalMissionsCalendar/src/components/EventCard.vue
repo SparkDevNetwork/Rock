@@ -21,7 +21,7 @@
         @load="showTitle = false"
         @error="showTitle = true"
         width="100%"
-      :src="Event.EventPhoto ? Event.EventPhoto.Url : ''"
+      :src="Event.EventPhoto ? `https://voxchurch.org/GetImage.ashx?id=${Event.EventPhoto.Id}` : ''"
       >
 
       </v-img>
