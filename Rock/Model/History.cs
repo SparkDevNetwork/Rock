@@ -1597,7 +1597,7 @@ namespace Rock.Model
         {
             if ( location != null )
             {
-                return location.ToString();
+                return location.ToString( true );
             }
 
             if ( locationId.HasValue )
@@ -1605,7 +1605,7 @@ namespace Rock.Model
                 var loc = new LocationService( rockContext ).Get( locationId.Value );
                 if ( loc != null )
                 {
-                    return loc.ToString();
+                    return loc.ToString( true );
                 }
             }
 

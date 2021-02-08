@@ -104,7 +104,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString() ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
+            return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString( true ) ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
         }
 
         #endregion

@@ -788,7 +788,7 @@ $('#{0}').tooltip();
                     .ThenBy( a => a.Schedule.GetNextStartDateTime( occurrenceDate ) )
                     .ThenBy( a => a.Schedule.Name )
                     .ThenBy( a => a.Schedule.Id )
-                    .ThenBy( a => a.LocationId.HasValue ? a.Location.ToString() : string.Empty )
+                    .ThenBy( a => a.LocationId.HasValue ? a.Location.ToString( true ) : string.Empty )
                     .ToList();
 
                 gGroupPreferenceAssignments.DataKeyNames = new string[1] { "Id" };
@@ -1065,7 +1065,7 @@ $('#{0}').tooltip();
             lScheduleName.Text = groupMemberAssignment.Schedule.Name;
             if ( groupMemberAssignment.LocationId.HasValue )
             {
-                lLocationName.Text = groupMemberAssignment.Location.ToString();
+                lLocationName.Text = groupMemberAssignment.Location.ToString( true );
             }
             else
             {
