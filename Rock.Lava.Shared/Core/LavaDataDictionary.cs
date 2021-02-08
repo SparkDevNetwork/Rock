@@ -34,7 +34,7 @@ namespace Rock.Lava
 
         private readonly Func<LavaDataDictionary, string, object> _lambda;
         private readonly Dictionary<string, object> _nestedDictionary = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
-        
+
         #endregion
 
         #region Static construction methods
@@ -113,7 +113,7 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        private object GetValue( string key )
+        public object GetValue( string key )
         {
             if ( _nestedDictionary.ContainsKey( key ) )
             {

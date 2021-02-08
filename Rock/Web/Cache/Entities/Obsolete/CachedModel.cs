@@ -415,7 +415,7 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public object GetValue( object key )
+        public object GetValue( string key )
         {
             return this[key];
         }
@@ -511,7 +511,7 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public virtual bool ContainsKey( object key )
+        public virtual bool ContainsKey( string key )
         {
             string attributeKey = key.ToStringSafe();
 
