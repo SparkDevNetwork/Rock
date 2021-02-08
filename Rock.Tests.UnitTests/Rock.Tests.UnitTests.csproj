@@ -106,7 +106,7 @@
     <Compile Include="Rock\Lava\Filters\SerializationFilterTests.cs" />
     <Compile Include="Rock\Lava\Filters\TextFilterTests.cs" />
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
-    <Compile Include="Rock\Lava\ObjectPropertyTests.cs" />
+    <Compile Include="Rock\Lava\DynamicObjectTests.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
