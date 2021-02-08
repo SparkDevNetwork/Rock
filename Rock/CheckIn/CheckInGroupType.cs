@@ -224,7 +224,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public object GetValue(object key)
+        public object GetValue(string key)
         {
             return this[key];
         }
@@ -256,7 +256,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public bool ContainsKey( string key )
         {
             var additionalKeys = new List<string> { "LastCheckIn", "Groups" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )

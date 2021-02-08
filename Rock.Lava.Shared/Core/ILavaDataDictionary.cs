@@ -29,14 +29,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        object GetValue( object key );
+        object GetValue( string key );
 
         /// <summary>
         /// Returns a flag indicating if this data object contains a value associated with the specified key.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        bool ContainsKey( object key );
+        bool ContainsKey( string key );
 
         /// <summary>
         /// Gets a list of the keys defined by this data object.
