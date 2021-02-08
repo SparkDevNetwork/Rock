@@ -50,7 +50,6 @@ namespace Rock.Lava.Fluid
 
         private static IList<AssignStatement> _assignStatements;
 
-        public event EventHandler<FluidElementParseEventArgs> ElementParsing;
         public event EventHandler<FluidElementParseEventArgs> ElementParsed;
 
         public FluidParserEx( LanguageData languageData, Dictionary<string, ITag> tags, Dictionary<string, ITag> blocks )
@@ -1373,7 +1372,6 @@ namespace Rock.Lava.Fluid
     /// </summary>
     internal interface IFluidParserEx : IFluidParser
     {
-        event EventHandler<FluidElementParseEventArgs> ElementParsing;
         event EventHandler<FluidElementParseEventArgs> ElementParsed;
     }
 
