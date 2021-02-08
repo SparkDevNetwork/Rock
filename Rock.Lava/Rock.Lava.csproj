@@ -214,6 +214,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Core\Blocks\LavaBlockInfo.cs" />
+    <Compile Include="Core\ILiquidFrameworkDataObjectProxy.cs" />
     <Compile Include="Core\LavaSecurityHelper.cs" />
     <Compile Include="Core\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Core\Shortcodes\DynamicShortcode.cs" />
