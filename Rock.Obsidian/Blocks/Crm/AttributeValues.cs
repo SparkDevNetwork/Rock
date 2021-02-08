@@ -112,7 +112,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetConfigurationValues()
+        public override object GetObsidianConfigurationValues()
         {
             return new
             {

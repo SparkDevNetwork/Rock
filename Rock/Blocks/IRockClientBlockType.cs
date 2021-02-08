@@ -23,25 +23,30 @@ namespace Rock.Blocks
     public interface IRockClientBlockType : IRockBlockType
     {
         /// <summary>
-        /// Gets the required client version.
-        /// </summary>
-        /// <value>
-        /// The required client version.
-        /// </value>
-        string RequiredClientVersion { get; }
-
-        /// <summary>
-        /// Gets the client block identifier.
-        /// </summary>
-        /// <value>
-        /// The client block identifier.
-        /// </value>
-        string ClientBlockIdentifier { get; }
-
-        /// <summary>
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <returns>A collection of string/object pairs.</returns>
-        object GetConfigurationValues();
+        object GetConfigurationValues( RockClientType clientType );
+    }
+
+    /// <summary>
+    /// Rock Client Type
+    /// </summary>
+    public enum RockClientType
+    {
+        /// <summary>
+        /// Web Forms
+        /// </summary>
+        WebForms = 0,
+
+        /// <summary>
+        /// Mobile
+        /// </summary>
+        Mobile = 1,
+
+        /// <summary>
+        /// Obsidian
+        /// </summary>
+        Obsidian = 2
     }
 }

@@ -14,28 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Defines the properties and methods that all mobile blocks must implement.
+    /// Obsidian Block Type
     /// </summary>
-    /// <seealso cref="Rock.Blocks.IRockBlockType" />
-    public interface IRockMobileBlockType : IRockClientBlockType
+    public interface IObsidianBlockType : IRockClientBlockType
     {
         /// <summary>
-        /// Gets the required mobile application binary interface version.
+        /// Gets the client block identifier.
         /// </summary>
         /// <value>
-        /// The required mobile application binary interface version.
+        /// The client block identifier.
         /// </value>
-        int RequiredMobileAbiVersion { get; }
-
-        /// <summary>
-        /// Gets the class name of the mobile block to use during rendering on the device.
-        /// </summary>
-        /// <value>
-        /// The class name of the mobile block to use during rendering on the device
-        /// </value>
-        string MobileBlockType { get; }
+        string BlockFileUrl { get; }
     }
 }

@@ -26,7 +26,7 @@ namespace Rock.Obsidian.Blocks
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="IRockClientBlockType" />
-    public abstract class ObsidianBlockType : RockBlockType, IRockClientBlockType
+    public abstract class ObsidianBlockType : RockBlockType, IObsidianBlockType
     {
         #region Properties
 
@@ -36,7 +36,7 @@ namespace Rock.Obsidian.Blocks
         /// <value>
         /// The client block identifier.
         /// </value>
-        public virtual string ClientBlockIdentifier
+        public virtual string BlockFileUrl
         {
             get
             {
@@ -45,14 +45,6 @@ namespace Rock.Obsidian.Blocks
                 return $"/ObsidianJs/Generated/Blocks/{lastNamespace}/{type.Name}";
             }
         }
-
-        /// <summary>
-        /// Gets the required client version.
-        /// </summary>
-        /// <value>
-        /// The required client version.
-        /// </value>
-        public string RequiredClientVersion => string.Empty;
 
         #endregion Properties
 
@@ -70,12 +62,29 @@ namespace Rock.Obsidian.Blocks
         }
 
         /// <summary>
+        /// Gets the property values that will be sent to the block.
+        /// </summary>
+        /// <param name="clientType"></param>
+        /// <returns>
+        /// A collection of string/object pairs.
+        /// </returns>
+        public virtual object GetConfigurationValues( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Obsidian )
+            {
+                return GetObsidianConfigurationValues();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the property values that will be sent to the browser.
         /// </summary>
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetConfigurationValues()
+        public virtual object GetObsidianConfigurationValues()
         {
             return null;
         }
@@ -94,10 +103,10 @@ $@"<div id=""{rootElementId}""></div>
 Obsidian.whenReady(() => {{
     System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
         indexModule.initializeBlock({{
-            blockFileUrl: '{ClientBlockIdentifier}',
+            blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',
-            configurationValues: {JavaScript.ToJavaScriptObject( GetConfigurationValues() ?? new object() )}
+            configurationValues: {JavaScript.ToJavaScriptObject( GetObsidianConfigurationValues() ?? new object() )}
         }});
     }});
 }});

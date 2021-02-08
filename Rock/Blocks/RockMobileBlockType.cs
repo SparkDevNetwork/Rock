@@ -50,6 +50,20 @@ namespace Rock.Blocks
         #region Methods
 
         /// <summary>
+        /// Gets the property values that will be sent to the block.
+        /// </summary>
+        /// <returns>A collection of string/object pairs.</returns>
+        public object GetConfigurationValues( RockClientType clientType )
+        {
+            if ( clientType == RockClientType.Mobile )
+            {
+                return GetMobileConfigurationValues();
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
         /// </summary>
         /// <returns>

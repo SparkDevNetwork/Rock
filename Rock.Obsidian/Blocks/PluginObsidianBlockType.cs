@@ -40,7 +40,7 @@ namespace Rock.Obsidian.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string ClientBlockIdentifier
+        public override string BlockFileUrl
         {
             get
             {
