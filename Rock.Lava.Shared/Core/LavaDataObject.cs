@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -25,24 +26,323 @@ using Rock.Data;
 namespace Rock.Lava
 {
     /// <summary>
-    /// LavaDataObject can be as a base class for C# classes that need to be available to Lava.
-    /// It can also be used to create a Lava Proxy for C# objects that cannot directly inherit from this class.
+    /// A container for exposing data that should be accessible to a Lava template.
+    /// This Type can be used as a base class for a derived Type, as a proxy for an existing object, or
+    /// as a dictionary of values populated dynamically at runtime.
+    /// </summary>
+    public class LavaDataObject : ILavaDataDictionary, IDictionary<string, object>
+    {
+        // The internal implementation of the DynamicObject that is used to manage access to the LavaDataObject properties.
+        // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
+        // for Lava developers looking to implement a simple Lava data source.
+        private LavaDataObjectInternal _lavaDataObjectInternal;
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaDataObject"/> class as a Lava-accessible dictionary.
+        /// </summary>
+        public LavaDataObject()
+        {
+            _lavaDataObjectInternal = new LavaDataObjectInternal( this );
+
+            _lavaDataObjectInternal.TryGetMemberCallback = OnTryGetValue;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaDataObject"/> class as a proxy that makes the properties of the supplied object available to Lava.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        public LavaDataObject( object obj )
+        {
+            _lavaDataObjectInternal = new LavaDataObjectInternal( obj );
+
+            _lavaDataObjectInternal.TryGetMemberCallback = OnTryGetValue;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Override this method to provide a custom implementation for retrieving a property value from this data object.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="result"></param>
+        /// <returns>True if the value was resolved.</returns>
+        [LavaIgnore]
+        protected virtual bool OnTryGetValue( string key, out object result )
+        {
+            if ( key == null )
+            {
+                result = null;
+                return false;
+            }
+
+            return _lavaDataObjectInternal.GetProperty( key.ToString(), out result );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object this[string key]
+        {
+            get
+            {
+                return GetValue( key );
+            }
+            set
+            {
+                _lavaDataObjectInternal[key] = value;
+            }
+        }
+
+        /// <summary>
+        /// Try to get the value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns>True if a value is available for the specified key.</returns>
+        public bool TryGetValue( string key, out object value )
+        {
+            return _lavaDataObjectInternal.TryGetMember( key, out value );
+        }
+
+        #region ILavaDataDictionary Implementation
+
+        /// <summary>
+        /// Gets the collection of available keys.
+        /// </summary>
+        /// <value>
+        /// The available keys.
+        /// </value>
+        [LavaIgnore]
+        public virtual List<string> AvailableKeys
+        {
+            get
+            {
+                return _lavaDataObjectInternal.GetDynamicMemberNames().ToList();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the object property dictionary contains the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaIgnore]
+        public bool ContainsKey( string key )
+        {
+            if ( AvailableKeys.Contains( key ) )
+            {
+                return true;
+            }
+
+            // As a fallback, see if a value can be retrieved for this key.
+            // This code will only execute if the property does not exist,
+            // or an override for OnTryGetValue exists without a corresponding override for AvailableKeys.
+            // In this situation, overriding the AvailableKeys method is a more efficient implementation.
+            object discardedValue;
+
+            return TryGetValue( key, out discardedValue );
+        }
+
+        /// <summary>
+        /// Get the value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        [LavaIgnore]
+        public object GetValue( string key )
+        {
+            object result;
+
+            OnTryGetValue( key, out result );
+
+            return result;
+        }
+
+        #endregion
+
+        #region IDictionary<string, object> implementation.
+
+        ICollection<string> IDictionary<string, object>.Keys
+        {
+            get
+            {
+                return this.AvailableKeys;
+            }
+        }
+
+        ICollection<object> IDictionary<string, object>.Values
+        {
+            get
+            {
+                var dictionary = GetValueDictionary();
+
+                return dictionary.Values;
+            }
+        }
+
+        bool IDictionary<string, object>.ContainsKey( string key )
+        {
+            return this.ContainsKey( key );
+            // AvailableKeys.Contains( key );
+        }
+
+        void IDictionary<string, object>.Add( string key, object value )
+        {
+            this[key] = value;
+        }
+
+        bool IDictionary<string, object>.Remove( string key )
+        {
+            return _lavaDataObjectInternal.DynamicProperties.Remove( key );
+        }
+
+        bool IDictionary<string, object>.TryGetValue( string key, out object value )
+        {
+            return _lavaDataObjectInternal.TryGetMember( key, out value );
+        }
+
+        #endregion
+
+        #region ICollection implementation
+
+        int ICollection<KeyValuePair<string, object>>.Count
+        {
+            get
+            {
+                return _lavaDataObjectInternal.GetDynamicMemberNames().Count();
+            }
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Add( KeyValuePair<string, object> item )
+        {
+            this[item.Key] = item.Value;
+        }
+
+        void ICollection<KeyValuePair<string, object>>.Clear()
+        {
+            _lavaDataObjectInternal.DynamicProperties.Clear();
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Contains( KeyValuePair<string, object> item )
+        {
+            return _lavaDataObjectInternal.DynamicProperties.Contains( item );
+        }
+
+        void ICollection<KeyValuePair<string, object>>.CopyTo( KeyValuePair<string, object>[] array, int arrayIndex )
+        {
+            _lavaDataObjectInternal.DynamicProperties.CopyTo( array, arrayIndex );
+        }
+
+        bool ICollection<KeyValuePair<string, object>>.Remove( KeyValuePair<string, object> item )
+        {
+            return _lavaDataObjectInternal.DynamicProperties.Remove( item );
+        }
+
+        #endregion
+
+        #region IEnumerable implementation
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetValueDictionary().GetEnumerator();
+        }
+
+        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        {
+            return this.GetValueDictionary().GetEnumerator();
+        }
+
+        #endregion
+
+        private Dictionary<string, object> GetValueDictionary()
+        {
+            var memberNames = _lavaDataObjectInternal.GetDynamicMemberNames();
+
+            var dictionary = new Dictionary<string, object>( _lavaDataObjectInternal.DynamicProperties );
+
+            foreach ( var memberName in memberNames )
+            {
+                if ( dictionary.ContainsKey( memberName ) )
+                {
+                    dictionary[memberName] = this[memberName];
+                }
+                else
+                {
+                    dictionary.Add( memberName, this[memberName] );
+                }
+            }
+
+            return dictionary;
+
+        }
+    }
+
+    /// <summary>
+    /// An implementation of a DynamicObject that can be used to expose the properties of an object to Lava.
+    /// This Type can either be used as a base class for a Type whose properties should be made visible in Lava,
+    /// or as a proxy for an object that does not inherit from this base class.
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class LavaDataObject : DynamicObject, ILavaDataDictionary, IDictionary<string, object>
+    internal class LavaDataObjectInternal : DynamicObject
     {
+        public delegate bool TryGetValueDelegate( string memberName, out object memberValue );
+
         private Dictionary<string, object> _members = new Dictionary<string, object>();
 
-        private object _instance;
+        private object _targetObject;
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaDataObject"/> class as a proxy that makes the target object available to Lava.
+        /// </summary>
+        /// <param name="obj">The target object.</param>
+        public LavaDataObjectInternal( object obj )
+        {
+            _targetObject = obj;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the collection of dynamic properties defined for this instance.
+        /// </summary>
+        public IDictionary<string, object> DynamicProperties
+        {
+            get
+            {
+                return _members;
+            }
+        }
+
+        /// <summary>
+        /// Defines a method that can be used to implement a custom member lookup.
+        /// </summary>
+        public TryGetValueDelegate TryGetMemberCallback { get; set; }
 
         private Dictionary<string, PropertyInfo> InstancePropertyLookup
         {
             get
             {
-                if ( _instancePropertyInfoLookup == null && _instance != null )
+                if ( _instancePropertyInfoLookup == null && _targetObject != null )
                 {
                     var rockDynamicType = typeof( LavaDataObject );
-                    _instancePropertyInfoLookup = _instance.GetType().GetProperties().Where( a => a.DeclaringType != rockDynamicType ).ToDictionary( k => k.Name, v => v );
+                    _instancePropertyInfoLookup = _targetObject.GetType().GetProperties().Where( a => a.DeclaringType != rockDynamicType ).ToDictionary( k => k.Name, v => v );
                 }
 
                 return _instancePropertyInfoLookup;
@@ -52,23 +352,6 @@ namespace Rock.Lava
         private Dictionary<string, PropertyInfo> _instancePropertyInfoLookup;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LavaDataObject"/> class.
-        /// </summary>
-        public LavaDataObject()
-        {
-            _instance = this;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LavaDataObject"/> class as a proxy that makes the object available to lava
-        /// </summary>
-        /// <param name="obj">The object.</param>
-        public LavaDataObject( object obj )
-        {
-            _instance = obj;
-        }
-
-        /// <summary>
         /// Return a string representation of the dynamic object.
         /// </summary>
         /// <returns></returns>
@@ -76,13 +359,13 @@ namespace Rock.Lava
         {
             // If we are wrapping an object instance, return the ToString() for the object,
             // otherwise return the first value in the property dictionary.
-            if ( _instance != null )
+            if ( _targetObject != null )
             {
-                if ( _instance == this )
+                if ( _targetObject == this )
                 {
                     return null;
                 }
-                return _instance.ToString();
+                return _targetObject.ToString();
             }
 
             if ( _members != null )
@@ -114,6 +397,50 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Provides the implementation for operations that get member values.
+        /// </summary>
+        /// <param name="binder">The name of the member on which the dynamic operation is performed.
+        /// <param name="result">The result of the get operation. For example, if the method is called for a property, you can assign the property value to <paramref name="result" />.</param>
+        /// <returns>
+        /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a run-time exception is thrown.)
+        /// </returns>
+        public bool TryGetMember( string memberName, out object result )
+        {
+            // If a custom member lookup is defined, try to get the member value from there first.
+            // This feature is implemented as a delegate method here rather than simply allowing the user to override TryGetMember,
+            // because we do not want to expose the many other public methods of the DynamicObject implementation to the caller.
+            if ( TryGetMemberCallback != null )
+            {
+                var exists = TryGetMemberCallback( memberName, out result );
+
+                if ( exists )
+                {
+                    return true;
+                }
+            }
+
+            // Check the dynamic dictionary of values for the member.
+            if ( _members.Keys.Contains( memberName ) )
+            {
+                result = _members[memberName];
+                return true;
+            }
+
+            // Check for public properties defined on the target object.
+            try
+            {
+                return GetProperty( _targetObject, memberName, out result );
+            }
+            catch
+            {
+            }
+
+            // Failed to find the property, so return nothing.
+            result = null;
+            return false;
+        }
+
+        /// <summary>
         /// Provides the implementation for operations that set member values. Classes derived from the <see cref="T:System.Dynamic.DynamicObject" /> class can override this method to specify dynamic behavior for operations such as setting a value for a property.
         /// </summary>
         /// <param name="binder">Provides information about the object that called the dynamic operation. The binder.Name property provides the name of the member to which the value is being assigned. For example, for the statement sampleObject.SampleProperty = "Test", where sampleObject is an instance of the class derived from the <see cref="T:System.Dynamic.DynamicObject" /> class, binder.Name returns "SampleProperty". The binder.IgnoreCase property specifies whether the member name is case-sensitive.</param>
@@ -124,7 +451,7 @@ namespace Rock.Lava
         public override bool TrySetMember( SetMemberBinder binder, object value )
         {
             // first check to see if there's a native property to set
-            if ( _instance != null )
+            if ( _targetObject != null )
             {
                 try
                 {
@@ -143,14 +470,19 @@ namespace Rock.Lava
             return true;
         }
 
+        public bool GetProperty( string propertyPathName, out object result )
+        {
+            return GetProperty( _targetObject, propertyPathName, out result );
+        }
+
         /// <summary>
-        /// Gets the property Value of the object's property as specified by propertyPathName.
-        /// If the object is a dictionary, retrieves the value associated with the matching key.
+        /// Gets the value of the target object property as specified by propertyPathName.
+        /// If the target object is a dictionary, retrieves the value associated with the matching key.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
         /// <param name="propertyPathName">The named path to the property, which may include references to nested properties in a dot-separated list.</param>
         /// <returns></returns>
-        protected bool GetProperty( object rootObj, string propertyPathName, out object result )
+        public bool GetProperty( object rootObj, string propertyPathName, out object result )
         {
             if ( string.IsNullOrWhiteSpace( propertyPathName ) )
             {
@@ -181,10 +513,10 @@ namespace Rock.Lava
                     InstancePropertyLookup.TryGetValue( propName, out prop );
                     getPropertyValue = true;
                 }
-                else if ( obj is LavaDataObject dataObject )
+                else if ( obj is LavaDataObjectInternal dataObject )
                 {
                     // Get the property value for the dynamic object.
-                    dataObject.GetProperty( obj, propName, out obj );
+                    dataObject.GetProperty( propName, out obj );
                     prop = null;
                     getPropertyValue = false;
                 }
@@ -234,7 +566,7 @@ namespace Rock.Lava
 
             if ( prop != null )
             {
-                prop.SetValue( _instance, value, null );
+                prop.SetValue( _targetObject, value, null );
                 return true;
             }
 
@@ -261,7 +593,7 @@ namespace Rock.Lava
 
                 // try reflection on instanceType
                 object result = null;
-                if ( GetProperty( _instance, key, out result ) )
+                if ( GetProperty( _targetObject, key, out result ) )
                 {
                     return result;
                 }
@@ -304,11 +636,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public IEnumerable<KeyValuePair<string, object>> GetProperties( bool includeInstanceProperties = false )
         {
-            if ( includeInstanceProperties && _instance != null )
+            if ( includeInstanceProperties && _targetObject != null )
             {
                 foreach ( var prop in this.InstancePropertyLookup.Values )
                 {
-                    yield return new KeyValuePair<string, object>( prop.Name, prop.GetValue( _instance, null ) );
+                    yield return new KeyValuePair<string, object>( prop.Name, prop.GetValue( _targetObject, null ) );
                 }
             }
 
@@ -341,268 +673,5 @@ namespace Rock.Lava
             return propertyNames;
         }
 
-        /// <summary>
-        /// Provides the implementation for operations that get member values. Classes derived from the <see cref="T:System.Dynamic.DynamicObject" /> class can override this method to specify dynamic behavior for operations such as getting a value for a property.
-        /// </summary>
-        /// <param name="binder">Provides information about the object that called the dynamic operation. The binder.Name property provides the name of the member on which the dynamic operation is performed. For example, for the Console.WriteLine(sampleObject.SampleProperty) statement, where sampleObject is an instance of the class derived from the <see cref="T:System.Dynamic.DynamicObject" /> class, binder.Name returns "SampleProperty". The binder.IgnoreCase property specifies whether the member name is case-sensitive.</param>
-        /// <param name="result">The result of the get operation. For example, if the method is called for a property, you can assign the property value to <paramref name="result" />.</param>
-        /// <returns>
-        /// true if the operation is successful; otherwise, false. If this method returns false, the run-time binder of the language determines the behavior. (In most cases, a run-time exception is thrown.)
-        /// </returns>
-        public virtual bool TryGetMember( string memberName, out object result )
-        {
-            // first check the dictionary for member
-            if ( _members.Keys.Contains( memberName ) )
-            {
-                result = _members[memberName];
-                return true;
-            }
-
-            // next check for public properties via Reflection
-            try
-            {
-                return GetProperty( _instance, memberName, out result );
-            }
-            catch
-            {
-            }
-
-            // failed to retrieve a property
-            result = null;
-            return false;
-        }
-
-        #region ILiquid Implementation
-
-        /// <summary>
-        /// Gets the available keys (for debugging info).
-        /// </summary>
-        /// <value>
-        /// The available keys.
-        /// </value>
-        [LavaIgnore]
-        public List<string> AvailableKeys
-        {
-            get
-            {
-                return GetDynamicMemberNames().ToList();
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public object this[object key]
-        {
-            get
-            {
-                var propertyKey = ( key == null ) ? string.Empty : key.ToString();
-                return this[propertyKey];
-            }
-        }
-
-        /// <summary>
-        /// Determines whether [contains] [the specified item].
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="includeInstanceProperties">if set to <c>true</c> [include instance properties].</param>
-        /// <returns></returns>
-        public bool Contains( KeyValuePair<string, object> item, bool includeInstanceProperties = false )
-        {
-            bool res = _members.ContainsKey( item.Key );
-            if ( res )
-            {
-                return _members[item.Key].Equals( item.Value );
-            }
-
-            if ( includeInstanceProperties && _instance != null )
-            {
-                return InstancePropertyLookup.ContainsKey( item.Key );
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines whether the object property dictionary contains the specified key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public bool ContainsKey( object key )
-        {
-            return this.GetDynamicMemberNames().Contains( key.ToString() );
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Gets a dictionary populated with the properties of the dynamic object.
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, object> AsDictionary()
-        {
-            /* [2020-10-01] DJL
-             * Although it would be preferable to implement the IDictionary<string, object> interface directly,
-             * doing so breaks the use of the RockDynamic class to store an individual row in the result set of a LINQ query.
-             * LINQ does not support the use of an IEnumerable to receive an individual row of data, and
-             * this technique is used in a number of places in the Rock codebase.
-             */
-            var memberNames = this.GetDynamicMemberNames();
-
-            var dictionary = new Dictionary<string, object>( _members );
-
-            foreach ( var memberName in memberNames )
-            {
-                if ( dictionary.ContainsKey( memberName ) )
-                {
-                    dictionary[memberName] = this[memberName];
-                }
-                else
-                {
-                    dictionary.Add( memberName, this[memberName] );
-                }
-            }
-
-            return dictionary;
-        }
-
-        /// <summary>
-        /// Get the value associated with the specified key.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public object GetValue( object key )
-        {
-            object value;
-
-            if ( key == null )
-            {
-                return null;
-            }
-
-            GetProperty( this, key.ToString(), out value );
-
-            return value;
-        }
-
-        #region IDictionary<string, object> implementation.
-
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return this.AvailableKeys;
-            }
-        }
-
-        public ICollection<object> Values
-        {
-            get
-            {
-                var dictionary = GetValueDictionary();
-
-                return dictionary.Values;
-            }
-        }
-
-        public int Count
-        {
-            get
-            {
-                return this.GetDynamicMemberNames().Count();
-            }
-        }
-
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        public bool ContainsKey( string key )
-        {
-            return this.GetDynamicMemberNames().Contains( key );
-        }
-
-        public void Add( string key, object value )
-        {
-            this[key] = value;
-        }
-
-        public bool Remove( string key )
-        {
-            return ( (IDictionary<string, object>)_members ).Remove( key );
-        }
-
-        public bool TryGetValue( string key, out object value )
-        {
-            return this.TryGetMember( key, out value );
-        }
-
-        public void Add( KeyValuePair<string, object> item )
-        {
-            this[item.Key] = item.Value;
-        }
-
-        public void Clear()
-        {
-            ( (IDictionary<string, object>)_members ).Clear();
-        }
-
-        public bool Contains( KeyValuePair<string, object> item )
-        {
-            return ( (IDictionary<string, object>)_members ).Contains( item );
-        }
-
-        public void CopyTo( KeyValuePair<string, object>[] array, int arrayIndex )
-        {
-            ( (IDictionary<string, object>)_members ).CopyTo( array, arrayIndex );
-        }
-
-        public bool Remove( KeyValuePair<string, object> item )
-        {
-            return ( (IDictionary<string, object>)_members ).Remove( item );
-        }
-
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-        {
-            return this.GetValueDictionary().GetEnumerator();
-        }
-
-        private Dictionary<string, object> GetValueDictionary()
-        {
-            var memberNames = this.GetDynamicMemberNames();
-
-            var dictionary = new Dictionary<string, object>( _members );
-
-            foreach ( var memberName in memberNames )
-            {
-                if ( dictionary.ContainsKey( memberName ) )
-                {
-                    dictionary[memberName] = this[memberName];
-                }
-                else
-                {
-                    dictionary.Add( memberName, this[memberName] );
-                }
-            }
-
-            return dictionary;
-
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-
-        #endregion
     }
 }
