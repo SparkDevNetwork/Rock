@@ -670,23 +670,55 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Return this location as a string. Set preferName to true
+        /// to return this location.Name (if it has one). Otherwise,
+        /// it will try to show the Full Address first.
+        /// </summary>
+        /// <param name="preferName">if set to <c>true</c> [prefer name].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public string ToString( bool preferName )
+        {
+            if ( preferName && this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
+            }
+
+            return this.ToString();
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> containing the Location's address that represents this instance.
+        /// If this location has a street address, that will be returned, otherwise the Name will be returned.
+        /// Use <see cref="ToString(bool)"/> to prefer returning the location's name vs address
         /// </summary>
         /// <returns>
         /// A <see cref="System.String"/> containing the Location's address that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            if ( this.Name.IsNotNullOrWhiteSpace() )
-            {
-                return this.Name;
-            }
-
             string fullAddress = GetFullStreetAddress();
 
             if ( fullAddress.IsNotNullOrWhiteSpace() )
             {
+                /* 
+                    02/05/2021 MDP 
+
+                    Even if Location.Name has a value, return the Full Street Address
+                    for ToString() if there is a full address. This way to don't change
+                    the behavior of how this has worked before.
+
+                    UIs, etc, that should be showing Location.Name should use Location.Name instead
+                    of relying on ToString().
+                 */
+
                 return fullAddress;
+            }
+
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
             }
 
             if ( this.GeoPoint != null )
