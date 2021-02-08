@@ -142,11 +142,11 @@ export default defineComponent({
     },
     template:
 `<div class="obsidian-block">
-    <Alert v-if="!blockComponent" class="alert-danger">
+    <Alert v-if="!blockComponent" alertType="danger">
         <strong>Not Found</strong>
         Could not find block component: "{{this.config.blockFileUrl}}"
     </Alert>
-    <Alert v-if="error" :dismissible="true" @dismiss="clearError" class="alert-danger">
+    <Alert v-if="error" alertType="danger" :dismissible="true" @dismiss="clearError">
         <strong>Uncaught Error</strong>
         {{error}}
     </Alert>

@@ -245,7 +245,7 @@ export default defineComponent({
         <DefinedValuePicker :definedTypeGuid="frequencyDefinedTypeGuid" v-model="args.FrequencyValueGuid" label="Frequency" :showBlankItem="false" />
         <DatePicker label="Process Gift On" v-model="args.GiftDate" />
         <Alert validation v-if="page1Error">{{page1Error}}</Alert>
-        <RockButton primary @click="onPageOneSubmit">Give Now</RockButton>
+        <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>
     </template>
     <template v-else-if="pageIndex === 2">
         <div class="amount-summary">
@@ -261,8 +261,8 @@ export default defineComponent({
                 <component :is="gatewayControl" :settings="gatewayControlSettings" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
             </div>
             <div class="navigation actions">
-                <RockButton default @click="goBack" :disabled="doGatewayControlSubmit">Back</RockButton>
-                <RockButton primary class="pull-right" @click="onPageTwoSubmit" :disabled="doGatewayControlSubmit">Next</RockButton>
+                <RockButton btnType="default" @click="goBack" :disabled="doGatewayControlSubmit">Back</RockButton>
+                <RockButton btnType="primary" class="pull-right" @click="onPageTwoSubmit" :disabled="doGatewayControlSubmit">Next</RockButton>
             </div>
         </div>
     </template>
@@ -281,8 +281,8 @@ export default defineComponent({
             <TextBox v-model="args.LastName" placeholder="Last Name" class="margin-b-sm" />
         </template>
         <div class="navigation actions margin-t-md">
-            <RockButton default @click="goBack">Back</RockButton>
-            <RockButton primary class="pull-right" @click="onPageThreeSubmit">Finish</RockButton>
+            <RockButton @click="goBack">Back</RockButton>
+            <RockButton btnType="primary" class="pull-right" @click="onPageThreeSubmit">Finish</RockButton>
         </div>
     </template>
     <template v-else-if="pageIndex === 4">

@@ -18,7 +18,7 @@ import { getFieldTypeComponent } from '../Fields/Index.js';
 import { Guid } from '../Util/Guid.js';
 import { Component, defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
-// Import and assign TextField because it is the callback
+// Import and assign TextField because it is the fallback
 import TextField from '../Fields/TextField.js';
 
 // Import other field types so they are registered and available upon dynamic request

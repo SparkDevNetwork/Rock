@@ -1,6 +1,6 @@
 System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1;
+    var vue_js_1, AlertType;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -9,6 +9,16 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
             }
         ],
         execute: function () {
+            (function (AlertType) {
+                AlertType["default"] = "default";
+                AlertType["success"] = "success";
+                AlertType["info"] = "info";
+                AlertType["danger"] = "danger";
+                AlertType["warning"] = "warning";
+                AlertType["primary"] = "primary";
+                AlertType["validation"] = "validation";
+            })(AlertType || (AlertType = {}));
+            exports_1("AlertType", AlertType);
             exports_1("default", vue_js_1.defineComponent({
                 name: 'Alert',
                 props: {
@@ -16,33 +26,9 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                         type: Boolean,
                         default: false
                     },
-                    default: {
-                        type: Boolean,
-                        default: false
-                    },
-                    success: {
-                        type: Boolean,
-                        default: false
-                    },
-                    info: {
-                        type: Boolean,
-                        default: false
-                    },
-                    danger: {
-                        type: Boolean,
-                        default: false
-                    },
-                    warning: {
-                        type: Boolean,
-                        default: false
-                    },
-                    primary: {
-                        type: Boolean,
-                        default: false
-                    },
-                    validation: {
-                        type: Boolean,
-                        default: false
+                    alertType: {
+                        type: String,
+                        default: AlertType.default
                     }
                 },
                 emits: [
@@ -55,25 +41,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                 },
                 computed: {
                     typeClass: function () {
-                        if (this.danger) {
-                            return 'alert-danger';
-                        }
-                        if (this.warning) {
-                            return 'alert-warning';
-                        }
-                        if (this.success) {
-                            return 'alert-success';
-                        }
-                        if (this.info) {
-                            return 'alert-info';
-                        }
-                        if (this.primary) {
-                            return 'alert-primary';
-                        }
-                        if (this.validation) {
-                            return 'alert-validation';
-                        }
-                        return 'btn-default';
+                        return "alert-" + this.alertType;
                     },
                 },
                 template: "\n<div class=\"alert\" :class=\"typeClass\">\n    <button v-if=\"dismissible\" type=\"button\" class=\"close\" @click=\"onDismiss\">\n        <span>&times;</span>\n    </button>\n    <slot />\n</div>"

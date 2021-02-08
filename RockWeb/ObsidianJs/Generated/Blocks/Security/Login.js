@@ -1,4 +1,4 @@
-System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Elements/RockButton", "vue"], function (exports_1, context_1) {
+System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Elements/RockButton", "vue", "../../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Ele
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var TextBox_1, CheckBox_1, RockButton_1, vue_1;
+    var TextBox_1, CheckBox_1, RockButton_1, vue_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -51,6 +51,9 @@ System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Ele
             },
             function (vue_1_1) {
                 vue_1 = vue_1_1;
+            },
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             }
         ],
         execute: function () {
@@ -59,7 +62,8 @@ System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Ele
                 components: {
                     TextBox: TextBox_1.default,
                     CheckBox: CheckBox_1.default,
-                    RockButton: RockButton_1.default
+                    RockButton: RockButton_1.default,
+                    Alert: Alert_1.default
                 },
                 setup: function () {
                     return {
@@ -180,7 +184,7 @@ System.register(["../../Elements/TextBox", "../../Elements/CheckBox", "../../Ele
                         });
                     }
                 },
-                template: "\n<div class=\"login-block\">\n    <fieldset>\n        <legend>Login</legend>\n\n        <div class=\"alert alert-danger\" v-if=\"errorMessage\" v-html=\"errorMessage\"></div>\n\n        <form @submit.prevent=\"submitLogin\">\n            <TextBox label=\"Username\" v-model=\"username\" />\n            <TextBox label=\"Password\" v-model=\"password\" type=\"password\" />\n            <CheckBox label=\"Keep me logged in\" v-model=\"rememberMe\" />\n            <RockButton primary :is-loading=\"isLoading\" loading-text=\"Logging In...\" type=\"submit\">\n                Log In\n            </RockButton>\n        </form>\n\n        <RockButton link :is-loading=\"isLoading\" @click=\"onHelpClick\">\n            Forgot Account\n        </RockButton>\n\n    </fieldset>\n</div>"
+                template: "\n<div class=\"login-block\">\n    <fieldset>\n        <legend>Login</legend>\n\n        <Alert v-if=\"errorMessage\" alertType=\"danger\">\n            <div v-html=\"errorMessage\"></div>\n        </Alert>\n\n        <form @submit.prevent=\"submitLogin\">\n            <TextBox label=\"Username\" v-model=\"username\" />\n            <TextBox label=\"Password\" v-model=\"password\" type=\"password\" />\n            <CheckBox label=\"Keep me logged in\" v-model=\"rememberMe\" />\n            <RockButton btnType=\"primary\" :is-loading=\"isLoading\" loading-text=\"Logging In...\" type=\"submit\">\n                Log In\n            </RockButton>\n        </form>\n\n        <RockButton btnType=\"link\" :is-loading=\"isLoading\" @click=\"onHelpClick\">\n            Forgot Account\n        </RockButton>\n\n    </fieldset>\n</div>"
             }));
         }
     };

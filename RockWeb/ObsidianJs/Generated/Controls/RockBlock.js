@@ -195,7 +195,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                         });
                     }
                 },
-                template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" class=\"alert-danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" :dismissible=\"true\" @dismiss=\"clearError\" class=\"alert-danger\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
+                template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" alertType=\"danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" alertType=\"danger\" :dismissible=\"true\" @dismiss=\"clearError\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
             }));
         }
     };

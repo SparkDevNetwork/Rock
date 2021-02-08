@@ -178,8 +178,8 @@ export default defineComponent({
                         </div>
                     </div>
                     <div class="actions">
-                        <RockButton primary type="submit">Save</RockButton>
-                        <RockButton link @click="doCancel">Cancel</RockButton>
+                        <RockButton btnType="primary" type="submit">Save</RockButton>
+                        <RockButton btnType="link" @click="doCancel">Cancel</RockButton>
                     </div>
                 </RockForm>
                 <template v-else>
@@ -199,7 +199,7 @@ export default defineComponent({
                         <div class="col-sm-6">
                             <div class="well">
                                 <TextBox label="Message" v-model="messageToPublish" />
-                                <RockButton primary sm @click="doPublish">Publish</RockButton>
+                                <RockButton btnType="primary" btnSize="sm" @click="doPublish">Publish</RockButton>
                             </div>
                             <p>
                                 <strong>Secondary block says:</strong>
@@ -208,7 +208,7 @@ export default defineComponent({
                         </div>
                     </div>
                     <div class="actions">
-                        <RockButton primary @click="doEdit">Edit</RockButton>
+                        <RockButton btnType="primary" @click="doEdit">Edit</RockButton>
                     </div>
                 </template>
             </Loading>

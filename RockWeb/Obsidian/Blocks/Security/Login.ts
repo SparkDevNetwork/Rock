@@ -19,6 +19,7 @@ import CheckBox from '../../Elements/CheckBox';
 import RockButton from '../../Elements/RockButton';
 import { defineComponent, inject } from 'vue';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import Alert from '../../Elements/Alert';
 
 type AuthCookie = {
     Expires: string;
@@ -35,7 +36,8 @@ export default defineComponent({
     components: {
         TextBox,
         CheckBox,
-        RockButton
+        RockButton,
+        Alert
     },
     setup() {
         return {
@@ -145,18 +147,20 @@ export default defineComponent({
     <fieldset>
         <legend>Login</legend>
 
-        <div class="alert alert-danger" v-if="errorMessage" v-html="errorMessage"></div>
+        <Alert v-if="errorMessage" alertType="danger">
+            <div v-html="errorMessage"></div>
+        </Alert>
 
         <form @submit.prevent="submitLogin">
             <TextBox label="Username" v-model="username" />
             <TextBox label="Password" v-model="password" type="password" />
             <CheckBox label="Keep me logged in" v-model="rememberMe" />
-            <RockButton primary :is-loading="isLoading" loading-text="Logging In..." type="submit">
+            <RockButton btnType="primary" :is-loading="isLoading" loading-text="Logging In..." type="submit">
                 Log In
             </RockButton>
         </form>
 
-        <RockButton link :is-loading="isLoading" @click="onHelpClick">
+        <RockButton btnType="link" :is-loading="isLoading" @click="onHelpClick">
             Forgot Account
         </RockButton>
 

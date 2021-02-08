@@ -1,4 +1,4 @@
-System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js", "../../Controls/Grid.js", "../../Controls/GridRow.js", "../../Controls/GridColumn.js", "../../Controls/GridSelectColumn.js", "../../Controls/GridProfileLinkColumn.js"], function (exports_1, context_1) {
+System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js", "../../Controls/Grid.js", "../../Controls/GridRow.js", "../../Controls/GridColumn.js", "../../Controls/GridSelectColumn.js", "../../Controls/GridProfileLinkColumn.js", "../../Elements/Alert.js"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var PaneledBlockTemplate_js_1, vue_js_1, Index_js_1, Grid_js_1, GridRow_js_1, GridColumn_js_1, GridSelectColumn_js_1, GridProfileLinkColumn_js_1;
+    var PaneledBlockTemplate_js_1, vue_js_1, Index_js_1, Grid_js_1, GridRow_js_1, GridColumn_js_1, GridSelectColumn_js_1, GridProfileLinkColumn_js_1, Alert_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -63,6 +63,9 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
             },
             function (GridProfileLinkColumn_js_1_1) {
                 GridProfileLinkColumn_js_1 = GridProfileLinkColumn_js_1_1;
+            },
+            function (Alert_js_1_1) {
+                Alert_js_1 = Alert_js_1_1;
             }
         ],
         execute: function () {
@@ -70,6 +73,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
                 name: 'Groups.GroupMemberList',
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
+                    Alert: Alert_js_1.default,
                     Grid: Grid_js_1.default(),
                     GridRow: GridRow_js_1.default(),
                     GridColumn: GridColumn_js_1.default(),
@@ -193,7 +197,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Vendor/Vue/vu
                         });
                     });
                 },
-                template: "\n<PaneledBlockTemplate>\n    <template #title>\n        <i class=\"fa fa-users\"></i>\n        Group Members\n    </template>\n    <template #default>\n        <div class=\"alert alert-danger\" v-if=\"errorMessage\">\n            {{errorMessage}}\n        </div>\n        <div class=\"grid grid-panel\">\n            <Grid :gridData=\"members\" rowIdKey=\"GroupMemberId\" #default=\"rowContext\" v-model:sortProperty=\"sortProperty\" rowItemText=\"Group Member\">\n                <GridRow :rowContext=\"rowContext\" @click:body=\"onRowClick\">\n                    <GridSelectColumn />\n                    <GridColumn title=\"Name\" property=\"FullName\" sortExpression=\"Person.LastName,Person.NickName\">\n                        <div\n                            class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm\"\n                            :style=\"{\n                                backgroundImage: 'url(' + rowContext.rowData.PhotoUrl + ')',\n                                backgroundSize: 'cover',\n                                backgroundRepeat: 'no-repeat'\n                            }\"></div>\n                        {{rowContext.rowData.FullName}}\n                    </GridColumn>\n                    <GridColumn title=\"Role\" property=\"RoleName\" sortExpression=\"GroupRole.Name\" />\n                    <GridColumn title=\"Member Status\" property=\"StatusName\" sortExpression=\"GroupMemberStatus\" />\n                    <GridProfileLinkColumn property=\"PersonId\" />\n                </GridRow>\n            </Grid>\n        </div>\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate>\n    <template #title>\n        <i class=\"fa fa-users\"></i>\n        Group Members\n    </template>\n    <template #default>\n        <Alert v-if=\"errorMessage\" alertType=\"danger\">\n            {{errorMessage}}\n        </Alert>\n        <div class=\"grid grid-panel\">\n            <Grid :gridData=\"members\" rowIdKey=\"GroupMemberId\" #default=\"rowContext\" v-model:sortProperty=\"sortProperty\" rowItemText=\"Group Member\">\n                <GridRow :rowContext=\"rowContext\" @click:body=\"onRowClick\">\n                    <GridSelectColumn />\n                    <GridColumn title=\"Name\" property=\"FullName\" sortExpression=\"Person.LastName,Person.NickName\">\n                        <div\n                            class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm\"\n                            :style=\"{\n                                backgroundImage: 'url(' + rowContext.rowData.PhotoUrl + ')',\n                                backgroundSize: 'cover',\n                                backgroundRepeat: 'no-repeat'\n                            }\"></div>\n                        {{rowContext.rowData.FullName}}\n                    </GridColumn>\n                    <GridColumn title=\"Role\" property=\"RoleName\" sortExpression=\"GroupRole.Name\" />\n                    <GridColumn title=\"Member Status\" property=\"StatusName\" sortExpression=\"GroupMemberStatus\" />\n                    <GridProfileLinkColumn property=\"PersonId\" />\n                </GridRow>\n            </Grid>\n        </div>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

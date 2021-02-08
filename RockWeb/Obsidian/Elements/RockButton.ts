@@ -16,6 +16,23 @@
 //
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
+export enum BtnType {
+    default = 'default',
+    primary = 'primary',
+    danger = 'danger',
+    warning = 'warning',
+    success = 'success',
+    info = 'info',
+    link = 'link'
+}
+
+export enum BtnSize {
+    default = '',
+    xs = 'xs',
+    sm = 'sm',
+    lg = 'lg'
+}
+
 export default defineComponent({
     name: 'RockButton',
     props: {
@@ -35,45 +52,13 @@ export default defineComponent({
             type: Boolean,
             default: false
         },
-        default: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        btnType: {
+            type: String as PropType<BtnType>,
+            default: BtnType.default
         },
-        success: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        info: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        danger: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        warning: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        primary: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        link: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        xs: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        sm: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        lg: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.default
         }
     },
     emits: [
@@ -86,53 +71,21 @@ export default defineComponent({
     },
     computed: {
         typeClass(): string {
-            if (this.danger) {
-                return 'btn-danger';
-            }
-
-            if (this.warning) {
-                return 'btn-warning';
-            }
-
-            if (this.success) {
-                return 'btn-success';
-            }
-
-            if (this.info) {
-                return 'btn-info';
-            }
-
-            if (this.primary) {
-                return 'btn-primary';
-            }
-
-            if (this.link) {
-                return 'btn-link';
-            }
-
-            return 'btn-default';
+            return `btn-${this.btnType}`;
         },
         sizeClass(): string {
-            if (this.xs) {
-                return 'btn-xs';
+            if (!this.btnSize) {
+                return '';
             }
 
-            if (this.sm) {
-                return 'btn-sm';
-            }
-
-            if (this.lg) {
-                return 'btn-lg';
-            }
-
-            return '';
+            return `btn-${this.btnSize}`;
         },
         cssClasses(): string {
             return `btn ${this.typeClass} ${this.sizeClass}`;
         }
     },
-    template:
-`<button :class="cssClasses" :disabled="isLoading || disabled" @click="handleClick" :type="type">
+    template: `
+<button :class="cssClasses" :disabled="isLoading || disabled" @click="handleClick" :type="type">
     <template v-if="isLoading">
         {{loadingText}}
     </template>

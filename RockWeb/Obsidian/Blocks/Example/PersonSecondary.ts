@@ -82,12 +82,12 @@ export default defineComponent({
                         <div class="photo-icon photo-round photo-round-sm" :style="photoElementStyle"></div>
                     </p>
                     <p>This is a secondary block. It respects the store's value indicating if secondary blocks are visible.</p>
-                    <RockButton danger sm @click="doThrowError">Throw Error</RockButton>
+                    <RockButton btnType="danger" btnSize="sm" @click="doThrowError">Throw Error</RockButton>
                 </div>
                 <div class="col-sm-6">
                     <div class="well">
                         <TextBox label="Message" v-model="messageToPublish" />
-                        <RockButton primary sm @click="doPublish">Publish</RockButton>
+                        <RockButton btnType="primary" btnSize="sm" @click="doPublish">Publish</RockButton>
                     </div>
                     <p>
                         <strong>Detail block says:</strong>

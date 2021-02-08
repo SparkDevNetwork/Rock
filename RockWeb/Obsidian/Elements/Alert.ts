@@ -16,40 +16,26 @@
 //
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
+export enum AlertType {
+    default = 'default',
+    success = 'success',
+    info = 'info',
+    danger = 'danger',
+    warning = 'warning',
+    primary = 'primary',
+    validation = 'validation'
+}
+
 export default defineComponent({
     name: 'Alert',
     props: {
         dismissible: {
-            type: Boolean,
-            default: false
-        },
-        default: {
             type: Boolean as PropType<boolean>,
             default: false
         },
-        success: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        info: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        danger: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        warning: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        primary: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        validation: {
-            type: Boolean as PropType<boolean>,
-            default: false
+        alertType: {
+            type: String as PropType<AlertType>,
+            default: AlertType.default
         }
     },
     emits: [
@@ -62,31 +48,7 @@ export default defineComponent({
     },
     computed: {
         typeClass(): string {
-            if (this.danger) {
-                return 'alert-danger';
-            }
-
-            if (this.warning) {
-                return 'alert-warning';
-            }
-
-            if (this.success) {
-                return 'alert-success';
-            }
-
-            if (this.info) {
-                return 'alert-info';
-            }
-
-            if (this.primary) {
-                return 'alert-primary';
-            }
-
-            if (this.validation) {
-                return 'alert-validation';
-            }
-
-            return 'btn-default';
+            return `alert-${this.alertType}`;
         },
     },
     template: `

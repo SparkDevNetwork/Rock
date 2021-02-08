@@ -23,6 +23,7 @@ import GridColumn from '../../Controls/GridColumn.js';
 import GridSelectColumn from '../../Controls/GridSelectColumn.js';
 import GridProfileLinkColumn from '../../Controls/GridProfileLinkColumn.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
+import Alert from '../../Elements/Alert.js';
 
 type GroupMemberViewModel = {
     FullName: string;
@@ -41,6 +42,7 @@ export default defineComponent({
     name: 'Groups.GroupMemberList',
     components: {
         PaneledBlockTemplate,
+        Alert,
         Grid: Grid<GroupMemberViewModel>(),
         GridRow: GridRow<GroupMemberViewModel>(),
         GridColumn: GridColumn<GroupMemberViewModel>(),
@@ -131,9 +133,9 @@ export default defineComponent({
         Group Members
     </template>
     <template #default>
-        <div class="alert alert-danger" v-if="errorMessage">
+        <Alert v-if="errorMessage" alertType="danger">
             {{errorMessage}}
-        </div>
+        </Alert>
         <div class="grid grid-panel">
             <Grid :gridData="members" rowIdKey="GroupMemberId" #default="rowContext" v-model:sortProperty="sortProperty" rowItemText="Group Member">
                 <GridRow :rowContext="rowContext" @click:body="onRowClick">

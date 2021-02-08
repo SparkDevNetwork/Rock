@@ -155,8 +155,8 @@ export default defineComponent({
             <RockForm v-else @submit="doSave">
                 <AttributeValuesContainer :attributeValues="attributeValues" isEditMode :showAbbreviatedName="useAbbreviatedNames" />
                 <div class="actions">
-                    <RockButton primary xs type="submit">Save</RockButton>
-                    <RockButton link xs @click="goToViewMode">Cancel</RockButton>
+                    <RockButton btnType="primary" btnSize="xs" type="submit">Save</RockButton>
+                    <RockButton btnType="link" btnSize="xs" @click="goToViewMode">Cancel</RockButton>
                 </div>
             </RockForm>
         </Loading>

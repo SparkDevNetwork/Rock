@@ -14,10 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+import Alert from '../Elements/Alert.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 
 export default defineComponent({
     name: 'RockValidation',
+    components: {
+        Alert
+    },
     props: {
         errors: {
             type: Object as PropType<Record<string, string>>,
@@ -30,7 +34,7 @@ export default defineComponent({
         }
     },
     template: `
-<div v-if="hasErrors" class="alert alert-validation">
+<Alert v-if="hasErrors" alertType="validation">
     Please correct the following:
     <ul>
         <li v-for="(error, fieldLabel) of errors">
@@ -38,5 +42,5 @@ export default defineComponent({
             {{error}}
         </li>
     </ul>
-</div>`
+</Alert>`
 });
