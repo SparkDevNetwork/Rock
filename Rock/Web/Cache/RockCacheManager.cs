@@ -253,7 +253,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public T Get( string key )
         {
-            return CacheManager.Get<T>( key );
+            return CacheManager.Get( key );
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public T Get( string key, string region )
         {
-            return CacheManager.Get<T>( key, region );
+            return CacheManager.Get( key, region );
         }
 
         /// <summary>
