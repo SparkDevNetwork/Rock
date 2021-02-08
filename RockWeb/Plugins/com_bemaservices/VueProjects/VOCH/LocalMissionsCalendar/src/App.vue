@@ -155,6 +155,9 @@ export default {
           break;
       }
       try {
+        let currentEvents = new Set()
+        this.Events.map(e => currentEvents.add(e.OccurrenceId.toString() + ' ' + e.EventNextStartDate.StartDateTime.toString()))
+        console.log(currentEvents)
         const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
           credentials: 'include',
         });
@@ -162,8 +165,9 @@ export default {
         const newEvents = [];
         await events.forEach(
           (newEvent) => {
-            if (this.Events.findIndex((event) => event.OccurrenceId == newEvent.OccurrenceId) < 0) {
+            if (!currentEvents.has(newEvent.OccurrenceId.toString() + ' ' + newEvent.EventNextStartDate.StartDateTime.toString())) {
               newEvents.push(newEvent);
+              currentEvents.add(newEvent.OccurrenceId.toString() + ' ' + newEvent.EventNextStartDate.StartDateTime.toString())
             }
           },
 
@@ -171,7 +175,7 @@ export default {
 
         this.Events = this.Events.concat(newEvents);
       } catch (err) {
-
+        
       }
     },
   },
