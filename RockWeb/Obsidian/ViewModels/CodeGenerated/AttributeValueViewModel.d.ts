@@ -31,8 +31,6 @@ export default interface AttributeValue extends Entity {
     AttributeId: number;
     Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
-    ForeignGuid: Guid | null;
-    ForeignKey: string | null;
     IsSystem: boolean;
     Value: string | null;
     ValueAsNumeric: number | null;
@@ -41,5 +39,4 @@ export default interface AttributeValue extends Entity {
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;
-    ForeignId: number | null;
 }

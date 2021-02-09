@@ -39,8 +39,6 @@ export default interface Attribute extends Entity {
     EntityTypeQualifierValue: string | null;
     FieldTypeGuid: Guid;
     FieldTypeId: number;
-    ForeignGuid: Guid | null;
-    ForeignKey: string | null;
     IconCssClass: string | null;
     IsActive: boolean;
     IsAnalytic: boolean;
@@ -56,11 +54,11 @@ export default interface Attribute extends Entity {
     Order: number;
     PostHtml: string | null;
     PreHtml: string | null;
+    QualifierValues: Record<string, unknown>;
     ShowOnBulk: boolean;
     CreatedDateTime: string | Date | null;
     ModifiedDateTime: string | Date | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;
-    ForeignId: number | null;
 }

@@ -49,7 +49,7 @@ namespace Rock.Data
         [Key]
         [DataMember]
         [IncludeForReporting]
-        [ViewModelExclude]
+        [ViewModelExclude] // Excluded because the ViewModelBase provides this through inheritance
         public int Id { get; set; }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Rock.Data
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]
-        [ViewModelExclude]
+        [ViewModelExclude] // Excluded because the ViewModelBase provides this through inheritance
         public Guid Guid
         {
             get { return _guid; }
@@ -85,6 +85,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [ViewModelExclude]
         public int? ForeignId { get; set; }
 
         /// <summary>
@@ -95,6 +96,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [ViewModelExclude]
         public Guid? ForeignGuid { get; set; }
 
         /// <summary>
@@ -106,6 +108,7 @@ namespace Rock.Data
         [MaxLength( 100 )]
         [DataMember]
         [HideFromReporting]
+        [ViewModelExclude]
         public string ForeignKey { get; set; }
 
         #endregion

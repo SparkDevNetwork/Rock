@@ -176,22 +176,6 @@ namespace Rock.ViewModel
         public bool EnableSpecificGroupRequirements { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignGuid.
-        /// </summary>
-        /// <value>
-        /// The ForeignGuid.
-        /// </value>
-        public Guid? ForeignGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ForeignKey.
-        /// </summary>
-        /// <value>
-        /// The ForeignKey.
-        /// </value>
-        public string ForeignKey { get; set; }
-
-        /// <summary>
         /// Gets or sets the GroupAttendanceRequiresLocation.
         /// </summary>
         /// <value>
@@ -518,14 +502,6 @@ namespace Rock.ViewModel
         /// The ModifiedByPersonAliasId.
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ForeignId.
-        /// </summary>
-        /// <value>
-        /// The ForeignId.
-        /// </value>
-        public int? ForeignId { get; set; }
 
     }
 }

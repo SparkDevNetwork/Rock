@@ -40,22 +40,6 @@ namespace Rock.ViewModel
         public int CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignGuid.
-        /// </summary>
-        /// <value>
-        /// The ForeignGuid.
-        /// </value>
-        public Guid? ForeignGuid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ForeignKey.
-        /// </summary>
-        /// <value>
-        /// The ForeignKey.
-        /// </value>
-        public string ForeignKey { get; set; }
-
-        /// <summary>
         /// Gets or sets the MetricId.
         /// </summary>
         /// <value>
@@ -70,14 +54,6 @@ namespace Rock.ViewModel
         /// The Order.
         /// </value>
         public int Order { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ForeignId.
-        /// </summary>
-        /// <value>
-        /// The ForeignId.
-        /// </value>
-        public int? ForeignId { get; set; }
 
     }
 }

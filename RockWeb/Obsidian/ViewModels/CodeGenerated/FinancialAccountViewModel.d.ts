@@ -22,16 +22,16 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialAccount extends Entity {
     Id: number;
     AccountTypeValueId: number | null;
+    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     Description: string | null;
     EndDate: string | Date | null;
-    ForeignGuid: Guid | null;
-    ForeignKey: string | null;
     GlCode: string | null;
     ImageBinaryFileId: number | null;
     IsActive: boolean;
@@ -49,5 +49,4 @@ export default interface FinancialAccount extends Entity {
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;
-    ForeignId: number | null;
 }

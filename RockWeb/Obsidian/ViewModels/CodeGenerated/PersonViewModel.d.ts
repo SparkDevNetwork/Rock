@@ -41,8 +41,6 @@ export default interface Person extends Entity {
     EmailNote: string | null;
     EmailPreference: number;
     FirstName: string | null;
-    ForeignGuid: Guid | null;
-    ForeignKey: string | null;
     FullName: string | null;
     Gender: number;
     GivingGroupId: number | null;
@@ -79,5 +77,4 @@ export default interface Person extends Entity {
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;
-    ForeignId: number | null;
 }

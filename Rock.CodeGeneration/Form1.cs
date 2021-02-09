@@ -832,8 +832,8 @@ namespace Rock.ViewModel
         /// <returns></returns>
         private static List<Type> GetViewModelTypes()
         {
-            var rockAssembly = typeof( IViewModel ).Assembly;
-            var fileInfo = new FileInfo( new Uri( rockAssembly.CodeBase ).AbsolutePath );
+            var rockViewModelAssembly = typeof( ViewModelBase ).Assembly;
+            var fileInfo = new FileInfo( new Uri( rockViewModelAssembly.CodeBase ).AbsolutePath );
             var assemblyFileName = fileInfo.FullName;
             var assembly = Assembly.LoadFrom( assemblyFileName );
             var types = new List<Type>();
