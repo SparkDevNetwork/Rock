@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -210,7 +211,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.11" )]
         [Obsolete( "Use InteractionChannelId instead", false )]
@@ -226,7 +227,7 @@ namespace Rock.Model
         /// <value>
         /// The channel.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.11" )]
         [Obsolete( "Use InteractionChannel instead", false )]

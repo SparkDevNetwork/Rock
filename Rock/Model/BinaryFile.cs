@@ -30,6 +30,7 @@ using ImageResizer;
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -224,7 +225,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFileData DatabaseData { get; set; }
 
         /// <summary>
@@ -234,7 +235,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>

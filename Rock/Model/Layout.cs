@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -133,7 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -142,7 +143,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of <see cref="Rock.Model.Page">Pages</see> that use this Layout.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Page> Pages
         {
             get { return _pages ?? ( _pages = new Collection<Page>() ); }

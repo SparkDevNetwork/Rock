@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -214,7 +215,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -223,7 +224,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
@@ -232,7 +233,7 @@ namespace Rock.Model
         /// <value>
         /// The connector person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
         /// <summary>
@@ -255,7 +256,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionRequestActivity">ConnectionRequestActivities</see> who are associated with the ConnectionRequest.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionRequestActivity> ConnectionRequestActivities
         {
             get { return _connectionRequestActivities; }

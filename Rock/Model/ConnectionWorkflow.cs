@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -92,7 +93,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -119,7 +120,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the cache workflow.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowTypeCache WorkflowTypeCache
         {
             get
