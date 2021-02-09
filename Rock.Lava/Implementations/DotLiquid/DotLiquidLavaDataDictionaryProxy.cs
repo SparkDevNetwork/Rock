@@ -17,13 +17,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DotLiquid;
 
 namespace Rock.Lava.DotLiquid
 {
     /// <summary>
     /// A proxy for a LavaDataDictionary that can be used by the DotLiquid Templating Framework.
     /// </summary>
-    internal class DotLiquidLavaDataDictionaryProxy : IDictionary<string, object>, ILiquidFrameworkDataObjectProxy
+    internal class DotLiquidLavaDataDictionaryProxy : ILiquidizable, IIndexable, IValueTypeConvertible, IDictionary<string, object>, ILavaDataDictionarySource
     {
         private ILavaDataDictionary _dataObject = null;
 
@@ -32,6 +33,52 @@ namespace Rock.Lava.DotLiquid
         public DotLiquidLavaDataDictionaryProxy( ILavaDataDictionary dataObject )
         {
             _dataObject = dataObject;
+        }
+
+        #endregion
+
+        #region DotLiquid.IIndexable implementation
+
+        /// <summary>
+        /// Returns the data value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object this[object key]
+        {
+            get
+            {
+                return GetValue( key );
+            }
+        }
+
+        /// <summary>
+        /// Returns a flag indicating if this data object contains a value associated with the specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            if ( _dataObject == null )
+            {
+                return false;
+            }
+
+            return _dataObject.ContainsKey( key );
+        }
+
+        #endregion
+
+        #region DotLiquid.IValueTypeConvertible implementation
+
+        public object ConvertToValueType()
+        {
+            if ( _dataObject == null )
+            {
+                return null;
+            }
+
+            return _dataObject;
         }
 
         #endregion
@@ -81,6 +128,11 @@ namespace Rock.Lava.DotLiquid
         public bool Remove( KeyValuePair<string, object> item )
         {
             throw GetReadOnlyException();
+        }
+
+        private static Exception GetReadOnlyException()
+        {
+            return new NotImplementedException( "This Lava Data Dictionary instance is read-only." );
         }
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
@@ -137,7 +189,7 @@ namespace Rock.Lava.DotLiquid
         {
             get
             {
-                return GetValue( key );
+                return this[key];
             }
             set
             {
@@ -147,19 +199,46 @@ namespace Rock.Lava.DotLiquid
 
         #endregion
 
-        #region ILiquidFrameworkDataObjectProxy implementation
+        #region ILavaDataDictionarySource implementation
 
-        object ILiquidFrameworkDataObjectProxy.GetProxiedDataObject()
+        /// <summary>
+        /// Gets an instance of this object as a LavaDataDictionary.
+        /// </summary>
+        /// <returns></returns>
+        public ILavaDataDictionary GetLavaDataDictionary()
         {
             return _dataObject;
         }
 
         #endregion
 
-        private static Exception GetReadOnlyException()
+        #region DotLiquid.ILiquidizable implementation
+
+        /// <summary>
+        /// Returns a representation of this object that can be accessed by the DotLiquid framework.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
         {
-            return new NotImplementedException( "This Lava Data Dictionary instance is read-only." );
+            if ( _dataObject == null )
+            {
+                return null;
+            }
+
+            if ( _dataObject is IDictionary<string, object> dictionary )
+            {
+                return dictionary;
+            }
+
+            if ( _dataObject is LavaDataObject lavaData )
+            {
+                return lavaData;
+            }
+
+            return new DropProxy( _dataObject, GetAvailableKeys().ToArray(), ( x ) => { return _dataObject; } );
         }
+
+        #endregion
 
         /// <summary>
         /// Return a string representation of the object.
@@ -183,7 +262,7 @@ namespace Rock.Lava.DotLiquid
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        private object GetValue( string key )
+        private object GetValue( object key )
         {
             if ( _dataObject == null )
             {
