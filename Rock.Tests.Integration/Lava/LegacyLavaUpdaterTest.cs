@@ -9,7 +9,6 @@ using Rock.Tests.Shared;
 namespace Rock.Tests.Integration.Lava
 {
     [TestClass]
-    [Ignore( "This test set verifies a specific feature that does not require regression testing." )]
     public class LegacyLavaUpdaterTest
     {
         [TestMethod]
