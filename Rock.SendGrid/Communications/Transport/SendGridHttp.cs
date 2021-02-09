@@ -150,7 +150,10 @@ namespace Rock.Communication.Transport
             sendGridMessage.HtmlContent = rockEmailMessage.Message;
 
             // Communication record for tracking opens & clicks
-            sendGridMessage.CustomArgs = rockEmailMessage.MessageMetaData;
+            if ( rockEmailMessage.MessageMetaData != null && rockEmailMessage.MessageMetaData.Count > 0 )
+            {
+                sendGridMessage.CustomArgs = rockEmailMessage.MessageMetaData;
+            }
 
             if ( CanTrackOpens )
             {
