@@ -19,7 +19,7 @@ namespace Rock.Lava
     /// <summary>
     /// Specifies that this object can supply an ILavaDataDictionary, either as a representation of itself or as a related object.
     /// </summary>
-    public interface ILavaDataDictionarySource : DotLiquid.ILiquidizable
+    public interface ILavaDataDictionarySource
     {
         /// <summary>
         /// Gets an ILavaDataDictionary that represents the data contained in the implementing object or a related object.
