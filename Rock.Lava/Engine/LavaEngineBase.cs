@@ -172,7 +172,13 @@ namespace Rock.Lava
                 // Create a new factory method that returns an initialized Shortcode Block element.
                 Func<string, IRockLavaBlock> blockFactoryMethod = ( blockName ) =>
                 {
-                    var shortcodeInstance = GetShortcodeFromFactory<DynamicShortcodeBlock>( blockName, shortcodeFactoryMethod );
+                    // Call the factory method we have been passed to retrieve the definition of the shortcode.
+                    // The definition may change at runtime, so we need to execute the factory method for each new shortcode instance.
+                    var shortCodeName = LavaUtilityHelper.GetShortcodeNameFromLiquidElementName( blockName );
+
+                    var shortcodeDefinition = shortcodeFactoryMethod( shortCodeName );
+
+                    var shortcodeInstance = new DynamicShortcodeBlock( shortcodeDefinition );
 
                     return shortcodeInstance;
                 };
@@ -192,11 +198,6 @@ namespace Rock.Lava
             var shortCodeName = LavaUtilityHelper.GetShortcodeNameFromLiquidElementName( shortcodeInternalName );
 
             var shortcodeDefinition = shortcodeFactoryMethod( shortCodeName );
-
-            if ( shortcodeDefinition == null )
-            {
-                throw new Exception( $"Shortcode factory could not provide a valid instance for \"{shortCodeName}\" ." );
-            }
 
             var shortcodeInstance = new T();
 
