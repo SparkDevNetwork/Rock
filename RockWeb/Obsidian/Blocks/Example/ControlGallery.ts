@@ -26,19 +26,25 @@ import DefinedValue from '../../ViewModels/CodeGenerated/DefinedValueViewModel.j
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
 import CurrencyBox from '../../Elements/CurrencyBox.js';
+import PanelWidget from '../../Elements/PanelWidget.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
+    components: {
+        PanelWidget
+    },
     template: `
-<div class="row">
-    <div class="col-md-6">
-        <slot name="gallery" />
+<PanelWidget>
+    <template #header><slot name="header" /></template>
+    <div class="row">
+        <div class="col-md-6">
+            <slot name="gallery" />
+        </div>
+        <div class="col-md-6">
+            <slot name="result" />
+        </div>
     </div>
-    <div class="col-md-6">
-        <slot name="result" />
-    </div>
-</div>
-<hr />`
+</PanelWidget>`
 });
 
 export default defineComponent({
@@ -95,6 +101,9 @@ export default defineComponent({
     </template>
     <template v-slot:default>
         <GalleryAndResult>
+            <template #header>
+                TextBox
+            </template>
             <template #gallery>
                 <TextBox label="Text 1" v-model="text" :maxLength="10" showCountDown />
                 <TextBox label="Text 2" v-model="text" />
@@ -104,6 +113,9 @@ export default defineComponent({
             </template>
         </GalleryAndResult>
         <GalleryAndResult>
+            <template #header>
+                CurrencyBox
+            </template>
             <template #gallery>
                 <CurrencyBox label="Currency 1" v-model="currency" />
                 <CurrencyBox label="Currency 2" v-model="currency" />
@@ -113,6 +125,9 @@ export default defineComponent({
             </template>
         </GalleryAndResult>
         <GalleryAndResult>
+            <template #header>
+                EmailBox
+            </template>
             <template #gallery>
                 <EmailBox label="EmailBox 1" v-model="email" />
                 <EmailBox label="EmailBox 2" v-model="email" />
@@ -122,6 +137,9 @@ export default defineComponent({
             </template>
         </GalleryAndResult>
         <GalleryAndResult>
+            <template #header>
+                Defined Type and Value
+            </template>
             <template #gallery>
                 <DefinedTypePicker v-model="definedTypeGuid" />
                 <DefinedValuePicker v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
@@ -140,6 +158,9 @@ export default defineComponent({
             </template>
         </GalleryAndResult>
         <GalleryAndResult>
+            <template #header>
+                CampusPicker
+            </template>
             <template #gallery>
                 <CampusPicker v-model="campusGuid" />
                 <CampusPicker v-model="campusGuid" label="Campus 2" />
