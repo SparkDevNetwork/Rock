@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -206,7 +207,7 @@ namespace Rock.Model
         /// <value>
         /// The metric partitions.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>
@@ -215,7 +216,7 @@ namespace Rock.Model
         /// <value>
         /// The metric values.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
@@ -233,7 +234,7 @@ namespace Rock.Model
         /// <value>
         /// The data view.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataView DataView { get; set; }
 
         /// <summary>
@@ -242,7 +243,7 @@ namespace Rock.Model
         /// <value>
         /// The metric champion person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias MetricChampionPersonAlias { get; set; }
 
         /// <summary>
@@ -251,7 +252,7 @@ namespace Rock.Model
         /// <value>
         /// The admin person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias AdminPersonAlias { get; set; }
 
         /// <summary>
@@ -260,7 +261,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -280,7 +281,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the numeric data.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public MetricNumericDataType NumericDataType { get; set; }
 
         #endregion

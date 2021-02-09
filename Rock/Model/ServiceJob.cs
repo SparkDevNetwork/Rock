@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using CronExpressionDescriptor;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -238,7 +239,7 @@ namespace Rock.Model
         /// <value>
         /// The last status message as HTML.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public string LastStatusMessageAsHtml
         {
             get
@@ -253,7 +254,7 @@ namespace Rock.Model
         /// <value>
         /// The cron description.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public string CronDescription
         {
             get
@@ -269,7 +270,7 @@ namespace Rock.Model
         /// The history of service jobs.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<ServiceJobHistory> ServiceJobHistory { get; set; } = new Collection<ServiceJobHistory>();
 
         #endregion

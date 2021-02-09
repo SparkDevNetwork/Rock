@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -94,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the viewer.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias ViewerPersonAlias { get; set; }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the person who was viewed.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
         #endregion

@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -355,7 +356,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group's parent group. If this Group does not have a parent, the value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
@@ -418,7 +419,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of Groups that are children of this group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Group> Groups { get; set; } = new Collection<Group>();
 
         /// <summary>
@@ -455,7 +456,7 @@ namespace Rock.Model
         /// <value>
         /// The group member workflow triggers.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; } = new Collection<GroupMemberWorkflowTrigger>();
 
         /// <summary>
@@ -473,7 +474,7 @@ namespace Rock.Model
         /// <value>
         /// The linkages.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; } = new Collection<EventItemOccurrenceGroupMap>();
 
         /// <summary>
