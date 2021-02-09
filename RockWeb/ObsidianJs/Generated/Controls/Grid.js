@@ -16,7 +16,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                 },
                 sortProperty: {
                     type: Object,
-                    required: true
+                    default: null
                 },
                 rowItemText: {
                     type: String,

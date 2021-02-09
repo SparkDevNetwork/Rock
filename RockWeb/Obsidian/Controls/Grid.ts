@@ -34,7 +34,7 @@ export type SortProperty = {
 export type GridContext = {
     selectedRowIds: Record<number, boolean>;
     selectAllRows: boolean;
-    sortProperty: SortProperty;
+    sortProperty: SortProperty | null;
 };
 
 export type RowContext<T> = {
@@ -56,8 +56,8 @@ export default function OfType<T>() {
                 required: true
             },
             sortProperty: {
-                type: Object as PropType<SortProperty>,
-                required: true
+                type: Object as PropType<SortProperty | null>,
+                default: null
             },
             rowItemText: {
                 type: String as PropType<string>,

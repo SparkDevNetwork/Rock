@@ -25,7 +25,7 @@ System.register(["../../../Vendor/Vue/vue.js", "../../../Templates/PaneledBlockT
                         return Index_js_1.default.getters.groupContext || {};
                     }
                 },
-                template: "<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-grin-tongue-squint\"></i>\n        Context Group (TS Plugin)\n    </template>\n    <template v-slot:default>\n        <dl>\n            <dt>Group</dt>\n            <dd>{{contextGroup.Name}}</dd>\n        </dl>\n    </template>\n</PaneledBlockTemplate>"
+                template: "<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-grin-tongue-squint\"></i>\n        Context Group (TS Plugin)\n    </template>\n    <template v-slot:default>\n        <dl>\n            <dt>Group</dt>\n            <dd>{{contextGroup.Name || '<none>'}}</dd>\n        </dl>\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

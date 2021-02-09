@@ -37,7 +37,7 @@ export default defineComponent({
     <template v-slot:default>
         <dl>
             <dt>Group</dt>
-            <dd>{{contextGroup.Name}}</dd>
+            <dd>{{contextGroup.Name || '<none>'}}</dd>
         </dl>
     </template>
 </PaneledBlockTemplate>`

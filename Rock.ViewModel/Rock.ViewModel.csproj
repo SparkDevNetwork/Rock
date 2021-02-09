@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CodeGenerated\GroupViewModel.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />
     <Compile Include="Partials\AttributeViewModel.partial.cs" />
     <Compile Include="CodeGenerated\AttributeValueViewModel.cs" />

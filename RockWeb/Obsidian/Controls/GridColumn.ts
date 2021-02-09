@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+import JavaScriptAnchor from '../Elements/JavaScriptAnchor.js';
 import { defineComponent, PropType, inject } from '../Vendor/Vue/vue.js';
 import { GridContext, RowContext, SortDirection, SortProperty } from './Grid.js';
 
 export default function OfType<T>() {
     return defineComponent({
         name: 'GridColumn',
+        components: {
+            JavaScriptAnchor
+        },
         props: {
             title: {
                 type: String as PropType<string>,
@@ -44,24 +48,27 @@ export default function OfType<T>() {
             mySortExpression(): string {
                 return this.sortExpression || this.property;
             },
-            sortProperty(): SortProperty {
+            canSort(): boolean {
+                return !!this.sortProperty;
+            },
+            sortProperty(): SortProperty | null {
                 return this.gridContext.sortProperty;
             },
             isCurrentlySorted(): boolean {
-                return !!this.mySortExpression && this.sortProperty.Property === this.mySortExpression;
+                return !!this.mySortExpression && this.sortProperty?.Property === this.mySortExpression;
             },
             isCurrentlySortedDesc(): boolean {
-                return this.isCurrentlySorted && this.sortProperty.Direction === SortDirection.Descending;
+                return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Descending;
             },
             isCurrentlySortedAsc(): boolean {
-                return this.isCurrentlySorted && this.sortProperty.Direction === SortDirection.Ascending;
+                return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Ascending;
             }
         },
         methods: {
             onHeaderClick() {
                 this.$emit('click:header', this.property);
 
-                if (this.mySortExpression) {
+                if (this.mySortExpression && this.sortProperty) {
                     if (this.isCurrentlySortedAsc) {
                         this.sortProperty.Direction = SortDirection.Descending;
                     }
@@ -78,11 +85,11 @@ export default function OfType<T>() {
     scope="col"
     @click="onHeaderClick"
     :class="isCurrentlySortedAsc ? 'ascending' : isCurrentlySortedDesc ? 'descending' : ''">
-    <a v-if="mySortExpression" href="javascript:void(0);">
+    <JavaScriptAnchor v-if="mySortExpression && canSort">
         <slot name="header">
             {{title}}
         </slot>
-    </a>
+    </JavaScriptAnchor>
     <template v-else>
         <slot name="header">
             {{title}}

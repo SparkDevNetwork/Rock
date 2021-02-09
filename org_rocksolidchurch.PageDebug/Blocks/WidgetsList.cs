@@ -16,23 +16,28 @@
 //
 
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using org_rocksolidchurch.PageDebug.Model;
 using Rock.Attribute;
+using Rock.Blocks;
+using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.Blocks;
 
-namespace org_rocksolidchurch.PageDebug
+namespace org_rocksolidchurch.PageDebug.Blocks
 {
     /// <summary>
-    /// Shows the page's context group.
+    /// Shows the widgets.
     /// </summary>
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
-    [DisplayName( "Context Group" )]
+    [DisplayName( "Widget List" )]
     [Category( "Rock Solid Church > Page Debug" )]
-    [Description( "Shows the page's context group" )]
-    [IconCssClass( "fa fa-grin-tongue-squint" )]
+    [Description( "Shows a list of widgets" )]
+    [IconCssClass( "fa fa-fan" )]
 
-    public class ContextGroup : PluginObsidianBlockType
+    public class WidgetsList : PluginObsidianBlockType
     {
         /// <summary>
         /// Gets a value indicating whether the block file is written in TypeScript.
@@ -42,5 +47,28 @@ namespace org_rocksolidchurch.PageDebug
         /// <c>true</c> if this instance is type script; otherwise, <c>false</c>.
         /// </value>
         public override bool IsTypeScript => true;
+
+        /// <summary>
+        /// Gets the block markup file identifier.
+        /// </summary>
+        /// <value>
+        /// The block markup file identifier.
+        /// </value>
+        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/org_rocksolidchurch/PageDebug/WidgetsList";
+
+        /// <summary>
+        /// Gets the widgets.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetWidgets( )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new PluginWidgetService( rockContext );
+                var widgets = service.Queryable().AsNoTracking().ToList();
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, widgets );
+            }
+        }
     }
 }

@@ -39,13 +39,25 @@
             <dt>Random Guid</dt>
             <dd>{{aGuid}}</dd>
             <dt>Person (shortcut)</dt>
-            <dd>{{contextPerson.FullName}}</dd>
+            <dd>{{contextPerson.FullName || '<none>'}}</dd>
             <dt>Group (shortcut)</dt>
-            <dd>{{contextGroup.Name}}</dd>
+            <dd>{{contextGroup.Name || '<none>'}}</dd>
+            <dt>All Context Entities</dt>
+            <dd>
+                <ul>
             <template v-for="(entity, key) of contextEntities">
-                <dt>{{key}}</dt>
-                <dd>{{entity.FullName || entity.Name || entity.Title || entity.Id}}</dd>
+                <li>
+                    <strong>{{key}}:</strong>
+                    <template v-if="entity">
+                        {{entity.FullName || entity.Name || entity.Title || entity.Id}}
+                    </template>
+                    <template v-else>
+                        null
+                    </template>
+                </li>
             </template>
+                </ul>
+            </dd>
             <p v-if="!Object.keys(contextEntities).length">
                 There are no context entities.
             </p>
