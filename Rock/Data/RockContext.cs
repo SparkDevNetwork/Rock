@@ -926,6 +926,22 @@ namespace Rock.Data
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlert> FinancialTransactionAlerts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The type of the financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlertType> FinancialTransactionAlertTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
