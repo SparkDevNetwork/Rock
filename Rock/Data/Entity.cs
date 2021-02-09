@@ -119,7 +119,7 @@ namespace Rock.Data
         /// <value>
         /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int TypeId
         {
             get
@@ -136,7 +136,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string TypeName
         {
             get
@@ -227,7 +227,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string UrlEncodedKey
         {
             get
@@ -245,7 +245,7 @@ namespace Rock.Data
         /// The entity string value.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string EntityStringValue
         {
             get
@@ -359,7 +359,7 @@ namespace Rock.Data
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual List<string> AvailableKeys
         {
             get
@@ -410,7 +410,7 @@ namespace Rock.Data
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual object this[object key]
         {
             get
@@ -455,7 +455,7 @@ namespace Rock.Data
         /// The additional Lava fields.
         /// </value>
         //[LavaIgnore]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>

@@ -22,7 +22,6 @@ using System.Reflection;
 using DotLiquid;
 
 using Rock.Common;
-using Rock.Data;
 
 namespace Rock.Lava.DotLiquid
 {
@@ -295,7 +294,7 @@ namespace Rock.Lava.DotLiquid
                 includedProperties = type.GetProperties().Where( x => attr.AllowedMembers.Contains( x.Name, StringComparer.OrdinalIgnoreCase ) ).ToList();
             }
 
-            var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaIgnoreAttribute ), false ).Any() ).ToList();
+            var ignoredProperties = type.GetProperties().Where( x => x.GetCustomAttributes( typeof( LavaHiddenAttribute ), false ).Any() ).ToList();
 
             var allowedProperties = includedProperties.Except( ignoredProperties ).Select( x => x.Name ).ToArray();
 

@@ -280,7 +280,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         public class TestSecuredRockDynamicObject : RockDynamic
         {
-            [LavaInclude]
+            [LavaVisible]
             public int Id { get; set; }
             public string NickName { get; set; }
             public string FirstName { get; set; }
@@ -298,7 +298,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         public class TestSecuredLavaDataObject : LavaDataObject
         {
-            [LavaInclude]
+            [LavaVisible]
             public int Id { get; set; }
             public string NickName { get; set; }
             public string FirstName { get; set; }

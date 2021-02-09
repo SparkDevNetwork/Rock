@@ -30,6 +30,7 @@ using Ical.Net.DataTypes;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -253,7 +254,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
         public virtual DateTime? NextStartDateTime
@@ -329,7 +330,7 @@ namespace Rock.Model
         /// The first start date time.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
 
         /// <summary>
@@ -339,7 +340,7 @@ namespace Rock.Model
         /// The first start date time this week.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTimeThisWeek
         {
             get
@@ -357,7 +358,7 @@ namespace Rock.Model
         /// <value>
         /// The start time of day.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual TimeSpan StartTimeOfDay
         {
             get
@@ -383,7 +384,7 @@ namespace Rock.Model
         /// <value>
         /// The duration in minutes.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int DurationInMinutes
         {
             get
@@ -413,7 +414,7 @@ namespace Rock.Model
         /// <value>
         /// The friendly schedule text.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual string FriendlyScheduleText
         {

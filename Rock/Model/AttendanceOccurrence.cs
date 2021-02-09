@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -228,7 +229,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -237,7 +238,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -246,7 +247,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -264,7 +265,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if [attendance entered]; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool AttendanceEntered
         {
             get

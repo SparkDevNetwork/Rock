@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -246,7 +247,7 @@ namespace Rock.Model
         /// <value>
         /// The items.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /*
@@ -266,7 +267,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaIgnore, JsonIgnore]
+        [DataMember, LavaHidden, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }

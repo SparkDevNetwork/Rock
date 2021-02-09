@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -100,7 +101,7 @@ namespace Rock.Model
         /// The value as unique identifier.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public Guid? ValueAsGuid {
             get
             {
@@ -132,7 +133,7 @@ namespace Rock.Model
         /// The value as numeric.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public decimal? ValueAsNumeric
         {
             get
@@ -174,7 +175,7 @@ namespace Rock.Model
         /// The value as boolean.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public bool? ValueAsBoolean {
             get
             {

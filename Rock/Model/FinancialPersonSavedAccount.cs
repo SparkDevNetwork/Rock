@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -157,7 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -166,7 +167,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>

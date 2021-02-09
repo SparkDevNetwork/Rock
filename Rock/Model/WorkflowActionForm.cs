@@ -329,7 +329,7 @@ namespace Rock.Model
         /// <value>
         /// The notification system email.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [Obsolete( "Use NotificationSystemCommunication instead." )]
         [RockObsolete( "1.10" )]
         public virtual SystemEmail NotificationSystemEmail { get; set; }
@@ -340,7 +340,7 @@ namespace Rock.Model
         /// <value>
         /// The notification system communication.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual SystemCommunication NotificationSystemCommunication { get; set; }
 
         /// <summary>
@@ -381,7 +381,7 @@ namespace Rock.Model
         /// The buttons.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual List<LiquidButton> Buttons
         {
             get
