@@ -29,7 +29,6 @@ using System.Web.Hosting;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -218,7 +217,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -228,7 +227,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
@@ -238,7 +237,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual bool IsAuthenticated
         {
             get

@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -87,7 +86,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Audit"/>
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.Audit Audit { get; set; }
 
         #endregion

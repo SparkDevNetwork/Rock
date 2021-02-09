@@ -34,7 +34,6 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -461,7 +460,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> entity for the parent Page
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
@@ -470,7 +469,7 @@ namespace Rock.Model
         /// <value>
         /// The icon binary file.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
@@ -497,7 +496,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Layout"/> entity that the Page is using
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Layout Layout { get; set; }
 
         /// <summary>

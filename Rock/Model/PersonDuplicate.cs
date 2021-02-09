@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -134,7 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -143,7 +142,7 @@ namespace Rock.Model
         /// <value>
         /// The duplicate person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias DuplicatePersonAlias { get; set; }
 
         #endregion

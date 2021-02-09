@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -131,7 +130,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow action form.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActionForm WorkflowActionForm { get; set; }
 
         /// <summary>

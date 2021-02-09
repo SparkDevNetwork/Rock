@@ -202,7 +202,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [Rock.Data.LavaIgnore]
         public List<string> AvailableKeys
         {
             get
@@ -224,7 +224,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [Rock.Data.LavaIgnore]
         public object GetValue(string key)
         {
             return this[key];
@@ -238,7 +238,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [Rock.Data.LavaIgnore]
         public object this[object key]
         {
             get

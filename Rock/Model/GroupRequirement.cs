@@ -23,7 +23,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -99,7 +98,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace Rock.Model
         /// <value>
         /// The group type role.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupTypeRole GroupRole { get; set; }
 
         #endregion

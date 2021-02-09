@@ -21,7 +21,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Lava;
 
 namespace Rock.Web.Cache
 {
@@ -86,7 +85,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The field.
         /// </value>
-		[LavaVisible]
+		[LavaInclude]
         public Field.IFieldType Field
         {
             get

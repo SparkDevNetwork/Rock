@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -300,7 +299,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual bool IsSystem
         {
             get { return IsSecured || IsEntity; }

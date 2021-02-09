@@ -28,7 +28,6 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -590,7 +589,7 @@ namespace Rock.Model
         /// <value>
         /// The category.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Category Category { get; set; }
 
         /// <summary>
@@ -599,7 +598,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -680,7 +679,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of child pages
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<RegistrationInstance> Instances
         {
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }

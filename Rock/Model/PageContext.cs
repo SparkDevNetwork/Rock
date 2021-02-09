@@ -24,7 +24,6 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -98,7 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that uses this PageContext.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         #endregion

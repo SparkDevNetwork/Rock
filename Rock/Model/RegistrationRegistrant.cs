@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -109,7 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The registration instance.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Registration Registration { get; set; }
 
         /// <summary>
@@ -127,7 +126,7 @@ namespace Rock.Model
         /// <value>
         /// The group member.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
@@ -163,7 +162,7 @@ namespace Rock.Model
         /// The name of the nick.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string NickName 
         {
             get 
@@ -183,7 +182,7 @@ namespace Rock.Model
         /// The first name.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string FirstName 
         {
             get 
@@ -203,7 +202,7 @@ namespace Rock.Model
         /// The last name.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string LastName
         {
             get 
@@ -223,7 +222,7 @@ namespace Rock.Model
         /// The email.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string Email
         {
             get
@@ -243,7 +242,7 @@ namespace Rock.Model
         /// The cost with fees.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal TotalCost
         {
             get
@@ -269,7 +268,7 @@ namespace Rock.Model
         /// <value>
         /// The person.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Person Person
         {
             get

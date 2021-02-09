@@ -23,7 +23,6 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -135,7 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Block Block { get; set; }
 
         /// <summary>
@@ -144,7 +143,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.PersonAlias ApprovedByPersonAlias { get; set; }
 
         #endregion

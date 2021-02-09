@@ -26,7 +26,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -363,7 +362,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
@@ -409,7 +408,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual FinancialTransactionRefund RefundDetails { get; set; }
 
         /// <summary>
@@ -418,7 +417,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -428,7 +427,7 @@ namespace Rock.Model
         /// <value>
         /// The processed by person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias ProcessedByPersonAlias { get; set; }
 
         /// <summary>
@@ -466,7 +465,7 @@ namespace Rock.Model
         /// <value>
         /// The refunds.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<FinancialTransactionRefund> Refunds
         {
             get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }
@@ -480,7 +479,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {
@@ -493,7 +492,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeAmount
         {
@@ -518,7 +517,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeCoverageAmount
         {

@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -150,7 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The parent category
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Category ParentCategory { get; set; }
 
         /// <summary>

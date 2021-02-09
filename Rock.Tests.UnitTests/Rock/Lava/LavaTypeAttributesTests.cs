@@ -184,18 +184,18 @@ Password:
             public string Email { get; set; } = "tdecker@rocksolidchurch.com";
             public string DateOfBirth { get; set; } = "1-Aug-1980";
 
-            [LavaHidden]
+            [LavaIgnore]
             public string Password { get; set; } = "this-should-remain-secret";
         }
 
         [LavaType]
         public class TestLavaTypeAttributeOnIndividualProperty
         {
-            [LavaVisible]
+            [LavaInclude]
             public string Name { get; set; } = "Ted Decker";
             public string Email { get; set; } = "tdecker@rocksolidchurch.com";
 
-            [LavaHidden]
+            [LavaIgnore]
             public string Password { get; set; } = "secret_password";
         }
 

@@ -19,7 +19,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -58,7 +57,7 @@ namespace Rock.Model
         /// <value>
         /// The event item occurrence.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>

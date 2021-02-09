@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -75,7 +74,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         #endregion

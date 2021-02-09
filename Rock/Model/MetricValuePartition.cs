@@ -19,7 +19,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -72,7 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The metric partition.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual MetricPartition MetricPartition { get; set; }
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace Rock.Model
         /// <value>
         /// The metric value.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual MetricValue MetricValue { get; set; }
 
         #endregion
