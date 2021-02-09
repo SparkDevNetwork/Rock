@@ -584,7 +584,7 @@ namespace Rock.Data
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public override bool ContainsKey( string key )
+        public override bool ContainsKey( object key )
         {
             string attributeKey = key.ToStringSafe();
 

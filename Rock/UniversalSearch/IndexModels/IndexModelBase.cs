@@ -382,7 +382,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public object GetValue( string key )
+        public object GetValue( object key )
         {
             return this[key];
         }
@@ -564,7 +564,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( string key )
+        public bool ContainsKey( object key )
         {
             return this.GetDynamicMemberNames().Contains( key.ToString() );
         }
