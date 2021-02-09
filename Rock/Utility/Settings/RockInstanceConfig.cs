@@ -94,6 +94,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public static string AspNetVersion
+        {
+            get
+            {
+                return _serviceInstance.AspNetVersion;
+            }
+        }
+
+        /// <summary>
         /// Gets information about the database configuration for the current Rock instance.
         /// </summary>
         public static RockInstanceDatabaseConfiguration Database
