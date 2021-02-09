@@ -81,7 +81,6 @@
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Constants\TestGuids.cs" />
-    <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
     <Compile Include="TestFramework\CollectionAssertExtensions.cs" />
@@ -97,6 +96,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>
       <Name>Rock.Mailgun</Name>

@@ -25,6 +25,8 @@ using System.Web;
 using dotless.Core;
 using dotless.Core.configuration;
 
+using DotLiquid;
+
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -38,11 +40,27 @@ namespace Rock.Lava.Blocks
     /// SELECT [FirstName], [LastName] FROM [Person]
     /// {% endsql %}
     /// </summary>
-    public class Stylesheet : RockLavaBlockBase
+    public class Stylesheet : DotLiquid.Block, IRockStartup
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public void OnStartup()
+        {
+            Template.RegisterTag<Stylesheet>( "stylesheet" );
+        }
+
+        /// <summary>
+        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int StartupOrder { get { return 0; } }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -51,11 +69,11 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -63,21 +81,15 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
-            // Get the current page object if it is available.
-            RockPage page = null;
-
-            if ( HttpContext.Current != null )
-            {
-                page = HttpContext.Current.Handler as RockPage;
-            }
+            RockPage page = HttpContext.Current.Handler as RockPage;
 
             var parms = ParseMarkup( _markup, context );
 
             using ( TextWriter twStylesheet = new StringWriter() )
             {
-                base.OnRender( context, twStylesheet );
+                base.Render( context, twStylesheet );
 
                 var stylesheet = twStylesheet.ToString();
 
@@ -109,18 +121,14 @@ namespace Rock.Lava.Blocks
                                     filePath = importFile;
                                 }
 
-                                if ( page != null )
+                                filePath = page.ResolveRockUrl( filePath );
+
+                                var fullPath = page.MapPath( "~/" ) + filePath;
+
+                                if (File.Exists( fullPath ) )
                                 {
-                                    filePath = page.ResolveRockUrl( filePath );
-
-                                    var fullPath = page.MapPath( "~/" ) + filePath;
-
-                                    if ( File.Exists( fullPath ) )
-                                    {
-                                        importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
-                                    }
+                                    importStatements = $"{importStatements}{Environment.NewLine}@import \"{fullPath}\";";
                                 }
-                                
                             }
 
                             stylesheet = $"{stylesheet}{Environment.NewLine}{importStatements}";
@@ -174,34 +182,25 @@ namespace Rock.Lava.Blocks
                     }
                 }
 
-                var styleText = $"{Environment.NewLine}<style>{stylesheet}</style>{Environment.NewLine}";
-
-                if ( page != null )
+                if ( parms.ContainsKey("id") )
                 {
-                    if ( parms.ContainsKey( "id" ) )
+                    var identifier = parms["id"];
+                    if ( identifier.IsNotNullOrWhiteSpace() )
                     {
-                        var identifier = parms["id"];
-                        if ( identifier.IsNotNullOrWhiteSpace() )
-                        {
-                            var controlId = "css-" + identifier;
+                        var controlId = "css-" + identifier;
 
-                            var cssControl = page.Header.FindControl( controlId );
-                            if ( cssControl == null )
-                            {
-                                cssControl = new System.Web.UI.LiteralControl( styleText );
-                                cssControl.ID = controlId;
-                                page.Header.Controls.Add( cssControl );
-                            }
+                        var cssControl = page.Header.FindControl( controlId );
+                        if (cssControl == null )
+                        {
+                            cssControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<style>{stylesheet}</style>{Environment.NewLine}" );
+                            cssControl.ID = controlId;
+                            page.Header.Controls.Add( cssControl );
                         }
-                    }
-                    else
-                    {
-                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( styleText ) );
                     }
                 }
                 else
                 {
-                    result.Write( styleText );
+                    page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<style>{stylesheet}</style>{Environment.NewLine}" ) );
                 }
             }
         }
@@ -212,16 +211,13 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
-            /*
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            foreach ( var scope in context.GetScopes )
+            foreach ( var scope in context.Scopes )
             {
                 foreach ( var item in scope )
                 {
@@ -230,15 +226,13 @@ namespace Rock.Lava.Blocks
             }
 
             // get merge fields loaded by the block or container
-            if ( context.GetEnvironments.Count > 0 )
+            if ( context.Environments.Count > 0 )
             {
-                foreach ( var item in context.GetEnvironments[0] )
+                foreach ( var item in context.Environments[0] )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
-            */
-
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using DotLiquid;
 
 namespace Rock.Lava
 {
@@ -159,7 +160,7 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="attributesMarkup"></param>
         /// <param name="context"></param>
-        public void ParseFromMarkup( string attributesMarkup, ILavaContext context )
+        public void ParseFromMarkup( string attributesMarkup, Context context )
         {
             _settings = GetElementAttributes( attributesMarkup, context );
         }
@@ -173,12 +174,31 @@ namespace Rock.Lava
         /// <param name="elementAttributesMarkup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static Dictionary<string, string> GetElementAttributes( string elementAttributesMarkup, ILavaContext context = null )
+        public static Dictionary<string, string> GetElementAttributes( string elementAttributesMarkup, Context context = null )
         {
             // First, resolve any Lava merge fields that exist in the element attributes markup.
             if ( context != null )
             {
-                elementAttributesMarkup = elementAttributesMarkup.ResolveMergeFields( context.GetMergeFields() );
+                var internalMergeFields = new Dictionary<string, object>();
+
+                // Get variables defined in the current scope, then from the outer block or container.
+                foreach ( var scope in context.Scopes )
+                {
+                    foreach ( var item in scope )
+                    {
+                        internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    }
+                }
+
+                foreach ( var environment in context.Environments )
+                {
+                    foreach ( var item in environment )
+                    {
+                        internalMergeFields.AddOrReplace( item.Key, item.Value );
+                    }
+                }
+
+                elementAttributesMarkup = elementAttributesMarkup.ResolveMergeFields( internalMergeFields );
             }
 
             // Get the set of parameters using variations of the following pattern:

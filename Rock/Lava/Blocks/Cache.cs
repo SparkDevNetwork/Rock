@@ -23,6 +23,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+using DotLiquid.Util;
+
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -41,9 +44,17 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
         string _tagName = string.Empty;
 
-        string _blockMarkup = null;
+        StringBuilder _blockMarkup = new StringBuilder();
 
         const int _maxRecursionDepth = 10;
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Cache>( "cache" );
+        }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -52,33 +63,79 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
             _tagName = tagName;
 
-            // Get the internal content of the block. The list of tokens passed in to custom blocks includes the block closing tag,
-            // We need to remove the unmatched closing tag to get the valid internal markup for the block.
-            if ( tokens.Any() )
-            {
-                var lastToken = tokens.Last().Replace( " ", "" );
+            base.Initialize( tagName, markup, tokens );
+        }
 
-                if ( lastToken.StartsWith( "{%end" ) || lastToken.StartsWith( "{%-end" ) )
+        /// <summary>
+        /// Parses the specified tokens.
+        /// </summary>
+        /// <param name="tokens">The tokens.</param>
+        protected override void Parse( List<string> tokens )
+        {
+            // Get the block markup. The list of tokens contains all of the lava from the start tag to
+            // the end of the template. This will pull out just the internals of the block.
+
+            // We must take into consideration nested tags of the same type
+
+            // This is similar logic to the Shortcodes, but the tag regex are different. Attempted to refactor to a reusable helper, but it needs
+            // access to a lot of the internals of the command.
+
+            var endTagFound = false;
+
+            var startTag = $@"{{\%\s*{ _tagName }\s*\%}}";
+            var endTag = $@"{{\%\s*end{ _tagName }\s*\%}}";
+
+            var childTags = 0;
+
+            Regex regExStart = new Regex( startTag );
+            Regex regExEnd = new Regex( endTag );
+
+            NodeList = NodeList ?? new List<object>();
+            NodeList.Clear();
+
+            string token;
+            while ( ( token = tokens.Shift() ) != null )
+            {
+
+                Match startTagMatch = regExStart.Match( token );
+                if ( startTagMatch.Success )
                 {
-                    _blockMarkup = tokens.Take( tokens.Count - 1 ).JoinStrings( string.Empty );
+                    childTags++; // increment the child tag counter
+                    _blockMarkup.Append( token );
                 }
                 else
                 {
-                    // If the final tag is not an (unmatched) closing tag, include it.
-                    _blockMarkup = tokens.JoinStrings( string.Empty );
+                    Match endTagMatch = regExEnd.Match( token );
+
+                    if ( endTagMatch.Success )
+                    {
+                        if ( childTags > 0 )
+                        {
+                            childTags--; // decrement the child tag counter
+                            _blockMarkup.Append( token );
+                        }
+                        else
+                        {
+                            endTagFound = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        _blockMarkup.Append( token );
+                    }
                 }
             }
-            else
-            {
-                _blockMarkup = string.Empty;
-            }
 
-            base.OnInitialize( tagName, markup, tokens );
+            if ( !endTagFound )
+            {
+                AssertMissingDelimitation();
+            }
         }
 
         /// <summary>
@@ -86,13 +143,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // First ensure that cached commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
@@ -104,7 +161,7 @@ namespace Rock.Lava.Blocks
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
-                base.OnRender( context, result );
+                base.Render( context, result );
                 return;
             }
 
@@ -133,42 +190,39 @@ namespace Rock.Lava.Blocks
                     result.Write( cachedResult.Content );
                 }
 
-                base.OnRender( context, result );
+                base.Render( context, result );
                 return;
             }
 
             // Cached value not available so render the template and cache it
             var lavaResults = MergeLava( _blockMarkup.ToString(), context );
 
-            if ( lavaResults != null )
+            var cacheDuration = parms["duration"].AsInteger();
+
+            if ( cacheDuration > 0 )
             {
-                var cacheDuration = parms["duration"].AsInteger();
+                // Don't cache if it's too large
+                var maxCacheSize = parms["maxcachesize"].AsInteger();
 
-                if ( cacheDuration > 0 )
+                if ( lavaResults.Length < maxCacheSize )
                 {
-                    // Don't cache if it's too large
-                    var maxCacheSize = parms["maxcachesize"].AsInteger();
-
-                    if ( lavaResults.Length < maxCacheSize )
-                    {
-                        var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-                        var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
-                        RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
-                    }
+                    var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
+                    var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
                 }
+            }
 
-                // If twopass is enabled run the lava again
-                if ( twoPassEnabled )
-                {
-                    lavaResults = MergeLava( lavaResults, context );
-                }
+            // If twopass is enabled run the lava again
+            if ( twoPassEnabled )
+            {
+                lavaResults = MergeLava( lavaResults, context );
             }
 
             result.Write( lavaResults );
 
 
-            // TODO: Removed to fix for DotLiquid implementation - if present, output prints twice.
-            //base.OnRender( context, result );
+
+            base.Render( context, result );
         }
 
         /// <summary>
@@ -213,20 +267,31 @@ namespace Rock.Lava.Blocks
         /// <param name="lavaTemplate">The lava template.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private string MergeLava( string lavaTemplate, ILavaContext context )
+        private string MergeLava( string lavaTemplate, Context context )
         {
-            string output = null;
+            // Get enabled commands
+            var enabledCommands = context.Registers["EnabledCommands"].ToString();
 
-            // Resolve the Lava template contained in this block in a new context.
-            var newContext = LavaEngine.CurrentEngine.NewContext();
+            // Get mergefields from lava context
+            var lavaMergeFields = new Dictionary<string, object>();
+            if ( context.Environments?.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    lavaMergeFields.Add( item.Key, item.Value );
+                }
+            }
 
-            newContext.SetMergeFields( context.GetMergeFields() );
-            newContext.SetInternalFields( context.GetInternalFields() );
+            // Add variables in the scope (defined in the lava itself via assign)
+            if ( context.Scopes?.Count > 0 )
+            {
+                foreach ( var item in context.Scopes[0] )
+                {
+                    lavaMergeFields.Add( item.Key, item.Value );
+                }
+            }
 
-            // Resolve the inner template.
-            LavaEngine.CurrentEngine.TryRender( lavaTemplate, out output, newContext );
-
-            return output;
+            return lavaTemplate.ResolveMergeFields( lavaMergeFields, enabledCommands );
         }
 
         /// <summary>
@@ -235,10 +300,28 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
 
             var parms = new Dictionary<string, string>();
             parms.Add( "key", string.Empty );
@@ -269,5 +352,6 @@ namespace Rock.Lava.Blocks
             }
             return parms;
         }
+
     }
 }

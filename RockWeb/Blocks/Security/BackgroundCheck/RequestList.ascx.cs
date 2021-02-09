@@ -28,7 +28,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
 
 namespace RockWeb.Blocks.Security.BackgroundCheck
 {
@@ -362,7 +361,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <summary>
         /// The Background Check table row columns tags
         /// </summary>
-        public class BackgroundCheckRow : RockDynamic
+        public class BackgroundCheckRow : Rock.Utility.RockDynamic
         {
             public string Name { get; set; }
 

@@ -24,7 +24,6 @@ using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -237,7 +236,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// A class to store event item occurrence data for liquid
         /// </summary>
-        [LavaType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Location", "Description", "Summary", "DetailPage" )]
+        [DotLiquid.LiquidType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Location", "Description", "Summary", "DetailPage" )]
         public class EventOccurrenceSummary
         {
             /// <summary>

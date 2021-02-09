@@ -2,7 +2,7 @@
 using Rock.Tests.Shared;
 using Scripturize = Rock.Utility.Scripturize;
 
-namespace Rock.Tests.UnitTests.Lava
+namespace Rock.Tests.Rock.Lava
 {
     /// <summary>
     /// A test class for testing any Rock Shortcode Lava.

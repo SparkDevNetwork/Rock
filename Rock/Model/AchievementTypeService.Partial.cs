@@ -320,7 +320,7 @@ namespace Rock.Model
     /// <summary>
     /// Statement of Progress for an Achievement Type
     /// </summary>
-    public class ProgressStatement: ILavaDataDictionary
+    public class ProgressStatement: ILiquidizable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressStatement" /> class.
@@ -452,19 +452,6 @@ namespace Rock.Model
 
                 return availableKeys;
             }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public object GetValue( object key )
-        {
-            return this[key];
         }
 
         /// <summary>

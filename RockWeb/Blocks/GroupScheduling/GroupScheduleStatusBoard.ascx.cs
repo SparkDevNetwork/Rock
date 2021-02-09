@@ -22,9 +22,7 @@ using System.Text;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -446,7 +444,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <summary>
         ///
         /// </summary>
-        private class ScheduleOccurrenceDate : RockDynamic
+        private class ScheduleOccurrenceDate : DotLiquid.Drop
         {
             public Schedule Schedule { get; set; }
 

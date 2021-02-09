@@ -17,7 +17,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -26,7 +25,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-    public class GroupTypeLocationType: ILavaDataDictionarySource
+    public class GroupTypeLocationType: DotLiquid.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.
@@ -69,11 +68,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }
-
-        ILavaDataDictionary ILavaDataDictionarySource.GetLavaDataDictionary()
-        {
-            return new LavaDataDictionary( LocationTypeValue );
-        }
 
         /// <summary>
         /// To the liquid.

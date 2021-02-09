@@ -1229,16 +1229,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Removes all whitespace in a string, including carriage return and line feed characters.
-        /// </summary>
-        /// <param name="input">The input string.</param>
-        /// <returns></returns>
-        public static string RemoveWhiteSpace( this string input )
-        {
-            return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
-        }
-
-        /// <summary>
         /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
         /// from https://stackoverflow.com/a/1450889/1755417
         /// </summary>

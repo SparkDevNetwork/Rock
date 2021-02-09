@@ -102,9 +102,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
-      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
-      <Name>Rock.Lava.Shared</Name>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
+      <Name>DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}</Project>

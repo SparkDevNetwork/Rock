@@ -26,7 +26,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -432,7 +431,7 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
-        [LavaType( "Name", "Html", "EmailHtml" )]
+        [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
         public class LiquidButton
         {
             /// <summary>
