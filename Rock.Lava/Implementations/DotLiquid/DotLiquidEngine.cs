@@ -153,12 +153,18 @@ namespace Rock.Lava.DotLiquid
         /// </summary>
         private void GetLavaFilterCompatibleArguments( string filterName, List<object> args, ParameterInfo[] lavaFilterFunctionParams, Context dotLiquidContext )
         {
+            // Add the DotLiquid Context wrapped in a LavaContext.
+            if ( lavaFilterFunctionParams.Length > 0 && lavaFilterFunctionParams[0].ParameterType == typeof( ILavaContext ) )
+            {
+                args.Insert( 0, new DotLiquidLavaContext( dotLiquidContext ) );
+            }
+
             // Unwrap proxy objects.
             for ( int i = 0; i < args.Count; i++ )
             {
-                if ( args[i] is ILiquidFrameworkDataObjectProxy proxy )
+                if ( ( args[i] is ILavaDataDictionarySource ) )
                 {
-                    args[i] = proxy.GetProxiedDataObject();
+                    args[i] = ( (ILavaDataDictionarySource)args[i] ).GetLavaDataDictionary();
                 }
 
                 if ( args[i] is DropProxy )
@@ -166,12 +172,6 @@ namespace Rock.Lava.DotLiquid
                     args[i] = ( (DropProxy)args[i] ).ConvertToValueType();
                 }
 
-            }
-
-            // Add the DotLiquid Context wrapped in a LavaContext.
-            if ( lavaFilterFunctionParams.Length > 0 && lavaFilterFunctionParams[0].ParameterType == typeof( ILavaContext ) )
-            {
-                args.Insert( 0, new DotLiquidLavaContext( dotLiquidContext ) );
             }
 
             // Add in any missing parameters with the default values defined for the filter method.
@@ -261,32 +261,20 @@ namespace Rock.Lava.DotLiquid
         /// <param name="allowedMembers"></param>
         public override void RegisterSafeType( Type type, string[] allowedMembers = null )
         {
-            // Register the Type and if necessary, provide a converter function to return a Type that supports the IDictionary<string,object> interface required by DotLiquid.
-            if ( typeof( IDictionary<string, object> ).IsAssignableFrom( type ) )
+            if ( typeof( Rock.Lava.ILavaDataDictionarySource ).IsAssignableFrom( type ) )
             {
-                // This Type does not require conversion, it can be accessed directly by DotLiquid.
-                Template.RegisterSafeType( type, allowedMembers );
-
-                return;
+                Template.RegisterSafeType( type,
+                    ( x ) =>
+                    {
+                        return ( (Rock.Lava.ILavaDataDictionarySource)x ).GetLavaDataDictionary();
+                    } );
             }
             else if ( typeof( Rock.Lava.ILavaDataDictionary ).IsAssignableFrom( type ) )
             {
-                Template.RegisterSafeType( type,
+                Template.RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ),
                     ( x ) =>
                     {
-                        // Return a wrapper for the Lava dictionary that supports the IDictionary<string, object> interface.
                         return new DotLiquidLavaDataDictionaryProxy( x as ILavaDataDictionary );
-                    } );
-            }
-            else if ( typeof( Rock.Lava.ILavaDataDictionarySource ).IsAssignableFrom( type ) )
-            {
-                Template.RegisterSafeType( type,
-                    ( x ) =>
-                    {
-                        // Get the Lava Dictionary and return it in a wrapper that supports the IDictionary<string, object> interface.
-                        var lavaDictionary = ( (Rock.Lava.ILavaDataDictionarySource)x ).GetLavaDataDictionary();
-
-                        return new DotLiquidLavaDataDictionaryProxy( lavaDictionary );
                     } );
             }
             else
