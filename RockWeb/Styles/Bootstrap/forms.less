@@ -136,9 +136,9 @@ output {
   display: block;
   width: 100%;
   height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-  padding: @padding-base-vertical @padding-base-horizontal;
-  font-size: @font-size-base;
-  line-height: @line-height-base;
+  padding: @input-padding-y @input-padding-x;
+  font-size: @input-font-size;
+  line-height: @input-line-height;
   color: @input-color;
   background-color: @input-bg;
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
@@ -157,6 +157,12 @@ output {
   &::-ms-expand {
     background-color: transparent;
     border: 0;
+  }
+
+  // Remove select outline from select box in FF
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 @input-color;
   }
 
   // Disabled and read-only inputs
@@ -182,6 +188,43 @@ output {
   }
 }
 
+
+// Select
+//
+// Replaces the browser default select with a custom one, mostly pulled from
+// https://primer.github.io/.
+
+select.form-control {
+  padding: @form-select-padding-y @form-select-indicator-padding @form-select-padding-y @form-select-padding-x;
+  background-image: @form-select-indicator;
+  background-repeat: no-repeat;
+  background-position: @form-select-bg-position;
+  background-size: @form-select-bg-size;
+  border-radius: @input-border-radius;
+  appearance: none;
+
+  &[multiple],
+  &[size]:not([size="1"]) {
+    padding-right: @form-select-padding-x;
+    background-image: none;
+  }
+
+  // Remove outline from select box in FF
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 @form-select-color;
+  }
+
+  &:focus::-ms-value {
+    // Suppress the nested default white text on blue background highlight given to
+    // the selected option text when the (still closed) <select> receives focus
+    // in IE and (under certain conditions) Edge, as it looks bad and cannot be made to
+    // match the appearance of the native widget.
+    // See https://github.com/twbs/bootstrap/issues/19398.
+    color: @input-color;
+    background-color: @input-bg;
+  }
+}
 
 // Special styles for iOS temporal inputs
 //
@@ -319,42 +362,42 @@ output {
 // issue documented in https://github.com/twbs/bootstrap/issues/15074.
 
 .input-sm {
-  .input-size(@input-height-small; @padding-small-vertical; @padding-small-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+  .input-size(@input-height-small; @input-padding-y-sm; @input-padding-x-sm; @input-font-size-sm; @input-line-height-sm; @input-border-radius-small);
 }
 .form-group-sm {
   .form-control {
     height: @input-height-small;
-    padding: @padding-small-vertical @padding-small-horizontal;
+    padding: @input-padding-y-sm @input-padding-x-sm;
     font-size: @font-size-small;
-    line-height: @line-height-small;
+    line-height: @input-line-height-sm;
     border-radius: @input-border-radius-small;
   }
   select.form-control {
     height: @input-height-small;
-    line-height: @input-height-small;
+    line-height: @input-line-height-sm;
   }
   textarea.form-control,
   select[multiple].form-control {
     height: auto;
   }
   .form-control-static {
-    height: @input-height-small;
-    min-height: (@line-height-computed + @font-size-small);
+    height: @input-line-height-sm;
+    min-height: (@line-height-computed + @input-font-size-sm);
     padding: (@padding-small-vertical + 1) @padding-small-horizontal;
-    font-size: @font-size-small;
-    line-height: @line-height-small;
+    font-size: @input-font-size-sm;
+    line-height: @input-line-height-sm;
   }
 }
 
 .input-lg {
-  .input-size(@input-height-large; @padding-large-vertical; @padding-large-horizontal; @font-size-large; @line-height-large; @input-border-radius-large);
+  .input-size(@input-height-large; @input-padding-y-lg; @input-padding-x-lg; @input-font-size-lg; @input-line-height-lg; @input-border-radius-large);
 }
 .form-group-lg {
   .form-control {
     height: @input-height-large;
-    padding: @padding-large-vertical @padding-large-horizontal;
-    font-size: @font-size-large;
-    line-height: @line-height-large;
+    padding: @input-padding-y-lg @input-padding-x-lg;
+    font-size: @input-font-size-lg;
+    line-height: @input-line-height-lg;
     border-radius: @input-border-radius-large;
   }
   select.form-control {
@@ -367,10 +410,10 @@ output {
   }
   .form-control-static {
     height: @input-height-large;
-    min-height: (@line-height-computed + @font-size-large);
-    padding: (@padding-large-vertical + 1) @padding-large-horizontal;
-    font-size: @font-size-large;
-    line-height: @line-height-large;
+    min-height: (@line-height-computed + @input-font-size-lg);
+    padding: (@input-padding-y-lg + 1) @input-padding-x-lg;
+    font-size: @input-font-size-lg;
+    line-height: @input-line-height-lg;
   }
 }
 
@@ -589,8 +632,8 @@ output {
   .form-group-lg {
     @media (min-width: @screen-sm-min) {
       .control-label {
-        padding-top: (@padding-large-vertical + 1);
-        font-size: @font-size-large;
+        padding-top: (@input-padding-y-lg + 1);
+        font-size: @input-font-size-lg;
       }
     }
   }
