@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -116,7 +117,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that the transaction detail belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace Rock.Model
         /// <value>
         /// Tehe <see cref="Rock.Model.FinancialAccount"/>/account that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

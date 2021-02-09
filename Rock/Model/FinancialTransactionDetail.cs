@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Security;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -132,7 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -141,7 +142,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual FinancialAccount Account { get; set; }
 

@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -86,7 +87,7 @@ namespace Rock.Model
         /// <value>
         /// The Device type.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual InteractionDeviceType DeviceType { get; set; }
 
         /// <summary>

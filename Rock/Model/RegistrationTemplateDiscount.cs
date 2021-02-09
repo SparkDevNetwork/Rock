@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -149,7 +150,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>
@@ -159,7 +160,7 @@ namespace Rock.Model
         /// The discount string.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string DiscountString
         {
             get
@@ -183,7 +184,7 @@ namespace Rock.Model
         /// The discount limits string.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string DiscountLimitsString
         {
             get
