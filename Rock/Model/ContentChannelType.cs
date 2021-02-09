@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -126,7 +125,7 @@ namespace Rock.Model
         /// <value>
         /// The channels.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
         /// <summary>

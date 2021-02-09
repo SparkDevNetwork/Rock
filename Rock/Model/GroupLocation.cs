@@ -26,7 +26,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -127,7 +126,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that is associated with this GroupLocation.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -155,7 +154,7 @@ namespace Rock.Model
         /// <value>
         /// The group member person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias GroupMemberPersonAlias { get; set; }
 
         /// <summary>

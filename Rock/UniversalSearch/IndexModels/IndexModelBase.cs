@@ -496,7 +496,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public List<string> AvailableKeys
         {
             get

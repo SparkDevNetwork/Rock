@@ -31,7 +31,6 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -82,7 +81,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [LavaHidden]
+        [LavaIgnore]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -139,7 +138,7 @@ namespace Rock.Model
         /// <value>
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public decimal? ValueAsNumeric
         {
             get
@@ -182,7 +181,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaHidden]
+        [LavaIgnore]
         public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
@@ -193,7 +192,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaHidden]
+        [LavaIgnore]
         public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
@@ -209,7 +208,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaHidden]
+        [LavaIgnore]
         public int? ValueAsPersonId { get; private set; }
 
         /// <summary>
@@ -244,7 +243,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
@@ -254,7 +253,7 @@ namespace Rock.Model
         /// The attribute values historical.
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; } = new Collection<AttributeValueHistorical>();
 
         /// <summary>
@@ -263,7 +262,7 @@ namespace Rock.Model
         /// <value>
         /// The value formatted.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string ValueFormatted
         {
             get
@@ -288,7 +287,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the attribute.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string AttributeName
         {
             get
@@ -313,7 +312,7 @@ namespace Rock.Model
         /// <value>
         /// The attribute key.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string AttributeKey
         {
             get
@@ -338,7 +337,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual bool AttributeIsGridColumn
         {
             get

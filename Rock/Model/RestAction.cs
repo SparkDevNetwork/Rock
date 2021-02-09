@@ -23,7 +23,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -129,7 +128,7 @@ namespace Rock.Model
         /// <value>
         /// The controller.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RestController Controller { get; set; }
 
         #endregion

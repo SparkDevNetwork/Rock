@@ -21,7 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -94,7 +93,7 @@ namespace Rock.Model
         /// <value>
         /// The connection request.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
         /// <summary>
@@ -103,7 +102,7 @@ namespace Rock.Model
         /// <value>
         /// The connection workflow.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ConnectionWorkflow ConnectionWorkflow { get; set; }
 
         /// <summary>
@@ -112,7 +111,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Workflow Workflow { get; set; }
 
         #endregion

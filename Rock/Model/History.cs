@@ -24,7 +24,6 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -283,7 +282,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public string SummaryHtml
         {
             get

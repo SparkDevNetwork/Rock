@@ -28,7 +28,6 @@ using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -217,7 +216,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Page Page { get; set; }
 
         /// <summary>
@@ -228,7 +227,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Layout Layout { get; set; }
 
         /// <summary>
@@ -239,7 +238,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Site"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Site Site { get; set; }
 
         /// <summary>

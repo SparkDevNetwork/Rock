@@ -26,7 +26,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -229,7 +228,7 @@ namespace Rock.Model
         /// <value>
         /// The authorized person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
@@ -313,7 +312,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public decimal TotalAmount 
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }

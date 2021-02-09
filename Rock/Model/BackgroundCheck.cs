@@ -21,7 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -159,7 +158,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -168,7 +167,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.Workflow Workflow { get; set; }
 
         /// <summary>
@@ -177,7 +176,7 @@ namespace Rock.Model
         /// <value>
         /// The response document.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.BinaryFile ResponseDocument { get; set; }
 
         /// <summary>

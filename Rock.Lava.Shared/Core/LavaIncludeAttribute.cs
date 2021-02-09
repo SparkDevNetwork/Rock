@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.Lava
+namespace Rock.Data
 {
     /// <summary>
-    /// Marks a property as being inaccessible to a Lava template if an object of the type exists in the Lava context.
+    /// Marks a property as being accessible to a Lava template during rendering.
     /// </summary>
-    public class LavaHiddenAttribute : System.Attribute
+    public class LavaIncludeAttribute : System.Attribute
     {
     }
 }

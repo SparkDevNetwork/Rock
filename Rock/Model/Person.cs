@@ -36,7 +36,6 @@ using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -571,7 +570,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -898,7 +897,7 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         public virtual string PhotoUrl
         {
@@ -950,7 +949,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -965,7 +964,7 @@ namespace Rock.Model
         /// <value>
         /// The aliases.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
@@ -1061,7 +1060,7 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -1070,7 +1069,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
@@ -1079,7 +1078,7 @@ namespace Rock.Model
         /// <value>
         /// The primary family.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
@@ -1088,7 +1087,7 @@ namespace Rock.Model
         /// <value>
         /// The primary campus.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
@@ -1097,7 +1096,7 @@ namespace Rock.Model
         /// <value>
         /// The financial account.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
@@ -1385,7 +1384,7 @@ namespace Rock.Model
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual double? AgePrecise
         {
             get
@@ -1581,7 +1580,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string ImpersonationParameter
         {
             get
@@ -1617,7 +1616,7 @@ namespace Rock.Model
         /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public override string UrlEncodedKey
         {
             get

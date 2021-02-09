@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -114,7 +113,7 @@ namespace Rock.Model
         /// <value>
         /// The parent entity set.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual EntitySet ParentEntitySet { get; set; }
 
         /// <summary>

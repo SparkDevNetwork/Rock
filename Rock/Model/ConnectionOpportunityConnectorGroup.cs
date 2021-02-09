@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -74,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>

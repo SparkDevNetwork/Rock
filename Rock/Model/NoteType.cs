@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -112,7 +111,7 @@ namespace Rock.Model
         [RockObsolete( "1.8" )]
         [Obsolete( "No Longer Supported", true )]
         [NotMapped]
-        [LavaHidden]
+        [LavaIgnore]
         public string CssClass
         {
             get
