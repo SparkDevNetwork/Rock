@@ -19,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -79,16 +81,24 @@ namespace Rock.Lava.Blocks
         private string _markup;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<WorkflowActivate>( "workflowactivate" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -96,13 +106,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
@@ -140,7 +150,7 @@ namespace Rock.Lava.Blocks
 
             /* Process inside a new stack level so our own created variables do not
              * persist throughout the rest of the workflow. */
-            context.ExecuteInChildScope( (System.Action<ILavaContext>)((newContext) =>
+            context.Stack( ( System.Action)(() =>
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -303,9 +313,7 @@ namespace Rock.Lava.Blocks
                         context["Error"] = "Must specify one of WorkflowType or WorkflowId.";
                     }
 
-                    base.OnRender( context, result );
-                    //RenderAll( NodeList, context, result );
-                    // TODO: Test this! - NodeList is empty here, so the call to RenderAll seems unnecessary?
+                    RenderAll( NodeList, context, result );
                 }
             }) );
         }
@@ -316,10 +324,28 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            foreach ( var environment in context.Environments )
+            {
+                foreach ( var item in environment )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
 
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 

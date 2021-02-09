@@ -18,6 +18,8 @@ using System;
 using System.Linq;
 using System.Text;
 
+using DotLiquid;
+
 using Quartz;
 
 using Rock.Communication;
@@ -222,7 +224,7 @@ namespace Rock.Jobs
             {
                 if ( jobException != null )
                 {
-                    mergeFields.Add( "Exception", jobException );
+                    mergeFields.Add( "Exception", Hash.FromAnonymousObject( jobException ) );
                 }
 
             }

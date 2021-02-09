@@ -20,7 +20,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
-using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -29,7 +28,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : ILavaDataDictionary, IHasAttributesWrapper
+    public class CheckInPerson : Lava.ILiquidizable, IHasAttributesWrapper
     {
         /// <summary>
         /// Gets or sets the person.
@@ -371,19 +370,6 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public object GetValue( object key )
-        {
-            return this[key];
-        }
-
-        /// <summary>
         /// Determines whether the specified key contains key.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -413,7 +399,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Helper class for summarizing the selected check-in
     /// </summary>
-    [LavaType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
+    [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
     public class CheckInPersonSummary
     {
         /// <summary>

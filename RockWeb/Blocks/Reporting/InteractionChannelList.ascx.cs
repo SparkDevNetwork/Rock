@@ -21,10 +21,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 
+using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -214,7 +215,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times
-                var defaultTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+                var defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
                 options.GetLegacyGlobalMergeFields = false;
@@ -235,7 +236,7 @@ namespace RockWeb.Blocks.Reporting
 
                     string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
                         channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
-                        defaultTemplate.Render( channelMergeFields );
+                        defaultTemplate.Render( Hash.FromDictionary( channelMergeFields ) );
 
                     channelItems.Add( new ChannelItem
                     {

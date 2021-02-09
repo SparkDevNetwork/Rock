@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 
+using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -30,7 +32,6 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Model;
 using Rock.Web;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -207,24 +208,19 @@ namespace RockWeb.Blocks.Cms
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-
+           
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
-                var lavaContext = LavaEngine.CurrentEngine.NewContext( pageProperties );
-
                 var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
 
-                lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
-
-                IList<Exception> errors;
-
-                lavaTemplate.TryRender( lavaContext, out content, out errors );
+                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
 
                 // Check for Lava rendering errors.
-                if ( errors.Any() )
+                if ( lavaTemplate.Errors.Any() )
                 {
-                    throw errors.First();
+                    throw lavaTemplate.Errors.First();
                 }
 
                 phContent.Controls.Clear();
@@ -263,7 +259,7 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
-        private ILavaTemplate GetTemplate()
+        private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;

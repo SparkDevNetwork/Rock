@@ -20,26 +20,25 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+
 namespace Rock.Lava.Shortcodes
 {
     /// <summary>
     ///
     /// </summary>
-    public class BootstrapAlert : RockLavaShortcodeBase, IRockLavaBlock
+    public class BootstrapAlert : RockLavaShortcodeBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
 
         /// <summary>
-        /// Specifies the type of Liquid element for this shortcode.
+        /// Method that will be run at Rock startup
         /// </summary>
-        public override LavaShortcodeTypeSpecifier ElementType
+        public override void OnStartup()
         {
-            get
-            {
-                return LavaShortcodeTypeSpecifier.Block;
-            }
+            Template.RegisterShortcode<BootstrapAlert>( "bootstrapalert" );
         }
 
         /// <summary>
@@ -49,11 +48,11 @@ namespace Rock.Lava.Shortcodes
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -61,12 +60,12 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
 
             using ( TextWriter writer = new StringWriter() )
             {
-                base.OnRender( context, writer );
+                base.Render( context, writer );
 
                 var parms = ParseMarkup( _markup, context );
 
@@ -87,11 +86,28 @@ namespace Rock.Lava.Shortcodes
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
 
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();

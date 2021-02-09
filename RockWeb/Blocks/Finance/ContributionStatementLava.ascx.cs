@@ -30,7 +30,6 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using Rock.Security;
-using Rock.Utility;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -459,7 +458,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Pledge Summary Class
         /// </summary>
-        public class PledgeSummary : RockDynamic
+        public class PledgeSummary : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the pledge account identifier.
@@ -537,7 +536,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Account Summary Class
         /// </summary>
-        public class AccountSummary : RockDynamic
+        public class AccountSummary : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the name of the account.

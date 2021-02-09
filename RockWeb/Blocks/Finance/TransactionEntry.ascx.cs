@@ -3729,7 +3729,7 @@ TransactionAccountDetails: [
         /// Lightweight object for each contribution item
         /// </summary>
         [Serializable]
-        [LavaType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
+        [DotLiquid.LiquidType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
         protected class AccountItem
         {
             public int Id { get; set; }
