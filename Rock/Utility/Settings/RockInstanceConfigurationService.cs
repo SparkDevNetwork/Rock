@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Utilities;
 
 namespace Rock.Utility.Settings
 {
@@ -94,6 +95,20 @@ namespace Rock.Utility.Settings
             get
             {
                 return System.Environment.MachineName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public string AspNetVersion
+        {
+            get
+            {
+                return RockUpdateHelper.GetDotNetVersion();
             }
         }
 

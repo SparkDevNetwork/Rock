@@ -216,6 +216,7 @@
     <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfigurationTests.cs" />
+    <Compile Include="Web\Utilities\RockUpdateHelperTests.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequestTests.cs" />
   </ItemGroup>
   <ItemGroup>
