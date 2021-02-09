@@ -61,6 +61,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202102082138560_CleanMigrationHistory.cs" />
+    <Compile Include="Migrations\202102082138560_CleanMigrationHistory.Designer.cs">
+      <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203.Designer.cs">
       <DependentUpon>202102032221004_Rollup_0203.cs</DependentUpon>
@@ -1575,6 +1579,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202102082138560_CleanMigrationHistory.resx">
+      <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203.resx">
       <DependentUpon>202102032221004_Rollup_0203.cs</DependentUpon>
     </EmbeddedResource>
