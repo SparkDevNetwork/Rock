@@ -3145,10 +3145,6 @@
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
-      <Name>DotLiquid</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
