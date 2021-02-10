@@ -9,6 +9,12 @@
             return Rock.dialogs.confirmDelete(event, 'Checkin for ' + personName);
         });
 
+        // ask ZebraPrinterPlugin if it running using the Windows CheckinClient or IPad app
+        // If so, we can present the 'local printer' option for label reprints
+        if (typeof (ZebraPrintPlugin) != 'undefined' && ZebraPrintPlugin.hasClientPrinter()) {
+            $('.js-has-client-printer').val(1);
+        }
+
     });
 </script>
 
@@ -32,7 +38,8 @@
                 </div>
 
                 <div class="col d-flex flex-column justify-content-center align-items-center">
-                    <Rock:NotificationBox ID="nbReprintMessage" runat="server" Visible="false"></Rock:NotificationBox>
+                    <Rock:HiddenFieldWithClass ID="hfHasClientPrinter" runat="server" CssClass="js-has-client-printer" />
+                    <Rock:NotificationBox ID="nbReprintMessage" runat="server" CssClass="js-reprintlabel-notification" Visible="false"></Rock:NotificationBox>
                     <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
@@ -41,7 +48,7 @@
                         <Content>
                             <Rock:NotificationBox ID="nbReprintLabelMessages" runat="server" NotificationBoxType="Validation"></Rock:NotificationBox>
                             <Rock:RockCheckBoxList ID="cblLabels" runat="server" Label="Labels" DataTextField="Name" DataValueField="FileGuid"></Rock:RockCheckBoxList>
-                            <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="IPAddress"></Rock:RockDropDownList>
+                            <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" />
                         </Content>
                     </Rock:ModalDialog>
                 </div>
