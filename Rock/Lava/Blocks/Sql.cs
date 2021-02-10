@@ -58,10 +58,11 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaContext context, TextWriter result )
         {
-            // If the SQL command is not allowed in this context, return an error.
+            // first ensure that sql commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
+                base.OnRender( context, result );
                 return;
             }
 
@@ -71,16 +72,16 @@ namespace Rock.Lava.Blocks
 
                 var parms = ParseMarkup( _markup, context );
 
-                var sqlTimeout = (int?)null;
+                var sqlTimeout = ( int? ) null;
                 if ( parms.ContainsKey( "timeout" ) )
                 {
                     sqlTimeout = parms["timeout"].AsIntegerOrNull();
                 }
-
+                
                 switch ( parms["statement"] )
                 {
                     case "select":
-                        var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => (object)i.Value ), sqlTimeout );
+                        var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
 
                         context.SetMergeField( parms["return"], results.Tables[0].ToDynamic(), LavaContextRelativeScopeSpecifier.Root );
                         break;
@@ -123,7 +124,7 @@ namespace Rock.Lava.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
-
+            
             var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
