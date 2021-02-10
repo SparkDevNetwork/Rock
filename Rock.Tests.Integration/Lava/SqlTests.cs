@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava.Blocks;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -16,7 +17,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectShortTimeoutShouldFail()
         {
             var lavaScript = @"{% sql timeout:'10' %}
@@ -41,7 +41,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectLongTimeoutShouldPass()
         {
             var lavaScript = @"{% sql timeout:'40' %}
@@ -87,7 +86,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
             var lavaScript = @"{% sql %}
@@ -111,7 +109,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandShortTimeoutShouldFail()
         {
             var lavaScript = @"{% sql statement:'command' timeout:'10' %}
@@ -126,7 +123,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandLongTimeoutShouldPass()
         {
             var lavaScript = @"{% sql statement:'command' timeout:'40' %}
@@ -154,7 +150,6 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
             var lavaScript = @"{% sql statement:'command' %}
