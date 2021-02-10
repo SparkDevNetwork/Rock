@@ -1,4 +1,4 @@
-System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValuePicker.js", "../../Elements/CurrencyBox.js", "../../Vendor/Vue/vue.js", "../../SystemGuid/DefinedType.js", "../../Elements/DatePicker.js", "../../Elements/RockButton.js", "../../Util/Guid.js", "../../Elements/Alert.js", "../../Filters/Number.js", "../../Elements/Toggle.js", "../../Store/Index.js", "../../Elements/TextBox.js", "../../Filters/Date.js", "../../Filters/String.js"], function (exports_1, context_1) {
+System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValuePicker.js", "../../Elements/CurrencyBox.js", "../../Vendor/Vue/vue.js", "../../SystemGuid/DefinedType.js", "../../Elements/DatePicker.js", "../../Elements/RockButton.js", "../../Util/Guid.js", "../../Elements/Alert.js", "../../Filters/Number.js", "../../Elements/Toggle.js", "../../Store/Index.js", "../../Elements/TextBox.js", "../../Filters/String.js", "../../Util/RockDate.js"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var CampusPicker_js_1, DefinedValuePicker_js_1, CurrencyBox_js_1, vue_js_1, DefinedType_js_1, DatePicker_js_1, RockButton_js_1, Guid_js_1, Alert_js_1, Number_js_1, Toggle_js_1, Index_js_1, TextBox_js_1, Date_js_1, String_js_1;
+    var CampusPicker_js_1, DefinedValuePicker_js_1, CurrencyBox_js_1, vue_js_1, DefinedType_js_1, DatePicker_js_1, RockButton_js_1, Guid_js_1, Alert_js_1, Number_js_1, Toggle_js_1, Index_js_1, TextBox_js_1, String_js_1, RockDate_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -79,11 +79,11 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
             function (TextBox_js_1_1) {
                 TextBox_js_1 = TextBox_js_1_1;
             },
-            function (Date_js_1_1) {
-                Date_js_1 = Date_js_1_1;
-            },
             function (String_js_1_1) {
                 String_js_1 = String_js_1_1;
+            },
+            function (RockDate_js_1_1) {
+                RockDate_js_1 = RockDate_js_1_1;
             }
         ],
         execute: function () {
@@ -136,7 +136,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                             CampusGuid: '',
                             BusinessGuid: null,
                             FrequencyValueGuid: '',
-                            GiftDate: Date_js_1.toDatePickerValue(new Date()),
+                            GiftDate: RockDate_js_1.default.newDate(),
                             IsGiveAnonymously: false
                         }
                     };

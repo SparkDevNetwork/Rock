@@ -18,7 +18,7 @@ import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
 import DefinedTypePicker from '../../Controls/DefinedTypePicker.js';
 import DefinedValuePicker from '../../Controls/DefinedValuePicker.js';
 import CampusPicker from '../../Controls/CampusPicker.js';
-import { defineComponent } from '../../Vendor/Vue/vue.js';
+import { defineComponent } from 'vue';
 import store from '../../Store/Index.js';
 import TextBox from '../../Elements/TextBox.js';
 import EmailBox from '../../Elements/EmailBox.js';
@@ -27,6 +27,8 @@ import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
 import CurrencyBox from '../../Elements/CurrencyBox.js';
 import PanelWidget from '../../Elements/PanelWidget.js';
+import DatePicker from '../../Elements/DatePicker.js';
+import { RockDateType } from '../../Util/RockDate.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -57,7 +59,8 @@ export default defineComponent({
         GalleryAndResult,
         TextBox,
         CurrencyBox,
-        EmailBox
+        EmailBox,
+        DatePicker
     },
     data() {
         return {
@@ -67,7 +70,8 @@ export default defineComponent({
             definedValue: null as DefinedValue | null,
             text: 'Some two-way bound text',
             currency: 1.234,
-            email: 'joe@joes.co'
+            email: 'joe@joes.co',
+            date: null as RockDateType | null
         };
     },
     methods: {
@@ -110,6 +114,18 @@ export default defineComponent({
             </template>
             <template #result>
                 {{text}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                DatePicker
+            </template>
+            <template #gallery>
+                <DatePicker label="Date 1" v-model="date" />
+                <DatePicker label="Date 2" v-model="date" />
+            </template>
+            <template #result>
+                {{date}}
             </template>
         </GalleryAndResult>
         <GalleryAndResult>

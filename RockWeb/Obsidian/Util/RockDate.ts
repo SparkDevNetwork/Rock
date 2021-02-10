@@ -14,39 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-export type Guid = string;
+
+export type RockDateType = string;
 
 /**
-* Generates a new Guid
+ * Convert a date to a RockDate
+ * @param d
+ */
+export function toRockDate(d: Date): RockDateType {
+    return d.toISOString().split('T')[0];
+}
+
+/**
+* Generates a new Rock Date
 */
-export function newGuid(): Guid {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
-}
-
-/**
- * Returns a normalized Guid that can be compared with string equality (===)
- * @param a
- */
-export function normalize(a: Guid) {
-    return a.toLowerCase();
-}
-
-/**
- * Are the guids equal?
- * @param a
- * @param b
- */
-export function areEqual(a: Guid, b: Guid) {
-    return normalize(a) === normalize(b);
+export function newDate(): RockDateType {
+    return toRockDate(new Date());
 }
 
 export default {
-    newGuid,
-    normalize,
-    areEqual
+    newDate,
+    toRockDate
 };
-

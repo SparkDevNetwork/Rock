@@ -24,6 +24,7 @@
 import Entity from '../Entity.js';
 import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
+import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface Attribute extends Entity {
     Id: number;
@@ -56,8 +57,8 @@ export default interface Attribute extends Entity {
     PreHtml: string | null;
     QualifierValues: Record<string, unknown>;
     ShowOnBulk: boolean;
-    CreatedDateTime: string | Date | null;
-    ModifiedDateTime: string | Date | null;
+    CreatedDateTime: RockDateType | null;
+    ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;

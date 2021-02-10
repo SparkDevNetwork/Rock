@@ -1,5 +1,22 @@
-System.register([], function (exports_1, context_1) {
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+System.register(["../Util/RockDate"], function (exports_1, context_1) {
     "use strict";
+    var RockDate_1;
     var __moduleName = context_1 && context_1.id;
     /**
      * Adjust for the timezone offset so early morning times don't appear as the previous local day.
@@ -31,17 +48,17 @@ System.register([], function (exports_1, context_1) {
     }
     exports_1("asDateOrNull", asDateOrNull);
     /**
-     * To a date picker value.  Mon Dec 2 => 2000-12-02
+     * To a RockDate value.  Mon Dec 2 => 2000-12-02
      * @param val
      */
-    function toDatePickerValue(val) {
+    function toRockDateOrNull(val) {
         var date = asDateOrNull(val);
         if (date === null) {
-            return '';
+            return null;
         }
-        return date.toISOString().split('T')[0];
+        return RockDate_1.toRockDate(date);
     }
-    exports_1("toDatePickerValue", toDatePickerValue);
+    exports_1("toRockDateOrNull", toRockDateOrNull);
     /**
      * Transforms the value into a string like '9/13/2001'
      * @param val
@@ -55,7 +72,11 @@ System.register([], function (exports_1, context_1) {
     }
     exports_1("asDateString", asDateString);
     return {
-        setters: [],
+        setters: [
+            function (RockDate_1_1) {
+                RockDate_1 = RockDate_1_1;
+            }
+        ],
         execute: function () {
         }
     };

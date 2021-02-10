@@ -32,6 +32,11 @@ System.register([], function (exports_1, context_1) {
     return {
         setters: [],
         execute: function () {
+            exports_1("default", {
+                newGuid: newGuid,
+                normalize: normalize,
+                areEqual: areEqual
+            });
         }
     };
 });

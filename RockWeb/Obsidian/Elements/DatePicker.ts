@@ -18,7 +18,7 @@ import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { newGuid } from '../Util/Guid.js';
 import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 import RockLabel from './RockLabel.js';
-import { toDatePickerValue } from '../Filters/Date.js';
+import { RockDateType } from '../Util/RockDate.js';
 
 export default defineComponent({
     name: 'DatePicker',
@@ -28,7 +28,7 @@ export default defineComponent({
     },
     props: {
         modelValue: {
-            type: String as PropType<string>,
+            type: String as PropType<RockDateType>,
             required: true
         },
         label: {
@@ -54,7 +54,7 @@ export default defineComponent({
     data: function () {
         return {
             uniqueId: `rock-textbox-${newGuid()}`,
-            internalValue: toDatePickerValue(this.modelValue)
+            internalValue: this.modelValue
         };
     },
     computed: {
@@ -69,7 +69,7 @@ export default defineComponent({
     },
     watch: {
         modelValue: function () {
-            this.internalValue = toDatePickerValue(this.modelValue);
+            this.internalValue = this.modelValue;
         }
     },
     template: `

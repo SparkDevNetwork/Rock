@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import AttributeValue from './AttributeValueViewModel.js';
+import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Campus extends Entity {
@@ -43,8 +44,8 @@ export default interface Campus extends Entity {
     TeamGroupId: number | null;
     TimeZoneId: string | null;
     Url: string | null;
-    CreatedDateTime: string | Date | null;
-    ModifiedDateTime: string | Date | null;
+    CreatedDateTime: RockDateType | null;
+    ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;

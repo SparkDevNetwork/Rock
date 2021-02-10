@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+
+import { RockDateType, toRockDate } from '../Util/RockDate';
+
 /**
  * Adjust for the timezone offset so early morning times don't appear as the previous local day.
  * @param val
@@ -50,17 +53,17 @@ export function asDateOrNull(val: unknown) {
 }
 
 /**
- * To a date picker value.  Mon Dec 2 => 2000-12-02
+ * To a RockDate value.  Mon Dec 2 => 2000-12-02
  * @param val
  */
-export function toDatePickerValue(val: unknown) {
+export function toRockDateOrNull(val: unknown): RockDateType | null {
     const date = asDateOrNull(val);
 
     if (date === null) {
-        return '';
+        return null;
     }
 
-    return date.toISOString().split('T')[0];
+    return toRockDate(date);
 }
 
 /**

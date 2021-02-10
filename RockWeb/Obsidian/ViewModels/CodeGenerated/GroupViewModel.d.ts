@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import { RockDateType } from '../../Util/RockDate.js';
 import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface Group extends Entity {
     Id: number;
     AllowGuests: boolean | null;
     ArchivedByPersonAliasId: number | null;
-    ArchivedDateTime: string | Date | null;
+    ArchivedDateTime: RockDateType | null;
     AttendanceRecordRequiredForCheckIn: number;
     Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
@@ -38,7 +39,7 @@ export default interface Group extends Entity {
     DisableScheduling: boolean;
     GroupCapacity: number | null;
     GroupTypeId: number;
-    InactiveDateTime: string | Date | null;
+    InactiveDateTime: RockDateType | null;
     InactiveReasonNote: string | null;
     InactiveReasonValueId: number | null;
     IsActive: boolean;
@@ -56,8 +57,8 @@ export default interface Group extends Entity {
     ScheduleId: number | null;
     SchedulingMustMeetRequirements: boolean;
     StatusValueId: number | null;
-    CreatedDateTime: string | Date | null;
-    ModifiedDateTime: string | Date | null;
+    CreatedDateTime: RockDateType | null;
+    ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;

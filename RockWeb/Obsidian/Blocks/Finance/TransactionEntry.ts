@@ -31,9 +31,9 @@ import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import store from '../../Store/Index.js';
 import TextBox from '../../Elements/TextBox.js';
 import FinancialAccount from '../../ViewModels/CodeGenerated/FinancialAccountViewModel.js';
-import { toDatePickerValue } from '../../Filters/Date.js';
 import { asCommaAnd } from '../../Filters/String.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
+import RockDate, { RockDateType } from '../../Util/RockDate.js';
 
 export type ProcessTransactionArgs = {
     IsGivingAsPerson: boolean;
@@ -57,7 +57,7 @@ export type ProcessTransactionArgs = {
     CampusGuid: Guid | null;
     BusinessGuid: Guid | null;
     FrequencyValueGuid: Guid;
-    GiftDate: Date | string;
+    GiftDate: RockDateType;
     IsGiveAnonymously: boolean;
 };
 
@@ -110,7 +110,7 @@ export default defineComponent({
                 CampusGuid: '',
                 BusinessGuid: null,
                 FrequencyValueGuid: '',
-                GiftDate: toDatePickerValue(new Date()),
+                GiftDate: RockDate.newDate(),
                 IsGiveAnonymously: false
             } as ProcessTransactionArgs
         };

@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import { RockDateType } from '../../Util/RockDate.js';
 import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Person extends Entity {
     Id: number;
     AgeClassification: number;
-    AnniversaryDate: string | Date | null;
+    AnniversaryDate: RockDateType | null;
     Attributes: Record<string, AttributeValue> | null;
     BirthDay: number | null;
     BirthMonth: number | null;
@@ -36,7 +37,7 @@ export default interface Person extends Entity {
     CommunicationPreference: number;
     ConnectionStatusValueId: number | null;
     ContributionFinancialAccountId: number | null;
-    DeceasedDate: string | Date | null;
+    DeceasedDate: RockDateType | null;
     Email: string | null;
     EmailNote: string | null;
     EmailPreference: number;
@@ -59,7 +60,7 @@ export default interface Person extends Entity {
     PhotoUrl: string | null;
     PrimaryCampusId: number | null;
     PrimaryFamilyId: number | null;
-    RecordStatusLastModifiedDateTime: string | Date | null;
+    RecordStatusLastModifiedDateTime: RockDateType | null;
     RecordStatusReasonValueId: number | null;
     RecordStatusValueId: number | null;
     RecordTypeValueId: number | null;
@@ -72,8 +73,8 @@ export default interface Person extends Entity {
     TopSignalIconCssClass: string | null;
     TopSignalId: number | null;
     ViewedCount: number | null;
-    CreatedDateTime: string | Date | null;
-    ModifiedDateTime: string | Date | null;
+    CreatedDateTime: RockDateType | null;
+    ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;

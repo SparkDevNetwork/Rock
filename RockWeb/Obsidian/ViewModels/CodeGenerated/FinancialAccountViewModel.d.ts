@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import AttributeValue from './AttributeValueViewModel.js';
+import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialAccount extends Entity {
@@ -31,7 +32,7 @@ export default interface FinancialAccount extends Entity {
     Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     Description: string | null;
-    EndDate: string | Date | null;
+    EndDate: RockDateType | null;
     GlCode: string | null;
     ImageBinaryFileId: number | null;
     IsActive: boolean;
@@ -42,10 +43,10 @@ export default interface FinancialAccount extends Entity {
     ParentAccountId: number | null;
     PublicDescription: string | null;
     PublicName: string | null;
-    StartDate: string | Date | null;
+    StartDate: RockDateType | null;
     Url: string | null;
-    CreatedDateTime: string | Date | null;
-    ModifiedDateTime: string | Date | null;
+    CreatedDateTime: RockDateType | null;
+    ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
     Guid: Guid;
