@@ -349,19 +349,20 @@ namespace Rock.Utility
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public object GetValue( string key )
+        public object GetValue( object key )
         {
-            return this[key];
+            var propertyKey = key.ToStringSafe();
+            return this[propertyKey];
         }
 
         /// <summary>
-        /// Determines whether this object holds a value with the specified key.
+        /// Determines whether the specified key contains key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( string key )
+        public bool ContainsKey( object key )
         {
-            return this.GetDynamicMemberNames().Contains( key );
+            return this.GetDynamicMemberNames().Contains( key.ToString() );
         }
 
         #endregion

@@ -756,7 +756,7 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public override bool ContainsKey( string key )
+        public override bool ContainsKey( object key )
         {
             var propInfo = GetType().GetProperty( key.ToStringSafe() );
             return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any();
