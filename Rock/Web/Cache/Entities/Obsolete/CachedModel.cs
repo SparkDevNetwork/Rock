@@ -77,7 +77,7 @@ namespace Rock.Web.Cache
         /// The type id.
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual int TypeId { get; private set; }
 
         /// <summary>
@@ -86,14 +86,14 @@ namespace Rock.Web.Cache
         /// qualified name of the class.
         /// </summary>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual string TypeName { get; private set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual ISecured ParentAuthority
         {
             get
@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual Security.ISecured ParentAuthorityPre
         {
             get { return null; }
@@ -122,7 +122,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attributes.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public Dictionary<string, AttributeCache> Attributes
         {
             get
@@ -229,14 +229,14 @@ namespace Rock.Web.Cache
         /// The attribute ids
         /// </summary>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         protected List<int> AttributeIds = new List<int>();
 
         /// <summary>
         /// Dictionary of all attributes and their value.
         /// </summary>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute defaults.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual Dictionary<string, string> AttributeValueDefaults
         {
             get { return null; }
@@ -388,7 +388,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual List<string> AvailableKeys
         {
             get
@@ -397,7 +397,7 @@ namespace Rock.Web.Cache
 
                 foreach ( var propInfo in GetType().GetProperties() )
                 {
-                    if ( propInfo != null && propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() <= 0 )
+                    if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                     {
                         availableKeys.Add( propInfo.Name );
                     }
@@ -428,7 +428,7 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual object this[object key]
         {
             get
@@ -441,7 +441,7 @@ namespace Rock.Web.Cache
                 }
 
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo != null && propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() <= 0 )
+                if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
                     if ( propValue is Guid )
@@ -521,7 +521,7 @@ namespace Rock.Web.Cache
             }
 
             var propInfo = GetType().GetProperty( key.ToStringSafe() );
-            if ( propInfo != null && propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() <= 0 )
+            if ( propInfo != null && propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() <= 0 )
             {
                 return true;
             }

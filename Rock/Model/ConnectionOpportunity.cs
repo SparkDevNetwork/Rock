@@ -26,7 +26,6 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -165,7 +164,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -175,7 +174,7 @@ namespace Rock.Model
         /// URL of the photo
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string PhotoUrl
         {
             get
@@ -191,7 +190,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -270,7 +269,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
             get { return _connectionOpportunityCampuses ?? ( _connectionOpportunityCampuses = new Collection<ConnectionOpportunityCampus>() ); }

@@ -25,7 +25,6 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -106,7 +105,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
 
         #endregion

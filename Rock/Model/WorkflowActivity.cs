@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -122,7 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> instance that is performing this WorkflowActivity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -131,7 +130,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -140,7 +139,7 @@ namespace Rock.Model
         /// <value>
         /// The activity type cache.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActivityTypeCache ActivityTypeCache
         {
             get
@@ -163,7 +162,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias AssignedPersonAlias { get; set; }
 
         /// <summary>
@@ -172,7 +171,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
@@ -198,7 +197,7 @@ namespace Rock.Model
         /// <value>
         /// The activated by activity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
@@ -221,7 +220,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
             get

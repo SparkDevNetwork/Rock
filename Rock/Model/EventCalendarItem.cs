@@ -21,7 +21,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -64,7 +63,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual EventCalendar EventCalendar { get; set; }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventCalendarItem is a member of.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual EventItem EventItem { get; set; }
 
         #endregion

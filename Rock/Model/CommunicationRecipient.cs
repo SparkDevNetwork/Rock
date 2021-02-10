@@ -27,7 +27,6 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Web.UI.Controls;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -220,7 +219,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Communication Communication { get; set; }
 
         /// <summary>

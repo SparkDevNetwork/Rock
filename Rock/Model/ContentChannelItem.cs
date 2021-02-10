@@ -27,7 +27,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -203,7 +202,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
@@ -213,7 +212,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual string PrimarySlug
         {
             get
@@ -228,7 +227,7 @@ namespace Rock.Model
         /// <value>
         /// The content channel item slugs.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
 
         /// <summary>
@@ -237,7 +236,7 @@ namespace Rock.Model
         /// <value>
         /// The child items.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<ContentChannelItemAssociation> ChildItems
         {
             get { return _childItems ?? ( _childItems = new Collection<ContentChannelItemAssociation>() ); }
@@ -251,7 +250,7 @@ namespace Rock.Model
         /// <value>
         /// The parent items.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<ContentChannelItemAssociation> ParentItems
         {
             get { return _parentItems ?? ( _parentItems = new Collection<ContentChannelItemAssociation>() ); }

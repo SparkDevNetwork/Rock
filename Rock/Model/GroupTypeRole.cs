@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -165,7 +164,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         #endregion

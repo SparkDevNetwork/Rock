@@ -27,7 +27,6 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -321,7 +320,7 @@ namespace Rock.Model
         /// <value>
         /// The label data.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual AttendanceData AttendanceData { get; set; }
 
         /// <summary>
@@ -330,7 +329,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.AttendanceOccurrence"/> for the attendance
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual AttendanceOccurrence Occurrence { get; set; }
 
         /// <summary>
@@ -339,7 +338,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -348,7 +347,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -375,7 +374,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group SearchResultGroup { get; set; }
 
         /// <summary>
@@ -508,7 +507,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> that was checked in to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.GroupId instead", true )]
@@ -530,7 +529,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.LocationId instead", true )]
@@ -552,7 +551,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.ScheduleId instead", true )]
@@ -574,7 +573,7 @@ namespace Rock.Model
         /// <value>
         /// The did not occur.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
@@ -596,7 +595,7 @@ namespace Rock.Model
         /// <value>
         /// The Sunday date.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.SundayDate instead", true )]
@@ -622,7 +621,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Group instead", true )]
@@ -649,7 +648,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Location instead", true )]
@@ -676,7 +675,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Schedule instead", true )]

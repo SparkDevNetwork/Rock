@@ -97,7 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivity"/> that contains this WorkflowAction.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The action type cache.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowActionTypeCache ActionTypeCache
         {
             get
@@ -507,7 +507,7 @@ namespace Rock.Model
         /// The form attributes.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual List<LiquidFormAttribute> FormAttributes
         {
             get

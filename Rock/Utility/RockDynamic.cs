@@ -335,7 +335,7 @@ namespace Rock.Utility
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public List<string> AvailableKeys
         {
             get

@@ -30,7 +30,6 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -194,7 +193,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -203,7 +202,7 @@ namespace Rock.Model
         /// <value>
         /// The group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -239,7 +238,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal TotalCost
         {
             get
@@ -260,7 +259,7 @@ namespace Rock.Model
         /// The discounted cost.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal DiscountedCost
         {
             get
@@ -283,7 +282,7 @@ namespace Rock.Model
         /// The total paid.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal TotalPaid
         {
             get
@@ -299,7 +298,7 @@ namespace Rock.Model
         /// The balance due.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal BalanceDue
         {
             get
@@ -316,7 +315,7 @@ namespace Rock.Model
         /// The registration template identifier.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual int? RegistrationTemplateId
         {
             get
@@ -337,7 +336,7 @@ namespace Rock.Model
         /// The payments.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual IQueryable<FinancialTransactionDetail> Payments
         {
             get

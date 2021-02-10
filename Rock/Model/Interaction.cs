@@ -23,7 +23,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -337,7 +336,7 @@ namespace Rock.Model
         /// <value>
         /// The personal device.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonalDevice PersonalDevice { get; set; }
 
         /// <summary>

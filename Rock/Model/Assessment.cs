@@ -21,7 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -148,7 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.<see cref="Rock.Model.PersonAlias"/>
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual PersonAlias RequesterPersonAlias { get; set; }
 
         #endregion

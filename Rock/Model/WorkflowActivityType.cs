@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -106,7 +105,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>

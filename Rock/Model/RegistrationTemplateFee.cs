@@ -28,7 +28,6 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Web.UI.Controls;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -148,7 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>
@@ -157,7 +156,7 @@ namespace Rock.Model
         /// <value>
         /// The fee items.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [DataMember]
         public virtual ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; } = new List<RegistrationTemplateFeeItem>();
 

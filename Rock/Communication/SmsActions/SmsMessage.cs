@@ -83,7 +83,7 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual List<string> AvailableKeys
         {
             get
@@ -120,7 +120,7 @@ namespace Rock.Communication.SmsActions
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual object this[object key]
         {
             get

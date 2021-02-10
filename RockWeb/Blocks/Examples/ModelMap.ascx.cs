@@ -34,11 +34,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.UI;
 using Newtonsoft.Json;
-
 namespace RockWeb.Blocks.Examples
 {
     [DisplayName( "Model Map" )]
@@ -341,13 +339,12 @@ namespace RockWeb.Blocks.Examples
                             .ToArray();
                         foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
                         {
-#pragma warning disable CS0618 // LavaIncludeAttribute is obsolete 
                             mClass.Properties.Add( new MProperty
                             {
                                 Name = p.Name,
                                 IsInherited = p.DeclaringType != type,
                                 IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
-                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
                                 NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
@@ -355,7 +352,6 @@ namespace RockWeb.Blocks.Examples
                                 Id = p.MetadataToken,
                                 Comment = GetComments( p, xmlComments )
                             } );
-#pragma warning restore CS0618 // LavaIncludeAttribute is obsolete
                         }
 
                         MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )

@@ -30,7 +30,6 @@ using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -241,7 +240,7 @@ namespace Rock.Model
         /// <value>
         /// The viewable child notes.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         public virtual List<Note> ViewableChildNotes
         {
@@ -271,7 +270,7 @@ namespace Rock.Model
         /// <value>
         /// The created by person photo URL.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string CreatedByPersonPhotoUrl
         {
             get
@@ -286,7 +285,7 @@ namespace Rock.Model
         /// <value>
         /// The note anchor identifier.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string NoteAnchorId => $"NoteRef-{this.Guid.ToString( "N" )}";
 
         /// <summary>
@@ -295,7 +294,7 @@ namespace Rock.Model
         /// <value>
         /// The edited by person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string EditedByPersonName
         {
             get
@@ -311,7 +310,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the entity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string EntityName
         {
             get
@@ -336,7 +335,7 @@ namespace Rock.Model
         /// <value>
         /// The approval URL.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string ApprovalUrl
         {
             get
@@ -361,7 +360,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is current person watching; otherwise, <c>false</c>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual bool IsCurrentPersonWatching
         {
             get
@@ -391,7 +390,7 @@ namespace Rock.Model
         /// <value>
         /// The viewable descendents count.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual int ViewableDescendentsCount
         {
             get

@@ -27,7 +27,6 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Field;
-using Rock.Lava;
 using Rock.Security;
 
 using Rock.Web.UI.Controls;
@@ -736,13 +735,13 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public override object this[object key]
         {
             get
             {
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() ) return null;
+                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() ) return null;
 
                 var propValue = propInfo.GetValue( this, null );
 
@@ -760,7 +759,7 @@ namespace Rock.Web.Cache
         public override bool ContainsKey( string key )
         {
             var propInfo = GetType().GetProperty( key.ToStringSafe() );
-            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any();
+            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any();
         }
 
         #endregion
