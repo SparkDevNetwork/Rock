@@ -19,14 +19,6 @@ System.register(["../Util/RockDate"], function (exports_1, context_1) {
     var RockDate_1;
     var __moduleName = context_1 && context_1.id;
     /**
-     * Adjust for the timezone offset so early morning times don't appear as the previous local day.
-     * @param val
-     */
-    function stripTimezone(val) {
-        var asUtc = new Date(val.getTime() + val.getTimezoneOffset() * 60000);
-        return asUtc;
-    }
-    /**
      * Transform the value into a date or null
      * @param val
      */
@@ -42,7 +34,7 @@ System.register(["../Util/RockDate"], function (exports_1, context_1) {
             if (isNaN(ms)) {
                 return null;
             }
-            return stripTimezone(new Date(ms));
+            return RockDate_1.default.stripTimezone(new Date(ms));
         }
         return null;
     }
@@ -56,7 +48,7 @@ System.register(["../Util/RockDate"], function (exports_1, context_1) {
         if (date === null) {
             return null;
         }
-        return RockDate_1.toRockDate(date);
+        return RockDate_1.default.toRockDate(date);
     }
     exports_1("toRockDateOrNull", toRockDateOrNull);
     /**

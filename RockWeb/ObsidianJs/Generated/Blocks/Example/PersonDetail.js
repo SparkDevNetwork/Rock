@@ -1,4 +1,4 @@
-System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js", "../../Elements/EmailBox.js", "../../Controls/RockValidation.js", "../../Controls/RockForm.js", "../../Controls/CampusPicker.js", "../../Controls/Loading.js", "../../Controls/PrimaryBlock.js"], function (exports_1, context_1) {
+System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "../../Vendor/Vue/vue.js", "../../Store/Index.js", "../../Elements/EmailBox.js", "../../Controls/RockValidation.js", "../../Controls/RockForm.js", "../../Controls/CampusPicker.js", "../../Controls/Loading.js", "../../Controls/PrimaryBlock.js", "../../Filters/Date.js", "../../Util/RockDate.js", "../../Elements/DatePicker.js"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -47,7 +47,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var Bus_js_1, PaneledBlockTemplate_js_1, RockButton_js_1, TextBox_js_1, vue_js_1, Index_js_1, EmailBox_js_1, RockValidation_js_1, RockForm_js_1, CampusPicker_js_1, Loading_js_1, PrimaryBlock_js_1;
+    var Bus_js_1, PaneledBlockTemplate_js_1, RockButton_js_1, TextBox_js_1, vue_js_1, Index_js_1, EmailBox_js_1, RockValidation_js_1, RockForm_js_1, CampusPicker_js_1, Loading_js_1, PrimaryBlock_js_1, Date_js_1, RockDate_js_1, DatePicker_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -86,6 +86,15 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
             },
             function (PrimaryBlock_js_1_1) {
                 PrimaryBlock_js_1 = PrimaryBlock_js_1_1;
+            },
+            function (Date_js_1_1) {
+                Date_js_1 = Date_js_1_1;
+            },
+            function (RockDate_js_1_1) {
+                RockDate_js_1 = RockDate_js_1_1;
+            },
+            function (DatePicker_js_1_1) {
+                DatePicker_js_1 = DatePicker_js_1_1;
             }
         ],
         execute: function () {
@@ -100,7 +109,8 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                     RockForm: RockForm_js_1.default,
                     CampusPicker: CampusPicker_js_1.default,
                     Loading: Loading_js_1.default,
-                    PrimaryBlock: PrimaryBlock_js_1.default
+                    PrimaryBlock: PrimaryBlock_js_1.default,
+                    DatePicker: DatePicker_js_1.default
                 },
                 setup: function () {
                     return {
@@ -114,7 +124,9 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                         isEditMode: false,
                         messageToPublish: '',
                         receivedMessage: '',
-                        isLoading: false
+                        isLoading: false,
+                        campusGuid: null,
+                        birthdate: null
                     };
                 },
                 methods: {
@@ -122,28 +134,32 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                         this.isEditMode = isEditMode;
                     },
                     doEdit: function () {
+                        var _a;
                         this.personForEditing = this.person ? __assign({}, this.person) : null;
+                        this.campusGuid = ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.Guid) || null;
+                        this.birthdate = this.birthdateOrNull ? RockDate_js_1.toRockDate(this.birthdateOrNull) : null;
                         this.setIsEditMode(true);
                     },
                     doCancel: function () {
                         this.setIsEditMode(false);
                     },
                     doSave: function () {
+                        var _a;
                         return __awaiter(this, void 0, void 0, function () {
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
                                     case 0:
                                         if (!this.personForEditing) return [3 /*break*/, 2];
-                                        this.person = __assign({}, this.personForEditing);
+                                        this.person = __assign(__assign({}, this.personForEditing), { BirthDay: RockDate_js_1.default.getDay(this.birthdate), BirthMonth: RockDate_js_1.default.getMonth(this.birthdate), BirthYear: RockDate_js_1.default.getYear(this.birthdate), PrimaryCampusId: ((_a = Index_js_1.default.getters['campuses/getByGuid'](this.campusGuid)) === null || _a === void 0 ? void 0 : _a.Id) || null });
                                         this.isLoading = true;
                                         return [4 /*yield*/, this.invokeBlockAction('EditPerson', {
                                                 personGuid: this.person.Guid,
                                                 personArgs: this.person
                                             })];
                                     case 1:
-                                        _a.sent();
+                                        _b.sent();
                                         this.isLoading = false;
-                                        _a.label = 2;
+                                        _b.label = 2;
                                     case 2:
                                         this.setIsEditMode(false);
                                         return [2 /*return*/];
@@ -160,6 +176,19 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                     }
                 },
                 computed: {
+                    birthdateOrNull: function () {
+                        var _a;
+                        if (!((_a = this.person) === null || _a === void 0 ? void 0 : _a.BirthDay) || !this.person.BirthMonth || !this.person.BirthYear) {
+                            return null;
+                        }
+                        return new Date(this.person.BirthYear + "-" + this.person.BirthMonth + "-" + this.person.BirthDay);
+                    },
+                    birthdateFormatted: function () {
+                        if (!this.birthdateOrNull) {
+                            return 'Not Completed';
+                        }
+                        return Date_js_1.asDateString(this.birthdateOrNull);
+                    },
                     campus: function () {
                         if (this.person) {
                             return Index_js_1.default.getters['campuses/getById'](this.person.PrimaryCampusId) || null;
@@ -218,7 +247,7 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                 created: function () {
                     Bus_js_1.default.subscribe('PersonSecondary:Message', this.receiveMessage);
                 },
-                template: "\n<PrimaryBlock :hideSecondaryBlocks=\"isEditMode\">\n    <PaneledBlockTemplate>\n        <template v-slot:title>\n            <i class=\"fa fa-flask\"></i>\n            Edit Yourself{{blockTitle}}\n        </template>\n        <template v-slot:default>\n            <Loading :isLoading=\"isLoading\">\n                <p v-if=\"!person\">\n                    There is no person loaded.\n                </p>\n                <RockForm v-else-if=\"isEditMode\" @submit=\"doSave\">\n                    <div class=\"row\">\n                        <div class=\"col-sm-6\">\n                            <TextBox label=\"First Name\" v-model=\"personForEditing.FirstName\" rules=\"required\" />\n                            <TextBox label=\"Nick Name\" v-model=\"personForEditing.NickName\" />\n                            <TextBox label=\"Last Name\" v-model=\"personForEditing.LastName\" rules=\"required\" />\n                        </div>\n                        <div class=\"col-sm-6\">\n                            <EmailBox v-model=\"personForEditing.Email\" />\n                            <CampusPicker v-model:id=\"personForEditing.PrimaryCampusId\" />\n                        </div>\n                    </div>\n                    <div class=\"actions\">\n                        <RockButton btnType=\"primary\" type=\"submit\">Save</RockButton>\n                        <RockButton btnType=\"link\" @click=\"doCancel\">Cancel</RockButton>\n                    </div>\n                </RockForm>\n                <template v-else>\n                    <div class=\"row\">\n                        <div class=\"col-sm-6\">\n                            <dl>\n                                <dt>First Name</dt>\n                                <dd>{{person.FirstName}}</dd>\n                                <dt>Last Name</dt>\n                                <dd>{{person.LastName}}</dd>\n                                <dt>Email</dt>\n                                <dd>{{person.Email}}</dd>\n                                <dt>Campus</dt>\n                                <dd>{{campusName || 'None'}}</dd>\n                            </dl>\n                        </div>\n                        <div class=\"col-sm-6\">\n                            <div class=\"well\">\n                                <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                                <RockButton btnType=\"primary\" btnSize=\"sm\" @click=\"doPublish\">Publish</RockButton>\n                            </div>\n                            <p>\n                                <strong>Secondary block says:</strong>\n                                {{receivedMessage}}\n                            </p>\n                        </div>\n                    </div>\n                    <div class=\"actions\">\n                        <RockButton btnType=\"primary\" @click=\"doEdit\">Edit</RockButton>\n                    </div>\n                </template>\n            </Loading>\n        </template>\n    </PaneledBlockTemplate>\n</PrimaryBlock>"
+                template: "\n<PrimaryBlock :hideSecondaryBlocks=\"isEditMode\">\n    <PaneledBlockTemplate>\n        <template v-slot:title>\n            <i class=\"fa fa-flask\"></i>\n            Edit Yourself{{blockTitle}}\n        </template>\n        <template v-slot:default>\n            <Loading :isLoading=\"isLoading\">\n                <p v-if=\"!person\">\n                    There is no person loaded.\n                </p>\n                <RockForm v-else-if=\"isEditMode\" @submit=\"doSave\">\n                    <div class=\"row\">\n                        <div class=\"col-sm-6\">\n                            <TextBox label=\"First Name\" v-model=\"personForEditing.FirstName\" rules=\"required\" />\n                            <TextBox label=\"Nick Name\" v-model=\"personForEditing.NickName\" />\n                            <TextBox label=\"Last Name\" v-model=\"personForEditing.LastName\" rules=\"required\" />\n                        </div>\n                        <div class=\"col-sm-6\">\n                            <EmailBox v-model=\"personForEditing.Email\" />\n                            <CampusPicker v-model=\"campusGuid\" />\n                            <DatePicker label=\"Birthdate\" v-model=\"birthdate\" />\n                        </div>\n                    </div>\n                    <div class=\"actions\">\n                        <RockButton btnType=\"primary\" type=\"submit\">Save</RockButton>\n                        <RockButton btnType=\"link\" @click=\"doCancel\">Cancel</RockButton>\n                    </div>\n                </RockForm>\n                <template v-else>\n                    <div class=\"row\">\n                        <div class=\"col-sm-6\">\n                            <dl>\n                                <dt>First Name</dt>\n                                <dd>{{person.FirstName}}</dd>\n                                <dt>Last Name</dt>\n                                <dd>{{person.LastName}}</dd>\n                                <dt>Email</dt>\n                                <dd>{{person.Email}}</dd>\n                                <dt>Campus</dt>\n                                <dd>{{campusName || 'None'}}</dd>\n                                <dt>Birthdate</dt>\n                                <dd>{{birthdateFormatted}}</dd>\n                            </dl>\n                        </div>\n                        <div class=\"col-sm-6\">\n                            <div class=\"well\">\n                                <TextBox label=\"Message\" v-model=\"messageToPublish\" />\n                                <RockButton btnType=\"primary\" btnSize=\"sm\" @click=\"doPublish\">Publish</RockButton>\n                            </div>\n                            <p>\n                                <strong>Secondary block says:</strong>\n                                {{receivedMessage}}\n                            </p>\n                        </div>\n                    </div>\n                    <div class=\"actions\">\n                        <RockButton btnType=\"primary\" @click=\"doEdit\">Edit</RockButton>\n                    </div>\n                </template>\n            </Loading>\n        </template>\n    </PaneledBlockTemplate>\n</PrimaryBlock>"
             }));
         }
     };

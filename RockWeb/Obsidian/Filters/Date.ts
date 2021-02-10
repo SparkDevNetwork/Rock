@@ -15,16 +15,7 @@
 // </copyright>
 //
 
-import { RockDateType, toRockDate } from '../Util/RockDate';
-
-/**
- * Adjust for the timezone offset so early morning times don't appear as the previous local day.
- * @param val
- */
-function stripTimezone(val: Date) {
-    const asUtc = new Date(val.getTime() + val.getTimezoneOffset() * 60000);
-    return asUtc;
-}
+import RockDate, { RockDateType } from '../Util/RockDate';
 
 /**
  * Transform the value into a date or null
@@ -46,7 +37,7 @@ export function asDateOrNull(val: unknown) {
             return null;
         }
 
-        return stripTimezone(new Date(ms));
+        return RockDate.stripTimezone(new Date(ms));
     }
 
     return null;
@@ -63,7 +54,7 @@ export function toRockDateOrNull(val: unknown): RockDateType | null {
         return null;
     }
 
-    return toRockDate(date);
+    return RockDate.toRockDate(date);
 }
 
 /**

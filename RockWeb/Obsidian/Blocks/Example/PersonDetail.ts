@@ -30,6 +30,9 @@ import PrimaryBlock from '../../Controls/PrimaryBlock.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
+import { asDateString } from '../../Filters/Date.js';
+import RockDate, { RockDateType, toRockDate } from '../../Util/RockDate.js';
+import DatePicker from '../../Elements/DatePicker.js';
 
 declare type PersonViewModel = {
     Id: number;
@@ -39,6 +42,9 @@ declare type PersonViewModel = {
     LastName: string;
     Email: string;
     PrimaryCampusId: number | null;
+    BirthDay: number | null;
+    BirthMonth: number | null;
+    BirthYear: number | null;
 };
 
 export default defineComponent({
@@ -52,7 +58,8 @@ export default defineComponent({
         RockForm,
         CampusPicker,
         Loading,
-        PrimaryBlock
+        PrimaryBlock,
+        DatePicker
     },
     setup() {
         return {
@@ -66,7 +73,9 @@ export default defineComponent({
             isEditMode: false,
             messageToPublish: '',
             receivedMessage: '',
-            isLoading: false
+            isLoading: false,
+            campusGuid: null as Guid | null,
+            birthdate: null as RockDateType | null
         };
     },
     methods: {
@@ -75,6 +84,8 @@ export default defineComponent({
         },
         doEdit(): void {
             this.personForEditing = this.person ? { ...this.person } : null;
+            this.campusGuid = this.campus?.Guid || null;
+            this.birthdate = this.birthdateOrNull ? toRockDate(this.birthdateOrNull) : null;
             this.setIsEditMode(true);
         },
         doCancel(): void {
@@ -82,7 +93,13 @@ export default defineComponent({
         },
         async doSave(): Promise<void> {
             if (this.personForEditing) {
-                this.person = { ...this.personForEditing };
+                this.person = {
+                    ...this.personForEditing,
+                    BirthDay: RockDate.getDay(this.birthdate),
+                    BirthMonth: RockDate.getMonth(this.birthdate),
+                    BirthYear: RockDate.getYear(this.birthdate),
+                    PrimaryCampusId: store.getters['campuses/getByGuid'](this.campusGuid)?.Id || null
+                };
                 this.isLoading = true;
 
                 await this.invokeBlockAction('EditPerson', {
@@ -104,6 +121,20 @@ export default defineComponent({
         }
     },
     computed: {
+        birthdateOrNull(): Date | null {
+            if (!this.person?.BirthDay || !this.person.BirthMonth || !this.person.BirthYear) {
+                return null;
+            }
+
+            return new Date(`${this.person.BirthYear}-${this.person.BirthMonth}-${this.person.BirthDay}`);
+        },
+        birthdateFormatted(): string {
+            if (!this.birthdateOrNull) {
+                return 'Not Completed';
+            }
+
+            return asDateString(this.birthdateOrNull);
+        },
         campus(): Campus | null {
             if (this.person) {
                 return store.getters['campuses/getById'](this.person.PrimaryCampusId) || null;
@@ -174,7 +205,8 @@ export default defineComponent({
                         </div>
                         <div class="col-sm-6">
                             <EmailBox v-model="personForEditing.Email" />
-                            <CampusPicker v-model:id="personForEditing.PrimaryCampusId" />
+                            <CampusPicker v-model="campusGuid" />
+                            <DatePicker label="Birthdate" v-model="birthdate" />
                         </div>
                     </div>
                     <div class="actions">
@@ -194,6 +226,8 @@ export default defineComponent({
                                 <dd>{{person.Email}}</dd>
                                 <dt>Campus</dt>
                                 <dd>{{campusName || 'None'}}</dd>
+                                <dt>Birthdate</dt>
+                                <dd>{{birthdateFormatted}}</dd>
                             </dl>
                         </div>
                         <div class="col-sm-6">

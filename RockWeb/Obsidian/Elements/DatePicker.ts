@@ -14,22 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { defineComponent, PropType } from 'vue';
 import { newGuid } from '../Util/Guid.js';
-import { Field } from '../Vendor/VeeValidate/vee-validate.js';
 import RockLabel from './RockLabel.js';
-import { RockDateType } from '../Util/RockDate.js';
+import RockDate, { RockDateType } from '../Util/RockDate.js';
 
 export default defineComponent({
     name: 'DatePicker',
     components: {
-        Field,
         RockLabel
     },
     props: {
         modelValue: {
-            type: String as PropType<RockDateType>,
-            required: true
+            type: String as PropType<RockDateType | null>,
+            default: null
         },
         label: {
             type: String as PropType<string>,
@@ -53,44 +51,65 @@ export default defineComponent({
     ],
     data: function () {
         return {
-            uniqueId: `rock-textbox-${newGuid()}`,
-            internalValue: this.modelValue
+            uniqueId: `rock-datepicker-${newGuid()}`,
+            internalValue: null as string | null
         };
     },
     computed: {
         isRequired(): boolean {
             return this.rules.includes('required');
+        },
+        asRockDateOrNull(): RockDateType | null {
+            return this.internalValue ? RockDate.toRockDate(new Date(this.internalValue)) : null;
         }
     },
     methods: {
-        handleInput() {
-            this.$emit('update:modelValue', this.internalValue);
+        onChange(arg) {
+            console.log('change', arg);
         }
     },
     watch: {
-        modelValue: function () {
-            this.internalValue = this.modelValue;
+        internalValue() {
+            this.$emit('update:modelValue', this.asRockDateOrNull);
+        },
+        modelValue: {
+            immediate: true,
+            handler() {
+                if (!this.modelValue) {
+                    this.internalValue = null;
+                    return;
+                }
+
+                const month = RockDate.getMonth(this.modelValue);
+                const day = RockDate.getDay(this.modelValue);
+                const year = RockDate.getYear(this.modelValue);
+                this.internalValue = `${month}/${day}/${year}`;
+            }
         }
     },
+    mounted() {
+        window['Rock'].controls.datePicker.initialize({
+            id: this.uniqueId,
+            startView: 0,
+            showOnFocus: true,
+            format: 'mm/dd/yyyy',
+            todayHighlight: true,
+            forceParse: true,
+            onChangeScript: () => {
+                this.internalValue = window['$'](`#${this.uniqueId}`).val();
+            }
+        });
+    },
     template: `
-<Field
-    v-model="internalValue"
-    @input="handleInput"
-    :name="label"
-    :rules="rules"
-    #default="{field, errors}">
-    <div class="form-group date-picker" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
-        <RockLabel :for="uniqueId" :help="help">
-            {{label}}
-        </RockLabel>
-        <div class="control-wrapper">
-            <div class="input-group input-width-md date">
-                <input :id="uniqueId" type="text" class="form-control" :disabled="disabled" v-bind="field" onfocus="(this.type='date')" onblur="(this.type='text')" />
-                <label :for="uniqueId" class="input-group-addon" :disabled="disabled">
-                    <i class="fa fa-calendar"></i>
-                </label>
-            </div>
+<div class="form-group date-picker required">
+    <RockLabel :for="uniqueId" :help="help">{{label}}</RockLabel>
+    <div class="control-wrapper">
+        <div class="input-group input-width-md js-date-picker date">
+            <input type="text" :id="uniqueId" class="form-control" v-model.lazy="internalValue" />
+            <span class="input-group-addon">
+                <i class="fa fa-calendar"></i>
+            </span>
         </div>
     </div>
-</Field>`
+</div>`
 });

@@ -18,11 +18,24 @@
 export type RockDateType = string;
 
 /**
+ * Adjust for the timezone offset so early morning times don't appear as the previous local day.
+ * @param val
+ */
+export function stripTimezone(val: Date) {
+    const asUtc = new Date(val.getTime() + val.getTimezoneOffset() * 60000);
+    return asUtc;
+}
+
+/**
  * Convert a date to a RockDate
  * @param d
  */
 export function toRockDate(d: Date): RockDateType {
-    return d.toISOString().split('T')[0];
+    if (d instanceof Date && !isNaN(d as unknown as number)) {
+        return stripTimezone(d).toISOString().split('T')[0];
+    }
+
+    return '';
 }
 
 /**
@@ -32,7 +45,53 @@ export function newDate(): RockDateType {
     return toRockDate(new Date());
 }
 
+/**
+ * Returns the day.
+ * Ex: 1/2/2000 => 2
+ * @param d
+ */
+export function getDay(d: RockDateType | null): number | null {
+    if (!d) {
+        return null;
+    }
+
+    const asDate = stripTimezone(new Date(d));
+    return asDate.getDate();
+}
+
+/**
+ * Returns the month.
+ * Ex: 1/2/2000 => 1
+ * @param d
+ */
+export function getMonth(d: RockDateType | null): number | null {
+    if (!d) {
+        return null;
+    }
+
+    const asDate = stripTimezone(new Date(d));
+    return asDate.getMonth() + 1;
+}
+
+/**
+ * Returns the year.
+ * Ex: 1/2/2000 => 2000
+ * @param d
+ */
+export function getYear(d: RockDateType | null): number | null {
+    if (!d) {
+        return null;
+    }
+
+    const asDate = stripTimezone(new Date(d));
+    return asDate.getFullYear();
+}
+
 export default {
     newDate,
-    toRockDate
+    toRockDate,
+    getDay,
+    getMonth,
+    getYear,
+    stripTimezone
 };

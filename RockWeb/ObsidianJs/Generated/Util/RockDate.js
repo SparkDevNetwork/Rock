@@ -18,11 +18,23 @@ System.register([], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     /**
+     * Adjust for the timezone offset so early morning times don't appear as the previous local day.
+     * @param val
+     */
+    function stripTimezone(val) {
+        var asUtc = new Date(val.getTime() + val.getTimezoneOffset() * 60000);
+        return asUtc;
+    }
+    exports_1("stripTimezone", stripTimezone);
+    /**
      * Convert a date to a RockDate
      * @param d
      */
     function toRockDate(d) {
-        return d.toISOString().split('T')[0];
+        if (d instanceof Date && !isNaN(d)) {
+            return stripTimezone(d).toISOString().split('T')[0];
+        }
+        return '';
     }
     exports_1("toRockDate", toRockDate);
     /**
@@ -32,12 +44,55 @@ System.register([], function (exports_1, context_1) {
         return toRockDate(new Date());
     }
     exports_1("newDate", newDate);
+    /**
+     * Returns the day.
+     * Ex: 1/2/2000 => 2
+     * @param d
+     */
+    function getDay(d) {
+        if (!d) {
+            return null;
+        }
+        var asDate = stripTimezone(new Date(d));
+        return asDate.getDate();
+    }
+    exports_1("getDay", getDay);
+    /**
+     * Returns the month.
+     * Ex: 1/2/2000 => 1
+     * @param d
+     */
+    function getMonth(d) {
+        if (!d) {
+            return null;
+        }
+        var asDate = stripTimezone(new Date(d));
+        return asDate.getMonth() + 1;
+    }
+    exports_1("getMonth", getMonth);
+    /**
+     * Returns the year.
+     * Ex: 1/2/2000 => 2000
+     * @param d
+     */
+    function getYear(d) {
+        if (!d) {
+            return null;
+        }
+        var asDate = stripTimezone(new Date(d));
+        return asDate.getFullYear();
+    }
+    exports_1("getYear", getYear);
     return {
         setters: [],
         execute: function () {
             exports_1("default", {
                 newDate: newDate,
-                toRockDate: toRockDate
+                toRockDate: toRockDate,
+                getDay: getDay,
+                getMonth: getMonth,
+                getYear: getYear,
+                stripTimezone: stripTimezone
             });
         }
     };

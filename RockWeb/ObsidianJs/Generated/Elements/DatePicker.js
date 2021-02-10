@@ -1,33 +1,32 @@
-System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValidate/vee-validate.js", "./RockLabel.js"], function (exports_1, context_1) {
+System.register(["vue", "../Util/Guid.js", "./RockLabel.js", "../Util/RockDate.js"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Guid_js_1, vee_validate_js_1, RockLabel_js_1;
+    var vue_1, Guid_js_1, RockLabel_js_1, RockDate_js_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
             function (Guid_js_1_1) {
                 Guid_js_1 = Guid_js_1_1;
             },
-            function (vee_validate_js_1_1) {
-                vee_validate_js_1 = vee_validate_js_1_1;
-            },
             function (RockLabel_js_1_1) {
                 RockLabel_js_1 = RockLabel_js_1_1;
+            },
+            function (RockDate_js_1_1) {
+                RockDate_js_1 = RockDate_js_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'DatePicker',
                 components: {
-                    Field: vee_validate_js_1.Field,
                     RockLabel: RockLabel_js_1.default
                 },
                 props: {
                     modelValue: {
                         type: String,
-                        required: true
+                        default: null
                     },
                     label: {
                         type: String,
@@ -51,26 +50,56 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Vendor/VeeValida
                 ],
                 data: function () {
                     return {
-                        uniqueId: "rock-textbox-" + Guid_js_1.newGuid(),
-                        internalValue: this.modelValue
+                        uniqueId: "rock-datepicker-" + Guid_js_1.newGuid(),
+                        internalValue: null
                     };
                 },
                 computed: {
                     isRequired: function () {
                         return this.rules.includes('required');
+                    },
+                    asRockDateOrNull: function () {
+                        return this.internalValue ? RockDate_js_1.default.toRockDate(new Date(this.internalValue)) : null;
                     }
                 },
                 methods: {
-                    handleInput: function () {
-                        this.$emit('update:modelValue', this.internalValue);
+                    onChange: function (arg) {
+                        console.log('change', arg);
                     }
                 },
                 watch: {
-                    modelValue: function () {
-                        this.internalValue = this.modelValue;
+                    internalValue: function () {
+                        this.$emit('update:modelValue', this.asRockDateOrNull);
+                    },
+                    modelValue: {
+                        immediate: true,
+                        handler: function () {
+                            if (!this.modelValue) {
+                                this.internalValue = null;
+                                return;
+                            }
+                            var month = RockDate_js_1.default.getMonth(this.modelValue);
+                            var day = RockDate_js_1.default.getDay(this.modelValue);
+                            var year = RockDate_js_1.default.getYear(this.modelValue);
+                            this.internalValue = month + "/" + day + "/" + year;
+                        }
                     }
                 },
-                template: "\n<Field\n    v-model=\"internalValue\"\n    @input=\"handleInput\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group date-picker\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"control-wrapper\">\n            <div class=\"input-group input-width-md date\">\n                <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" :disabled=\"disabled\" v-bind=\"field\" onfocus=\"(this.type='date')\" onblur=\"(this.type='text')\" />\n                <label :for=\"uniqueId\" class=\"input-group-addon\" :disabled=\"disabled\">\n                    <i class=\"fa fa-calendar\"></i>\n                </label>\n            </div>\n        </div>\n    </div>\n</Field>"
+                mounted: function () {
+                    var _this = this;
+                    window['Rock'].controls.datePicker.initialize({
+                        id: this.uniqueId,
+                        startView: 0,
+                        showOnFocus: true,
+                        format: 'mm/dd/yyyy',
+                        todayHighlight: true,
+                        forceParse: true,
+                        onChangeScript: function () {
+                            _this.internalValue = window['$']("#" + _this.uniqueId).val();
+                        }
+                    });
+                },
+                template: "\n<div class=\"form-group date-picker required\">\n    <RockLabel :for=\"uniqueId\" :help=\"help\">{{label}}</RockLabel>\n    <div class=\"control-wrapper\">\n        <div class=\"input-group input-width-md js-date-picker date\">\n            <input type=\"text\" :id=\"uniqueId\" class=\"form-control\" v-model.lazy=\"internalValue\" />\n            <span class=\"input-group-addon\">\n                <i class=\"fa fa-calendar\"></i>\n            </span>\n        </div>\n    </div>\n</div>"
             }));
         }
     };

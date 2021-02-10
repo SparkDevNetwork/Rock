@@ -86,6 +86,9 @@ namespace Rock.Obsidian.Blocks.Example
                 person.FirstName = personArgs.FirstName;
                 person.NickName = personArgs.NickName;
                 person.LastName = personArgs.LastName;
+                person.BirthDay = personArgs.BirthDay;
+                person.BirthMonth = personArgs.BirthMonth;
+                person.BirthYear = personArgs.BirthYear;
 
                 rockContext.SaveChanges();
                 return new BlockActionResult( HttpStatusCode.OK );

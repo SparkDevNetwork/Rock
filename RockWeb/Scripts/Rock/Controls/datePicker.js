@@ -39,6 +39,10 @@
                     if (options.postbackScript) {
                         window.location = "javascript:" + options.postbackScript;
                     }
+
+                    if (options.onChangeScript) {
+                        options.onChangeScript();
+                    }
                 });
 
                 // if the guest clicks the addon select all the text in the input
