@@ -972,7 +972,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         ///
         /// </summary>
-        private class DataRowDrop : LavaDataObject
+        private class DataRowDrop : DotLiquid.Drop
         {
             private readonly DataRow _dataRow;
 
@@ -981,17 +981,28 @@ namespace RockWeb.Blocks.Reporting
                 _dataRow = dataRow;
             }
 
-            protected override bool OnTryGetValue( string key, out object result )
+            public override object BeforeMethod( string method )
             {
-                if ( _dataRow.Table.Columns.Contains( key ) )
+                if ( _dataRow.Table.Columns.Contains( method ) )
                 {
-                    result = _dataRow[key];
-                    return true;
+                    return _dataRow[method];
                 }
 
-                result = null;
-                return false;
+                return null;
             }
+
+            // override for the RockDynamic class when we switch back to that from DotLiquid.Drop
+            //public override bool TryGetMember( GetMemberBinder binder, out object result )
+            //{
+            //    if ( _dataRow.Table.Columns.Contains( binder.Name ) )
+            //    {
+            //        result = _dataRow[binder.Name];
+            //        return true;
+            //    }
+
+            //    result = null;
+            //    return false;
+            //}
         }
     }
 }
