@@ -67,6 +67,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
         IsRequired = false,
         Order = 4 )]
 
+    [BooleanField(
+        "Show Only Parent Group",
+        "When enabled, only the actual parent group for each check-in group-location will be shown and groups under the same parent group in the same location will be combined into one row.",
+        Key = AttributeKey.ShowOnlyParentGroup,
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
     #endregion Block Attributes
     public partial class RoomList : RockBlock
     {
@@ -88,9 +95,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string CheckInAreaGuid = CheckinManagerHelper.BlockAttributeKey.CheckInAreaGuid;
 
             public const string RosterPage = "RosterPage";
+
+            /// <summary>
+            /// When enabled, only the actual parent group for the check-in group-location will be shown
+            /// in the Room Name grid column and groups under the same parent group in the same
+            /// location will be combined into one row.
+            /// Otherwise, the actual group will be shown along with the parent group/area hierarchy under
+            /// it (as per typical Rock check-in notation).
+            /// </summary>
+            public const string ShowOnlyParentGroup = "ShowOnlyParentGroup";
         }
 
         #endregion Attribute Keys
+
         #region Page Parameter Keys
 
         private class PageParameterKey
@@ -100,6 +117,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
             /// For example "Weekly Service Check-in".
             /// </summary>
             public const string Area = CheckinManagerHelper.PageParameterKey.Area;
+
+            /// <summary>
+            /// If this is specified in the URL, show the direct (first level) child locations of the specified ParentLocationId.
+            /// Also, set the PanelTitle in the format of "{{ParentLocation.Name}} Child Locations"
+            /// This will take precedence over the selected campus+locations.
+            /// </summary>
+            public const string ParentLocationId = "ParentLocationId";
+
+            /// <summary>
+            /// If LocationId is specified in the URL, list only items for the specified location.
+            /// Also, hide the Location Grid Column and set the PanelTitle as the location's name
+            /// This will take precedence over the selected campus+locations and/or <seealso cref="ParentLocationId"/>
+            /// </summary>
+            public const string LocationId = "LocationId";
         }
 
         #endregion Page Parameter Keys
@@ -253,10 +284,53 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var groupLocationService = new GroupLocationService( rockContext );
             var groupLocationsQuery = groupLocationService.Queryable().Where( gl => selectedGroupTypeIds.Contains( gl.Group.GroupTypeId ) );
 
-            // Limit locations (rooms) to locations within the selected campus.
-            var campusLocationIds = new LocationService( rockContext ).GetAllDescendentIds( campus.LocationId.Value ).ToList();
-            campusLocationIds.Add( campus.LocationId.Value, true );
-            groupLocationsQuery = groupLocationsQuery.Where( a => campusLocationIds.Contains( a.LocationId ) );
+            var parentLocationIdParameter = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull();
+            var locationIdParameter = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+            var locationGridField = gRoomList.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lRoomName" );
+            if ( locationGridField != null && !locationGridField.Visible )
+            {
+                locationGridField.Visible = true;
+            }
+
+            List<int> locationIds;
+            if ( locationIdParameter.HasValue )
+            {
+                // If LocationId is specified in the URL, list only items for the specified location.
+                // Also, hide the Location Grid Column and set the PanelTitle as the location's name
+                // This will take precedence over the selected campus+locations and/or <seealso cref="ParentLocationId"/>
+                var locationService = new LocationService( rockContext );
+                lPanelTitle.Text = locationService.GetSelect( locationIdParameter.Value, s => s.Name );
+
+                locationIds = new List<int>();
+                locationIds.Add( locationIdParameter.Value );
+
+                if ( locationGridField != null )
+                {
+                    // since a LocationId parameter was specified, the LocationGrid field doesn't need to be shown
+                    locationGridField.Visible = false;
+                }
+            }
+            else if ( parentLocationIdParameter.HasValue )
+            {
+                // If parentLocationId is specified, show the direct (first level) child locations of the specified ParentLocationId.
+                // This will take precedence over the selected campus+locations.
+                var locationService = new LocationService( rockContext );
+                locationIds = locationService.Queryable()
+                    .Where( a => a.ParentLocationId.HasValue && a.ParentLocationId.Value == parentLocationIdParameter.Value )
+                    .Select( a => a.Id ).ToList();
+
+                lPanelTitle.Text = string.Format( "{0} Child Locations", locationService.GetSelect( parentLocationIdParameter.Value, s => s.Name ) );
+            }
+            else
+            {
+                // Limit locations (rooms) to locations within the selected campus.
+                locationIds = new LocationService( rockContext ).GetAllDescendentIds( campus.LocationId.Value ).ToList();
+                locationIds.Add( campus.LocationId.Value, true );
+
+                lPanelTitle.Text = "Room List";
+            }
+
+            groupLocationsQuery = groupLocationsQuery.Where( a => locationIds.Contains( a.LocationId ) );
 
             if ( selectedScheduleIds.Any() )
             {
@@ -267,10 +341,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 groupLocationsQuery = groupLocationsQuery.Where( a => a.Schedules.Any( s => s.IsActive && s.CheckInStartOffsetMinutes.HasValue ) );
             }
 
-            var groupLocationList = groupLocationsQuery.Select( a => new
+            var groupLocationList = groupLocationsQuery.Select( a => new GroupLocationInfo
             {
                 LocationId = a.LocationId,
                 LocationName = a.Location.Name,
+                ParentGroupId = a.Group.ParentGroupId,
+                ParentGroupName = a.Group.ParentGroup.Name,
                 GroupId = a.Group.Id,
                 GroupName = a.Group.Name,
                 GroupTypeId = a.Group.GroupTypeId
@@ -297,8 +373,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 && a.Occurrence.LocationId.HasValue
                 && a.Occurrence.ScheduleId.HasValue );
 
-            // Limit attendances (rooms) to locations within the selected campus.
-            attendanceQuery = attendanceQuery.Where( a => campusLocationIds.Contains( a.Occurrence.LocationId.Value ) );
+            // Limit attendances (rooms) to the groupLocations' LocationId and GroupIds that we'll be showing
+            var groupLocationLocationIds = groupLocationList.Select( a => a.LocationId ).Distinct().ToList();
+            var groupLocationGroupsIds = groupLocationList.Select( a => a.GroupId ).Distinct().ToList();
+
+            attendanceQuery = attendanceQuery.Where( a =>
+                groupLocationLocationIds.Contains( a.Occurrence.LocationId.Value )
+                && groupLocationGroupsIds.Contains( a.Occurrence.GroupId.Value ) );
 
             attendanceQuery = attendanceQuery.Where( a => selectedGroupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
 
@@ -333,10 +414,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Select( a => a.Id )
                 .Distinct();
 
-            // If the same person is checked in multiple times, only count the most recent attendance.
-            attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.GroupBy( a => a.PersonId )
-                .Select( s => s.OrderByDescending( o => o.StartDateTime ).FirstOrDefault() ).ToList();
-
             attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.Where( a =>
             {
                 var allowCheckout = groupTypeIdsWithAllowCheckout.Contains( a.GroupTypeId );
@@ -361,63 +438,40 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             } ).ToList();
 
-            Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesByLocationId = attendanceCheckinTimeInfoList
+            var attendancesByLocationId = attendanceCheckinTimeInfoList
                 .GroupBy( a => a.LocationId ).ToDictionary( k => k.Key, v => v.ToList() );
 
-            Dictionary<int, Dictionary<int, List<AttendanceCheckinTimeInfo>>> attendancesByLocationIdAndGroupId = attendancesByLocationId.ToDictionary(
+            _attendancesByLocationIdAndGroupId = attendancesByLocationId.ToDictionary(
                    k => k.Key,
                    v => v.Value.GroupBy( x => x.GroupId ).ToDictionary( x => x.Key, xx => xx.ToList() ) );
 
-            var checkinAreaPathsLookupByGroupTypeId = checkinAreaPaths.ToDictionary( k => k.GroupTypeId, v => v );
+            _checkinAreaPathsLookupByGroupTypeId = checkinAreaPaths.ToDictionary( k => k.GroupTypeId, v => v );
 
-            var roomList = groupLocationList
-                .Select( a =>
-                {
-                    List<AttendanceCheckinTimeInfo> attendancesForLocationAndGroup = null;
-                    Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesForLocation = attendancesByLocationIdAndGroupId.GetValueOrNull( a.LocationId );
-                    if ( attendancesForLocation != null )
-                    {
-                        attendancesForLocationAndGroup = attendancesForLocation.GetValueOrNull( a.GroupId );
-                    }
+            _showOnlyParentGroup = this.GetAttributeValue( AttributeKey.ShowOnlyParentGroup ).AsBoolean();
 
-                    RoomCounts roomCounts = null;
+            var roomList = new List<RoomInfo>();
 
-                    if ( attendancesForLocationAndGroup != null)
-                    {
-                        roomCounts = new RoomCounts
-                        {
-                            CheckedInCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedIn ).Count(),
-                            PresentCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.Present ).Count(),
-                            CheckedOutCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedOut ).Count(),
-                        };
-                    }
+            foreach ( var groupLocation in groupLocationList )
+            {
+                AddToRoomList( roomList, groupLocation );
+            }
 
-                    var groupAndRoomInfo = new GroupAndRoomInfo
-                    {
-                        LocationId = a.LocationId,
-                        GroupId = a.GroupId,
-                        GroupName = a.GroupName,
-                        LocationName = a.LocationName,
-                        RoomCounts = roomCounts,
-                        GroupPath = new RoomGroupPathInfo
-                        {
-                            GroupId = a.GroupId,
-                            GroupName = a.GroupName,
-                            GroupTypePath = checkinAreaPathsLookupByGroupTypeId.GetValueOrNull( a.GroupTypeId )
-                        }
-                    };
-
-                    return groupAndRoomInfo;
-                } );
-
-            var sortedRoomList = roomList.OrderBy( a => a.LocationName ).ThenBy( a => a.GroupName ).ToList();
+            List<RoomInfo> sortedRoomList;
+            if ( _showOnlyParentGroup )
+            {
+                sortedRoomList = roomList.OrderBy( a => a.LocationName ).ToList();
+            }
+            else
+            {
+                sortedRoomList = new List<RoomInfo>();
+                sortedRoomList.AddRange( roomList.OfType<RoomInfoByGroup>().OrderBy( a => a.LocationName ).ThenBy( a => a.GroupName ).ToList() );
+            }
 
             var checkedInCountField = gRoomList.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lCheckedInCount" );
             var presentCountField = gRoomList.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lPresentCount" );
             var checkedOutCountField = gRoomList.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lCheckedOutCount" );
 
             checkedOutCountField.Visible = groupTypeIdsWithAllowCheckout.Any();
-
 
             // Always show Present Count regardless of the 'Enable Presence' setting. (A person gets automatically marked present if 'Enable Presence' is disabled.)
             presentCountField.Visible = true;
@@ -430,18 +484,136 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                //* https://app.asana.com/0/0/1199637795718017/f */
+                // https://app.asana.com/0/0/1199637795718017/f 
                 // 'Enable Presence' is disabled, so a person automatically gets marked present.
-                // So, no records wil be in the 'Checked-In (but no present)' state.
+                // So, no records will be in the 'Checked-In (but no present)' state.
                 // Also, a user thinks of 'Present' as 'Checked-In' if they don't use the 'Enable Presence' feature
                 checkedInCountField.Visible = false;
                 presentCountField.HeaderText = "Checked-In";
             }
 
+            if ( _showOnlyParentGroup )
+            {
+                gRoomList.DataKeyNames = new string[1] { "LocationId" };
+            }
+            else
+            {
+                gRoomList.DataKeyNames = new string[2] { "LocationId", "GroupId" };
+            }
 
-            gRoomList.DataKeyNames = new string[2] { "LocationId", "GroupId" };
             gRoomList.DataSource = sortedRoomList;
             gRoomList.DataBind();
+        }
+
+        // lookups for adding groupLocationInfo to the RoomList
+        private Dictionary<int, Dictionary<int, List<AttendanceCheckinTimeInfo>>> _attendancesByLocationIdAndGroupId;
+        private Dictionary<int, CheckinAreaPath> _checkinAreaPathsLookupByGroupTypeId;
+
+        private bool _showOnlyParentGroup;
+
+        /// <summary>
+        /// Adds to room list.
+        /// </summary>
+        /// <param name="roomList">The room list.</param>
+        /// <param name="groupLocation">The group location.</param>
+        private void AddToRoomList( List<RoomInfo> roomList, GroupLocationInfo groupLocation )
+        {
+            Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesForLocationByGroupId = _attendancesByLocationIdAndGroupId.GetValueOrNull( groupLocation.LocationId );
+            
+            List<AttendanceCheckinTimeInfo> attendancesForLocationAndGroup;
+            if ( attendancesForLocationByGroupId != null )
+            {
+                attendancesForLocationAndGroup = attendancesForLocationByGroupId.GetValueOrNull( groupLocation.GroupId );
+
+                if ( attendancesForLocationAndGroup != null )
+                {
+                    // if the same person is attending this location and group multiple times, just take the most recent one
+                    attendancesForLocationAndGroup = attendancesForLocationAndGroup
+                        .GroupBy( a => a.PersonId )
+                        .Select( s => s.OrderByDescending( x => x.StartDateTime ).FirstOrDefault() ).ToList();
+                }
+                else
+                {
+                    // no attendances for this Location (Room) and Group
+                    attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>();
+                }
+            }
+            else
+            {
+                // no attendances for this Location (Room)
+                attendancesForLocationByGroupId = new Dictionary<int, List<AttendanceCheckinTimeInfo>>();
+                attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>(); 
+            }
+
+            var roomCounts = new RoomCounts
+            {
+                CheckedInCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedIn ).Count(),
+                PresentCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.Present ).Count(),
+                CheckedOutCount = attendancesForLocationAndGroup.Where( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.CheckedOut ).Count(),
+            };
+
+            if ( _showOnlyParentGroup )
+            {
+                // if the same person is attending this location and group multiple times, just take the most recent one
+                var attendancesForLocation = attendancesForLocationByGroupId.SelectMany( s => s.Value )
+                    .GroupBy( a => a.PersonId )
+                    .Select( s => s.OrderByDescending( x => x.StartDateTime ).FirstOrDefault() ).ToList();
+
+                // roll group/location counts into the parent group
+                // for example, if the Group Structure is
+                // - Babies
+                // --- 101 Blue
+                // --- 101 Green
+                // --- 101 Orange
+                // --- 101 Red
+                // --- 102 Blue
+                // combine each ChildGroup+Location into Babies.
+                // also, the grid would be single location per row, instead of location+group per row
+                RoomInfoByParentGroups groupInfoByParentGroups = roomList.OfType<RoomInfoByParentGroups>().Where( a => a.LocationId == groupLocation.LocationId ).FirstOrDefault();
+                if ( groupInfoByParentGroups == null )
+                {
+                    // since we are rolling into ParentGroup, use the ParentGroup/ParentGroupId as the group
+                    groupInfoByParentGroups = new RoomInfoByParentGroups
+                    {
+                        LocationId = groupLocation.LocationId,
+                        LocationName = groupLocation.LocationName,
+                        RoomCounts = roomCounts,
+                        ParentGroupNames = new Dictionary<int, string>(),
+                    };
+
+                    roomList.Add( groupInfoByParentGroups );
+                }
+                else
+                {
+                    groupInfoByParentGroups.RoomCounts.CheckedInCount += roomCounts.CheckedInCount;
+                    groupInfoByParentGroups.RoomCounts.PresentCount += roomCounts.PresentCount;
+                    groupInfoByParentGroups.RoomCounts.CheckedOutCount += roomCounts.CheckedOutCount;
+                }
+
+                if ( groupLocation.ParentGroupId.HasValue )
+                {
+                    groupInfoByParentGroups.ParentGroupNames.AddOrIgnore( groupLocation.ParentGroupId.Value, groupLocation.ParentGroupName );
+                }
+            }
+            else
+            {
+                var roomInfoByGroup = new RoomInfoByGroup
+                {
+                    LocationId = groupLocation.LocationId,
+                    GroupId = groupLocation.GroupId,
+                    GroupName = groupLocation.GroupName,
+                    LocationName = groupLocation.LocationName,
+                    RoomCounts = roomCounts,
+                    GroupPath = new RoomGroupPathInfo
+                    {
+                        GroupId = groupLocation.GroupId,
+                        GroupName = groupLocation.GroupName,
+                        GroupTypePath = _checkinAreaPathsLookupByGroupTypeId.GetValueOrNull( groupLocation.GroupTypeId )
+                    }
+                };
+
+                roomList.Add( roomInfoByGroup );
+            }
         }
 
         /// <summary>
@@ -474,8 +646,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gRoomList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            GroupAndRoomInfo groupAndRoomInfo = e.Row.DataItem as GroupAndRoomInfo;
-            if ( groupAndRoomInfo == null )
+            RoomInfo roomInfo = e.Row.DataItem as RoomInfo;
+            if ( roomInfo == null )
             {
                 return;
             }
@@ -486,14 +658,23 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var lPresentCount = e.Row.FindControl( "lPresentCount" ) as Literal;
             var lCheckedOutCount = e.Row.FindControl( "lCheckedOutCount" ) as Literal;
 
-            lRoomName.Text = groupAndRoomInfo.LocationName;
+            lRoomName.Text = roomInfo.LocationName;
 
-            lGroupNameAndPath.Text = groupAndRoomInfo.GroupsPathHTML;
-            if ( groupAndRoomInfo.RoomCounts != null )
+            if ( roomInfo is RoomInfoByGroup )
             {
-                lCheckedInCount.Text = groupAndRoomInfo.RoomCounts.CheckedInCount.ToString();
-                lPresentCount.Text = groupAndRoomInfo.RoomCounts.PresentCount.ToString();
-                lCheckedOutCount.Text = groupAndRoomInfo.RoomCounts.CheckedOutCount.ToString();
+                lGroupNameAndPath.Text = ( roomInfo as RoomInfoByGroup ).GroupsPathHTML;
+            }
+            else if ( roomInfo is RoomInfoByParentGroups )
+            {
+                lGroupNameAndPath.Text = ( roomInfo as RoomInfoByParentGroups ).ParentGroupNames.Select( a => a.Value )
+                    .OrderBy( a => a ).ToList().AsDelimited( "," );
+            }
+
+            if ( roomInfo.RoomCounts != null )
+            {
+                lCheckedInCount.Text = roomInfo.RoomCounts.CheckedInCount.ToString();
+                lPresentCount.Text = roomInfo.RoomCounts.PresentCount.ToString();
+                lCheckedOutCount.Text = roomInfo.RoomCounts.CheckedOutCount.ToString();
             }
         }
 
@@ -579,19 +760,27 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         /// <summary>
-        ///
+        ///  RoomInfo for when <seealso cref="AttributeKey.ShowOnlyParentGroup"/> is enabled.
+        ///  In this mode, each row is a location, instead of Location+Group
+        ///  So, there could be more than one group in this location
         /// </summary>
-        private class GroupAndRoomInfo
+        /// <seealso cref="RockWeb.Blocks.CheckIn.Manager.RoomList.RoomInfo" />
+        private class RoomInfoByParentGroups : RoomInfo
         {
-            public int LocationId { get; internal set; }
+            public Dictionary<int, string> ParentGroupNames { get; set; }
+        }
 
+        /// <summary>
+        ///  RoomInfo for when <seealso cref="AttributeKey.ShowOnlyParentGroup"/> is disable.
+        ///  In this mode, each row is  Location+Group
+        ///  So, there could is only one group and one location for this
+        /// </summary>
+        /// <seealso cref="RockWeb.Blocks.CheckIn.Manager.RoomList.RoomInfo" />
+        private class RoomInfoByGroup : RoomInfo
+        {
             public int GroupId { get; internal set; }
 
-            public string LocationName { get; internal set; }
-
             public RoomGroupPathInfo GroupPath { get; internal set; }
-
-            public RoomCounts RoomCounts { get; set; }
 
             public string GroupsPathHTML
             {
@@ -606,6 +795,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             public string GroupName { get; internal set; }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        private abstract class RoomInfo
+        {
+            public int LocationId { get; internal set; }
+
+            public string LocationName { get; internal set; }
+
+            public RoomCounts RoomCounts { get; internal set; }
         }
 
         /// <summary>
@@ -648,6 +849,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime? PresentDateTime { get; internal set; }
 
             public int PersonId { get; internal set; }
+
+            public override string ToString()
+            {
+                return string.Format( "GroupId:{0} LocationId:{1} PersonId:{2}", GroupId, LocationId, PersonId );
+            }
+        }
+
+        private class GroupLocationInfo
+        {
+            public int LocationId { get; internal set; }
+
+            public string LocationName { get; internal set; }
+
+            public int? ParentGroupId { get; internal set; }
+
+            public string ParentGroupName { get; internal set; }
+
+            public int GroupId { get; internal set; }
+
+            public string GroupName { get; internal set; }
+
+            public int GroupTypeId { get; internal set; }
         }
     }
 }

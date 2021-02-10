@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     /// ######### OBSOLETE: Use PersonLeft/PersonRight instead #######
     /// </summary>
     [DisplayName( "Person Profile (Obsolete)" )]
+    [RockObsolete( "1.12" )]
     [Category( "Check-in > Manager" )]
     [Description( "Obsolete: Use PersonLeft/PersonRight instead" )]
 
