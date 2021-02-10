@@ -147,22 +147,19 @@ namespace Rock.Utility
         {
             var _dictionary = new Dictionary<string, string>();
 
-            if ( uriEncodedString != null )
+            var keyValueStrings = uriEncodedString.Split( new string[] { keyValuePairEntrySeparator }, StringSplitOptions.None ).ToList();
+
+            foreach ( var keyValueString in keyValueStrings )
             {
-                var keyValueStrings = uriEncodedString.Split( new string[] { keyValuePairEntrySeparator }, StringSplitOptions.None ).ToList();
+                var keyValueArray = keyValueString.Split( new string[] { keyValuePairInternalSeparator }, StringSplitOptions.None );
 
-                foreach ( var keyValueString in keyValueStrings )
+                // Decode the values. Use UnescapeDataString() because HttpUtility.UrlDecode() replaces "+" with " " which is unwanted behavior.
+                if ( keyValueArray.Length == 2 )
                 {
-                    var keyValueArray = keyValueString.Split( new string[] { keyValuePairInternalSeparator }, StringSplitOptions.None );
+                    var key = System.Uri.UnescapeDataString( keyValueArray[0] );
+                    var value = System.Uri.UnescapeDataString( keyValueArray[1] );
 
-                    // Decode the values. Use UnescapeDataString() because HttpUtility.UrlDecode() replaces "+" with " " which is unwanted behavior.
-                    if ( keyValueArray.Length == 2 )
-                    {
-                        var key = System.Uri.UnescapeDataString( keyValueArray[0] );
-                        var value = System.Uri.UnescapeDataString( keyValueArray[1] );
-
-                        _dictionary.AddOrReplace( key, value );
-                    }
+                    _dictionary.AddOrReplace( key, value );
                 }
             }
 

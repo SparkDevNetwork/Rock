@@ -30,9 +30,8 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using System.Text;
+using DotLiquid;
 using System.Runtime.Serialization;
-using Rock.Utility;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -359,7 +358,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
 		[Serializable]
         [DataContract]
-        protected class MetricResult : RockDynamic
+        protected class MetricResult : Drop
         {
             /// <summary>
             /// Gets or sets the identifier.
@@ -432,7 +431,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
 		[Serializable]
         [DataContract]
-        protected class MetricValue : RockDynamic
+        protected class MetricValue : Drop
         {
             /// <summary>
             /// Gets or sets the date time.

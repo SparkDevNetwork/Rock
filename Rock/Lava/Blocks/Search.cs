@@ -17,13 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+
 using Rock.UniversalSearch;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -39,17 +39,25 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Search>( "search" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -57,13 +65,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // first ensure that search commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
@@ -157,17 +165,11 @@ namespace Rock.Lava.Blocks
             }
 
             var client = IndexContainer.GetActiveComponent();
-
-            if ( client == null )
-            {
-                throw new Exception( "Search results not available. Universal search is not enabled for this Rock instance." );
-            }
-
             var results = client.Search( query, searchType, entityIds, fieldCriteria, limit, offset );
 
-            context.SetMergeField( parms["iterator"], results, LavaContextRelativeScopeSpecifier.Root );
+            context.Scopes.Last()[parms["iterator"]] = results;
 
-            base.OnRender( context, result );
+            base.Render( context, result );
         }
 
         /// <summary>
@@ -176,11 +178,28 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
 
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
@@ -212,7 +231,7 @@ namespace Rock.Lava.Blocks
         /// <summary>
         ///
         /// </summary>
-        private class DataRowDrop : RockDynamic
+        private class DataRowDrop : DotLiquid.Drop
         {
             private readonly DataRow _dataRow;
 
@@ -221,16 +240,14 @@ namespace Rock.Lava.Blocks
                 _dataRow = dataRow;
             }
 
-            public override bool TryGetMember( GetMemberBinder binder, out object result )
+            public override object BeforeMethod( string method )
             {
-                if ( _dataRow.Table.Columns.Contains( binder.Name ) )
+                if ( _dataRow.Table.Columns.Contains( method ) )
                 {
-                    result = _dataRow[binder.Name];
-                    return true;
+                    return _dataRow[method];
                 }
 
-                result = null;
-                return false;
+                return null;
             }
         }
     }

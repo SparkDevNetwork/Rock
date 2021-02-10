@@ -19,6 +19,8 @@ using System.Data.Entity;
 using System.IO;
 using System.Linq;
 
+using DotLiquid;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
@@ -30,7 +32,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows a Content Channel Item Interaction to be written.
     /// </summary>
-    public class InteractionContentChannelItemWrite : RockLavaTagBase
+    public class InteractionContentChannelItemWrite : DotLiquid.Tag, IRockStartup, IRockLavaBlock
     {
         #region Parameter Keys
 
@@ -49,18 +51,49 @@ namespace Rock.Lava.Blocks
 
         #endregion Parameter Keys
 
+        private string _markup;
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public void OnStartup()
+        {
+            Template.RegisterTag<InteractionContentChannelItemWrite>( "interactioncontentchannelitemwrite" );
+        }
+
+        /// <summary>
+        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int StartupOrder { get { return 0; } }
+
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        public override void Initialize( string tagName, string markup, List<string> tokens )
+        {
+            _markup = markup;
+
+            base.Initialize( tagName, markup, tokens );
+        }
+
         /// <summary>
         /// Renders the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
             if ( !LavaHelper.IsAuthorized( context, this.GetType().Name ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
@@ -70,7 +103,7 @@ namespace Rock.Lava.Blocks
                 { ParameterKey.Operation, "View" }
             };
 
-            LavaHelper.ParseCommandMarkup( this.ElementAttributesMarkup, context, parms );
+            LavaHelper.ParseCommandMarkup( _markup, context, parms );
 
             // Set local variables from parsed parameters.
             int? contentChannelItemId = parms.GetValueOrNull( ParameterKey.ContentChannelItemId ).AsIntegerOrNull();

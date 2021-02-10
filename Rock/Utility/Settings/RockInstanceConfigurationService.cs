@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using Rock.Lava;
+using Rock.Web.Utilities;
 
 namespace Rock.Utility.Settings
 {
@@ -99,6 +99,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public string AspNetVersion
+        {
+            get
+            {
+                return RockUpdateHelper.GetDotNetVersion();
+            }
+        }
+
+        /// <summary>
         /// Returns the database properties of the Rock application.
         /// </summary>
         public RockInstanceDatabaseConfiguration Database { get; }
@@ -114,17 +128,6 @@ namespace Rock.Utility.Settings
             get
             {
                 return Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the name of the rendering engine that is currently used to render Lava templates.
-        /// </summary>
-        public string LavaEngineName
-        {
-            get
-            {
-                return LavaEngine.CurrentEngine.EngineName;
             }
         }
     }

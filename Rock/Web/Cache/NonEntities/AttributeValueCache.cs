@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -29,7 +28,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
+    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors

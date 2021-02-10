@@ -23,6 +23,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+using DotLiquid.Util;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -65,14 +68,14 @@ namespace Rock.Lava.Shortcodes
         </ul>",
         "scheduleid,showwhen,roleid",
         "" )]
-    public class ScheduledContent : RockLavaShortcodeBase, IRockLavaBlock
+    public class ScheduledContent : RockLavaShortcodeBlockBase
     {
-        //private static readonly Regex Syntax = new Regex( @"(\w+)" );
+        private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
         string _enabledSecurityCommands = string.Empty;
         StringBuilder _blockMarkup = new StringBuilder();
-        //string _tagName = "scheduledcontent";
+        string _tagName = "scheduledcontent";
 
         // Keys
         const string SHOW_WHEN = "showwhen";
@@ -80,19 +83,15 @@ namespace Rock.Lava.Shortcodes
         const string ROLE_ID = "roleid";
         const string LOOK_AHEAD_DAYS = "lookaheaddays";
         const string SCHEDULE_CATEGORY_ID = "schedulecategoryid";
-        const string AS_AT_DATE = "asatdate";
 
         /// <summary>
-        /// Specifies the type of Liquid element for this shortcode.
+        /// Method that will be run at Rock startup
         /// </summary>
-        public override LavaShortcodeTypeSpecifier ElementType
+        public override void OnStartup()
         {
-            get
-            {
-                return LavaShortcodeTypeSpecifier.Block;
-            }
+            Template.RegisterShortcode<ScheduledContent>( _tagName );
         }
-        
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
@@ -100,38 +99,36 @@ namespace Rock.Lava.Shortcodes
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
         /// Parses the specified tokens.
         /// </summary>
         /// <param name="tokens">The tokens.</param>
-        public override void OnParsed( List<string> tokens )
+        protected override void Parse( List<string> tokens )
         {
-            // This block does not return any nodes for further processing.
-            //nodes = null;
-
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
             // the end of the template. This will pull out just the internals of the block.
 
             // We must take into consideration nested tags of the same type
 
-            //var endTagFound = false;
+            var endTagFound = false;
 
-            //var startTag = $@"{{\[\s*{ this.InternalElementName }\s*\]}}";
-            //var endTag = $@"{{\[\s*end{ this.InternalElementName }\s*\]}}";
-            var startTag = $@"{{\%\s*{ this.InternalElementName }\s*\%}}";
-            var endTag = $@"{{\%\s*end{ this.InternalElementName }\s*\%}}";
+            var startTag = $@"{{\[\s*{ _tagName }\s*\]}}";
+            var endTag = $@"{{\[\s*end{ _tagName }\s*\]}}";
 
             var childTags = 0;
 
             Regex regExStart = new Regex( startTag );
             Regex regExEnd = new Regex( endTag );
+
+            NodeList = NodeList ?? new List<object>();
+            NodeList.Clear();
 
             string token;
             while ( ( token = tokens.Shift() ) != null )
@@ -154,11 +151,11 @@ namespace Rock.Lava.Shortcodes
                             childTags--; // decrement the child tag counter
                             _blockMarkup.Append( token );
                         }
-                        //else
-                        //{
-                        //    endTagFound = true;
-                        //    break;
-                        //}
+                        else
+                        {
+                            endTagFound = true;
+                            break;
+                        }
                     }
                     else
                     {
@@ -167,7 +164,7 @@ namespace Rock.Lava.Shortcodes
                 }
             }
 
-            if ( childTags > 0 )
+            if ( !endTagFound )
             {
                 AssertMissingDelimitation();
             }
@@ -178,27 +175,27 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             var rockContext = new RockContext();
 
             // Get enabled security commands
-            _enabledSecurityCommands = context.GetEnabledCommands().JoinStrings(",");
+            if ( context.Registers.ContainsKey( "EnabledCommands" ) )
+            {
+                _enabledSecurityCommands = context.Registers["EnabledCommands"].ToString();
+            }
 
             using ( TextWriter writer = new StringWriter() )
             {
                 bool filterProvided = false;
 
-                //var now = RockDateTime.Now;
+                var now = RockDateTime.Now;
 
-                base.OnRender( context, writer );
+                base.Render( context, writer );
 
                 var parms = ParseMarkup( _markup, context );
                 var lookAheadDays = parms[ LOOK_AHEAD_DAYS ].AsInteger();
                 var scheduleCategoryId = parms[ SCHEDULE_CATEGORY_ID ].AsIntegerOrNull();
-                var asAtDate = parms[AS_AT_DATE].AsDateTime();
-
-                var now = asAtDate ?? RockDateTime.Now;
 
                 var scheduleIds = new List<int>();
 
@@ -284,8 +281,7 @@ namespace Rock.Lava.Shortcodes
                     }
                 }
 
-                var mergeFields = context.GetMergeFields();
-
+                var mergeFields = LoadBlockMergeFields( context );
                 mergeFields.Add( "NextOccurrenceDateTime", nextStartDateTime );
                 mergeFields.Add( "OccurrenceEndDateTime", occurrenceEndDateTime );
                 mergeFields.Add( "Schedule", nextSchedule );
@@ -293,7 +289,7 @@ namespace Rock.Lava.Shortcodes
 
                 var results = _blockMarkup.ToString().ResolveMergeFields( mergeFields, _enabledSecurityCommands );
                 result.Write( results.Trim() );
-                //base.OnRender( context, result );
+                base.Render( context, result );
             }
         }
 
@@ -302,12 +298,21 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static Person GetCurrentPerson( ILavaContext context )
+        private static Person GetCurrentPerson( DotLiquid.Context context )
         {
             Person currentPerson = null;
 
             // First check for a person override value included in lava context
-            currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
+            if ( context.Scopes != null )
+            {
+                foreach ( var scopeHash in context.Scopes )
+                {
+                    if ( scopeHash.ContainsKey( "CurrentPerson" ) )
+                    {
+                        currentPerson = scopeHash["CurrentPerson"] as Person;
+                    }
+                }
+            }
 
             if ( currentPerson == null )
             {
@@ -327,11 +332,28 @@ namespace Rock.Lava.Shortcodes
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
 
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
@@ -340,7 +362,6 @@ namespace Rock.Lava.Shortcodes
             parms.Add( SHOW_WHEN, "live" );
             parms.Add( LOOK_AHEAD_DAYS, "30" );
             parms.Add( SCHEDULE_CATEGORY_ID, "" );
-            parms.Add( AS_AT_DATE, "" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
@@ -356,6 +377,28 @@ namespace Rock.Lava.Shortcodes
                 }
             }
             return parms;
+        }
+
+
+        /// <summary>
+        /// Loads the block merge fields.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Dictionary<string, object> LoadBlockMergeFields( Context context )
+        {
+            var _internalMergeFields = new Dictionary<string, object>();
+
+            // Get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    _internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            return _internalMergeFields;
         }
     }
 }

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Utility;
 using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.UniversalSearch
@@ -22,7 +21,7 @@ namespace Rock.UniversalSearch
     /// <summary>
     /// Search Result Object
     /// </summary>
-    public class SearchResultModel: RockDynamic
+    public class SearchResultModel: DotLiquid.Drop
     {
         /// <summary>
         /// Gets or sets the score.

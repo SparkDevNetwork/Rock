@@ -28,8 +28,8 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using Rock.Utility;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Jobs
 {

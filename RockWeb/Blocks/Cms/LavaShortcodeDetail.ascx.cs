@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -30,7 +31,6 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using System.Collections.Generic;
 using System.Web;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Core
 {
@@ -122,27 +122,24 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             // unregister shortcode
-            var lavaEngine = LavaEngine.CurrentEngine;
-
             if ( hfOriginalTagName.Value.IsNotNullOrWhiteSpace() )
             {
-                lavaEngine.UnregisterShortcode( hfOriginalTagName.Value );
+                Template.UnregisterShortcode( hfOriginalTagName.Value );
             }
 
-            // register shortcode            
+            // register shortcode
             if ( lavaShortcode.TagType == TagType.Block )
             {
-                lavaEngine.RegisterDynamicShortcode( lavaShortcode.TagName, (shortcodeName) => { return null; } );
-                //lavaEngine.RegisterShortcode<DynamicShortcodeBlock>( lavaShortcode.TagName );
+                Template.RegisterShortcode<DynamicShortcodeBlock>( lavaShortcode.TagName );
             }
-            //else
-            //{
-            //    lavaEngine.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
-            //}
+            else
+            {
+                Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
+            }
 
             // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
             // usage of this shortcode is cached with a key we can't predict.
-            lavaEngine.ClearTemplateCache();
+            LavaTemplateCache.Clear();
 
             NavigateToParentPage();
         }

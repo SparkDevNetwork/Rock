@@ -14,49 +14,85 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+
+using DotLiquid;
+
+using Rock.Utility;
 
 namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Tag which allows you to list all of the registered Lava commands on your server.
     /// </summary>
-    public class TagList : RockLavaTagBase
+    public class TagList : Tag, IRockStartup
     {
+        private static readonly Regex Syntax = new Regex( @"(\w+)" );
+
+        string _markup = string.Empty;
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public void OnStartup()
+        {
+            Template.RegisterTag<TagList>( "taglist" );
+        }
+
+        /// <summary>
+        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int StartupOrder { get { return 0; } }
+
+        /// <summary>
+        /// Initializes the specified tag name.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <param name="markup">The markup.</param>
+        /// <param name="tokens">The tokens.</param>
+        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
+        public override void Initialize( string tagName, string markup, List<string> tokens )
+        {
+            _markup = markup;
+
+            base.Initialize( tagName, markup, tokens );
+        }
+
         /// <summary>
         /// Renders the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
-           var tags = LavaEngine.CurrentEngine.GetRegisteredElements();
-
-           if ( !tags.Any() )
+           if ( Template.Tags == null )
            {
                 return;
            }
-           
-           var tagList = new StringBuilder();
+
+           StringBuilder tagList = new StringBuilder();
 
            tagList.Append( "<strong>Lava Tag List</strong>" );
            tagList.Append( "<ul>" );
 
-           foreach( var kvp in tags.OrderBy( t => t.Key ) )
+           foreach( var tag in Template.Tags.OrderBy( t => t.Key ) )
            {
-                var tag = kvp.Value;
-                
-                tagList.Append( $"<li>{tag.Name} - {tag.SystemTypeName}</li>" );
+                tagList.Append( $"<li>{tag.Key} - {tag.Value}</li>" );
            }
 
            tagList.Append( "</ul>" );
 
            result.Write( tagList.ToString() );
 
-           base.OnRender( context, result );
+           base.Render( context, result );
         }
     }
 }

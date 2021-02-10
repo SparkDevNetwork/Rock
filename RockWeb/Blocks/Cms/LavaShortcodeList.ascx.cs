@@ -24,10 +24,9 @@ using Rock.Model;
 using Rock.Web.UI;
 using System.ComponentModel;
 using Rock.Security;
-
+using DotLiquid;
 using System.Web.UI.WebControls;
 using Rock.Lava.Shortcodes;
-using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -145,7 +144,7 @@ namespace RockWeb.Blocks.Cms
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
-                LavaEngine.CurrentEngine.UnregisterShortcode( lavaShortcode.TagName );
+                Template.UnregisterShortcode( lavaShortcode.TagName );
 
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();
@@ -218,10 +217,33 @@ namespace RockWeb.Blocks.Cms
             var shortcodeList = lavaShortcodes.ToList();
 
             // Start with block items
-            var shortcodeTypes = Rock.Reflection.FindTypes( typeof( IRockShortcode ) ).Values.ToList();
-
-            foreach ( var shortcode in shortcodeTypes )
+            foreach ( var shortcodeInCode in Rock.Reflection.FindTypes( typeof( Rock.Lava.Shortcodes.RockLavaShortcodeBlockBase ) ).ToList() )
             {
+                var shortcode = shortcodeInCode.Value;
+                var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
+                
+                // ignore shortcodes with no metadata
+                if ( shortcodeMetadataAttribute == null )
+                {
+                    continue;
+                }
+
+                shortcodeList.Add( new LavaShortcode {
+                    Id = -1,
+                    Name = shortcodeMetadataAttribute.Name,
+                    TagName = shortcodeMetadataAttribute.TagName,
+                    TagType = TagType.Block,
+                    IsActive = true,
+                    IsSystem = true,
+                    Description = shortcodeMetadataAttribute.Description,
+                    Documentation = shortcodeMetadataAttribute.Documentation
+                } );
+            }
+
+            // Next add inline items
+            foreach ( var shortcodeInCode in Rock.Reflection.FindTypes( typeof( Rock.Lava.Shortcodes.RockLavaShortcodeBase ) ).ToList() )
+            {
+                var shortcode = shortcodeInCode.Value;
                 var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
 
                 // ignore shortcodes with no metadata
@@ -230,29 +252,17 @@ namespace RockWeb.Blocks.Cms
                     continue;
                 }
 
-                try
+                shortcodeList.Add( new LavaShortcode
                 {
-                    var shortcodeInstance = Activator.CreateInstance( shortcode ) as IRockShortcode;
-
-                    var shortcodeType = shortcodeInstance.ElementType;
-
-                    shortcodeList.Add( new LavaShortcode
-                    {
-                        Id = -1,
-                        Name = shortcodeMetadataAttribute.Name,
-                        TagName = shortcodeMetadataAttribute.TagName,
-                        TagType = ( shortcodeType == LavaShortcodeTypeSpecifier.Inline ) ? TagType.Inline : TagType.Block,
-                        IsActive = true,
-                        IsSystem = true,
-                        Description = shortcodeMetadataAttribute.Description,
-                        Documentation = shortcodeMetadataAttribute.Documentation
-                    } );
-
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                }
+                    Id = -1,
+                    Name = shortcodeMetadataAttribute.Name,
+                    TagName = shortcodeMetadataAttribute.TagName,
+                    TagType = TagType.Inline,
+                    IsActive = true,
+                    IsSystem = true,
+                    Description = shortcodeMetadataAttribute.Description,
+                    Documentation = shortcodeMetadataAttribute.Documentation
+                } );
             }
 
             rptShortcodes.DataSource = shortcodeList.ToList().OrderBy( s => s.Name );

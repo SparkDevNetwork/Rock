@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
 using System.Collections.Generic;
-
+using DotLiquid;
 using System.Dynamic;
 using Rock.Web;
 

@@ -25,7 +25,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -408,7 +407,7 @@ namespace RockWeb.Blocks.Reporting
     /// <summary>
     /// Helper class for binding sessions
     /// </summary>
-    [LavaType( "InteractionSession", "PersonAlias", "StartDateTime", "EndDateTime", "Interactions" )]
+    [DotLiquid.LiquidType( "InteractionSession", "PersonAlias", "StartDateTime", "EndDateTime", "Interactions" )]
     public class WebSession
     {
         /// <summary>

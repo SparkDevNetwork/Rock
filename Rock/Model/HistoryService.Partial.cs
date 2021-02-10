@@ -21,7 +21,6 @@ using System.Linq;
 using System.Reflection;
 
 using Rock.Data;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -272,7 +271,8 @@ namespace Rock.Model
         /// <summary>
         /// 
         /// </summary>
-        public class HistorySummaryByDateTimeAndVerb : RockDynamic
+        /// <seealso cref="DotLiquid.Drop" />
+        public class HistorySummaryByDateTimeAndVerb : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the date time 
@@ -310,7 +310,8 @@ namespace Rock.Model
         /// <summary>
         /// 
         /// </summary>
-        public class HistorySummaryListByEntityTypeAndVerb : RockDynamic
+        /// <seealso cref="DotLiquid.Drop" />
+        public class HistorySummaryListByEntityTypeAndVerb : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the verb.
@@ -370,7 +371,7 @@ namespace Rock.Model
         /// <summary>
         /// 
         /// </summary>
-        public class HistorySummaryByDateTime : RockDynamic
+        public class HistorySummaryByDateTime : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the date time.
@@ -392,7 +393,8 @@ namespace Rock.Model
         /// <summary>
         /// 
         /// </summary>
-        public class HistorySummary : RockDynamic
+        /// <seealso cref="DotLiquid.Drop" />
+        public class HistorySummary : DotLiquid.Drop
         {
             /// <summary>
             /// Gets or sets the created date time.

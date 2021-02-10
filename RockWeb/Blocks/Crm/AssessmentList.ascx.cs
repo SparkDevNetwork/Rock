@@ -25,9 +25,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -291,7 +289,7 @@ namespace Rockweb.Blocks.Crm
             }
         }
 
-        public class LastAssessmentTaken : RockDynamic
+        public class LastAssessmentTaken : DotLiquid.Drop
         {
             public DateTime? RequestedDate { get; set; }
             public DateTime? CompletedDate { get; set; }
@@ -299,7 +297,7 @@ namespace Rockweb.Blocks.Crm
             public string Requester { get; set; }
         }
 
-        public class AssessmentTypeListItem : RockDynamic
+        public class AssessmentTypeListItem : DotLiquid.Drop
         {
             public string Title { get; set; }
             public string AssessmentPath { get; set; }

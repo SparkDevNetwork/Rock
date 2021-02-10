@@ -20,7 +20,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -338,7 +337,7 @@ namespace Rock.Web.Cache
         /// </summary>
 		[Serializable]
         [DataContract]
-        [LavaType( "Day", "Time" )]
+        [DotLiquid.LiquidType( "Day", "Time" )]
         public class ServiceTime
         {
             /// <summary>
@@ -365,7 +364,7 @@ namespace Rock.Web.Cache
         /// </summary>
         [Serializable]
         [DataContract]
-        [LavaType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
+        [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
         public class CampusLocation
         {
             /// <summary>

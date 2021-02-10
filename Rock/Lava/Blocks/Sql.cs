@@ -20,6 +20,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using DotLiquid;
+
 using Rock.Data;
 
 namespace Rock.Lava.Blocks
@@ -38,17 +40,25 @@ namespace Rock.Lava.Blocks
         string _markup = string.Empty;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<Sql>( "sql" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -56,19 +66,19 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // first ensure that sql commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
             using ( TextWriter sql = new StringWriter() )
             {
-                base.OnRender( context, sql );
+                base.Render( context, sql );
 
                 var parms = ParseMarkup( _markup, context );
 
@@ -83,7 +93,7 @@ namespace Rock.Lava.Blocks
                     case "select":
                         var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => ( object ) i.Value ), sqlTimeout );
 
-                        context.SetMergeField( parms["return"], results.Tables[0].ToDynamic(), LavaContextRelativeScopeSpecifier.Root );
+                        context.Scopes.Last()[parms["return"]] = results.Tables[0].ToDynamic();
                         break;
                     case "command":
                         var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
@@ -99,9 +109,9 @@ namespace Rock.Lava.Blocks
                             {
                                 rockContext.Database.CommandTimeout = sqlTimeout;
                             }
-                            int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+                            int numOfRowEffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
 
-                            context.SetMergeField( parms["return"], numOfRowsAffected, LavaContextRelativeScopeSpecifier.Root );
+                            context.Scopes.Last()[parms["return"]] = numOfRowEffected;
                         }
                         break;
                     default:
@@ -116,10 +126,28 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            if ( context.Environments.Count > 0 )
+            {
+                foreach ( var item in context.Environments[0] )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
 
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );

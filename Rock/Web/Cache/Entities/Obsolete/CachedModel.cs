@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 
@@ -36,7 +35,7 @@ namespace Rock.Web.Cache
     [DataContract]
     [RockObsolete( "1.8" )]
     [Obsolete( "Use ModelCache instead", true )]
-    public abstract class CachedModel<T> : CachedEntity<T>, ISecured, Rock.Attribute.IHasAttributes, ILavaDataDictionary
+    public abstract class CachedModel<T> : CachedEntity<T>, ISecured, Rock.Attribute.IHasAttributes, Lava.ILiquidizable
         where T : Rock.Data.Entity<T>, ISecured, Rock.Attribute.IHasAttributes, new()
     {
         /// <summary>
@@ -405,19 +404,6 @@ namespace Rock.Web.Cache
 
                 return availableKeys;
             }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="System.Object"/> with the specified key.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Object"/>.
-        /// </value>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public object GetValue( object key )
-        {
-            return this[key];
         }
 
         /// <summary>
