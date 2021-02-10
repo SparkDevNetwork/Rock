@@ -29,7 +29,6 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -118,7 +117,7 @@ namespace Rock.Model
         /// <value>
         /// The parent DataViewFilter.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>

@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -104,7 +103,7 @@ namespace Rock.Model
         /// <value>
         /// The template binary file.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BinaryFile TemplateBinaryFile { get; set; }
 
         /// <summary>
@@ -113,7 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the merge template type entity.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual EntityType MergeTemplateTypeEntityType { get; set; }
 
         /// <summary>

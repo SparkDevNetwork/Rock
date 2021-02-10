@@ -21,7 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -110,7 +109,7 @@ namespace Rock.Model
         /// <value>
         /// The status message as HTML.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         public string StatusMessageAsHtml
         {
@@ -126,7 +125,7 @@ namespace Rock.Model
         /// <value>
         /// The job duration in seconds.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         [NotMapped]
         public int? DurationSeconds
         {

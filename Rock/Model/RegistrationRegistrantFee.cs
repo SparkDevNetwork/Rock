@@ -19,7 +19,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -98,7 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The registration registrant.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>
@@ -107,7 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
 
         /// <summary>
@@ -116,7 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee item.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual RegistrationTemplateFeeItem RegistrationTemplateFeeItem { get; set; }
 
         /// <summary>
@@ -126,7 +125,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
-        [LavaVisible]
+        [LavaInclude]
         public virtual decimal TotalCost
         {
             get { return Quantity * Cost; }

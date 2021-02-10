@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -73,7 +72,7 @@ namespace Rock.Model
         /// <value>
         /// The package.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BenevolenceRequest BenevolenceRequest { get; set; }
 
         /// <summary>

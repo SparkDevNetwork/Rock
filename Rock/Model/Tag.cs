@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -174,7 +173,7 @@ namespace Rock.Model
         /// <value>
         /// The owner person alias.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Model.PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
@@ -192,7 +191,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing of <see cref="Rock.Model.TaggedItem">TaggedItems</see> representing the entities that use this tag.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
 
         /// <summary>

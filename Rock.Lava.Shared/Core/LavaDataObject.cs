@@ -21,6 +21,8 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Data;
+
 namespace Rock.Lava
 {
     /// <summary>
@@ -66,7 +68,7 @@ namespace Rock.Lava
         /// <param name="key"></param>
         /// <param name="result"></param>
         /// <returns>True if the value was resolved.</returns>
-        [LavaHidden]
+        [LavaIgnore]
         protected virtual bool OnTryGetValue( string key, out object result )
         {
             if ( key == null )
@@ -117,7 +119,7 @@ namespace Rock.Lava
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual List<string> AvailableKeys
         {
             get
@@ -131,7 +133,7 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public bool ContainsKey( string key )
         {
             if ( AvailableKeys.Contains( key ) )
@@ -153,7 +155,7 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public object GetValue( string key )
         {
             object result;

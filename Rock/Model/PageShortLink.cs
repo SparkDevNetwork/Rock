@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -77,7 +76,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this PageShortLink is associated with.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -86,7 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The short link URL.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual string ShortLinkUrl
         {
             get

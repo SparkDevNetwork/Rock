@@ -21,7 +21,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -148,7 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.SignatureDocumentTemplate"/> that is being executed in this persisted SignatureDocument instance.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual SignatureDocumentTemplate SignatureDocumentTemplate { get; set; }
 
         /// <summary>

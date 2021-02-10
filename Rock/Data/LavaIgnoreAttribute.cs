@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.Data
 {
     /// <summary>
     /// Attribute so that the dotLiquid knows to ignore this column ( Only used when [DataMember] needs to be used for serialization )
     /// </summary>
-    [Obsolete("Use Rock.Lava.LavaHiddenAttribute instead.")]
-    [RockObsolete("1.13")]
     public class LavaIgnoreAttribute : System.Attribute
     {
     }

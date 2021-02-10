@@ -22,7 +22,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -74,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BinaryFile BinaryFile { get; set; }
 
         /// <summary>
@@ -83,7 +82,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         #endregion

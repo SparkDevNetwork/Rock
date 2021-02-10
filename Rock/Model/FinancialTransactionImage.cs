@@ -24,7 +24,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -77,7 +76,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this image belongs to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -86,7 +85,7 @@ namespace Rock.Model
         /// <value>
         /// The image's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual BinaryFile BinaryFile { get; set; }
 
         /// <summary>

@@ -25,7 +25,6 @@ using System.Runtime.Serialization;
 
 using Rock.Chart;
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -127,7 +126,7 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Metric Metric { get; set; }
 
         /// <summary>

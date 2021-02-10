@@ -20,7 +20,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -135,7 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the group.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
@@ -147,7 +146,7 @@ namespace Rock.Model
         /// <remarks>
         /// NOTE: [DataMember] attribute is intentionally omitted to prevent having to serialize all group members (times out on large groups)
         /// </remarks>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Group Group { get; set; }
 
         /// <summary>

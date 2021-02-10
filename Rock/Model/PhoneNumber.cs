@@ -27,7 +27,6 @@ using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -173,7 +172,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing an optional description of the PhoneNumber.
         /// </value>
         [DataMember]
-        [LavaHidden]
+        [LavaIgnore]
         public string Description { get; set; }
 
         #endregion
@@ -195,7 +194,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that the phone number belongs to.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public virtual Person Person { get; set; }
 
         /// <summary>

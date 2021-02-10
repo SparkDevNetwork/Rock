@@ -340,7 +340,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type identifier.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public int AchievementTypeId { get; }
 
         /// <summary>
@@ -353,7 +353,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the name of the streak type achievement type.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public string AchievementTypeName { get; }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type description.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public string AchievementTypeDescription { get; }
 
         /// <summary>
@@ -379,25 +379,25 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the success count.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public int SuccessCount { get; set; }
 
         /// <summary>
         /// Gets or sets the attempt count.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public int AttemptCount { get; set; }
 
         /// <summary>
         /// Gets or sets the best attempt.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public AchievementAttempt BestAttempt { get; set; }
 
         /// <summary>
         /// Gets or sets the most recent attempt.
         /// </summary>
-        [LavaVisible]
+        [LavaInclude]
         public AchievementAttempt MostRecentAttempt { get; set; }
 
         /// <summary>
@@ -406,7 +406,7 @@ namespace Rock.Model
         /// <value>
         /// The attributes.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public Dictionary<string, string> Attributes { get; set; }
 
         /// <summary>
@@ -415,7 +415,7 @@ namespace Rock.Model
         /// <value>
         /// The unmet prerequisites.
         /// </value>
-        [LavaVisible]
+        [LavaInclude]
         public List<ProgressStatement> UnmetPrerequisites { get; }
 
         #region ILiquidizable
@@ -435,7 +435,7 @@ namespace Rock.Model
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual List<string> AvailableKeys
         {
             get
@@ -475,7 +475,7 @@ namespace Rock.Model
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
+        [LavaIgnore]
         public virtual object this[object key]
         {
             get
