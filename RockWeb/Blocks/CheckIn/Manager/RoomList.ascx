@@ -6,7 +6,8 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title">Room List
+                <h1 class="panel-title">
+                    <asp:Literal ID="lPanelTitle" runat="server" Text="Room List" />
                 </h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnShowFilter" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnShowFilter_Click">

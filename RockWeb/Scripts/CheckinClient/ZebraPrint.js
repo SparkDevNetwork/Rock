@@ -8,6 +8,26 @@
 
 var ZebraPrintPlugin = {
 
+    hasClientPrinter: function () {
+        if (typeof window.RockCheckinNative != 'undefined') {
+            return true;
+        }
+
+        if (typeof Cordova != 'undefined') {
+            return true;
+        }
+
+        if (typeof eoWebBrowser != 'undefined') {
+            return true;
+        }
+
+        if (typeof window.external.PrintLabels != 'undefined') {
+            return true;
+        }
+
+        return false;
+    },
+
     // print tags
     printTags: function (tagJson, success, fail) {
 
