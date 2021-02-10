@@ -216,11 +216,5 @@ namespace Rock.SystemKey
         /// The RockCleanup Last Run DateTime
         /// </summary>
         public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
-
-        /// <summary>
-        /// Lava Engine Type.
-        /// </summary>
-        public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
-
     }
 }

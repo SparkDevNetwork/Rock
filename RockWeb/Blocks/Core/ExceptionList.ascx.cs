@@ -29,7 +29,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;

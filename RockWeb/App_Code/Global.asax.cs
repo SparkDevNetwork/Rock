@@ -27,6 +27,8 @@ using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
 
+using DotLiquid;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -769,7 +771,7 @@ namespace RockWeb
 
                         try
                         {
-                            mergeFields.Add( "Exception", ex );
+                            mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
                         }
                         catch
                         {

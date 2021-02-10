@@ -28,7 +28,6 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
@@ -280,7 +279,7 @@ namespace Rock.MergeTemplates
                                             {
                                                 try
                                                 {
-                                                    var wordMergeObjects = new LavaDataDictionary();
+                                                    DotLiquid.Hash wordMergeObjects = new DotLiquid.Hash();
                                                     wordMergeObjects.Add( "Row", mergeObjectList[recordIndex] );
 
                                                     foreach ( var field in globalMergeFields )
@@ -417,7 +416,7 @@ namespace Rock.MergeTemplates
                         lastId++;
                     }
 
-                    LavaDataDictionary globalMergeHash = new LavaDataDictionary();
+                    DotLiquid.Hash globalMergeHash = new DotLiquid.Hash();
                     foreach ( var field in globalMergeFields )
                     {
                         globalMergeHash.Add( field.Key, field.Value );
@@ -464,7 +463,7 @@ namespace Rock.MergeTemplates
         /// </summary>
         /// <param name="outputDoc">The output document.</param>
         /// <param name="globalMergeHash">The global merge hash.</param>
-        private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, LavaDataDictionary globalMergeHash )
+        private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, DotLiquid.Hash globalMergeHash )
         {
             // make sure that all proof codes get removed so that the lava can be found
             MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveProof = true } );

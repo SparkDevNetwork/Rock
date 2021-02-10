@@ -16,20 +16,47 @@
 //
 using System.Collections.Generic;
 using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
+
+using DotLiquid;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+using RestSharp;
+using RestSharp.Authenticators;
+using Rock.Utility;
 
 namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Web
     /// </summary>
-    public class JsonProperty : RockLavaBlockBase
+    public class JsonProperty : DotLiquid.Block, IRockStartup
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
+
+        /// <summary>
+        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int StartupOrder { get { return 0; } }
+
+        /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public void OnStartup()
+        {
+            Template.RegisterTag<JsonProperty>( "jsonproperty" );
+        }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -38,11 +65,11 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -50,7 +77,7 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             var parms = ParseMarkup( _markup, context );
 
@@ -67,7 +94,7 @@ namespace Rock.Lava.Blocks
 
             using ( TextWriter twBody = new StringWriter() )
             {
-                base.OnRender( context, twBody );
+                base.Render( context, twBody );
 
                 var body = twBody.ToString();
 
@@ -96,10 +123,28 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, ILavaContext context )
+        private Dictionary<string, string> ParseMarkup( string markup, Context context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
+            var internalMergeFields = new Dictionary<string, object>();
+
+            // get variables defined in the lava source
+            foreach ( var scope in context.Scopes )
+            {
+                foreach ( var item in scope )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
+
+            // get merge fields loaded by the block or container
+            foreach( var environment in context.Environments )
+            {
+                foreach ( var item in environment )
+                {
+                    internalMergeFields.AddOrReplace( item.Key, item.Value );
+                }
+            }
 
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 

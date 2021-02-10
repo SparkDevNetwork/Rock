@@ -17,6 +17,8 @@
 using System.Collections.Generic;
 using System.IO;
 
+using DotLiquid;
+
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -65,16 +67,24 @@ namespace Rock.Lava.Blocks
         private string _markup;
 
         /// <summary>
+        /// Method that will be run at Rock startup
+        /// </summary>
+        public override void OnStartup()
+        {
+            Template.RegisterTag<InteractionWrite>( "interactionwrite" );
+        }
+
+        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
-        public override void OnInitialize( string tagName, string markup, List<string> tokens )
+        public override void Initialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.OnInitialize( tagName, markup, tokens );
+            base.Initialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -82,13 +92,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void OnRender( ILavaContext context, TextWriter result )
+        public override void Render( Context context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
+                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
+                base.Render( context, result );
                 return;
             }
 
@@ -150,7 +160,7 @@ namespace Rock.Lava.Blocks
             string data = null;
             using ( TextWriter twData = new StringWriter() )
             {
-                base.OnRender( context, twData );
+                base.Render( context, twData );
                 data = twData.ToString();
             }
 

@@ -31,7 +31,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Utility;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -2146,7 +2145,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Special classes so that we can have a Transactions and TransactionDetail mode with minimal special case logic
         /// </summary>
-        private class FinancialTransactionRow : RockDynamic
+        private class FinancialTransactionRow : DotLiquid.Drop
         {
             public int Id { get; set; }
             public int? AuthorizedPersonAliasId { get; internal set; }
@@ -2182,7 +2181,7 @@ namespace RockWeb.Blocks.Finance
             public IEnumerable<DetailInfo> TransactionDetails { get; set; }
         }
 
-        private class DetailInfo : RockDynamic
+        private class DetailInfo : DotLiquid.Drop
         {
             public int AccountId { get; internal set; }
             public decimal Amount { get; internal set; }
@@ -2190,7 +2189,7 @@ namespace RockWeb.Blocks.Finance
             public int? EntityTypeId { get; internal set; }
         }
 
-        private class PaymentDetailInfo : RockDynamic
+        private class PaymentDetailInfo : DotLiquid.Drop
         {
             public int? CreditCardTypeValueId { get; internal set; }
             public int? CurrencyTypeValueId { get; internal set; }

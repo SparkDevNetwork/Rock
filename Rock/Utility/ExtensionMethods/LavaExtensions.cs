@@ -24,15 +24,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using DotLiquid;
+
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock
 {
-
     /// <summary>
     /// Rock Lava related extensions
     /// </summary>
@@ -48,7 +48,7 @@ namespace Rock
             //
             // Register any 3rd party library classes that are safe to use.
             //
-            LavaEngine.CurrentEngine.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
+            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
         }
 
         #endregion
@@ -125,9 +125,9 @@ namespace Rock
             }
 
             // If the object is liquidable, get the object return by its ToLiquid() method.
-            if ( myObject is ILavaDataDictionarySource )
+            if ( myObject is DotLiquid.ILiquidizable )
             {
-                myObject = ( (ILavaDataDictionarySource)myObject ).GetLavaDataDictionary();
+                myObject = ( (DotLiquid.ILiquidizable)myObject ).ToLiquid();
             }
 
             // If the object is null, return an empty string
@@ -178,12 +178,36 @@ namespace Rock
                 }
             }
 
-            // If the object has the [LavaType] attribute, enumerate the allowed properties and return a list of those properties
-            if ( entityType.GetCustomAttributes( typeof( LavaTypeAttribute ), false ).Any() )
+            // If the object is a Liquid Drop object, return a list of all of the object's properties
+            if ( myObject is Drop )
+            {
+                var result = new Dictionary<string, object>();
+                Type baseDrop = typeof( DropBase );
+
+                foreach ( var propInfo in entityType.GetProperties( BindingFlags.Public | BindingFlags.Instance ) )
+                {
+                    if ( propInfo != null && propInfo.DeclaringType != baseDrop )
+                    {
+                        try
+                        {
+                            result.Add( propInfo.Name, propInfo.GetValue( myObject, null ).LiquidizeChildren( levelsDeep, rockContext, entityHistory ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            result.Add( propInfo.Name, ex.ToString() );
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            // If the object has the [LiquidType] attribute, enumerate the allowed properties and return a list of those properties
+            if ( entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).Any() )
             {
                 var result = new Dictionary<string, object>();
 
-                var attr = (LavaTypeAttribute)entityType.GetCustomAttributes( typeof( LavaTypeAttribute ), false ).First();
+                var attr = (LiquidTypeAttribute)entityType.GetCustomAttributes( typeof( LiquidTypeAttribute ), false ).First();
                 foreach ( string propName in attr.AllowedMembers )
                 {
                     var propInfo = entityType.GetProperty( propName );
@@ -206,9 +230,9 @@ namespace Rock
             }
 
             // If the object is a Rock Liquidizable object, call the object's AvailableKeys method to determine the properties available.
-            if ( myObject is ILavaDataDictionary )
+            if ( myObject is Lava.ILiquidizable )
             {
-                var liquidObject = (ILavaDataDictionary)myObject;
+                var liquidObject = (Lava.ILiquidizable)myObject;
 
                 var result = new Dictionary<string, object>();
 
@@ -247,7 +271,7 @@ namespace Rock
                                     {
                                         if ( entryCollection.IsLoaded )
                                         {
-                                            propValue = liquidObject.GetValue(key);
+                                            propValue = liquidObject[key];
                                         }
                                         else
                                         {
@@ -266,7 +290,7 @@ namespace Rock
                                             catch
                                             {
                                                 // The Collection might be a database model that isn't an IEntity, so just do it the regular way
-                                                propValue = liquidObject.GetValue(key);
+                                                propValue = liquidObject[key];
                                             }
                                         }
                                     }
@@ -274,7 +298,7 @@ namespace Rock
                             }
                             else
                             {
-                                propValue = liquidObject.GetValue(key);
+                                propValue = liquidObject[key];
                             }
 
                             if ( propValue != null )
@@ -543,35 +567,28 @@ namespace Rock
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <param name="currentPersonOverride">The current person override.</param>
-        /// <param name="enabledLavaCommands">A comma-delimited list of the lava commands that are enabled for this template.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
         /// <returns>If lava present returns merged string, if no lava returns original string, if null returns empty string</returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands )
         {
             try
             {
+                // 7-9-2020 JME / NA
+                // We decided to remove the check for lava merge fields here as this method is specifically
+                // made to resolve them. The performance increase for text without lava is acceptable as in
+                // a vast majority of cases the string will have lava (that's what this method is for). In
+                // these cases there is a performance tax (though small) on the vast majority of calls.
+
                 // If there have not been any EnabledLavaCommands explicitly set, then use the global defaults.
                 if ( enabledLavaCommands == null )
                 {
                     enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
                 }
 
-                var context = LavaEngine.CurrentEngine.NewContext();
-
-                context.SetEnabledCommands( enabledLavaCommands, "," );
-
-                context.SetMergeField( "CurrentPerson", currentPersonOverride );
-                context.SetMergeFields( mergeObjects );
-
-                ILavaTemplate template;
-
-                LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
-
-                IList<Exception> errors;
-                string output;
-
-                var isRendered = template.TryRender( context, out output, out errors );
-
-                return output;
+                Template template = GetTemplate( content );
+                template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
+                template.InstanceAssigns.AddOrReplace( "CurrentPerson", currentPersonOverride );
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
             }
             catch ( Exception ex )
             {
@@ -624,20 +641,6 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
-            return ResolveMergeFields( content, mergeObjects, enabledLavaCommands.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ), encodeStrings, throwExceptionOnErrors );
-        }
-
-        /// <summary>
-        /// Uses Lava to resolve any merge codes within the content using the values in the merge objects.
-        /// </summary>
-        /// <param name="content">The content.</param>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
-        /// <param name="encodeStrings">if set to <c>true</c> [encode strings].</param>
-        /// <param name="throwExceptionOnErrors">if set to <c>true</c> [throw exception on errors].</param>
-        /// <returns></returns>
-        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects, IEnumerable<string> enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
-        {
             try
             {
                 if ( !content.HasMergeFields() )
@@ -658,36 +661,34 @@ namespace Rock
                     }
                 }
 
-                var context = LavaEngine.CurrentEngine.NewContext( mergeObjects );
-
-                if ( enabledLavaCommands != null )
-                {
-                    context.SetEnabledCommands( enabledLavaCommands );
-                }
-
-                var renderParameters = new LavaRenderParameters { LavaContext = context };
-
-                renderParameters.ShouldEncodeStringsAsXml = encodeStrings;
+                Template template = GetTemplate( content );
+                template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
 
                 string result;
-                IList<Exception> errors;
 
-                ILavaTemplate template;
-
-                // Try and parse the template, or retrieve it from the cache if it has been previously parsed.
-                LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
-
-                var isRendered = template.TryRender( renderParameters, out result, out errors );
-
-                if ( throwExceptionOnErrors && errors.Any() )
+                if ( encodeStrings )
                 {
-                    if ( errors.Count == 1 )
+                    // if encodeStrings = true, we want any string values to be XML Encoded ( 
+                    RenderParameters renderParameters = new RenderParameters();
+                    renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
+                    renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
+                    renderParameters.ValueTypeTransformers[typeof( string )] = EncodeStringTransformer;
+                    result = template.Render( renderParameters );
+                }
+                else
+                {
+                    result = template.Render( Hash.FromDictionary( mergeObjects ) );
+                }
+
+                if ( throwExceptionOnErrors && template.Errors.Any() )
+                {
+                    if ( template.Errors.Count == 1 )
                     {
-                        throw errors[0];
+                        throw template.Errors[0];
                     }
                     else
                     {
-                        throw new AggregateException( errors );
+                        throw new AggregateException( template.Errors );
                     }
                 }
 
@@ -710,6 +711,43 @@ namespace Rock
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
+        }
+
+        /// <summary>
+        /// Create a parsed Lava template or retrieve it from the cache.
+        /// </summary>
+        /// <param name="content">The content of the template.</param>
+        /// <returns></returns>
+        private static Template GetTemplate( string content )
+        {
+            const int hashLength = 10;
+            string templateKey;
+
+            if ( string.IsNullOrEmpty( content ) )
+            {
+                /* [2020-08-01] DJL - Cache the null template specifically, but process other whitespace templates individually
+                 * to ensure that the format of the final output is preserved.
+                 */
+                templateKey = string.Empty;
+            }
+            else if ( content.Length <= hashLength )
+            {
+                // If the content is less than the size of the MD5 hash,
+                // simply use the content as the key to save processing time.
+                templateKey = content;
+            }
+            else
+            {
+                // Calculate a hash of the content using xxHash.
+                templateKey = content.XxHash();
+            }
+
+            var template = LavaTemplateCache.Get( templateKey, content ).Template;
+
+            // Clear any previous errors from the template.
+            template.Errors.Clear();
+
+            return template;
         }
 
         /// <summary>

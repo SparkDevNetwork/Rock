@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using Rock.Utility;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,7 +27,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class NoteOptions : RockDynamic
+    /// <seealso cref="DotLiquid.Drop" />
+    public class NoteOptions : DotLiquid.Drop
     {
         private StateBag _containerViewState;
 
