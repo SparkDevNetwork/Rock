@@ -14,13 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
 using Rock.Lava;
-using Rock.Model;
-using Rock.Tests.Shared;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -61,7 +56,7 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var context = new LavaDataDictionary() { { "fontsize", 99 } };
+             var context = new LavaDataDictionary() { { "fontsize", 99 }  };
 
             TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, context, ignoreWhiteSpace: true, wildCard: "<?>" );
         }
@@ -76,84 +71,9 @@ Font Bold: true
 
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
-
+            
             TestHelper.AssertTemplateOutput( expectedResult,
                                           input );
-        }
-
-        [TestMethod]
-        public void Shortcode_WithEmbeddedCommandHavingInsufficientPermission_FailsWithError()
-        {
-            ConfigureTestShortcodeWithEmbeddedSqlCommand( "testshortcodesql", shortcodeGrantsSqlPermission: false );
-
-            TestHelper.AssertTemplateOutput( "The Lava command 'sql' is not configured for this template.", "{[ testshortcodesql ]}", ignoreWhitespace: true );
-        }
-
-        [TestMethod]
-        public void Shortcode_WithEmbeddedCommandHavingSufficientPermission_RendersExpectedOutput()
-        {
-            ConfigureTestShortcodeWithEmbeddedSqlCommand( "testshortcodesql", shortcodeGrantsSqlPermission: true );
-
-            TestHelper.AssertTemplateOutput( "Cindy Decker<br>Ted Decker<br>", "{[ testshortcodesql ]}", ignoreWhitespace: true );
-        }
-
-        private void ConfigureTestShortcodeWithEmbeddedSqlCommand( string shortcodeName, bool shortcodeGrantsSqlPermission )
-        {
-            var rockContext = new RockContext();
-            var lavaShortCodeService = new LavaShortcodeService( rockContext );
-
-            // Create a new Shortcode.
-            var shortcodeGuid1 = TestGuids.Shortcodes.ShortcodeTestSql1.AsGuid();
-
-            var lavaShortcode = lavaShortCodeService.Queryable().FirstOrDefault( x => x.Guid == shortcodeGuid1 );
-
-            if ( lavaShortcode == null )
-            {
-                lavaShortcode = new LavaShortcode();
-
-                lavaShortCodeService.Add( lavaShortcode );
-            }
-
-            var shortcodeTemplate = @"
-{% sql %}
-   SELECT [NickName],[LastName] FROM [Person]
-   WHERE [LastName] = 'Decker' AND [NickName] IN ('Ted','Cindy')
-   ORDER BY [NickName]
-{% endsql %}
-{% for item in results %}
-   {{ item.NickName }} {{ item.LastName }}<br>
-{% endfor %}
-";
-            lavaShortcode.Guid = shortcodeGuid1;
-            lavaShortcode.TagName = shortcodeName; // "TestShortcodeSql";
-            lavaShortcode.Name = shortcodeName; // "Test Shortcode Sql";
-            lavaShortcode.IsActive = true;
-            lavaShortcode.Description = "Test shortcode.";
-            lavaShortcode.TagType = TagType.Inline;
-
-            lavaShortcode.Markup = shortcodeTemplate;
-
-            if ( shortcodeGrantsSqlPermission )
-            {
-                lavaShortcode.EnabledLavaCommands = "sql,execute";
-            }
-            else
-            {
-                lavaShortcode.EnabledLavaCommands = null;
-            }
-
-            rockContext.SaveChanges();
-
-            LavaEngine.CurrentEngine.RegisterDynamicShortcode( "TestShortcodeSql",
-                ( name ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( name ) );
-
-            // Clear caches to ensure that the updated shortcode definition  is loaded.
-            LavaEngine.CurrentEngine.ClearTemplateCache();
-
-            LavaShortcodeCache.Clear();
-
-            // NOTE: There appears to be a caching issue here - the updated version of the shortcode is not always returned
-            // until the test is run a second time.
         }
 
         #endregion

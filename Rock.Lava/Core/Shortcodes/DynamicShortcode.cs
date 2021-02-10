@@ -265,28 +265,25 @@ namespace Rock.Lava
             }
             else
             {
-                // Merge the shortcode template in a new context, using the parameters and security allowed by the shortcode.
-                var shortcodeContext = LavaEngine.CurrentEngine.NewContext( parms );
-
                 // If the shortcode specifies a set of enabled Lava commands, set these for the current context.
-                // If not, use the commands enabled for the current context.
-                if ( _shortcode.EnabledLavaCommands != null
-                     &&  _shortcode.EnabledLavaCommands.Any() )
+                var blockCommands = context.GetEnabledCommands();
+
+                if ( _shortcode.EnabledLavaCommands.Any() )
                 {
-                    shortcodeContext.SetEnabledCommands( _shortcode.EnabledLavaCommands );
-                }
-                else
-                {
-                    shortcodeContext.SetEnabledCommands( context.GetEnabledCommands() );
+                    context.SetEnabledCommands( _shortcode.EnabledLavaCommands );
                 }
 
+                // Resolve the child parameters in the template to get the final output.
                 var lavaTemplate = _shortcode.TemplateMarkup;
 
                 string results;
 
-                LavaEngine.CurrentEngine.TryRender( lavaTemplate, out results, shortcodeContext );
+                LavaEngine.CurrentEngine.TryRender( lavaTemplate, out results, new LavaDataDictionary( parms ) );
 
                 result.Write( results.Trim() );
+
+                // Revert the enabled commands to those of the block.
+                context.SetEnabledCommands( blockCommands );
             }
         }
 
