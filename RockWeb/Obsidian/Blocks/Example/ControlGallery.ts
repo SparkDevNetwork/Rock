@@ -125,7 +125,7 @@ export default defineComponent({
                 <DatePicker label="Date 2" v-model="date" />
             </template>
             <template #result>
-                {{date}}
+                {{date === null ? 'null' : date}}
             </template>
         </GalleryAndResult>
         <GalleryAndResult>

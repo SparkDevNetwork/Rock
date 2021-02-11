@@ -18,7 +18,7 @@ import bus from '../../Util/Bus.js';
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
 import RockButton from '../../Elements/RockButton.js';
 import TextBox from '../../Elements/TextBox.js';
-import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
+import { defineComponent, inject } from 'vue';
 import store from '../../Store/Index.js';
 import EmailBox from '../../Elements/EmailBox.js';
 import RockValidation from '../../Controls/RockValidation.js';
@@ -206,7 +206,7 @@ export default defineComponent({
                         <div class="col-sm-6">
                             <EmailBox v-model="personForEditing.Email" />
                             <CampusPicker v-model="campusGuid" />
-                            <DatePicker label="Birthdate" v-model="birthdate" />
+                            <DatePicker label="Birthdate" v-model="birthdate" rules="required" />
                         </div>
                     </div>
                     <div class="actions">

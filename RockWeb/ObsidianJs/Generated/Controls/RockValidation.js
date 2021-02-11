@@ -21,14 +21,39 @@ System.register(["../Elements/Alert.js", "../Vendor/Vue/vue.js"], function (expo
                     errors: {
                         type: Object,
                         required: true
+                    },
+                    submitCount: {
+                        type: Number,
+                        required: true
                     }
+                },
+                data: function () {
+                    return {
+                        errorsToShow: this.errors,
+                        allowErrorChange: false
+                    };
                 },
                 computed: {
                     hasErrors: function () {
-                        return Object.keys(this.errors).length > 0;
+                        return Object.keys(this.errorsToShow).length > 0;
                     }
                 },
-                template: "\n<Alert v-if=\"hasErrors\" alertType=\"validation\">\n    Please correct the following:\n    <ul>\n        <li v-for=\"(error, fieldLabel) of errors\">\n            <strong>{{fieldLabel}}</strong>\n            {{error}}\n        </li>\n    </ul>\n</Alert>"
+                watch: {
+                    submitCount: {
+                        immediate: true,
+                        handler: function () {
+                            this.allowErrorChange = this.submitCount > 0;
+                        }
+                    },
+                    errors: function () {
+                        if (!this.allowErrorChange || !Object.keys(this.errors).length) {
+                            return;
+                        }
+                        this.errorsToShow = this.errors;
+                        this.allowErrorChange = false;
+                    }
+                },
+                template: "\n<Alert v-show=\"hasErrors\" alertType=\"validation\">\n    Please correct the following:\n    <ul>\n        <li v-for=\"(error, fieldLabel) of errorsToShow\">\n            <strong>{{fieldLabel}}</strong>\n            {{error}}\n        </li>\n    </ul>\n</Alert>"
             }));
         }
     };

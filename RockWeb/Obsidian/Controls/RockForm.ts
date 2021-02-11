@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
-import { Form } from '../Vendor/VeeValidate/vee-validate.js';
+import { defineComponent } from 'vue';
+import { Form } from 'vee-validate';
 import RockValidation from './RockValidation.js';
 
 export default defineComponent({
@@ -31,22 +31,18 @@ export default defineComponent({
         };
     },
     methods: {
+        onInternalSubmit(handleSubmit, $event) {
+            this.submitCount++;
+            return handleSubmit($event, this.emitSubmit);
+        },
         emitSubmit(payload) {
             this.$emit('submit', payload);
-        },
-        getErrorsToDisplay(errors, submitCount: number) {
-            if (submitCount !== this.submitCount) {
-                this.submitCount = submitCount;
-                this.errorsToDisplay = errors;
-            }
-
-            return this.errorsToDisplay;
         }
     },
     template: `
-<Form as="" #default="{errors, handleSubmit, submitCount}">
-    <RockValidation v-if="submitCount" :errors="getErrorsToDisplay(errors, submitCount)" />
-    <form @submit="handleSubmit($event, emitSubmit)">
+<Form as="" #default="{errors, handleSubmit}">
+    <RockValidation :submitCount="submitCount" :errors="errors" />
+    <form @submit="onInternalSubmit(handleSubmit, $event)">
         <slot />
     </form>
 </Form>`

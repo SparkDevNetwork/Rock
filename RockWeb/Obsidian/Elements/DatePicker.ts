@@ -16,34 +16,18 @@
 //
 import { defineComponent, PropType } from 'vue';
 import { newGuid } from '../Util/Guid.js';
-import RockLabel from './RockLabel.js';
 import RockDate, { RockDateType } from '../Util/RockDate.js';
+import RockFormField from './RockFormField.js';
 
 export default defineComponent({
     name: 'DatePicker',
     components: {
-        RockLabel
+        RockFormField
     },
     props: {
         modelValue: {
             type: String as PropType<RockDateType | null>,
             default: null
-        },
-        label: {
-            type: String as PropType<string>,
-            required: true
-        },
-        help: {
-            type: String as PropType<string>,
-            default: ''
-        },
-        rules: {
-            type: String as PropType<string>,
-            default: ''
-        },
-        disabled: {
-            type: Boolean,
-            default: false
         }
     },
     emits: [
@@ -51,14 +35,10 @@ export default defineComponent({
     ],
     data: function () {
         return {
-            uniqueId: `rock-datepicker-${newGuid()}`,
             internalValue: null as string | null
         };
     },
     computed: {
-        isRequired(): boolean {
-            return this.rules.includes('required');
-        },
         asRockDateOrNull(): RockDateType | null {
             return this.internalValue ? RockDate.toRockDate(new Date(this.internalValue)) : null;
         }
@@ -88,28 +68,30 @@ export default defineComponent({
         }
     },
     mounted() {
+        const input = this.$refs['input'] as HTMLInputElement;
+        const inputId = input.id;
+
         window['Rock'].controls.datePicker.initialize({
-            id: this.uniqueId,
+            id: inputId,
             startView: 0,
             showOnFocus: true,
             format: 'mm/dd/yyyy',
             todayHighlight: true,
             forceParse: true,
             onChangeScript: () => {
-                this.internalValue = window['$'](`#${this.uniqueId}`).val();
+                this.internalValue = input.value;
             }
         });
     },
     template: `
-<div class="form-group date-picker required">
-    <RockLabel :for="uniqueId" :help="help">{{label}}</RockLabel>
+<RockFormField formGroupClasses="date-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalValue">
     <div class="control-wrapper">
         <div class="input-group input-width-md js-date-picker date">
-            <input type="text" :id="uniqueId" class="form-control" v-model.lazy="internalValue" />
+            <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalValue" />
             <span class="input-group-addon">
                 <i class="fa fa-calendar"></i>
             </span>
         </div>
     </div>
-</div>`
+</RockFormField>`
 });

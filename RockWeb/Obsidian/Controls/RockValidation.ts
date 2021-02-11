@@ -26,18 +26,44 @@ export default defineComponent({
         errors: {
             type: Object as PropType<Record<string, string>>,
             required: true
+        },
+        submitCount: {
+            type: Number as PropType<number>,
+            required: true
         }
+    },
+    data() {
+        return {
+            errorsToShow: this.errors,
+            allowErrorChange: false
+        };
     },
     computed: {
         hasErrors(): boolean {
-            return Object.keys(this.errors).length > 0;
+            return Object.keys(this.errorsToShow).length > 0;
+        }
+    },
+    watch: {
+        submitCount: {
+            immediate: true,
+            handler() {
+                this.allowErrorChange = this.submitCount > 0;
+            }
+        },
+        errors() {
+            if (!this.allowErrorChange || !Object.keys(this.errors).length) {
+                return;
+            }
+
+            this.errorsToShow = this.errors;
+            this.allowErrorChange = false;
         }
     },
     template: `
-<Alert v-if="hasErrors" alertType="validation">
+<Alert v-show="hasErrors" alertType="validation">
     Please correct the following:
     <ul>
-        <li v-for="(error, fieldLabel) of errors">
+        <li v-for="(error, fieldLabel) of errorsToShow">
             <strong>{{fieldLabel}}</strong>
             {{error}}
         </li>
