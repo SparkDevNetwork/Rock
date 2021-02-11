@@ -7,5 +7,5 @@ export async function  getEvents(calendarId, startDate, endDate){
   });
 
   const events = await response.json();
-  return await events
+  return events
 }

@@ -157,11 +157,9 @@ export default {
         let currentEvents = new Set()
         this.Events.map(e => currentEvents.add(e.OccurrenceId.toString() + ' ' + e.EventNextStartDate.StartDateTime.toString()))
         
-        let response = getEvents(this.calendar, startDate, endDate)
-        // const response = await fetch(`https://voxchurch.org/api/com_bemaservices/EventLink/GetCalendarItems?CalendarIds=${this.calendar}&startDateTime=${startDate.toISOString()}&endDateTime=${endDate}`, {
-        //   credentials: 'include',
-        // });
-        const events = await response;
+        let response = await getEvents(this.calendar, startDate, endDate)
+
+        const events = response;
         const newEvents = [];
          events.forEach(
           (newEvent) => {
