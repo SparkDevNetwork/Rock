@@ -31,7 +31,7 @@ import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import { asDateString } from '../../Filters/Date.js';
-import RockDate, { RockDateType, toRockDate } from '../../Util/RockDate.js';
+import RockDate, { RockDateType, toRockDate } from '../../Util/RockDate';
 import DatePicker from '../../Elements/DatePicker.js';
 
 declare type PersonViewModel = {

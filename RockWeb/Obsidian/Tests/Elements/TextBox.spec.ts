@@ -19,11 +19,10 @@ import TextBox from '../../Elements/TextBox';
 
 describe('TextBox', () => {
     it('Does not render label when not passed', async () => {
-        const wrapper = mount(TextBox, {
-            propsData: {
-                modelValue: '',
-                label: ''
-            }
+        const wrapper = mount(TextBox);
+        await wrapper.setProps({
+            modelValue: '',
+            label: ''
         });
 
         const labels = wrapper.findAll('label');
@@ -33,11 +32,10 @@ describe('TextBox', () => {
     it('Renders label when passed', async () => {
         const labelText = 'This is the label';
 
-        const wrapper = mount(TextBox, {
-            propsData: {
-                modelValue: '',
-                label: labelText
-            }
+        const wrapper = mount(TextBox);
+        await wrapper.setProps({
+            modelValue: '',
+            label: labelText
         });
 
         const labels = wrapper.findAll('label');
@@ -50,13 +48,12 @@ describe('TextBox', () => {
         const maxLength = 20;
         const charsRemaining = maxLength - text.length;
 
-        const wrapper = mount(TextBox, {
-            propsData: {
-                modelValue: text,
-                label: '',
-                showCountDown: true,
-                maxLength
-            }
+        const wrapper = mount(TextBox);
+        await wrapper.setProps({
+          modelValue: text,
+          label: '',
+          showCountDown: true,
+          maxLength
         });
 
         const countdownElements = wrapper.findAll('em.badge');
