@@ -49,6 +49,11 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
     
     //Add setting to set set the request date time to the current date and time
     [BooleanField("Default Request Time to Current Time", "Defaults the Reqest Date and Time to Current Date and Time", false,"",1)]
+
+    //Add option to enable self selection in the requester person pickers
+    [BooleanField("Allow Requester Self Selection", "Allows the person filling out the form to select themselves as the requestor", false,"",2)]
+
+
     public partial class CareItemDetail : PersonBlock, IDetailBlock, ICustomGridColumns
     {
         #region Properties
@@ -173,7 +178,9 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 dtpContactDate.SelectedDateTime = RockDateTime.Now;
             }
 
-            
+            //Checks the block attribute eto allow Requester self selection 
+            bool enbleSelfSelection = GetAttributeValue("AllowRequesterSelfSelection").AsBoolean();
+            ppContactorEdit.EnableSelfSelection = enbleSelfSelection;
 
             if ( careItemId == 0 && PageParameter( "CareTypeId" ).AsIntegerOrNull() == null )
             {
