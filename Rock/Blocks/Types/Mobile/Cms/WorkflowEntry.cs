@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     [WorkflowTypeField( "Workflow Type",
         Description = "The type of workflow to launch when viewing this.",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.WorkflowType,
         Order = 0 )]
 
@@ -155,6 +155,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </value>
         protected string ScanAttribute => GetAttributeValue( AttributeKeys.ScanAttribute );
 
+        /// <summary>
+        /// Gets the workflow type unique identifier block setting.
+        /// </summary>
+        /// <value>
+        /// The workflow type unique identifier block setting.
+        /// </value>
+        protected Guid? WorkflowType => GetAttributeValue( AttributeKeys.WorkflowType ).AsGuidOrNull();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -207,7 +215,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
             else
             {
-                var workflowType = WorkflowTypeCache.Get( GetAttributeValue( AttributeKeys.WorkflowType ).AsGuid() );
+                WorkflowTypeCache workflowType = null;
+
+                if ( WorkflowType.HasValue )
+                {
+                    workflowType = WorkflowTypeCache.Get( WorkflowType.Value );
+                }
+                else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeGuid" ) )
+                {
+                    workflowType = WorkflowTypeCache.Get( RequestContext.PageParameters["WorkflowTypeGuid"].AsGuid() );
+                }
+
+                if ( workflowType == null )
+                {
+                    return null;
+                }
 
                 return Model.Workflow.Activate( workflowType, $"New {workflowType.Name}" );
             }
@@ -796,6 +818,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
             }
 
+            // If the LastProcessedDateTime is equal to RockDateTime.Now we need to pause for a bit so the workflow will actually process here.
+            // The resolution of System.DateTime.UTCNow is between .5 and 15 ms which can cause the workflow processing to not properly pick up
+            // where it left off.
+            // Without this you might see random failures of workflows to save automatically.
+            // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.utcnow?view=netframework-4.7#remarks
+            while ( workflow.LastProcessedDateTime == RockDateTime.Now )
+            {
+                System.Threading.Thread.Sleep( 1 );
+            }
+
             return responseText;
         }
 
@@ -1003,6 +1035,18 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var workflow = LoadWorkflow( workflowGuid, rockContext );
             var currentPerson = GetCurrentPerson();
+
+            if ( workflow == null )
+            {
+                return new WorkflowForm
+                {
+                    Message = new WorkflowFormMessage
+                    {
+                        Type = WorkflowFormMessageType.Error,
+                        Content = "No Workflow Type has been set."
+                    }
+                };
+            }
 
             //
             // Set initial workflow attribute values.
