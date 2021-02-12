@@ -1502,6 +1502,7 @@ namespace RockWeb.Blocks.WorkFlow
             // If the LastProcessedDateTime is equal to RockDateTime.Now we need to pause for a bit so the workflow will actually process here.
             // The resolution of System.DateTime.UTCNow is between .5 and 15 ms which can cause the workflow processing to not properly pick up
             // where it left off.
+            // Without this you might see random failures of workflows to save automatically.
             // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.utcnow?view=netframework-4.7#remarks
             while ( _workflow.LastProcessedDateTime == RockDateTime.Now )
             {
