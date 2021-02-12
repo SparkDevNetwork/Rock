@@ -161,7 +161,7 @@
 
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-sms-template" runat="server">
+                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-comments" CssClass="js-sms-template" runat="server">
                     <h2>SMS</h2>
                     <div class="row">
                         <div class="col-md-6">
