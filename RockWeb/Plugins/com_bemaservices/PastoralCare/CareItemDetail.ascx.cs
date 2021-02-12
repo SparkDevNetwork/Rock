@@ -114,6 +114,20 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             // Get the careType id of the careType that user navigated from 
             _careTypeId = PageParameter( "CareTypeId" ).AsIntegerOrNull();
 
+            // Get the Person Id of the Person that the user navigated From
+            _personId = PageParameter("PersonId").AsIntegerOrNull();
+
+             // Get PersonId from Page Parameter if Navigated from Person Profile and set Person Picker
+            _personId = PageParameter("PersonId").AsIntegerOrNull();
+
+            if (_personId.HasValue) {
+                using (var rockContext = new RockContext()) {
+                    var personService = new PersonService(rockContext);
+                    ppPerson.SetValue(personService.Get(_personId.Value));
+                }
+                    
+            }
+
             // Load the other careTypes user is authorized to view 
             cblCareTypes.Items.Clear();
             using ( var rockContext = new RockContext() )
