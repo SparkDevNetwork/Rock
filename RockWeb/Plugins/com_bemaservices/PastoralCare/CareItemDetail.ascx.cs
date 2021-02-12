@@ -58,6 +58,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
     {
         #region Properties
         public int? _careTypeId = null;
+        public int? _personId = null;
         public List<CareTypeItem> ItemsState { get; set; }
         public List<AttributeCache> AvailableAttributes { get; set; }
 
@@ -113,9 +114,6 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             // Get the careType id of the careType that user navigated from 
             _careTypeId = PageParameter( "CareTypeId" ).AsIntegerOrNull();
-
-            // Get the Person Id of the Person that the user navigated From
-            _personId = PageParameter("PersonId").AsIntegerOrNull();
 
             // Get PersonId from Page Parameter if Navigated from Person Profile
             _personId = PageParameter("PersonId").AsIntegerOrNull();
