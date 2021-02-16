@@ -3774,20 +3774,23 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
-                if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
+                if( group.GroupType != null )
                 {
-                    var oldMemberChanges = new History.HistoryChangeList();
-                    History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
-                    History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
-                    HistoryService.SaveChanges(
-                        rockContext,
-                        typeof( Person ),
-                        Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                        fm.Person.Id,
-                        oldMemberChanges,
-                        fm.Group.Name,
-                        typeof( Group ),
-                        fm.Group.Id );
+                    if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
+                    {
+                        var oldMemberChanges = new History.HistoryChangeList();
+                        History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
+                        History.EvaluateChange( oldMemberChanges, "Family", fm.Group.Name, string.Empty );
+                        HistoryService.SaveChanges(
+                            rockContext,
+                            typeof(Person),
+                            Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                            fm.Person.Id,
+                            oldMemberChanges,
+                            fm.Group.Name,
+                            typeof(Group),
+                            fm.Group.Id);
+                    }
                 }
 
                 groupMemberService.Delete( fm.GroupMember );
