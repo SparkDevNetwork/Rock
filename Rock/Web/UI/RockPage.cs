@@ -722,6 +722,18 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
+            /*  
+                2/16/2021 - JME
+                The code below provides the opportunity for an external system to disable
+                partial postbacks. This was put in place to allow dynamic language translation
+                tools to be able to proxy Rock requests and translate the output. Partial postbacks
+                were not able to be translated.
+            */
+            if ( Request.Headers["Disable_Postbacks"].AsBoolean() )
+            {
+                _scriptManager.EnablePartialRendering = false;
+            }
+
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
