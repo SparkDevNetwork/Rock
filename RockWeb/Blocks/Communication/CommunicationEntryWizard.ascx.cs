@@ -131,6 +131,13 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    [BooleanField( "Enable Person Parameter",
+        Key = AttributeKey.EnablePersonParameter,
+        Description = "When enabled, allows passing a 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.",
+        DefaultBooleanValue = true,
+        IsRequired = false,
+        Order = 13 )]
+
     #endregion Block Attributes
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
@@ -153,6 +160,7 @@ namespace RockWeb.Blocks.Communication
             public const string SimpleCommunicationPage = "SimpleCommunicationPage";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
             public const string DefaultAsBulk = "DefaultAsBulk";
+            public const string EnablePersonParameter = "EnablePersonParameter";
         }
 
         #endregion Attribute Keys
@@ -164,6 +172,7 @@ namespace RockWeb.Blocks.Communication
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
             public const string Person = "Person";
+            public const string PersonId = "PersonId";
             public const string TemplateGuid = "TemplateGuid";
         }
 
@@ -476,14 +485,17 @@ function onTaskCompleted( resultData )
             if ( communication.ListGroupId == null )
             {
                 IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
-
-                if ( IndividualRecipientPersonIds.Count > 0 )
-                {
-                    BindIndividualRecipientsGrid();
-                }
             }
 
-            int? personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull();
+
+            int? personId = null;
+            if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
+            {
+                // if either 'Person' or 'PersonId' is specified add that person to the communication
+                personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull()
+                    ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            }
+
             if ( personId.HasValue && !communication.ListGroupId.HasValue )
             {
                 communication.IsBulkCommunication = false;
@@ -516,11 +528,21 @@ function onTaskCompleted( resultData )
 
             UpdateRecipientListCount();
 
-            // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
-            if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
+            if ( IndividualRecipientPersonIds.Count > 0 )
             {
+                BindIndividualRecipientsGrid();
                 pnlListSelection.Visible = false;
                 pnlIndividualRecipientList.Visible = true;
+            }
+            else
+            {
+
+                // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
+                if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
+                {
+                    pnlListSelection.Visible = false;
+                    pnlIndividualRecipientList.Visible = true;
+                }
             }
 
             // Note: Javascript takes care of making sure the buttons are set up based on this
