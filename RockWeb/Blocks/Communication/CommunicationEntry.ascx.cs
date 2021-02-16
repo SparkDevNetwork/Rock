@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1 )]
     [BooleanField("Enable Person Parameter",
         Key = AttributeKey.EnablePersonParameter,
-        Description = "When enabled, allows passing a 'person' querystring parameter with a person Id to the block to create a communication for that person.",
+        Description = "When enabled, allows passing a 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 2 )]
@@ -185,6 +185,15 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Attribute Keys
+
+        private static class PageParameterKey
+        {
+            public const string CommunicationId = "CommunicationId";
+            public const string Edit = "Edit";
+            public const string Person = "Person";
+            public const string PersonId = "PersonId";
+            public const string TemplateGuid = "TemplateGuid";
+        }
 
         #region Fields
 
@@ -348,7 +357,7 @@ namespace RockWeb.Blocks.Communication
             btnTest.Visible = _fullMode;
             btnSave.Visible = _fullMode;
 
-            _editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
+            _editingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
         }
 
@@ -375,7 +384,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communication == null )
                 {
                     // If not, check page parameter for existing communication
-                    int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
+                    int? communicationId = PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
                         communication = new CommunicationService( new RockContext() ).Get( communicationId.Value );
@@ -925,18 +934,23 @@ namespace RockWeb.Blocks.Communication
                 communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
 
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
-
-                int? personId = GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() ? PageParameter( "Person" ).AsIntegerOrNull() : null;
-                if ( personId.HasValue )
+                if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
                 {
-                    communication.IsBulkCommunication = false;
-                    var context = new RockContext();
-                    var person = new PersonService( context ).Get( personId.Value );
-                    if ( person != null )
+                    // if either 'Person' or 'PersonId' is specified add that person to the communication
+                    var personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull()
+                        ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+                    if ( personId.HasValue )
                     {
-                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
-                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        communication.IsBulkCommunication = false;
+                        var context = new RockContext();
+                        var person = new PersonService( context ).Get( personId.Value );
+                        if ( person != null )
+                        {
+                            var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
+                                .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
+                            Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        }
                     }
                 }
             }
@@ -957,7 +971,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If a template guid was passed in, it overrides any default template.
-            string templateGuid = PageParameter( "TemplateGuid" );
+            string templateGuid = PageParameter( PageParameterKey.TemplateGuid );
             if ( !string.IsNullOrEmpty( templateGuid ) )
             {
                 var guid = new Guid( templateGuid );
