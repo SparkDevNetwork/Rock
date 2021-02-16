@@ -61,7 +61,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The AssignedGroupMemberStatus.
         /// </value>
-        public Rock.Client.Enums.GroupMemberStatus? AssignedGroupMemberStatus { get; set; }
+        public int? AssignedGroupMemberStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the CampusId.

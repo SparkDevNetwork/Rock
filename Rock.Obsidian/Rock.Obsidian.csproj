@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Blocks\Crm\AttributeValues.cs" />
+    <Compile Include="Blocks\Event\RegistrationEntry.cs" />
     <Compile Include="Blocks\Finance\TransactionEntry.cs" />
     <Compile Include="Blocks\Groups\GroupMemberList.cs" />
     <Compile Include="Blocks\PluginObsidianBlockType.cs" />

@@ -117,7 +117,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The WeeklyDayOfWeek.
         /// </value>
-        public int /* DayOfWeek*/? WeeklyDayOfWeek { get; set; }
+        public int? WeeklyDayOfWeek { get; set; }
 
         /// <summary>
         /// Gets or sets the WeeklyTimeOfDay.

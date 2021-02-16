@@ -53,7 +53,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The FirstDayOfWeek.
         /// </value>
-        public int /* DayOfWeek*/? FirstDayOfWeek { get; set; }
+        public int? FirstDayOfWeek { get; set; }
 
         /// <summary>
         /// Gets or sets the IsActive.
@@ -117,7 +117,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The StructureType.
         /// </value>
-        public Rock.Client.Enums.StreakStructureType? StructureType { get; set; }
+        public int? StructureType { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

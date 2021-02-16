@@ -1,6 +1,22 @@
 System.register([], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
+    // <copyright>
+    // Copyright by the Spark Development Network
+    //
+    // Licensed under the Rock Community License (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    // http://www.rockrms.com/license
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    // </copyright>
+    //
     /**
      * Is the value an empty string?
      * @param val
@@ -61,9 +77,31 @@ System.register([], function (exports_1, context_1) {
         return strs.join(', ') + ", and " + last;
     }
     exports_1("asCommaAnd", asCommaAnd);
+    /**
+     * Convert the string to the title case.
+     * hellO worlD => Hello World
+     * @param str
+     */
+    function toTitleCase(str) {
+        if (!str) {
+            return '';
+        }
+        return str.replace(/\w\S*/g, function (word) {
+            return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+        });
+    }
+    exports_1("toTitleCase", toTitleCase);
     return {
         setters: [],
         execute: function () {
+            exports_1("default", {
+                asCommaAnd: asCommaAnd,
+                splitCamelCase: splitCamelCase,
+                isNullOrWhitespace: isNullOrWhitespace,
+                isWhitespace: isWhitespace,
+                isEmpty: isEmpty,
+                toTitleCase: toTitleCase
+            });
         }
     };
 });

@@ -46,3 +46,60 @@ export function toNumberOrNull(str: string | null) {
     const replaced = str.replace(/[$,]/g, '');
     return Number(replaced) || 0;
 }
+
+/**
+ * Adds an ordinal suffix.
+ * Ex: 1 => 1st
+ * @param num
+ */
+export function toOrdinalSuffix(num: number | null) {
+    if (!num) {
+        return '';
+    }
+
+    const j = num % 10;
+    const k = num % 100;
+
+    if (j == 1 && k != 11) {
+        return num + 'st';
+    }
+    if (j == 2 && k != 12) {
+        return num + 'nd';
+    }
+    if (j == 3 && k != 13) {
+        return num + 'rd';
+    }
+    return num + 'th';
+}
+
+/**
+ * Convert a number to an ordinal.
+ * Ex: 1 => First
+ * @param num
+ */
+export function toOrdinal(num: number | null) {
+    if (!num) {
+        return '';
+    }
+
+    switch (num) {
+        case 1: return 'first';
+        case 2: return 'second';
+        case 3: return 'third';
+        case 4: return 'fourth';
+        case 5: return 'fifth';
+        case 6: return 'sixth';
+        case 7: return 'seventh';
+        case 8: return 'eighth';
+        case 9: return 'ninth';
+        case 10: return 'tenth';
+        default: return toOrdinalSuffix(num);
+    }
+}
+
+export default {
+    toOrdinal,
+    toOrdinalSuffix,
+    toNumberOrNull,
+    asFormattedString
+};

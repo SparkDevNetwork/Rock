@@ -237,7 +237,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The PaymentRedirectVendor.
         /// </value>
-        public Rock.Client.Enums.PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
+        public int? PaymentRedirectVendor { get; set; }
 
         /// <summary>
         /// Gets or sets the PaymentReminderEmailTemplate.

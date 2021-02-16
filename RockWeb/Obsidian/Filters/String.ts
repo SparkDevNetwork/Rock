@@ -79,3 +79,27 @@ export function asCommaAnd(strs: string[]) {
     const last = strs.pop();
     return `${strs.join(', ')}, and ${last}`;
 }
+
+/**
+ * Convert the string to the title case.
+ * hellO worlD => Hello World
+ * @param str
+ */
+export function toTitleCase(str: string | null) {
+    if (!str) {
+        return '';
+    }
+
+    return str.replace(/\w\S*/g, (word) => {
+        return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+    });
+}
+
+export default {
+    asCommaAnd,
+    splitCamelCase,
+    isNullOrWhitespace,
+    isWhitespace,
+    isEmpty,
+    toTitleCase
+};

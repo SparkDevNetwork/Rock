@@ -37,7 +37,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The CameraBarcodeConfigurationType.
         /// </value>
-        public Rock.Client.Enums.CameraBarcodeConfiguration? CameraBarcodeConfigurationType { get; set; }
+        public int? CameraBarcodeConfigurationType { get; set; }
 
         /// <summary>
         /// Gets or sets the Description.

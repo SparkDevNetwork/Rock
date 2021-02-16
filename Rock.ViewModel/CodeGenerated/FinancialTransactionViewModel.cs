@@ -117,7 +117,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The MICRStatus.
         /// </value>
-        public Rock.Client.Enums.MICRStatus? MICRStatus { get; set; }
+        public int? MICRStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the NonCashAssetTypeValueId.

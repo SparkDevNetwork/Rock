@@ -57,7 +57,7 @@ namespace Rock.Obsidian.Blocks
         /// <returns></returns>
         public string PageParameter( string name )
         {
-            return RequestContext?.OriginalPageParameters?.GetValueOrNull( name );
+            return RequestContext?.OriginalPageParameters?.GetValueOrNull( name ) ?? RequestContext?.GetPageParameter( name );
         }
 
         /// <summary>

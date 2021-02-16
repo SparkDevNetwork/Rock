@@ -15,7 +15,6 @@
 // </copyright>
 //
 import { defineComponent, PropType } from 'vue';
-import { newGuid } from '../Util/Guid.js';
 import RockDate, { RockDateType } from '../Util/RockDate.js';
 import RockFormField from './RockFormField.js';
 

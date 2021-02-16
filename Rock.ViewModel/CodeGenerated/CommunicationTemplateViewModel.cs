@@ -181,7 +181,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The PushOpenAction.
         /// </value>
-        public int /* PushOpenAction*/? PushOpenAction { get; set; }
+        public int? PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets the PushOpenMessage.

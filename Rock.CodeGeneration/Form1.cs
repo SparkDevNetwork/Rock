@@ -160,7 +160,7 @@ namespace Rock.CodeGeneration
                                 WriteRESTFile( restFolder, type );
                             }
 
-                            if (cbViewModel.Checked)
+                            if ( cbViewModel.Checked )
                             {
                                 WriteViewModelFile( viewModelFolder, type );
                             }
@@ -699,7 +699,9 @@ GO
                 .Select( p =>
                 {
                     var obsolete = p.Value.GetCustomAttribute<ObsoleteAttribute>();
-                    var isEnum = p.Value.PropertyType.IsEnum;
+                    var underlyingType = Nullable.GetUnderlyingType( p.Value.PropertyType );
+                    var isNullable = underlyingType != null;
+                    var isEnum = isNullable ? underlyingType.IsEnum : p.Value.PropertyType.IsEnum;
 
                     return new
                     {
@@ -707,7 +709,10 @@ GO
                         IsObsoleteWarning = obsolete != null,
                         IsObsoleteError = obsolete?.IsError ?? false,
                         IsEnum = isEnum,
-                        TypeName = isEnum ? "int" : PropertyTypeName( p.Value.PropertyType )
+                        TypeName =
+                            ( isNullable && isEnum ) ? "int?" :
+                            isEnum ? "int" :
+                            PropertyTypeName( p.Value.PropertyType )
                     };
                 } )
                 .Where( p => !p.IsObsoleteError )
