@@ -26,9 +26,9 @@
             <div class="panel-body">
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
-                       
+
                         <div class="panel panel-widget panel-shortcodeitem">
-                          <div class="panel-heading js-shortcode-toggle clearfix">
+                          <div class="panel-heading cursor-pointer js-shortcode-toggle clearfix">
                             <div class="row">
                               <div class="col-md-8">
 		                        <a name="<%# Eval("TagName").ToString().ToLower() %>"></a>
@@ -36,7 +36,7 @@
                               </div>
                               <div class="col-md-4">
                                 <div class="pull-right">
-          
+
 		                          <div class="example-toggle">
                                     <i class="fa fa-circle-o"></i> Show Details
                                   </div>
@@ -56,12 +56,12 @@
                                 <asp:Literal ID="lMessages" runat="server" />
                               <asp:HiddenField ID="hfShortcodeId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Id").ToString() %>' />
                               <div id="divViewPanel" runat="server" class="pull-right">
-                                    <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnView" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-search"></i></asp:LinkButton>
                                 </div>
                                 <div id="divEditPanel" runat="server" class="pull-right">
-                                    
-                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
+
+                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs btn-square" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                           </div>
                         </div>
