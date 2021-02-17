@@ -28,6 +28,7 @@ namespace Rock.CheckIn
     /// <summary>
     /// Attendance Information about a person when listed in an attendance roster
     /// </summary>
+    [System.Diagnostics.DebuggerDisplay( "{FullName} {StatusString} {CheckInTime}" )]
     public class RosterAttendee
     {
         private Person _person;
@@ -536,6 +537,28 @@ namespace Rock.CheckIn
             else
             {
                 return RosterAttendeeStatus.CheckedIn;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this record meets the specified RosterStatusFilter criteria
+        /// </summary>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <returns></returns>
+        public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter)
+        {
+            switch ( rosterStatusFilter )
+            {
+                case RosterStatusFilter.CheckedIn:
+                    return Status == RosterAttendeeStatus.CheckedIn;
+                case RosterStatusFilter.CheckedOut:
+                    return Status == RosterAttendeeStatus.CheckedOut;
+                case RosterStatusFilter.Present:
+                    return Status == RosterAttendeeStatus.Present;
+                case RosterStatusFilter.All:
+                    return true;
+                default:
+                    return false;
             }
         }
 

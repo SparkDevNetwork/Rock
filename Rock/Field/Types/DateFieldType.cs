@@ -137,7 +137,7 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 5 )
+            if ( controls != null && controls.Count >= 5 )
             {
                 var tbDateFormat = controls[0] as RockTextBox;
                 var cbDisplayDiff = controls[1] as RockCheckBox;

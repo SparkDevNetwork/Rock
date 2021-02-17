@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Finance
             var creditCardFeeCoverageTotal = creditCardTransactions.Sum( a => a.FeeCoverageAmount );
 
             var kpiLava = @"
-{[kpis columncount:'3']}
+{[kpis style:'card' columncount:'3']}
   [[ kpi icon:'fa-list' value:'{{TotalFeeCoverageAmount | FormatAsCurrency }}' label:'{{TotalFeeCoverageLabel}}' color:'blue-500']][[ endkpi ]]
   [[ kpi icon:'fa-credit-card' value:'{{CreditCardFeeCoverageAmount | FormatAsCurrency }}' label:'{{CreditFeeCoverageLabel}}' color:'green-500']][[ endkpi ]]
   [[ kpi icon:'fa fa-money-check-alt' value:'{{ACHFeeCoverageAmount | FormatAsCurrency }}' label:'{{ACHFeeCoverageLabel}}' color:'indigo-500' ]][[ endkpi ]]
