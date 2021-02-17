@@ -1277,7 +1277,7 @@ namespace Rock.Lava
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
-
+            
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
@@ -5072,6 +5072,10 @@ namespace Rock.Lava
             else if ( valueName == "systemdatetime" )
             {
                 return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+            }
+            else if ( valueName == "aspnetversion" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
             }
 
             return $"Configuration setting \"{ input }\" is not available.";

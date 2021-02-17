@@ -703,11 +703,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         navGroup.ChildGroupIds = childGroupIds;
                         NavData.Groups.Add( navGroup );
 
-                        if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
-                        {
-                            NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
+                        /* 
+                            2/5/2021 MDP 
+
+                            This used to only add the group to the GroupTypes.ChildGroups if it didn't have
+                            a parent group, or the parent group was one of the groups we are displaying.
+                            However, this was preventing groups from being added if they were organized (using GroupViewer)
+                            under some non-checkin group. I couldn't figure out why that restriction was in place.
+                         */
+
+                        NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).ToList()
                                 .ForEach( t => t.ChildGroupIds.Add( group.Id ) );
-                        }
                     }
                 }
 
@@ -1499,6 +1505,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         [Serializable]
+        [System.Diagnostics.DebuggerDisplay( "{Name}" )]
         public abstract class NavigationItem
         {
             public int? ParentId { get; set; }
