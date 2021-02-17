@@ -277,7 +277,7 @@ namespace Rock.Model
             this.HasOptional( t => t.DataView ).WithMany().HasForeignKey( t => t.DataViewId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.WorkflowType ).WithMany().HasForeignKey( t => t.WorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ConnectionOpportunity ).WithMany().HasForeignKey( t => t.ConnectionOpportunityId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.SystemCommunication ).WithMany().HasForeignKey( t => t.SystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.SystemCommunication ).WithMany().HasForeignKey( t => t.SystemCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 
