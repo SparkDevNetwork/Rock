@@ -4897,7 +4897,7 @@ namespace Rock.Lava
         /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
         /// <param name="randomLength">The random length.</param>
         /// <returns></returns>
-        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 7 )
+        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10 )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -4948,10 +4948,10 @@ namespace Rock.Lava
             var shortLink = shortLinkService.GetByToken( token, siteId.Value );
             if ( shortLink != null && overwrite == false )
             {
-                // We can't use the provided shortlink because it's ready used, so get a random token
+                // We can't use the provided shortlink because it's already used, so get a random token.
                 // Garbage in Random out
                 shortLink = null;
-                token = shortLinkService.GetUniqueToken( siteId.Value, 7 );
+                token = shortLinkService.GetUniqueToken( siteId.Value, 10 );
             }
 
             if ( shortLink == null )
