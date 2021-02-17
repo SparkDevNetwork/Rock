@@ -216,5 +216,10 @@ namespace Rock.SystemKey
         /// The RockCleanup Last Run DateTime
         /// </summary>
         public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
+
+        /// <summary>
+        /// Settings for Giving Analytics
+        /// </summary>
+        public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
     }
 }
