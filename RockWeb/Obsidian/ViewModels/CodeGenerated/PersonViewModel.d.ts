@@ -59,6 +59,7 @@ export default interface Person extends Entity {
     PhotoId: number | null;
     PhotoUrl: string | null;
     PrimaryCampusId: number | null;
+    PrimaryFamilyGuid: Guid | null;
     PrimaryFamilyId: number | null;
     RecordStatusLastModifiedDateTime: RockDateType | null;
     RecordStatusReasonValueId: number | null;
