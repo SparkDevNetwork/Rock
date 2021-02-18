@@ -181,6 +181,10 @@ TransactionAccountDetails: [
         Order = 37 )]
     /* Bema.FE3.End */
 
+    /* BEMA.FE4.Start */ 
+     [BooleanField( "Show All Active Accounts", "Display all active accounts instead of just public ones", false, "" )]
+     /* BEMA.FE4.End */ 
+
     #endregion
 
     #region Advanced Block Attributes
@@ -1480,6 +1484,12 @@ TransactionAccountDetails: [
 
             bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
 
+
+            /*  BEMA.FE4.Start */
+            bool showAllActiveAccounts = GetAttributeValue( "ShowAllActiveAccounts" ).AsBoolean( );
+            /*  BEMA.FE4.End */
+        
+
             SelectedAccounts = new List<AccountItem>();
             AvailableAccounts = new List<AccountItem>();
 
@@ -1498,10 +1508,13 @@ TransactionAccountDetails: [
                 foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&
-                    f.IsPublic.HasValue &&
-                    f.IsPublic.Value &&
-                    ( f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
-                    ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                    /* BEMA.FE4.Start */
+                    ( showAllActiveAccounts || f.IsPublic.HasValue ) &&
+                    ( showAllActiveAccounts || f.IsPublic.Value ) &&
+                    ( showAllActiveAccounts || f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
+                    ( showAllActiveAccounts || f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                    /* BEMA.FE4.End */
+                   
                 .OrderBy( f => f.Order ) )
                 {
                     var accountItem = new AccountItem( account.Id, account.Order, account.Name, account.CampusId, account.PublicName );
