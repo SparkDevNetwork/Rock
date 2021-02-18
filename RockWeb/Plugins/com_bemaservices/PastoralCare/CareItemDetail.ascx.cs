@@ -46,10 +46,19 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, order: 0 )]
     [BadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
+    
+    //Add setting to set set the request date time to the current date and time
+    [BooleanField("Default Request Time to Current Time", "Defaults the Reqest Date and Time to Current Date and Time", false,"",1)]
+
+    //Add option to enable self selection in the requester person pickers
+    [BooleanField("Allow Requester Self Selection", "Allows the person filling out the form to select themselves as the requestor", false,"",2)]
+
+
     public partial class CareItemDetail : PersonBlock, IDetailBlock, ICustomGridColumns
     {
         #region Properties
         public int? _careTypeId = null;
+        public int? _personId = null;
         public List<CareTypeItem> ItemsState { get; set; }
         public List<AttributeCache> AvailableAttributes { get; set; }
 
@@ -105,6 +114,17 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             // Get the careType id of the careType that user navigated from 
             _careTypeId = PageParameter( "CareTypeId" ).AsIntegerOrNull();
+
+            // Get PersonId from Page Parameter if Navigated from Person Profile
+            _personId = PageParameter("PersonId").AsIntegerOrNull();
+
+            if (_personId.HasValue && _personId != 0) {
+                using (var rockContext = new RockContext()) {
+                    var personService = new PersonService(rockContext);
+                    ppPerson.SetValue(personService.Get(_personId.Value));
+                }
+                    
+            }
 
             // Load the other careTypes user is authorized to view 
             cblCareTypes.Items.Clear();
@@ -162,6 +182,17 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             var careItemId = PageParameter( "CareItemId" ).AsInteger();
             nbErrorMessage.Visible = false;
             nbNoParameterMessage.Visible = false;
+
+              //Check block attribute value to set request to current time and sets the value
+            bool? setToCurrentTime = GetAttributeValue("DefaultRequestTimetoCurrentTime").AsBoolean();
+            if (setToCurrentTime == true)
+            {
+                dtpContactDate.SelectedDateTime = RockDateTime.Now;
+            }
+
+            //Checks the block attribute eto allow Requester self selection 
+            bool enbleSelfSelection = GetAttributeValue("AllowRequesterSelfSelection").AsBoolean();
+            ppContactorEdit.EnableSelfSelection = enbleSelfSelection;
 
             if ( careItemId == 0 && PageParameter( "CareTypeId" ).AsIntegerOrNull() == null )
             {

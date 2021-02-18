@@ -317,7 +317,20 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gItems_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CareItemId", 0, "CareTypeId", SelectedTypeId );
+            string personId; 
+            if (_person != null) {
+                personId = _person.Id.ToString();
+            } else {
+                personId = "0";
+            }
+        
+            NavigateToLinkedPage("DetailPage", new Dictionary<string, string> {
+                { "CareItemId", "0" },
+                { "CareTypeId", SelectedTypeId.ToString() },
+                { "PersonId", personId }
+                
+            });
+        
         }
 
         /// <summary>
