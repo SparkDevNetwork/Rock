@@ -1485,9 +1485,9 @@ TransactionAccountDetails: [
             bool additionalAccounts = GetAttributeValue( "AdditionalAccounts" ).AsBoolean( true );
 
 
-            /*  BEMA.FE4.Star */
+            /*  BEMA.FE4.Start */
             bool showAllActiveAccounts = GetAttributeValue( "ShowAllActiveAccounts" ).AsBoolean( );
-            /*  BEMA.FE4.Star */
+            /*  BEMA.FE4.End */
         
 
             SelectedAccounts = new List<AccountItem>();
@@ -1508,12 +1508,12 @@ TransactionAccountDetails: [
                 foreach ( var account in new FinancialAccountService( rockContext ).Queryable()
                 .Where( f =>
                     f.IsActive &&
-                    /* BEMA.FE4.Star */
+                    /* BEMA.FE4.Start */
                     ( showAllActiveAccounts || f.IsPublic.HasValue ) &&
                     ( showAllActiveAccounts || f.IsPublic.Value ) &&
                     ( showAllActiveAccounts || f.StartDate == null || f.StartDate <= RockDateTime.Today ) &&
                     ( showAllActiveAccounts || f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
-                    /* BEMA.FE4.Star */
+                    /* BEMA.FE4.End */
                    
                 .OrderBy( f => f.Order ) )
                 {
