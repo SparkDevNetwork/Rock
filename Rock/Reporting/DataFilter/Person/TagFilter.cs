@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people based on a person tag" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -82,7 +82,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -131,6 +131,7 @@ function() {
         {
             var rblTagType = new RockRadioButtonList();
             rblTagType.ID = filterControl.ID + "_tagType";
+            rblTagType.Label = "Tag Type";
             rblTagType.RepeatDirection = RepeatDirection.Horizontal;
             rblTagType.Items.Add( new ListItem( "Personal Tags", "1" ) );
             rblTagType.Items.Add( new ListItem( "Organizational Tags", "2" ) );
@@ -142,6 +143,7 @@ function() {
 
             var ddlTagList = new RockDropDownList();
             ddlTagList.ID = filterControl.ID + "_ddlTagList";
+            ddlTagList.Label = "Tag";
             ddlTagList.AddCssClass( "js-tag-filter-list" );
             filterControl.Controls.Add( ddlTagList );
 
@@ -245,7 +247,7 @@ function() {
                 }
                 else
                 {
-                    // if the selectedTag is a personal tag, but for a different Owner than the current logged in person, include it in the list 
+                    // if the selectedTag is a personal tag, but for a different Owner than the current logged in person, include it in the list
                     var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
                     if ( selectedTag != null )
                     {
