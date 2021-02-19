@@ -84,7 +84,7 @@ namespace Rock.Communication.VideoEmbed
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}.png", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
+                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
                     }
                 }
             }

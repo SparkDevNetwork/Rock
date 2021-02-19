@@ -338,6 +338,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
             mergeFields.Add( "Salutation", salutation );
+            mergeFields.Add( "TargetPerson", targetPerson );
 
             var mailingAddress = targetPerson.GetMailingLocation();
             if ( mailingAddress != null )

@@ -121,7 +121,7 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
         }
-       
+
         /// <summary>
         /// Empty constructor for job initialization
         /// <para>
@@ -237,6 +237,8 @@ namespace Rock.Jobs
                 RunCleanupTask( "did attend attendance fix", () => FixDidAttendInAttendance() );
             }
 
+            RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
             //// ***********************
@@ -265,6 +267,32 @@ namespace Rock.Jobs
                 var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
                 throw new RockJobWarningException( "RockCleanup completed with warnings", exceptionList );
             }
+        }
+
+        private int UpdateSmsCommunicationPreferences()
+        {
+            var rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                var personService = new PersonService( rockContext );
+                var peopleToUpdate = personService
+                    .Queryable()
+                    .Where( p => p.CommunicationPreference == CommunicationType.SMS )
+                    .Where( p => !p.PhoneNumbers.Any( ph => ph.IsMessagingEnabled ) );
+
+                rowsUpdated = rockContext.BulkUpdate( peopleToUpdate, p => new Person { CommunicationPreference = CommunicationType.Email } );
+
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMembersToUpdate = groupMemberService
+                    .Queryable()
+                    .Where( gm => gm.CommunicationPreference == CommunicationType.SMS )
+                    .Where( gm => !gm.Person.PhoneNumbers.Any( pn => pn.IsMessagingEnabled ) );
+
+                rowsUpdated += rockContext.BulkUpdate( groupMembersToUpdate, p => new GroupMember { CommunicationPreference = CommunicationType.RecipientPreference } );
+            }
+            return rowsUpdated;
         }
 
         /// <summary>

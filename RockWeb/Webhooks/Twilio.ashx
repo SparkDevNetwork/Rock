@@ -81,6 +81,11 @@ class TwilioResponseAsync : TwilioDefaultResponseAsync
 
         new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
 
+        if ( errorMessage.IsNullOrWhiteSpace() )
+        {
+            return null;
+        }
+
         var twilioMessage = new Twilio.TwiML.Message();
         twilioMessage.Body( errorMessage );
         return twilioMessage;

@@ -106,7 +106,7 @@ namespace Rock.Net
         /// </summary>
         internal RockRequestContext()
         {
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             Headers = new Dictionary<string, IEnumerable<string>>();
             RootUrlPath = string.Empty;
@@ -128,7 +128,7 @@ namespace Rock.Net
             //
             // Setup the page parameters.
             //
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
             foreach ( var key in request.QueryString.AllKeys )
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
@@ -169,7 +169,7 @@ namespace Rock.Net
             // Setup the page parameters, only use query string for now. Route
             // parameters don't make a lot of sense with an API call.
             //
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
             foreach ( var kvp in request.GetQueryNameValuePairs() )
             {
                 PageParameters.AddOrReplace( kvp.Key, kvp.Value );
@@ -316,9 +316,18 @@ namespace Rock.Net
         /// <returns>A reference to the IEntity object or null if none was found.</returns>
         public virtual T GetContextEntity<T>() where T : IEntity
         {
-            if ( ContextEntities.ContainsKey( typeof(T) ) )
+            return ( T ) GetContextEntity( typeof( T ) );
+        }
+
+        /// <summary>
+        /// Gets the entity object given it's type.
+        /// </summary>
+        /// <returns>A reference to the IEntity object or null if none was found.</returns>
+        public virtual IEntity GetContextEntity( Type entityType )
+        {
+            if ( ContextEntities.ContainsKey( entityType ) )
             {
-                return ( T ) ContextEntities[typeof( T )].Value;
+                return ContextEntities[entityType].Value;
             }
 
             return default;

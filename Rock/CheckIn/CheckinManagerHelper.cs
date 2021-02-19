@@ -253,6 +253,19 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Saves the selected label printer to cookie.
+        /// Use labelPrinterGuid of Guid.Empty for "local printer".
+        /// Use null for nothing selected.
+        /// </summary>
+        /// <param name="labelPrinterGuid">The label printer unique identifier.</param>
+        public static void SaveSelectedLabelPrinterToCookie( Guid? labelPrinterGuid )
+        {
+            CheckinManagerConfiguration checkinManagerConfiguration = GetCheckinManagerConfigurationFromCookie();
+            checkinManagerConfiguration.LabelPrinterGuid = labelPrinterGuid;
+            SaveCheckinManagerConfigurationToCookie( checkinManagerConfiguration );
+        }
+
+        /// <summary>
         /// Saves the room list filter to the response cookie
         /// </summary>
         /// <param name="roomListScheduleIdsFilter">The room list schedule ids filter.</param>
@@ -484,6 +497,16 @@ namespace Rock.CheckIn
         public Guid? CheckinAreaGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the label printer Guid <see cref="Rock.Model.Device"/>
+        /// Returns Guid.Empty if 'local printer' is selected
+        /// and "" if nothing is selected.
+        /// </summary>
+        /// <value>
+        /// The label printer unique identifier.
+        /// </value>
+        public Guid? LabelPrinterGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the room list schedule ids filter.
         /// </summary>
         /// <value>
@@ -498,6 +521,5 @@ namespace Rock.CheckIn
         /// The custom settings.
         /// </value>
         public Dictionary<string, string> CustomSettings { get; set; }
-
     }
 }

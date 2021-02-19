@@ -224,6 +224,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( !this.IsPostBack )
             {
+                bgStatus.Items.Clear();
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.All.ConvertToString( true ), RosterStatusFilter.All.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedIn.ConvertToString( true ), RosterStatusFilter.CheckedIn.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.Present.ConvertToString( true ), RosterStatusFilter.Present.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedOut.ConvertToString( true ), RosterStatusFilter.CheckedOut.ConvertToInt().ToString() ) );
+
                 BuildRoster();
             }
         }
@@ -569,13 +575,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
             RemoveUnneededStatusFilters( unfilteredAttendanceCheckinAreas );
             var currentStatusFilter = GetStatusFilterValueFromControl();
 
-            attendanceQuery = CheckinManagerHelper.FilterByRosterStatusFilter( attendanceQuery, currentStatusFilter );
-
             List<Attendance> attendanceList = attendanceQuery
                 .Include( a => a.AttendanceCode )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Occurrence.Schedule )
                 .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Location )
                 .AsNoTracking()
                 .ToList();
 
@@ -583,7 +588,50 @@ namespace RockWeb.Blocks.CheckIn.Manager
             attendanceList = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null ).ToList();
             var attendees = RosterAttendee.GetFromAttendanceList( attendanceList );
 
-            return attendees;
+            UpdateStatusFilterTabs( attendees );
+
+            var attendeesForCurrentStatusFilter = attendees.Where( a => a.MeetsRosterStatusFilter( currentStatusFilter ) ).ToList();
+
+            return attendeesForCurrentStatusFilter;
+        }
+
+        /// <summary>
+        /// Set the Text of the ListItems in the StatusFilter Button Group
+        /// </summary>
+        /// <param name="attendanceQuery">The attendance query.</param>
+        /// <param name="currentDateTime">The current date time.</param>
+        private void UpdateStatusFilterTabs( IList<RosterAttendee> attendees )
+        {
+            var checkedInCount = attendees.Where( x => x.Status == RosterAttendeeStatus.CheckedIn ).Count();
+            var presentCount = attendees.Where( x => x.Status == RosterAttendeeStatus.Present ).Count();
+            var checkedOutCount = attendees.Where( x => x.Status == RosterAttendeeStatus.CheckedOut ).Count();
+            var allCount = checkedInCount + presentCount + checkedOutCount;
+
+            UpdateStatusFilterTabText( RosterStatusFilter.All, allCount );
+            UpdateStatusFilterTabText( RosterStatusFilter.CheckedIn, checkedInCount );
+            UpdateStatusFilterTabText( RosterStatusFilter.Present, presentCount );
+            UpdateStatusFilterTabText( RosterStatusFilter.CheckedOut, checkedOutCount );
+        }
+
+        /// <summary>
+        /// Updates the status filter tab text.
+        /// </summary>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <param name="count">The count.</param>
+        private void UpdateStatusFilterTabText( RosterStatusFilter rosterStatusFilter, int count )
+        {
+            var listItem = bgStatus.Items.FindByValue( rosterStatusFilter.ConvertToInt().ToString() );
+            if ( listItem != null )
+            {
+                if ( listItem.Selected )
+                {
+                    listItem.Text = string.Format( "{0} <span class='badge badge-info'>{1}</span>", rosterStatusFilter.ConvertToString(), count );
+                }
+                else
+                {
+                    listItem.Text = string.Format( "{0} <span class='badge badge-'>{1}</span>", rosterStatusFilter.ConvertToString(), count );
+                }
+            }
         }
 
         #endregion Roster Grid Related
