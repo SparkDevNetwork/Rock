@@ -99,11 +99,12 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 if ( numberOfAttachments != null )
                 {
                     int? communicationAttachmentBinaryFileId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
-                    string imageNameGuid = new Guid().ToString();
+                    var imageGuid = new Guid();
                     for ( int i = 0; i < numberOfAttachments.Value; i++ )
                     {
                         string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
                         string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
+                        imageGuid = Guid.NewGuid();
 
                         System.IO.Stream stream = null;
                         var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
@@ -124,9 +125,10 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                                 IsTemporary = false,
                                 BinaryFileTypeId = communicationAttachmentBinaryFileId,
                                 MimeType = mimeType,
-                                FileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageNameGuid, i, fileExension ),
+                                FileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageGuid, i, fileExension ),
                                 FileSize = httpWebResponse.ContentLength,
-                                ContentStream = memoryStream
+                                ContentStream = memoryStream,
+                                Guid = imageGuid
                             };
 
                             var binaryFileService = new BinaryFileService( rockContext );

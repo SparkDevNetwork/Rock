@@ -80,13 +80,26 @@ namespace Rock.Communication.Medium
         }
 
         /// <summary>
+        /// Processes the response.
+        /// </summary>
+        /// <param name="toPhone">To phone.</param>
+        /// <param name="fromPhone">From phone.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="errorMessage">The error message.</param>
+        public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
+        {
+            ProcessResponse( toPhone, fromPhone, message, null, out errorMessage );
+        }
+
+        /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>
         /// <param name="toPhone">The transport (e.g. Twilio) phone number a message is sent to.</param>
-        /// <param name="fromPhone">The phone number a message is sent from. (This would be the number from somebody's mobile device) </param>
+        /// <param name="fromPhone">The phone number a message is sent from. (This would be the number from somebody's mobile device)</param>
         /// <param name="message">The message that was sent.</param>
+        /// <param name="attachments">The attachments.</param>
         /// <param name="errorMessage">The error message.</param>
-        public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
+        public void ProcessResponse( string toPhone, string fromPhone, string message, List<BinaryFile> attachments, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -137,12 +150,12 @@ namespace Rock.Communication.Medium
 
                             if ( recipient != null && recipient.Communication.SenderPersonAliasId.HasValue )
                             {
-                                CreateCommunication( fromPerson, fromPhone, recipient.Communication.SenderPersonAliasId.Value, message.Replace( responseCode, "" ), plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage );
+                                CreateCommunication( fromPerson, fromPhone, recipient.Communication.SenderPersonAliasId.Value, message.Replace( responseCode, "" ), plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage, attachments );
                             }
                             else // send a warning message back to the medium recipient
                             {
                                 string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
-                                CreateCommunication( fromPerson, fromPhone, fromPerson.PrimaryAliasId.Value, warningMessage, plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage );
+                                CreateCommunication( fromPerson, fromPhone, fromPerson.PrimaryAliasId.Value, warningMessage, plainMessage, rockSmsFromPhoneDv, "", rockContext, out errorMessage, attachments );
                             }
                         }
                         else
@@ -158,7 +171,7 @@ namespace Rock.Communication.Medium
 
                         // NOTE: fromPerson will never be null since we would have created a Nameless Person record if there wasn't a regular person found
                         message = $"-{fromPerson.FullName}-\n{message}\n( {messageId} )";
-                        CreateCommunication( fromPerson, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage );
+                        CreateCommunication( fromPerson, fromPhone, toPersonPrimaryAliasId, message, plainMessage, rockSmsFromPhoneDv, messageId, rockContext, out errorMessage, attachments );
 
                     }
                 }
@@ -184,7 +197,8 @@ namespace Rock.Communication.Medium
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
         /// <param name="errorMessage">The error message.</param>
-        private void CreateCommunication( Person fromPerson, string messageKey, int? toPersonAliasId, string message, string plainMessage, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext, out string errorMessage )
+        /// <param name="attachments">The attachments.</param>
+        private void CreateCommunication( Person fromPerson, string messageKey, int? toPersonAliasId, string message, string plainMessage, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext, out string errorMessage, List<BinaryFile> attachments = null )
         {
             errorMessage = string.Empty;
 
@@ -207,10 +221,10 @@ namespace Rock.Communication.Medium
 
             if ( enableResponseRecipientForwarding )
             {
-                CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext );
+                CreateCommunicationMobile( fromPerson, toPersonAliasId, message, rockSmsFromPhoneDv, responseCode, rockContext, attachments );
             }
 
-            CreateCommunicationResponse( fromPerson, messageKey, toPersonAliasId, plainMessage, rockSmsFromPhoneDv, responseCode, rockContext );
+            CreateCommunicationResponse( fromPerson, messageKey, toPersonAliasId, plainMessage, rockSmsFromPhoneDv, responseCode, rockContext, attachments );
         }
 
         /// <summary>
@@ -264,7 +278,9 @@ namespace Rock.Communication.Medium
         /// <param name="rockSmsFromPhoneDv">From phone.</param>
         /// <param name="responseCode">The response code.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void CreateCommunicationResponse( Person fromPerson, string messageKey, int? toPersonAliasId, string message, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext )
+        /// <param name="attachments">The attachments.</param>
+        /// <exception cref="System.Exception">Configuration Error. No SMS Transport Component is currently active.</exception>
+        private void CreateCommunicationResponse( Person fromPerson, string messageKey, int? toPersonAliasId, string message, DefinedValueCache rockSmsFromPhoneDv, string responseCode, Rock.Data.RockContext rockContext, List<BinaryFile> attachments = null )
         {
             var smsMedium = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS );
 
@@ -297,6 +313,24 @@ namespace Rock.Communication.Medium
             var communicationResposeService = new CommunicationResponseService( rockContext );
             communicationResposeService.Add( communicationResponse );
             rockContext.SaveChanges();
+
+            // Now that we have a communication response ID we can add the attachments
+            if ( attachments.IsNotNull() && attachments.Any() )
+            {
+                foreach( var attachment in attachments )
+                {
+                    communicationResponse.Attachments.Add( 
+                        new CommunicationResponseAttachment
+                        {
+                            BinaryFileId = attachment.Id,
+                            CommunicationResponseId = communicationResponse.Id,
+                            CommunicationType = CommunicationType.SMS
+                        }
+                    );
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>

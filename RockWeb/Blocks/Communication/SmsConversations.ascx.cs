@@ -258,6 +258,7 @@ namespace RockWeb.Blocks.Communication
             hfSelectedMessageKey.Value = string.Empty;
             tbNewMessage.Visible = false;
             btnSend.Visible = false;
+            lbShowImagePicker.Visible = false;
 
             int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
             if ( smsPhoneDefinedValueId == default( int ) )
@@ -642,6 +643,7 @@ namespace RockWeb.Blocks.Communication
 
             tbNewMessage.Visible = true;
             btnSend.Visible = true;
+            lbShowImagePicker.Visible = true;
 
             upConversation.Attributes.Add( "class", "conversation-panel has-focus" );
 
@@ -722,16 +724,29 @@ namespace RockWeb.Blocks.Communication
                 hfCommunicationMessageKey.Value = communicationRecipientResponse.MessageKey;
 
                 var lSMSMessage = ( Literal ) e.Item.FindControl( "lSMSMessage" );
-                lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
-
-                if ( communicationRecipientResponse.BinaryFileGuid != null )
+                if ( communicationRecipientResponse.SMSMessage.IsNullOrWhiteSpace() )
                 {
-                    // Show the image thumnail by appending the html to lSMSMessage.Text
-                    string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
-                    string imageElement = string.Format("<img src='{0}GetImage.ashx?guid={1}&width=100&height=100' class='img-responsive sms-image'>", applicationRoot, communicationRecipientResponse.BinaryFileGuid );
+                    var divCommunicationBody = ( HtmlControl ) e.Item.FindControl( "divCommunicationBody" );
+                    divCommunicationBody.Visible = false;
+                }
+                else
+                {
+                    lSMSMessage.Text = communicationRecipientResponse.SMSMessage;
+                }
 
-                    // If there is a text portion then drop down a line before appending the image element
-                    lSMSMessage.Text += lSMSMessage.Text.IsNotNullOrWhiteSpace() ? @"<br \>" + imageElement : imageElement;
+                if ( communicationRecipientResponse.BinaryFileGuids != null )
+                {
+                    var lSMSAttachments = ( Literal ) e.Item.FindControl( "lSMSAttachments" );
+                    string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+                    foreach ( var binaryFileGuid in communicationRecipientResponse.BinaryFileGuids )
+                    {
+                        // Show the image thumnail by appending the html to lSMSMessage.Text
+                        string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=100&height=100' class='img-responsive sms-image'></a>";
+
+                        // If there is a text portion or previous image then drop down a line before appending the image element
+                        lSMSAttachments.Text += imageElement;
+                    }
                 }
 
                 var lSenderName = ( Literal ) e.Item.FindControl( "lSenderName" );
