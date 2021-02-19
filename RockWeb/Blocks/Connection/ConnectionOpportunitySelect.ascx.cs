@@ -539,7 +539,6 @@ namespace RockWeb.Blocks.Connection
                     allOpportunities.Contains( r.ConnectionOpportunityId ) &&
                     ( r.ConnectionState == ConnectionState.Active ||
                         ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) ) )
-                .AsEnumerable()
                 .Select( r => new
                 {
                     r.Id,
