@@ -100,6 +100,14 @@ namespace Rock.Bus
         private static string _nodeName;
 
         /// <summary>
+        /// Gets a value indicating whether this instance is using the in memory transport.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is in memory transport; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsInMemoryTransport => _transportComponent is InMemory;
+
+        /// <summary>
         /// Starts this bus.
         /// </summary>
         public static async Task StartAsync()

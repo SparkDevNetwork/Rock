@@ -278,19 +278,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 currentDateTime = RockDateTime.Now;
             }
 
-            // Get all Attendance records for the current day and location.
+            // Get all Attendance records for the current day
             var attendanceQuery = new AttendanceService( rockContext )
                 .Queryable()
                 .Include( a => a.AttendanceCode )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Occurrence.Schedule )
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Location )
                 .Where( a =>
                     a.StartDateTime >= startDateTime
+                    && a.DidAttend == true
                     && a.StartDateTime <= currentDateTime
                     && a.PersonAliasId.HasValue
+                    && a.Occurrence.GroupId.HasValue
                     && a.Occurrence.ScheduleId.HasValue
-                    && a.PersonAlias != null
-                    && a.PersonAlias.Person != null );
+                    && a.Occurrence.LocationId.HasValue );
+
+            attendanceQuery = attendanceQuery.Where( a => a.DidAttend == true );
 
             // Do the person search
             var personService = new PersonService( rockContext );
@@ -328,19 +333,33 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
-            var attendanceQueryList = attendanceQuery.AsNoTracking().ToList();
+            IList<RosterAttendee> attendees;
 
-            var peopleAttendances = personIds
-                    .GroupJoin(
-                        attendanceQueryList,
-                        pId => pId,
-                        a => a.PersonAlias.PersonId,
-                        ( p, a ) => a )
-                    .SelectMany( a => a )
-                    .Distinct()
-                    .ToList();
+            if ( personIds.Any() )
+            {
+                // Get *all* of today's transactions.
+                // Not sure why we aren't filtering by PersonIds yet, but
+                // it could be to make performance more consistent in case the PersonQuery is complex.
+                var attendanceQueryList = attendanceQuery.AsNoTracking().ToList();
 
-            var attendees = RosterAttendee.GetFromAttendanceList( peopleAttendances );
+                // join (in memory) matching person ids and attendances
+                var peopleAttendances = personIds
+                        .GroupJoin(
+                            attendanceQueryList,
+                            pId => pId,
+                            a => a.PersonAlias.PersonId,
+                            ( p, a ) => a )
+                        .SelectMany( a => a )
+                        .Distinct()
+                        .ToList();
+
+                attendees = RosterAttendee.GetFromAttendanceList( peopleAttendances );
+            }
+            else
+            {
+                // no matching persons, so return empty list
+                attendees = new List<RosterAttendee>();
+            }
 
             return attendees;
         }

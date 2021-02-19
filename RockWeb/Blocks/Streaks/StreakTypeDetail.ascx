@@ -54,19 +54,23 @@
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                         <div class="col-sm-6">
-                            <Rock:DatePicker ID="rdpStartDate" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="StartDate" Label="Start Date" />
+                            <Rock:DatePicker ID="rdpStartDate" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="StartDate" Label="Start Date"
+                                Help="This defines the first day (or week) that a person could engage with this Streak Type and receive an affirmative mark towards their streak. The start date cannot be changed once the Streak Type is created except when rebuilding the entire Streak Type." />
                         </div>
                         <div class="col-sm-3 col-xs-6">
-                            <Rock:RockCheckBox CssClass="col-sm-6" ID="cbEnableAttendance" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="EnableAttendance" Label="Enable Attendance" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox CssClass="col-sm-6" ID="cbEnableAttendance" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="EnableAttendance" Label="Sync Linked Activity" Checked="true" Text="Yes"
+                                Help="If enabled, this streak type will create linked activity records (interaction or attendance) when the Mark Engagement API endpoints are used. Furthermore, when linked activity records are added, this streak type will mark the appropriate engagement bit." />
                         </div>
                         <div class="col-sm-3 col-xs-6">
-                            <Rock:RockCheckBox CssClass="col-sm-6" ID="cbRequireEnrollment" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="RequiresEnrollment" Label="Require Enrollment" Checked="false" Text="Yes" />
+                            <Rock:RockCheckBox CssClass="col-sm-6" ID="cbRequireEnrollment" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" PropertyName="RequiresEnrollment" Label="Require Enrollment" Checked="false" Text="Yes"
+                                Help="If enabled, this Streak Type will not allow new Streaks to be tracked unless the person has been explicitly enrolled. Implicit enrollment occurs when Sync Linked Activity is enabled, and a linked activity record is created." />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlStructureType" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Linked Activity" PropertyName="StructureType" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlStructureType_SelectedIndexChanged" AutoPostBack="true" />
+                            <Rock:DataDropDownList ID="ddlStructureType" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Linked Activity" PropertyName="StructureType" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlStructureType_SelectedIndexChanged" AutoPostBack="true"
+                                Help="This specifies what linked activity types this Streak Type may interface with.  Something very broad like “Any Attendance” could help measure general engagement with the church.  Alternatively, something narrower like a Group Type Purpose could measure more specific engagement points." />
                             <Rock:GroupPicker ID="gpStructureGroupPicker" runat="server" Visible="false" />
                             <Rock:GroupTypePicker ID="gtpStructureGroupTypePicker" runat="server" Visible="false" />
                             <Rock:DefinedValuePicker ID="dvpStructureDefinedValuePicker" runat="server" Visible="false" />
@@ -74,7 +78,8 @@
                             <Rock:InteractionChannelPicker ID="icChannelPicker" runat="server" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlFrequencyOccurrence" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Frequency" PropertyName="OccurrenceFrequency" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlFrequencyOccurrence_SelectedIndexChanged" AutoPostBack="true" />
+                            <Rock:DataDropDownList ID="ddlFrequencyOccurrence" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Frequency" PropertyName="OccurrenceFrequency" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlFrequencyOccurrence_SelectedIndexChanged" AutoPostBack="true"
+                                Help="Daily measuring is great for something like Bible Reading where the ideal is daily engagement. Weekly measurements are better suited for activities such as a small group where the ideal is weekly engagement." />
                             <Rock:DayOfWeekPicker ID="dowPicker" runat="server" Label="Day of Week Start" Help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
                         </div>
                     </div>

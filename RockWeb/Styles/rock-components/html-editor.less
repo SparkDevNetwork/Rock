@@ -2,6 +2,12 @@
 // HTML Editor (summernote)
 // --------------------------------------------------
 
+// The HTML Editor height only includes the content body. Add additional space while the control is loading.
+.html-editor-container.loading {
+  box-sizing: content-box; // Use content-box to exclude padding from min-height total.
+  padding: 0 0 (@html-editor-toolbar-height + 10);
+}
+
 .note-editor.panel-default {
   border-color: @panel-border;
 }

@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     /// ######### OBSOLETE: Use PersonLeft/PersonRight instead #######
     /// </summary>
     [DisplayName( "Person Profile (Obsolete)" )]
+    [RockObsolete( "1.12" )]
     [Category( "Check-in > Manager" )]
     [Description( "Obsolete: Use PersonLeft/PersonRight instead" )]
 
@@ -595,8 +596,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var fileGuids = cblLabels.SelectedValues.AsGuidList();
 
+            var reprintLabelOptions = new ReprintLabelOptions
+            {
+                PrintFrom = PrintFrom.Server,
+                ServerPrinterIPAddress = ddlPrinter.SelectedValue
+            };
+
             // Now, finally, re-print the labels.
-            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, nbReprintMessage, this.Request, ddlPrinter.SelectedValue );
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, nbReprintMessage, this.Request, reprintLabelOptions );
             nbReprintMessage.Visible = true;
             nbReprintMessage.Text = messages.JoinStrings( "<br>" );
 

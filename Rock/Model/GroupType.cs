@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -1310,8 +1311,13 @@ namespace Rock.Model
 
             foreach ( var groupId in groupIds )
             {
-                var transaction = new DeleteIndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
-                transaction.Enqueue();
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = groupEntityTypeId,
+                    EntityId = groupId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
             }
         }
 
@@ -1329,8 +1335,13 @@ namespace Rock.Model
 
             foreach ( var groupId in groupIds )
             {
-                var transaction = new IndexEntityTransaction { EntityId = groupId, EntityTypeId = groupEntityTypeId };
-                transaction.Enqueue();
+                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                {
+                    EntityTypeId = groupEntityTypeId,
+                    EntityId = groupId
+                };
+
+                processEntityTypeIndexMsg.Send();
             }
         }
         #endregion

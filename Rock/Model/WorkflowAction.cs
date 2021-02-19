@@ -446,6 +446,60 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person entry people that should be used for this action.
+        /// </summary>
+        /// <param name="rockContext">The rock context to use with database operations.</param>
+        /// <param name="currentPersonId">The currently logged in person identifier.</param>
+        /// <param name="personEntryPerson">On return will contain the <see cref="Person"/> object to be used for this form.</param>
+        /// <param name="personEntrySpouse">On return will contain the <see cref="Person"/> object to be used for this form..</param>
+        public void GetPersonEntryPeople( RockContext rockContext, int? currentPersonId, out Person personEntryPerson, out Person personEntrySpouse )
+        {
+            personEntryPerson = null;
+            personEntrySpouse = null;
+
+            var form = ActionTypeCache.WorkflowForm;
+            if ( form == null )
+            {
+                return;
+            }
+
+            if ( form.PersonEntryAutofillCurrentPerson && currentPersonId.HasValue )
+            {
+                var personService = new PersonService( rockContext );
+                personEntryPerson = personService.Get( currentPersonId.Value );
+                personEntrySpouse = personEntryPerson.GetSpouse();
+            }
+            else
+            {
+                // Not using the current person, so initialize with the current value of PersonEntryPersonAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
+                if ( form.PersonEntryPersonAttributeGuid.HasValue )
+                {
+                    var personAliasGuid = GetWorkflowAttributeValue( form.PersonEntryPersonAttributeGuid.Value ).AsGuidOrNull();
+
+                    if ( personAliasGuid.HasValue )
+                    {
+                        // the workflow already set a value for the FormEntry person, so use that
+                        var personAliasService = new PersonAliasService( rockContext );
+                        personEntryPerson = personAliasService.GetPerson( personAliasGuid.Value );
+                    }
+                }
+
+                // Not using the current person, so initialize with the current value PersonEntrySpouseAttributeGuid (normally this would be null unless then also had a PersonEntry form on previous Activities)
+                if ( form.PersonEntrySpouseAttributeGuid.HasValue )
+                {
+                    var spousePersonAliasGuid = GetWorkflowAttributeValue( form.PersonEntrySpouseAttributeGuid.Value ).AsGuidOrNull();
+
+                    if ( spousePersonAliasGuid.HasValue )
+                    {
+                        // the workflow already set a value for the FormEntry person, so use that
+                        var personAliasService = new PersonAliasService( rockContext );
+                        personEntrySpouse = personAliasService.GetPerson( spousePersonAliasGuid.Value );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the form attributes.
         /// </summary>
         /// <value>

@@ -54,6 +54,8 @@
 @font-size-large:         ceil((@font-size-base * 1.25)); // ~18px
 @font-size-small:         ceil((@font-size-base * .85)); // ~12px
 
+@font-weight-base: 400;
+
 @font-size-h1:            floor((@font-size-base * 2.6)); // ~36px
 @font-size-h2:            floor((@font-size-base * 2.15)); // ~30px
 @font-size-h3:            ceil((@font-size-base * 1.7)); // ~24px
@@ -227,6 +229,61 @@
 
 //** Disabled cursor for form controls and buttons.
 @cursor-disabled:                not-allowed;
+
+
+@input-padding-y:                       @padding-base-vertical;
+@input-padding-x:                       @padding-base-horizontal;
+@input-font-family:                     ~""; // LESS PORT: Sass version uses `null`;
+@input-font-size:                       @font-size-base;
+@input-font-weight:                     @font-weight-base;
+@input-line-height:                     @line-height-base;
+
+@input-padding-y-sm:                    @padding-small-vertical;
+@input-padding-x-sm:                    @padding-small-horizontal;
+@input-font-size-sm:                    @font-size-small;
+@input-line-height-sm:                  @line-height-small;
+
+@input-padding-y-lg:                    @padding-large-vertical;
+@input-padding-x-lg:                    @padding-large-horizontal;
+@input-font-size-lg:                    @font-size-large;
+@input-line-height-lg:                  @line-height-large;
+
+@input-height-inner:                    ((@input-line-height * 1em) (@input-padding-y * 2));
+@input-height-inner-half:               ((@input-line-height * .5em) + @input-padding-y);
+@input-height-inner-quarter:            ((@input-line-height * .25em) + (@input-padding-y / 2));
+
+
+
+@form-select-padding-y:             @input-padding-y;
+@form-select-padding-x:             @input-padding-x;
+@form-select-font-family:           ~"";
+@form-select-font-size:             @input-font-size;
+@form-select-indicator-padding:     (@form-select-padding-x * 3); // Extra padding for background-image
+@form-select-font-weight:           @input-font-weight;
+@form-select-line-height:           @input-line-height;
+@form-select-color:                 @input-color;
+@form-select-disabled-color:        @input-color;
+@form-select-bg:                    @input-bg;
+@form-select-disabled-bg:           @input-bg-disabled;
+@form-select-disabled-border-color: @input-border;
+@form-select-bg-position:           right @form-select-padding-x center;
+@form-select-bg-size:               16px 12px; // In pixels because image dimensions
+@form-select-indicator-color:       #343a40;
+@form-select-indicator-color-esc:   %('%A', @form-select-indicator-color);
+@form-select-indicator-code:             %(~"data:image/svg+xml,%s%s%s", "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='", "@{form-select-indicator-color-esc}", "' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+@form-select-indicator:           ~'url("@{form-select-indicator-code}")';
+
+@form-select-border-color:        @input-border;
+@form-select-border-radius:       @input-border-radius;
+@form-select-box-shadow:          inset 0 1px 2px rgba(0,0,0, .075); //@box-shadow-inset;
+
+@form-select-padding-y-sm:        @input-padding-y-sm;
+@form-select-padding-x-sm:        @input-padding-x-sm;
+@form-select-font-size-sm:        @input-font-size-sm;
+
+@form-select-padding-y-lg:        @input-padding-y-lg;
+@form-select-padding-x-lg:        @input-padding-x-lg;
+@form-select-font-size-lg:        @input-font-size-lg;
 
 
 //== Dropdowns
@@ -871,7 +928,7 @@
 @hr-border:                   @gray-lighter;
 
 // Bootstrap 4 Variables
-@font-size-root: unit(@font-size-base/16, rem);
+@font-size-root: unit((@font-size-base/16), rem);
 
 // Used when @enable-flexbox: true;
 @bs4-screen-xs: 0;

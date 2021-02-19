@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -34,14 +33,12 @@ using System.Data.Entity;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// Block for viewing entities with a selected tag
     /// </summary>
     [DisplayName( "Tag Report" )]
     [Category( "Core" )]
     [Description( "Block for viewing entities with a selected tag" )]
     public partial class TagReport : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
-
         #region Properties
 
         /// <summary>
@@ -93,7 +90,6 @@ namespace RockWeb.Blocks.Core
                         if ( TagEntityType.Name == "Rock.Model.Person" )
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
-                            gReport.PersonIdField = "PersonId";
                             gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 
@@ -146,7 +142,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gReport_GridRebind( object sender, EventArgs e )
+        private void gReport_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -166,7 +162,7 @@ namespace RockWeb.Blocks.Core
                     var entityType = EntityTypeCache.Get( taggedItem.EntityTypeId );
                     if ( entityType != null )
                     {
-                        var entity = GetGenericEntity( entityType.GetEntityType(), taggedItem.EntityGuid ) as IEntity;
+                        var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), taggedItem.EntityGuid );
                         if ( entity != null )
                         {
                             string url = string.Format( "~/{0}/{1}", entityType.FriendlyName.Replace( " ", "" ), entity.Id );
@@ -174,6 +170,7 @@ namespace RockWeb.Blocks.Core
                             {
                                 url = entityType.LinkUrlLavaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "Entity", entity } } );
                             }
+
                             Response.Redirect( url, false );
                         }
                     }
@@ -293,53 +290,60 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
+            if ( TagEntityType == null )
+            {
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var service = new TaggedItemService( rockContext );
-                var people = new PersonService( rockContext ).Queryable().AsNoTracking();
 
-                IQueryable<TaggedItemRow> results = null;
+                var tagEntityTypeType = TagEntityType.GetEntityType();
 
-                if ( TagEntityType != null && TagEntityType.Name == "Rock.Model.Person" )
-                {
-                    results = service.Queryable().AsNoTracking()
-                        .Where( t =>
-                            t.TagId == TagId.Value )
-                        .Join( people, t => t.EntityGuid, p => p.Guid, ( t, p ) => new TaggedItemRow
+                // Join TaggedItemRow with whatever IEntity query is for the TagEntityType (PersonService.Queryable(), GroupService.Queryable(), etc)
+                // That way we can get the Entity.Id and tell the Grid what the EntityId is for each item (Person, Group, etc)
+                IService serviceInstance = Reflection.GetServiceForEntityType( tagEntityTypeType, rockContext );
+                MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                var entityQuery = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+
+                IQueryable<TaggedItemRow> results = service.Queryable().AsNoTracking()
+                    .Where( t => t.TagId == TagId.Value )
+                        .Join( entityQuery, t => t.EntityGuid, e => e.Guid, ( t, e ) => new TaggedItemRow
                         {
                             Id = t.Id,
                             EntityTypeId = t.EntityTypeId,
                             EntityGuid = t.EntityGuid,
                             CreatedDateTime = t.CreatedDateTime,
-                            PersonId = p.Id,
-                        } );
-                }
-                else
+                            EntityId = e.Id,
+                        } ); ;
+
+                // Tell the grid that it has a list of the EntityType for the Tag (Person, Group, etc).
+                // Also tell it to get the Entities (Group, Person, etc) using EntityId (instead of Id)
+                gReport.EntityTypeId = TagEntityType.Id;
+                gReport.EntityIdField = "EntityId";
+                if ( TagEntityType.Name == "Rock.Model.Person" )
                 {
-                    results = service.Queryable().AsNoTracking()
-                        .Where( t =>
-                            t.TagId == TagId.Value )
-                        .Select( t => new TaggedItemRow
-                        {
-                            Id = t.Id,
-                            EntityTypeId = t.EntityTypeId,
-                            EntityGuid = t.EntityGuid,
-                            CreatedDateTime = t.CreatedDateTime
-                        } );
+                    gReport.PersonIdField = "EntityId";
                 }
 
-                gReport.EntityTypeId = EntityTypeCache.Get<TaggedItem>().Id;
                 gReport.DataSource = results.ToList();
                 gReport.DataBind();
             }
         }
 
+        /// <summary>
+        /// Gets the name of the item.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityGuid">The entity unique identifier.</param>
+        /// <returns></returns>
         public string GetItemName( int entityTypeId, Guid entityGuid )
         {
             var entityType = EntityTypeCache.Get( entityTypeId );
             if ( entityType != null )
             {
-                var entity = GetGenericEntity( entityType.GetEntityType(), entityGuid ) as IEntity;
+                var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), entityGuid );
                 if ( entity != null )
                 {
                     return entity.ToString();
@@ -358,48 +362,18 @@ namespace RockWeb.Blocks.Core
             pnlContent.Visible = visible;
         }
 
-        private object GetGenericEntity( Type modelType, Guid guid )
-        {
-            // Get the context type since this may be for a non-rock core object
-            Type contextType = null;
-            var contexts = Rock.Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
-            if ( contexts.Any() )
-            {
-                contextType = contexts.First().Value;
-            }
-            else
-            {
-                contextType = typeof( RockContext );
-            }
-
-            Type genericServiceType = typeof( Rock.Data.Service<> );
-            Type modelServiceType = genericServiceType.MakeGenericType( new Type[] { modelType } );
-
-            if ( modelServiceType != null )
-            {
-                var context = Activator.CreateInstance( contextType );
-                Object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
-                if ( serviceInstance != null )
-                {
-                    MethodInfo method = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
-                    if ( method != null )
-                    {
-                        return method.Invoke( serviceInstance, new object[] { guid } );
-                    }
-                }
-            }
-
-            return null;
-        }
-
         #endregion
 
         private class TaggedItemRow
         {
             public int Id { get; set; }
-            public int PersonId { get; set; }
+
             public int EntityTypeId { get; set; }
+
             public Guid EntityGuid { get; set; }
+
+            public int EntityId { get; set; }
+
             public DateTime? CreatedDateTime { get; set; }
         }
     }

@@ -111,11 +111,11 @@
     <script>
         Sys.Application.add_load(navs);
         function navs(){
-            $('.navbar-static-side').on('show.bs.collapse hide.bs.collapse', function(e) {
+            $('.navbar-static-side').off('show.bs.collapse hide.bs.collapse').on('show.bs.collapse hide.bs.collapse', function(e) {
                 e.preventDefault();
             }),
 
-            $('.navbar-toggle-side-left').on('click', function(e) {
+            $('.navbar-toggle-side-left').off('click').on('click', function(e) {
                 e.preventDefault();
                 if (! $('.navbar-static-side').hasClass('in') && !$('body').hasClass('nav-open-lg')) {
                     $('.navbar-static-side').addClass('in');
