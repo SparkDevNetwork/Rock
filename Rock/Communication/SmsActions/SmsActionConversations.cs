@@ -93,8 +93,7 @@ namespace Rock.Communication.SmsActions
         /// <returns>An SmsMessage that will be sent as the response or null if no response should be sent.</returns>
         public override SmsMessage ProcessMessage( SmsActionCache action, SmsMessage message, out string errorMessage )
         {
-            new Rock.Communication.Medium.Sms().ProcessResponse( message.ToNumber, message.FromNumber, message.Message, out errorMessage );
-
+            new Rock.Communication.Medium.Sms().ProcessResponse( message.ToNumber, message.FromNumber, message.Message, message.Attachments, out errorMessage );
             return null;
         }
 

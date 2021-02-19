@@ -133,7 +133,7 @@ namespace Rock.Model
         /// <value>
         /// The binary file unique identifier.
         /// </value>
-        public Guid? BinaryFileGuid { get; set; }
+        public List<Guid> BinaryFileGuids { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is read.
@@ -320,7 +320,7 @@ namespace Rock.Model
                     MessageKey = null, // communication recipients just need to show their name, not their number
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
                     SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.Communication.SMSMessage : mostRecentCommunicationRecipient.SentMessage,
-                    BinaryFileGuid = mostRecentCommunicationRecipient.Communication.Attachments.FirstOrDefault()?.BinaryFile?.Guid
+                    BinaryFileGuids = mostRecentCommunicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
                 };
 
                 if ( mostRecentCommunicationRecipient?.Person.IsNameless() == true )
@@ -377,7 +377,8 @@ namespace Rock.Model
                     IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
                     SMSMessage = communicationResponse.Response,
-                    MessageStatus = CommunicationRecipientStatus.Delivered // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
+                    MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
+                    BinaryFileGuids = communicationResponse.Attachments?.Select( r => r.BinaryFile.Guid ).ToList()
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -412,7 +413,7 @@ namespace Rock.Model
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage,
                     MessageStatus = communicationRecipient.Status,
-                    BinaryFileGuid = communicationRecipient.Communication.Attachments.FirstOrDefault()?.BinaryFile?.Guid
+                    BinaryFileGuids = communicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
                 };
 
                 if ( communicationRecipient.Person?.IsNameless() == true )
