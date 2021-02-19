@@ -23,7 +23,7 @@ declare
 
 declare
   @sourceTypeValueId int = (select top 1 Id from DefinedValue where DefinedTypeId = @sourceTypeDefinedTypeId order by NEWID()), 
-  @accountId int = (select top 1 id from FinancialAccount),
+  @accountId int = (select top 1 id from FinancialAccount where IsTaxDeductible = 1),
   @batchId int,
   @batchStatusOpen int = 1,
   @transactionId int,
@@ -155,7 +155,7 @@ begin
 
         if (@transactionCounter % 17 = 0 )
         begin
-            set @accountId = (select top 1 id from FinancialAccount order by NEWID());
+            set @accountId = (select top 1 id from FinancialAccount where IsTaxDeductible = 1 order by NEWID());
         end
 
         if (@transactionCounter % 50 = 0 )
