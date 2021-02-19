@@ -73,10 +73,6 @@ span.data-view-filter-label {
   margin: 0 12px 0 0;
 }
 
-.data-view-detail .field-criteria > .col-md-10 > div {
-  padding-top: (@padding-base-vertical + 1);
-}
-
 // 2. Dynamic Report
 // -------------------------
 
@@ -122,8 +118,13 @@ span.data-view-filter-label {
 // 4. Form Field Filter
 // -------------------------
 
-.filter-rule {
-  margin-bottom: @padding-base-vertical;
+.filtervisibilityrules-type {
+  margin-bottom: @form-group-margin-bottom;
+}
+
+.filter-rule .form-control {
+  min-width: 100%;
+  margin-bottom: @form-group-margin-bottom;
 }
 
 .filter-rule-fieldfilter {
