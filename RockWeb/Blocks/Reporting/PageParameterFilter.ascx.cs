@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -554,7 +554,17 @@ namespace RockWeb.Blocks.Reporting
 
             if ( queryString.AllKeys.Any() )
             {
-                Response.Redirect( string.Format( "{0}?{1}", url, queryString ), false );
+                // JE 2/19/2021
+                // Fixing to support routes. This should probably be in the GenerateQueryString() but it's difficult to understand
+                // the logic of that method. This is slightly slower, but a safer change. A re-write of the filter redirect may be in order.
+                var pageReference = CurrentPageReference;
+                
+                foreach ( var key in queryString.AllKeys )
+                {
+                    pageReference.Parameters.AddOrReplace( key, queryString[key] );
+                }
+
+                Response.Redirect( pageReference.BuildUrl(), false );
             }
             else
             {
@@ -613,7 +623,7 @@ namespace RockWeb.Blocks.Reporting
                     Control control = phAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = Request.QueryString[attribute.Key];
+                        var value = PageParameter( attribute.Key );
                         if ( value != null )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, value );
