@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.GroupScheduling
             Page.Response.Cache.SetNoStore();
 
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Rock/Controls/GroupScheduler/groupScheduler.js" );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
 
             this.AddConfigurationUpdateTrigger( upnlContent );
