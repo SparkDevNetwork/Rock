@@ -1080,7 +1080,13 @@ namespace RockWeb.Blocks.Connection
             if ( connectionStatus == null )
             {
                 connectionStatus = new ConnectionStatus();
+                /*
+                  SK - 22 Feb 2020
+                  Avoid removing and then adding Connection Type's Statuses on edit as it causes them to reorder
+                */
+                StatusesState.Add( connectionStatus );
             }
+
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -1101,12 +1107,6 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            if ( StatusesState.Any( a => a.Guid.Equals( connectionStatus.Guid ) ) )
-            {
-                StatusesState.RemoveEntity( connectionStatus.Guid );
-            }
-
-            StatusesState.Add( connectionStatus );
             BindConnectionStatusesGrid();
             HideDialog();
         }
