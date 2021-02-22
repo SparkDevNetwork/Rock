@@ -270,6 +270,7 @@ namespace RockWeb.Blocks.Finance
             financialTransactionAlertType.ContinueIfMatched = cbContinueIfMatched.Checked;
             financialTransactionAlertType.RepeatPreventionDuration = nbRepeatPreventionDuration.Text.AsIntegerOrNull();
             financialTransactionAlertType.AmountSensitivityScale = nbAmountSensitivityScale.Text.AsDecimalOrNull();
+            financialTransactionAlertType.FrequencySensitivityScale = nbFrequencySensitivityScale.Text.AsDecimalOrNull();
             financialTransactionAlertType.MinimumGiftAmount = cbMinimumGiftAmount.Text.AsDecimalOrNull();
             financialTransactionAlertType.MaximumGiftAmount = cbMaximumGiftAmount.Text.AsDecimalOrNull();
             financialTransactionAlertType.MinimumMedianGiftAmount = cbMinimumMedianGiftAmount.Text.AsDecimalOrNull();
@@ -375,6 +376,7 @@ namespace RockWeb.Blocks.Finance
             cbContinueIfMatched.Checked = financialTransactionAlertType.ContinueIfMatched;
             nbRepeatPreventionDuration.Text = financialTransactionAlertType.RepeatPreventionDuration.ToStringSafe();
             nbAmountSensitivityScale.Text = financialTransactionAlertType.AmountSensitivityScale.ToStringSafe();
+            nbFrequencySensitivityScale.Text = financialTransactionAlertType.FrequencySensitivityScale.ToStringSafe();
             cbMinimumGiftAmount.Text = financialTransactionAlertType.MinimumGiftAmount.ToStringSafe();
             cbMaximumGiftAmount.Text = financialTransactionAlertType.MaximumGiftAmount.ToStringSafe();
             cbMinimumMedianGiftAmount.Text = financialTransactionAlertType.MinimumMedianGiftAmount.ToStringSafe();
