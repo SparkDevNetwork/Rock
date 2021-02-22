@@ -387,7 +387,8 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         /// <param name="toPersonAliasId">To person alias identifier.</param>
         /// <param name="message">The message.</param>
-        private void SendMessage( int toPersonAliasId, string message )
+        /// <param name="newMessage">if set to <c>true</c> [new message].</param>
+        private void SendMessage( int toPersonAliasId, string message, bool newMessage )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -400,19 +401,24 @@ namespace RockWeb.Blocks.Communication
 
                 string responseCode = Rock.Communication.Medium.Sms.GenerateResponseCode( rockContext );
 
-                List<BinaryFile> photo = null;
-                if ( ImageUploaderConversation.BinaryFileId.IsNotNullOrZero() )
+                BinaryFile binaryFile = null;
+                List<BinaryFile> photos = null;
+
+                if ( !newMessage && ImageUploaderConversation.BinaryFileId.IsNotNullOrZero() )
                 {
-                    var binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderConversation.BinaryFileId.Value );
-                    if ( binaryFile.IsNotNull() )
-                    {
-                        photo = new List<BinaryFile>();
-                        photo.Add( binaryFile );
-                    }
+                    // If this is a response using the conversation window and a photo file has been uploaded then add it
+                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderConversation.BinaryFileId.Value );
+                }
+                else if ( newMessage && ImageUploaderModal.BinaryFileId.IsNotNullOrZero() )
+                {
+                    // If this is a new message using the modal and a photo file has been uploaded then add it
+                    binaryFile = new BinaryFileService( rockContext ).Get( ImageUploaderModal.BinaryFileId.Value );
                 }
 
+                photos = binaryFile.IsNotNull() ? new List<BinaryFile> { binaryFile } : null;
+
                 // Create and enqueue the communication
-                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext, photo );
+                Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext, photos );
                 ImageUploaderConversation.BinaryFileId = null;
                 
             }
@@ -546,7 +552,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             int toPersonAliasId = hfSelectedRecipientPersonAliasId.ValueAsInt();
-            SendMessage( toPersonAliasId, message );
+            SendMessage( toPersonAliasId, message, false );
             tbNewMessage.Text = string.Empty;
             LoadResponsesForRecipient( toPersonAliasId );
             UpdateMessagePart( message );
@@ -576,7 +582,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            SendMessage( toPersonAliasId, message );
+            SendMessage( toPersonAliasId, message, true );
 
             mdNewMessage.Hide();
             LoadResponseListing();

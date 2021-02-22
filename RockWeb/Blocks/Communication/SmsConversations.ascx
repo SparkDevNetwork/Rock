@@ -174,6 +174,9 @@
 
                 <%-- multi-line textbox --%>
                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+
+                <%-- image uploader --%>
+                <Rock:ImageUploader ID="ImageUploaderModal" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
             </Content>
         </Rock:ModalDialog>
 
