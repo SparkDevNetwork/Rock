@@ -22,6 +22,10 @@
 //
 
 using System;
+using System.Linq;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
@@ -167,5 +171,68 @@ namespace Rock.ViewModel
         /// </value>
         public double? TimeToBuildMS { get; set; }
 
+        /// <summary>
+        /// Sets the properties from.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public virtual void SetPropertiesFrom( Rock.Model.PersistedDataset model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return;
+            }
+
+            if ( loadAttributes && model is IHasAttributes hasAttributes )
+            {
+                if ( hasAttributes.Attributes == null )
+                {
+                    hasAttributes.LoadAttributes();
+                }
+
+                Attributes = hasAttributes.AttributeValues.Where( av =>
+                {
+                    var attribute = AttributeCache.Get( av.Value.AttributeId );
+                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
+                } ).ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
+            }
+
+            AccessKey = model.AccessKey;
+            AllowManualRefresh = model.AllowManualRefresh;
+            BuildScript = model.BuildScript;
+            BuildScriptType = ( int ) model.BuildScriptType;
+            Description = model.Description;
+            EnabledLavaCommands = model.EnabledLavaCommands;
+            EntityTypeId = model.EntityTypeId;
+            ExpireDateTime = model.ExpireDateTime;
+            IsActive = model.IsActive;
+            IsSystem = model.IsSystem;
+            LastRefreshDateTime = model.LastRefreshDateTime;
+            MemoryCacheDurationMS = model.MemoryCacheDurationMS;
+            Name = model.Name;
+            RefreshIntervalMinutes = model.RefreshIntervalMinutes;
+            ResultData = model.ResultData;
+            ResultFormat = ( int ) model.ResultFormat;
+            TimeToBuildMS = model.TimeToBuildMS;
+
+            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
+        }
+
+        /// <summary>
+        /// Creates a view model from the specified model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson" >The current person.</param>
+        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static PersistedDatasetViewModel From( Rock.Model.PersistedDataset model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var viewModel = new PersistedDatasetViewModel();
+            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
     }
 }

@@ -22,6 +22,10 @@
 //
 
 using System;
+using System.Linq;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
@@ -54,14 +58,6 @@ namespace Rock.ViewModel
         /// The ChannelCustomIndexed1.
         /// </value>
         public string ChannelCustomIndexed1 { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ChannelId.
-        /// </summary>
-        /// <value>
-        /// The ChannelId.
-        /// </value>
-        public int ChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the ComponentData.
@@ -135,5 +131,63 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Sets the properties from.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public virtual void SetPropertiesFrom( Rock.Model.InteractionComponent model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return;
+            }
+
+            if ( loadAttributes && model is IHasAttributes hasAttributes )
+            {
+                if ( hasAttributes.Attributes == null )
+                {
+                    hasAttributes.LoadAttributes();
+                }
+
+                Attributes = hasAttributes.AttributeValues.Where( av =>
+                {
+                    var attribute = AttributeCache.Get( av.Value.AttributeId );
+                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
+                } ).ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
+            }
+
+            ChannelCustom1 = model.ChannelCustom1;
+            ChannelCustom2 = model.ChannelCustom2;
+            ChannelCustomIndexed1 = model.ChannelCustomIndexed1;
+            ComponentData = model.ComponentData;
+            ComponentSummary = model.ComponentSummary;
+            EntityId = model.EntityId;
+            InteractionChannelId = model.InteractionChannelId;
+            Name = model.Name;
+            CreatedDateTime = model.CreatedDateTime;
+            ModifiedDateTime = model.ModifiedDateTime;
+            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
+            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
+
+            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
+        }
+
+        /// <summary>
+        /// Creates a view model from the specified model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson" >The current person.</param>
+        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static InteractionComponentViewModel From( Rock.Model.InteractionComponent model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var viewModel = new InteractionComponentViewModel();
+            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
     }
 }

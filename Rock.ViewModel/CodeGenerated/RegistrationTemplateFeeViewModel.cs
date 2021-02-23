@@ -22,6 +22,10 @@
 //
 
 using System;
+using System.Linq;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
@@ -38,14 +42,6 @@ namespace Rock.ViewModel
         /// The AllowMultiple.
         /// </value>
         public bool AllowMultiple { get; set; }
-
-        /// <summary>
-        /// Gets or sets the CostValue.
-        /// </summary>
-        /// <value>
-        /// The CostValue.
-        /// </value>
-        public string CostValue { get; set; }
 
         /// <summary>
         /// Gets or sets the DiscountApplies.
@@ -143,5 +139,64 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Sets the properties from.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public virtual void SetPropertiesFrom( Rock.Model.RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return;
+            }
+
+            if ( loadAttributes && model is IHasAttributes hasAttributes )
+            {
+                if ( hasAttributes.Attributes == null )
+                {
+                    hasAttributes.LoadAttributes();
+                }
+
+                Attributes = hasAttributes.AttributeValues.Where( av =>
+                {
+                    var attribute = AttributeCache.Get( av.Value.AttributeId );
+                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
+                } ).ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
+            }
+
+            AllowMultiple = model.AllowMultiple;
+            DiscountApplies = model.DiscountApplies;
+            FeeType = ( int ) model.FeeType;
+            HideWhenNoneRemaining = model.HideWhenNoneRemaining;
+            IsActive = model.IsActive;
+            IsRequired = model.IsRequired;
+            Name = model.Name;
+            Order = model.Order;
+            RegistrationTemplateId = model.RegistrationTemplateId;
+            CreatedDateTime = model.CreatedDateTime;
+            ModifiedDateTime = model.ModifiedDateTime;
+            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
+            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
+
+            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
+        }
+
+        /// <summary>
+        /// Creates a view model from the specified model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson" >The current person.</param>
+        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static RegistrationTemplateFeeViewModel From( Rock.Model.RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var viewModel = new RegistrationTemplateFeeViewModel();
+            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
     }
 }
