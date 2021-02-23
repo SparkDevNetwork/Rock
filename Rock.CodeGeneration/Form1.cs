@@ -706,20 +706,24 @@ GO
                     return new
                     {
                         Name = p.Key,
-                        IsObsoleteWarning = obsolete != null,
-                        IsObsoleteError = obsolete?.IsError ?? false,
+                        IsObsolete = obsolete != null,
                         IsEnum = isEnum,
+                        IsNullable = isNullable,
                         TypeName =
                             ( isNullable && isEnum ) ? "int?" :
                             isEnum ? "int" :
                             PropertyTypeName( p.Value.PropertyType )
                     };
                 } )
-                .Where( p => !p.IsObsoleteError )
+                .Where( p => !p.IsObsolete )
                 .ToList();
 
             sb.AppendLine( $@"
 using System;
+using System.Linq;
+using Rock.Attribute;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {{
@@ -742,7 +746,62 @@ namespace Rock.ViewModel
 " );
             }
 
-            sb.Append( @"    }
+            sb.AppendLine( $@"        /// <summary>
+        /// Sets the properties from.
+        /// </summary>
+        /// <param name=""model"">The model.</param>
+        /// <param name=""currentPerson"">The current person.</param>
+        /// <param name=""loadAttributes"">if set to <c>true</c> [load attributes].</param>
+        public virtual void SetPropertiesFrom( Rock.Model.{type.Name} model, Person currentPerson = null, bool loadAttributes = true )
+        {{
+            if ( model == null )
+            {{
+                return;
+            }}
+
+            if ( loadAttributes && model is IHasAttributes hasAttributes )
+            {{
+                if ( hasAttributes.Attributes == null )
+                {{
+                    hasAttributes.LoadAttributes();
+                }}
+
+                Attributes = hasAttributes.AttributeValues.Where( av =>
+                {{
+                    var attribute = AttributeCache.Get( av.Value.AttributeId );
+                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
+                }} ).ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
+            }}
+" );
+
+            foreach ( var property in properties )
+            {
+                var cast = property.IsEnum ? $"( int{( property.IsNullable ? "?" : string.Empty )} ) " : string.Empty;
+                sb.AppendLine( $"            {property.Name} = {cast}model.{property.Name};" );
+            }
+
+            sb.AppendLine( @"
+            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
+        }" );
+
+            sb.AppendLine($@"
+        /// <summary>
+        /// Creates a view model from the specified model.
+        /// </summary>
+        /// <param name=""model"">The model.</param>
+        /// <param name=""currentPerson"" >The current person.</param>
+        /// <param name=""loadAttributes"" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static {type.Name}ViewModel From( Rock.Model.{type.Name} model, Person currentPerson = null, bool loadAttributes = true )
+        {{
+            var viewModel = new {type.Name}ViewModel();
+            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
+            return viewModel;
+        }}" );
+
+            sb.AppendLine( @"    }
 }" );
 
             var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + "ViewModel.cs" ) );

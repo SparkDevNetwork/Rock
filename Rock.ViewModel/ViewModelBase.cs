@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -86,6 +85,16 @@ namespace Rock.ViewModel
                     kvp => kvp.Key,
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
+
+            SetAdditionalPropertiesFrom( entity, currentPerson, loadAttributes );
+        }
+
+        /// <summary>
+        /// Copies additional properties from the object.
+        /// </summary>
+        protected virtual void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
+        {
+            return;
         }
     }
 }

@@ -76,9 +76,9 @@ namespace Rock.Obsidian.Blocks.Event
 
                 return new
                 {
-                    registrationInstance = registrationInstance.ToViewModel( currentPerson, false ),
-                    registrationTemplate = registrationTemplate.ToViewModel( currentPerson, false ),
-                    registrationTemplateForms = registrationTemplate?.Forms?.Select( f => f.ToViewModel( currentPerson, false ) )
+                    registrationInstance = RegistrationInstanceViewModel.From( registrationInstance, currentPerson, false ),
+                    registrationTemplate = RegistrationTemplateViewModel.From( registrationTemplate, currentPerson, false ),
+                    registrationTemplateForms = registrationTemplate?.Forms?.Select( f => RegistrationTemplateFormViewModel.From( f, currentPerson, false ) )
                 };
             }
         }

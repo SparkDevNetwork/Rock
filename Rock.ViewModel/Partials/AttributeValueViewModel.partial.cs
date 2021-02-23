@@ -36,19 +36,17 @@ namespace Rock.ViewModel
         public AttributeViewModel Attribute { get; set; }
 
         /// <summary>
-        /// Sets the properties from entity.
+        /// Copies additional properties from the object.
         /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
+        /// <param name="entity"></param>
+        /// <param name="currentPerson"></param>
+        /// <param name="loadAttributes"></param>
+        protected override void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( entity == null )
             {
                 return;
             }
-
-            base.SetPropertiesFrom( entity, currentPerson, loadAttributes );
 
             if ( entity is AttributeValueCache attributeValueCache )
             {
@@ -58,6 +56,20 @@ namespace Rock.ViewModel
             {
                 Attribute = AttributeCache.Get( attributeValue.AttributeId ).ToViewModel<AttributeViewModel>();
             }
+        }
+
+        /// <summary>
+        /// Creates a view model from the specified cache.
+        /// </summary>
+        /// <param name="cache">The cache.</param>
+        /// <param name="currentPerson" >The current person.</param>
+        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static AttributeValueViewModel From( AttributeValueCache cache, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var viewModel = new AttributeValueViewModel();
+            viewModel.SetPropertiesFrom( cache, currentPerson, loadAttributes );
+            return viewModel;
         }
     }
 }

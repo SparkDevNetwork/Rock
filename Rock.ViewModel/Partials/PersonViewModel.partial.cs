@@ -24,7 +24,7 @@ namespace Rock.ViewModel
     /// Person View Model
     /// </summary>
     /// <seealso cref="Rock.ViewModel.IViewModel" />
-    public partial class PersonViewModel
+    public partial class PersonViewModel : IViewModel
     {
         /// <summary>
         /// Gets or sets the full name.
@@ -56,12 +56,13 @@ namespace Rock.ViewModel
         /// <param name="entity">The entity, cache item, or some object.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public override void SetPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
+        protected override void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
         {
-            base.SetPropertiesFrom( entity, currentPerson, loadAttributes );
-
             if ( entity is Person person )
             {
+                FullName = person.FullName;
+                PhotoUrl = person.PhotoUrl;
+
                 if ( person.PrimaryFamily != null )
                 {
                     PrimaryFamilyGuid = person.PrimaryFamily.Guid;
