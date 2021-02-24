@@ -698,6 +698,7 @@
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
+    <Compile Include="Model\CommunicationResponseAttachment.cs" />
     <Compile Include="Model\FinancialTransactionAlert.cs" />
     <Compile Include="Model\FinancialTransactionAlertType.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
