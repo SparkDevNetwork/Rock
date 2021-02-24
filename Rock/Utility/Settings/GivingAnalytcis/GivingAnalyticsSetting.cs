@@ -86,7 +86,7 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// <value>
         /// The global repeat prevention duration.
         /// </value>
-        public int? GlobalRepeatPreventionDuration { get; set; }
+        public int? GlobalRepeatPreventionDurationDays { get; set; }
 
         /// <summary>
         /// Gets or sets the gratitude repeat prevention duration in days.
@@ -94,7 +94,7 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// <value>
         /// The gratitude repeat prevention duration.
         /// </value>
-        public int? GratitudeRepeatPreventionDuration { get; set; }
+        public int? GratitudeRepeatPreventionDurationDays { get; set; }
 
         /// <summary>
         /// Gets or sets the followup repeat prevention duration in days.
@@ -102,6 +102,6 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// <value>
         /// The followup repeat prevention duration.
         /// </value>
-        public int? FollowupRepeatPreventionDuration { get; set; }
+        public int? FollowupRepeatPreventionDurationDays { get; set; }
     }
 }

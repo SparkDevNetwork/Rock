@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Reporting
             edtFilter.AllowSearchVisible = false;
             edtFilter.IsShowInGridVisible = false;
 
-            // hide these attribute settings manually since there isn't a property to do so.
+            // Hide these attribute settings manually since there isn't a property to do so.
             Control cbEnableHistory = edtFilter.FindControl( "_cbEnableHistory" );
             if ( cbEnableHistory != null )
             {
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Reporting
 
             mdFilter.SaveClick += mdFilter_SaveClick;
 
-            // this event gets fired after block settings are updated.
+            // This event gets fired after block settings are updated.
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Reporting
                 var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
                 var attribsWithDefaultValue = query.AsQueryable().Where( a => a.DefaultValue != null && a.DefaultValue != "" ).ToList();
 
-                // if we have any filters with default values, we want to load this block with the page parameters already set.
+                // If we have any filters with default values, we want to load this block with the page parameters already set.
                 if ( attribsWithDefaultValue.Any() && !this.RockPage.PageParameters().Any() )
                 {
                     ResetFilters();
@@ -284,10 +284,10 @@ namespace RockWeb.Blocks.Reporting
 
             base.OnLoad( e );
 
-            //add postback controls
+            // Add postback controls
             if ( Page.IsPostBack && _reloadOnSelection )
             {
-                //See if hidden field has 'true' already set
+                // See if hidden field has 'true' already set
                 if ( hfPostBack.Value.IsNullOrWhiteSpace() )
                 {
                     var control = Page.FindControl( Request.Form["__EVENTTARGET"] );
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Reporting
                         ScriptManager.RegisterStartupScript( control, control.GetType(), "Refresh-Controls", @"console.log('Doing Postback');  __doPostBack('" + Request.Form["__EVENTTARGET"] + @"','');", true );
                     }
                 }
-                else //reset hidden field for next time
+                else // Reset hidden field for next time
                 {
                     hfPostBack.Value = "";
                 }
@@ -554,7 +554,17 @@ namespace RockWeb.Blocks.Reporting
 
             if ( queryString.AllKeys.Any() )
             {
-                Response.Redirect( string.Format( "{0}?{1}", url, queryString ), false );
+                // JE 2/19/2021
+                // Fixing to support routes. This should probably be in the GenerateQueryString() but it's difficult to understand
+                // the logic of that method. This is slightly slower, but a safer change. A re-write of the filter redirect may be in order.
+                var pageReference = CurrentPageReference;
+                
+                foreach ( var key in queryString.AllKeys )
+                {
+                    pageReference.Parameters.AddOrReplace( key, queryString[key] );
+                }
+
+                Response.Redirect( pageReference.BuildUrl(), false );
             }
             else
             {
@@ -579,7 +589,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e"></param>
         private void ItemPicker_SelectItem( object sender, EventArgs e )
         {
-            //hopefully an xhr happens here
+            // Hopefully an xhr happens here
         }
 
         /// <summary>
@@ -613,7 +623,7 @@ namespace RockWeb.Blocks.Reporting
                     Control control = phAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = Request.QueryString[attribute.Key];
+                        var value = PageParameter( attribute.Key );
                         if ( value != null )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, value );
@@ -695,7 +705,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var queryString = GenerateQueryString();
 
-            //Change query string without redirect ( a little bit of a hack )
+            // Change query string without redirect ( a little bit of a hack )
             System.Reflection.PropertyInfo isreadonly = typeof( NameValueCollection ).GetProperty( "IsReadOnly", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic );
 
             if ( Request != null )

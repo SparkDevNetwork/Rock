@@ -1828,7 +1828,21 @@ function onTaskCompleted( resultData )
                             if ( communicationService != null && testCommunication != null )
                             {
                                 var testCommunicationId = testCommunication.Id;
-                                communicationService.Delete( testCommunication );
+                                var pushMediumEntityTypeGuid = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
+
+                                if ( testCommunication.GetMediums().Any( a => a.EntityType.Guid == pushMediumEntityTypeGuid ) )
+                                {
+                                    // We can't actually delete the test communication since if it is an
+                                    // action type of "Show Details" then they won't be able to view the
+                                    // communication on their device to see how it looks. Instead we switch
+                                    // the communication to be transient so the cleanup job will take care
+                                    // of it later.
+                                    testCommunication.Status = CommunicationStatus.Transient;
+                                }
+                                else
+                                {
+                                    communicationService.Delete( testCommunication );
+                                }
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication

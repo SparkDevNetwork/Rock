@@ -27,12 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for CommunicationResponse that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CommunicationResponseAttachment that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CommunicationResponseEntity
+    public partial class CommunicationResponseAttachmentEntity
     {
         /// <summary />
         public int Id { get; set; }
+
+        /// <summary />
+        public int BinaryFileId { get; set; }
+
+        /// <summary />
+        public int CommunicationResponseId { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationType { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -40,37 +49,10 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public int? FromPersonAliasId { get; set; }
-
-        /// <summary />
-        public bool IsRead { get; set; }
-
-        /// <summary />
-        public string MessageKey { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
-
-        /// <summary />
-        public int? RelatedCommunicationId { get; set; }
-
-        /// <summary />
-        public int RelatedMediumEntityTypeId { get; set; }
-
-        /// <summary />
-        public int? RelatedSmsFromDefinedValueId { get; set; }
-
-        /// <summary />
-        public int RelatedTransportEntityTypeId { get; set; }
-
-        /// <summary />
-        public string Response { get; set; }
-
-        /// <summary />
-        public int? ToPersonAliasId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -99,24 +81,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source CommunicationResponse object
+        /// Copies the base properties from a source CommunicationResponseAttachment object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( CommunicationResponse source )
+        public void CopyPropertiesFrom( CommunicationResponseAttachment source )
         {
             this.Id = source.Id;
+            this.BinaryFileId = source.BinaryFileId;
+            this.CommunicationResponseId = source.CommunicationResponseId;
+            this.CommunicationType = source.CommunicationType;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.FromPersonAliasId = source.FromPersonAliasId;
-            this.IsRead = source.IsRead;
-            this.MessageKey = source.MessageKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.RelatedCommunicationId = source.RelatedCommunicationId;
-            this.RelatedMediumEntityTypeId = source.RelatedMediumEntityTypeId;
-            this.RelatedSmsFromDefinedValueId = source.RelatedSmsFromDefinedValueId;
-            this.RelatedTransportEntityTypeId = source.RelatedTransportEntityTypeId;
-            this.Response = source.Response;
-            this.ToPersonAliasId = source.ToPersonAliasId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -128,13 +104,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for CommunicationResponse that includes all the fields that are available for GETs. Use this for GETs (use CommunicationResponseEntity for POST/PUTs)
+    /// Client model for CommunicationResponseAttachment that includes all the fields that are available for GETs. Use this for GETs (use CommunicationResponseAttachmentEntity for POST/PUTs)
     /// </summary>
-    public partial class CommunicationResponse : CommunicationResponseEntity
+    public partial class CommunicationResponseAttachment : CommunicationResponseAttachmentEntity
     {
-        /// <summary />
-        public ICollection<CommunicationResponseAttachment> Attachments { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
