@@ -349,7 +349,7 @@ function onTaskCompleted( resultData )
                     Dictionary<string, string> qryParams = new Dictionary<string, string>();
                     if ( hfCommunicationId.Value != "0" )
                     {
-                        qryParams.Add( "CommunicationId", hfCommunicationId.Value );
+                        qryParams.Add( PageParameterKey.CommunicationId, hfCommunicationId.Value );
                     }
 
                     this.NavigateToCurrentPageReference( qryParams );
