@@ -19,7 +19,7 @@ import { defineComponent, inject, PropType } from 'vue';
 import { DropDownListOption } from '../../../Elements/DropDownList';
 import RadioButtonList from '../../../Elements/RadioButtonList';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
-import { RegistrantInfo } from '../RegistrationEntry';
+import { RegistrantInfo, RegistrationFieldSource } from '../RegistrationEntry';
 import NumberFilter from '../../../Filters/Number';
 import StringFilter from '../../../Filters/String';
 import RockButton from '../../../Elements/RockButton';
@@ -28,13 +28,20 @@ import RegistrationInstance from '../../../ViewModels/CodeGenerated/Registration
 import RegistrationTemplate from '../../../ViewModels/CodeGenerated/RegistrationTemplateViewModel';
 import RegistrationTemplateForm from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormViewModel';
 import ProgressBar from '../../../Elements/ProgressBar';
+import RegistrantPersonField from './RegistrantPersonField';
+import RegistrantAttributeField from './RegistrantAttributeField';
+import RegistrationTemplateFormField from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormFieldViewModel';
+import Alert from '../../../Elements/Alert';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
     components: {
         RadioButtonList,
         RockButton,
-        ProgressBar
+        ProgressBar,
+        RegistrantPersonField,
+        RegistrantAttributeField,
+        Alert
     },
     setup() {
         return {
@@ -55,10 +62,23 @@ export default defineComponent({
             currentFormIndex: 0,
             registrationInstance: this.configurationValues['registrationInstance'] as RegistrationInstance | null,
             registrationTemplate: this.configurationValues['registrationTemplate'] as RegistrationTemplate | null,
-            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[]
+            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[],
+            registrationTemplateFormFields: (this.configurationValues['registrationTemplateFormFields'] || []) as RegistrationTemplateFormField[],
+            fieldSources: {
+                PersonField: RegistrationFieldSource.PersonField,
+                PersonAttribute: RegistrationFieldSource.PersonAttribute,
+                GroupMemberAttribute: RegistrationFieldSource.GroupMemberAttribute,
+                RegistrantAttribute: RegistrationFieldSource.RegistrantAttribute
+            }
         };
     },
     computed: {
+        currentFormId(): number {
+            return this.registrationTemplateForms[this.currentFormIndex]?.Id || 0;
+        },
+        currentFormFields(): RegistrationTemplateFormField[] {
+            return this.registrationTemplateFormFields.filter(f => f.RegistrationTemplateFormId === this.currentFormId);
+        },
         formCountPerRegistrant(): number {
             return this.registrationTemplateForms.length;
         },
@@ -163,9 +183,16 @@ export default defineComponent({
 <div class="registrationentry-registrant">
     <h1>{{currentRegistrantTitle}}</h1>
     <ProgressBar :percent="completionPercentInt" />
-    <div class="well js-registration-same-family">
+    <div v-if="possibleFamilyMembers && possibleFamilyMembers.length > 1" class="well js-registration-same-family">
         <RadioButtonList label="Individual is in the same immediate family as" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" />
     </div>
+
+    <template v-for="field in currentFormFields" :key="field.Guid">
+        <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" />
+        <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" />
+        <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
+    </template>
+
     <div class="actions">
         <RockButton btnType="default" @click="onPrevious">
             Previous

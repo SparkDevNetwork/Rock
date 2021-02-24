@@ -86,5 +86,19 @@ namespace Rock.ViewModel
                 QualifierValues = attributeCache.QualifierValues;
             }
         }
+
+        /// <summary>
+        /// Creates a view model from the specified cache.
+        /// </summary>
+        /// <param name="cache">The cache.</param>
+        /// <param name="currentPerson" >The current person.</param>
+        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public static AttributeViewModel From( AttributeCache cache, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var viewModel = new AttributeViewModel();
+            viewModel.SetPropertiesFrom( cache, currentPerson, loadAttributes );
+            return viewModel;
+        }
     }
 }

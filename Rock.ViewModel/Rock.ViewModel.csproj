@@ -49,6 +49,7 @@
     <Compile Include="CodeGenerated\DefinedValueViewModel.cs" />
     <Compile Include="CodeGenerated\GroupViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationInstanceViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFormFieldViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFormViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateViewModel.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />

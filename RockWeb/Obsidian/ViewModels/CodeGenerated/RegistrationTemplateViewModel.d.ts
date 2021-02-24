@@ -30,7 +30,6 @@ export default interface RegistrationTemplate extends Entity {
     Id: number;
     AddPersonNote: boolean;
     AllowExternalRegistrationUpdates: boolean;
-    AllowGroupPlacement: boolean;
     AllowMultipleRegistrants: boolean;
     Attributes: Record<string, AttributeValue> | null;
     BatchNamePrefix: string | null;

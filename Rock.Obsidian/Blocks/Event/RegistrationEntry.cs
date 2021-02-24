@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -22,6 +23,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Obsidian.Blocks.Event
 {
@@ -61,7 +63,7 @@ namespace Rock.Obsidian.Blocks.Event
                 var now = RockDateTime.Now;
 
                 var registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate.Fees,RegistrationTemplate.Discounts" )
+                    .Queryable( "RegistrationTemplate.Forms.Fields" )
                     .AsNoTracking()
                     .Where( r =>
                         r.Id == registrationInstanceId &&
@@ -73,12 +75,17 @@ namespace Rock.Obsidian.Blocks.Event
                     .FirstOrDefault();
 
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
+                var forms = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+                var fields = forms.SelectMany( f => f.Fields ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFormField>();
+                var fieldAttributes = fields.Select( f => AttributeCache.Get( f.AttributeId ?? 0 ) ).Where( a => a != null ).ToList();
 
                 return new
                 {
                     registrationInstance = RegistrationInstanceViewModel.From( registrationInstance, currentPerson, false ),
                     registrationTemplate = RegistrationTemplateViewModel.From( registrationTemplate, currentPerson, false ),
-                    registrationTemplateForms = registrationTemplate?.Forms?.Select( f => RegistrationTemplateFormViewModel.From( f, currentPerson, false ) )
+                    registrationTemplateForms = forms.Select( f => RegistrationTemplateFormViewModel.From( f, currentPerson, false ) ),
+                    registrationTemplateFormFields = fields.Select( f => RegistrationTemplateFormFieldViewModel.From( f, currentPerson, false ) ),
+                    fieldAttributes = fieldAttributes.Select( a => AttributeViewModel.From( a, currentPerson, false ) )
                 };
             }
         }

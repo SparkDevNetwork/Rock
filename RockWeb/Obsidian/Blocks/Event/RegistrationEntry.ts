@@ -32,6 +32,31 @@ export type RegistrantInfo = {
     FamilyGuid: Guid | null
 };
 
+export enum RegistrationPersonFieldType {
+    FirstName = 0,
+    LastName = 1,
+    Campus = 2,
+    Address = 3,
+    Email = 4,
+    Birthdate = 5,
+    Gender = 6,
+    MaritalStatus = 7,
+    MobilePhone = 8,
+    HomePhone = 9,
+    WorkPhone = 10,
+    Grade = 11,
+    ConnectionStatus = 12,
+    MiddleName = 13,
+    AnniversaryDate = 14
+}
+
+export enum RegistrationFieldSource {
+    PersonField = 0,
+    PersonAttribute = 1,
+    GroupMemberAttribute = 2,
+    RegistrantAttribute = 4
+}
+
 export default defineComponent({
     name: 'Event.RegistrationEntry',
     components: {

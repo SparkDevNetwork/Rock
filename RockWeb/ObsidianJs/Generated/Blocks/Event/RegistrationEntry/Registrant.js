@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/Number", "../../../Filters/String", "../../../Elements/RockButton", "../../../Elements/ProgressBar"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEntry", "../../../Filters/Number", "../../../Filters/String", "../../../Elements/RockButton", "../../../Elements/ProgressBar", "./RegistrantPersonField", "./RegistrantAttributeField", "../../../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RadioButtonList_1, Number_1, String_1, RockButton_1, ProgressBar_1;
+    var vue_1, RadioButtonList_1, RegistrationEntry_1, Number_1, String_1, RockButton_1, ProgressBar_1, RegistrantPersonField_1, RegistrantAttributeField_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,6 +25,9 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/N
             },
             function (RadioButtonList_1_1) {
                 RadioButtonList_1 = RadioButtonList_1_1;
+            },
+            function (RegistrationEntry_1_1) {
+                RegistrationEntry_1 = RegistrationEntry_1_1;
             },
             function (Number_1_1) {
                 Number_1 = Number_1_1;
@@ -37,6 +40,15 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/N
             },
             function (ProgressBar_1_1) {
                 ProgressBar_1 = ProgressBar_1_1;
+            },
+            function (RegistrantPersonField_1_1) {
+                RegistrantPersonField_1 = RegistrantPersonField_1_1;
+            },
+            function (RegistrantAttributeField_1_1) {
+                RegistrantAttributeField_1 = RegistrantAttributeField_1_1;
+            },
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             }
         ],
         execute: function () {
@@ -45,7 +57,10 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/N
                 components: {
                     RadioButtonList: RadioButtonList_1.default,
                     RockButton: RockButton_1.default,
-                    ProgressBar: ProgressBar_1.default
+                    ProgressBar: ProgressBar_1.default,
+                    RegistrantPersonField: RegistrantPersonField_1.default,
+                    RegistrantAttributeField: RegistrantAttributeField_1.default,
+                    Alert: Alert_1.default
                 },
                 setup: function () {
                     return {
@@ -66,10 +81,25 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/N
                         currentFormIndex: 0,
                         registrationInstance: this.configurationValues['registrationInstance'],
                         registrationTemplate: this.configurationValues['registrationTemplate'],
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || [])
+                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []),
+                        registrationTemplateFormFields: (this.configurationValues['registrationTemplateFormFields'] || []),
+                        fieldSources: {
+                            PersonField: RegistrationEntry_1.RegistrationFieldSource.PersonField,
+                            PersonAttribute: RegistrationEntry_1.RegistrationFieldSource.PersonAttribute,
+                            GroupMemberAttribute: RegistrationEntry_1.RegistrationFieldSource.GroupMemberAttribute,
+                            RegistrantAttribute: RegistrationEntry_1.RegistrationFieldSource.RegistrantAttribute
+                        }
                     };
                 },
                 computed: {
+                    currentFormId: function () {
+                        var _a;
+                        return ((_a = this.registrationTemplateForms[this.currentFormIndex]) === null || _a === void 0 ? void 0 : _a.Id) || 0;
+                    },
+                    currentFormFields: function () {
+                        var _this = this;
+                        return this.registrationTemplateFormFields.filter(function (f) { return f.RegistrationTemplateFormId === _this.currentFormId; });
+                    },
                     formCountPerRegistrant: function () {
                         return this.registrationTemplateForms.length;
                     },
@@ -160,7 +190,7 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/N
                         }
                     }
                 },
-                template: "\n<div class=\"registrationentry-registrant\">\n    <h1>{{currentRegistrantTitle}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n    <div class=\"well js-registration-same-family\">\n        <RadioButtonList label=\"Individual is in the same immediate family as\" rules=\"required\" v-model=\"selectedFamily\" :options=\"possibleFamilyMembers\" />\n    </div>\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>\n"
+                template: "\n<div class=\"registrationentry-registrant\">\n    <h1>{{currentRegistrantTitle}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n    <div v-if=\"possibleFamilyMembers && possibleFamilyMembers.length > 1\" class=\"well js-registration-same-family\">\n        <RadioButtonList label=\"Individual is in the same immediate family as\" rules=\"required\" v-model=\"selectedFamily\" :options=\"possibleFamilyMembers\" />\n    </div>\n\n    <template v-for=\"field in currentFormFields\" :key=\"field.Guid\">\n        <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" />\n        <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" />\n        <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n    </template>\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>\n"
             }));
         }
     };

@@ -16,7 +16,7 @@
 //
 System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrant", "./RegistrationEntry/Registration", "./RegistrationEntry/Summary"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Intro_1, Registrant_1, Registration_1, Summary_1;
+    var vue_1, RockButton_1, Intro_1, Registrant_1, Registration_1, Summary_1, RegistrationPersonFieldType, RegistrationFieldSource;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -40,6 +40,31 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
             }
         ],
         execute: function () {
+            (function (RegistrationPersonFieldType) {
+                RegistrationPersonFieldType[RegistrationPersonFieldType["FirstName"] = 0] = "FirstName";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["LastName"] = 1] = "LastName";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Campus"] = 2] = "Campus";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Address"] = 3] = "Address";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Email"] = 4] = "Email";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Birthdate"] = 5] = "Birthdate";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Gender"] = 6] = "Gender";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["MaritalStatus"] = 7] = "MaritalStatus";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["MobilePhone"] = 8] = "MobilePhone";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["HomePhone"] = 9] = "HomePhone";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["WorkPhone"] = 10] = "WorkPhone";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["Grade"] = 11] = "Grade";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["ConnectionStatus"] = 12] = "ConnectionStatus";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["MiddleName"] = 13] = "MiddleName";
+                RegistrationPersonFieldType[RegistrationPersonFieldType["AnniversaryDate"] = 14] = "AnniversaryDate";
+            })(RegistrationPersonFieldType || (RegistrationPersonFieldType = {}));
+            exports_1("RegistrationPersonFieldType", RegistrationPersonFieldType);
+            (function (RegistrationFieldSource) {
+                RegistrationFieldSource[RegistrationFieldSource["PersonField"] = 0] = "PersonField";
+                RegistrationFieldSource[RegistrationFieldSource["PersonAttribute"] = 1] = "PersonAttribute";
+                RegistrationFieldSource[RegistrationFieldSource["GroupMemberAttribute"] = 2] = "GroupMemberAttribute";
+                RegistrationFieldSource[RegistrationFieldSource["RegistrantAttribute"] = 4] = "RegistrantAttribute";
+            })(RegistrationFieldSource || (RegistrationFieldSource = {}));
+            exports_1("RegistrationFieldSource", RegistrationFieldSource);
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry',
                 components: {

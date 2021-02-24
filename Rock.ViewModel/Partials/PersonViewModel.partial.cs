@@ -67,6 +67,10 @@ namespace Rock.ViewModel
                 {
                     PrimaryFamilyGuid = person.PrimaryFamily.Guid;
                 }
+                else
+                {
+                    PrimaryFamilyGuid = person.GetFamily()?.Guid;
+                }
             }
         }
     }
