@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             StepId = model.StepId;
             StepWorkflowTriggerId = model.StepWorkflowTriggerId;
             WorkflowId = model.WorkflowId;

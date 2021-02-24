@@ -208,6 +208,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ApprovedByPersonAliasId = model.ApprovedByPersonAliasId;
             ApprovedDateTime = model.ApprovedDateTime;
             Content = model.Content;

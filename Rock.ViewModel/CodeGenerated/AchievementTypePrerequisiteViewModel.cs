@@ -112,6 +112,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AchievementTypeId = model.AchievementTypeId;
             PrerequisiteAchievementTypeId = model.PrerequisiteAchievementTypeId;
             CreatedDateTime = model.CreatedDateTime;

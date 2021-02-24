@@ -200,6 +200,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             CurrentStreakCount = model.CurrentStreakCount;
             CurrentStreakStartDate = model.CurrentStreakStartDate;
             EngagementCount = model.EngagementCount;

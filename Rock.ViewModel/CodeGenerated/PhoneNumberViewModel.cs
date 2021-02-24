@@ -176,6 +176,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             CountryCode = model.CountryCode;
             Description = model.Description;
             Extension = model.Extension;

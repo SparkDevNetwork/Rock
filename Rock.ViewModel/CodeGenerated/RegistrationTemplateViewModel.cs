@@ -528,6 +528,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AddPersonNote = model.AddPersonNote;
             AllowExternalRegistrationUpdates = model.AllowExternalRegistrationUpdates;
             AllowMultipleRegistrants = model.AllowMultipleRegistrants;

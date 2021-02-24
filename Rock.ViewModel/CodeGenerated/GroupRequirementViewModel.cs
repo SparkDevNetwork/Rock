@@ -136,6 +136,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             GroupId = model.GroupId;
             GroupRequirementTypeId = model.GroupRequirementTypeId;
             GroupRoleId = model.GroupRoleId;

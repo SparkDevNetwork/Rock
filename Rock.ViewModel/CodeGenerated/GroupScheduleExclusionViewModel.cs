@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             EndDate = model.EndDate;
             GroupTypeId = model.GroupTypeId;
             StartDate = model.StartDate;

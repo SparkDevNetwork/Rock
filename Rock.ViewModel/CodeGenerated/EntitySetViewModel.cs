@@ -152,6 +152,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             EntitySetPurposeValueId = model.EntitySetPurposeValueId;
             EntityTypeId = model.EntityTypeId;
             ExpireDateTime = model.ExpireDateTime;

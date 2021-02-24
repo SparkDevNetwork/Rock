@@ -336,6 +336,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AdditionalSettings = model.AdditionalSettings;
             AllowIndexing = model.AllowIndexing;
             BodyCssClass = model.BodyCssClass;

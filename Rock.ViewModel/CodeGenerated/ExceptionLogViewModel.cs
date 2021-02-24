@@ -208,6 +208,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             Cookies = model.Cookies;
             Description = model.Description;
             ExceptionType = model.ExceptionType;

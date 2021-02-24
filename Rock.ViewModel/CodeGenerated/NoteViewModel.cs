@@ -224,6 +224,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ApprovalsSent = model.ApprovalsSent;
             ApprovalStatus = ( int ) model.ApprovalStatus;
             ApprovedByPersonAliasId = model.ApprovedByPersonAliasId;

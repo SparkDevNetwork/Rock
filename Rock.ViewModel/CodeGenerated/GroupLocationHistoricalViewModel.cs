@@ -176,6 +176,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             CurrentRowIndicator = model.CurrentRowIndicator;
             EffectiveDateTime = model.EffectiveDateTime;
             ExpireDateTime = model.ExpireDateTime;

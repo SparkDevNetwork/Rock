@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             MigrationName = model.MigrationName;
             MigrationNumber = model.MigrationNumber;
             PluginAssemblyName = model.PluginAssemblyName;

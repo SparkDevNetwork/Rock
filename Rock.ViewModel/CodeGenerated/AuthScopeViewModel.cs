@@ -128,6 +128,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             IsActive = model.IsActive;
             IsSystem = model.IsSystem;
             Name = model.Name;

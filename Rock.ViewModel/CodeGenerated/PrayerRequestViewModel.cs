@@ -256,6 +256,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AllowComments = model.AllowComments;
             Answer = model.Answer;
             ApprovedByPersonAliasId = model.ApprovedByPersonAliasId;

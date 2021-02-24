@@ -520,6 +520,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AdministratorTerm = model.AdministratorTerm;
             AllowAnyChildGroupType = model.AllowAnyChildGroupType;
             AllowedScheduleTypes = ( int ) model.AllowedScheduleTypes;

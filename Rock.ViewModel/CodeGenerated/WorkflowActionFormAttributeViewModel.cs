@@ -168,6 +168,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AttributeId = model.AttributeId;
             HideLabel = model.HideLabel;
             IsReadOnly = model.IsReadOnly;

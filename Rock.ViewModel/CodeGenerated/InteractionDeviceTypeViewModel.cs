@@ -136,6 +136,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             Application = model.Application;
             ClientType = model.ClientType;
             DeviceTypeData = model.DeviceTypeData;

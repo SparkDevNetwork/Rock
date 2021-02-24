@@ -312,6 +312,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             BCCEmails = model.BCCEmails;
             CategoryId = model.CategoryId;
             CCEmails = model.CCEmails;

@@ -320,6 +320,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AssessorParcelId = model.AssessorParcelId;
             Barcode = model.Barcode;
             City = model.City;

@@ -144,6 +144,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ServiceJobId = model.ServiceJobId;
             ServiceWorker = model.ServiceWorker;
             StartDateTime = model.StartDateTime;

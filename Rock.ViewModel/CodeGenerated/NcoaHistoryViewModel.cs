@@ -304,6 +304,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AddressInvalidReason = ( int ) model.AddressInvalidReason;
             AddressStatus = ( int ) model.AddressStatus;
             FamilyId = model.FamilyId;

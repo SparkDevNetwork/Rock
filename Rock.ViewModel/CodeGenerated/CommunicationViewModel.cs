@@ -376,6 +376,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AdditionalMergeFieldsJson = model.AdditionalMergeFieldsJson;
             BCCEmails = model.BCCEmails;
             CCEmails = model.CCEmails;

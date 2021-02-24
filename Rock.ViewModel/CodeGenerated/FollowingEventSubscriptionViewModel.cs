@@ -112,6 +112,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             EventTypeId = model.EventTypeId;
             PersonAliasId = model.PersonAliasId;
             CreatedDateTime = model.CreatedDateTime;

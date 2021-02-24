@@ -168,6 +168,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AllowedClaims = model.AllowedClaims;
             AllowedScopes = model.AllowedScopes;
             AllowUserApiAccess = model.AllowUserApiAccess;

@@ -176,6 +176,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             Description = model.Description;
             EntityNotificationFormatLava = model.EntityNotificationFormatLava;
             EntityTypeId = model.EntityTypeId;

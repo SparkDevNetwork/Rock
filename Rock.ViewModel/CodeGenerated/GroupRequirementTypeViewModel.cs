@@ -200,6 +200,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             CanExpire = model.CanExpire;
             CheckboxLabel = model.CheckboxLabel;
             DataViewId = model.DataViewId;

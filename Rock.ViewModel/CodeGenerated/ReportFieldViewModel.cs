@@ -184,6 +184,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ColumnHeaderText = model.ColumnHeaderText;
             ColumnOrder = model.ColumnOrder;
             DataSelectComponentEntityTypeId = model.DataSelectComponentEntityTypeId;

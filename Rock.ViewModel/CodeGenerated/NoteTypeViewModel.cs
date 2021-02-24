@@ -256,6 +256,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AllowsAttachments = model.AllowsAttachments;
             AllowsReplies = model.AllowsReplies;
             AllowsWatching = model.AllowsWatching;

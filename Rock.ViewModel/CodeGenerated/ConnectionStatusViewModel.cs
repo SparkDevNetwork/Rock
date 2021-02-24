@@ -168,6 +168,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AutoInactivateState = model.AutoInactivateState;
             ConnectionTypeId = model.ConnectionTypeId;
             Description = model.Description;

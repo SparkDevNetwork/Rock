@@ -200,6 +200,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AdditionalSettings = model.AdditionalSettings;
             BlockTypeId = model.BlockTypeId;
             CssClass = model.CssClass;

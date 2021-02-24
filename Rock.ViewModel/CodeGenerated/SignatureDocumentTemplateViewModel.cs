@@ -144,6 +144,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             BinaryFileTypeId = model.BinaryFileTypeId;
             Description = model.Description;
             InviteSystemCommunicationId = model.InviteSystemCommunicationId;

@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             EntityId = model.EntityId;
             MetricPartitionId = model.MetricPartitionId;
             MetricValueId = model.MetricValueId;

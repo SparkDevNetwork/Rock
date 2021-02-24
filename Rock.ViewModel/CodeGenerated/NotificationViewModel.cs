@@ -136,6 +136,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             Classification = ( int ) model.Classification;
             IconCssClass = model.IconCssClass;
             Message = model.Message;

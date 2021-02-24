@@ -208,6 +208,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AttributeId = model.AttributeId;
             FieldSource = ( int ) model.FieldSource;
             FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON;

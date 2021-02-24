@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             EntityId = model.EntityId;
             EntityTypeId = model.EntityTypeId;
             PersonAliasId = model.PersonAliasId;

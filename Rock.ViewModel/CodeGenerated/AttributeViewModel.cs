@@ -296,6 +296,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AbbreviatedName = model.AbbreviatedName;
             AllowSearch = model.AllowSearch;
             DefaultValue = model.DefaultValue;

@@ -192,6 +192,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AssessmentPath = model.AssessmentPath;
             AssessmentResultsPath = model.AssessmentResultsPath;
             BadgeColor = model.BadgeColor;

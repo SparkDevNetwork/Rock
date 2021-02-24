@@ -160,6 +160,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AddUserAccountsDuringSync = model.AddUserAccountsDuringSync;
             ExitSystemCommunicationId = model.ExitSystemCommunicationId;
             GroupId = model.GroupId;

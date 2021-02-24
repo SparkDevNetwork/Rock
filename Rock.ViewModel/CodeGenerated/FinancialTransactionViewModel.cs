@@ -304,6 +304,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AuthorizedPersonAliasId = model.AuthorizedPersonAliasId;
             BatchId = model.BatchId;
             CheckMicrEncrypted = model.CheckMicrEncrypted;

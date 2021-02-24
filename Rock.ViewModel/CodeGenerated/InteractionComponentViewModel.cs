@@ -160,6 +160,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ChannelCustom1 = model.ChannelCustom1;
             ChannelCustom2 = model.ChannelCustom2;
             ChannelCustomIndexed1 = model.ChannelCustomIndexed1;

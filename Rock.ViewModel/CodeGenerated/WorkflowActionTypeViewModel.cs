@@ -176,6 +176,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ActivityTypeId = model.ActivityTypeId;
             CriteriaAttributeGuid = model.CriteriaAttributeGuid;
             CriteriaComparisonType = ( int ) model.CriteriaComparisonType;

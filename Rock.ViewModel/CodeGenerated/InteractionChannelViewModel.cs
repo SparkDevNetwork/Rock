@@ -296,6 +296,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ChannelData = model.ChannelData;
             ChannelDetailTemplate = model.ChannelDetailTemplate;
             ChannelEntityId = model.ChannelEntityId;

@@ -88,6 +88,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             Attendances = model.Attendances;
             ClientIpAddress = model.ClientIpAddress;
             DeviceId = model.DeviceId;

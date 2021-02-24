@@ -144,6 +144,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             GroupMemberId = model.GroupMemberId;
             GroupRequirementId = model.GroupRequirementId;
             LastRequirementCheckDateTime = model.LastRequirementCheckDateTime;

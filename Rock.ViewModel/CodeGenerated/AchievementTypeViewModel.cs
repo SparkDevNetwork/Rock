@@ -240,6 +240,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             AchievementFailureWorkflowTypeId = model.AchievementFailureWorkflowTypeId;
             AchievementIconCssClass = model.AchievementIconCssClass;
             AchievementStartWorkflowTypeId = model.AchievementStartWorkflowTypeId;

@@ -232,6 +232,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             CampusId = model.CampusId;
             CaseWorkerPersonAliasId = model.CaseWorkerPersonAliasId;
             CellPhoneNumber = model.CellPhoneNumber;

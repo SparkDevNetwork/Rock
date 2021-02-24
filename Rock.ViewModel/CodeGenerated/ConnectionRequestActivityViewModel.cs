@@ -136,6 +136,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ConnectionActivityTypeId = model.ConnectionActivityTypeId;
             ConnectionOpportunityId = model.ConnectionOpportunityId;
             ConnectionRequestId = model.ConnectionRequestId;

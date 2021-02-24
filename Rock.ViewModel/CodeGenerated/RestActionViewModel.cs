@@ -136,6 +136,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             ApiId = model.ApiId;
             CacheControlHeaderSettings = model.CacheControlHeaderSettings;
             ControllerId = model.ControllerId;

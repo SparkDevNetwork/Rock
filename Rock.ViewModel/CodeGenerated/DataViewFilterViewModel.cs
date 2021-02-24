@@ -144,6 +144,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             DataViewId = model.DataViewId;
             EntityTypeId = model.EntityTypeId;
             ExpressionType = ( int ) model.ExpressionType;

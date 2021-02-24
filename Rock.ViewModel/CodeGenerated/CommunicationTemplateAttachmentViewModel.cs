@@ -120,6 +120,8 @@ namespace Rock.ViewModel
                     kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
             }
 
+            Id = model.Id;
+            Guid = model.Guid;
             BinaryFileId = model.BinaryFileId;
             CommunicationTemplateId = model.CommunicationTemplateId;
             CommunicationType = ( int ) model.CommunicationType;
