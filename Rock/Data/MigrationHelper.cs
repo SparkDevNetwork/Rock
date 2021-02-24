@@ -91,6 +91,18 @@ namespace Rock.Data
         /// <param name="guid">The GUID.</param>
         public void UpdateEntityType( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
         {
+             /* 
+                02/23/2021 MDP, NA
+
+                In this script, we put the AttributeIds into a @attributeIds table variable, then use that for the UPDATE
+                SQL. We were finding that this fixes a performance issue cause by the SQL optimizer choosing
+                to use the IX_FieldTypeId Index on Attribute, but doing a Full Table Scan on AttributeValue.
+
+                Putting the AttributeIds into the table variable helped the SQL optimizer to use the IX_AttributeId index
+                on AttributeValue instead of doing the Full Table Scan. 
+             */
+
+
             Migration.Sql( string.Format( @"
 
                 DECLARE @Guid uniqueidentifier
@@ -119,19 +131,27 @@ namespace Rock.Data
 	                DECLARE @ComponentsFieldTypeId int = ( SELECT TOP 1 [Id] FROM [FieldType] WHERE [Class] = 'Rock.Field.Types.ComponentsFieldType' )
                     DECLARE @OldGuidString nvarchar(50) = LOWER(CAST(@Guid AS nvarchar(50)))
 
-                    UPDATE V SET [Value] = REPLACE( LOWER([Value]), @OldGuidString, LOWER('{5}') )
-	                FROM [AttributeValue] V
-	                INNER JOIN [Attribute] A ON A.[Id] = V.[AttributeId]
-	                WHERE
-                        (
-                            A.[FieldTypeId] = @EntityTypeFieldTypeId OR
-                            A.[FieldTypeId] = @ComponentFieldTypeId	OR
-                            A.[FieldTypeId] = @ComponentsFieldTypeId
-                        ) AND
-                        Value IS NOT NULL AND
-                        Value != '' AND
-                        V.Value LIKE '%' + @OldGuidString + '%' -- short circuit unnecessary writes, which are slow because of indexes
-                    OPTION (RECOMPILE)
+                    IF @OldGuidString != LOWER('{5}')
+					BEGIN
+
+                        DECLARE @attributeIds TABLE (id INT)
+						INSERT INTO @attributeIds
+							SELECT Id
+							FROM [Attribute] A
+							WHERE (
+                                A.[FieldTypeId] = @EntityTypeFieldTypeId OR
+                                A.[FieldTypeId] = @ComponentFieldTypeId OR
+                                A.[FieldTypeId] = @ComponentsFieldTypeId
+                            )
+
+                        UPDATE V SET [Value] = REPLACE( LOWER([Value]), @OldGuidString, LOWER('{5}') )
+	                    FROM [AttributeValue] V
+                            WHERE v.[AttributeId] IN (select Id from @attributeIds) AND
+                            Value IS NOT NULL AND
+                            Value != '' AND
+                            V.Value LIKE '%' + @OldGuidString + '%' -- short circuit unnecessary writes, which are slow because of indexes
+                        OPTION (RECOMPILE)
+                    END
 
                 END
 ",
