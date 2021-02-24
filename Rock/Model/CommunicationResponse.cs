@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -162,6 +164,28 @@ namespace Rock.Model
         /// The related transport.
         /// </value>
         public virtual EntityType RelatedTransport { get; set; }
+
+        // <summary>
+        /// Gets or sets the attachments.
+        /// </summary>
+        /// <value>
+        /// The attachments.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationResponseAttachment> Attachments
+        {
+            get
+            {
+                return _attachments ?? ( _attachments = new Collection<CommunicationResponseAttachment>() );
+            }
+
+            set
+            {
+                _attachments = value;
+            }
+        }
+
+        private ICollection<CommunicationResponseAttachment> _attachments;
 
         #endregion Virtual Properties
 
