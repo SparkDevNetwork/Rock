@@ -93,4 +93,9 @@
 
 	</div>
 
+    <script>
+        Sys.Application.add_load(function() {
+            Rock.controls.priorityNav.initialize({controlId: 'zone-subnavigation'})
+        });
+    </script>
 </asp:Content>
