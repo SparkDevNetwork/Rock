@@ -18,7 +18,10 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Web;
+
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -150,6 +153,43 @@ namespace Rock.Model
                     binaryFile.DatabaseData.Content = content;
                 }
 
+                return binaryFile;
+            }
+        }
+
+        /// <summary>
+        /// Adds the file from stream. This method will save the current context.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <param name="contentLength">Length of the content.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
+        /// <param name="imageGuid">The image unique identifier.</param>
+        /// <returns></returns>
+        public BinaryFile AddFileFromStream( Stream stream, string mimeType, long contentLength, string fileName, string binaryFileTypeGuid, Guid? imageGuid )
+        {
+            int? binaryFileTypeId = Rock.Web.Cache.BinaryFileTypeCache.GetId( binaryFileTypeGuid.AsGuid() );
+
+            imageGuid = imageGuid == null || imageGuid == Guid.Empty ? Guid.NewGuid() : imageGuid;
+            var rockContext = ( RockContext ) this.Context;
+            using (var memoryStream = new System.IO.MemoryStream() )
+            {
+                stream.CopyTo( memoryStream );
+                var binaryFile = new BinaryFile
+                {
+                    IsTemporary = false,
+                    BinaryFileTypeId = binaryFileTypeId,
+                    MimeType = mimeType,
+                    FileName = fileName,
+                    FileSize = contentLength,
+                    ContentStream = memoryStream,
+                    Guid = imageGuid.Value
+                };
+
+                var binaryFileService = new BinaryFileService( rockContext );
+                binaryFileService.Add( binaryFile );
+                rockContext.SaveChanges();
                 return binaryFile;
             }
         }
