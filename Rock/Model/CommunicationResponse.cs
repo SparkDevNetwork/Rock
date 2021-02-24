@@ -165,7 +165,7 @@ namespace Rock.Model
         /// </value>
         public virtual EntityType RelatedTransport { get; set; }
 
-        // <summary>
+        /// <summary>
         /// Gets or sets the attachments.
         /// </summary>
         /// <value>
@@ -186,7 +186,6 @@ namespace Rock.Model
         }
 
         private ICollection<CommunicationResponseAttachment> _attachments;
-
         #endregion Virtual Properties
 
         #region Public Methods
@@ -216,9 +215,7 @@ namespace Rock.Model
             this.HasOptional( c => c.RelatedCommunication ).WithMany().HasForeignKey( c => c.RelatedCommunicationId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedMedium ).WithMany().HasForeignKey( c => c.RelatedMediumEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( c => c.RelatedTransport ).WithMany().HasForeignKey( c => c.RelatedTransportEntityTypeId ).WillCascadeOnDelete( false );
-
         }
-
     }
     #endregion Entity Configuration
 

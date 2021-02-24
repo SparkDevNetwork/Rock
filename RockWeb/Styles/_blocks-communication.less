@@ -302,9 +302,15 @@ iframe.email-body {
       border: 0;
     }
 
-    a {
+    .send-button {
       position: absolute;
       right: 12px;
+      bottom: 10px;
+    }
+
+    .image-button {
+      position: absolute;
+      right: 84px;
       bottom: 10px;
     }
   }
@@ -341,10 +347,22 @@ iframe.email-body {
       transform: translateX(103%);
       will-change: transform;
     }
+
+    .sms-image-uploader {
+      width: 106px;
+      margin: 0 auto;
+      position: relative
+    }
+
+    .sms-image-uploader-background {
+      width: 25%;
+      background-color: #f3f3f3;
+    }
   }
 
   .conversation-back {
     display: none;
+
     @media (max-width: 599px) {
       display: block;
     }
@@ -379,7 +397,6 @@ iframe.email-body {
     -webkit-align-items: flex-start;
     align-items: flex-start;
     -webkit-box-orient: vertical;
-
     -webkit-box-align: start;
 
     &.outbound {
@@ -426,6 +443,11 @@ iframe.email-body {
 
     &.inbound .sender-name {
       display: none;
+    }
+
+    .sms-image {
+      border-radius: 10px;
+      padding-top: 5px;
     }
   }
 }

@@ -91,6 +91,7 @@
                                             <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
                                             <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
                                             <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
+                                            <div id="divCommicationAttachments" runat="server"><asp:Literal ID="lSMSAttachments" runat="server" /></div>
                                             <div class="message-meta">
                                                 <span class="sender-name"><asp:Literal ID="lSenderName" runat="server" /></span>
                                                 <asp:Label ID="lblMessageDateTime" runat="server" CssClass="date" />
@@ -102,11 +103,17 @@
                                     </FooterTemplate>
                                 </asp:Repeater>
                             </div>
+                            <div class="js-send-image sms-image-uploader-background pull-right" style="display: none;">
+                                <asp:LinkButton ID="lbDismiss" runat="server" CssClass="btn btn-lg pull-right" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-times"></i></asp:LinkButton>
+                                <div class="sms-image-uploader">
+                                    <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
+                                </div>
+                            </div>
                         </div>
-
                         <div class="footer">
                             <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
-                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
+                            <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default btn-md image-button btn-square pull-right" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
+                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
                         </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>
@@ -167,6 +174,9 @@
 
                 <%-- multi-line textbox --%>
                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+
+                <%-- image uploader --%>
+                <Rock:ImageUploader ID="ImageUploaderModal" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
             </Content>
         </Rock:ModalDialog>
 
