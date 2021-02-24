@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Finance
                 cblAlertType.SetValues( alertTypeValue.Split( ';' ).ToList() );
             }
 
-            // don't show the person picker if the the current context is already a specific person
+            // Don't show the person picker if the the current context is already a specific person.
             if ( GetPerson() != null )
             {
                 ppPerson.Visible = false;
