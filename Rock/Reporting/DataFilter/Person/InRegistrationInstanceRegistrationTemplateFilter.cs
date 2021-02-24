@@ -311,22 +311,17 @@ namespace Rock.Reporting.DataFilter.Person
             if ( selectionValues.Length >= 1 )
             {
                 List<Guid> registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
-                var registrationInstanceService = new RegistrationInstanceService( (RockContext)serviceInstance.Context );
+                var registrationInstanceService = new RegistrationInstanceService( ( RockContext ) serviceInstance.Context );
                 var registrationInstanceIds = registrationInstanceService.Queryable().Where( ri => registrationTemplateGuids.Contains( ri.RegistrationTemplate.Guid ) ).Select( ri => ri.Id ).Distinct().ToList();
 
-                RegistrationRegistrantService registrationRegistrantService = new RegistrationRegistrantService( (RockContext)serviceInstance.Context );
+                RegistrationRegistrantService registrationRegistrantService = new RegistrationRegistrantService( ( RockContext ) serviceInstance.Context );
 
 
                 bool includeInactiveRegistrationInstances = false;
 
                 if ( selectionValues.Length >= 2 )
                 {
-                    includeInactiveRegistrationInstances = selectionValues[1].AsBooleanOrNull() ?? true; ;
-                }
-                else
-                {
-                    // if options where saved before this option was added, set to false, even though it would have included inactive before
-                    includeInactiveRegistrationInstances = false;
+                    includeInactiveRegistrationInstances = selectionValues[1].AsBooleanOrNull() ?? true;
                 }
 
                 var registrationRegistrantServiceQry = registrationRegistrantService.Queryable();
@@ -334,6 +329,11 @@ namespace Rock.Reporting.DataFilter.Person
                 if ( registrationTemplateGuids.Count > 0 )
                 {
                     registrationRegistrantServiceQry = registrationRegistrantServiceQry.Where( xx => registrationInstanceIds.Contains( xx.Registration.RegistrationInstanceId ) );
+                }
+
+                if ( !includeInactiveRegistrationInstances )
+                {
+                    registrationRegistrantServiceQry = registrationRegistrantServiceQry.Where( xx => xx.Registration.RegistrationInstance.IsActive );
                 }
 
                 if ( selectionValues.Length >= 3 )
@@ -351,7 +351,7 @@ namespace Rock.Reporting.DataFilter.Person
                     }
                 }
 
-                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => registrationRegistrantServiceQry.Any( xx => xx.PersonAlias.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

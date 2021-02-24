@@ -1077,14 +1077,11 @@ namespace RockWeb.Blocks.Connection
                 connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
+            bool isNew = false;
             if ( connectionStatus == null )
             {
                 connectionStatus = new ConnectionStatus();
-                /*
-                  SK - 22 Feb 2020
-                  Avoid removing and then adding Connection Type's Statuses on edit as it causes them to reorder
-                */
-                StatusesState.Add( connectionStatus );
+                isNew = true;
             }
 
             connectionStatus.Name = tbConnectionStatusName.Text;
@@ -1105,6 +1102,16 @@ namespace RockWeb.Blocks.Connection
             if ( !connectionStatus.IsValid )
             {
                 return;
+            }
+
+            
+            if ( isNew )
+            {
+               /*
+                 SK - 22 Feb 2020
+                 Avoid removing and then adding Connection Type's Statuses on edit as it causes them to reorder
+               */
+                StatusesState.Add( connectionStatus );
             }
 
             BindConnectionStatusesGrid();
