@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Communication
                 // Create and enqueue the communication
                 Rock.Communication.Medium.Sms.CreateCommunicationMobile( CurrentUser.Person, toPersonAliasId, message, fromPhone, responseCode, rockContext, photos );
                 ImageUploaderConversation.BinaryFileId = null;
-                
+
             }
         }
 
@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Communication
             {
                 lbPersonFilter.RemoveCssClass( "bg-warning" );
             }
-            
+
             LoadResponseListing( ppPersonFilter.PersonId );
         }
 
@@ -747,7 +747,7 @@ namespace RockWeb.Blocks.Communication
 
                     foreach ( var binaryFileGuid in communicationRecipientResponse.BinaryFileGuids )
                     {
-                        // Show the image thumnail by appending the html to lSMSMessage.Text
+                        // Show the image thumbnail by appending the html to lSMSMessage.Text
                         string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=100&height=100' class='img-responsive sms-image'></a>";
 
                         // If there is a text portion or previous image then drop down a line before appending the image element
