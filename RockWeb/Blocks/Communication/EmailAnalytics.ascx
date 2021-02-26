@@ -26,23 +26,21 @@
 
                 <div class="pull-right">
 
-                    <asp:HiddenField ID="hfSelectedMonthsDateRange" runat="server"  />
+                    <asp:HiddenField ID="hfSelectedMonthsDateRange" runat="server" />
                     <%-- If not specific communication(s) were selected, limit the date range --%>
                     <asp:Panel runat="server" ID="pnlSelectedMonthsDateRange" class="btn-group panel-toggle pull-right" Visible="false">
+                        <asp:LinkButton ID="btnDateRangeOneMonth" CssClass="btn btn-xs btn-primary" runat="server" Text="One Month" OnClick="btnDateRange_Click" />
                         <asp:LinkButton ID="btnDateRangeThreeMonths" CssClass="btn btn-xs btn-primary" runat="server" Text="Three Months" OnClick="btnDateRange_Click" />
                         <asp:LinkButton ID="btnDateRangeSixMonths" CssClass="btn btn-xs btn-primary" runat="server" Text="Six Months" OnClick="btnDateRange_Click" />
-                        <asp:LinkButton ID="btnDateRangeYear" CssClass="btn btn-xs btn-outline-primary" runat="server" Text="One Year" OnClick="btnDateRange_Click" />
                     </asp:Panel>
                 </div>
             </div>
 
-            <Rock:NotificationBox ID="nbConfigurationError" runat="server" NotificationBoxType="Danger" Text="" Visible="false" />
+            <Rock:NotificationBox ID="nbWarningMessage" runat="server" CssClass="margin-all-md" NotificationBoxType="Warning" Visible="false" />
 
-            <div class="panel-body">
+            <asp:Panel ID="pnlCharts" runat="server" class="panel-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
-
                         <%-- Main Opens/Clicks Line Chart --%>
                         <div class="chart-container">
                             <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
@@ -141,7 +139,7 @@
                     </asp:Repeater>
                 </asp:Panel>
 
-            </div>
+            </asp:Panel>
         </div>
 
         <script>
@@ -149,11 +147,10 @@
 
                 var chartSeriesColors = <%=this.SeriesColorsJSON%>;
 
-                var getSeriesColors = function(numberOfColors) {
+                var getSeriesColors = function (numberOfColors) {
 
                     var result = chartSeriesColors;
-                    while (result.length < numberOfColors)
-                    {
+                    while (result.length < numberOfColors) {
                         result = result.concat(chartSeriesColors);
                     }
 
@@ -209,8 +206,7 @@
                             labels: {
                                 filter: function (item, data) {
                                     // don't include the label if the dataset is hidden
-                                    if (data.datasets[item.datasetIndex].hidden)
-                                    {
+                                    if (data.datasets[item.datasetIndex].hidden) {
                                         return false;
                                     }
 
@@ -262,7 +258,7 @@
                         datasets: [{
                             type: 'pie',
                             data: pieChartDataOpenClicks,
-                            backgroundColor: ['#5DA5DA', '#60BD68','#FFBF2F'],
+                            backgroundColor: ['#5DA5DA', '#60BD68', '#FFBF2F'],
                         }],
                     }
                 });
@@ -283,7 +279,7 @@
                         cutoutPercentage: 50,
                         tooltips: {
                             callbacks: {
-                                label: function(tooltipItem, data) {
+                                label: function (tooltipItem, data) {
                                     var dataValue = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                                     var labelText = data.labels[tooltipItem.index];
                                     return labelText + ": " + dataValue + "%";
@@ -296,7 +292,7 @@
                         datasets: [{
                             type: 'doughnut',
                             data: pieChartDataClientCounts,
-                            backgroundColor:getSeriesColors(pieChartDataClientCounts.length)
+                            backgroundColor: getSeriesColors(pieChartDataClientCounts.length)
                         }],
                     }
                 });
