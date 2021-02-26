@@ -818,6 +818,17 @@ namespace Rock.Storage.AssetStorage
             string name = GetNameFromKey( response.Key );
             string uriKey = System.Web.HttpUtility.UrlPathEncode( response.Key );
 
+            /*
+                 2/24/2021 - NA
+
+                 The response.ResponseStream wrapper class appears to change based
+                 on file (perhaps the file size?) so in certain cases you cannot read
+                 the response.ResponseStream.Length. But, the response.ContentLength
+                 appears to *always* be available (and it matches the response.ResponseStream.Length
+                 when it was available during my tests).
+
+                 Reason: Amazon S3's Amazon.Runtime.Internal.Util.WrapperStream changes based on the file.
+            */
             return new Asset
             {
                 Name = name,
@@ -825,7 +836,7 @@ namespace Rock.Storage.AssetStorage
                 Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = GetAssetType( response.Key ),
                 IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified ) : GetFileTypeIcon( response.Key ),
-                FileSize = response.ResponseStream.Length,
+                FileSize = response.ContentLength,
                 LastModifiedDateTime = response.LastModified,
                 Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
                 AssetStream = response.ResponseStream

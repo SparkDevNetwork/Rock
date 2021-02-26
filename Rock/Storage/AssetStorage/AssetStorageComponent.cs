@@ -563,24 +563,32 @@ namespace Rock.Storage.AssetStorage
         {
             asset = GetObject( assetStorageProvider, asset, false );
 
-            using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
+            try
             {
-                if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+                using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
                 {
-                    // just save the svg to the thumbnail dir
-                    asset.AssetStream.CopyTo( resizedStream );
-                }
-                else
-                {
-                    using ( var origImageStream = new MemoryStream() )
+                    if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        asset.AssetStream.CopyTo( origImageStream );
-                        origImageStream.Position = 0;
-                        ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                        // just save the svg to the thumbnail dir
+                        asset.AssetStream.CopyTo( resizedStream );
                     }
-                }
+                    else
+                    {
+                        using ( var origImageStream = new MemoryStream() )
+                        {
+                            asset.AssetStream.CopyTo( origImageStream );
+                            origImageStream.Position = 0;
+                            ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                        }
+                    }
 
-                resizedStream.Flush();
+                    resizedStream.Flush();
+                }
+            }
+            catch ( ImageResizer.ImageProcessingException ex )
+            {
+                // This error will happen if the image format is unsupported.
+                ExceptionLogService.LogException( string.Format( "Unable to create image thumbnail from stream for AssetStorage provider ({0}) and thumbnail ({1}).", assetStorageProvider.Name, physicalThumbPath ) );
             }
         }
 

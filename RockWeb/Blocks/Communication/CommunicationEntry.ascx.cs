@@ -781,7 +781,7 @@ namespace RockWeb.Blocks.Communication
                         pageRef.PageId = CurrentPageReference.PageId;
                         pageRef.RouteId = CurrentPageReference.RouteId;
                         pageRef.Parameters = new Dictionary<string, string>();
-                        pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                        pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                         Response.Redirect( pageRef.BuildUrl() );
                         Context.ApplicationInstance.CompleteRequest();
                     }
@@ -890,7 +890,7 @@ namespace RockWeb.Blocks.Communication
                     pageRef.PageId = CurrentPageReference.PageId;
                     pageRef.RouteId = CurrentPageReference.RouteId;
                     pageRef.Parameters = new Dictionary<string, string>();
-                    pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                    pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                     Response.Redirect( pageRef.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
                 }
@@ -1596,7 +1596,7 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
-            CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page
