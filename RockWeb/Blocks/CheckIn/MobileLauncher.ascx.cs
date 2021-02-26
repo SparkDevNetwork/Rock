@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.CheckIn
             // we want the SuccessBlock to generate a QR Code that contains the AttendanceSession(s)
             LocalDeviceConfig.GenerateQRCodeForAttendanceSessions = true;
 
-            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None ), RockDateTime.Now.AddYears( 1 ) );
+            LocalDeviceConfig.SaveToCookie();
 
             // create new checkin state since we are starting a new checkin sessions
             this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
@@ -481,7 +481,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = theme;
-                RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None ), RockDateTime.Now.AddYears( 1 ) );
+                LocalDeviceConfig.SaveToCookie();
             }
 
             if ( !RockPage.Site.Theme.Equals( LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
@@ -579,7 +579,7 @@ namespace RockWeb.Blocks.CheckIn
             LocalDeviceConfig.CurrentKioskId = device.Id;
             LocalDeviceConfig.AllowCheckout = false;
 
-            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None ), RockDateTime.Now.AddYears( 1 ) );
+            LocalDeviceConfig.SaveToCookie();
 
             // create new checkin state since we are starting a new checkin sessions
             this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
