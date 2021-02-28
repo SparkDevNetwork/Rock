@@ -1193,7 +1193,7 @@
                                         <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Required="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'></span>" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" />
+                                        <Rock:EmailBox ID="ebFromAddress" runat="server" Label="From Address" Required="true" AllowLava="true" ValidationGroup="vgEmailSummary" MaxLength="100" Help="<span class='tip tip-lava'>" />
                                         <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                                         <div class="pull-right">
                                             <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>
@@ -1204,7 +1204,7 @@
                                 <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" AllowLava="true" />
+                                            <Rock:EmailBox ID="ebReplyToAddress" runat="server" Label="Reply To Address" AllowLava="true" MaxLength="100" Help="<span class='tip tip-lava'>" />
                                         </div>
                                         <div class="col-md-6">
                                         </div>
