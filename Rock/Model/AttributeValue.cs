@@ -92,6 +92,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 2 )]
         public int AttributeId { get; set; }
 
         /// <summary>
@@ -104,6 +105,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 1 )]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -780,10 +782,10 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         private AttributeValue GetRootMatrixAttributeValue()
-            {
+        {
             var rockContext = new RockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
-            var attributeService = new AttributeService(rockContext);
+            var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
