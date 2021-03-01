@@ -141,10 +141,6 @@
   font-weight: 700;
 }
 
-.store-categories li {
-  margin-right: 6px;
-}
-
 // 5. Purchased Package
 // -------------------------
 .purchasedpackage {
@@ -166,35 +162,20 @@
 }
 
 .store-category-list {
-  .active {
-    a {
-      margin-bottom: 6px;
-    }
-  }
-}
+  > li {
+    margin: 0 16px 6px 0;
 
-@media only screen and (min-device-width : 991px) and (max-device-width : 1230px) {
-  .store-category-list {
-    .active {
-      margin-right: 1px;
-
-      a {
-        padding: 5px 6px;
-        font-size: 10.5px;
-      }
-    }
-  }
-}
-
-@media only screen and (min-device-width : 1231px) and (max-device-width : 1595px), only screen and (min-device-width : 768px) and (max-device-width : 991px) {
-  .store-category-list {
-    .active {
-      margin-right: 1px;
+    @media (max-width: @screen-md-max) {
+      margin-right: 8px;
 
       a {
         padding: 5px 8px;
         font-size: 14px;
       }
     }
+  }
+
+  > li + li {
+    margin-left: 0 !important;
   }
 }

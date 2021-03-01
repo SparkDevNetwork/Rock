@@ -14,7 +14,7 @@
                             <div class="packagesummary-body">
                                 <h2>{{ promo.PackageName }}</h2>
                                 <p class="vendor">
-                                  {{ promo.PackageVendor }}
+                                    {{ promo.PackageVendor }}
                                 </p>
                             </div>
                             <div class="packagesummary-footer clearfix">
@@ -23,9 +23,9 @@
                                 </div>
                                 <div class="cost pull-right">
                                     {% if promo.PackagePrice == 0 %}
-                                      Free
+                                        Free
                                     {% elseif promo.PackagePrice != null %}
-                                      ${{ promo.PackagePrice }}
+                                        ${{ promo.PackagePrice }}
                                     {% endif %}
                                 </div>
                             </div>
