@@ -769,6 +769,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SessionStatus
+    {
+        Transient = 0x0,
+        PaymentPending = 0x1,
+        Completed = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SeverityLevel
     {
         Info = 0x0,
