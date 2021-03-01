@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Registration Service class
+    /// RegistrationSession Service class
     /// </summary>
-    public partial class RegistrationService : Service<Registration>
+    public partial class RegistrationSessionService : Service<RegistrationSession>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrationService"/> class
+        /// Initializes a new instance of the <see cref="RegistrationSessionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public RegistrationService(RockContext context) : base(context)
+        public RegistrationSessionService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Registration item, out string errorMessage )
+        public bool CanDelete( RegistrationSession item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.RegistrationId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Registration.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,49 +58,47 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class RegistrationExtensionMethods
+    public static partial class RegistrationSessionExtensionMethods
     {
         /// <summary>
-        /// Clones this Registration object to a new Registration object
+        /// Clones this RegistrationSession object to a new RegistrationSession object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Registration Clone( this Registration source, bool deepCopy )
+        public static RegistrationSession Clone( this RegistrationSession source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Registration;
+                return source.Clone() as RegistrationSession;
             }
             else
             {
-                var target = new Registration();
+                var target = new RegistrationSession();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Registration object to this Registration object
+        /// Copies the properties from another RegistrationSession object to this RegistrationSession object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Registration target, Registration source )
+        public static void CopyPropertiesFrom( this RegistrationSession target, RegistrationSession source )
         {
             target.Id = source.Id;
-            target.ConfirmationEmail = source.ConfirmationEmail;
-            target.DiscountAmount = source.DiscountAmount;
-            target.DiscountCode = source.DiscountCode;
-            target.DiscountPercentage = source.DiscountPercentage;
-            target.FirstName = source.FirstName;
+            target.ClientIpAddress = source.ClientIpAddress;
+            target.ExpirationDateTime = source.ExpirationDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GroupId = source.GroupId;
-            target.IsTemporary = source.IsTemporary;
-            target.LastName = source.LastName;
-            target.LastPaymentReminderDateTime = source.LastPaymentReminderDateTime;
-            target.PersonAliasId = source.PersonAliasId;
+            target.PaymentGatewayReference = source.PaymentGatewayReference;
+            target.RegistrationCount = source.RegistrationCount;
+            target.RegistrationData = source.RegistrationData;
+            target.RegistrationId = source.RegistrationId;
             target.RegistrationInstanceId = source.RegistrationInstanceId;
+            target.SessionStartDateTime = source.SessionStartDateTime;
+            target.SessionStatus = source.SessionStatus;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
