@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// WorkflowActionForm View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.WorkflowActionForm ) )]
     public partial class WorkflowActionFormViewModel : ViewModelBase
     {
         /// <summary>
@@ -283,84 +279,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            ActionAttributeGuid = model.ActionAttributeGuid;
-            Actions = model.Actions;
-            AllowNotes = model.AllowNotes;
-            AllowPersonEntry = model.AllowPersonEntry;
-            Footer = model.Footer;
-            Header = model.Header;
-            IncludeActionsInNotification = model.IncludeActionsInNotification;
-            NotificationSystemCommunicationId = model.NotificationSystemCommunicationId;
-            PersonEntryAddressEntryOption = ( int ) model.PersonEntryAddressEntryOption;
-            PersonEntryAutofillCurrentPerson = model.PersonEntryAutofillCurrentPerson;
-            PersonEntryBirthdateEntryOption = ( int ) model.PersonEntryBirthdateEntryOption;
-            PersonEntryCampusIsVisible = model.PersonEntryCampusIsVisible;
-            PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId;
-            PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption;
-            PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid;
-            PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption;
-            PersonEntryGroupLocationTypeValueId = model.PersonEntryGroupLocationTypeValueId;
-            PersonEntryHideIfCurrentPersonKnown = model.PersonEntryHideIfCurrentPersonKnown;
-            PersonEntryMaritalStatusEntryOption = ( int ) model.PersonEntryMaritalStatusEntryOption;
-            PersonEntryMobilePhoneEntryOption = ( int ) model.PersonEntryMobilePhoneEntryOption;
-            PersonEntryPersonAttributeGuid = model.PersonEntryPersonAttributeGuid;
-            PersonEntryPostHtml = model.PersonEntryPostHtml;
-            PersonEntryPreHtml = model.PersonEntryPreHtml;
-            PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId;
-            PersonEntrySpouseAttributeGuid = model.PersonEntrySpouseAttributeGuid;
-            PersonEntrySpouseEntryOption = ( int ) model.PersonEntrySpouseEntryOption;
-            PersonEntrySpouseLabel = model.PersonEntrySpouseLabel;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static WorkflowActionFormViewModel From( Rock.Model.WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new WorkflowActionFormViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

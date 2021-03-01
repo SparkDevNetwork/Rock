@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// FinancialTransaction View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.FinancialTransaction ) )]
     public partial class FinancialTransactionViewModel : ViewModelBase
     {
         /// <summary>
@@ -275,83 +271,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.FinancialTransaction model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AuthorizedPersonAliasId = model.AuthorizedPersonAliasId;
-            BatchId = model.BatchId;
-            CheckMicrEncrypted = model.CheckMicrEncrypted;
-            CheckMicrHash = model.CheckMicrHash;
-            CheckMicrParts = model.CheckMicrParts;
-            FinancialGatewayId = model.FinancialGatewayId;
-            FinancialPaymentDetailId = model.FinancialPaymentDetailId;
-            FutureProcessingDateTime = model.FutureProcessingDateTime;
-            IsReconciled = model.IsReconciled;
-            IsSettled = model.IsSettled;
-            MICRStatus = ( int? ) model.MICRStatus;
-            NonCashAssetTypeValueId = model.NonCashAssetTypeValueId;
-            ProcessedByPersonAliasId = model.ProcessedByPersonAliasId;
-            ProcessedDateTime = model.ProcessedDateTime;
-            ScheduledTransactionId = model.ScheduledTransactionId;
-            SettledDate = model.SettledDate;
-            SettledGroupId = model.SettledGroupId;
-            ShowAsAnonymous = model.ShowAsAnonymous;
-            SourceTypeValueId = model.SourceTypeValueId;
-            Status = model.Status;
-            StatusMessage = model.StatusMessage;
-            Summary = model.Summary;
-            SundayDate = model.SundayDate;
-            TransactionCode = model.TransactionCode;
-            TransactionDateTime = model.TransactionDateTime;
-            TransactionTypeValueId = model.TransactionTypeValueId;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static FinancialTransactionViewModel From( Rock.Model.FinancialTransaction model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new FinancialTransactionViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

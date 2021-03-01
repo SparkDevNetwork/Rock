@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// Page View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.Page ) )]
     public partial class PageViewModel : ViewModelBase
     {
         /// <summary>
@@ -307,87 +303,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.Page model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AdditionalSettings = model.AdditionalSettings;
-            AllowIndexing = model.AllowIndexing;
-            BodyCssClass = model.BodyCssClass;
-            BreadCrumbDisplayIcon = model.BreadCrumbDisplayIcon;
-            BreadCrumbDisplayName = model.BreadCrumbDisplayName;
-            BrowserTitle = model.BrowserTitle;
-            CacheControlHeaderSettings = model.CacheControlHeaderSettings;
-            Description = model.Description;
-            DisplayInNavWhen = ( int ) model.DisplayInNavWhen;
-            EnableViewState = model.EnableViewState;
-            HeaderContent = model.HeaderContent;
-            IconBinaryFileId = model.IconBinaryFileId;
-            IconCssClass = model.IconCssClass;
-            IncludeAdminFooter = model.IncludeAdminFooter;
-            InternalName = model.InternalName;
-            IsSystem = model.IsSystem;
-            KeyWords = model.KeyWords;
-            LayoutId = model.LayoutId;
-            MedianPageLoadTimeDurationSeconds = model.MedianPageLoadTimeDurationSeconds;
-            MenuDisplayChildPages = model.MenuDisplayChildPages;
-            MenuDisplayDescription = model.MenuDisplayDescription;
-            MenuDisplayIcon = model.MenuDisplayIcon;
-            Order = model.Order;
-            PageDisplayBreadCrumb = model.PageDisplayBreadCrumb;
-            PageDisplayDescription = model.PageDisplayDescription;
-            PageDisplayIcon = model.PageDisplayIcon;
-            PageDisplayTitle = model.PageDisplayTitle;
-            PageTitle = model.PageTitle;
-            ParentPageId = model.ParentPageId;
-            RequiresEncryption = model.RequiresEncryption;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static PageViewModel From( Rock.Model.Page model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new PageViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// Audit View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.Audit ) )]
     public partial class AuditViewModel : ViewModelBase
     {
         /// <summary>
@@ -83,59 +79,5 @@ namespace Rock.ViewModel
         /// </value>
         public string Title { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.Audit model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AuditType = ( int ) model.AuditType;
-            DateTime = model.DateTime;
-            EntityId = model.EntityId;
-            EntityTypeId = model.EntityTypeId;
-            PersonAliasId = model.PersonAliasId;
-            Title = model.Title;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static AuditViewModel From( Rock.Model.Audit model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new AuditViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

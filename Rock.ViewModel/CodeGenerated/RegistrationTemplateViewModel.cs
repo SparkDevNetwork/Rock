@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// RegistrationTemplate View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.RegistrationTemplate ) )]
     public partial class RegistrationTemplateViewModel : ViewModelBase
     {
         /// <summary>
@@ -499,111 +495,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AddPersonNote = model.AddPersonNote;
-            AllowExternalRegistrationUpdates = model.AllowExternalRegistrationUpdates;
-            AllowMultipleRegistrants = model.AllowMultipleRegistrants;
-            BatchNamePrefix = model.BatchNamePrefix;
-            CategoryId = model.CategoryId;
-            ConfirmationEmailTemplate = model.ConfirmationEmailTemplate;
-            ConfirmationFromEmail = model.ConfirmationFromEmail;
-            ConfirmationFromName = model.ConfirmationFromName;
-            ConfirmationSubject = model.ConfirmationSubject;
-            Cost = model.Cost;
-            DefaultPayment = model.DefaultPayment;
-            Description = model.Description;
-            DiscountCodeTerm = model.DiscountCodeTerm;
-            FeeTerm = model.FeeTerm;
-            FinancialGatewayId = model.FinancialGatewayId;
-            GroupMemberRoleId = model.GroupMemberRoleId;
-            GroupMemberStatus = ( int ) model.GroupMemberStatus;
-            GroupTypeId = model.GroupTypeId;
-            IsActive = model.IsActive;
-            LoginRequired = model.LoginRequired;
-            MaxRegistrants = model.MaxRegistrants;
-            MinimumInitialPayment = model.MinimumInitialPayment;
-            Name = model.Name;
-            Notify = ( int ) model.Notify;
-            PaymentRedirectVendor = ( int? ) model.PaymentRedirectVendor;
-            PaymentReminderEmailTemplate = model.PaymentReminderEmailTemplate;
-            PaymentReminderFromEmail = model.PaymentReminderFromEmail;
-            PaymentReminderFromName = model.PaymentReminderFromName;
-            PaymentReminderSubject = model.PaymentReminderSubject;
-            PaymentReminderTimeSpan = model.PaymentReminderTimeSpan;
-            RegistrantsSameFamily = ( int ) model.RegistrantsSameFamily;
-            RegistrantTerm = model.RegistrantTerm;
-            RegistrarOption = ( int ) model.RegistrarOption;
-            RegistrationAttributeTitleEnd = model.RegistrationAttributeTitleEnd;
-            RegistrationAttributeTitleStart = model.RegistrationAttributeTitleStart;
-            RegistrationInstructions = model.RegistrationInstructions;
-            RegistrationTerm = model.RegistrationTerm;
-            RegistrationWorkflowTypeId = model.RegistrationWorkflowTypeId;
-            ReminderEmailTemplate = model.ReminderEmailTemplate;
-            ReminderFromEmail = model.ReminderFromEmail;
-            ReminderFromName = model.ReminderFromName;
-            ReminderSubject = model.ReminderSubject;
-            RequestEntryName = model.RequestEntryName;
-            RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId;
-            SetCostOnInstance = model.SetCostOnInstance;
-            ShowCurrentFamilyMembers = model.ShowCurrentFamilyMembers;
-            SignatureDocumentAction = ( int ) model.SignatureDocumentAction;
-            SuccessText = model.SuccessText;
-            SuccessTitle = model.SuccessTitle;
-            WaitListEnabled = model.WaitListEnabled;
-            WaitListTransitionEmailTemplate = model.WaitListTransitionEmailTemplate;
-            WaitListTransitionFromEmail = model.WaitListTransitionFromEmail;
-            WaitListTransitionFromName = model.WaitListTransitionFromName;
-            WaitListTransitionSubject = model.WaitListTransitionSubject;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static RegistrationTemplateViewModel From( Rock.Model.RegistrationTemplate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new RegistrationTemplateViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

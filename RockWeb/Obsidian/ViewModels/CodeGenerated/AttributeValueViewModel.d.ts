@@ -22,15 +22,10 @@
 //
 
 import Entity from '../Entity.js';
-import Attribute from './AttributeViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
-import { Guid } from '../../Util/Guid.js';
 
 export default interface AttributeValue extends Entity {
-    Id: number;
-    Attribute: Attribute | null;
     AttributeId: number;
-    Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
     IsSystem: boolean;
     Value: string | null;
@@ -39,5 +34,4 @@ export default interface AttributeValue extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
 }

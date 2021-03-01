@@ -23,26 +23,14 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// AttributeMatrixTemplate View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.AttributeMatrixTemplate ) )]
     public partial class AttributeMatrixTemplateViewModel : ViewModelBase
     {
-        /// <summary>
-        /// Gets or sets the AttributeMatrices.
-        /// </summary>
-        /// <value>
-        /// The AttributeMatrices.
-        /// </value>
-        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
-
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -123,64 +111,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.AttributeMatrixTemplate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AttributeMatrices = model.AttributeMatrices;
-            Description = model.Description;
-            FormattedLava = model.FormattedLava;
-            IsActive = model.IsActive;
-            MaximumRows = model.MaximumRows;
-            MinimumRows = model.MinimumRows;
-            Name = model.Name;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static AttributeMatrixTemplateViewModel From( Rock.Model.AttributeMatrixTemplate model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new AttributeMatrixTemplateViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

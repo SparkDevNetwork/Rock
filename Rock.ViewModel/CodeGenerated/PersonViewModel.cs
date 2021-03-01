@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// Person View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.Person ) )]
     public partial class PersonViewModel : ViewModelBase
     {
         /// <summary>
@@ -403,99 +399,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.Person model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AgeClassification = ( int ) model.AgeClassification;
-            AnniversaryDate = model.AnniversaryDate;
-            BirthDay = model.BirthDay;
-            BirthMonth = model.BirthMonth;
-            BirthYear = model.BirthYear;
-            CommunicationPreference = ( int ) model.CommunicationPreference;
-            ConnectionStatusValueId = model.ConnectionStatusValueId;
-            ContributionFinancialAccountId = model.ContributionFinancialAccountId;
-            DeceasedDate = model.DeceasedDate;
-            Email = model.Email;
-            EmailNote = model.EmailNote;
-            EmailPreference = ( int ) model.EmailPreference;
-            FirstName = model.FirstName;
-            Gender = ( int ) model.Gender;
-            GivingGroupId = model.GivingGroupId;
-            GivingLeaderId = model.GivingLeaderId;
-            GraduationYear = model.GraduationYear;
-            InactiveReasonNote = model.InactiveReasonNote;
-            IsDeceased = model.IsDeceased;
-            IsEmailActive = model.IsEmailActive;
-            IsLockedAsChild = model.IsLockedAsChild;
-            IsSystem = model.IsSystem;
-            LastName = model.LastName;
-            MaritalStatusValueId = model.MaritalStatusValueId;
-            MiddleName = model.MiddleName;
-            NickName = model.NickName;
-            PhotoId = model.PhotoId;
-            PrimaryCampusId = model.PrimaryCampusId;
-            PrimaryFamilyId = model.PrimaryFamilyId;
-            RecordStatusLastModifiedDateTime = model.RecordStatusLastModifiedDateTime;
-            RecordStatusReasonValueId = model.RecordStatusReasonValueId;
-            RecordStatusValueId = model.RecordStatusValueId;
-            RecordTypeValueId = model.RecordTypeValueId;
-            ReviewReasonNote = model.ReviewReasonNote;
-            ReviewReasonValueId = model.ReviewReasonValueId;
-            SuffixValueId = model.SuffixValueId;
-            SystemNote = model.SystemNote;
-            TitleValueId = model.TitleValueId;
-            TopSignalColor = model.TopSignalColor;
-            TopSignalIconCssClass = model.TopSignalIconCssClass;
-            TopSignalId = model.TopSignalId;
-            ViewedCount = model.ViewedCount;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static PersonViewModel From( Rock.Model.Person model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new PersonViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

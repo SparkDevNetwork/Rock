@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// Metric View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.Metric ) )]
     public partial class MetricViewModel : ViewModelBase
     {
         /// <summary>
@@ -211,75 +207,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.Metric model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AdminPersonAliasId = model.AdminPersonAliasId;
-            DataViewId = model.DataViewId;
-            Description = model.Description;
-            EnableAnalytics = model.EnableAnalytics;
-            IconCssClass = model.IconCssClass;
-            IsCumulative = model.IsCumulative;
-            IsSystem = model.IsSystem;
-            LastRunDateTime = model.LastRunDateTime;
-            MetricChampionPersonAliasId = model.MetricChampionPersonAliasId;
-            NumericDataType = ( int ) model.NumericDataType;
-            ScheduleId = model.ScheduleId;
-            SourceLava = model.SourceLava;
-            SourceSql = model.SourceSql;
-            SourceValueTypeId = model.SourceValueTypeId;
-            Subtitle = model.Subtitle;
-            Title = model.Title;
-            XAxisLabel = model.XAxisLabel;
-            YAxisLabel = model.YAxisLabel;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static MetricViewModel From( Rock.Model.Metric model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new MetricViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

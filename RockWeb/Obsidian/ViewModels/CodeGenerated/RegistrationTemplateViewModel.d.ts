@@ -22,16 +22,12 @@
 //
 
 import Entity from '../Entity.js';
-import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
-import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplate extends Entity {
-    Id: number;
     AddPersonNote: boolean;
     AllowExternalRegistrationUpdates: boolean;
     AllowMultipleRegistrants: boolean;
-    Attributes: Record<string, AttributeValue> | null;
     BatchNamePrefix: string | null;
     CategoryId: number | null;
     ConfirmationEmailTemplate: string | null;
@@ -59,7 +55,6 @@ export default interface RegistrationTemplate extends Entity {
     PaymentReminderFromName: string | null;
     PaymentReminderSubject: string | null;
     PaymentReminderTimeSpan: number | null;
-    PluralRegistrantTerm: string | null;
     RegistrantsSameFamily: number;
     RegistrantTerm: string | null;
     RegistrarOption: number;
@@ -88,5 +83,4 @@ export default interface RegistrationTemplate extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
 }

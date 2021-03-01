@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// FinancialAccount View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.FinancialAccount ) )]
     public partial class FinancialAccountViewModel : ViewModelBase
     {
         /// <summary>
@@ -195,73 +191,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.FinancialAccount model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AccountTypeValueId = model.AccountTypeValueId;
-            CampusId = model.CampusId;
-            Description = model.Description;
-            EndDate = model.EndDate;
-            GlCode = model.GlCode;
-            ImageBinaryFileId = model.ImageBinaryFileId;
-            IsActive = model.IsActive;
-            IsPublic = model.IsPublic;
-            IsTaxDeductible = model.IsTaxDeductible;
-            Name = model.Name;
-            Order = model.Order;
-            ParentAccountId = model.ParentAccountId;
-            PublicDescription = model.PublicDescription;
-            PublicName = model.PublicName;
-            StartDate = model.StartDate;
-            Url = model.Url;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static FinancialAccountViewModel From( Rock.Model.FinancialAccount model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new FinancialAccountViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

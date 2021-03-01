@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// NcoaHistory View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.NcoaHistory ) )]
     public partial class NcoaHistoryViewModel : ViewModelBase
     {
         /// <summary>
@@ -275,83 +271,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.NcoaHistory model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AddressInvalidReason = ( int ) model.AddressInvalidReason;
-            AddressStatus = ( int ) model.AddressStatus;
-            FamilyId = model.FamilyId;
-            LocationId = model.LocationId;
-            MatchFlag = ( int ) model.MatchFlag;
-            MoveDate = model.MoveDate;
-            MoveDistance = model.MoveDistance;
-            MoveType = ( int ) model.MoveType;
-            NcoaNote = model.NcoaNote;
-            NcoaRunDateTime = model.NcoaRunDateTime;
-            NcoaType = ( int ) model.NcoaType;
-            OriginalCity = model.OriginalCity;
-            OriginalPostalCode = model.OriginalPostalCode;
-            OriginalState = model.OriginalState;
-            OriginalStreet1 = model.OriginalStreet1;
-            OriginalStreet2 = model.OriginalStreet2;
-            PersonAliasId = model.PersonAliasId;
-            Processed = ( int ) model.Processed;
-            UpdatedAddressType = ( int ) model.UpdatedAddressType;
-            UpdatedBarcode = model.UpdatedBarcode;
-            UpdatedCity = model.UpdatedCity;
-            UpdatedCountry = model.UpdatedCountry;
-            UpdatedPostalCode = model.UpdatedPostalCode;
-            UpdatedState = model.UpdatedState;
-            UpdatedStreet1 = model.UpdatedStreet1;
-            UpdatedStreet2 = model.UpdatedStreet2;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static NcoaHistoryViewModel From( Rock.Model.NcoaHistory model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new NcoaHistoryViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

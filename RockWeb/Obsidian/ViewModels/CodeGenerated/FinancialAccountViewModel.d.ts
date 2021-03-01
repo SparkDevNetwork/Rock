@@ -22,14 +22,10 @@
 //
 
 import Entity from '../Entity.js';
-import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
-import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialAccount extends Entity {
-    Id: number;
     AccountTypeValueId: number | null;
-    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     Description: string | null;
     EndDate: RockDateType | null;
@@ -49,5 +45,4 @@ export default interface FinancialAccount extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
 }

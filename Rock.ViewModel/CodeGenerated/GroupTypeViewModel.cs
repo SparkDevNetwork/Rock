@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// GroupType View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.GroupType ) )]
     public partial class GroupTypeViewModel : ViewModelBase
     {
         /// <summary>
@@ -491,110 +487,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.GroupType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AdministratorTerm = model.AdministratorTerm;
-            AllowAnyChildGroupType = model.AllowAnyChildGroupType;
-            AllowedScheduleTypes = ( int ) model.AllowedScheduleTypes;
-            AllowGroupSync = model.AllowGroupSync;
-            AllowMultipleLocations = model.AllowMultipleLocations;
-            AllowSpecificGroupMemberAttributes = model.AllowSpecificGroupMemberAttributes;
-            AllowSpecificGroupMemberWorkflows = model.AllowSpecificGroupMemberWorkflows;
-            AttendanceCountsAsWeekendService = model.AttendanceCountsAsWeekendService;
-            AttendancePrintTo = ( int ) model.AttendancePrintTo;
-            AttendanceRule = ( int ) model.AttendanceRule;
-            DefaultGroupRoleId = model.DefaultGroupRoleId;
-            Description = model.Description;
-            EnableGroupHistory = model.EnableGroupHistory;
-            EnableGroupTag = model.EnableGroupTag;
-            EnableInactiveReason = model.EnableInactiveReason;
-            EnableLocationSchedules = model.EnableLocationSchedules;
-            EnableRSVP = model.EnableRSVP;
-            EnableSpecificGroupRequirements = model.EnableSpecificGroupRequirements;
-            GroupAttendanceRequiresLocation = model.GroupAttendanceRequiresLocation;
-            GroupAttendanceRequiresSchedule = model.GroupAttendanceRequiresSchedule;
-            GroupCapacityRule = ( int ) model.GroupCapacityRule;
-            GroupMemberTerm = model.GroupMemberTerm;
-            GroupsRequireCampus = model.GroupsRequireCampus;
-            GroupStatusDefinedTypeId = model.GroupStatusDefinedTypeId;
-            GroupTerm = model.GroupTerm;
-            GroupTypeColor = model.GroupTypeColor;
-            GroupTypePurposeValueId = model.GroupTypePurposeValueId;
-            GroupViewLavaTemplate = model.GroupViewLavaTemplate;
-            IconCssClass = model.IconCssClass;
-            IgnorePersonInactivated = model.IgnorePersonInactivated;
-            InheritedGroupTypeId = model.InheritedGroupTypeId;
-            IsIndexEnabled = model.IsIndexEnabled;
-            IsSchedulingEnabled = model.IsSchedulingEnabled;
-            IsSystem = model.IsSystem;
-            LocationSelectionMode = ( int ) model.LocationSelectionMode;
-            Name = model.Name;
-            Order = model.Order;
-            RequiresInactiveReason = model.RequiresInactiveReason;
-            RequiresReasonIfDeclineSchedule = model.RequiresReasonIfDeclineSchedule;
-            RSVPReminderOffsetDays = model.RSVPReminderOffsetDays;
-            RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId;
-            ScheduleCancellationWorkflowTypeId = model.ScheduleCancellationWorkflowTypeId;
-            ScheduleConfirmationEmailOffsetDays = model.ScheduleConfirmationEmailOffsetDays;
-            ScheduleConfirmationSystemCommunicationId = model.ScheduleConfirmationSystemCommunicationId;
-            ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays;
-            ScheduleReminderSystemCommunicationId = model.ScheduleReminderSystemCommunicationId;
-            SendAttendanceReminder = model.SendAttendanceReminder;
-            ShowAdministrator = model.ShowAdministrator;
-            ShowConnectionStatus = model.ShowConnectionStatus;
-            ShowInGroupList = model.ShowInGroupList;
-            ShowInNavigation = model.ShowInNavigation;
-            ShowMaritalStatus = model.ShowMaritalStatus;
-            TakesAttendance = model.TakesAttendance;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static GroupTypeViewModel From( Rock.Model.GroupType model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new GroupTypeViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

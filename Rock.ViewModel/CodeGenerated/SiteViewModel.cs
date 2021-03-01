@@ -23,16 +23,12 @@
 
 using System;
 using System.Linq;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.ViewModel
 {
     /// <summary>
     /// Site View Model
     /// </summary>
-    [ViewModelOf( typeof( Rock.Model.Site ) )]
     public partial class SiteViewModel : ViewModelBase
     {
         /// <summary>
@@ -387,97 +383,5 @@ namespace Rock.ViewModel
         /// </value>
         public int? ModifiedByPersonAliasId { get; set; }
 
-        /// <summary>
-        /// Sets the properties from.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void SetPropertiesFrom( Rock.Model.Site model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( model == null )
-            {
-                return;
-            }
-
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
-            {
-                if ( hasAttributes.Attributes == null )
-                {
-                    hasAttributes.LoadAttributes();
-                }
-
-                Attributes = hasAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel<AttributeValueViewModel>() as object );
-            }
-
-            Id = model.Id;
-            Guid = model.Guid;
-            AdditionalSettings = model.AdditionalSettings;
-            AllowedFrameDomains = model.AllowedFrameDomains;
-            AllowIndexing = model.AllowIndexing;
-            ChangePasswordPageId = model.ChangePasswordPageId;
-            ChangePasswordPageRouteId = model.ChangePasswordPageRouteId;
-            CommunicationPageId = model.CommunicationPageId;
-            CommunicationPageRouteId = model.CommunicationPageRouteId;
-            ConfigurationMobilePhoneBinaryFileId = model.ConfigurationMobilePhoneBinaryFileId;
-            ConfigurationMobileTabletBinaryFileId = model.ConfigurationMobileTabletBinaryFileId;
-            DefaultPageId = model.DefaultPageId;
-            DefaultPageRouteId = model.DefaultPageRouteId;
-            Description = model.Description;
-            EnabledForShortening = model.EnabledForShortening;
-            EnableExclusiveRoutes = model.EnableExclusiveRoutes;
-            EnableMobileRedirect = model.EnableMobileRedirect;
-            EnablePageViews = model.EnablePageViews;
-            ErrorPage = model.ErrorPage;
-            ExternalUrl = model.ExternalUrl;
-            FavIconBinaryFileId = model.FavIconBinaryFileId;
-            GoogleAnalyticsCode = model.GoogleAnalyticsCode;
-            IndexStartingLocation = model.IndexStartingLocation;
-            IsActive = model.IsActive;
-            IsIndexEnabled = model.IsIndexEnabled;
-            IsSystem = model.IsSystem;
-            LatestVersionDateTime = model.LatestVersionDateTime;
-            LoginPageId = model.LoginPageId;
-            LoginPageRouteId = model.LoginPageRouteId;
-            MobilePageId = model.MobilePageId;
-            Name = model.Name;
-            PageHeaderContent = model.PageHeaderContent;
-            PageNotFoundPageId = model.PageNotFoundPageId;
-            PageNotFoundPageRouteId = model.PageNotFoundPageRouteId;
-            RedirectTablets = model.RedirectTablets;
-            RegistrationPageId = model.RegistrationPageId;
-            RegistrationPageRouteId = model.RegistrationPageRouteId;
-            RequiresEncryption = model.RequiresEncryption;
-            SiteLogoBinaryFileId = model.SiteLogoBinaryFileId;
-            SiteType = ( int ) model.SiteType;
-            Theme = model.Theme;
-            ThumbnailBinaryFileId = model.ThumbnailBinaryFileId;
-            CreatedDateTime = model.CreatedDateTime;
-            ModifiedDateTime = model.ModifiedDateTime;
-            CreatedByPersonAliasId = model.CreatedByPersonAliasId;
-            ModifiedByPersonAliasId = model.ModifiedByPersonAliasId;
-
-            SetAdditionalPropertiesFrom( model, currentPerson, loadAttributes );
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified model.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static SiteViewModel From( Rock.Model.Site model, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new SiteViewModel();
-            viewModel.SetPropertiesFrom( model, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }
