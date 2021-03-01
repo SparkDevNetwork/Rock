@@ -19,7 +19,9 @@
         <h2 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
         <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
         <p>{{ leader | Attribute:'StaffBio' }}</p>
-        <p><a href="https://newspring.cc/workflows/712?StaffMember={{ leader | Property:'PrimaryAlias' | Property:'Guid' }}" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
+        {% assign personAliasGuid = leader | Property:'PrimaryAlias' | Property:'Guid' %}
+        {% assign contactUrl = 'Global' | Attribute:'PublicApplicationRoot' | Append:'workflows/712?StaffMember=' | Append:personAliasGuid %}
+        <p><a href="{{ contactUrl }}" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
       </div>
     </div>
   </div>
@@ -28,8 +30,9 @@
   <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
 
     {% for person in campus.CampusStaff %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom {% if person.FullName == leader.FullName %}hidden{% endif %}">
-
-      {[ user imageurl:'{{ person.StaffImage }}' title:'{{ person.FullName }}' subtitle:'{{ person.StaffTitle | Replace:"'","’" }}' linkurl:'https://newspring.cc/workflows/712?StaffMember={{ person | Property:"PersonId" | PersonById | Property:"PrimaryAlias" | Property:"Guid" }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
+      {% assign personAliasGuid = person | Property:"PersonId" | PersonById | Property:"PrimaryAlias" | Property:"Guid" %}
+      {% assign contactUrl = 'Global' | Attribute:'PublicApplicationRoot' | Append:'workflows/712?StaffMember=' | Append:personAliasGuid %}
+      {[ user imageurl:'{{ person.StaffImage }}' title:'{{ person.FullName }}' subtitle:'{{ person.StaffTitle | Replace:"'","’" }}' linkurl:'{{ contactUrl }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
     </div>{% endfor %}
   </div>
 
