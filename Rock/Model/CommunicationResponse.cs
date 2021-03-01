@@ -165,7 +165,7 @@ namespace Rock.Model
         /// </value>
         public virtual EntityType RelatedTransport { get; set; }
 
-        // <summary>
+        /// <summary>
         /// Gets or sets the attachments.
         /// </summary>
         /// <value>
