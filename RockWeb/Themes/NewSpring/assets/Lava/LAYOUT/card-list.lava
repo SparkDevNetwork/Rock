@@ -18,6 +18,11 @@
 {% endcomment %}
 {% assign Items = displayItemsString | ReplaceLast:',', '' | StripNewlines | FromJSON %}
 
+{% comment %}
+    Overwrite itemcount with count of items that aren't future dated or expired.
+{% endcomment %}
+{% assign itemcount = Items | Size %}
+
 {% assign pagesize = 12 %}
 {% assign currentpage = 'Global' | PageParameter:'Page' %}
 {% assign offset = currentpage | Times:pagesize | Minus:pagesize %}
