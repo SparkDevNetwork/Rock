@@ -585,7 +585,7 @@ namespace Rock.Storage.AssetStorage
                     resizedStream.Flush();
                 }
             }
-            catch ( ImageResizer.ImageProcessingException ex )
+            catch ( ImageResizer.ImageProcessingException )
             {
                 // This error will happen if the image format is unsupported.
                 ExceptionLogService.LogException( string.Format( "Unable to create image thumbnail from stream for AssetStorage provider ({0}) and thumbnail ({1}).", assetStorageProvider.Name, physicalThumbPath ) );

@@ -17,7 +17,7 @@ FROM (
 		ON ic.object_id = col.object_id AND ic.column_id = col.column_id
 	INNER JOIN sys.tables t
 		ON ind.object_id = t.object_id
-	WHERE ind.is_primary_key = 0 AND ind.is_unique = 0 AND ind.is_unique_constraint = 0 AND t.is_ms_shipped = 0
+	WHERE ind.is_primary_key = 0
 	GROUP BY t.Name, ind.name
 	) x
 WHERE x.[ActualIndexName] != x.[StandardizedIndexName]
