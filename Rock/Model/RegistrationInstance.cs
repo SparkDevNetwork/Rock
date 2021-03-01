@@ -239,6 +239,33 @@ namespace Rock.Model
         [MaxLength( 500 )]
         public string PaymentRedirectData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the external gateway merchant identifier.
+        /// </summary>
+        /// <value>
+        /// The external gateway merchant identifier.
+        /// </value>
+        [DataMember]
+        public int? ExternalGatewayMerchantId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the external gateway fund identifier.
+        /// </summary>
+        /// <value>
+        /// The external gateway fund identifier.
+        /// </value>
+        [DataMember]
+        public int? ExternalGatewayFundId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration metering threshold.
+        /// </summary>
+        /// <value>
+        /// The registration metering threshold.
+        /// </value>
+        [DataMember]
+        public int? RegistrationMeteringThreshold { get; set; }
+
         #endregion
 
         #region Virtual Properties
