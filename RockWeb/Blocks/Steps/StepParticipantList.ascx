@@ -51,7 +51,7 @@
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:RockLiteralField ID="lNameWithHtml" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" ExcelExportBehavior="NeverInclude" />
-                                    <Rock:DateTimeField HeaderText="Date Started" DataField="StartedDateTime" SortExpression="StartedDateTime" DataFormatString="{0:d}"  />
+                                    <Rock:DateTimeField HeaderText="Date Started" DataField="StartedDateTime" SortExpression="StartDateTime" DataFormatString="{0:d}"  />
                                     <Rock:DateTimeField HeaderText="Date Completed" DataField="CompletedDateTime" SortExpression="CompletedDateTime" DataFormatString="{0:d}" />
                                     <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ExcelExportBehavior="AlwaysInclude"/>
                                     <Rock:RockLiteralField ID="lStepStatusHtml" HeaderText="Status" SortExpression="StepStatus.Name" ExcelExportBehavior="NeverInclude" />

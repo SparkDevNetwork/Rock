@@ -926,6 +926,22 @@ namespace Rock.Data
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlert> FinancialTransactionAlerts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The type of the financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlertType> FinancialTransactionAlertTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
@@ -1902,6 +1918,14 @@ namespace Rock.Data
         /// The web farm nodes.
         /// </value>
         public DbSet<WebFarmNode> WebFarmNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
 
         /// <summary>
         /// Gets or sets the web farm node logs.

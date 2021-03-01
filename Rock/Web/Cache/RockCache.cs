@@ -292,8 +292,8 @@ namespace Rock.Web.Cache
             }
 
             var value = args.Region.IsNotNullOrWhiteSpace() ?
-                RockCacheManager<object>.Instance.Cache.Get( args.Key, args.Region ) :
-                RockCacheManager<object>.Instance.Cache.Get( args.Key );
+                RockCacheManager<object>.Instance.Get( args.Key, args.Region ) :
+                RockCacheManager<object>.Instance.Get( args.Key );
 
             if ( value != null )
             {
@@ -419,7 +419,7 @@ namespace Rock.Web.Cache
                         return;
                     }
 
-                    var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                    var value = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                     if ( !value.Contains(key) )
                     {
                         value.Add( key );
@@ -459,11 +459,11 @@ namespace Rock.Web.Cache
         {
             if ( region.IsNotNullOrWhiteSpace() )
             {
-                RockCacheManager<object>.Instance.Cache.Remove( key, region );
+                RockCacheManager<object>.Instance.Remove( key, region );
             }
             else
             {
-                RockCacheManager<object>.Instance.Cache.Remove( key );
+                RockCacheManager<object>.Instance.Remove( key );
             }
 
             RemoveObjectCacheKey( region, key );
@@ -478,7 +478,7 @@ namespace Rock.Web.Cache
             var cacheTagList = cacheTags.Split( ',' );
             foreach ( var cacheTag in cacheTagList )
             {
-                var cachedItemKeys = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+                var cachedItemKeys = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                 foreach ( var key in cachedItemKeys )
                 {
                     Remove( key );
@@ -601,7 +601,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static long GetCountOfCachedItemsForTag( string cacheTag )
         {
-            var cachedItemKeys = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
+            var cachedItemKeys = RockCacheManager<List<string>>.Instance.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
             return cachedItemKeys.Count();
         }
 

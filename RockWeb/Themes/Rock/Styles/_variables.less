@@ -167,7 +167,7 @@
 @body-bg:                     @body-background;
 
 @navbar-top-height:           80px;
-
+@full-worksurface-offset:     (@navbar-top-height + 72px);
 
 // Theme Defaults
 @border-radius-base:          0px;                              // The global setting for rounding corners.
@@ -421,9 +421,12 @@
 
 
 // Pills
+@nav-pills-border-radius:               3px;
 @nav-pills-active-link-hover-bg:        @brand-color;
 @nav-pills-active-link-hover-color:     @white;
 @nav-pills-link-color:                  @text-color;          // The color of the none active pill link.
+@nav-pills-link-bg:                     @gray-lightest;
+@nav-pills-link-margin:                 16px;
 
 // List As Blocks { Used on many administration pages and pages like 'My Workflows', 'Connections' and 'Calendar'. }
 @listasblocks-bg:                       #eee;

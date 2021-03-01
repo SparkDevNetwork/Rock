@@ -80,7 +80,6 @@
           {
             var isStructureRelated = $(el).closest($(self.editorToolbarStructure)).length // is it from the structures toolbar
               || $(el).closest('.component').hasClass('component-section'); // is it an existing structure component in the email
-              console.log($(el).closest('.component').hasClass('component-section'));
             return !isStructureRelated;
           },
           ignoreInputTextSelection: true

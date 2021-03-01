@@ -24,14 +24,12 @@ using Rock.Web.Cache;
 
 namespace Rock.Badge.Component
 {
-
     /// <summary>
     /// FamilyAttendance Badge
     /// </summary>
     [Description( "Shows a chart of the attendance history with each bar representing one month." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "Family Attendance" )]
-
 
     [IntegerField("Months To Display", "The number of months to show on the chart (default 24.)", false, 24)]
     [IntegerField("Minimum Bar Height", "The minimum height of a bar (in pixels). Useful for showing hint of bar when attendance was 0. (default 2.)", false, 2)]
@@ -68,16 +66,17 @@ namespace Rock.Badge.Component
             }
 
             string tooltip;
+            var monthsToDisplay = GetAttributeValue( badge, "MonthsToDisplay" ).AsIntegerOrNull() ?? 24;
             if ( Person.AgeClassification == AgeClassification.Child )
             {
-                tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last 24 months. Each bar is a month.";
+                tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
             else
             {
-                tooltip = "Family attendance for the last 24 months. Each bar is a month.";
+                tooltip = $"Family attendance for the last {monthsToDisplay} months. Each bar is a month.";
             }
 
-            writer.Write( String.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
+            writer.Write( string.Format( "<div class='badge badge-attendance{0} badge-id-{1}' data-toggle='tooltip' data-original-title='{2}'>", animateClass, badge.Id, tooltip ) );
 
             writer.Write("</div>");
         }

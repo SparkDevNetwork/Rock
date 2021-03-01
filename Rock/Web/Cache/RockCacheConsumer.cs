@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Rock.Bus;
 using Rock.Bus.Consumer;
@@ -35,11 +36,17 @@ namespace Rock.Web.Cache
         private readonly MethodInfo _applyMethod;
 
         /// <summary>
+        /// The cache types
+        /// </summary>
+        private readonly Dictionary<string, Type> _cacheTypes;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockCacheConsumer"/> class.
         /// </summary>
         public RockCacheConsumer()
         {
             _applyMethod = GetType().GetMethod( nameof( ApplyCacheMessage ), BindingFlags.NonPublic | BindingFlags.Instance );
+            _cacheTypes = new Dictionary<string, Type>();
         }
 
         /// <summary>
@@ -48,19 +55,41 @@ namespace Rock.Web.Cache
         /// <param name="message">The message.</param>
         public override void Consume( CacheWasUpdatedMessage message )
         {
-            if ( !RockMessageBus.IsRockStarted || RockMessageBus.IsFromSelf( message ) )
+            if ( !RockMessageBus.IsRockStarted )
             {
                 return;
             }
 
-            var type = Type.GetType( message.CacheTypeName );
+            var type = FindCacheType( message.CacheTypeName );
 
             if ( type == null )
             {
                 return;
             }
 
-            _applyMethod.MakeGenericMethod( type ).Invoke( this, new[] { message.Key } );
+            _applyMethod.MakeGenericMethod( type ).Invoke( this, new[] { message.Key, message.Region } );
+        }
+
+        /// <summary>
+        /// Finds the type of the cache.
+        /// </summary>
+        /// <param name="cacheTypeName">Name of the cache type.</param>
+        /// <returns></returns>
+        private Type FindCacheType( string cacheTypeName )
+        {
+            if ( _cacheTypes.ContainsKey( cacheTypeName ) )
+            {
+                return _cacheTypes[cacheTypeName];
+            }
+
+            var cacheType = Type.GetType( cacheTypeName );
+
+            if ( cacheType != null )
+            {
+                _cacheTypes[cacheTypeName] = cacheType;
+            }
+
+            return cacheType;
         }
 
         /// <summary>
@@ -68,15 +97,20 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="key">The key.</param>
-        private void ApplyCacheMessage<T>( string key )
+        /// <param name="region">The region.</param>
+        private void ApplyCacheMessage<T>( string key, string region )
         {
-            if ( key.IsNullOrWhiteSpace() )
+            if ( key != null && region != null )
             {
-                RockCacheManager<T>.Instance.Cache.Clear();
+                RockCacheManager<T>.Instance.ReceiveRemoveMessage( key, region );
+            }
+            else if ( key != null )
+            {
+                RockCacheManager<T>.Instance.ReceiveRemoveMessage( key );
             }
             else
             {
-                RockCacheManager<T>.Instance.Cache.Remove( key );
+                RockCacheManager<T>.Instance.ReceiveClearMessage();
             }
         }
     }

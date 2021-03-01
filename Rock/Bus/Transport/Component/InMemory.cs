@@ -41,8 +41,8 @@ namespace Rock.Bus.Transport
         {
             get => new Dictionary<string, string>
             {
-                { "Active", "True" },
-                { "Order", "0" }
+                { BaseAttributeKey.Active, true.ToString() },
+                { BaseAttributeKey.Order, 0.ToString() }
             };
         }
 

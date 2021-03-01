@@ -67,14 +67,23 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="session">The session(s) to be printed.</param>
         /// <param name="kioskId">The kiosk identifier requesting the labels.</param>
+        /// <param name="printerId">The printer identifier to use when overriding where to print labels to.</param>
+        /// <param name="printerOverride">Which labels to override the destination printer.</param>
         /// <returns>
         /// A collection of <see cref="CheckInLabel">labels</see> that should be printed by the client.
         /// </returns>
+        /// <remarks>
+        /// This API call is primarily used by the Rock Check-in Application to support no-touch check-in.
+        /// However, it is likely to be used by 3rd party mobile applications as well so care should be
+        /// taken when modifying functionality.
+        /// </remarks>
         [HttpGet]
         [System.Web.Http.Route( "api/checkin/printsessionlabels" )]
-        public PrintSessionLabelsResponse PrintSessionLabels([FromUri] string session, [FromUri] int? kioskId = null )
+        public PrintSessionLabelsResponse PrintSessionLabels([FromUri] string session, [FromUri] int? kioskId = null, [FromUri] int? printerId = null, [FromUri] PrintSessionLabelsPrinterOverride printerOverride = PrintSessionLabelsPrinterOverride.Client )
         {
             List<Guid?> sessionGuids;
+            bool overrideClientPrinter = printerOverride == PrintSessionLabelsPrinterOverride.Client || printerOverride == PrintSessionLabelsPrinterOverride.Both;
+            bool overrideServerPrinter = printerOverride == PrintSessionLabelsPrinterOverride.Server || printerOverride == PrintSessionLabelsPrinterOverride.Both;
 
             //
             // The session data is a comma separated list of Guid values.
@@ -128,7 +137,16 @@ namespace Rock.Rest.Controllers
                 // If they specified a kiosk, attempt to load the printer for
                 // that kiosk.
                 //
-                if ( kioskId.HasValue && kioskId.Value != 0 )
+                if ( printerId.HasValue && printerId.Value != 0 )
+                {
+                    //
+                    // We aren't technically loading a kiosk, but this lets us
+                    // load the printer IP address from cache rather than hitting
+                    // the database each time.
+                    //
+                    printer = KioskDevice.Get( printerId.Value, null );
+                }
+                else if ( kioskId.HasValue && kioskId.Value != 0 )
                 {
                     var kiosk = KioskDevice.Get( kioskId.Value, null );
                     if ( ( kiosk?.Device?.PrinterDeviceId ).HasValue )
@@ -176,18 +194,31 @@ namespace Rock.Rest.Controllers
                     };
                 }
 
-                foreach ( var label in labels )
+                //
+                // If the client has specified a printer override setting then we need to
+                // check all labels and modify the target printer for any matching labels.
+                //
+                if ( printer != null )
                 {
-                    //
-                    // If the label is being printed to the kiosk and client printing
-                    // is enabled and the client has specified their device
-                    // identifier then we need to update the label data to have the
-                    // new printer information.
-                    //
-                    if ( label.PrintTo == PrintTo.Kiosk && label.PrintFrom == PrintFrom.Client && printer != null )
+                    foreach ( var label in labels )
                     {
-                        label.PrinterDeviceId = printer.Device.Id;
-                        label.PrinterAddress = printer.Device.IPAddress;
+                        //
+                        // If we are overriding client printed labels then update.
+                        //
+                        if ( label.PrintTo == PrintTo.Kiosk && label.PrintFrom == PrintFrom.Client && overrideClientPrinter )
+                        {
+                            label.PrinterDeviceId = printer.Device.Id;
+                            label.PrinterAddress = printer.Device.IPAddress;
+                        }
+
+                        //
+                        // If we are overriding server printed labels then update.
+                        //
+                        if ( label.PrintTo == PrintTo.Kiosk && label.PrintFrom == PrintFrom.Server && overrideServerPrinter )
+                        {
+                            label.PrinterDeviceId = printer.Device.Id;
+                            label.PrinterAddress = printer.Device.IPAddress;
+                        }
                     }
                 }
 
@@ -235,7 +266,7 @@ namespace Rock.Rest.Controllers
         #region Support Classes
 
         /// <summary>
-        /// The response data used with the <see cref="PrintSessionLabels(string, int?)" />
+        /// The response data used with the <see cref="PrintSessionLabels(string, int?, int?, PrintSessionLabelsPrinterOverride)" />
         /// API endpoint.
         /// </summary>
         public class PrintSessionLabelsResponse
@@ -255,6 +286,28 @@ namespace Rock.Rest.Controllers
             /// The errors encountered by the server.
             /// </value>
             public List<string> Messages { get; set; }
+        }
+
+        /// <summary>
+        /// The override options used with the <see cref="PrintSessionLabels(string, int?, int?, PrintSessionLabelsPrinterOverride)"/>
+        /// API endpoint.
+        /// </summary>
+        public enum PrintSessionLabelsPrinterOverride
+        {
+            /// <summary>
+            /// The client printed labels will have their printer overridden.
+            /// </summary>
+            Client,
+
+            /// <summary>
+            /// The server printed labels will have their printer overridden.
+            /// </summary>
+            Server,
+
+            /// <summary>
+            /// Both the client and server printed labels will have their printer overridden.
+            /// </summary>
+            Both
         }
 
         #endregion

@@ -140,7 +140,7 @@ namespace Rock.Field.Types
 
                 if ( match.Success )
                 {
-                    message = "The email address provided is not valid.";
+                    message = "The email address provided is valid.";
                     return true;
                 }
             }
