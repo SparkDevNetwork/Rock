@@ -307,6 +307,13 @@ namespace RockWeb.Blocks.Communication
 
             if ( responses.Any() )
             {
+                var responseListItem = responses.Last();
+
+                if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.BinaryFileGuids != null && responseListItem.BinaryFileGuids.Any() )
+                {
+                    return "Rock-Image-File";
+                }
+
                 return responses.Last().SMSMessage;
             }
 
@@ -440,9 +447,19 @@ namespace RockWeb.Blocks.Communication
                 var messageKeyHiddenField = ( HiddenFieldWithClass ) row.FindControl( "hfMessageKey" );
                 if ( messageKeyHiddenField.Value == hfSelectedMessageKey.Value )
                 {
-                    // This is our row, update the lit
                     Literal literal = ( Literal ) row.FindControl( "litMessagePart" );
-                    literal.Text = message;
+
+                    // This is our row, update the lit
+                    if ( message == "Rock-Image-File" )
+                    {
+                        literal.Text = "Image";
+                        row.AddCssClass( "latest-message-is-image" );
+                    }
+                    else
+                    {
+                        literal.Text = message;
+                    }
+
                     break;
                 }
             }
@@ -638,7 +655,16 @@ namespace RockWeb.Blocks.Communication
                 recipientPerson = new PersonAliasService( rockContext ).GetPerson( recipientPersonAliasId.Value );
             }
 
-            litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
+            var messagePart = LoadResponsesForRecipient( recipientPersonAliasId.Value );
+            if ( messagePart == "Rock-Image-File" )
+            {
+                litMessagePart.Text = "Image";
+                e.Row.AddCssClass( "latest-message-is-image" );
+            }
+            else
+            {
+                litMessagePart.Text = messagePart;
+            }
 
             int? smsPhoneDefinedValueId = hfSmsNumber.Value.AsIntegerOrNull();
 
@@ -705,6 +731,12 @@ namespace RockWeb.Blocks.Communication
 
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
             litMessagePart.Text = responseListItem.SMSMessage;
+
+            if ( responseListItem.SMSMessage.IsNullOrWhiteSpace() && responseListItem.BinaryFileGuids != null && responseListItem.BinaryFileGuids.Any() )
+            {
+                litMessagePart.Text = "Image";
+                e.Row.AddCssClass( "latest-message-is-image" );
+            }
 
             if ( !responseListItem.IsRead )
             {
