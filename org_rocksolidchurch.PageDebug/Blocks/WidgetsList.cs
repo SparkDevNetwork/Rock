@@ -19,11 +19,13 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using org_rocksolidchurch.PageDebug.Model;
+using org_rocksolidchurch.PageDebug.ViewModel;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.Blocks;
+using Rock.ViewModel;
 
 namespace org_rocksolidchurch.PageDebug.Blocks
 {
@@ -63,11 +65,17 @@ namespace org_rocksolidchurch.PageDebug.Blocks
         [BlockAction]
         public BlockActionResult GetWidgets( )
         {
+            var currentPerson = GetCurrentPerson();
+
             using ( var rockContext = new RockContext() )
             {
                 var service = new PluginWidgetService( rockContext );
                 var widgets = service.Queryable().AsNoTracking().ToList();
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, widgets );
+
+                var viewModelHelper = new ViewModelHelper<PluginWidget, PluginWidgetViewModel>();
+                var viewModels = widgets.Select( w => viewModelHelper.CreateViewModel( w, currentPerson, false ) );
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, viewModels );
             }
         }
     }

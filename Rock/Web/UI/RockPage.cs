@@ -2254,17 +2254,32 @@ Sys.Application.add_load(function () {
         /// Gets the context view models.
         /// </summary>
         /// <returns></returns>
-        internal Dictionary<string, IViewModel> GetContextViewModels() {
-            return GetContextEntities().ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToViewModel( CurrentPerson ) );
+        internal Dictionary<string, IViewModel> GetContextViewModels()
+        {
+            var contextEntities = GetContextEntities();
+            var viewModels = new Dictionary<string, IViewModel>();
+
+            foreach ( var kvp in contextEntities )
+            {
+                var entity = kvp.Value;
+                var viewModel = ViewModelHelper.GetViewModel( entity, CurrentPerson, false );
+
+                if ( viewModel != null )
+                {
+                    viewModels[kvp.Key] = viewModel;
+                }
+            }
+
+            return viewModels;
         }
 
         /// <summary>
         /// Gets the context entities.
         /// </summary>
         /// <returns></returns>
-        internal Dictionary<string, object> GetContextEntities()
+        internal Dictionary<string, IEntity> GetContextEntities()
         {
-            var contextEntities = new Dictionary<string, object>();
+            var contextEntities = new Dictionary<string, IEntity>();
 
             foreach ( var contextEntityType in GetContextEntityTypes() )
             {

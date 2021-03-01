@@ -885,10 +885,9 @@ mission. We are so grateful for your commitment.</p>
                 var accounts = service.GetByGuids( allowedGuids ).ToList();
 
                 return accounts
-                    .Select( a => a.ToViewModel<FinancialAccountViewModel>( null, false ) )
+                    .Select( a => a.ToViewModel( null, false ) )
                     .ToList();
             }
-            
         }
 
         /// <summary>

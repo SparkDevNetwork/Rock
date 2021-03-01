@@ -27,8 +27,9 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Field;
+using Rock.Model;
 using Rock.Security;
-
+using Rock.ViewModel;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
@@ -431,6 +432,50 @@ namespace Rock.Web.Cache
             }
 
             CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
+        }
+
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        {
+            var viewModel = new AttributeViewModel
+            {
+                Id = Id,
+                Guid = Guid,
+                AbbreviatedName = AbbreviatedName,
+                AllowSearch = AllowSearch,
+                DefaultValue = DefaultValue,
+                Description = Description,
+                EnableHistory = EnableHistory,
+                EntityTypeId = EntityTypeId,
+                EntityTypeQualifierColumn = EntityTypeQualifierColumn,
+                EntityTypeQualifierValue = EntityTypeQualifierValue,
+                FieldTypeId = FieldTypeId,
+                IconCssClass = IconCssClass,
+                IsActive = IsActive,
+                IsAnalytic = IsAnalytic,
+                IsAnalyticHistory = IsAnalyticHistory,
+                IsGridColumn = IsGridColumn,
+                IsIndexEnabled = IsIndexEnabled,
+                IsMultiValue = IsMultiValue,
+                IsPublic = IsPublic,
+                IsRequired = IsRequired,
+                IsSystem = IsSystem,
+                Key = Key,
+                Name = Name,
+                Order = Order,
+                PostHtml = PostHtml,
+                PreHtml = PreHtml,
+                ShowOnBulk = ShowOnBulk
+            };
+
+            var helper = new ViewModelHelper<Rock.Model.Attribute, AttributeViewModel>();
+            helper.ApplyAdditionalPropertiesAndSecurityToViewModel( viewModel, currentPerson, loadAttributes );
+            return viewModel;
         }
 
         /// <summary>

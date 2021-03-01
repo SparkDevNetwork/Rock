@@ -64,7 +64,7 @@
       <Name>Rock.Obsidian</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
-      <Project>{90545602-ee57-44bb-a79d-3bda60b166b0}</Project>
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
       <Name>Rock.ViewModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">

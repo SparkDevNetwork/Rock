@@ -81,11 +81,11 @@ namespace Rock.Obsidian.Blocks.Event
 
                 return new
                 {
-                    registrationInstance = RegistrationInstanceViewModel.From( registrationInstance, currentPerson, false ),
-                    registrationTemplate = RegistrationTemplateViewModel.From( registrationTemplate, currentPerson, false ),
-                    registrationTemplateForms = forms.Select( f => RegistrationTemplateFormViewModel.From( f, currentPerson, false ) ),
-                    registrationTemplateFormFields = fields.Select( f => RegistrationTemplateFormFieldViewModel.From( f, currentPerson, false ) ),
-                    fieldAttributes = fieldAttributes.Select( a => AttributeViewModel.From( a, currentPerson, false ) )
+                    registrationInstance = registrationInstance.ToViewModel( currentPerson, false ),
+                    registrationTemplate = registrationTemplate.ToViewModel( currentPerson, false ),
+                    registrationTemplateForms = forms.Select( f => f.ToViewModel( currentPerson, false ) ),
+                    registrationTemplateFormFields = fields.Select( f => f.ToViewModel( currentPerson, false ) ),
+                    fieldAttributes = fieldAttributes.Select( a => a.ToViewModel( currentPerson, false ) )
                 };
             }
         }

@@ -57,7 +57,7 @@ namespace Rock.Obsidian.Blocks.Example
                 }
 
                 var currentPerson = GetCurrentPerson();
-                var personViewModel = PersonViewModel.From( currentPerson );
+                var personViewModel = currentPerson.ToViewModel( currentPerson );
                 return new BlockActionResult( HttpStatusCode.OK, personViewModel );
             }
         }

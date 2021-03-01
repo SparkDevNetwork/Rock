@@ -20,6 +20,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModel;
 
 namespace Rock.Web.Cache
 {
@@ -249,5 +250,28 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public AttributeValueViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        {
+            var viewModel = new AttributeValueViewModel
+            {
+                AttributeId = AttributeId,
+                EntityId = EntityId,
+                Value = Value
+            };
+
+            var helper = new ViewModelHelper<AttributeValue, AttributeValueViewModel>();
+            helper.ApplyAdditionalPropertiesAndSecurityToViewModel( viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
+        #endregion Methods
     }
 }

@@ -792,9 +792,8 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
-    <Compile Include="ViewModel\IViewModel.cs" />
     <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
-    <Compile Include="ViewModel\TypeScriptTypeAttribute.cs" />
+    <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="ViewModel\ViewModelOfAttribute.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
@@ -3155,6 +3154,10 @@
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
