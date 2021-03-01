@@ -2230,6 +2230,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
