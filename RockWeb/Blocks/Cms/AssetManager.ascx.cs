@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
@@ -463,6 +464,32 @@ upnlFiles.ClientID // {2}
             ListFiles();
         }
 
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptFiles control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptFiles_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var asset = e.Item.DataItem as Asset;
+            if ( asset != null && asset.HasError )
+            {
+                var row = ( HtmlControl ) e.Item.FindControl( "rptFileRow" );
+                row.Attributes.Add( "title", "Error loading file. See the Exception Log for details." );
+                row.AddCssClass( "asset-has-error" );
+
+                Label nameLabel = (Label) e.Item.FindControl( "lbName" );
+                nameLabel.AddCssClass( "asset-has-error" );
+
+                Label lbLastModified = (Label) e.Item.FindControl( "lbLastModified" );
+                lbLastModified.AddCssClass( "asset-has-error" );
+
+                Label lbFileSize = (Label) e.Item.FindControl( "lbFileSize" );
+                lbFileSize.AddCssClass( "asset-has-error" );
+            }
+        }
+
         #endregion control events
 
         #region private methods
@@ -514,7 +541,7 @@ upnlFiles.ClientID // {2}
         /// <returns></returns>
         private bool IsValidName( string renameFolderName )
         {
-            Regex regularExpression = new Regex( "^([^*/><?\\|:,]).*$" );
+            Regex regularExpression = new Regex( @"^([^*/><?\\|:,]).*$" );
             return regularExpression.IsMatch( renameFolderName );
         }
 

@@ -791,18 +791,43 @@ namespace Rock.Storage.AssetStorage
             string name = GetNameFromKey( s3Object.Key );
             string uriKey = System.Web.HttpUtility.UrlPathEncode( s3Object.Key );
             AssetType assetType = GetAssetType( s3Object.Key );
+            Asset asset = new Asset();
 
-            return new Asset
+            try
             {
-                Name = name,
-                Key = s3Object.Key,
-                Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
-                Type = assetType,
-                IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail( assetStorageProvider, s3Object.Key, s3Object.LastModified ),
-                FileSize = s3Object.Size,
-                LastModifiedDateTime = s3Object.LastModified,
-                Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString(),
+                asset = new Asset
+                {
+                    Name = name,
+                    Key = s3Object.Key,
+                    Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
+                    Type = assetType,
+                    IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail( assetStorageProvider, s3Object.Key, s3Object.LastModified ),
+                    FileSize = s3Object.Size,
+                    LastModifiedDateTime = s3Object.LastModified,
+                    Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString()
+                };
+
+            }
+            catch ( Exception ex )
+            {
+                // log the exception and create an assett that describes the error, but don't throw it.
+                ExceptionLogService.LogException( new AggregateException( $"Error creating S3 asset for key {s3Object.Key}", ex ) );
+
+                asset = new Asset
+                {
+                    Name = name,
+                    Key = s3Object.Key,
+                    Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
+                    Type = assetType,
+                    IconPath = assetType == AssetType.Folder ? string.Empty : GetCorruptImageAssetImage(),
+                    FileSize = s3Object.Size,
+                    LastModifiedDateTime = s3Object.LastModified,
+                    Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString(),
+                    HasError = true
+                };
             };
+
+            return asset;
         }
 
         /// <summary>
@@ -829,18 +854,47 @@ namespace Rock.Storage.AssetStorage
 
                  Reason: Amazon S3's Amazon.Runtime.Internal.Util.WrapperStream changes based on the file.
             */
-            return new Asset
+
+            Asset asset = new Asset();
+
+            try
             {
-                Name = name,
-                Key = response.Key,
-                Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
-                Type = GetAssetType( response.Key ),
-                IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified ) : GetFileTypeIcon( response.Key ),
-                FileSize = response.ContentLength,
-                LastModifiedDateTime = response.LastModified,
-                Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
-                AssetStream = response.ResponseStream
-            };
+                asset = new Asset
+                {
+                    Name = name,
+                    Key = response.Key,
+                    Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
+                    Type = GetAssetType( response.Key ),
+                    IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified ) : GetFileTypeIcon( response.Key ),
+                    FileSize = response.ContentLength,
+                    LastModifiedDateTime = response.LastModified,
+                    Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
+                    AssetStream = response.ResponseStream,
+                    HasError = true
+                };
+            }
+            catch ( Exception ex )
+            {
+                // log the exception and create an assett that describes the error, but don't throw it.
+                ExceptionLogService.LogException( new AggregateException( $"Error creating asset for key {response.Key}", ex ) );
+                asset = new Asset
+                {
+                    Name = name,
+                    Key = response.Key,
+                    Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
+                    Type = GetAssetType( response.Key ),
+                    IconPath = GetCorruptImageAssetImage(),
+                    FileSize = response.ContentLength,
+                    LastModifiedDateTime = response.LastModified,
+                    Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
+                    AssetStream = response.ResponseStream,
+                    HasError = true
+                };
+            }
+
+
+
+            return asset;
         }
 
         /// <summary>
