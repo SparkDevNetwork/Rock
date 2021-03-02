@@ -322,7 +322,8 @@ namespace Rock.Mobile
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
-                TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
+                TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
+                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic
             };
 
             //
@@ -479,7 +480,8 @@ namespace Rock.Mobile
                     CssClasses = page.BodyCssClass,
                     CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) ),
-                    HideNavigationBar = additionalPageSettings.HideNavigationBar
+                    HideNavigationBar = additionalPageSettings.HideNavigationBar,
+                    ShowFullScreen = additionalPageSettings.ShowFullScreen
                 };
 
                 package.Pages.Add( mobilePage );
