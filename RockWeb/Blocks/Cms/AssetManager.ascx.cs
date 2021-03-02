@@ -473,13 +473,22 @@ upnlFiles.ClientID // {2}
         protected void rptFiles_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var asset = e.Item.DataItem as Asset;
-            if ( asset != null && asset.HasError )
+            if ( asset == null )
+            {
+                return;
+            }
+
+            Label nameLabel = (Label) e.Item.FindControl( "lbName" );
+
+            // Constrain the file name length to 100 characters to prevent it from messing with the UI
+            nameLabel.Text = asset.Name.LeftWithEllipsis( 100 );
+
+            if ( asset.HasError )
             {
                 var row = ( HtmlControl ) e.Item.FindControl( "rptFileRow" );
                 row.Attributes.Add( "title", "Error loading file. See the Exception Log for details." );
                 row.AddCssClass( "asset-has-error" );
 
-                Label nameLabel = (Label) e.Item.FindControl( "lbName" );
                 nameLabel.AddCssClass( "asset-has-error" );
 
                 Label lbLastModified = (Label) e.Item.FindControl( "lbLastModified" );
