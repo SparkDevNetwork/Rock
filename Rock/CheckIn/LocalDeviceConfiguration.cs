@@ -146,7 +146,6 @@ namespace Rock.CheckIn
         /// Saves to cookie.
         /// We are now encrypting this cookie see Asana: REF# 20210224-MSB1 for details.
         /// </summary>
-        /// <param name="page">The page.</param>
         public void SaveToCookie()
         {
             var localDeviceConfigValue = this.ToJson( Newtonsoft.Json.Formatting.None );
