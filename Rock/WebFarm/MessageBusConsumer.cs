@@ -33,6 +33,12 @@ namespace Rock.WebFarm
         /// <param name="message">The message.</param>
         public override void Consume( WebFarmWasUpdatedMessage message )
         {
+            if ( !RockWebFarm.IsRunning() )
+            {
+                // Don't act on any messages until this node is fully started
+                return;
+            }
+
             switch ( message.MessageType )
             {
                 case RockWebFarm.EventType.Ping:
