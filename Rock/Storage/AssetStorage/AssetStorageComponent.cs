@@ -379,10 +379,18 @@ namespace Rock.Storage.AssetStorage
             if ( !File.Exists( thumbnailFilePath ) )
             {
                 virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
-                //thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
             }
 
             return virtualThumbnailFilePath;
+        }
+
+        /// <summary>
+        /// Gets the no asset image.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetCorruptImageAssetImage()
+        {
+            return "/Assets/Images/corrupt-image.jpg";
         }
 
         /// <summary>
@@ -588,7 +596,11 @@ namespace Rock.Storage.AssetStorage
             catch ( ImageResizer.ImageProcessingException )
             {
                 // This error will happen if the image format is unsupported.
-                ExceptionLogService.LogException( string.Format( "Unable to create image thumbnail from stream for AssetStorage provider ({0}) and thumbnail ({1}).", assetStorageProvider.Name, physicalThumbPath ) );
+                ExceptionLogService.LogException( $"Unable to create image thumbnail from stream for AssetStorage provider ({assetStorageProvider.Name}) and thumbnail ({physicalThumbPath})." );
+
+                // This prevents 0KB files and will allow the thumbnail to be created next time it is loaded. It also allows alternate images to be shown instead of the browser broken image link icon.
+                File.Delete( physicalThumbPath );
+                throw;
             }
         }
 
