@@ -16,7 +16,6 @@
 //
 
 using System;
-using Rock.Model;
 
 namespace Rock.ViewModel
 {
@@ -49,29 +48,5 @@ namespace Rock.ViewModel
         /// The primary family unique identifier.
         /// </value>
         public Guid? PrimaryFamilyGuid { get; set; }
-
-        /// <summary>
-        /// Sets the properties from entity.
-        /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        protected override void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( entity is Person person )
-            {
-                FullName = person.FullName;
-                PhotoUrl = person.PhotoUrl;
-
-                if ( person.PrimaryFamily != null )
-                {
-                    PrimaryFamilyGuid = person.PrimaryFamily.Guid;
-                }
-                else
-                {
-                    PrimaryFamilyGuid = person.GetFamily()?.Guid;
-                }
-            }
-        }
     }
 }

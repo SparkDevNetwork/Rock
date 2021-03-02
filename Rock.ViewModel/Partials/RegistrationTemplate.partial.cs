@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using Rock.Model;
-
 namespace Rock.ViewModel
 {
     /// <summary>
@@ -32,19 +30,5 @@ namespace Rock.ViewModel
         /// The plural registrant term.
         /// </value>
         public string PluralRegistrantTerm { get; set; }
-
-        /// <summary>
-        /// Sets the properties from entity.
-        /// </summary>
-        /// <param name="entity">The entity, cache item, or some object.</param>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        protected override void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( entity is RegistrationTemplate registrationTemplate )
-            {
-                PluralRegistrantTerm = registrationTemplate.RegistrantTerm.Pluralize();
-            }
-        }
     }
 }

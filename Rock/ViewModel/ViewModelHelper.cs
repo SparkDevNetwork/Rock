@@ -85,7 +85,6 @@ namespace Rock.ViewModel
     /// View Model Helper
     /// </summary>
     public class ViewModelHelper<TModel, TViewModel>
-        where TModel : Model<TModel>, new()
         where TViewModel : IViewModel, new()
     {
         /// <summary>
@@ -106,7 +105,7 @@ namespace Rock.ViewModel
             CopyProperties( model, viewModel );
 
             AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
-            ApplyAdditionalPropertiesAndSecurityToViewModel( viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
 
             return viewModel;
         }
@@ -118,7 +117,7 @@ namespace Rock.ViewModel
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void AddAttributesToViewModel( TModel model, IViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public virtual void AddAttributesToViewModel( TModel model, TViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( loadAttributes && model is IHasAttributes hasAttributes )
             {
@@ -138,12 +137,13 @@ namespace Rock.ViewModel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Model{T}" /> class.
+        /// Applies the additional properties and security to view model.
         /// </summary>
+        /// <param name="model">The model.</param>
         /// <param name="viewModel">The view model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
-        public virtual void ApplyAdditionalPropertiesAndSecurityToViewModel( IViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        public virtual void ApplyAdditionalPropertiesAndSecurityToViewModel( TModel model, TViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
             return;
         }

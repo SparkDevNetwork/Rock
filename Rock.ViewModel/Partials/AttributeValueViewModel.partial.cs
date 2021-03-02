@@ -15,15 +15,11 @@
 // </copyright>
 //
 
-using Rock.Model;
-using Rock.Web.Cache;
-
 namespace Rock.ViewModel
 {
     /// <summary>
     /// AttributeValueViewModel
     /// </summary>
-    /// <seealso cref="Rock.ViewModel.IViewModel" />
     public partial class AttributeValueViewModel
     {
         /// <summary>
@@ -34,42 +30,5 @@ namespace Rock.ViewModel
         /// </value>
         [TypeScriptType( "Attribute | null", "import Attribute from './AttributeViewModel.js';" )]
         public AttributeViewModel Attribute { get; set; }
-
-        /// <summary>
-        /// Copies additional properties from the object.
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="currentPerson"></param>
-        /// <param name="loadAttributes"></param>
-        protected override void SetAdditionalPropertiesFrom( object entity, Person currentPerson = null, bool loadAttributes = true )
-        {
-            if ( entity == null )
-            {
-                return;
-            }
-
-            if ( entity is AttributeValueCache attributeValueCache )
-            {
-                Attribute = AttributeCache.Get( attributeValueCache.AttributeId ).ToViewModel<AttributeViewModel>();
-            }
-            else if ( entity is AttributeValue attributeValue )
-            {
-                Attribute = AttributeCache.Get( attributeValue.AttributeId ).ToViewModel<AttributeViewModel>();
-            }
-        }
-
-        /// <summary>
-        /// Creates a view model from the specified cache.
-        /// </summary>
-        /// <param name="cache">The cache.</param>
-        /// <param name="currentPerson" >The current person.</param>
-        /// <param name="loadAttributes" >if set to <c>true</c> [load attributes].</param>
-        /// <returns></returns>
-        public static AttributeValueViewModel From( AttributeValueCache cache, Person currentPerson = null, bool loadAttributes = true )
-        {
-            var viewModel = new AttributeValueViewModel();
-            viewModel.SetPropertiesFrom( cache, currentPerson, loadAttributes );
-            return viewModel;
-        }
     }
 }

@@ -260,6 +260,11 @@
     <Compile Include="CodeGenerated\WorkflowTypeViewModel.cs" />
     <Compile Include="CodeGenerated\WorkflowViewModel.cs" />
     <Compile Include="IViewModel.cs" />
+    <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
+    <Compile Include="Partials\AttributeValueViewModel.partial.cs" />
+    <Compile Include="Partials\AttributeViewModel.partial.cs" />
+    <Compile Include="Partials\PersonViewModel.partial.cs" />
+    <Compile Include="Partials\RegistrationTemplate.partial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TypeScriptTypeAttribute.cs" />
     <Compile Include="ViewModelBase.cs" />

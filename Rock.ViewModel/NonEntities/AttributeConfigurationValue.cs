@@ -15,39 +15,35 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using Rock.ViewModel.NonEntities;
-
-namespace Rock.ViewModel
+namespace Rock.ViewModel.NonEntities
 {
     /// <summary>
-    /// AttributeViewModel
+    /// Attribute Configuration Value
     /// </summary>
-    public partial class AttributeViewModel
+    public class AttributeConfigurationValue
     {
         /// <summary>
-        /// Gets or sets the category Guids.
+        /// Gets or sets the name. The name is used as the field label heading.
         /// </summary>
         /// <value>
-        /// The category Guids.
+        /// The name/label to use as the field label heading.
         /// </value>
-        public Guid[] CategoryGuids { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the field type unique identifier.
+        /// Gets or sets the description.
         /// </summary>
         /// <value>
-        /// The field type unique identifier.
+        /// The description.
         /// </value>
-        public Guid FieldTypeGuid { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
-        /// Gets the qualifier values.
+        /// Gets or sets the value.
         /// </summary>
         /// <value>
-        /// The qualifier values.
+        /// The value.
         /// </value>
-        public Dictionary<string, AttributeConfigurationValue> QualifierValues { get; set; }
+        public string Value { get; set; }
     }
 }
