@@ -795,7 +795,6 @@
     <Compile Include="Utility\TimeIntervalSetting.cs" />
     <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
     <Compile Include="ViewModel\ViewModelHelper.cs" />
-    <Compile Include="ViewModel\ViewModelOfAttribute.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />

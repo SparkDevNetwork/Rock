@@ -61,7 +61,7 @@ System.register(["vue", "../../../Elements/Alert.js", "../../../Templates/Panele
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
-                name: 'org_rocksolidchurch.PageDebug.WidgetsList',
+                name: 'com_rocksolidchurchdemo.PageDebug.WidgetsList',
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
                     Alert: Alert_js_1.default,

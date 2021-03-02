@@ -19,7 +19,7 @@ import PaneledBlockTemplate from '../../../Templates/PaneledBlockTemplate.js';
 import store from '../../../Store/Index.js';
 
 export default defineComponent({
-    name: 'org_rocksolidchurch.PageDebug.ContextGroup',
+    name: 'com_rocksolidchurchdemo.PageDebug.ContextGroup',
     components: {
         PaneledBlockTemplate
     },

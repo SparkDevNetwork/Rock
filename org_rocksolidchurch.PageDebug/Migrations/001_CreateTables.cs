@@ -1,25 +1,25 @@
-﻿using org_rocksolidchurch.PageDebug.Model;
+﻿using com_rocksolidchurchdemo.PageDebug.Model;
 using Rock.Plugin;
 
-namespace org_rocksolidchurch.PageDebug.Migrations
+namespace com_rocksolidchurchdemo.PageDebug.Migrations
 {
     [MigrationNumber( 1, "1.13.0" )]
     public class CreateTables : Migration
     {
         public override void Down()
         {
-            DropTable( $"dbo.{PluginWidget.TableName}" );
+            DropTable( $"dbo.{Widget.TableName}" );
         }
 
         public override void Up()
         {
-            Sql( $@"IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('[dbo].[{PluginWidget.TableName}]'))
+            Sql( $@"IF NOT EXISTS(SELECT 1 FROM sys.objects WHERE object_id = OBJECT_ID('[dbo].[{Widget.TableName}]'))
                 BEGIN
-	                CREATE TABLE [dbo].[{PluginWidget.TableName}](
+	                CREATE TABLE [dbo].[{Widget.TableName}](
 		                [Id] [int] IDENTITY(1,1) NOT NULL,
-		                [{nameof( PluginWidget.ThisIsTheString )}] [nvarchar](max) NOT NULL,
-		                [{nameof( PluginWidget.ThisIsTheSecret )}] [nvarchar](100) NOT NULL,
-		                [{nameof( PluginWidget.ThisIsTheInt )}] [int] NOT NULL,
+		                [{nameof( Widget.ThisIsTheString )}] [nvarchar](max) NOT NULL,
+		                [{nameof( Widget.ThisIsTheSecret )}] [nvarchar](100) NOT NULL,
+		                [{nameof( Widget.ThisIsTheInt )}] [int] NOT NULL,
 		                [CreatedDateTime] [datetime] NULL,
 		                [ModifiedDateTime] [datetime] NULL,
 		                [CreatedByPersonAliasId] [int] NULL,
@@ -28,16 +28,16 @@ namespace org_rocksolidchurch.PageDebug.Migrations
 		                [ForeignId] [int] NULL,
 		                [ForeignGuid] [uniqueidentifier] NULL,
 		                [ForeignKey] [nvarchar](100) NULL,
-		                CONSTRAINT [PK_{PluginWidget.TableName}] PRIMARY KEY CLUSTERED ( [Id] ASC )
+		                CONSTRAINT [PK_{Widget.TableName}] PRIMARY KEY CLUSTERED ( [Id] ASC )
 	                );
 
-	                CREATE UNIQUE NONCLUSTERED INDEX [IX_{PluginWidget.TableName}_GuiId] 
-		                ON [dbo].[{PluginWidget.TableName}] ( [Guid] ASC );
+	                CREATE UNIQUE NONCLUSTERED INDEX [IX_{Widget.TableName}_GuiId] 
+		                ON [dbo].[{Widget.TableName}] ( [Guid] ASC );
 
-                    INSERT INTO [{PluginWidget.TableName}] (
-                        [{nameof( PluginWidget.ThisIsTheString )}],
-		                [{nameof( PluginWidget.ThisIsTheSecret )}],
-		                [{nameof( PluginWidget.ThisIsTheInt )}],
+                    INSERT INTO [{Widget.TableName}] (
+                        [{nameof( Widget.ThisIsTheString )}],
+		                [{nameof( Widget.ThisIsTheSecret )}],
+		                [{nameof( Widget.ThisIsTheInt )}],
                         [Guid]
                     ) VALUES (
                         'String 1', 'Secret 1', 111, NEWID()

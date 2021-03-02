@@ -24,7 +24,7 @@ import GridRow from '../../../Controls/GridRow.js';
 import GridColumn from '../../../Controls/GridColumn.js';
 
 export default defineComponent({
-    name: 'org_rocksolidchurch.PageDebug.WidgetsList',
+    name: 'com_rocksolidchurchdemo.PageDebug.WidgetsList',
     components: {
         PaneledBlockTemplate,
         Alert,

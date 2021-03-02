@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Rock.Data;
 
-namespace org_rocksolidchurch.PageDebug.Model
+namespace com_rocksolidchurchdemo.PageDebug.Model
 {
     /// <summary>
     /// Example Model
     /// </summary>
     [Table( TableName )]
     [DataContract]
-    public class PluginWidget : Model<PluginWidget>, IRockEntity
+    public class Widget : Model<Widget>, IRockEntity
     {
-        public const string TableName = "_org_rocksolidchurch_PageDebug_PluginWidget";
+        public const string TableName = "_com_rocksolidchurchdemo_PageDebug_Widget";
 
         /// <summary>
         /// Gets or sets the secret.

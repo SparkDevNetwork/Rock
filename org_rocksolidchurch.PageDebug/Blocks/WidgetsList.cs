@@ -18,8 +18,8 @@
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using org_rocksolidchurch.PageDebug.Model;
-using org_rocksolidchurch.PageDebug.ViewModel;
+using com_rocksolidchurchdemo.PageDebug.Model;
+using com_rocksolidchurchdemo.PageDebug.ViewModel;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
@@ -27,7 +27,7 @@ using Rock.Model;
 using Rock.Obsidian.Blocks;
 using Rock.ViewModel;
 
-namespace org_rocksolidchurch.PageDebug.Blocks
+namespace com_rocksolidchurchdemo.PageDebug.Blocks
 {
     /// <summary>
     /// Shows the widgets.
@@ -35,7 +35,7 @@ namespace org_rocksolidchurch.PageDebug.Blocks
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
     [DisplayName( "Widget List" )]
-    [Category( "Rock Solid Church > Page Debug" )]
+    [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows a list of widgets" )]
     [IconCssClass( "fa fa-fan" )]
 
@@ -56,7 +56,7 @@ namespace org_rocksolidchurch.PageDebug.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/org_rocksolidchurch/PageDebug/WidgetsList";
+        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/com_rocksolidchurchdemo/PageDebug/WidgetsList";
 
         /// <summary>
         /// Gets the widgets.
@@ -69,10 +69,10 @@ namespace org_rocksolidchurch.PageDebug.Blocks
 
             using ( var rockContext = new RockContext() )
             {
-                var service = new PluginWidgetService( rockContext );
+                var service = new WidgetService( rockContext );
                 var widgets = service.Queryable().AsNoTracking().ToList();
 
-                var viewModelHelper = new ViewModelHelper<PluginWidget, PluginWidgetViewModel>();
+                var viewModelHelper = new ViewModelHelper<Widget, PluginWidgetViewModel>();
                 var viewModels = widgets.Select( w => viewModelHelper.CreateViewModel( w, currentPerson, false ) );
 
                 return new BlockActionResult( System.Net.HttpStatusCode.OK, viewModels );

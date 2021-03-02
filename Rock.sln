@@ -83,7 +83,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Specs", "Rock.Specs\Ro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Obsidian", "Rock.Obsidian\Rock.Obsidian.csproj", "{E8C5F154-201F-4C67-BCDC-34787DEFFEAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org_rocksolidchurch.PageDebug", "org_rocksolidchurch.PageDebug\org_rocksolidchurch.PageDebug.csproj", "{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com_rocksolidchurchdemo.PageDebug", "org_rocksolidchurch.PageDebug\com_rocksolidchurchdemo.PageDebug.csproj", "{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.ViewModel", "Rock.ViewModel\Rock.ViewModel.csproj", "{05BAAF85-9C53-4CCD-A535-036427B0DF72}"
 EndProject

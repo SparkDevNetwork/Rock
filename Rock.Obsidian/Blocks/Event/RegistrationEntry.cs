@@ -32,7 +32,7 @@ namespace Rock.Obsidian.Blocks.Event
     /// </summary>
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
-    [DisplayName( "Person Detail" )]
+    [DisplayName( "Registration Entry" )]
     [Category( "Obsidian > Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]

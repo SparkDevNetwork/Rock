@@ -16,7 +16,7 @@ System.register(["../../../Vendor/Vue/vue.js", "../../../Templates/PaneledBlockT
         ],
         execute: function () {
             exports_1("default", vue_js_1.defineComponent({
-                name: 'org_rocksolidchurch.PageDebug.ContextGroup',
+                name: 'com_rocksolidchurchdemo.PageDebug.ContextGroup',
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_js_1.default
                 },

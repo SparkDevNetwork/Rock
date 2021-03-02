@@ -1,12 +1,10 @@
-﻿using org_rocksolidchurch.PageDebug.Model;
-using Rock.ViewModel;
+﻿using Rock.ViewModel;
 
-namespace org_rocksolidchurch.PageDebug.ViewModel
+namespace com_rocksolidchurchdemo.PageDebug.ViewModel
 {
     /// <summary>
     /// Example Model View Model
     /// </summary>
-    [ViewModelOf( typeof( PluginWidget ) )]
     public class PluginWidgetViewModel : ViewModelBase
     {
         /// <summary>

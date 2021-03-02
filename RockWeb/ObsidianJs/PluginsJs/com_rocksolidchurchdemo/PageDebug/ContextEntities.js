@@ -8,7 +8,7 @@
         GuidModule
     ) {
         return {
-            name: 'org_rocksolidchurch.PageDebug.ContextEntities',
+            name: 'com_rocksolidchurchdemo.PageDebug.ContextEntities',
             components: {
                 PaneledBlockTemplate: PaneledBlockTemplateModule.default
             },

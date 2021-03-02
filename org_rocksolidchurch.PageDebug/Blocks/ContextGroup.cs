@@ -20,7 +20,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Obsidian.Blocks;
 
-namespace org_rocksolidchurch.PageDebug.Blocks
+namespace com_rocksolidchurchdemo.PageDebug.Blocks
 {
     /// <summary>
     /// Shows the page's context group.
@@ -28,7 +28,7 @@ namespace org_rocksolidchurch.PageDebug.Blocks
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
     [DisplayName( "Context Group" )]
-    [Category( "Rock Solid Church > Page Debug" )]
+    [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows the page's context group" )]
     [IconCssClass( "fa fa-grin-tongue-squint" )]
 
@@ -49,6 +49,6 @@ namespace org_rocksolidchurch.PageDebug.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/org_rocksolidchurch/PageDebug/ContextGroup";
+        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/com_rocksolidchurchdemo/PageDebug/ContextGroup";
     }
 }

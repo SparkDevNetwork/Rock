@@ -20,7 +20,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Obsidian.Blocks;
 
-namespace org_rocksolidchurch.PageDebug.Blocks
+namespace com_rocksolidchurchdemo.PageDebug.Blocks
 {
     /// <summary>
     /// Shows the page's context entities.
@@ -28,7 +28,7 @@ namespace org_rocksolidchurch.PageDebug.Blocks
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
     [DisplayName( "Context Entities" )]
-    [Category( "Rock Solid Church > Page Debug" )]
+    [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows the page's context entities" )]
     [IconCssClass( "fa fa-pizza-slice" )]
 
@@ -49,6 +49,6 @@ namespace org_rocksolidchurch.PageDebug.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockFileUrl => $"/ObsidianJs/PluginsJs/org_rocksolidchurch/PageDebug/ContextEntities";
+        public override string BlockFileUrl => $"/ObsidianJs/PluginsJs/com_rocksolidchurchdemo/PageDebug/ContextEntities";
     }
 }

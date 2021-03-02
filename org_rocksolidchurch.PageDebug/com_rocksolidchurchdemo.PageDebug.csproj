@@ -7,8 +7,8 @@
     <ProjectGuid>{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>org_rocksolidchurch.PageDebug</RootNamespace>
-    <AssemblyName>org_rocksolidchurch.PageDebug</AssemblyName>
+    <RootNamespace>com_rocksolidchurchdemo.PageDebug</RootNamespace>
+    <AssemblyName>com_rocksolidchurchdemo.PageDebug</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -46,12 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Migrations\001_CreateTables.cs" />
-    <Compile Include="Model\PluginWidgetService.cs" />
+    <Compile Include="Model\WidgetService.cs" />
     <Compile Include="Blocks\WidgetsList.cs" />
     <Compile Include="Blocks\ContextGroup.cs" />
     <Compile Include="Blocks\ContextEntities.cs" />
     <Compile Include="ViewModel\PluginWidgetViewModel.cs" />
-    <Compile Include="Model\PluginWidget.cs" />
+    <Compile Include="Model\Widget.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
