@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
@@ -40,11 +39,51 @@ namespace Rock.Rest.Filters
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
+            var principal = actionContext.Request.GetUserPrincipal();
+            Person person = null;
+
+            if ( principal != null && principal.Identity != null )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    string userName = principal.Identity.Name;
+                    UserLogin userLogin = null;
+                    if ( userName.StartsWith( "rckipid=" ) )
+                    {
+                        var personService = new PersonService( rockContext );
+                        var impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
+                        if ( impersonatedPerson != null )
+                        {
+                            userLogin = impersonatedPerson.GetImpersonatedUser();
+                        }
+                    }
+                    else
+                    {
+                        var userLoginService = new UserLoginService( rockContext );
+                        userLogin = userLoginService.GetByUserName( userName );
+                    }
+
+                    if ( userLogin != null )
+                    {
+                        person = userLogin.Person;
+                        var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Security.Authentication.PINAuthentication ).FullName );
+
+                        // Don't allow PIN authentications.
+                        var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
+                        if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+                        {
+                            actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                            return;
+                        }
+                    }
+                }
+            }
+
             var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionContext.ActionDescriptor;
 
             var controller = actionContext.ActionDescriptor.ControllerDescriptor;
-            string controllerClassName = controller.ControllerType.FullName;
-            string actionMethod = actionContext.Request.Method.Method;
+            var controllerClassName = controller.ControllerType.FullName;
+            var actionMethod = actionContext.Request.Method.Method;
 
             var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
             ISecured item = RestActionCache.Get( apiId );
@@ -59,58 +98,27 @@ namespace Rock.Rest.Filters
                 }
             }
 
-            Person person = null;
-
             if ( actionContext.Request.Properties.Keys.Contains( "Person" ) )
             {
                 person = actionContext.Request.Properties["Person"] as Person;
             }
             else
             {
-                var principal = actionContext.Request.GetUserPrincipal();
-                if ( principal != null && principal.Identity != null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        string userName = principal.Identity.Name;
-                        UserLogin userLogin = null;
-                        if ( userName.StartsWith( "rckipid=" ) )
-                        {
-                            Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                            Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( userName.Substring( 8 ) );
-                            if ( impersonatedPerson != null )
-                            {
-                                userLogin = impersonatedPerson.GetImpersonatedUser();
-                            }
-                        }
-                        else
-                        {
-                            var userLoginService = new Rock.Model.UserLoginService( rockContext );
-                            userLogin = userLoginService.GetByUserName( userName );
-                        }
+                actionContext.Request.Properties.Add( "Person", person );
 
-                        if ( userLogin != null )
-                        {
-                            person = userLogin.Person;
-                            actionContext.Request.Properties.Add( "Person", person );
-
-                            /* 12/12/2019 BJW
-                             *
-                             * Setting this current person item was only done in put, post, and patch in the ApiController
-                             * class. Set it here so that it is always set for all methods, including delete. This enhances
-                             * history logging done in the pre and post save model hooks (when the pre-save event is called
-                             * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
-                             *
-                             * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
-                             */
-                            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
-                        }
-                    }
-                }
+                /* 12/12/2019 BJW
+                 *
+                 * Setting this current person item was only done in put, post, and patch in the ApiController
+                 * class. Set it here so that it is always set for all methods, including delete. This enhances
+                 * history logging done in the pre and post save model hooks (when the pre-save event is called
+                 * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
+                 *
+                 * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
+                 */
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
-                Rock.Security.Authorization.VIEW : Rock.Security.Authorization.EDIT;
+            var action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ? Security.Authorization.VIEW : Security.Authorization.EDIT;
             if ( !item.IsAuthorized( action, person ) )
             {
                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
