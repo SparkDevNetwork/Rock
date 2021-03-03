@@ -86,7 +86,7 @@
                     <div class="row row-eq-height no-gutters">
                         <div class="col-lg-3 col-md-4">
                             <%-- Resource List - Filter Options (Header) --%>
-                            <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options d-flex justify-content-between align-items-center">
+                            <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options align-items-center">
                                 <asp:Panel ID="pnlResourceListFilter" runat="server">
                                     <div class="btn-group">
                                         <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
@@ -116,7 +116,7 @@
                             <%-- AttendanceOccurrences - Filter Options (Header) --%>
                             <!--<div class="group-scheduler-occurrence-filter occurrences-filter-options">-->
                                 <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
-                                <div class="panel-toolbar d-flex flex-wrap flex-sm-nowrap justify-content-between">
+                                <div class="panel-toolbar">
                                     <!-- Filter for Groups/ChildGroups -->
                                     <div class="d-flex">
                                         <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
@@ -188,7 +188,7 @@
                     </div>
 
                     <div id="filter-drawer" class="panel-drawer" style="display: none;">
-                        <div class="clearfix p-3">
+                        <div class="p-3">
                             <div>
                             <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
                             <p><strong>Scheduling Basics</strong></p>

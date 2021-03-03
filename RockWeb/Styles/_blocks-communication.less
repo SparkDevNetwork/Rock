@@ -285,10 +285,20 @@ iframe.email-body {
   .messages-outer-container {
     position: relative;
     flex-grow: 1;
-    padding: 15px;
-    overflow-y: auto;
+    height: 100%;
+    overflow: hidden;
     -webkit-box-flex: 1;
     -ms-flex-positive: 1;
+  }
+
+  .messages-scroll-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    overflow-y: scroll;
   }
 
   .footer {
@@ -302,9 +312,15 @@ iframe.email-body {
       border: 0;
     }
 
-    a {
+    .send-button {
       position: absolute;
       right: 12px;
+      bottom: 10px;
+    }
+
+    .image-button {
+      position: absolute;
+      right: 84px;
       bottom: 10px;
     }
   }
@@ -341,10 +357,28 @@ iframe.email-body {
       transform: translateX(103%);
       will-change: transform;
     }
+
+    .sms-image-uploader {
+      position: relative;
+      width: 106px;
+      margin: 0 auto;
+    }
+
+    .sms-image-uploader-container {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 100%;
+      padding: 8px;
+      margin: 0;
+      background: @well-bg;
+    }
   }
 
   .conversation-back {
     display: none;
+
     @media (max-width: 599px) {
       display: block;
     }
@@ -379,7 +413,6 @@ iframe.email-body {
     -webkit-align-items: flex-start;
     align-items: flex-start;
     -webkit-box-orient: vertical;
-
     -webkit-box-align: start;
 
     &.outbound {
@@ -426,6 +459,12 @@ iframe.email-body {
 
     &.inbound .sender-name {
       display: none;
+    }
+
+    .sms-image {
+      min-height: 100px;
+      margin-top: 5px;
+      border-radius: 10px;
     }
   }
 }

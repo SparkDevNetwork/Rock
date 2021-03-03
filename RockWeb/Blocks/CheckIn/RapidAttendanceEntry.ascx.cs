@@ -643,10 +643,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bbtnSave_Click( object sender, EventArgs e )
         {
-            if ( _attendanceSettingState == null )
-            {
-                return;
-            }
 
             hfAttendanceDirty.Value = "false";
             hfPersonDirty.Value = "false";
@@ -654,30 +650,36 @@ namespace RockWeb.Blocks.CheckIn
             ProcessCurrentPersonInput();
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
-            var group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
-            var groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
+            Group group = null;
+            GroupLocation groupLocation = null;
             var personService = new PersonService( rockContext );
 
-            for ( int i = 0; i < rcbAttendance.Items.Count; i++ )
+            if ( IsAttendanceEnabled && _attendanceSettingState != null )
             {
-                var personId = rcbAttendance.Items[i].Value.AsInteger();
-                var attendancePerson = personService.Get( personId );
+                group = new GroupService( rockContext ).Get( _attendanceSettingState.GroupId );
+                groupLocation = new GroupLocationService( rockContext ).Get( _attendanceSettingState.GroupLocationId );
 
-                if ( rcbAttendance.Items[i].Selected )
+                for ( int i = 0; i < rcbAttendance.Items.Count; i++ )
                 {
-                    var attendance = attendanceService.AddOrUpdate( attendancePerson.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
-                }
-                else
-                {
-                    var attendance = attendanceService.Get( _attendanceSettingState.AttendanceDate, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.Id, attendancePerson.Id );
-                    if ( attendance != null )
+                    var personId = rcbAttendance.Items[i].Value.AsInteger();
+                    var attendancePerson = personService.Get( personId );
+
+                    if ( rcbAttendance.Items[i].Selected )
                     {
-                        attendanceService.Delete( attendance );
+                        var attendance = attendanceService.AddOrUpdate( attendancePerson.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
+                    }
+                    else
+                    {
+                        var attendance = attendanceService.Get( _attendanceSettingState.AttendanceDate, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.Id, attendancePerson.Id );
+                        if ( attendance != null )
+                        {
+                            attendanceService.Delete( attendance );
+                        }
                     }
                 }
-            }
 
-            rockContext.SaveChanges();
+                rockContext.SaveChanges();
+            }
 
             foreach ( var personInput in _personInputsState )
             {
@@ -779,7 +781,11 @@ namespace RockWeb.Blocks.CheckIn
                 if ( personInput.Workflows != null && personInput.Workflows.Any() )
                 {
                     var workflowService = new WorkflowService( rockContext );
-                    var schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
+                    Schedule schedule = null;
+                    if ( IsAttendanceEnabled && _attendanceSettingState != null )
+                    {
+                        schedule = new ScheduleService( rockContext ).Get( _attendanceSettingState.ScheduleId );
+                    }
                     Location location = null;
                     if ( groupLocation != null )
                     {
@@ -801,10 +807,13 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            //
-            // Flush the attendance cache.
-            //
-            Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
+            if ( IsAttendanceEnabled && _attendanceSettingState != null )
+            {
+                //
+                // Flush the attendance cache.
+                //
+                Rock.CheckIn.KioskLocationAttendance.Remove( groupLocation.LocationId );
+            }
 
             ShowMainPanel( SelectedPersonId );
         }
@@ -1587,15 +1596,22 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ShowDetails()
         {
-            if ( IsAttendanceEnabled )
+            SelectedPersonId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+            if ( !IsAttendanceEnabled )
             {
-                if ( _attendanceSettingState == null )
-                {
-                    _attendanceSettingState = GetRapidAttendanceCookie();
-                }
+                _attendanceSettingState = null;
+                lbSetting.Visible = false;
+
+                ShowMainPanel( SelectedPersonId );
+
+                return;
+
             }
 
-            if ( IsAttendanceEnabled && _attendanceSettingState == null )
+            _attendanceSettingState = _attendanceSettingState ?? GetRapidAttendanceCookie();
+
+            if ( _attendanceSettingState == null )
             {
                 ShowAttendanceSetting();
             }
@@ -1603,12 +1619,11 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( IsAttendanceSettingValid() )
                 {
-                    ShowMainPanel( PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull() );
+                    ShowMainPanel( SelectedPersonId );
                 }
                 else
                 {
                     _attendanceSettingState = null;
-                    SelectedPersonId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
                     ShowAttendanceSetting();
                 }
             }

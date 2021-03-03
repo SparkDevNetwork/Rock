@@ -726,7 +726,20 @@ namespace RockWeb.Blocks.Communication
                         }
                         nbTestResult.Visible = true;
 
-                        communicationService.Delete( testCommunication );
+                        var pushMediumEntityTypeGuid = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
+                        if ( testCommunication.GetMediums().Any( a => a.EntityType.Guid == pushMediumEntityTypeGuid ) )
+                        {
+                            // We can't actually delete the test communication since if it is an
+                            // action type of "Show Details" then they won't be able to view the
+                            // communication on their device to see how it looks. Instead we switch
+                            // the communication to be transient so the cleanup job will take care
+                            // of it later.
+                            testCommunication.Status = CommunicationStatus.Transient;
+                        }
+                        else
+                        {
+                            communicationService.Delete( testCommunication );
+                        }
                         rockContext.SaveChanges();
                     }
                 }
@@ -768,7 +781,7 @@ namespace RockWeb.Blocks.Communication
                         pageRef.PageId = CurrentPageReference.PageId;
                         pageRef.RouteId = CurrentPageReference.RouteId;
                         pageRef.Parameters = new Dictionary<string, string>();
-                        pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                        pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                         Response.Redirect( pageRef.BuildUrl() );
                         Context.ApplicationInstance.CompleteRequest();
                     }
@@ -877,7 +890,7 @@ namespace RockWeb.Blocks.Communication
                     pageRef.PageId = CurrentPageReference.PageId;
                     pageRef.RouteId = CurrentPageReference.RouteId;
                     pageRef.Parameters = new Dictionary<string, string>();
-                    pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                    pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                     Response.Redirect( pageRef.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
                 }
@@ -1583,7 +1596,7 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
-            CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page

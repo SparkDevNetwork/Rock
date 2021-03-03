@@ -103,6 +103,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public bool IsRegistrationMeteringEnabled { get; set; }
+
+        /// <summary />
         public bool LoginRequired { get; set; }
 
         /// <summary />
@@ -269,6 +272,7 @@ namespace Rock.Client
             this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
+            this.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             this.LoginRequired = source.LoginRequired;
             this.MaxRegistrants = source.MaxRegistrants;
             this.MinimumInitialPayment = source.MinimumInitialPayment;

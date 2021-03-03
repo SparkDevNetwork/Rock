@@ -223,7 +223,7 @@ function() {
             var slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
 
             // Row 1
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-12" );
@@ -234,7 +234,7 @@ function() {
             writer.RenderEndTag();
 
             // Row 2
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-4" );

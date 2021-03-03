@@ -77,14 +77,14 @@ namespace RockWeb.Blocks.GroupScheduling
         Description = "If checked, a custom note response will be required in order to save their decline status.",
         DefaultBooleanValue = false,
         Order = 6,
-        Key = AttributeKey.RequireDeclineNote)]
+        Key = AttributeKey.RequireDeclineNote )]
 
     [TextField( "Decline Note Title",
         Description = "A custom title for the decline elaboration note.",
         IsRequired = false,
         DefaultValue = "Please elaborate on why you cannot attend.",
         Order = 7,
-        Key = AttributeKey.DeclineNoteTitle)]
+        Key = AttributeKey.DeclineNoteTitle )]
 
     [SystemCommunicationField( "Scheduling Response Email",
         Description = "The system email that will be used for sending responses back to the scheduler.",
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
                 new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
                 rockContext.SaveChanges();
-                DetermineRecipientAndSendResponseEmail( attendanceId, rockContext );
+                DetermineRecipientAndSendResponseEmails( attendanceId, rockContext );
             }
 
             BindPendingConfirmations();
@@ -322,7 +322,7 @@ namespace RockWeb.Blocks.GroupScheduling
             nbError.Text = string.Format( "Thanks for letting us know. We’ll try to schedule another person for: {0}", attendance.Occurrence.Group.Name );
             nbError.Visible = true;
 
-            DetermineRecipientAndSendResponseEmail( attendance );
+            DetermineRecipientAndSendResponseEmails( attendance );
         }
 
         /// <summary>
@@ -331,7 +331,6 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="attendance">The attendance.</param>
         private void ShowHeadingByIsConfirmed( Attendance attendance )
         {
-            var mergeFields = MergeFields( attendance );
             if ( attendance.Note.IsNotNullOrWhiteSpace() )
             {
                 dtbDeclineReasonNote.Text = attendance.Note;
@@ -344,11 +343,13 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( PageParameter( "isConfirmed" ).AsBoolean() )
             {
+                var mergeFields = MergeFields( attendance, attendance?.ScheduledByPersonAlias?.Person );
                 ShowConfirmationHeading( mergeFields );
             }
             else
             {
                 // we send decline email from submit button
+                var mergeFields = MergeFields( attendance, attendance.Occurrence.Group?.ScheduleCancellationPersonAlias?.Person );
                 ShowDeclineHeading( mergeFields );
             }
 
@@ -494,7 +495,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         // Only send Confirm if the status has changed and change is to Yes
                         if ( attendance.RSVP == RSVP.Yes )
                         {
-                            DetermineRecipientAndSendResponseEmail( attendance );
+                            DetermineRecipientAndSendResponseEmails( attendance );
                         }
                     }
 
@@ -650,58 +651,47 @@ namespace RockWeb.Blocks.GroupScheduling
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void DetermineRecipientAndSendResponseEmail( int? attendanceId, RockContext rockContext )
+        private void DetermineRecipientAndSendResponseEmails( int? attendanceId, RockContext rockContext )
         {
             if ( attendanceId.HasValue )
             {
-                DetermineRecipientAndSendResponseEmail( new AttendanceService( rockContext ).Get( attendanceId.Value ) );
+                DetermineRecipientAndSendResponseEmails( new AttendanceService( rockContext ).Get( attendanceId.Value ) );
             }
         }
 
         /// <summary>
-        /// Determines the recipient and send confirmation email.
+        /// Determines the recipient and send Confirmation email or Cancellation Email
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        private void DetermineRecipientAndSendResponseEmail( Attendance attendance )
+        private void DetermineRecipientAndSendResponseEmails( Attendance attendance )
         {
-            List<RockEmailMessageRecipient> recipients = new List<RockEmailMessageRecipient>();
-
-            // if scheduler receives email add as a recipient
+            // The scheduler receives email add as a recipient for both Confirmation and Decline
             if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
             {
-                recipients.Add( new RockEmailMessageRecipient(attendance.ScheduledByPersonAlias.Person, null) );
+                SendResponseEmail( attendance, attendance.ScheduledByPersonAlias.Person );
             }
 
-            // if attendance is decline (no) send email to Schedule Cancellation Person
+            // if attendance is decline (no) also send email to Schedule Cancellation Person
             if ( attendance.RSVP == RSVP.No && attendance.Occurrence.Group.ScheduleCancellationPersonAlias != null && attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.IsEmailActive )
             {
-                recipients.Add( new RockEmailMessageRecipient(attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person, null ) );
+                SendResponseEmail( attendance, attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person );
             }
-
-            SendResponseEmail( attendance, recipients );
         }
 
         /// <summary>
-        /// Sends the confirmation email.
+        /// Sends the response email.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <param name="recipientEmailAddresses">The recipient email addresses.</param>
-        private void SendResponseEmail( Attendance attendance, List<RockEmailMessageRecipient> recipients )
+        /// <param name="recipientPerson">The recipient person.</param>
+        private void SendResponseEmail( Attendance attendance, Person recipientPerson )
         {
             try
             {
-                var mergeFields = MergeFields( attendance );
-
-                // Distinct is used so that if the same email address is for both the Scheduler and ScheduleCancellationPersonAlias
-                // Only one email will be sent
-                foreach ( var recipient in recipients )
-                {
-                    recipient.MergeFields = mergeFields;
-                    var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
-                    emailMessage.AddRecipient( recipient );
-                    emailMessage.CreateCommunicationRecord = false;
-                    emailMessage.Send();
-                }
+                var mergeFields = MergeFields( attendance, recipientPerson );
+                var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+                emailMessage.CreateCommunicationRecord = false;
+                emailMessage.Send();
             }
             catch ( SystemException ex )
             {
@@ -710,11 +700,12 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Merges the fields.
+        /// Populates the merge fields.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
+        /// <param name="recipientPerson">The recipient person.</param>
         /// <returns></returns>
-        private Dictionary<string, object> MergeFields( Attendance attendance )
+        private Dictionary<string, object> MergeFields( Attendance attendance, Person recipientPerson )
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this._selectedPerson );
             var group = attendance.Occurrence.Group;
@@ -724,6 +715,9 @@ namespace RockWeb.Blocks.GroupScheduling
             mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
             mergeFields.Add( "Person", attendance.PersonAlias.Person );
             mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+
+            // This would be Scheduler or Cancellation Person depending on which recipientPerson was specified
+            mergeFields.Add( "Recipient", recipientPerson );
 
             return mergeFields;
         }

@@ -165,7 +165,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForBillingAddress( FinancialGateway financialGateway )
         {
-            return false;
+            return true;
         }
 
         /// <summary>

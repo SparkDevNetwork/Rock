@@ -55,7 +55,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [Index( "IDX_LastName", IsUnique = false )]
+        [Index( "IX_LastName", IsUnique = false )]
         public string LastName { get; set; }
 
         #endregion

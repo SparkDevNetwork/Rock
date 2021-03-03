@@ -1786,12 +1786,12 @@ a comment --> sit amet</p>";
             DateTime today = RockDateTime.Today;
             int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
             DateTime firstSaturdayThisMonth = today.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
-            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 52 );
+            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 48 );
 
             DateTime expected = nextYearSaturday.AddHours( 10 );
 
-            // Get the end datetime of the 13th event in the "First Saturday of the Month" schedule.
-            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" ).LastOrDefault();
+            // Get the end datetime of the 12th event in the "First Saturday of the Month" schedule.
+            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" ).LastOrDefault();
             Assert.That.AreEqual( expected, output );
         }
 

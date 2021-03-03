@@ -141,6 +141,7 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
+            target.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             target.LoginRequired = source.LoginRequired;
             target.MaxRegistrants = source.MaxRegistrants;
             target.MinimumInitialPayment = source.MinimumInitialPayment;
