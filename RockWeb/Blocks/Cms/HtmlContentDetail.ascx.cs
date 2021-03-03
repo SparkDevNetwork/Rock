@@ -904,7 +904,7 @@ namespace RockWeb.Blocks.Cms
             // If this is a Secondary Block, and SetVisible was called, render a hidden field to
             // keep track of the visible state. We need to do this because
             // this block doesn't use view state for the HtmlContent content.
-            // So the hidden field helps use keep track.
+            // So the hidden field helps us keep track.
             hfSecondaryBlockState.Visible = true;
             var lastState = hfSecondaryBlockState.Value.AsBooleanOrNull() ?? true;
             if ( lastState != visible )
