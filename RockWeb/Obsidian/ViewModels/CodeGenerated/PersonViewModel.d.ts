@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Person extends Entity {
+    Id: number;
     AgeClassification: number;
     AnniversaryDate: RockDateType | null;
+    Attributes: Record<string, unknown>;
     BirthDay: number | null;
     BirthMonth: number | null;
     BirthYear: number | null;
@@ -38,6 +41,7 @@ export default interface Person extends Entity {
     EmailNote: string | null;
     EmailPreference: number;
     FirstName: string | null;
+    FullName: string | null;
     Gender: number;
     GivingGroupId: number | null;
     GivingLeaderId: number;
@@ -52,7 +56,9 @@ export default interface Person extends Entity {
     MiddleName: string | null;
     NickName: string | null;
     PhotoId: number | null;
+    PhotoUrl: string | null;
     PrimaryCampusId: number | null;
+    PrimaryFamilyGuid: Guid | null;
     PrimaryFamilyId: number | null;
     RecordStatusLastModifiedDateTime: RockDateType | null;
     RecordStatusReasonValueId: number | null;
@@ -71,4 +77,5 @@ export default interface Person extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

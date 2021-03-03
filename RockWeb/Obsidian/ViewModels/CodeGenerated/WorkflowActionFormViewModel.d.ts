@@ -26,10 +26,12 @@ import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface WorkflowActionForm extends Entity {
+    Id: number;
     ActionAttributeGuid: Guid | null;
     Actions: string | null;
     AllowNotes: boolean | null;
     AllowPersonEntry: boolean;
+    Attributes: Record<string, unknown>;
     Footer: string | null;
     Header: string | null;
     IncludeActionsInNotification: boolean;
@@ -57,4 +59,5 @@ export default interface WorkflowActionForm extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

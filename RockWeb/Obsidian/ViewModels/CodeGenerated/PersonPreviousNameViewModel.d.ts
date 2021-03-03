@@ -23,12 +23,16 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonPreviousName extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     LastName: string | null;
     PersonAliasId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

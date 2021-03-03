@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AuthClaim extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     IsActive: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     PublicName: string | null;
     ScopeId: number;
     Value: string | null;
@@ -35,4 +38,5 @@ export default interface AuthClaim extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

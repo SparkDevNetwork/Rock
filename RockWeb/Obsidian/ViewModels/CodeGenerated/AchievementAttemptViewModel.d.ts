@@ -23,12 +23,15 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AchievementAttempt extends Entity {
+    Id: number;
     AchievementAttemptEndDateTime: RockDateType | null;
     AchievementAttemptStartDateTime: RockDateType;
     AchievementTypeId: number;
     AchieverEntityId: number;
+    Attributes: Record<string, unknown>;
     IsClosed: boolean;
     IsSuccessful: boolean;
     Progress: number;
@@ -36,4 +39,5 @@ export default interface AchievementAttempt extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

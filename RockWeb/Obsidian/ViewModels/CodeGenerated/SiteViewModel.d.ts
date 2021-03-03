@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Site extends Entity {
+    Id: number;
     AdditionalSettings: string | null;
     AllowedFrameDomains: string | null;
     AllowIndexing: boolean;
+    Attributes: Record<string, unknown>;
     ChangePasswordPageId: number | null;
     ChangePasswordPageRouteId: number | null;
     CommunicationPageId: number | null;
@@ -53,7 +56,7 @@ export default interface Site extends Entity {
     LoginPageId: number | null;
     LoginPageRouteId: number | null;
     MobilePageId: number | null;
-    Name: string;
+    Name: string | null;
     PageHeaderContent: string | null;
     PageNotFoundPageId: number | null;
     PageNotFoundPageRouteId: number | null;
@@ -69,4 +72,5 @@ export default interface Site extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

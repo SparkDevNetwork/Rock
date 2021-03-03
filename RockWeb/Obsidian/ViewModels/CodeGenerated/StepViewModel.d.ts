@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Step extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     CompletedDateTime: RockDateType | null;
     EndDateTime: RockDateType | null;
@@ -38,4 +41,5 @@ export default interface Step extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface EntitySetItem extends Entity {
+    Id: number;
     AdditionalMergeValuesJson: string | null;
+    Attributes: Record<string, unknown>;
     EntityId: number;
     EntitySetId: number;
     Order: number;
@@ -33,4 +36,5 @@ export default interface EntitySetItem extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

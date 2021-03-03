@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AssessmentType extends Entity {
-    AssessmentPath: string;
+    Id: number;
+    AssessmentPath: string | null;
     AssessmentResultsPath: string | null;
+    Attributes: Record<string, unknown>;
     BadgeColor: string | null;
     BadgeSummaryLava: string | null;
     Description: string | null;
@@ -35,10 +38,11 @@ export default interface AssessmentType extends Entity {
     IsSystem: boolean;
     MinimumDaysToRetake: number;
     RequiresRequest: boolean;
-    Title: string;
+    Title: string | null;
     ValidDuration: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

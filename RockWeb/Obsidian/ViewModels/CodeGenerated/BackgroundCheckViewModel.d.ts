@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface BackgroundCheck extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     PackageName: string | null;
     PersonAliasId: number;
     ProcessorEntityTypeId: number | null;
@@ -41,4 +44,5 @@ export default interface BackgroundCheck extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

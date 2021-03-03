@@ -23,27 +23,31 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface BenevolenceRequest extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     CaseWorkerPersonAliasId: number | null;
     CellPhoneNumber: string | null;
     ConnectionStatusValueId: number | null;
     Email: string | null;
-    FirstName: string;
+    FirstName: string | null;
     GovernmentId: string | null;
     HomePhoneNumber: string | null;
-    LastName: string;
+    LastName: string | null;
     LocationId: number | null;
     ProvidedNextSteps: string | null;
     RequestDateTime: RockDateType;
     RequestedByPersonAliasId: number | null;
     RequestStatusValueId: number | null;
-    RequestText: string;
+    RequestText: string | null;
     ResultSummary: string | null;
     WorkPhoneNumber: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

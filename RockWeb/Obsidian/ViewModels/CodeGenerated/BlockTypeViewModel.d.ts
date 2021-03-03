@@ -23,17 +23,21 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface BlockType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Category: string | null;
     Description: string | null;
     EntityTypeId: number | null;
     IsCommon: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     Path: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

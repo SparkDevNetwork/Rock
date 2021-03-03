@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface UserLogin extends Entity {
+    Id: number;
     ApiKey: string | null;
+    Attributes: Record<string, unknown>;
     EntityTypeId: number | null;
     FailedPasswordAttemptCount: number | null;
     FailedPasswordAttemptWindowStartDateTime: RockDateType | null;
@@ -40,9 +43,10 @@ export default interface UserLogin extends Entity {
     LastPasswordExpirationWarningDateTime: RockDateType | null;
     Password: string | null;
     PersonId: number | null;
-    UserName: string;
+    UserName: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

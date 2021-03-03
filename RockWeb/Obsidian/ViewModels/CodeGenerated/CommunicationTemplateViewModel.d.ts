@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface CommunicationTemplate extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     BCCEmails: string | null;
     CategoryId: number | null;
     CCEmails: string | null;
@@ -39,7 +42,7 @@ export default interface CommunicationTemplate extends Entity {
     LogoBinaryFileId: number | null;
     Message: string | null;
     MessageMetaData: string | null;
-    Name: string;
+    Name: string | null;
     PushData: string | null;
     PushImageBinaryFileId: number | null;
     PushMessage: string | null;
@@ -56,4 +59,5 @@ export default interface CommunicationTemplate extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

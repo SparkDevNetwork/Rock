@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationInstance extends Entity {
+    Id: number;
     AccountId: number | null;
     AdditionalConfirmationDetails: string | null;
     AdditionalReminderDetails: string | null;
+    Attributes: Record<string, unknown>;
     ContactEmail: string | null;
     ContactPersonAliasId: number | null;
     ContactPhone: string | null;
@@ -38,7 +41,7 @@ export default interface RegistrationInstance extends Entity {
     IsActive: boolean;
     MaxAttendees: number | null;
     MinimumInitialPayment: number | null;
-    Name: string;
+    Name: string | null;
     PaymentRedirectData: string | null;
     RegistrationInstructions: string | null;
     RegistrationTemplateId: number;
@@ -50,4 +53,5 @@ export default interface RegistrationInstance extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

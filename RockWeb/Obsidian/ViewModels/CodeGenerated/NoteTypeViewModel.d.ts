@@ -23,12 +23,15 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface NoteType extends Entity {
+    Id: number;
     AllowsAttachments: boolean;
     AllowsReplies: boolean;
     AllowsWatching: boolean;
     ApprovalUrlTemplate: string | null;
+    Attributes: Record<string, unknown>;
     AutoWatchAuthors: boolean;
     BackgroundColor: string | null;
     BinaryFileTypeId: number | null;
@@ -40,7 +43,7 @@ export default interface NoteType extends Entity {
     IconCssClass: string | null;
     IsSystem: boolean;
     MaxReplyDepth: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     RequiresApprovals: boolean;
     SendApprovalNotifications: boolean;
@@ -49,4 +52,5 @@ export default interface NoteType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

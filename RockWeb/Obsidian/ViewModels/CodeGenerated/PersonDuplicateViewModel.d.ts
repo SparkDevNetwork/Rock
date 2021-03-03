@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonDuplicate extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Capacity: number | null;
     DuplicatePersonAliasId: number;
     IgnoreUntilScoreChanges: boolean;
@@ -37,4 +40,5 @@ export default interface PersonDuplicate extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

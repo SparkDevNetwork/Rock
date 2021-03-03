@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface CommunicationResponse extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     FromPersonAliasId: number | null;
     IsRead: boolean;
-    MessageKey: string;
+    MessageKey: string | null;
     RelatedCommunicationId: number | null;
     RelatedMediumEntityTypeId: number;
     RelatedSmsFromDefinedValueId: number | null;
@@ -38,4 +41,5 @@ export default interface CommunicationResponse extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

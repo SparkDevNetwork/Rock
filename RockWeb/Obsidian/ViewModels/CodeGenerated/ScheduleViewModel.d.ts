@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Schedule extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CategoryId: number | null;
     CheckInEndOffsetMinutes: number | null;
     CheckInStartOffsetMinutes: number | null;
@@ -41,4 +44,5 @@ export default interface Schedule extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

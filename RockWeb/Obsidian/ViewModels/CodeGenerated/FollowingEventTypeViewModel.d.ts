@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FollowingEventType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Description: string | null;
     EntityNotificationFormatLava: string | null;
     EntityTypeId: number | null;
@@ -32,11 +35,12 @@ export default interface FollowingEventType extends Entity {
     IsActive: boolean;
     IsNoticeRequired: boolean;
     LastCheckDateTime: RockDateType | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     SendOnWeekends: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

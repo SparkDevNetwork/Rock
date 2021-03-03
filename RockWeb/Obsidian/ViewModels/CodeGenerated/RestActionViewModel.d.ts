@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RestAction extends Entity {
+    Id: number;
     ApiId: string | null;
+    Attributes: Record<string, unknown>;
     CacheControlHeaderSettings: string | null;
     ControllerId: number;
     Method: string | null;
@@ -34,4 +37,5 @@ export default interface RestAction extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

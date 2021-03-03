@@ -23,8 +23,10 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AchievementType extends Entity {
+    Id: number;
     AchievementFailureWorkflowTypeId: number | null;
     AchievementIconCssClass: string | null;
     AchievementStartWorkflowTypeId: number | null;
@@ -33,6 +35,7 @@ export default interface AchievementType extends Entity {
     AchievementSuccessWorkflowTypeId: number | null;
     AchieverEntityTypeId: number;
     AllowOverAchievement: boolean;
+    Attributes: Record<string, unknown>;
     BadgeLavaTemplate: string | null;
     CategoryId: number | null;
     ComponentConfigJson: string | null;
@@ -40,11 +43,12 @@ export default interface AchievementType extends Entity {
     Description: string | null;
     IsActive: boolean;
     MaxAccomplishmentsAllowed: number | null;
-    Name: string;
+    Name: string | null;
     ResultsLavaTemplate: string | null;
     SourceEntityTypeId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

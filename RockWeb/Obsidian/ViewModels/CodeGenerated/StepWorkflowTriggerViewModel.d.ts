@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface StepWorkflowTrigger extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     IsActive: boolean;
     StepProgramId: number | null;
     StepTypeId: number | null;
@@ -36,4 +39,5 @@ export default interface StepWorkflowTrigger extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

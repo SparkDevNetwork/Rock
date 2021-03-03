@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Location extends Entity {
+    Id: number;
     AssessorParcelId: string | null;
+    Attributes: Record<string, unknown>;
     Barcode: string | null;
     City: string | null;
     Country: string | null;
@@ -57,4 +60,5 @@ export default interface Location extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

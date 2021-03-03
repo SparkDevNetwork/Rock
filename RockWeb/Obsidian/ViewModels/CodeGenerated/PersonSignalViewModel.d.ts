@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonSignal extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ExpirationDate: RockDateType | null;
     Note: string | null;
     OwnerPersonAliasId: number;
@@ -34,4 +37,5 @@ export default interface PersonSignal extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

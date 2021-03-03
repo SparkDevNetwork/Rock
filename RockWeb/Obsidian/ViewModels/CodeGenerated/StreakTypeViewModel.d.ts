@@ -23,13 +23,16 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface StreakType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Description: string | null;
     EnableAttendance: boolean;
     FirstDayOfWeek: number | null;
     IsActive: boolean;
-    Name: string;
+    Name: string | null;
     OccurrenceFrequency: number;
     OccurrenceMap: (number)[];
     RequiresEnrollment: boolean;
@@ -40,4 +43,5 @@ export default interface StreakType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

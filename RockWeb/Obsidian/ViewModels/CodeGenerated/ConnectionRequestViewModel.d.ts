@@ -23,12 +23,15 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ConnectionRequest extends Entity {
+    Id: number;
     AssignedGroupId: number | null;
     AssignedGroupMemberAttributeValues: string | null;
     AssignedGroupMemberRoleId: number | null;
     AssignedGroupMemberStatus: number | null;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     Comments: string | null;
     ConnectionOpportunityId: number;
@@ -42,4 +45,5 @@ export default interface ConnectionRequest extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

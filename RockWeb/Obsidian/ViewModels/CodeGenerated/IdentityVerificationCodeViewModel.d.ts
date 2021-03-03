@@ -23,12 +23,16 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface IdentityVerificationCode extends Entity {
-    Code: string;
+    Id: number;
+    Attributes: Record<string, unknown>;
+    Code: string | null;
     LastIssueDateTime: RockDateType | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

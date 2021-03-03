@@ -23,19 +23,23 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface EventItem extends Entity {
+    Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedOnDateTime: RockDateType | null;
+    Attributes: Record<string, unknown>;
     Description: string | null;
     DetailsUrl: string | null;
     IsActive: boolean;
     IsApproved: boolean;
-    Name: string;
+    Name: string | null;
     PhotoId: number | null;
     Summary: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

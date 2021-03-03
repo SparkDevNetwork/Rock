@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface SystemCommunication extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Bcc: string | null;
-    Body: string;
+    Body: string | null;
     CategoryId: number | null;
     Cc: string | null;
     CssInliningEnabled: boolean;
@@ -44,11 +47,12 @@ export default interface SystemCommunication extends Entity {
     PushTitle: string | null;
     SMSFromDefinedValueId: number | null;
     SMSMessage: string | null;
-    Subject: string;
-    Title: string;
+    Subject: string | null;
+    Title: string | null;
     To: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,17 +23,21 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Layout extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Description: string | null;
-    FileName: string;
+    FileName: string | null;
     IsSystem: boolean;
     LayoutMobilePhone: string | null;
     LayoutMobileTablet: string | null;
-    Name: string;
+    Name: string | null;
     SiteId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

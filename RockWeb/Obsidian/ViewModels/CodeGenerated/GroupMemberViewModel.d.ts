@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupMember extends Entity {
+    Id: number;
     ArchivedByPersonAliasId: number | null;
     ArchivedDateTime: RockDateType | null;
+    Attributes: Record<string, unknown>;
     CommunicationPreference: number;
     DateTimeAdded: RockDateType | null;
     GroupId: number;
@@ -47,4 +50,5 @@ export default interface GroupMember extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

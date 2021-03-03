@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplateDiscount extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     AutoApplyDiscount: boolean;
-    Code: string;
+    Code: string | null;
     DiscountAmount: number;
     DiscountPercentage: number;
     EndDate: RockDateType | null;
@@ -40,4 +43,5 @@ export default interface RegistrationTemplateDiscount extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

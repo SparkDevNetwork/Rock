@@ -23,16 +23,19 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ConnectionOpportunity extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ConnectionTypeId: number;
     Description: string | null;
     IconCssClass: string | null;
     IsActive: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     PhotoId: number | null;
-    PublicName: string;
+    PublicName: string | null;
     ShowCampusOnTransfer: boolean;
     ShowConnectButton: boolean;
     ShowStatusOnTransfer: boolean;
@@ -41,4 +44,5 @@ export default interface ConnectionOpportunity extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

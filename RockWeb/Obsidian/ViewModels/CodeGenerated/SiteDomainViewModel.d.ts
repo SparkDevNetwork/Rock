@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface SiteDomain extends Entity {
-    Domain: string;
+    Id: number;
+    Attributes: Record<string, unknown>;
+    Domain: string | null;
     IsSystem: boolean;
     Order: number;
     SiteId: number;
@@ -33,4 +36,5 @@ export default interface SiteDomain extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

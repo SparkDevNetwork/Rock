@@ -23,15 +23,19 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Notification extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Classification: number;
     IconCssClass: string | null;
-    Message: string;
+    Message: string | null;
     SentDateTime: RockDateType;
-    Title: string;
+    Title: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

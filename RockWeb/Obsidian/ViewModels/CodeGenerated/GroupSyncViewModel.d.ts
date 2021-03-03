@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupSync extends Entity {
+    Id: number;
     AddUserAccountsDuringSync: boolean;
+    Attributes: Record<string, unknown>;
     ExitSystemCommunicationId: number | null;
     GroupId: number;
     GroupTypeRoleId: number;
@@ -37,4 +40,5 @@ export default interface GroupSync extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

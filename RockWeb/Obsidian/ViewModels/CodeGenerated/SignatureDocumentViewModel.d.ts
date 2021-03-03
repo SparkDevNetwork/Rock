@@ -23,16 +23,19 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface SignatureDocument extends Entity {
+    Id: number;
     AppliesToPersonAliasId: number | null;
     AssignedToPersonAliasId: number | null;
+    Attributes: Record<string, unknown>;
     BinaryFileId: number | null;
     DocumentKey: string | null;
     InviteCount: number;
     LastInviteDate: RockDateType | null;
     LastStatusDate: RockDateType | null;
-    Name: string;
+    Name: string | null;
     SignatureDocumentTemplateId: number;
     SignedByPersonAliasId: number | null;
     Status: number;
@@ -40,4 +43,5 @@ export default interface SignatureDocument extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

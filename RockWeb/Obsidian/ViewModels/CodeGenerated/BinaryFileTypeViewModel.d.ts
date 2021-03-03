@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface BinaryFileType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CacheControlHeaderSettings: string | null;
     CacheToServerFileSystem: boolean;
     Description: string | null;
@@ -32,7 +35,7 @@ export default interface BinaryFileType extends Entity {
     IsSystem: boolean;
     MaxHeight: number | null;
     MaxWidth: number | null;
-    Name: string;
+    Name: string | null;
     PreferredColorDepth: number;
     PreferredFormat: number;
     PreferredRequired: boolean;
@@ -43,4 +46,5 @@ export default interface BinaryFileType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

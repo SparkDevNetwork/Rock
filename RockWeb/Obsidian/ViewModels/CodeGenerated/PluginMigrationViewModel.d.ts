@@ -23,13 +23,17 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PluginMigration extends Entity {
-    MigrationName: string;
+    Id: number;
+    Attributes: Record<string, unknown>;
+    MigrationName: string | null;
     MigrationNumber: number;
-    PluginAssemblyName: string;
+    PluginAssemblyName: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

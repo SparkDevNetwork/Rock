@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface StreakTypeExclusion extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ExclusionMap: (number)[];
     LocationId: number | null;
     StreakTypeId: number;
@@ -32,4 +35,5 @@ export default interface StreakTypeExclusion extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

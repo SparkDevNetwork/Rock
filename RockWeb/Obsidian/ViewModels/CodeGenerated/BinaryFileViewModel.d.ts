@@ -23,17 +23,20 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface BinaryFile extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     BinaryFileTypeId: number | null;
     ContentLastModified: RockDateType | null;
     Description: string | null;
-    FileName: string;
+    FileName: string | null;
     FileSize: number | null;
     Height: number | null;
     IsSystem: boolean;
     IsTemporary: boolean;
-    MimeType: string;
+    MimeType: string | null;
     Path: string | null;
     StorageEntitySettings: string | null;
     Width: number | null;
@@ -41,4 +44,5 @@ export default interface BinaryFile extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

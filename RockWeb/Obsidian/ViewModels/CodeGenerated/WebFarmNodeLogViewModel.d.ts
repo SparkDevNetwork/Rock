@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface WebFarmNodeLog extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     EventDateTime: RockDateType;
-    EventType: string;
+    EventType: string | null;
     Message: string | null;
     Severity: number;
     WebFarmNodeId: number;
@@ -35,4 +38,5 @@ export default interface WebFarmNodeLog extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

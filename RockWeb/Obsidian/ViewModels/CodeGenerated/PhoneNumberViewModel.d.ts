@@ -23,15 +23,18 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PhoneNumber extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CountryCode: string | null;
     Description: string | null;
     Extension: string | null;
     IsMessagingEnabled: boolean;
     IsSystem: boolean;
     IsUnlisted: boolean;
-    Number: string;
+    Number: string | null;
     NumberFormatted: string | null;
     NumberTypeValueId: number | null;
     PersonId: number;
@@ -39,4 +42,5 @@ export default interface PhoneNumber extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

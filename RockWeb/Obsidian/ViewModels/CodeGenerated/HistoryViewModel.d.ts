@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface History extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Caption: string | null;
     CategoryId: number;
     ChangeType: string | null;
@@ -46,4 +49,5 @@ export default interface History extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

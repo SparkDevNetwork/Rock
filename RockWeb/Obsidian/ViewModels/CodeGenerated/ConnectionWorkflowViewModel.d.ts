@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ConnectionWorkflow extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ConnectionOpportunityId: number | null;
     ConnectionTypeId: number | null;
     QualifierValue: string | null;
@@ -34,4 +37,5 @@ export default interface ConnectionWorkflow extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

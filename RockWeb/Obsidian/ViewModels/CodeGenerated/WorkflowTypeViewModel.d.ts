@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface WorkflowType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CategoryId: number | null;
     CompletedWorkflowRetentionPeriod: number | null;
     Description: string | null;
@@ -34,15 +37,16 @@ export default interface WorkflowType extends Entity {
     IsSystem: boolean;
     LoggingLevel: number;
     LogRetentionPeriod: number | null;
-    Name: string;
+    Name: string | null;
     NoActionMessage: string | null;
     Order: number;
     ProcessingIntervalSeconds: number | null;
     SummaryViewText: string | null;
     WorkflowIdPrefix: string | null;
-    WorkTerm: string;
+    WorkTerm: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

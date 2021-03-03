@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupTypeRole extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CanEdit: boolean;
     CanManageMembers: boolean;
     CanView: boolean;
@@ -34,11 +37,12 @@ export default interface GroupTypeRole extends Entity {
     IsSystem: boolean;
     MaxCount: number | null;
     MinCount: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     ReceiveRequirementsNotifications: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

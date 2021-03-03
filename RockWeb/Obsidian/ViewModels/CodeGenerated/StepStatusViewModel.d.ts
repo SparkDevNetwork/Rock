@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface StepStatus extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     IsActive: boolean;
     IsCompleteStatus: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     StatusColor: string | null;
     StepProgramId: number;
@@ -35,4 +38,5 @@ export default interface StepStatus extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

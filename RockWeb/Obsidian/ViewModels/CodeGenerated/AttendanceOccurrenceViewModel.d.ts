@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AttendanceOccurrence extends Entity {
+    Id: number;
     AcceptConfirmationMessage: string | null;
     AnonymousAttendanceCount: number | null;
     AttendanceTypeValueId: number | null;
+    Attributes: Record<string, unknown>;
     DeclineConfirmationMessage: string | null;
     DeclineReasonValueIds: string | null;
     DidNotOccur: boolean | null;
@@ -44,4 +47,5 @@ export default interface AttendanceOccurrence extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

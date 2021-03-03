@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Device extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CameraBarcodeConfigurationType: number | null;
     Description: string | null;
     DeviceTypeValueId: number;
@@ -32,7 +35,7 @@ export default interface Device extends Entity {
     IPAddress: string | null;
     IsActive: boolean;
     LocationId: number | null;
-    Name: string;
+    Name: string | null;
     PrinterDeviceId: number | null;
     PrintFrom: number;
     PrintToOverride: number;
@@ -40,4 +43,5 @@ export default interface Device extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

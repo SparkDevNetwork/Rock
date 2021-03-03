@@ -23,18 +23,22 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ContentChannelType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     DateRangeType: number;
     DisableContentField: boolean;
     DisablePriority: boolean;
     DisableStatus: boolean;
     IncludeTime: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     ShowInChannelList: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

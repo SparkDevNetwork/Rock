@@ -23,13 +23,17 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialPersonBankAccount extends Entity {
-    AccountNumberMasked: string;
-    AccountNumberSecured: string;
+    Id: number;
+    AccountNumberMasked: string | null;
+    AccountNumberSecured: string | null;
+    Attributes: Record<string, unknown>;
     PersonAliasId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

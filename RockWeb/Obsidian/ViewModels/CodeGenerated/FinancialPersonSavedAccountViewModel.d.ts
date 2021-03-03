@@ -23,15 +23,18 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialPersonSavedAccount extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     FinancialGatewayId: number | null;
     FinancialPaymentDetailId: number | null;
     GatewayPersonIdentifier: string | null;
     GroupId: number | null;
     IsDefault: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     PersonAliasId: number | null;
     ReferenceNumber: string | null;
     TransactionCode: string | null;
@@ -39,4 +42,5 @@ export default interface FinancialPersonSavedAccount extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

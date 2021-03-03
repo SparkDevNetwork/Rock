@@ -23,16 +23,20 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface SignatureDocumentTemplate extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     BinaryFileTypeId: number | null;
     Description: string | null;
     InviteSystemCommunicationId: number | null;
-    Name: string;
+    Name: string | null;
     ProviderEntityTypeId: number | null;
     ProviderTemplateKey: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

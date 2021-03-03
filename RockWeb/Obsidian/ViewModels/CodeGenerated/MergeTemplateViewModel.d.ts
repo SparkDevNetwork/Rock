@@ -23,16 +23,20 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface MergeTemplate extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CategoryId: number;
     Description: string | null;
     MergeTemplateTypeEntityTypeId: number;
-    Name: string;
+    Name: string | null;
     PersonAliasId: number | null;
     TemplateBinaryFileId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

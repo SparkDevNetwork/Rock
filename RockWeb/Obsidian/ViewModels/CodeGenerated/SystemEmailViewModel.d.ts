@@ -23,20 +23,24 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface SystemEmail extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Bcc: string | null;
-    Body: string;
+    Body: string | null;
     CategoryId: number | null;
     Cc: string | null;
     From: string | null;
     FromName: string | null;
     IsSystem: boolean;
-    Subject: string;
-    Title: string;
+    Subject: string | null;
+    Title: string | null;
     To: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonalDevice extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     DeviceRegistrationId: string | null;
     DeviceUniqueIdentifier: string | null;
     DeviceVersion: string | null;
@@ -42,4 +45,5 @@ export default interface PersonalDevice extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

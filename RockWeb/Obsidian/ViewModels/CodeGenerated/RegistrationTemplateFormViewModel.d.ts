@@ -23,13 +23,17 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplateForm extends Entity {
-    Name: string;
+    Id: number;
+    Attributes: Record<string, unknown>;
+    Name: string | null;
     Order: number;
     RegistrationTemplateId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

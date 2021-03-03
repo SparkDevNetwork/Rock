@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface NotificationRecipient extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     NotificationId: number;
     PersonAliasId: number;
     Read: boolean;
@@ -33,4 +36,5 @@ export default interface NotificationRecipient extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

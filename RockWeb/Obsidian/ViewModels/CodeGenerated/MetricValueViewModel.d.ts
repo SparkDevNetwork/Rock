@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface MetricValue extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     MetricId: number;
     MetricValueDateTime: RockDateType | null;
     MetricValueType: number;
@@ -35,4 +38,5 @@ export default interface MetricValue extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

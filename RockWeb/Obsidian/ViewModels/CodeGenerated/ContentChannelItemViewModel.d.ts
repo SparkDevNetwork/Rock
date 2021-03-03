@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ContentChannelItem extends Entity {
+    Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedDateTime: RockDateType | null;
+    Attributes: Record<string, unknown>;
     Content: string | null;
     ContentChannelId: number;
     ContentChannelTypeId: number;
@@ -43,4 +46,5 @@ export default interface ContentChannelItem extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

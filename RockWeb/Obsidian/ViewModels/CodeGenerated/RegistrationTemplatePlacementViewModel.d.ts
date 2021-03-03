@@ -23,18 +23,22 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplatePlacement extends Entity {
+    Id: number;
     AllowMultiplePlacements: boolean;
+    Attributes: Record<string, unknown>;
     Cost: number | null;
     GroupTypeId: number;
     IconCssClass: string | null;
     IsInternal: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     RegistrationTemplateId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

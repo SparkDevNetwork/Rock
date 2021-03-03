@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonSearchKey extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     PersonAliasId: number | null;
     SearchTypeValueId: number;
     SearchValue: string | null;
@@ -32,4 +35,5 @@ export default interface PersonSearchKey extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

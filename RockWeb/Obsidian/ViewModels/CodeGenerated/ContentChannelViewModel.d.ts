@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ContentChannel extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ChannelUrl: string | null;
     ChildItemsManuallyOrdered: boolean;
     ContentChannelTypeId: number;
@@ -38,7 +41,7 @@ export default interface ContentChannel extends Entity {
     ItemsManuallyOrdered: boolean;
     ItemTagCategoryId: number | null;
     ItemUrl: string | null;
-    Name: string;
+    Name: string | null;
     RequiresApproval: boolean;
     RootImageDirectory: string | null;
     StructuredContentToolValueId: number | null;
@@ -47,4 +50,5 @@ export default interface ContentChannel extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

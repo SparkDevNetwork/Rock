@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface InteractionComponent extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ChannelCustom1: string | null;
     ChannelCustom2: string | null;
     ChannelCustomIndexed1: string | null;
@@ -37,4 +40,5 @@ export default interface InteractionComponent extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

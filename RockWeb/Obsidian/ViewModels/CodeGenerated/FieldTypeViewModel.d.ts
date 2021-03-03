@@ -23,15 +23,19 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FieldType extends Entity {
-    Assembly: string;
-    Class: string;
+    Id: number;
+    Assembly: string | null;
+    Attributes: Record<string, unknown>;
+    Class: string | null;
     Description: string | null;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

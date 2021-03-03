@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Tag extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     BackgroundColor: string | null;
     CategoryId: number | null;
     Description: string | null;
@@ -34,11 +37,12 @@ export default interface Tag extends Entity {
     IconCssClass: string | null;
     IsActive: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     OwnerPersonAliasId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

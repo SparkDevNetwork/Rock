@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Auth extends Entity {
-    Action: string;
-    AllowOrDeny: string;
+    Id: number;
+    Action: string | null;
+    AllowOrDeny: string | null;
+    Attributes: Record<string, unknown>;
     EntityId: number | null;
     EntityTypeId: number;
     GroupId: number | null;
@@ -37,4 +40,5 @@ export default interface Auth extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

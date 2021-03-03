@@ -23,8 +23,10 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupType extends Entity {
+    Id: number;
     AdministratorTerm: string | null;
     AllowAnyChildGroupType: boolean;
     AllowedScheduleTypes: number;
@@ -35,6 +37,7 @@ export default interface GroupType extends Entity {
     AttendanceCountsAsWeekendService: boolean;
     AttendancePrintTo: number;
     AttendanceRule: number;
+    Attributes: Record<string, unknown>;
     DefaultGroupRoleId: number | null;
     Description: string | null;
     EnableGroupHistory: boolean;
@@ -46,10 +49,10 @@ export default interface GroupType extends Entity {
     GroupAttendanceRequiresLocation: boolean;
     GroupAttendanceRequiresSchedule: boolean;
     GroupCapacityRule: number;
-    GroupMemberTerm: string;
+    GroupMemberTerm: string | null;
     GroupsRequireCampus: boolean;
     GroupStatusDefinedTypeId: number | null;
-    GroupTerm: string;
+    GroupTerm: string | null;
     GroupTypeColor: string | null;
     GroupTypePurposeValueId: number | null;
     GroupViewLavaTemplate: string | null;
@@ -60,7 +63,7 @@ export default interface GroupType extends Entity {
     IsSchedulingEnabled: boolean;
     IsSystem: boolean;
     LocationSelectionMode: number;
-    Name: string;
+    Name: string | null;
     Order: number;
     RequiresInactiveReason: boolean;
     RequiresReasonIfDeclineSchedule: boolean;
@@ -82,4 +85,5 @@ export default interface GroupType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

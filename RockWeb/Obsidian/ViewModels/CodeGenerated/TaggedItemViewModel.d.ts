@@ -26,6 +26,8 @@ import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface TaggedItem extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     EntityGuid: Guid;
     EntityTypeId: number;
     IsSystem: boolean;
@@ -35,4 +37,5 @@ export default interface TaggedItem extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

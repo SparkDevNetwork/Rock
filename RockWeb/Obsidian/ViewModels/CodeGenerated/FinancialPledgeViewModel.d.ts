@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialPledge extends Entity {
+    Id: number;
     AccountId: number | null;
+    Attributes: Record<string, unknown>;
     EndDate: RockDateType;
     GroupId: number | null;
     PersonAliasId: number | null;
@@ -36,4 +39,5 @@ export default interface FinancialPledge extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

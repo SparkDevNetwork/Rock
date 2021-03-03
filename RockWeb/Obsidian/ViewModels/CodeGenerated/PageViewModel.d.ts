@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Page extends Entity {
+    Id: number;
     AdditionalSettings: string | null;
     AllowIndexing: boolean;
+    Attributes: Record<string, unknown>;
     BodyCssClass: string | null;
     BreadCrumbDisplayIcon: boolean;
     BreadCrumbDisplayName: boolean;
@@ -39,7 +42,7 @@ export default interface Page extends Entity {
     IconBinaryFileId: number | null;
     IconCssClass: string | null;
     IncludeAdminFooter: boolean;
-    InternalName: string;
+    InternalName: string | null;
     IsSystem: boolean;
     KeyWords: string | null;
     LayoutId: number;
@@ -59,4 +62,5 @@ export default interface Page extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

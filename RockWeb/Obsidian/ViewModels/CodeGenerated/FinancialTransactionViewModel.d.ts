@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialTransaction extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     AuthorizedPersonAliasId: number | null;
     BatchId: number | null;
     CheckMicrEncrypted: string | null;
@@ -55,4 +58,5 @@ export default interface FinancialTransaction extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

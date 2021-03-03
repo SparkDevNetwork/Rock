@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface DocumentType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     BinaryFileTypeId: number;
     DefaultDocumentNameTemplate: string | null;
     EntityTypeId: number;
@@ -34,11 +37,12 @@ export default interface DocumentType extends Entity {
     IsImage: boolean;
     IsSystem: boolean;
     MaxDocumentsPerEntity: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     UserSelectable: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

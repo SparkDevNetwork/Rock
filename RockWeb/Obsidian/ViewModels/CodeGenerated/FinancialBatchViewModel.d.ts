@@ -23,20 +23,24 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialBatch extends Entity {
+    Id: number;
     AccountingSystemCode: string | null;
+    Attributes: Record<string, unknown>;
     BatchEndDateTime: RockDateType | null;
     BatchStartDateTime: RockDateType | null;
     CampusId: number | null;
     ControlAmount: number;
     ControlItemCount: number | null;
     IsAutomated: boolean;
-    Name: string;
+    Name: string | null;
     Note: string | null;
     Status: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

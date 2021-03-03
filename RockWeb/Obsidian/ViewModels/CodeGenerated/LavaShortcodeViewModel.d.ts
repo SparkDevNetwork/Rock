@@ -23,20 +23,24 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface LavaShortcode extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Description: string | null;
     Documentation: string | null;
     EnabledLavaCommands: string | null;
     IsActive: boolean;
     IsSystem: boolean;
-    Markup: string;
-    Name: string;
+    Markup: string | null;
+    Name: string | null;
     Parameters: string | null;
-    TagName: string;
+    TagName: string | null;
     TagType: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

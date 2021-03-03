@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface StepType extends Entity {
+    Id: number;
     AllowManualEditing: boolean;
     AllowMultiple: boolean;
+    Attributes: Record<string, unknown>;
     AudienceDataViewId: number | null;
     AutoCompleteDataViewId: number | null;
     CardLavaTemplate: string | null;
@@ -38,7 +41,7 @@ export default interface StepType extends Entity {
     IsDateRequired: boolean;
     MergeTemplateDescriptor: string | null;
     MergeTemplateId: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     ShowCountOnBadge: boolean;
     StepProgramId: number;
@@ -46,4 +49,5 @@ export default interface StepType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

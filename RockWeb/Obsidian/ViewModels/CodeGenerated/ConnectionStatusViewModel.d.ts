@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ConnectionStatus extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     AutoInactivateState: boolean;
     ConnectionTypeId: number | null;
     Description: string | null;
@@ -32,10 +35,11 @@ export default interface ConnectionStatus extends Entity {
     IsActive: boolean;
     IsCritical: boolean;
     IsDefault: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

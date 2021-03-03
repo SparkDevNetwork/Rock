@@ -23,12 +23,15 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Group extends Entity {
+    Id: number;
     AllowGuests: boolean | null;
     ArchivedByPersonAliasId: number | null;
     ArchivedDateTime: RockDateType | null;
     AttendanceRecordRequiredForCheckIn: number;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     Description: string | null;
     DisableScheduleToolboxAccess: boolean;
@@ -43,7 +46,7 @@ export default interface Group extends Entity {
     IsPublic: boolean;
     IsSecurityRole: boolean;
     IsSystem: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     ParentGroupId: number | null;
     RequiredSignatureDocumentTemplateId: number | null;
@@ -57,4 +60,5 @@ export default interface Group extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

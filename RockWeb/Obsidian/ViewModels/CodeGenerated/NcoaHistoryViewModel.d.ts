@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface NcoaHistory extends Entity {
+    Id: number;
     AddressInvalidReason: number;
     AddressStatus: number;
+    Attributes: Record<string, unknown>;
     FamilyId: number;
     LocationId: number | null;
     MatchFlag: number;
@@ -55,4 +58,5 @@ export default interface NcoaHistory extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

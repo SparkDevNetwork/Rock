@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Assessment extends Entity {
+    Id: number;
     AssessmentResultData: string | null;
     AssessmentTypeId: number;
+    Attributes: Record<string, unknown>;
     CompletedDateTime: RockDateType | null;
     LastReminderDate: RockDateType | null;
     PersonAliasId: number;
@@ -38,4 +41,5 @@ export default interface Assessment extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

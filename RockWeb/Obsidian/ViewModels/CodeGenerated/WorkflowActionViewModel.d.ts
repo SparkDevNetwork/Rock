@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface WorkflowAction extends Entity {
+    Id: number;
     ActionTypeId: number;
     ActivityId: number;
+    Attributes: Record<string, unknown>;
     CompletedDateTime: RockDateType | null;
     FormAction: string | null;
     LastProcessedDateTime: RockDateType | null;
@@ -34,4 +37,5 @@ export default interface WorkflowAction extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

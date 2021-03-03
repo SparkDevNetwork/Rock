@@ -23,19 +23,23 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplateFee extends Entity {
+    Id: number;
     AllowMultiple: boolean;
+    Attributes: Record<string, unknown>;
     DiscountApplies: boolean;
     FeeType: number;
     HideWhenNoneRemaining: boolean;
     IsActive: boolean;
     IsRequired: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     RegistrationTemplateId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

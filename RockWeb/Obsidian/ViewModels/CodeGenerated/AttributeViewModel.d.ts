@@ -22,17 +22,22 @@
 //
 
 import Entity from '../Entity.js';
+import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface Attribute extends Entity {
+    Id: number;
     AbbreviatedName: string | null;
     AllowSearch: boolean;
+    Attributes: Record<string, unknown>;
+    CategoryGuids: (Guid)[];
     DefaultValue: string | null;
     Description: string | null;
     EnableHistory: boolean;
     EntityTypeId: number | null;
     EntityTypeQualifierColumn: string | null;
     EntityTypeQualifierValue: string | null;
+    FieldTypeGuid: Guid;
     FieldTypeId: number;
     IconCssClass: string | null;
     IsActive: boolean;
@@ -44,14 +49,16 @@ export default interface Attribute extends Entity {
     IsPublic: boolean;
     IsRequired: boolean;
     IsSystem: boolean;
-    Key: string;
-    Name: string;
+    Key: string | null;
+    Name: string | null;
     Order: number;
     PostHtml: string | null;
     PreHtml: string | null;
+    QualifierValues: Record<string, unknown>;
     ShowOnBulk: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

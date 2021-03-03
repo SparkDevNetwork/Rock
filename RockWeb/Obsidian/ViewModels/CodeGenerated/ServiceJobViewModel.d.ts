@@ -23,11 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ServiceJob extends Entity {
+    Id: number;
     Assembly: string | null;
-    Class: string;
-    CronExpression: string;
+    Attributes: Record<string, unknown>;
+    Class: string | null;
+    CronExpression: string | null;
     Description: string | null;
     EnableHistory: boolean;
     HistoryCount: number;
@@ -39,11 +42,12 @@ export default interface ServiceJob extends Entity {
     LastStatus: string | null;
     LastStatusMessage: string | null;
     LastSuccessfulRunDateTime: RockDateType | null;
-    Name: string;
+    Name: string | null;
     NotificationEmails: string | null;
     NotificationStatus: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,14 +23,17 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupRequirementType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CanExpire: boolean;
     CheckboxLabel: string | null;
     DataViewId: number | null;
     Description: string | null;
     ExpireInDays: number | null;
-    Name: string;
+    Name: string | null;
     NegativeLabel: string | null;
     PositiveLabel: string | null;
     RequirementCheckType: number;
@@ -42,4 +45,5 @@ export default interface GroupRequirementType extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

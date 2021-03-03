@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Campus extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CampusStatusValueId: number | null;
     CampusTypeValueId: number | null;
     Description: string | null;
@@ -32,7 +35,7 @@ export default interface Campus extends Entity {
     IsSystem: boolean;
     LeaderPersonAliasId: number | null;
     LocationId: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     PhoneNumber: string | null;
     ServiceTimes: string | null;
@@ -44,4 +47,5 @@ export default interface Campus extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

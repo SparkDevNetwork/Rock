@@ -23,19 +23,23 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AuthClient extends Entity {
+    Id: number;
     AllowedClaims: string | null;
     AllowedScopes: string | null;
     AllowUserApiAccess: boolean;
-    ClientId: string;
+    Attributes: Record<string, unknown>;
+    ClientId: string | null;
     ClientSecretHash: string | null;
     IsActive: boolean;
-    Name: string;
-    PostLogoutRedirectUri: string;
-    RedirectUri: string;
+    Name: string | null;
+    PostLogoutRedirectUri: string | null;
+    RedirectUri: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

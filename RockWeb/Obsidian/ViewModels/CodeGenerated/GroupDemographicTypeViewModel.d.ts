@@ -23,18 +23,22 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupDemographicType extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ComponentEntityTypeId: number;
     Description: string | null;
     GroupTypeId: number;
     IsAutomated: boolean;
     LastRunDurationSeconds: number | null;
-    Name: string;
+    Name: string | null;
     RoleFilter: string | null;
     RunOnPersonUpdate: boolean;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

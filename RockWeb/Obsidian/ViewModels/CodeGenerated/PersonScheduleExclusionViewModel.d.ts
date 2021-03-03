@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PersonScheduleExclusion extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     EndDate: RockDateType;
     GroupId: number | null;
     ParentPersonScheduleExclusionId: number | null;
@@ -35,4 +38,5 @@ export default interface PersonScheduleExclusion extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

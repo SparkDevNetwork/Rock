@@ -23,14 +23,18 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ScheduleCategoryExclusion extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CategoryId: number;
     EndDate: RockDateType;
     StartDate: RockDateType;
-    Title: string;
+    Title: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

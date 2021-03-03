@@ -23,14 +23,18 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PageContext extends Entity {
-    Entity: string;
-    IdParameter: string;
+    Id: number;
+    Attributes: Record<string, unknown>;
+    Entity: string | null;
+    IdParameter: string | null;
     IsSystem: boolean;
     PageId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

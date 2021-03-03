@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface NoteWatch extends Entity {
+    Id: number;
     AllowOverride: boolean;
+    Attributes: Record<string, unknown>;
     EntityId: number | null;
     EntityTypeId: number | null;
     IsWatching: boolean;
@@ -38,4 +41,5 @@ export default interface NoteWatch extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

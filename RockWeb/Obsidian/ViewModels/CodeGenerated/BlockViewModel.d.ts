@@ -23,23 +23,27 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Block extends Entity {
+    Id: number;
     AdditionalSettings: string | null;
+    Attributes: Record<string, unknown>;
     BlockTypeId: number;
     CssClass: string | null;
     IsSystem: boolean;
     LayoutId: number | null;
-    Name: string;
+    Name: string | null;
     Order: number;
     OutputCacheDuration: number;
     PageId: number | null;
     PostHtml: string | null;
     PreHtml: string | null;
     SiteId: number | null;
-    Zone: string;
+    Zone: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

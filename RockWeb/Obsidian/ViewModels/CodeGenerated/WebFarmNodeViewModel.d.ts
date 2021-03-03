@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface WebFarmNode extends Entity {
+    Id: number;
     AddedDateTime: RockDateType;
+    Attributes: Record<string, unknown>;
     ConfiguredLeadershipPollingIntervalSeconds: number | null;
     CurrentLeadershipPollingIntervalSeconds: number;
     IsActive: boolean;
@@ -34,10 +37,11 @@ export default interface WebFarmNode extends Entity {
     JobsAllowed: boolean;
     LastRestartDateTime: RockDateType;
     LastSeenDateTime: RockDateType;
-    NodeName: string;
+    NodeName: string | null;
     StoppedDateTime: RockDateType | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

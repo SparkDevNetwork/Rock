@@ -26,18 +26,21 @@ import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface WorkflowActionType extends Entity {
+    Id: number;
     ActivityTypeId: number;
+    Attributes: Record<string, unknown>;
     CriteriaAttributeGuid: Guid | null;
     CriteriaComparisonType: number;
     CriteriaValue: string | null;
     EntityTypeId: number;
     IsActionCompletedOnSuccess: boolean;
     IsActivityCompletedOnSuccess: boolean;
-    Name: string;
+    Name: string | null;
     Order: number;
     WorkflowFormId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

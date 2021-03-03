@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface DataView extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     CategoryId: number | null;
     DataViewFilterId: number | null;
     Description: string | null;
@@ -32,7 +35,7 @@ export default interface DataView extends Entity {
     IncludeDeceased: boolean;
     IsSystem: boolean;
     LastRunDateTime: RockDateType | null;
-    Name: string;
+    Name: string | null;
     PersistedLastRefreshDateTime: RockDateType | null;
     PersistedLastRunDurationMilliseconds: number | null;
     PersistedScheduleIntervalMinutes: number | null;
@@ -44,4 +47,5 @@ export default interface DataView extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,18 +23,21 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface PrayerRequest extends Entity {
+    Id: number;
     AllowComments: boolean | null;
     Answer: string | null;
     ApprovedByPersonAliasId: number | null;
     ApprovedOnDateTime: RockDateType | null;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     CategoryId: number | null;
     Email: string | null;
     EnteredDateTime: RockDateType;
     ExpirationDate: RockDateType | null;
-    FirstName: string;
+    FirstName: string | null;
     FlagCount: number | null;
     GroupId: number | null;
     IsActive: boolean | null;
@@ -44,9 +47,10 @@ export default interface PrayerRequest extends Entity {
     LastName: string | null;
     PrayerCount: number | null;
     RequestedByPersonAliasId: number | null;
-    Text: string;
+    Text: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Metric extends Entity {
+    Id: number;
     AdminPersonAliasId: number | null;
+    Attributes: Record<string, unknown>;
     DataViewId: number | null;
     Description: string | null;
     EnableAnalytics: boolean;
@@ -40,11 +43,12 @@ export default interface Metric extends Entity {
     SourceSql: string | null;
     SourceValueTypeId: number | null;
     Subtitle: string | null;
-    Title: string;
+    Title: string | null;
     XAxisLabel: string | null;
     YAxisLabel: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

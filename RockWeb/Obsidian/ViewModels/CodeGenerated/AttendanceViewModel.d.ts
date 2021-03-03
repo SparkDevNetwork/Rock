@@ -23,10 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Attendance extends Entity {
+    Id: number;
     AttendanceCheckInSessionId: number | null;
     AttendanceCodeId: number | null;
+    Attributes: Record<string, unknown>;
     CampusId: number | null;
     CheckedInByPersonAliasId: number | null;
     CheckedOutByPersonAliasId: number | null;
@@ -57,4 +60,5 @@ export default interface Attendance extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

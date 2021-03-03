@@ -23,9 +23,12 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface Communication extends Entity {
+    Id: number;
     AdditionalMergeFieldsJson: string | null;
+    Attributes: Record<string, unknown>;
     BCCEmails: string | null;
     CCEmails: string | null;
     CommunicationTemplateId: number | null;
@@ -64,4 +67,5 @@ export default interface Communication extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

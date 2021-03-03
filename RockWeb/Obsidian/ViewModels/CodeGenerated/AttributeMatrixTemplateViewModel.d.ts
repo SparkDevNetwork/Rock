@@ -23,16 +23,20 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface AttributeMatrixTemplate extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     Description: string | null;
     FormattedLava: string | null;
     IsActive: boolean;
     MaximumRows: number | null;
     MinimumRows: number | null;
-    Name: string;
+    Name: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }

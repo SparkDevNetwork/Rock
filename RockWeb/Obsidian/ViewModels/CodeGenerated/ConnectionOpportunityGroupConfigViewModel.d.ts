@@ -23,8 +23,11 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import { Guid } from '../../Util/Guid.js';
 
 export default interface ConnectionOpportunityGroupConfig extends Entity {
+    Id: number;
+    Attributes: Record<string, unknown>;
     ConnectionOpportunityId: number;
     GroupMemberRoleId: number | null;
     GroupMemberStatus: number;
@@ -34,4 +37,5 @@ export default interface ConnectionOpportunityGroupConfig extends Entity {
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;
     ModifiedByPersonAliasId: number | null;
+    Guid: Guid;
 }
