@@ -758,7 +758,7 @@ using Rock.Web.Cache;
         {
             var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
 
-            if ( isModel && type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
+            if ( !isModel || type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
             {
                 return;
             }
@@ -868,7 +868,8 @@ namespace Rock.ViewModel
         /// <returns></returns>
         private static List<Type> GetViewModelTypes()
         {
-            var rockViewModelAssembly = typeof( ViewModelBase ).Assembly;
+            var viewModelType = typeof( IViewModel );
+            var rockViewModelAssembly = viewModelType.Assembly;
             var fileInfo = new FileInfo( new Uri( rockViewModelAssembly.CodeBase ).AbsolutePath );
             var assemblyFileName = fileInfo.FullName;
             var assembly = Assembly.LoadFrom( assemblyFileName );
@@ -876,7 +877,7 @@ namespace Rock.ViewModel
 
             foreach ( var type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
-                if ( !type.IsAbstract && typeof( IViewModel ).IsAssignableFrom( type ) )
+                if ( !type.IsAbstract && viewModelType.IsAssignableFrom( type ) )
                 {
                     types.Add( type );
                 }
