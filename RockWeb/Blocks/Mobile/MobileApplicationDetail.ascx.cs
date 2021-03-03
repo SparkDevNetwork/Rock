@@ -445,6 +445,7 @@ namespace RockWeb.Blocks.Mobile
             
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
+            ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
 
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
@@ -781,6 +782,7 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
             additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
+            additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
 
             //
             // Save the image.

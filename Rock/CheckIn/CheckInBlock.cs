@@ -111,6 +111,14 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [load unencrypted cookie].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [load unencrypted cookie]; otherwise, <c>false</c>.
+        /// </value>
+        protected virtual bool LoadUnencryptedLocalDeviceConfig { get => false; }
+
+        /// <summary>
         /// The current kiosk id
         /// </summary>
         [Obsolete( "Use LocalDeviceConfig..." )]
@@ -852,8 +860,7 @@ namespace Rock.CheckIn
         /// </summary>
         protected void SaveState()
         {
-            var localDeviceConfigValue = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
-            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
+            LocalDeviceConfig.SaveToCookie();
 
             Session[SessionKey.CheckInWorkflow] = CurrentWorkflow;
 
@@ -872,7 +879,7 @@ namespace Rock.CheckIn
         /// </summary>
         private void GetState()
         {
-            this.LocalDeviceConfig = LocalDeviceConfig.GetFromCookie( this.Page );
+            this.LocalDeviceConfig = LocalDeviceConfig.GetFromCookie( Page, LoadUnencryptedLocalDeviceConfig );
 
             if ( this.LocalDeviceConfig == null )
             {

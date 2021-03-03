@@ -169,9 +169,6 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
-                // Perform any Rock startups
-                RunStartups();
-
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
@@ -195,6 +192,10 @@ namespace RockWeb
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
+
+                // Perform any Rock startups
+                RunStartups();
+
             }
             catch ( Exception ex )
             {

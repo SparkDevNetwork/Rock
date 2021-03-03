@@ -128,6 +128,14 @@ namespace Rock.Model
         public string SMSMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the binary file unique identifier.
+        /// </summary>
+        /// <value>
+        /// The binary file unique identifier.
+        /// </value>
+        public List<Guid> BinaryFileGuids { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is read.
         /// </summary>
         /// <value>
@@ -295,8 +303,8 @@ namespace Rock.Model
                 a.CreatedDateTime,
                 a.PersonAlias.Person,
                 a.PersonAliasId,
-                a.Communication.SMSMessage,
-                a.SentMessage
+                a.Communication,
+                a.SentMessage,
             } ).ToList();
             
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
@@ -311,7 +319,8 @@ namespace Rock.Model
                     IsRead = true,
                     MessageKey = null, // communication recipients just need to show their name, not their number
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.PersonAliasId,
-                    SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.SMSMessage : mostRecentCommunicationRecipient.SentMessage
+                    SMSMessage = mostRecentCommunicationRecipient.SentMessage.IsNullOrWhiteSpace() ? mostRecentCommunicationRecipient.Communication.SMSMessage : mostRecentCommunicationRecipient.SentMessage,
+                    BinaryFileGuids = mostRecentCommunicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
                 };
 
                 if ( mostRecentCommunicationRecipient?.Person.IsNameless() == true )
@@ -368,7 +377,8 @@ namespace Rock.Model
                     IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
                     SMSMessage = communicationResponse.Response,
-                    MessageStatus = CommunicationRecipientStatus.Delivered // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
+                    MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
+                    BinaryFileGuids = communicationResponse.Attachments?.Select( r => r.BinaryFile.Guid ).ToList()
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
@@ -385,6 +395,7 @@ namespace Rock.Model
             {
                 a.CreatedDateTime,
                 a.Communication.SenderPersonAlias.Person,
+                a.Communication,
                 PersonAliasId = a.Communication.SenderPersonAliasId,
                 a.SentMessage,
                 a.Status
@@ -401,7 +412,8 @@ namespace Rock.Model
                     IsOutbound = true,
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage,
-                    MessageStatus = communicationRecipient.Status
+                    MessageStatus = communicationRecipient.Status,
+                    BinaryFileGuids = communicationRecipient.Communication.Attachments?.Select( c => c.BinaryFile.Guid ).ToList()
                 };
 
                 if ( communicationRecipient.Person?.IsNameless() == true )

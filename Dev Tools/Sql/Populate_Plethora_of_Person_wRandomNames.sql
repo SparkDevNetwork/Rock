@@ -12332,7 +12332,7 @@ BEGIN
             ,@personId
             ,@adultRole
             ,newid()
-            ,0
+            ,1
 			,SYSDATETIME()
             )
 
@@ -12351,7 +12351,7 @@ BEGIN
             ,@spousePersonId
             ,@adultRole
             ,newid()
-            ,0
+            ,1
 			,SYSDATETIME()
             )
 
@@ -12448,7 +12448,7 @@ BEGIN
 				,@kidPersonId
 				,@childRole
 				,newid()
-				,0
+				,1
 				,SYSDATETIME()
 				)
 

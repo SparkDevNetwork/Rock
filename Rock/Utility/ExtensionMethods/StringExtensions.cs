@@ -690,6 +690,11 @@ namespace Rock
         /// <returns></returns>
         public static string LeftWithEllipsis( this string str, int length )
         {
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+
             return Left( str, length ) + ( char ) 8230;
         }
 

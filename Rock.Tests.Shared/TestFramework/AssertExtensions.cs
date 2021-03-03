@@ -44,9 +44,9 @@ namespace Rock.Tests.Shared
             Assert.AreEqual( expected, actual, ignoreCase );
         }
 
-        public static void Contains( this Assert assert, System.String value, System.String substring)
+        public static void Contains( this Assert assert, System.String value, System.String substring )
         {
-            StringAssert.Contains( value, substring);
+            StringAssert.Contains( value, substring );
         }
 
         public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
@@ -272,6 +272,25 @@ namespace Rock.Tests.Shared
             Assert.ThrowsException<T>( action, message, parameters );
         }
 
+        public static void ThrowsExceptionWithMessage<T>( this Assert assert, Action action, string expectedMessage )
+            where T : Exception
+        {
+            try
+            {
+                action();
+            }
+            catch ( T ex )
+            {
+                if ( !ex.Message.Equals( expectedMessage, StringComparison.InvariantCultureIgnoreCase ) )
+                {
+                    Assert.Fail( $"Excepted error message to be {expectedMessage}, but it was ${ex.Message}" );
+                }
+                return;
+            }
+
+            Assert.Fail( $"A ${typeof( T )} exception was expected but was not thrown." );
+        }
+
         #region Empty Assertions
 
         public static void IsEmpty( this Assert assert, string input )
@@ -318,5 +337,6 @@ namespace Rock.Tests.Shared
             return s.Replace( "\r", "" ).Replace( "\n", "" ).ToString( CultureInfo.InvariantCulture );
         }
         #endregion
+
     }
 }
