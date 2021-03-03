@@ -119,14 +119,14 @@ namespace Rock.ViewModel
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         public virtual void AddAttributesToViewModel( TModel model, TViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
         {
-            if ( loadAttributes && model is IHasAttributes hasAttributes )
+            if ( loadAttributes && model is IHasAttributes modelWithAttributes && viewModel is IViewModelWithAttributes viewModelWithAttributes )
             {
-                if ( hasAttributes.Attributes == null )
+                if ( modelWithAttributes.Attributes == null )
                 {
-                    hasAttributes.LoadAttributes();
+                    modelWithAttributes.LoadAttributes();
                 }
 
-                viewModel.Attributes = hasAttributes.AttributeValues.Where( av =>
+                viewModelWithAttributes.Attributes = modelWithAttributes.AttributeValues.Where( av =>
                 {
                     var attribute = AttributeCache.Get( av.Value.AttributeId );
                     return attribute?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;

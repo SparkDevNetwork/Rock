@@ -39,7 +39,7 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
                 },
                 setup: function () {
                     return {
-                        configurationValues: vue_1.inject('configurationValues')
+                        viewModel: vue_1.inject('configurationValues')
                     };
                 },
                 props: {
@@ -50,20 +50,8 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
                 },
                 data: function () {
                     return {
-                        numberOfRegistrants: this.initialRegistrantCount || 1,
-                        registrationInstance: this.configurationValues['registrationInstance'],
-                        registrationTemplate: this.configurationValues['registrationTemplate']
+                        numberOfRegistrants: this.initialRegistrantCount || 1
                     };
-                },
-                computed: {
-                    pluralRegistrantTerm: function () {
-                        var _a, _b;
-                        return ((_b = (_a = this.registrationTemplate) === null || _a === void 0 ? void 0 : _a.PluralRegistrantTerm) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || 'registrants';
-                    },
-                    registrationInstructions: function () {
-                        var _a, _b;
-                        return ((_a = this.registrationInstance) === null || _a === void 0 ? void 0 : _a.RegistrationInstructions) || ((_b = this.registrationTemplate) === null || _b === void 0 ? void 0 : _b.RegistrationInstructions) || '';
-                    }
                 },
                 methods: {
                     onNext: function () {
@@ -72,7 +60,7 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
                         });
                     },
                 },
-                template: "\n<div class=\"registrationentry-intro\">\n    <div class=\"text-left\" v-html=\"registrationInstructions\">\n    </div>\n    <div class=\"registrationentry-intro\">\n        <h1>How many {{pluralRegistrantTerm}} will you be registering?</h1>\n        <NumberUpDown v-model=\"numberOfRegistrants\" class=\"margin-t-sm input-lg\" />\n    </div>\n    <div class=\"actions\">\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
+                template: "\n<div class=\"registrationentry-intro\">\n    <div class=\"text-left\" v-html=\"viewModel.InstructionsHtml\">\n    </div>\n    <div class=\"registrationentry-intro\">\n        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>\n        <NumberUpDown v-model=\"numberOfRegistrants\" class=\"margin-t-sm input-lg\" />\n    </div>\n    <div class=\"actions\">\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };

@@ -17,8 +17,7 @@
 
 import { defineComponent, markRaw, PropType } from 'vue';
 import Alert from '../../../Elements/Alert';
-import RegistrationTemplateFormField from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormFieldViewModel';
-import { RegistrationPersonFieldType } from '../RegistrationEntry';
+import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.RegistrantPersonField',
@@ -27,7 +26,7 @@ export default defineComponent({
     },
     props: {
         field: {
-            type: Object as PropType<RegistrationTemplateFormField>,
+            type: Object as PropType<RegistrationEntryBlockFormFieldViewModel>,
             required: true
         }
     },

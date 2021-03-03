@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/Alert", "../RegistrationEntry"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../../Elements/Alert", "../RegistrationEntry"], func
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, Alert_1, RegistrationEntry_1;
+    var vue_1, Alert_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -62,8 +62,8 @@ System.register(["vue", "../../../Elements/Alert", "../RegistrationEntry"], func
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
             },
-            function (RegistrationEntry_1_1) {
-                RegistrationEntry_1 = RegistrationEntry_1_1;
+            function (RegistrationEntryBlockViewModel_1_1) {
+                RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
             }
         ],
         execute: function () {
@@ -101,27 +101,27 @@ System.register(["vue", "../../../Elements/Alert", "../RegistrationEntry"], func
                                                 rules: this.field.IsRequired ? 'required' : ''
                                             };
                                             switch (this.field.PersonFieldType) {
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.FirstName:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName:
                                                     componentPath = 'Elements/TextBox';
                                                     props.label = 'First Name';
                                                     break;
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.LastName:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.LastName:
                                                     componentPath = 'Elements/TextBox';
                                                     props.label = 'Last Name';
                                                     break;
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.MiddleName:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.MiddleName:
                                                     componentPath = 'Elements/TextBox';
                                                     props.label = 'Middle Name';
                                                     break;
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.Campus:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Campus:
                                                     componentPath = 'Components/CampusPicker';
                                                     props.label = 'Campus';
                                                     break;
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.Email:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Email:
                                                     componentPath = 'Elements/EmailBox';
                                                     props.label = 'Email';
                                                     break;
-                                                case RegistrationEntry_1.RegistrationPersonFieldType.Gender:
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Gender:
                                                     componentPath = 'Elements/GenderDropDownList';
                                                     break;
                                             }

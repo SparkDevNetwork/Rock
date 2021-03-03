@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEntry", "../../../Filters/Number", "../../../Filters/String", "../../../Elements/RockButton", "../../../Elements/ProgressBar", "./RegistrantPersonField", "./RegistrantAttributeField", "../../../Elements/Alert"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/RadioButtonList", "../../../Filters/Number", "../../../Filters/String", "../../../Elements/RockButton", "../../../Elements/ProgressBar", "./RegistrantPersonField", "./RegistrantAttributeField", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RadioButtonList_1, RegistrationEntry_1, Number_1, String_1, RockButton_1, ProgressBar_1, RegistrantPersonField_1, RegistrantAttributeField_1, Alert_1;
+    var vue_1, RadioButtonList_1, Number_1, String_1, RockButton_1, ProgressBar_1, RegistrantPersonField_1, RegistrantAttributeField_1, Alert_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,9 +25,6 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEnt
             },
             function (RadioButtonList_1_1) {
                 RadioButtonList_1 = RadioButtonList_1_1;
-            },
-            function (RegistrationEntry_1_1) {
-                RegistrationEntry_1 = RegistrationEntry_1_1;
             },
             function (Number_1_1) {
                 Number_1 = Number_1_1;
@@ -49,6 +46,9 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEnt
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
+            },
+            function (RegistrationEntryBlockViewModel_1_1) {
+                RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
             }
         ],
         execute: function () {
@@ -64,7 +64,7 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEnt
                 },
                 setup: function () {
                     return {
-                        configurationValues: vue_1.inject('configurationValues')
+                        viewModel: vue_1.inject('configurationValues')
                     };
                 },
                 props: {
@@ -79,29 +79,24 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEnt
                         selectedFamily: '',
                         currentRegistrantIndex: 0,
                         currentFormIndex: 0,
-                        registrationInstance: this.configurationValues['registrationInstance'],
-                        registrationTemplate: this.configurationValues['registrationTemplate'],
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []),
-                        registrationTemplateFormFields: (this.configurationValues['registrationTemplateFormFields'] || []),
                         fieldSources: {
-                            PersonField: RegistrationEntry_1.RegistrationFieldSource.PersonField,
-                            PersonAttribute: RegistrationEntry_1.RegistrationFieldSource.PersonAttribute,
-                            GroupMemberAttribute: RegistrationEntry_1.RegistrationFieldSource.GroupMemberAttribute,
-                            RegistrantAttribute: RegistrationEntry_1.RegistrationFieldSource.RegistrantAttribute
+                            PersonField: RegistrationEntryBlockViewModel_1.RegistrationFieldSource.PersonField,
+                            PersonAttribute: RegistrationEntryBlockViewModel_1.RegistrationFieldSource.PersonAttribute,
+                            GroupMemberAttribute: RegistrationEntryBlockViewModel_1.RegistrationFieldSource.GroupMemberAttribute,
+                            RegistrantAttribute: RegistrationEntryBlockViewModel_1.RegistrationFieldSource.RegistrantAttribute
                         }
                     };
                 },
                 computed: {
-                    currentFormId: function () {
-                        var _a;
-                        return ((_a = this.registrationTemplateForms[this.currentFormIndex]) === null || _a === void 0 ? void 0 : _a.Id) || 0;
+                    currentForm: function () {
+                        return this.viewModel.RegistrantForms[this.currentFormIndex] || null;
                     },
                     currentFormFields: function () {
-                        var _this = this;
-                        return this.registrationTemplateFormFields.filter(function (f) { return f.RegistrationTemplateFormId === _this.currentFormId; });
+                        var _a;
+                        return ((_a = this.currentForm) === null || _a === void 0 ? void 0 : _a.Fields) || [];
                     },
                     formCountPerRegistrant: function () {
-                        return this.registrationTemplateForms.length;
+                        return this.viewModel.RegistrantForms.length;
                     },
                     numberOfPages: function () {
                         // All of the steps are 1 page except the "per-registrant"
@@ -117,8 +112,7 @@ System.register(["vue", "../../../Elements/RadioButtonList", "../RegistrationEnt
                         return this.$store.state.currentPerson;
                     },
                     registrantTerm: function () {
-                        var _a, _b;
-                        return ((_b = (_a = this.registrationTemplate) === null || _a === void 0 ? void 0 : _a.RegistrantTerm) === null || _b === void 0 ? void 0 : _b.toLowerCase()) || 'registrant';
+                        return this.viewModel.RegistrantTerm || 'registrant';
                     },
                     possibleFamilyMembers: function () {
                         var _a;

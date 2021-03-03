@@ -20,7 +20,7 @@ import { ConfigurationValues } from '../../..';
 import RockField from '../../../Controls/RockField';
 import Alert from '../../../Elements/Alert';
 import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
-import RegistrationTemplateFormField from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormFieldViewModel';
+import { RegistrationEntryBlockFormFieldViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.RegistrantAttributeField',
@@ -28,14 +28,9 @@ export default defineComponent({
         Alert,
         RockField
     },
-    setup() {
-        return {
-            configurationValues: inject('configurationValues') as ConfigurationValues
-        };
-    },
     props: {
         field: {
-            type: Object as PropType<RegistrationTemplateFormField>,
+            type: Object as PropType<RegistrationEntryBlockFormFieldViewModel>,
             required: true
         }
     },
@@ -43,13 +38,12 @@ export default defineComponent({
         return {
             fieldControlComponent: null as unknown,
             fieldControlComponentProps: {},
-            value: '',
-            attributes: (this.configurationValues['fieldAttributes'] || []) as Attribute[]
+            value: ''
         };
     },
     computed: {
         attribute(): Attribute | null {
-            return this.attributes.find(a => a.Id === this.field.AttributeId) || null;
+            return this.field.Attribute || null;
         },
         props(): Record<string, unknown> {
             if (!this.attribute) {

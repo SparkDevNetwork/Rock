@@ -16,7 +16,7 @@
 //
 System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrant", "./RegistrationEntry/Registration", "./RegistrationEntry/Summary"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Intro_1, Registrant_1, Registration_1, Summary_1, RegistrationPersonFieldType, RegistrationFieldSource;
+    var vue_1, RockButton_1, Intro_1, Registrant_1, Registration_1, Summary_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -40,31 +40,6 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
             }
         ],
         execute: function () {
-            (function (RegistrationPersonFieldType) {
-                RegistrationPersonFieldType[RegistrationPersonFieldType["FirstName"] = 0] = "FirstName";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["LastName"] = 1] = "LastName";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Campus"] = 2] = "Campus";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Address"] = 3] = "Address";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Email"] = 4] = "Email";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Birthdate"] = 5] = "Birthdate";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Gender"] = 6] = "Gender";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["MaritalStatus"] = 7] = "MaritalStatus";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["MobilePhone"] = 8] = "MobilePhone";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["HomePhone"] = 9] = "HomePhone";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["WorkPhone"] = 10] = "WorkPhone";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["Grade"] = 11] = "Grade";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["ConnectionStatus"] = 12] = "ConnectionStatus";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["MiddleName"] = 13] = "MiddleName";
-                RegistrationPersonFieldType[RegistrationPersonFieldType["AnniversaryDate"] = 14] = "AnniversaryDate";
-            })(RegistrationPersonFieldType || (RegistrationPersonFieldType = {}));
-            exports_1("RegistrationPersonFieldType", RegistrationPersonFieldType);
-            (function (RegistrationFieldSource) {
-                RegistrationFieldSource[RegistrationFieldSource["PersonField"] = 0] = "PersonField";
-                RegistrationFieldSource[RegistrationFieldSource["PersonAttribute"] = 1] = "PersonAttribute";
-                RegistrationFieldSource[RegistrationFieldSource["GroupMemberAttribute"] = 2] = "GroupMemberAttribute";
-                RegistrationFieldSource[RegistrationFieldSource["RegistrantAttribute"] = 4] = "RegistrantAttribute";
-            })(RegistrationFieldSource || (RegistrationFieldSource = {}));
-            exports_1("RegistrationFieldSource", RegistrationFieldSource);
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry',
                 components: {
@@ -73,12 +48,6 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                     RegistrationEntryRegistrant: Registrant_1.default,
                     RegistrationEntryRegistration: Registration_1.default,
                     RegistrationEntrySummary: Summary_1.default
-                },
-                setup: function () {
-                    return {
-                        invokeBlockAction: vue_1.inject('invokeBlockAction'),
-                        configurationValues: vue_1.inject('configurationValues')
-                    };
                 },
                 data: function () {
                     var steps = {
@@ -90,10 +59,7 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                     return {
                         steps: steps,
                         currentStep: steps.intro,
-                        registrants: [],
-                        registrationInstance: this.configurationValues['registrationInstance'],
-                        registrationTemplate: this.configurationValues['registrationTemplate'],
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || [])
+                        registrants: []
                     };
                 },
                 methods: {
@@ -123,7 +89,7 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                         this.currentStep = this.steps.registrationForm;
                     }
                 },
-                template: "\n<div>\n    <RegistrationEntryIntro v-show=\"currentStep === steps.intro\" @next=\"onIntroNext\" :initialRegistrantCount=\"registrants.length\" />\n    <RegistrationEntryRegistrant v-show=\"currentStep === steps.perRegistrantForms\" :registrants=\"registrants\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistration v-show=\"currentStep === steps.registrationForm\" :registrants=\"registrants\" @next=\"onRegistrationNext\" @previous=\"onRegistrationPrevious\" />\n    <RegistrationEntrySummary v-show=\"currentStep === steps.reviewAndPayment\" :registrants=\"registrants\" @previous=\"onSummaryPrevious\" />\n</div>"
+                template: "\n<div>\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" :initialRegistrantCount=\"registrants.length\" />\n    <RegistrationEntryRegistrant v-else-if=\"currentStep === steps.perRegistrantForms\" :registrants=\"registrants\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistration v-else-if=\"currentStep === steps.registrationForm\" :registrants=\"registrants\" @next=\"onRegistrationNext\" @previous=\"onRegistrationPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" :registrants=\"registrants\" @previous=\"onSummaryPrevious\" />\n</div>"
             }));
         }
     };

@@ -37,11 +37,6 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                     Alert: Alert_1.default,
                     RockField: RockField_1.default
                 },
-                setup: function () {
-                    return {
-                        configurationValues: vue_1.inject('configurationValues')
-                    };
-                },
                 props: {
                     field: {
                         type: Object,
@@ -52,14 +47,12 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                     return {
                         fieldControlComponent: null,
                         fieldControlComponentProps: {},
-                        value: '',
-                        attributes: (this.configurationValues['fieldAttributes'] || [])
+                        value: ''
                     };
                 },
                 computed: {
                     attribute: function () {
-                        var _this = this;
-                        return this.attributes.find(function (a) { return a.Id === _this.field.AttributeId; }) || null;
+                        return this.field.Attribute || null;
                     },
                     props: function () {
                         if (!this.attribute) {

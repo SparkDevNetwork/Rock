@@ -19,19 +19,15 @@ import { defineComponent, inject, PropType } from 'vue';
 import { DropDownListOption } from '../../../Elements/DropDownList';
 import RadioButtonList from '../../../Elements/RadioButtonList';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
-import { RegistrantInfo, RegistrationFieldSource } from '../RegistrationEntry';
+import { RegistrantInfo } from '../RegistrationEntry';
 import NumberFilter from '../../../Filters/Number';
 import StringFilter from '../../../Filters/String';
 import RockButton from '../../../Elements/RockButton';
-import { ConfigurationValues } from '../../../Index.js';
-import RegistrationInstance from '../../../ViewModels/CodeGenerated/RegistrationInstanceViewModel';
-import RegistrationTemplate from '../../../ViewModels/CodeGenerated/RegistrationTemplateViewModel';
-import RegistrationTemplateForm from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormViewModel';
 import ProgressBar from '../../../Elements/ProgressBar';
 import RegistrantPersonField from './RegistrantPersonField';
 import RegistrantAttributeField from './RegistrantAttributeField';
-import RegistrationTemplateFormField from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormFieldViewModel';
 import Alert from '../../../Elements/Alert';
+import { RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
@@ -45,7 +41,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            configurationValues: inject('configurationValues') as ConfigurationValues
+            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
         };
     },
     props: {
@@ -60,10 +56,6 @@ export default defineComponent({
             selectedFamily: '',
             currentRegistrantIndex: 0,
             currentFormIndex: 0,
-            registrationInstance: this.configurationValues['registrationInstance'] as RegistrationInstance | null,
-            registrationTemplate: this.configurationValues['registrationTemplate'] as RegistrationTemplate | null,
-            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[],
-            registrationTemplateFormFields: (this.configurationValues['registrationTemplateFormFields'] || []) as RegistrationTemplateFormField[],
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
                 PersonAttribute: RegistrationFieldSource.PersonAttribute,
@@ -73,14 +65,14 @@ export default defineComponent({
         };
     },
     computed: {
-        currentFormId(): number {
-            return this.registrationTemplateForms[this.currentFormIndex]?.Id || 0;
+        currentForm(): RegistrationEntryBlockFormViewModel | null {
+            return this.viewModel.RegistrantForms[this.currentFormIndex] || null;
         },
-        currentFormFields(): RegistrationTemplateFormField[] {
-            return this.registrationTemplateFormFields.filter(f => f.RegistrationTemplateFormId === this.currentFormId);
+        currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
+            return this.currentForm?.Fields || [];
         },
         formCountPerRegistrant(): number {
-            return this.registrationTemplateForms.length;
+            return this.viewModel.RegistrantForms.length;
         },
         numberOfPages(): number {
             // All of the steps are 1 page except the "per-registrant"
@@ -96,7 +88,7 @@ export default defineComponent({
             return this.$store.state.currentPerson;
         },
         registrantTerm(): string {
-            return this.registrationTemplate?.RegistrantTerm?.toLowerCase() || 'registrant';
+            return this.viewModel.RegistrantTerm || 'registrant';
         },
         possibleFamilyMembers(): DropDownListOption[] {
             const options = [] as DropDownListOption[];

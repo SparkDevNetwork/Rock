@@ -15,14 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, inject } from 'vue';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import { defineComponent } from 'vue';
 import RockButton from '../../Elements/RockButton';
-import { ConfigurationValues } from '../../Index.js';
 import { Guid } from '../../Util/Guid';
-import RegistrationInstance from '../../ViewModels/CodeGenerated/RegistrationInstanceViewModel';
-import RegistrationTemplateForm from '../../ViewModels/CodeGenerated/RegistrationTemplateFormViewModel';
-import RegistrationTemplate from '../../ViewModels/CodeGenerated/RegistrationTemplateViewModel';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrant from './RegistrationEntry/Registrant';
 import RegistrationEntryRegistration from './RegistrationEntry/Registration';
@@ -32,31 +27,6 @@ export type RegistrantInfo = {
     FamilyGuid: Guid | null
 };
 
-export enum RegistrationPersonFieldType {
-    FirstName = 0,
-    LastName = 1,
-    Campus = 2,
-    Address = 3,
-    Email = 4,
-    Birthdate = 5,
-    Gender = 6,
-    MaritalStatus = 7,
-    MobilePhone = 8,
-    HomePhone = 9,
-    WorkPhone = 10,
-    Grade = 11,
-    ConnectionStatus = 12,
-    MiddleName = 13,
-    AnniversaryDate = 14
-}
-
-export enum RegistrationFieldSource {
-    PersonField = 0,
-    PersonAttribute = 1,
-    GroupMemberAttribute = 2,
-    RegistrantAttribute = 4
-}
-
 export default defineComponent({
     name: 'Event.RegistrationEntry',
     components: {
@@ -65,12 +35,6 @@ export default defineComponent({
         RegistrationEntryRegistrant,
         RegistrationEntryRegistration,
         RegistrationEntrySummary
-    },
-    setup() {
-        return {
-            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
-            configurationValues: inject('configurationValues') as ConfigurationValues
-        };
     },
     data() {
         const steps = {
@@ -83,10 +47,7 @@ export default defineComponent({
         return {
             steps,
             currentStep: steps.intro,
-            registrants: [] as RegistrantInfo[],
-            registrationInstance: this.configurationValues['registrationInstance'] as RegistrationInstance | null,
-            registrationTemplate: this.configurationValues['registrationTemplate'] as RegistrationTemplate | null,
-            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[]
+            registrants: [] as RegistrantInfo[]
         };
     },
     methods: {
@@ -119,9 +80,9 @@ export default defineComponent({
     },
     template: `
 <div>
-    <RegistrationEntryIntro v-show="currentStep === steps.intro" @next="onIntroNext" :initialRegistrantCount="registrants.length" />
-    <RegistrationEntryRegistrant v-show="currentStep === steps.perRegistrantForms" :registrants="registrants" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
-    <RegistrationEntryRegistration v-show="currentStep === steps.registrationForm" :registrants="registrants" @next="onRegistrationNext" @previous="onRegistrationPrevious" />
-    <RegistrationEntrySummary v-show="currentStep === steps.reviewAndPayment" :registrants="registrants" @previous="onSummaryPrevious" />
+    <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" :initialRegistrantCount="registrants.length" />
+    <RegistrationEntryRegistrant v-else-if="currentStep === steps.perRegistrantForms" :registrants="registrants" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
+    <RegistrationEntryRegistration v-else-if="currentStep === steps.registrationForm" :registrants="registrants" @next="onRegistrationNext" @previous="onRegistrationPrevious" />
+    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" :registrants="registrants" @previous="onSummaryPrevious" />
 </div>`
 });

@@ -18,9 +18,7 @@
 import { defineComponent, inject, PropType } from 'vue';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
-import { ConfigurationValues } from '../../../Index.js';
-import RegistrationInstance from '../../../ViewModels/CodeGenerated/RegistrationInstanceViewModel';
-import RegistrationTemplate from '../../../ViewModels/CodeGenerated/RegistrationTemplateViewModel';
+import RegistrationEntryBlockViewModel from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Intro',
@@ -30,7 +28,7 @@ export default defineComponent({
     },
     setup() {
         return {
-            configurationValues: inject('configurationValues') as ConfigurationValues
+            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
         };
     },
     props: {
@@ -41,18 +39,8 @@ export default defineComponent({
     },
     data() {
         return {
-            numberOfRegistrants: this.initialRegistrantCount || 1,
-            registrationInstance: this.configurationValues['registrationInstance'] as RegistrationInstance | null,
-            registrationTemplate: this.configurationValues['registrationTemplate'] as RegistrationTemplate | null
+            numberOfRegistrants: this.initialRegistrantCount || 1
         };
-    },
-    computed: {
-        pluralRegistrantTerm(): string {
-            return this.registrationTemplate?.PluralRegistrantTerm?.toLowerCase() || 'registrants';
-        },
-        registrationInstructions(): string {
-            return this.registrationInstance?.RegistrationInstructions || this.registrationTemplate?.RegistrationInstructions || '';
-        }
     },
     methods: {
         onNext() {
@@ -63,10 +51,10 @@ export default defineComponent({
     },
     template: `
 <div class="registrationentry-intro">
-    <div class="text-left" v-html="registrationInstructions">
+    <div class="text-left" v-html="viewModel.InstructionsHtml">
     </div>
     <div class="registrationentry-intro">
-        <h1>How many {{pluralRegistrantTerm}} will you be registering?</h1>
+        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm input-lg" />
     </div>
     <div class="actions">

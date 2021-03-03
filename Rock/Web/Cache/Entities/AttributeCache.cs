@@ -448,39 +448,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public AttributeViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
         {
-            var viewModel = new AttributeViewModel
-            {
-                Id = Id,
-                Guid = Guid,
-                AbbreviatedName = AbbreviatedName,
-                AllowSearch = AllowSearch,
-                DefaultValue = DefaultValue,
-                Description = Description,
-                EnableHistory = EnableHistory,
-                EntityTypeId = EntityTypeId,
-                EntityTypeQualifierColumn = EntityTypeQualifierColumn,
-                EntityTypeQualifierValue = EntityTypeQualifierValue,
-                FieldTypeId = FieldTypeId,
-                IconCssClass = IconCssClass,
-                IsActive = IsActive,
-                IsAnalytic = IsAnalytic,
-                IsAnalyticHistory = IsAnalyticHistory,
-                IsGridColumn = IsGridColumn,
-                IsIndexEnabled = IsIndexEnabled,
-                IsMultiValue = IsMultiValue,
-                IsPublic = IsPublic,
-                IsRequired = IsRequired,
-                IsSystem = IsSystem,
-                Key = Key,
-                Name = Name,
-                Order = Order,
-                PostHtml = PostHtml,
-                PreHtml = PreHtml,
-                ShowOnBulk = ShowOnBulk
-            };
-
-            var helper = new ViewModelHelper<AttributeCache, AttributeViewModel>();
-            helper.ApplyAdditionalPropertiesAndSecurityToViewModel( this, viewModel, currentPerson, loadAttributes );
+            var helper = new AttributeViewModelHelper();
+            var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
             return viewModel;
         }
 

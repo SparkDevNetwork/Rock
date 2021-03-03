@@ -22,7 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel;
+using Rock.ViewModel.Blocks;
 using Rock.Web.Cache;
 
 namespace Rock.Obsidian.Blocks.Event
@@ -63,7 +63,7 @@ namespace Rock.Obsidian.Blocks.Event
                 var now = RockDateTime.Now;
 
                 var registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate.Forms.Fields" )
+                    .Queryable( "RegistrationTemplate.Forms" )
                     .AsNoTracking()
                     .Where( r =>
                         r.Id == registrationInstanceId &&
@@ -75,17 +75,59 @@ namespace Rock.Obsidian.Blocks.Event
                     .FirstOrDefault();
 
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
-                var forms = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
-                var fields = forms.SelectMany( f => f.Fields ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFormField>();
-                var fieldAttributes = fields.Select( f => AttributeCache.Get( f.AttributeId ?? 0 ) ).Where( a => a != null ).ToList();
 
-                return new
+                // Get the instructions
+                var instructions = registrationInstance?.RegistrationInstructions;
+
+                if ( instructions.IsNullOrWhiteSpace() )
                 {
-                    registrationInstance = registrationInstance.ToViewModel( currentPerson, false ),
-                    registrationTemplate = registrationTemplate.ToViewModel( currentPerson, false ),
-                    registrationTemplateForms = forms.Select( f => f.ToViewModel( currentPerson, false ) ),
-                    registrationTemplateFormFields = fields.Select( f => f.ToViewModel( currentPerson, false ) ),
-                    fieldAttributes = fieldAttributes.Select( a => a.ToViewModel( currentPerson, false ) )
+                    instructions = registrationTemplate?.RegistrationInstructions ?? string.Empty;
+                }
+
+                // Get the registrant term
+                var registrantTerm = registrationTemplate?.RegistrantTerm;
+
+                if (registrantTerm.IsNullOrWhiteSpace())
+                {
+                    registrantTerm = "Person";
+                }
+
+                registrantTerm = registrantTerm.ToLower();
+                var pluralRegistrantTerm = registrantTerm.Pluralize();
+
+                // Get forms with fields
+                var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+                var forms = new List<RegistrationEntryBlockFormViewModel>();
+                var allFields = RegistrationTemplateFormFieldCache.All();
+
+                foreach ( var formModel in formModels )
+                {
+                    var form = new RegistrationEntryBlockFormViewModel();
+                    var fieldModels = allFields.Where( ff => ff.RegistrationTemplateFormId == formModel.Id ).OrderBy( f => f.Order );
+                    var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
+
+                    foreach ( var fieldModel in fieldModels )
+                    {
+                        var field = new RegistrationEntryBlockFormFieldViewModel();
+                        var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
+
+                        field.Attribute = attribute?.ToViewModel();
+                        field.FieldSource = ( int ) fieldModel.FieldSource;
+                        field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
+
+                        fields.Add( field );
+                    }
+
+                    form.Fields = fields;
+                    forms.Add( form );
+                }
+
+                return new RegistrationEntryBlockViewModel
+                {
+                    InstructionsHtml = instructions,
+                    RegistrantTerm = registrantTerm,
+                    PluralRegistrantTerm = pluralRegistrantTerm,
+                    RegistrantForms = forms
                 };
             }
         }

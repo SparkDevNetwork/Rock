@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModel
@@ -25,28 +24,20 @@ namespace Rock.ViewModel
     /// </summary>
     public interface IViewModel
     {
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        int Id { get; set; }
+    }
 
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>
-        /// The unique identifier.
-        /// </value>
-        Guid Guid { get; set; }
-
+    /// <summary>
+    /// View Model with Attributes
+    /// </summary>
+    public interface IViewModelWithAttributes : IViewModel
+    {
         /// <summary>
         /// Gets or sets the attributes.
         /// </summary>
         /// <value>
         /// The attributes.
         /// </value>
+        [TypeScriptType( "Record<string, AttributeValue> | null", "import AttributeValue from './AttributeValueViewModel.js';" )]
         Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
     }
 }
