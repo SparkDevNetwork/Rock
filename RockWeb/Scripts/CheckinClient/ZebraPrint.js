@@ -25,6 +25,10 @@ var ZebraPrintPlugin = {
             return true;
         }
 
+        if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage !== "undefined") {
+            return true;
+        }
+
         return false;
     },
 
