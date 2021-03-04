@@ -586,7 +586,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             attendanceList = CheckinManagerHelper.FilterByActiveCheckins( currentDateTime, attendanceList );
             attendanceList = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null ).ToList();
-            var attendees = RosterAttendee.GetFromAttendanceList( attendanceList );
+            var attendees = RosterAttendee.GetFromAttendanceList( attendanceList, checkinAreaFilter );
 
             UpdateStatusFilterTabs( attendees );
 

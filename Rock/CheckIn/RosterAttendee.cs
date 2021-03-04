@@ -545,7 +545,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="rosterStatusFilter">The roster status filter.</param>
         /// <returns></returns>
-        public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter)
+        public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter )
         {
             switch ( rosterStatusFilter )
             {
@@ -589,11 +589,24 @@ namespace Rock.CheckIn
         #region Static methods
 
         /// <summary>
-        /// Returns a list of <see cref="RosterAttendee"/> from the attendance list
+        /// Returns a list of <see cref="RosterAttendee" /> from the attendance list.
         /// </summary>
         /// <param name="attendanceList">The attendance list.</param>
         /// <returns></returns>
         public static IList<RosterAttendee> GetFromAttendanceList( IList<Attendance> attendanceList )
+        {
+            return GetFromAttendanceList( attendanceList, null );
+        }
+
+        /// <summary>
+        /// Returns a list of <see cref="RosterAttendee" /> from the attendance list,`
+        /// With an option to specify the selected Checkin Area so that the Group Type Path logic can deal
+        /// with situations where an area is part of more than one checkin area type.
+        /// </summary>
+        /// <param name="attendanceList">The attendance list.</param>
+        /// <param name="selectedCheckinArea">The selected checkin area (or null for all areas).</param>
+        /// <returns></returns>
+        public static IList<RosterAttendee> GetFromAttendanceList( IList<Attendance> attendanceList, GroupTypeCache selectedCheckinArea )
         {
             var groupTypeIds = attendanceList.Select( a => a.Occurrence.Group.GroupTypeId ).Distinct();
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null );
@@ -608,7 +621,20 @@ namespace Rock.CheckIn
                 .Select( a => a.Id )
                 .Distinct();
 
-            var checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths().ToDictionary( k => k.GroupTypeId, v => v );
+            Dictionary<int, CheckinAreaPath> checkinAreaPathsLookup;
+
+            if ( selectedCheckinArea != null )
+            {
+                // If there is a checkin area filter, limit to group types within the selected check-in area.
+                // this will help get the best path if a checkin area belongs to more than one checkin type
+                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
+                    .ToDictionary( k => k.GroupTypeId, v => v );
+            }
+            else
+            {
+                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths()
+                    .ToDictionary( k => k.GroupTypeId, v => v );
+            }
 
             var attendees = new List<RosterAttendee>();
             foreach ( var attendance in attendanceList )

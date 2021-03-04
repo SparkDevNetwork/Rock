@@ -607,7 +607,11 @@ namespace RockWeb.Blocks.Event
             }
             else if ( registrationTemplateId.HasValue )
             {
-                registrationInstanceList = registrationInstanceService.Queryable().Where( a => a.RegistrationTemplateId == registrationTemplateId.Value ).OrderBy( a => a.Name ).ToList();
+                registrationInstanceList = registrationInstanceService
+                    .Queryable()
+                    .Where( a => a.RegistrationTemplateId == registrationTemplateId.Value )
+                    .OrderBy( a => a.Name )
+                    .ToList();
             }
 
             var displayedCampusId = GetPlacementConfiguration().DisplayedCampusId;
@@ -618,7 +622,10 @@ namespace RockWeb.Blocks.Event
             {
                 foreach ( var registrationInstance in registrationInstanceList )
                 {
-                    var placementGroupsQry = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstance ).Where( a => a.GroupTypeId == groupType.Id );
+                    var placementGroupsQry = registrationInstanceService
+                        .GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance, registrationTemplatePlacementId )
+                        .Where( a => a.GroupTypeId == groupType.Id );
+
                     if ( displayedCampusId.HasValue )
                     {
                         placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
@@ -1052,7 +1059,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddPlacementGroup_SaveClick( object sender, EventArgs e )
         {
-            List<Group> placementGroups;// = new List<Group>();
+            List<Group> placementGroups;
             var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
             var rockContext = new RockContext();
             nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
@@ -1148,7 +1155,7 @@ namespace RockWeb.Blocks.Event
                     var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
 
                     // in RegistrationInstanceMode
-                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup );
+                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
                 }
                 else if ( registrationTemplatePlacementId.HasValue )
                 {
