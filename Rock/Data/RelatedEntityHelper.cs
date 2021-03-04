@@ -57,6 +57,22 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the related to source entity qualifier.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<TT> GetRelatedToSourceEntityQualifier<TT>( int entityId, string purposeKey, string qualifierValue ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var relatedEntities = GetRelatedToSourceEntity( entityId, relatedEntityTypeId.Value, purposeKey, qualifierValue ).Cast<TT>();
+
+            return relatedEntities;
+        }
+
+        /// <summary>
         /// Deletes any related entities that reference the specified entity
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -77,24 +93,38 @@ namespace Rock.Data
         /// <param name="purposeKey">The purpose key.</param>
         public void AddRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey ) where TT : IEntity
         {
-            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
-            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
-
-            var relatedEntityRecord = new RelatedEntity();
-            relatedEntityRecord.SourceEntityTypeId = sourceEntityTypeId.Value;
-            relatedEntityRecord.SourceEntityId = entityId;
-
-            relatedEntityRecord.TargetEntityTypeId = relatedEntityTypeId.Value;
-            relatedEntityRecord.TargetEntityId = relatedEntity.Id;
-
-            relatedEntityRecord.PurposeKey = purposeKey;
-            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
-
-            relatedEntityService.Add( relatedEntityRecord );
+            AddRelatedToSourceEntity<TT>( entityId, relatedEntity, purposeKey, null );
         }
 
         /// <summary>
-        /// Deletes (deletes relationship) the relationship between the relatedEntity and the entity
+        /// Adds a relationship between the relatedEntity and the entity
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntity">The related entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        public void AddRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey, string qualifierValue ) where TT : IEntity
+        {
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+
+            relatedEntityService.Add(
+                new RelatedEntity
+                {
+                    SourceEntityTypeId = sourceEntityTypeId.Value,
+                    SourceEntityId = entityId,
+                    TargetEntityTypeId = relatedEntityTypeId.Value,
+                    TargetEntityId = relatedEntity.Id,
+                    PurposeKey = purposeKey,
+                    QualifierValue = qualifierValue
+                }
+            );
+        }
+
+        /// <summary>
+        /// Deletes the relationship between the relatedEntity and the entity. This method will delete all relationships for the two entities and purpose key regardless of the QualifierValue.
         /// </summary>
         /// <typeparam name="TT">The type of the t.</typeparam>
         /// <param name="entityId">The entity identifier.</param>
@@ -107,6 +137,25 @@ namespace Rock.Data
 
             var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
             var relatedEntityRecords = relatedEntityService.GetRelatedEntityRecordsToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, purposeKey );
+
+            relatedEntityService.DeleteRange( relatedEntityRecords );
+        }
+
+        /// <summary>
+        /// Deletes the relationship between the relatedEntity and the entity for the given QualifierValue.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntity">The related entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        public void DeleteRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey, string qualifierValue ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntityRecords = relatedEntityService.GetRelatedEntityRecordsToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, purposeKey, qualifierValue );
 
             relatedEntityService.DeleteRange( relatedEntityRecords );
         }
@@ -136,6 +185,42 @@ namespace Rock.Data
                       && a.TargetEntityTypeId == relatedEntityTypeId.Value
                       && a.TargetEntityId == relatedEntity.Id
                       && a.PurposeKey == purposeKey
+                    )
+                )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if relationship to the source entity already exists.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntity">The related entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public bool RelatedToSourceEntityAlreadyExists<TT>( int entityId, TT relatedEntity, string purposeKey, string qualifierValue ) where TT : IEntity
+        {
+            if ( entityId == 0 || relatedEntity.Id == 0 )
+            {
+                return false;
+            }
+
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            if ( relatedEntityService.Queryable().Any( a =>
+                         a.SourceEntityTypeId == sourceEntityTypeId.Value
+                      && a.SourceEntityId == entityId
+                      && a.TargetEntityTypeId == relatedEntityTypeId.Value
+                      && a.TargetEntityId == relatedEntity.Id
+                      && a.PurposeKey == purposeKey
+                      && a.QualifierValue == qualifierValue
                     )
                 )
             {
@@ -190,6 +275,56 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Sets the related target entities for the given source entity type, purpose key, and qualifier value.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntities">The related entities.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        public void SetRelatedToSourceEntity<TT>( int entityId, List<TT> relatedEntities, string purposeKey, string qualifierValue ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+            var currentRelatedEntities = GetRelatedToSourceEntityQualifier<TT>( entityId, purposeKey, qualifierValue ).ToList();
+
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntityIds = relatedEntities.Select( a => a.Id ).ToList();
+
+            // delete related entities that are no longer in the list
+            foreach ( var currentRelatedEntity in currentRelatedEntities.Where( a => !relatedEntityIds.Contains( a.Id ) ) )
+            {
+                // get related entity record(s) that need to be deleted since the relatedEntity is no longer in the list
+                var relatedEntityToDelete = relatedEntityService
+                    .Queryable()
+                    .Where( a => a.SourceEntityTypeId == sourceEntityTypeId.Value
+                            && a.TargetEntityTypeId == relatedEntityTypeId.Value
+                            && a.SourceEntityId == entityId
+                            && a.TargetEntityId == currentRelatedEntity.Id
+                            && a.PurposeKey == purposeKey
+                            && a.QualifierValue == qualifierValue )
+                    .ToList();
+                relatedEntityService.DeleteRange( relatedEntityToDelete );
+            }
+
+            // add related entity record for related entities that that don't have a related entity record
+            foreach ( var relatedEntityId in relatedEntityIds.Where( a => !currentRelatedEntities.Any( r => r.Id == a ) ) )
+            {
+                var relatedEntityRecord = new RelatedEntity
+                {
+                    SourceEntityTypeId = sourceEntityTypeId.Value,
+                    SourceEntityId = entityId,
+                    TargetEntityTypeId = relatedEntityTypeId.Value,
+                    TargetEntityId = relatedEntityId,
+                    PurposeKey = purposeKey,
+                    QualifierValue = qualifierValue
+                };
+
+                relatedEntityService.Add( relatedEntityRecord );
+            }
+        }
+
+        /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities of the given entity type that (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="entityId">The Id of the entity you want to get the list of related entities for</param>
@@ -235,13 +370,25 @@ namespace Rock.Data
         /// </returns>
         public IQueryable<IEntity> GetRelatedToSourceEntity( int sourceEntityId, int relatedEntityTypeId, string purposeKey )
         {
+            return GetRelatedToSourceEntity( sourceEntityId, relatedEntityTypeId, purposeKey, null );
+        }
+
+        /// <summary>
+        /// Sets the related target entities for the given source entity type, purpose key, and qualifier value. If qualifierValue then it is not used to filter the results.
+        /// </summary>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetRelatedToSourceEntity( int sourceEntityId, int relatedEntityTypeId, string purposeKey, string qualifierValue )
+        {
             var rockContext = this.Context as RockContext;
+            var entityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext ).Id;
 
-            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
-
-            var srcQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityType.Id, relatedEntityTypeId, purposeKey );
-
-            return srcQuery;
+            return qualifierValue.IsNotNullOrWhiteSpace()
+                ? new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityTypeId, relatedEntityTypeId, purposeKey, qualifierValue )
+                : new RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityTypeId, relatedEntityTypeId, purposeKey );
         }
 
         /// <summary>
