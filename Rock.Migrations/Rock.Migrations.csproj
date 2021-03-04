@@ -81,6 +81,10 @@
     <Compile Include="Migrations\202103021953495_Rollup_0302.Designer.cs">
       <DependentUpon>202103021953495_Rollup_0302.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202103041650445_RegistrationSession-PropChanges.cs" />
+    <Compile Include="Migrations\202103041650445_RegistrationSession-PropChanges.Designer.cs">
+      <DependentUpon>202103041650445_RegistrationSession-PropChanges.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.Designer.cs">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
@@ -1617,6 +1621,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202103021953495_Rollup_0302.resx">
       <DependentUpon>202103021953495_Rollup_0302.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202103041650445_RegistrationSession-PropChanges.resx">
+      <DependentUpon>202103041650445_RegistrationSession-PropChanges.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.resx">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>

@@ -43,7 +43,7 @@ namespace Rock.Model
         /// The registration instance identifier.
         /// </value>
         [DataMember]
-        public int? RegistrationInstanceId { get; set; }
+        public int RegistrationInstanceId { get; set; }
 
         /// <summary>
         /// Gets or sets the registration count.
@@ -98,7 +98,7 @@ namespace Rock.Model
         /// The payment gateway reference.
         /// </value>
         [DataMember]
-        [MaxLength( 16 )]
+        [MaxLength( 36 )]
         public string PaymentGatewayReference { get; set; }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Rock.Model
         /// </summary>
         public RegistrationSessionConfiguration()
         {
-             this.HasOptional( t => t.RegistrationInstance ).WithMany().HasForeignKey( t => t.RegistrationInstanceId ).WillCascadeOnDelete( false );
+             this.HasRequired( t => t.RegistrationInstance ).WithMany().HasForeignKey( t => t.RegistrationInstanceId ).WillCascadeOnDelete( false );
              this.HasOptional( t => t.Registration ).WithMany().HasForeignKey( t => t.RegistrationId ).WillCascadeOnDelete( false );
         }
     }
