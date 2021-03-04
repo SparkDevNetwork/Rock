@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lucene.Net.Support;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;

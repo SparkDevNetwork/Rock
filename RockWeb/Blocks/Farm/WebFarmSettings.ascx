@@ -1,21 +1,53 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WebFarmSettings.ascx.cs" Inherits="RockWeb.Blocks.Farm.WebFarmSettings" %>
 
 <style>
-    .card .indicator {
-        height: 4px;
-    }
-
-    .server-meta {
-        font-size: 20px;
-    }
-
     .bg-disabled {
-        background: #F5F5F5;
-        color: #AEAEAE;
+        color: #aeaeae;
+        background: #f5f5f5;
     }
 
     .bg-disabled .indicator {
-        background: #A3A3A3;
+        background: #a3a3a3;
+    }
+
+    .card-node {
+        margin-bottom: 24px;
+        border-top: 0;
+    }
+
+    .card-node .indicator {
+        height: 4px;
+    }
+
+    .card-node .card-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background: transparent;
+    }
+
+    .server-meta {
+        display: flex;
+        flex: 1 1 auto;
+        flex-wrap: nowrap;
+        align-items: center;
+        overflow: hidden;
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .node-name {
+        margin-left: 4px;
+        font-weight: 700;
+    }
+
+    .node-type-icon {
+        flex-shrink: 0;
+        margin-left: 8px;
+    }
+
+    .card-node .card-body {
+        padding: 0;
     }
 </style>
 <script>
@@ -97,17 +129,17 @@
                                         <ItemTemplate>
                                             <div class="col-sm-6 col-md-6 col-lg-4">
                                                 <asp:LinkButton runat="server" style="color: inherit;" CommandArgument='<%# Eval("Id") %>'>
-                                                    <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
+                                                    <div class="card card-node <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
                                                         <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
-                                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
-                                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
+                                                        <div class="card-header">
+                                                            <span class="server-meta" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
                                                                 <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
-                                                                <p class="ml-1 font-weight-bold text-truncate text-black mb-0">
+                                                                <span class="node-name text-truncate">
                                                                     <%# Eval("NodeName") %>
-                                                                </p>
+                                                                </span>
                                                             </span>
-                                                            <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
-                                                            <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                            <%# (bool)Eval("IsLeader") ? "<span class='node-type-icon' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
+                                                            <%# (bool)Eval("IsJobRunner") ? "<span class='node-type-icon' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
                                                         </div>
                                                         <div class="card-body p-0" style="height:88px;">
                                                             <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
