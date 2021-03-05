@@ -19,7 +19,7 @@
                 {% endif %}
             </label>
             <div class='progress'>
-                <div class='progress-bar' role='progressbar' aria-valuenow='{{ percentRounded }}}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentWidth }}%;'>
+                <div class='progress-bar' role='progressbar' aria-valuenow='{{ percentRounded }}' aria-valuemin='0' aria-valuemax='100' style='width: {{ percentWidth }}%;'>
                     <span class='sr-only'>{{ percentRounded }}% Complete</span>
                 </div>
             </div>
