@@ -690,6 +690,7 @@
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
     <Compile Include="Reporting\DataFilter\Person\CreatedNotesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\NoteDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\CreatedNotesCountSelect.cs" />
     <Compile Include="Reporting\ReportGetQueryableArgs.cs" />
     <Compile Include="Reporting\RockReportingException.cs" />
@@ -2696,7 +2697,6 @@
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
-    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
