@@ -69,10 +69,6 @@ h4 {
   }
 }
 
-.panel {
-  margin-bottom: 16px;
-}
-
 .text-sm {
   font-size: @font-size-sm;
 }
@@ -86,10 +82,6 @@ h4 {
   margin-left: 16px;
   font-size: 28px;
   font-weight: @font-weight-bold;
-}
-
-.panel-widget {
-  overflow: hidden;
 }
 
 .btn-xs {
@@ -145,7 +137,7 @@ main {
 h3,
 h4,
 legend {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 b,
@@ -161,12 +153,7 @@ textarea,
 .picker-label {
   background-clip: padding-box;
   box-shadow: @shadow-sm;
-}
 
-.picker-label,
-input[type="text"],
-textarea,
-.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
     outline: none;
@@ -274,7 +261,7 @@ textarea,
 
     // Active state, and its :hover to override normal :hover
     &.active > a {
-      font-weight: bold;
+      font-weight: 700;
       color: @gray-dark;
       &,
       &:hover,
@@ -429,7 +416,7 @@ textarea,
       padding-top: 18px;
     }
     &.grid-row-header {
-      font-weight: bold;
+      font-weight: 700;
       border-right: 1px solid @table-border-color;
     }
 
@@ -575,6 +562,7 @@ textarea,
 }
 
 .panel {
+  margin-bottom: 16px;
   .box-shadow(@shadow-raised);
 
   .panel-title {
@@ -590,6 +578,7 @@ textarea,
 }
 
 .panel-widget {
+  overflow: hidden;
   box-shadow: @shadow-sm;
 }
 
@@ -601,14 +590,11 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: flex;
     flex-wrap: wrap;
     align-content: center;
     align-items: center;
+    border-bottom: 1px solid @panel-border;
 
     .row {
       width: 100%;
