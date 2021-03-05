@@ -113,7 +113,17 @@ namespace Rock.Web.UI.Controls
             this._avcNoteAttributes.AddEditControls( note );
         }
 
-        private bool _hasAttributes = false;
+        /// <summary>
+        /// Gets or sets a value indicating whether this note has attributes.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has attributes; otherwise, <c>false</c>.
+        /// </value>
+        private bool _hasAttributes
+        {
+            get => ViewState["_hasAttributes"] as bool? ?? false;
+            set => ViewState["_hasAttributes"] = value;
+        }
 
         /// <summary>
         /// Sets the note.
