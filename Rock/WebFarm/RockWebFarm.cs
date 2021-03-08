@@ -113,7 +113,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// Do debug logging
         /// </summary>
-        private const bool DEBUG = false;
+        private const bool DEBUG = true;
 
         /// <summary>
         /// The bytes per megayte
@@ -144,6 +144,11 @@ namespace Rock.WebFarm
         /// Was this instance pinged?
         /// </summary>
         private static bool _wasPinged = false;
+
+        /// <summary>
+        /// The leadership ping key
+        /// </summary>
+        private static Guid? _leadershipPingKey = null;
 
         /// <summary>
         /// The polling interval seconds
@@ -381,7 +386,8 @@ namespace Rock.WebFarm
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>
-        internal static void OnReceivedPing( string senderNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPing( string senderNodeName, Guid? pingPongKey )
         {
             if ( senderNodeName == _nodeName )
             {
@@ -389,11 +395,17 @@ namespace Rock.WebFarm
                 return;
             }
 
+            if ( !pingPongKey.HasValue )
+            {
+                // There is no valid ping key
+                return;
+            }
+
             Debug( $"Got a Ping from {senderNodeName}" );
             _wasPinged = true;
 
             // Reply to the leader (sender of the ping)
-            PublishEvent( EventType.Pong, senderNodeName );
+            PublishEvent( EventType.Pong, senderNodeName, pingPongKey.Value.ToString() );
         }
 
         /// <summary>
@@ -401,7 +413,8 @@ namespace Rock.WebFarm
         /// </summary>
         /// <param name="senderNodeName">Name of the node that ponged.</param>
         /// <param name="recipientNodeName">Name of the recipient node.</param>
-        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName, Guid? pingPongKey )
         {
             if ( senderNodeName == _nodeName )
             {
@@ -412,6 +425,12 @@ namespace Rock.WebFarm
             if ( !recipientNodeName.IsNullOrWhiteSpace() && recipientNodeName != _nodeName )
             {
                 // This message is not for me
+                return;
+            }
+
+            if ( !pingPongKey.HasValue || pingPongKey.Value != _leadershipPingKey )
+            {
+                // This pong key doesn't match the key that I sent out as a ping
                 return;
             }
 
@@ -467,9 +486,10 @@ namespace Rock.WebFarm
 
             Debug( "My time to poll. I was not pinged, so I'm starting leadership duties" );
 
-            // Ping other nodes
+            // Ping other nodes with a unique key for this ping-pong round
             var pollingTime = RockDateTime.Now;
-            PublishEvent( EventType.Ping );
+            _leadershipPingKey = Guid.NewGuid();
+            PublishEvent( EventType.Ping, payload: _leadershipPingKey.Value.ToString() );
 
             // Assert this node's leadership in the database
             using ( var rockContext = new RockContext() )
@@ -502,6 +522,9 @@ namespace Rock.WebFarm
             // Wait a maximum of 10 seconds for responses
             await Task.Delay( TimeSpan.FromSeconds( pollingWaitTimeSeconds ) ).ContinueWith( t =>
             {
+                // Clear the ping pong key because responses are now late and no longer accepted
+                _leadershipPingKey = null;
+
                 Debug( "Checking for unresponsive nodes" );
 
                 using ( var rockContext = new RockContext() )
