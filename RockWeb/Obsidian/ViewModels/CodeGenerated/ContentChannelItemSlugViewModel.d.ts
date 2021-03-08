@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface ContentChannelItemSlug extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ContentChannelItemId: number;
     IsPrimary: boolean;
     Slug: string | null;

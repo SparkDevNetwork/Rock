@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface StepType extends Entity {
     Id: number;
     AllowManualEditing: boolean;
     AllowMultiple: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     AudienceDataViewId: number | null;
     AutoCompleteDataViewId: number | null;
     CardLavaTemplate: string | null;

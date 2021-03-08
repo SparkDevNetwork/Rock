@@ -23,13 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupHistorical extends Entity {
     Id: number;
     ArchivedByPersonAliasId: number | null;
     ArchivedDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     CurrentRowIndicator: boolean;
     Description: string | null;

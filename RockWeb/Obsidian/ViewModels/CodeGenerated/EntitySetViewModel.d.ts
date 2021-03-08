@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface EntitySet extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EntitySetPurposeValueId: number | null;
     EntityTypeId: number | null;
     ExpireDateTime: RockDateType | null;

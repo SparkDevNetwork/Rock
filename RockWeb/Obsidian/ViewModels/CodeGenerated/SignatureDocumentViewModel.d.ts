@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface SignatureDocument extends Entity {
     Id: number;
     AppliesToPersonAliasId: number | null;
     AssignedToPersonAliasId: number | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BinaryFileId: number | null;
     DocumentKey: string | null;
     InviteCount: number;

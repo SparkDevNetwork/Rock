@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface CommunicationResponse extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     FromPersonAliasId: number | null;
     IsRead: boolean;
     MessageKey: string | null;

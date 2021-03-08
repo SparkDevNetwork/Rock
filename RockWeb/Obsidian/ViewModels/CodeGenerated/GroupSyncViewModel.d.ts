@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface GroupSync extends Entity {
     Id: number;
     AddUserAccountsDuringSync: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ExitSystemCommunicationId: number | null;
     GroupId: number;
     GroupTypeRoleId: number;

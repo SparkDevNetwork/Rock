@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -35,7 +36,7 @@ export default interface AchievementType extends Entity {
     AchievementSuccessWorkflowTypeId: number | null;
     AchieverEntityTypeId: number;
     AllowOverAchievement: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BadgeLavaTemplate: string | null;
     CategoryId: number | null;
     ComponentConfigJson: string | null;

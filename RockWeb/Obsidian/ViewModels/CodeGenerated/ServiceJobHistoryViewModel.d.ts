@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface ServiceJobHistory extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ServiceJobId: number;
     ServiceWorker: string | null;
     StartDateTime: RockDateType | null;

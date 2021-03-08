@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface NcoaHistory extends Entity {
     Id: number;
     AddressInvalidReason: number;
     AddressStatus: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     FamilyId: number;
     LocationId: number | null;
     MatchFlag: number;

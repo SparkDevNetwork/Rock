@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface NoteWatch extends Entity {
     Id: number;
     AllowOverride: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
     EntityTypeId: number | null;
     IsWatching: boolean;

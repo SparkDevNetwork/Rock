@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -30,7 +31,7 @@ export default interface AttendanceOccurrence extends Entity {
     AcceptConfirmationMessage: string | null;
     AnonymousAttendanceCount: number | null;
     AttendanceTypeValueId: number | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     DeclineConfirmationMessage: string | null;
     DeclineReasonValueIds: string | null;
     DidNotOccur: boolean | null;

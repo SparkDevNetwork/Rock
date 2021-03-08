@@ -23,13 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface ContentChannelItem extends Entity {
     Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     Content: string | null;
     ContentChannelId: number;
     ContentChannelTypeId: number;

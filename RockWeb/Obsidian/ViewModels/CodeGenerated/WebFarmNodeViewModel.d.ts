@@ -23,12 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface WebFarmNode extends Entity {
     Id: number;
     AddedDateTime: RockDateType;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ConfiguredLeadershipPollingIntervalSeconds: number | null;
     CurrentLeadershipPollingIntervalSeconds: number;
     IsActive: boolean;

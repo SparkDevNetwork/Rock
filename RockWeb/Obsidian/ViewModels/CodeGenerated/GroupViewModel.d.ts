@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Group extends Entity {
@@ -31,7 +32,7 @@ export default interface Group extends Entity {
     ArchivedByPersonAliasId: number | null;
     ArchivedDateTime: RockDateType | null;
     AttendanceRecordRequiredForCheckIn: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     Description: string | null;
     DisableScheduleToolboxAccess: boolean;

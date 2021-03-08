@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Registration extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ConfirmationEmail: string | null;
     DiscountAmount: number;
     DiscountCode: string | null;

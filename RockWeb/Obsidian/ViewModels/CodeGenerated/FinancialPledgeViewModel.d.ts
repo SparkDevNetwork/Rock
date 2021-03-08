@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialPledge extends Entity {
     Id: number;
     AccountId: number | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EndDate: RockDateType;
     GroupId: number | null;
     PersonAliasId: number | null;

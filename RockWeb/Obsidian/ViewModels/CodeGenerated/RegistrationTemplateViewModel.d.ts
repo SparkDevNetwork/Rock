@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -30,7 +31,7 @@ export default interface RegistrationTemplate extends Entity {
     AddPersonNote: boolean;
     AllowExternalRegistrationUpdates: boolean;
     AllowMultipleRegistrants: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BatchNamePrefix: string | null;
     CategoryId: number | null;
     ConfirmationEmailTemplate: string | null;

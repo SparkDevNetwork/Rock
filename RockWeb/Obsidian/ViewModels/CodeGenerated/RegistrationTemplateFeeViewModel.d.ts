@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplateFee extends Entity {
     Id: number;
     AllowMultiple: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     DiscountApplies: boolean;
     FeeType: number;
     HideWhenNoneRemaining: boolean;

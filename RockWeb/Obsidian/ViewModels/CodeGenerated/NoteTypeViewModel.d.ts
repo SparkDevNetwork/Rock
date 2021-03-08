@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -31,7 +32,7 @@ export default interface NoteType extends Entity {
     AllowsReplies: boolean;
     AllowsWatching: boolean;
     ApprovalUrlTemplate: string | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     AutoWatchAuthors: boolean;
     BackgroundColor: string | null;
     BinaryFileTypeId: number | null;

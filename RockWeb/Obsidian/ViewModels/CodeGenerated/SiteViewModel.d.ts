@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -30,7 +31,7 @@ export default interface Site extends Entity {
     AdditionalSettings: string | null;
     AllowedFrameDomains: string | null;
     AllowIndexing: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     ChangePasswordPageId: number | null;
     ChangePasswordPageRouteId: number | null;
     CommunicationPageId: number | null;

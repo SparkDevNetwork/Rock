@@ -23,12 +23,13 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Workflow extends Entity {
     Id: number;
     ActivatedDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CompletedDateTime: RockDateType | null;
     Description: string | null;
     EntityId: number | null;

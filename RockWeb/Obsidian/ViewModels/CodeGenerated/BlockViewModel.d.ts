@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Block extends Entity {
     Id: number;
     AdditionalSettings: string | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BlockTypeId: number;
     CssClass: string | null;
     IsSystem: boolean;

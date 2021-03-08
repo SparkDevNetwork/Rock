@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface AchievementAttempt extends Entity {
@@ -31,7 +32,7 @@ export default interface AchievementAttempt extends Entity {
     AchievementAttemptStartDateTime: RockDateType;
     AchievementTypeId: number;
     AchieverEntityId: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     IsClosed: boolean;
     IsSuccessful: boolean;
     Progress: number;

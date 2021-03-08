@@ -22,12 +22,13 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface TaggedItem extends Entity {
     Id: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EntityGuid: Guid;
     EntityTypeId: number;
     IsSystem: boolean;

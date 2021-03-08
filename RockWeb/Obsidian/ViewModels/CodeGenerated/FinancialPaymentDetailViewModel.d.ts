@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface FinancialPaymentDetail extends Entity {
     Id: number;
     AccountNumberMasked: string | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BillingLocationId: number | null;
     CreditCardTypeValueId: number | null;
     CurrencyTypeValueId: number | null;

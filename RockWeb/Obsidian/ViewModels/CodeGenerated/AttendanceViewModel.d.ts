@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface Attendance extends Entity {
     Id: number;
     AttendanceCheckInSessionId: number | null;
     AttendanceCodeId: number | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     CheckedInByPersonAliasId: number | null;
     CheckedOutByPersonAliasId: number | null;

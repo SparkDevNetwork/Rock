@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface AssessmentType extends Entity {
     Id: number;
     AssessmentPath: string | null;
     AssessmentResultsPath: string | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BadgeColor: string | null;
     BadgeSummaryLava: string | null;
     Description: string | null;

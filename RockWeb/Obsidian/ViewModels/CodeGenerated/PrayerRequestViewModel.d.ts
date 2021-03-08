@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface PrayerRequest extends Entity {
@@ -31,7 +32,7 @@ export default interface PrayerRequest extends Entity {
     Answer: string | null;
     ApprovedByPersonAliasId: number | null;
     ApprovedOnDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CampusId: number | null;
     CategoryId: number | null;
     Email: string | null;

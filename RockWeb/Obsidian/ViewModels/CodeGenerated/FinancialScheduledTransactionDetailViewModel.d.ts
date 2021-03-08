@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface FinancialScheduledTransactionDetail extends Entity {
     Id: number;
     AccountId: number;
     Amount: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
     EntityTypeId: number | null;
     FeeCoverageAmount: number | null;

@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface AchievementTypePrerequisite extends Entity {
     Id: number;
     AchievementTypeId: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     PrerequisiteAchievementTypeId: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;

@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Communication extends Entity {
     Id: number;
     AdditionalMergeFieldsJson: string | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     BCCEmails: string | null;
     CCEmails: string | null;
     CommunicationTemplateId: number | null;

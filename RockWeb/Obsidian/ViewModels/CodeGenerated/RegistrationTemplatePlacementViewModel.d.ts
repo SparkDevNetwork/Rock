@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplatePlacement extends Entity {
     Id: number;
     AllowMultiplePlacements: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     Cost: number | null;
     GroupTypeId: number;
     IconCssClass: string | null;

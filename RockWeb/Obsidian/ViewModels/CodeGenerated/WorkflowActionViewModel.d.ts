@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -29,7 +30,7 @@ export default interface WorkflowAction extends Entity {
     Id: number;
     ActionTypeId: number;
     ActivityId: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CompletedDateTime: RockDateType | null;
     FormAction: string | null;
     LastProcessedDateTime: RockDateType | null;

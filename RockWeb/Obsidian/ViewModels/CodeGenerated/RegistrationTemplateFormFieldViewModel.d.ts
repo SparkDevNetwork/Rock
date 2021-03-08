@@ -22,13 +22,14 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface RegistrationTemplateFormField extends Entity {
     Id: number;
     AttributeId: number | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     FieldSource: number;
     FieldVisibilityRulesJSON: string | null;
     IsGridField: boolean;

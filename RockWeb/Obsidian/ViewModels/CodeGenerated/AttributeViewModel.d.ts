@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
@@ -29,7 +30,7 @@ export default interface Attribute extends Entity {
     Id: number;
     AbbreviatedName: string | null;
     AllowSearch: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     CategoryGuids: (Guid)[];
     DefaultValue: string | null;
     Description: string | null;
@@ -49,7 +50,7 @@ export default interface Attribute extends Entity {
     IsPublic: boolean;
     IsRequired: boolean;
     IsSystem: boolean;
-    Key: string | null;
+    Key: string;
     Name: string | null;
     Order: number;
     PostHtml: string | null;

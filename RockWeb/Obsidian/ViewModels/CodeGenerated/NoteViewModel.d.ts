@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface Note extends Entity {
@@ -31,7 +32,7 @@ export default interface Note extends Entity {
     ApprovalStatus: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     Caption: string | null;
     EditedByPersonAliasId: number | null;
     EditedDateTime: RockDateType | null;

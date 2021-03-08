@@ -22,6 +22,7 @@
 //
 
 import Entity from '../Entity.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import { Guid } from '../../Util/Guid.js';
 
@@ -37,7 +38,7 @@ export default interface GroupType extends Entity {
     AttendanceCountsAsWeekendService: boolean;
     AttendancePrintTo: number;
     AttendanceRule: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     DefaultGroupRoleId: number | null;
     Description: string | null;
     EnableGroupHistory: boolean;

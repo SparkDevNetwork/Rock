@@ -23,6 +23,7 @@
 
 import Entity from '../Entity.js';
 import { Guid } from '../../Util/Guid.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { RockDateType } from '../../Util/RockDate.js';
 
 export default interface WorkflowActionForm extends Entity {
@@ -31,7 +32,7 @@ export default interface WorkflowActionForm extends Entity {
     Actions: string | null;
     AllowNotes: boolean | null;
     AllowPersonEntry: boolean;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     Footer: string | null;
     Header: string | null;
     IncludeActionsInNotification: boolean;

@@ -30,7 +30,7 @@ export default interface AttributeValue extends Entity {
     Id: number;
     Attribute: Attribute | null;
     AttributeId: number;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     EntityId: number | null;
     IsSystem: boolean;
     Value: string | null;

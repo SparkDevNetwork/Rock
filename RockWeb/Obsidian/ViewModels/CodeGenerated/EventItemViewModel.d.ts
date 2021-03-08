@@ -23,13 +23,14 @@
 
 import Entity from '../Entity.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import AttributeValue from './AttributeValueViewModel.js';
 import { Guid } from '../../Util/Guid.js';
 
 export default interface EventItem extends Entity {
     Id: number;
     ApprovedByPersonAliasId: number | null;
     ApprovedOnDateTime: RockDateType | null;
-    Attributes: Record<string, unknown>;
+    Attributes: Record<string, AttributeValue> | null;
     Description: string | null;
     DetailsUrl: string | null;
     IsActive: boolean;
