@@ -683,7 +683,7 @@
 <script id="js-template-column" type="text/template">
     <div class="board-column">
         <div class="board-heading">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="board-heading-details">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
@@ -697,7 +697,7 @@
 </script>
 
 <script id="js-template-column-sentry" type="text/template">
-    <div class="board-card-base board-column-sentry text-muted small p-3">
+    <div class="board-card-base board-column-sentry small">
         <p class="mb-2"><strong>More requests exist</strong></p>
         <p>Please adjust sorting, use filters, or even use the grid mode to interact with them.</p>
     </div>
@@ -710,13 +710,13 @@
                 {{StatusIconsHtml}}
                 {{CampusHtml}}
             </div>
-            <div class="board-card-body">
+            <div class="board-card-main">
                 <div class="flex-grow-1 mb-2">
                     <div class="board-card-photo" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
-                    <span class="board-card-assigned d-block text-muted">
+                    <span class="board-card-assigned">
                         {{ConnectorPersonFullname}}
                     </span>
                 </div>
@@ -747,11 +747,11 @@
                 </div>
             </div>
             <div class="board-card-meta">
-                <span class="text-muted" title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
+                <span title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
                     <i class="fa fa-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}
                 </span>
-                <span class="text-muted" title="{{DaysSinceOpeningLongText}}">
+                <span title="{{DaysSinceOpeningLongText}}">
                     <i class="fa fa-calendar"></i>
                     {{DaysSinceOpeningShortText}}
                 </span>

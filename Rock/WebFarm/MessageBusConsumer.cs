@@ -42,10 +42,10 @@ namespace Rock.WebFarm
             switch ( message.MessageType )
             {
                 case RockWebFarm.EventType.Ping:
-                    RockWebFarm.OnReceivedPing( message.SenderNodeName );
+                    RockWebFarm.OnReceivedPing( message.SenderNodeName, message.Payload.AsGuidOrNull() );
                     break;
                 case RockWebFarm.EventType.Pong:
-                    RockWebFarm.OnReceivedPong( message.SenderNodeName, message.RecipientNodeName );
+                    RockWebFarm.OnReceivedPong( message.SenderNodeName, message.RecipientNodeName, message.Payload.AsGuidOrNull() );
                     break;
                 case RockWebFarm.EventType.Startup:
                     RockWebFarm.OnReceivedStartup( message.SenderNodeName );

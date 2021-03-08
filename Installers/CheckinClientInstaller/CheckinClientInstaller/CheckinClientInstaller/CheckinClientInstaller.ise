@@ -342,6 +342,7 @@
 		<col def="S0">ISDotNetInstallerArgsCommit</col>
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
+		<row><td>CheckinClient.Content_Files</td><td>{1F1FEA28-0B22-45AD-81CE-F6BD61564FF5}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.content_files</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>CheckinClient.Primary_output</td><td>{7DE914C9-E3CD-458A-AF1B-0BEB88C32DDD}</td><td>INSTALLDIR</td><td>2</td><td/><td>checkinclient.primary_output</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
@@ -1869,6 +1870,7 @@
 	<table name="FeatureComponents">
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>AlwaysInstall</td><td>CheckinClient.Content_Files</td></row>
 		<row><td>AlwaysInstall</td><td>CheckinClient.Primary_output</td></row>
 	</table>
 
@@ -1884,6 +1886,7 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
+		<row><td>checkinclient.content_files</td><td>CheckinClient.Content_Files</td><td>CheckinClient.Content Files</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;CheckinClient&gt;|ContentFiles</td><td>3</td><td/></row>
 		<row><td>checkinclient.primary_output</td><td>CheckinClient.Primary_output</td><td>CheckinClient.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;CheckinClient&gt;|Built</td><td>3</td><td/></row>
 	</table>
 
@@ -2028,6 +2031,7 @@
 		<col def="S0">FTPLocation</col>
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
+		<row><td>CheckinClient.Content_Files</td><td/><td/><td>_814F8DA2_282D_44ED_97B6_B927E70E6577_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>CheckinClient.Primary_output</td><td/><td/><td>_02CB916F_7A4B_47D5_8287_9CB2C3DF44DA_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
@@ -4023,7 +4027,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{EEFF672D-BFAB-4FF4-9573-6BD177F4519F}</td></row>
 		<row><td>ISUSSignature</td><td>{2B077B3C-AA70-463D-BD16-59EADA09871A}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease,viewAppFiles,viewFeatureFiles</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>

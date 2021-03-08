@@ -342,6 +342,17 @@
     p {
       margin: 0;
     }
+
+    .note-attributes {
+      margin: 24px 0 0;
+      padding: 8px 0 0;
+      border-top: 1px solid fade(@panel-border, 60%);
+    }
+
+    .note-attribute {
+      font-size: @font-size-small;
+      margin: @form-group-margin-bottom 0 0;
+    }
   }
 
   .note-footer {
@@ -415,24 +426,8 @@
 }
 
 .note-editor {
-  margin: 8px 0;
-
   .meta-body {
     border: 1px solid @input-border;
-    &:focus,
-    &:focus-within,
-    &.focus-within {
-      border: var(--focus-state-border);
-      box-shadow: var(--focus-state-shadow);
-    }
-  }
-
-  .noteentry-control .form-control {
-    border: 0;
-    &:focus {
-      border: 0;
-      box-shadow: none;
-    }
   }
 
   .settings {
@@ -443,9 +438,8 @@
       float: left;
 
       .date-time-picker {
-        margin-bottom: 0;
-
-        .input-group {
+        .input-group,
+        & {
           margin-bottom: 0;
         }
 
@@ -480,13 +474,17 @@
       max-width: 200px;
       height: 30px;
       font-size: 12px;
-      line-height: 30px;
     }
+
     .checkbox {
       float: left;
       margin: 3px 5px 0 10px !important;
       font-size: 12px;
       line-height: 24px;
+    }
+
+    .hidden + .checkbox {
+      margin-left: 0 !important;
     }
 
     .commands {
@@ -496,6 +494,36 @@
         margin-left: 8px;
       }
     }
+  }
+}
+
+.note-editor-standard {
+  // Add custom focus state only for standard notes.
+  .meta-body {
+    &:focus,
+    &:focus-within,
+    &.focus-within {
+      border: var(--focus-state-border);
+      box-shadow: var(--focus-state-shadow);
+    }
+  }
+
+  // Disable primary note field border and focus states
+  .noteentry-control .form-control {
+    border: 0;
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.note-editor-attributes {
+  .noteentry-control {
+    padding: 18px 24px 24px;
+  }
+
+  .settings {
+    padding: 0 24px 6px;
   }
 }
 

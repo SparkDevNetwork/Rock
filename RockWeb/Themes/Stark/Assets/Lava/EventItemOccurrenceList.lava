@@ -4,8 +4,8 @@
   </div>
   <div class="list-group">
     {% for occurrence in EventItemOccurrences %}
-      <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select: 'RegistrationInstanceId' }}">
-          {{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'dddd, MMM d / h:mmtt' }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
+      <a class="list-group-item" href="{{ RegistrationPage }}?RegistrationInstanceId={{ occurrence.Linkages | Select:'RegistrationInstanceId' }}">
+          {{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date:'dddd, MMM d / h:mmtt' }} <span class="text-muted">{{ occurrence.Campus.Name }}</span>
       </a>
     {% endfor %}
   </div>
