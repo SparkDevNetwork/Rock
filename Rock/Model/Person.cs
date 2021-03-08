@@ -2645,7 +2645,7 @@ namespace Rock.Model
         /// <param name="gender">The gender.</param>
         /// <param name="isAdult">if set to <c>true</c> is adult.</param>
         /// <returns></returns>
-        private static string GetPhotoPath( Gender gender, bool isAdult )
+        public static string GetPhotoPath( Gender gender, bool isAdult )
         {
             if ( isAdult )
             {
