@@ -17,7 +17,7 @@
 import { defineComponent } from '../Vendor/Vue/vue.js';
 import { Guid } from '../Util/Guid.js';
 import { getFieldTypeProps, registerFieldType } from './Index.js';
-import { asDateString } from '../Filters/Date.js';
+import { asDateString } from '../Services/Date.js';
 import DatePicker from '../Elements/DatePicker.js';
 
 const fieldTypeGuid: Guid = '6B6AA175-4758-453F-8D83-FCD8044B5F36';

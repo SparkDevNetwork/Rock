@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { isEmail } from '../Filters/Email.js';
-import { isNullOrWhitespace } from '../Filters/String.js';
+import DateKey from '../Services/DateKey.js';
+import { isEmail } from '../Services/Email.js';
+import { isNullOrWhitespace } from '../Services/String.js';
 import { defineRule } from '../Vendor/VeeValidate/vee-validate.js';
 
 export type ValidationRuleFunction = (value: unknown) => boolean | string | Promise<boolean | string>;
@@ -45,6 +46,28 @@ defineRule('email', (value => {
     // Check if email
     if (!isEmail(value)) {
         return 'must be a valid email';
+    }
+
+    return true;
+}) as ValidationRuleFunction);
+
+defineRule('notequal', ((value, [compare]) => {
+    return value !== compare;
+}) as ValidationRuleFunction);
+
+defineRule('datekey', (value => {
+    const asString = value as string;
+
+    if (!DateKey.getYear(asString)) {
+        return 'must have a year';
+    }
+
+    if (!DateKey.getMonth(asString)) {
+        return 'must have a month';
+    }
+
+    if (!DateKey.getDay(asString)) {
+        return 'must have a day';
     }
 
     return true;

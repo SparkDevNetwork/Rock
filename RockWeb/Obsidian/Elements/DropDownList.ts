@@ -16,8 +16,7 @@
 //
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { newGuid } from '../Util/Guid.js';
-import { Field } from '../Vendor/VeeValidate/vee-validate.js';
-import RockLabel from './RockLabel.js';
+import RockFormField from './RockFormField.js';
 
 export type DropDownListOption = {
     key: string,
@@ -28,59 +27,41 @@ export type DropDownListOption = {
 export default defineComponent({
     name: 'DropDownList',
     components: {
-        Field,
-        RockLabel
+        RockFormField
     },
     props: {
         modelValue: {
-            type: String,
+            type: String as PropType<string>,
             required: true
-        },
-        label: {
-            type: String,
-            required: true
-        },
-        disabled: {
-            type: Boolean,
-            default: false
         },
         options: {
             type: Array as PropType<DropDownListOption[]>,
             required: true
         },
-        rules: {
-            type: String as PropType<string>,
-            default: ''
-        },
-        help: {
-            type: String as PropType<string>,
-            default: ''
-        },
         showBlankItem: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+        blankValue: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
-    emits: [
-        'update:modelValue'
-    ],
     data: function () {
         return {
             uniqueId: `rock-dropdownlist-${newGuid()}`,
-            internalValue: ''
+            internalValue: this.blankValue
         };
-    },
-    computed: {
-        isRequired(): boolean {
-            return this.rules.includes('required');
-        }
     },
     methods: {
         syncValue() {
             this.internalValue = this.modelValue;
-            if (!this.showBlankItem && !this.internalValue && this.options.length) {
-                this.internalValue = this.options[0].value;
-                this.$emit('update:modelValue', this.internalValue);
+            const selectedOption = this.options.find(o => o.value === this.internalValue) || null;
+
+            if (!selectedOption) {
+                this.internalValue = this.showBlankItem ?
+                    this.blankValue :
+                    (this.options[0]?.value || this.blankValue);
             }
         }
     },
@@ -102,19 +83,17 @@ export default defineComponent({
         }
     },
     template: `
-<Field
+<RockFormField
     v-model="internalValue"
-    :name="label"
-    :rules="rules"
-    #default="{field, errors}">
-    <div class="form-group rock-drop-down-list" :class="{required: isRequired, 'has-error': Object.keys(errors).length}">
-        <RockLabel :for="uniqueId" :help="help">{{label}}</RockLabel>
+    formGroupClasses="rock-drop-down-list"
+    name="dropdownlist">
+    <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
             <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field">
-                <option v-if="showBlankItem" value=""></option>
+                <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
         </div>
-    </div>
-</Field>`
+    </template>
+</RockFormField>`
 });

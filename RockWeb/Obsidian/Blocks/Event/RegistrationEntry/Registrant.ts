@@ -20,14 +20,16 @@ import { DropDownListOption } from '../../../Elements/DropDownList';
 import RadioButtonList from '../../../Elements/RadioButtonList';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { RegistrantInfo } from '../RegistrationEntry';
-import NumberFilter from '../../../Filters/Number';
-import StringFilter from '../../../Filters/String';
+import NumberFilter from '../../../Services/Number';
+import StringFilter from '../../../Services/String';
 import RockButton from '../../../Elements/RockButton';
 import ProgressBar from '../../../Elements/ProgressBar';
 import RegistrantPersonField from './RegistrantPersonField';
 import RegistrantAttributeField from './RegistrantAttributeField';
 import Alert from '../../../Elements/Alert';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
+import { Guid } from '../../../Util/Guid';
+import RockForm from '../../../Controls/RockForm';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
@@ -37,7 +39,8 @@ export default defineComponent({
         ProgressBar,
         RegistrantPersonField,
         RegistrantAttributeField,
-        Alert
+        Alert,
+        RockForm
     },
     setup() {
         return {
@@ -56,6 +59,7 @@ export default defineComponent({
             selectedFamily: '',
             currentRegistrantIndex: 0,
             currentFormIndex: 0,
+            fieldValues: {} as Record<Guid, string>,
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
                 PersonAttribute: RegistrationFieldSource.PersonAttribute,
@@ -67,6 +71,9 @@ export default defineComponent({
     computed: {
         currentForm(): RegistrationEntryBlockFormViewModel | null {
             return this.viewModel.RegistrantForms[this.currentFormIndex] || null;
+        },
+        isLastForm(): boolean {
+            return (this.currentFormIndex + 1) === this.viewModel.RegistrantForms.length;
         },
         currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
             return this.currentForm?.Fields || [];
@@ -89,6 +96,9 @@ export default defineComponent({
         },
         registrantTerm(): string {
             return this.viewModel.RegistrantTerm || 'registrant';
+        },
+        pluralFeeTerm(): string {
+            return StringFilter.toTitleCase(this.viewModel.PluralFeeTerm || 'fees');
         },
         possibleFamilyMembers(): DropDownListOption[] {
             const options = [] as DropDownListOption[];
@@ -169,30 +179,49 @@ export default defineComponent({
             else {
                 this.currentRegistrant.FamilyGuid = this.selectedFamily;
             }
+        },
+        viewModel: {
+            deep: true,
+            immediate: true,
+            handler() {
+                for (const form of this.viewModel.RegistrantForms) {
+                    for (const field of form.Fields) {
+                        this.fieldValues[field.Guid] = this.fieldValues[field.Guid] || '';
+                    }
+                }
+            }
         }
     },
     template: `
 <div class="registrationentry-registrant">
     <h1>{{currentRegistrantTitle}}</h1>
     <ProgressBar :percent="completionPercentInt" />
-    <div v-if="possibleFamilyMembers && possibleFamilyMembers.length > 1" class="well js-registration-same-family">
-        <RadioButtonList label="Individual is in the same immediate family as" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" />
-    </div>
 
-    <template v-for="field in currentFormFields" :key="field.Guid">
-        <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" />
-        <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" />
-        <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
-    </template>
+    <RockForm @submit="onNext">
+        <div v-if="possibleFamilyMembers && possibleFamilyMembers.length > 1 && currentFormIndex === 0" class="well js-registration-same-family">
+            <RadioButtonList label="Individual is in the same immediate family as" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" validationTitle="Family" />
+        </div>
 
-    <div class="actions">
-        <RockButton btnType="default" @click="onPrevious">
-            Previous
-        </RockButton>
-        <RockButton btnType="primary" class="pull-right" @click="onNext">
-            Next
-        </RockButton>
-    </div>
+        <template v-for="field in currentFormFields" :key="field.Guid">
+            <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" v-model="fieldValues[field.Guid]" />
+            <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" v-model="fieldValues[field.Guid]" :fieldValues="fieldValues" />
+            <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
+        </template>
+
+        <div v-if="isLastForm" class="well registration-additional-options">
+            <h4>{{pluralFeeTerm}}</h4>
+            Control here
+        </div>
+
+        <div class="actions">
+            <RockButton btnType="default" @click="onPrevious">
+                Previous
+            </RockButton>
+            <RockButton btnType="primary" class="pull-right" type="submit">
+                Next
+            </RockButton>
+        </div>
+    </RockForm>
 </div>
 `
 });

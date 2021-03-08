@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockField_1, Alert_1;
+    var vue_1, RockField_1, Alert_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -28,6 +28,9 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
+            },
+            function (RegistrationEntryBlockViewModel_1_1) {
+                RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
             }
         ],
         execute: function () {
@@ -41,6 +44,10 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                     field: {
                         type: Object,
                         required: true
+                    },
+                    fieldValues: {
+                        type: Object,
+                        required: true
                     }
                 },
                 data: function () {
@@ -50,11 +57,45 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                         value: ''
                     };
                 },
+                methods: {
+                    isRuleMet: function (rule) {
+                        var value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid].toLowerCase().trim();
+                        var comparison = rule.ComparedToValue.toLowerCase().trim();
+                        if (!value) {
+                            return false;
+                        }
+                        switch (rule.ComparisonType) {
+                            case RegistrationEntryBlockViewModel_1.ComparisonType.EqualTo:
+                                return value === comparison;
+                            case RegistrationEntryBlockViewModel_1.ComparisonType.NotEqualTo:
+                                return value !== comparison;
+                            case RegistrationEntryBlockViewModel_1.ComparisonType.Contains:
+                                return value.includes(comparison);
+                            case RegistrationEntryBlockViewModel_1.ComparisonType.DoesNotContain:
+                                return !value.includes(comparison);
+                        }
+                        return false;
+                    }
+                },
                 computed: {
+                    isVisible: function () {
+                        var _this = this;
+                        switch (this.field.VisibilityRuleType) {
+                            case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAll:
+                                return this.field.VisibilityRules.every(function (vr) { return _this.isRuleMet(vr); });
+                            case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAllFalse:
+                                return this.field.VisibilityRules.every(function (vr) { return !_this.isRuleMet(vr); });
+                            case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAny:
+                                return this.field.VisibilityRules.some(function (vr) { return _this.isRuleMet(vr); });
+                            case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAnyFalse:
+                                return this.field.VisibilityRules.some(function (vr) { return !_this.isRuleMet(vr); });
+                        }
+                        return true;
+                    },
                     attribute: function () {
                         return this.field.Attribute || null;
                     },
-                    props: function () {
+                    fieldProps: function () {
                         if (!this.attribute) {
                             return {};
                         }
@@ -63,11 +104,12 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                             isEditMode: true,
                             label: this.attribute.Name,
                             help: this.attribute.Description,
-                            rules: this.field.IsRequired ? 'required' : ''
+                            rules: this.field.IsRequired ? 'required' : '',
+                            configurationValues: this.attribute.QualifierValues
                         };
                     }
                 },
-                template: "\n<RockField v-if=\"attribute\" v-model=\"value\" v-bind=\"props\" />\n<Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>"
+                template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-model=\"value\" v-bind=\"fieldProps\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
             }));
         }
     };

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModel.Blocks
@@ -49,12 +50,88 @@ namespace Rock.ViewModel.Blocks
         public string PluralRegistrantTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets the plural fee term.
+        /// </summary>
+        /// <value>
+        /// The plural fee term.
+        /// </value>
+        public string PluralFeeTerm { get; set; }
+
+        /// <summary>
         /// Gets or sets the registrant forms.
         /// </summary>
         /// <value>
         /// The registrant forms.
         /// </value>
         public IEnumerable<RegistrationEntryBlockFormViewModel> RegistrantForms { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fees.
+        /// </summary>
+        /// <value>
+        /// The fees.
+        /// </value>
+        public IEnumerable<RegistrationEntryBlockFeeViewModel> Fees { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationEntryBlockFeeViewModel
+    /// </summary>
+    public sealed class RegistrationEntryBlockFeeViewModel
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the items.
+        /// </summary>
+        /// <value>
+        /// The items.
+        /// </value>
+        public List<RegistrationEntryBlockFeeItemViewModel> Items { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationEntryBlockFeeItemViewModel
+    /// </summary>
+    public sealed class RegistrationEntryBlockFeeItemViewModel
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cost.
+        /// </summary>
+        /// <value>
+        /// The cost.
+        /// </value>
+        public decimal Cost { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
     }
 
     /// <summary>
@@ -76,6 +153,14 @@ namespace Rock.ViewModel.Blocks
     /// </summary>
     public sealed class RegistrationEntryBlockFormFieldViewModel
     {
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// Gets or sets the field source.
         /// </summary>
@@ -107,5 +192,51 @@ namespace Rock.ViewModel.Blocks
         /// The attribute.
         /// </value>
         public AttributeViewModel Attribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the visibility rule.
+        /// </summary>
+        /// <value>
+        /// The type of the visibility rule.
+        /// </value>
+        public int VisibilityRuleType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the visibility rules.
+        /// </summary>
+        /// <value>
+        /// The visibility rules.
+        /// </value>
+        public IEnumerable<RegistrationEntryBlockVisibilityViewModel> VisibilityRules { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationEntryBlockVisibilityViewModel
+    /// </summary>
+    public class RegistrationEntryBlockVisibilityViewModel
+    {
+        /// <summary>
+        /// Gets or sets the compared to registration template form field unique identifier.
+        /// </summary>
+        /// <value>
+        /// The compared to registration template form field unique identifier.
+        /// </value>
+        public Guid ComparedToRegistrationTemplateFormFieldGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the comparison.
+        /// </value>
+        public int ComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the compared to value.
+        /// </summary>
+        /// <value>
+        /// The compared to value.
+        /// </value>
+        public string ComparedToValue { get; set; }
     }
 }

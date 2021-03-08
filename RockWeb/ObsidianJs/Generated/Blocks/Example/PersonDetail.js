@@ -1,4 +1,4 @@
-System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "vue", "../../Store/Index.js", "../../Elements/EmailBox.js", "../../Controls/RockValidation.js", "../../Controls/RockForm.js", "../../Controls/CampusPicker.js", "../../Controls/Loading.js", "../../Controls/PrimaryBlock.js", "../../Filters/Date.js", "../../Util/RockDate", "../../Elements/DatePicker.js"], function (exports_1, context_1) {
+System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js", "../../Elements/RockButton.js", "../../Elements/TextBox.js", "vue", "../../Store/Index.js", "../../Elements/EmailBox.js", "../../Controls/RockValidation.js", "../../Controls/RockForm.js", "../../Controls/CampusPicker.js", "../../Controls/Loading.js", "../../Controls/PrimaryBlock.js", "../../Services/Date.js", "../../Util/RockDate", "../../Elements/DatePicker.js"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -196,7 +196,8 @@ System.register(["../../Util/Bus.js", "../../Templates/PaneledBlockTemplate.js",
                         return null;
                     },
                     campusName: function () {
-                        return this.campus ? this.campus.Name : '';
+                        var _a;
+                        return ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.Name) || '';
                     },
                     blockTitle: function () {
                         return this.person ?

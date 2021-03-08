@@ -53,6 +53,10 @@ export default defineComponent({
         formGroupClasses: {
             type: String as PropType<string>,
             default: ''
+        },
+        validationTitle: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -78,7 +82,7 @@ export default defineComponent({
         }
     },
     template: `
-<Field v-model="internalValue" :name="label" :rules="rules" #default="{field, errors}">
+<Field v-model="internalValue" :name="validationTitle || label" :rules="rules" #default="{field, errors}">
     <slot name="pre" />
     <div class="form-group" :class="[formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']">
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">

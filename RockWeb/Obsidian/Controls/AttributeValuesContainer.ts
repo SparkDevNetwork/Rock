@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { isNullOrWhitespace } from '../Filters/String.js';
+import { isNullOrWhitespace } from '../Services/String.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import AttributeValue from '../ViewModels/CodeGenerated/AttributeValueViewModel.js';
 import RockField from './RockField.js';

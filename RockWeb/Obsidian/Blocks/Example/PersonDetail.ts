@@ -30,7 +30,7 @@ import PrimaryBlock from '../../Controls/PrimaryBlock.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
-import { asDateString } from '../../Filters/Date.js';
+import { asDateString } from '../../Services/Date.js';
 import RockDate, { RockDateType, toRockDate } from '../../Util/RockDate';
 import DatePicker from '../../Elements/DatePicker.js';
 
@@ -143,7 +143,7 @@ export default defineComponent({
             return null;
         },
         campusName(): string {
-            return this.campus ? this.campus.Name : '';
+            return this.campus?.Name || '';
         },
         blockTitle(): string {
             return this.person ?

@@ -29,6 +29,7 @@ import CurrencyBox from '../../Elements/CurrencyBox.js';
 import PanelWidget from '../../Elements/PanelWidget.js';
 import DatePicker from '../../Elements/DatePicker.js';
 import { RockDateType } from '../../Util/RockDate.js';
+import BirthdayPicker from '../../Elements/BirthdayPicker.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -60,7 +61,8 @@ export default defineComponent({
         TextBox,
         CurrencyBox,
         EmailBox,
-        DatePicker
+        DatePicker,
+        BirthdayPicker
     },
     data() {
         return {
@@ -71,7 +73,12 @@ export default defineComponent({
             text: 'Some two-way bound text',
             currency: 1.234,
             email: 'joe@joes.co',
-            date: null as RockDateType | null
+            date: null as RockDateType | null,
+            birthday: {
+                month: 1,
+                day: 1,
+                year: 2020
+            }
         };
     },
     methods: {
@@ -84,17 +91,17 @@ export default defineComponent({
             return store.getters['campuses/getByGuid'](this.campusGuid) || null;
         },
         campusName(): string {
-            return this.campus ? this.campus.Name : '';
+            return this.campus?.Name || '';
         },
         campusId(): number | null {
             return this.campus ? this.campus.Id : null;
         },
         definedTypeName(): string {
             const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid) as DefinedType;
-            return definedType ? definedType.Name : '';
+            return definedType?.Name || '';
         },
         definedValueName(): string {
-            return this.definedValue ? this.definedValue.Value : '';
+            return this.definedValue?.Value || '';
         }
     },
     template: `
@@ -150,6 +157,18 @@ export default defineComponent({
             </template>
             <template #result>
                 {{email}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                BirthdayPicker
+            </template>
+            <template #gallery>
+                <BirthdayPicker label="BirthdayPicker 1" v-model:day="birthday.day" v-model:month="birthday.month" v-model:year="birthday.year" />
+                <BirthdayPicker label="BirthdayPicker 2" v-model:day="birthday.day" v-model:month="birthday.month" v-model:year="birthday.year" />
+            </template>
+            <template #result>
+                {{birthday.month}} / {{birthday.day}} / {{birthday.year}}
             </template>
         </GalleryAndResult>
         <GalleryAndResult>

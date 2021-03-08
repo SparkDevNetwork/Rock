@@ -15,7 +15,8 @@
 // </copyright>
 //
 
-import Attribute from "../../../ViewModels/CodeGenerated/AttributeViewModel";
+import { Guid } from '../../../Util/Guid';
+import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
 
 export enum RegistrationPersonFieldType {
     FirstName = 0,
@@ -42,10 +43,36 @@ export enum RegistrationFieldSource {
     RegistrantAttribute = 4
 }
 
+export enum FilterExpressionType {
+    Filter = 0,
+    GroupAll = 1,
+    GroupAny = 2,
+    GroupAllFalse = 3,
+    GroupAnyFalse = 4
+}
+
+export enum ComparisonType {
+    EqualTo = 0x1,
+    NotEqualTo = 0x2,
+    StartsWith = 0x4,
+    Contains = 0x8,
+    DoesNotContain = 0x10,
+    IsBlank = 0x20,
+    IsNotBlank = 0x40,
+    GreaterThan = 0x80,
+    GreaterThanOrEqualTo = 0x100,
+    LessThan = 0x200,
+    LessThanOrEqualTo = 0x400,
+    EndsWith = 0x800,
+    Between = 0x1000,
+    RegularExpression = 0x2000
+}
+
 export interface RegistrationEntryBlockViewModel {
     InstructionsHtml: string;
     RegistrantTerm: string;
     PluralRegistrantTerm: string;
+    PluralFeeTerm: string;
     RegistrantForms: RegistrationEntryBlockFormViewModel[];
 }
 
@@ -58,4 +85,13 @@ export interface RegistrationEntryBlockFormFieldViewModel {
     PersonFieldType: RegistrationPersonFieldType;
     IsRequired: boolean;
     Attribute: Attribute;
+    VisibilityRuleType: FilterExpressionType;
+    VisibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
+    Guid: Guid;
+}
+
+export interface RegistrationEntryBlockFormFieldRuleViewModel {
+    ComparedToRegistrationTemplateFormFieldGuid: Guid;
+    ComparisonType: ComparisonType;
+    ComparedToValue: string;
 }

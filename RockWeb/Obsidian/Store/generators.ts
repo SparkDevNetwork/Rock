@@ -21,7 +21,7 @@ import { RootState } from './index.js';
 import cache from '../Util/cache.js';
 import http from '../Util/http.js';
 import { CommonEntity } from './commonEntities.js';
-import { splitCamelCase } from '../Filters/String.js';
+import { splitCamelCase } from '../Services/String.js';
 import { Guid } from '../Util/Guid.js';
 import Entity from '../ViewModels/Entity.js';
 

@@ -93,6 +93,14 @@ System.register([], function (exports_1, context_1) {
         }
     }
     exports_1("toOrdinal", toOrdinal);
+    function zeroPad(num, length) {
+        var str = num.toString();
+        while (str.length < length) {
+            str = '0' + str;
+        }
+        return str;
+    }
+    exports_1("zeroPad", zeroPad);
     return {
         setters: [],
         execute: function () {

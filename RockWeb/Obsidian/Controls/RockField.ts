@@ -14,16 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-import { getFieldTypeComponent } from '../Fields/Index.js';
-import { Guid } from '../Util/Guid.js';
-import { Component, defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { getFieldTypeComponent } from '../Fields/Index';
+import { Guid } from '../Util/Guid';
+import { Component, defineComponent, PropType } from '../Vendor/Vue/vue';
 
 // Import and assign TextField because it is the fallback
-import TextField from '../Fields/TextField.js';
+import TextField from '../Fields/TextField';
 
 // Import other field types so they are registered and available upon dynamic request
-import '../Fields/BooleanField.js';
-import '../Fields/DateField.js';
+import '../Fields/BooleanField';
+import '../Fields/DateField';
+import '../Fields/DefinedValueField';
 
 export default defineComponent({
     name: 'RockField',

@@ -1,25 +1,27 @@
-System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextField.js", "../Fields/BooleanField.js", "../Fields/DateField.js"], function (exports_1, context_1) {
+System.register(["../Fields/Index", "../Vendor/Vue/vue", "../Fields/TextField", "../Fields/BooleanField", "../Fields/DateField", "../Fields/DefinedValueField"], function (exports_1, context_1) {
     "use strict";
-    var Index_js_1, vue_js_1, TextField_js_1;
+    var Index_1, vue_1, TextField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (TextField_js_1_1) {
-                TextField_js_1 = TextField_js_1_1;
+            function (TextField_1_1) {
+                TextField_1 = TextField_1_1;
             },
             function (_1) {
             },
             function (_2) {
+            },
+            function (_3) {
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'RockField',
                 props: {
                     fieldTypeGuid: {
@@ -29,10 +31,10 @@ System.register(["../Fields/Index.js", "../Vendor/Vue/vue.js", "../Fields/TextFi
                 },
                 computed: {
                     fieldComponent: function () {
-                        var field = Index_js_1.getFieldTypeComponent(this.fieldTypeGuid);
+                        var field = Index_1.getFieldTypeComponent(this.fieldTypeGuid);
                         if (!field) {
                             // Fallback to text field
-                            return TextField_js_1.default.component;
+                            return TextField_1.default.component;
                         }
                         return field;
                     }

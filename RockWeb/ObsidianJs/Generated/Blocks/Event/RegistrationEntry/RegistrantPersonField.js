@@ -124,6 +124,10 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Gender:
                                                     componentPath = 'Elements/GenderDropDownList';
                                                     break;
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
+                                                    props.label = 'Birthday';
+                                                    componentPath = 'Elements/BirthdayPicker';
+                                                    break;
                                             }
                                             if (!componentPath) return [3 /*break*/, 2];
                                             return [4 /*yield*/, context_1.import("../../../" + componentPath)];

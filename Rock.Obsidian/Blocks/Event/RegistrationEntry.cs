@@ -63,7 +63,7 @@ namespace Rock.Obsidian.Blocks.Event
                 var now = RockDateTime.Now;
 
                 var registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate.Forms" )
+                    .Queryable( "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
                     .AsNoTracking()
                     .Where( r =>
                         r.Id == registrationInstanceId &&
@@ -84,6 +84,17 @@ namespace Rock.Obsidian.Blocks.Event
                     instructions = registrationTemplate?.RegistrationInstructions ?? string.Empty;
                 }
 
+                // Get the fee term
+                var feeTerm = registrationTemplate?.FeeTerm;
+
+                if ( feeTerm.IsNullOrWhiteSpace() )
+                {
+                    feeTerm = "Fee";
+                }
+
+                feeTerm = feeTerm.ToLower();
+                var pluralFeeTerm = feeTerm.Pluralize();
+
                 // Get the registrant term
                 var registrantTerm = registrationTemplate?.RegistrantTerm;
 
@@ -95,15 +106,40 @@ namespace Rock.Obsidian.Blocks.Event
                 registrantTerm = registrantTerm.ToLower();
                 var pluralRegistrantTerm = registrantTerm.Pluralize();
 
+                // Get the fees
+                var feeModels = registrationTemplate?.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+                var fees = new List<RegistrationEntryBlockFeeViewModel>();
+
+                foreach ( var feeModel in feeModels )
+                {
+                    var feeViewModel = new RegistrationEntryBlockFeeViewModel
+                    {
+                        Guid = feeModel.Guid,
+                        Name = feeModel.Name,
+                        Items = new List<RegistrationEntryBlockFeeItemViewModel>()
+                    };
+
+                    foreach ( var feeItemModel in feeModel.FeeItems )
+                    {
+                        feeViewModel.Items.Add( new RegistrationEntryBlockFeeItemViewModel
+                        {
+                            Cost = feeItemModel.Cost,
+                            Name = feeItemModel.Name,
+                            Guid = feeItemModel.Guid
+                        } );
+                    }
+
+                    fees.Add( feeViewModel );
+                }
+
                 // Get forms with fields
                 var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
                 var forms = new List<RegistrationEntryBlockFormViewModel>();
-                var allFields = RegistrationTemplateFormFieldCache.All();
 
                 foreach ( var formModel in formModels )
                 {
                     var form = new RegistrationEntryBlockFormViewModel();
-                    var fieldModels = allFields.Where( ff => ff.RegistrationTemplateFormId == formModel.Id ).OrderBy( f => f.Order );
+                    var fieldModels = formModel.Fields.OrderBy( f => f.Order );
                     var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
 
                     foreach ( var fieldModel in fieldModels )
@@ -111,9 +147,22 @@ namespace Rock.Obsidian.Blocks.Event
                         var field = new RegistrationEntryBlockFormFieldViewModel();
                         var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
 
+                        field.Guid = fieldModel.Guid;
                         field.Attribute = attribute?.ToViewModel();
                         field.FieldSource = ( int ) fieldModel.FieldSource;
                         field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
+                        field.IsRequired = fieldModel.IsRequired;
+                        field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
+
+                        field.VisibilityRules = fieldModel.FieldVisibilityRules
+                            .RuleList
+                            .Where( vr => vr.ComparedToRegistrationTemplateFormFieldGuid.HasValue )
+                            .Select( vr => new RegistrationEntryBlockVisibilityViewModel
+                            {
+                                ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToRegistrationTemplateFormFieldGuid.Value,
+                                ComparedToValue = vr.ComparedToValue,
+                                ComparisonType = ( int ) vr.ComparisonType
+                            } );
 
                         fields.Add( field );
                     }
@@ -127,7 +176,9 @@ namespace Rock.Obsidian.Blocks.Event
                     InstructionsHtml = instructions,
                     RegistrantTerm = registrantTerm,
                     PluralRegistrantTerm = pluralRegistrantTerm,
-                    RegistrantForms = forms
+                    PluralFeeTerm = pluralFeeTerm,
+                    RegistrantForms = forms,
+                    Fees = fees
                 };
             }
         }

@@ -18,7 +18,7 @@
 import { defineComponent, inject, PropType } from 'vue';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
-import RegistrationEntryBlockViewModel from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Intro',

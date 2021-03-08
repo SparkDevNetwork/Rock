@@ -23,7 +23,7 @@ namespace Rock.ViewModel
     /// Person View Model
     /// </summary>
     /// <seealso cref="Rock.ViewModel.IViewModel" />
-    public partial class PersonViewModel : IViewModel
+    public partial class PersonViewModel
     {
         /// <summary>
         /// Gets or sets the full name.

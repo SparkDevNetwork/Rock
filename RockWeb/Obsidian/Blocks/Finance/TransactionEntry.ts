@@ -23,7 +23,7 @@ import DatePicker from '../../Elements/DatePicker.js';
 import RockButton from '../../Elements/RockButton.js';
 import { areEqual, Guid, newGuid } from '../../Util/Guid.js';
 import Alert from '../../Elements/Alert.js';
-import { asFormattedString } from '../../Filters/Number.js';
+import { asFormattedString } from '../../Services/Number.js';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
 import { ConfigurationValues } from '../../Index.js';
 import Toggle from '../../Elements/Toggle.js';
@@ -31,7 +31,7 @@ import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
 import store from '../../Store/Index.js';
 import TextBox from '../../Elements/TextBox.js';
 import FinancialAccount from '../../ViewModels/CodeGenerated/FinancialAccountViewModel.js';
-import { asCommaAnd } from '../../Filters/String.js';
+import { asCommaAnd } from '../../Services/String.js';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
 import RockDate, { RockDateType } from '../../Util/RockDate.js';
 

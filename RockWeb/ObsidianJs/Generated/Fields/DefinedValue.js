@@ -18,7 +18,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js",
             }
         ],
         execute: function () {
-            fieldTypeGuid = '9C204CD0-1233-41C5-818A-C5DA439445AA';
+            fieldTypeGuid = '59D5A94C-94A0-4630-B80A-BB25697D74C7';
             (function (ConfigurationValueKey) {
                 ConfigurationValueKey["IsPassword"] = "ispassword";
                 ConfigurationValueKey["MaxCharacters"] = "maxcharacters";
@@ -68,4 +68,4 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js",
         }
     };
 });
-//# sourceMappingURL=TextField.js.map
+//# sourceMappingURL=DefinedValue.js.map

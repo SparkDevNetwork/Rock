@@ -16,7 +16,7 @@
 //
 System.register([], function (exports_1, context_1) {
     "use strict";
-    var RegistrationPersonFieldType, RegistrationFieldSource;
+    var RegistrationPersonFieldType, RegistrationFieldSource, FilterExpressionType, ComparisonType;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [],
@@ -46,6 +46,31 @@ System.register([], function (exports_1, context_1) {
                 RegistrationFieldSource[RegistrationFieldSource["RegistrantAttribute"] = 4] = "RegistrantAttribute";
             })(RegistrationFieldSource || (RegistrationFieldSource = {}));
             exports_1("RegistrationFieldSource", RegistrationFieldSource);
+            (function (FilterExpressionType) {
+                FilterExpressionType[FilterExpressionType["Filter"] = 0] = "Filter";
+                FilterExpressionType[FilterExpressionType["GroupAll"] = 1] = "GroupAll";
+                FilterExpressionType[FilterExpressionType["GroupAny"] = 2] = "GroupAny";
+                FilterExpressionType[FilterExpressionType["GroupAllFalse"] = 3] = "GroupAllFalse";
+                FilterExpressionType[FilterExpressionType["GroupAnyFalse"] = 4] = "GroupAnyFalse";
+            })(FilterExpressionType || (FilterExpressionType = {}));
+            exports_1("FilterExpressionType", FilterExpressionType);
+            (function (ComparisonType) {
+                ComparisonType[ComparisonType["EqualTo"] = 1] = "EqualTo";
+                ComparisonType[ComparisonType["NotEqualTo"] = 2] = "NotEqualTo";
+                ComparisonType[ComparisonType["StartsWith"] = 4] = "StartsWith";
+                ComparisonType[ComparisonType["Contains"] = 8] = "Contains";
+                ComparisonType[ComparisonType["DoesNotContain"] = 16] = "DoesNotContain";
+                ComparisonType[ComparisonType["IsBlank"] = 32] = "IsBlank";
+                ComparisonType[ComparisonType["IsNotBlank"] = 64] = "IsNotBlank";
+                ComparisonType[ComparisonType["GreaterThan"] = 128] = "GreaterThan";
+                ComparisonType[ComparisonType["GreaterThanOrEqualTo"] = 256] = "GreaterThanOrEqualTo";
+                ComparisonType[ComparisonType["LessThan"] = 512] = "LessThan";
+                ComparisonType[ComparisonType["LessThanOrEqualTo"] = 1024] = "LessThanOrEqualTo";
+                ComparisonType[ComparisonType["EndsWith"] = 2048] = "EndsWith";
+                ComparisonType[ComparisonType["Between"] = 4096] = "Between";
+                ComparisonType[ComparisonType["RegularExpression"] = 8192] = "RegularExpression";
+            })(ComparisonType || (ComparisonType = {}));
+            exports_1("ComparisonType", ComparisonType);
         }
     };
 });

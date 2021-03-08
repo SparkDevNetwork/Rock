@@ -14,24 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
+import { defineComponent } from 'vue';
 import { Guid } from '../Util/Guid.js';
 import { registerFieldType, getFieldTypeProps } from './Index.js';
-import TextBox from '../Elements/TextBox.js';
-import { asBooleanOrNull } from '../Services/Boolean.js';
+import DefinedValuePicker from '../Controls/DefinedValuePicker.js';
+import { toNumberOrNull } from '../Services/Number.js';
+import DefinedType from '../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
 
-const fieldTypeGuid: Guid = '9C204CD0-1233-41C5-818A-C5DA439445AA';
+const fieldTypeGuid: Guid = '59D5A94C-94A0-4630-B80A-BB25697D74C7';
 
 enum ConfigurationValueKey {
-    IsPassword = 'ispassword',
-    MaxCharacters = 'maxcharacters',
-    ShowCountDown = 'showcountdown'
+    DefinedType = 'definedtype'
 }
 
 export default registerFieldType(fieldTypeGuid, defineComponent({
-    name: 'TextField',
+    name: 'DefinedValueField',
     components: {
-        TextBox
+        DefinedValuePicker
     },
     props: getFieldTypeProps(),
     data() {
@@ -43,24 +42,16 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         safeValue(): string {
             return (this.modelValue || '').trim();
         },
-        configAttributes(): Record<string, number | boolean> {
-            const attributes: Record<string, number | boolean> = {};
+        configAttributes(): Record<string, unknown> {
+            const attributes: Record<string, unknown> = {};
 
-            const maxCharsConfig = this.configurationValues[ConfigurationValueKey.MaxCharacters];
-            if (maxCharsConfig && maxCharsConfig.Value) {
-                const maxCharsValue = Number(maxCharsConfig.Value);
+            const definedTypeConfig = this.configurationValues[ConfigurationValueKey.DefinedType];
+            if (definedTypeConfig && definedTypeConfig.Value) {
+                const definedTypeId = toNumberOrNull(definedTypeConfig.Value);
 
-                if (maxCharsValue) {
-                    attributes.maxLength = maxCharsValue;
-                }
-            }
-
-            const showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
-            if (showCountDownConfig && showCountDownConfig.Value) {
-                const showCountDownValue = asBooleanOrNull(showCountDownConfig.Value) || false;
-
-                if (showCountDownValue) {
-                    attributes.showCountDown = showCountDownValue;
+                if (definedTypeId) {
+                    const definedType = this.$store.getters['definedTypes/getById'](definedTypeId) as DefinedType | null;
+                    attributes.definedTypeGuid = definedType?.Guid || '';
                 }
             }
 
@@ -73,6 +64,6 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<TextBox v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" />
+<DefinedValuePicker v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" />
 <span v-else>{{ safeValue }}</span>`
 }));

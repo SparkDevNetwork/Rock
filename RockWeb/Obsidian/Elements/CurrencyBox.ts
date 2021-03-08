@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { Field } from '../Vendor/VeeValidate/vee-validate.js';
-import { asFormattedString, toNumberOrNull } from '../Filters/Number.js';
+import { asFormattedString, toNumberOrNull } from '../Services/Number.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import RockLabel from './RockLabel.js';
 import { newGuid } from '../Util/Guid.js';

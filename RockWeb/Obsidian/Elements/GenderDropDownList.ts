@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
+import { ruleArrayToString, ruleStringToArray } from '../Rules/Index';
 import DropDownList, { DropDownListOption } from './DropDownList';
 
 export enum Gender {
@@ -28,15 +29,35 @@ export default defineComponent({
     components: {
         DropDownList
     },
+    props: {
+        rules: {
+            type: String as PropType<string>,
+            default: ''
+        }
+    },
+    data() {
+        return {
+            blankValue: `${Gender.Unknown}`
+        };
+    },
     computed: {
         options(): DropDownListOption[] {
             return [
-                { key: Gender.Unknown.toString(), text: '', value: Gender.Unknown.toString() },
                 { key: Gender.Male.toString(), text: 'Male', value: Gender.Male.toString() },
                 { key: Gender.Female.toString(), text: 'Female', value: Gender.Female.toString() }
             ];
         },
+        computedRules(): string {
+            const rules = ruleStringToArray(this.rules);
+            const notEqualRule = `notequal:${Gender.Unknown}`;
+
+            if (rules.indexOf('required') !== -1 && rules.indexOf(notEqualRule) === -1) {
+                rules.push(notEqualRule);
+            }
+
+            return ruleArrayToString(rules);
+        }
     },
     template: `
-<DropDownList label="Gender" :options="options" :showBlankItem="false" />`
+<DropDownList label="Gender" :options="options" :showBlankItem="true" :blankValue="blankValue" :rules="computedRules" />`
 });

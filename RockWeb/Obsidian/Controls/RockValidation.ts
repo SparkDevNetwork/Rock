@@ -34,8 +34,9 @@ export default defineComponent({
     },
     data() {
         return {
-            errorsToShow: this.errors,
-            allowErrorChange: false
+            errorsToShow: {} as Record<string, string>,
+            lastSubmitCount: 0,
+            lastErrorChangeMs: 0
         };
     },
     computed: {
@@ -44,19 +45,25 @@ export default defineComponent({
         }
     },
     watch: {
-        submitCount: {
+        errors: {
             immediate: true,
             handler() {
-                this.allowErrorChange = this.submitCount > 0;
-            }
-        },
-        errors() {
-            if (!this.allowErrorChange || !Object.keys(this.errors).length) {
-                return;
-            }
+                // There are errors that come in at different cycles. We don't want the screen jumping around as the
+                // user fixes errors. But, we do want the validations from the submit cycle to all get through even
+                // though they come at different times. The "debounce" 1000ms code is to try to allow all of those
+                // through, but then prevent changes once the user starts fixing the form.
+                const now = new Date().getTime();
+                const msSinceLastChange = now - this.lastErrorChangeMs;
+                this.lastErrorChangeMs = now;
+                const wasSubmitted = this.lastSubmitCount < this.submitCount;
 
-            this.errorsToShow = this.errors;
-            this.allowErrorChange = false;
+                if (msSinceLastChange > 1000 || !wasSubmitted) {
+                    return;
+                }
+
+                this.errorsToShow = this.errors;
+                this.lastSubmitCount = this.submitCount;
+            }
         }
     },
     template: `

@@ -1,4 +1,4 @@
-System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Filters/Boolean.js", "../Elements/DropDownList.js"], function (exports_1, context_1) {
+System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Services/Boolean.js", "../Elements/DropDownList.js"], function (exports_1, context_1) {
     "use strict";
     var vue_js_1, Index_js_1, Boolean_js_1, DropDownList_js_1, fieldTypeGuid;
     var __moduleName = context_1 && context_1.id;

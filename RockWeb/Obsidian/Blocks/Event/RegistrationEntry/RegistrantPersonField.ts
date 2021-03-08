@@ -72,6 +72,10 @@ export default defineComponent({
                     case RegistrationPersonFieldType.Gender:
                         componentPath = 'Elements/GenderDropDownList';
                         break;
+                    case RegistrationPersonFieldType.Birthdate:
+                        props.label = 'Birthday';
+                        componentPath = 'Elements/BirthdayPicker';
+                        break;
                 }
 
                 const componentModule = componentPath ? (await import(`../../../${componentPath}`)) : null;

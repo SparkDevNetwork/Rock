@@ -1,4 +1,4 @@
-System.register(["../Filters/String.js", "../Vendor/Vue/vue.js", "./RockField.js"], function (exports_1, context_1) {
+System.register(["../Services/String.js", "../Vendor/Vue/vue.js", "./RockField.js"], function (exports_1, context_1) {
     "use strict";
     var String_js_1, vue_js_1, RockField_js_1;
     var __moduleName = context_1 && context_1.id;

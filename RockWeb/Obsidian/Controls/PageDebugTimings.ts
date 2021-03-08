@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { asFormattedString } from '../Filters/Number.js';
+import { asFormattedString } from '../Services/Number.js';
 import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import store from '../Store/Index.js';
 

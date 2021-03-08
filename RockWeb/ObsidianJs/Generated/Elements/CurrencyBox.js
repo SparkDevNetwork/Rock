@@ -1,4 +1,4 @@
-System.register(["../Vendor/VeeValidate/vee-validate.js", "../Filters/Number.js", "../Vendor/Vue/vue.js", "./RockLabel.js", "../Util/Guid.js"], function (exports_1, context_1) {
+System.register(["../Vendor/VeeValidate/vee-validate.js", "../Services/Number.js", "../Vendor/Vue/vue.js", "./RockLabel.js", "../Util/Guid.js"], function (exports_1, context_1) {
     "use strict";
     var vee_validate_js_1, Number_js_1, vue_js_1, RockLabel_js_1, Guid_js_1;
     var __moduleName = context_1 && context_1.id;

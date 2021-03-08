@@ -1,4 +1,4 @@
-System.register(["../Filters/Number.js", "../Vendor/Vue/vue.js", "../Store/Index.js"], function (exports_1, context_1) {
+System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Index.js"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
