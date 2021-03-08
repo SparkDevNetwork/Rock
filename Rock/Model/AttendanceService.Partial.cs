@@ -329,7 +329,7 @@ namespace Rock.Model
 
             if ( endDate.HasValue )
             {
-                endDate = endDate.Value.Date.AddDays(1);
+                endDate = endDate.Value.Date.AddDays( 1 );
                 qryAttendance = qryAttendance.Where( a => a.Occurrence.SundayDate < endDate.Value );
             }
 
@@ -1400,6 +1400,7 @@ namespace Rock.Model
             {
                 AttendanceId = ap.Attendance.Id,
                 ap.Attendance.RSVP,
+                ap.Attendance.DeclineReasonValueId,
                 ap.Attendance.ScheduledToAttend,
                 PersonId = ap.Person.Id,
                 NickName = ap.Person.NickName,
@@ -1543,6 +1544,7 @@ namespace Rock.Model
                     ConfirmationStatus = status.ConvertToString( false ).ToLower(),
                     MatchesPreference = matchesPreferenceAsDataAttribute,
                     PersonId = a.PersonId,
+                    DeclinedReason = DefinedValueCache.GetValue( a.DeclineReasonValueId ).EncodeHtml(),
 
                     GroupMemberId = attendanceOccurrenceGroupMemberInfo?.MemberId,
                     GroupRole = attendanceOccurrenceGroupMemberInfo?.GroupRole,
@@ -1766,12 +1768,13 @@ namespace Rock.Model
 
             var endOfOccurrenceDay = attendanceOccurrence.OccurrenceDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
             var groupMemberAssignmentsList = groupMemberAssignmentsQuery
-                .Select( a => new {
+                .Select( a => new
+                {
                     GroupMemberId = a.GroupMember.Id,
                     a.GroupMember.PersonId,
                     a.LocationId,
                     a.ScheduleId
-                })
+                } )
                 .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
                     ( gma, a ) => new GroupMemberAssignmentInfo
                     {
@@ -2380,6 +2383,14 @@ namespace Rock.Model
         ///   <c>true</c> if this Person has blackout conflict; otherwise, <c>false</c>.
         /// </value>
         public override bool HasBlackoutConflict => this.BlackoutDates?.Contains( this.OccurrenceDate ) == true;
+
+        /// <summary>
+        /// Gets or sets the declined reason.
+        /// </summary>
+        /// <value>
+        /// The declined reason.
+        /// </value>
+        public string DeclinedReason { get; set; }
     }
 
     /// <summary>
