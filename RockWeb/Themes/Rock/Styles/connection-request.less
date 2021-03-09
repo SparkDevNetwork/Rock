@@ -18,6 +18,8 @@
 }
 
 .panel-collapsible {
+  // Put toolbar shadow in front of grid.
+  z-index: 1;
   box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
 
   .panel-drawer {
@@ -25,8 +27,24 @@
   }
 }
 
+.drag-scroll-zone-container {
+  position: relative;
+  height: 100%;
+  min-height: 500px;
+  min-height: ~"var(--block-min-height, calc(100vh - 370px))";
+  overflow: auto;
+
+  > .panel-body {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+
 .overflow-scroll {
-  height: ~"calc(100vh - 290px)";
+  height: 100%;
   min-height: 200px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -51,11 +69,6 @@
   // height: 100%;
   padding: 5px 0 0;
   border-radius: 6px;
-}
-
-.board-heading {
-  padding: 0 1rem;
-  margin-top: 1rem;
 }
 
 .board-column-title {
@@ -190,11 +203,6 @@
   width: @line-height-computed;
   height: @line-height-computed;
   margin-top: 0;
-}
-
-.board-card-header {
-  display: flex;
-  justify-content: space-between;
 }
 
 .board-card-main {
