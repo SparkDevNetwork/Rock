@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,31 +29,46 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.InteractionChannel", "ChannelCustom1Label", c => c.String(maxLength: 100));
-            AddColumn("dbo.InteractionChannel", "ChannelCustom2Label", c => c.String(maxLength: 100));
-            AddColumn("dbo.InteractionChannel", "ChannelCustomIndexed1Label", c => c.String(maxLength: 100));
-            AddColumn("dbo.Interaction", "ChannelCustom1", c => c.String(maxLength: 500));
-            AddColumn("dbo.Interaction", "ChannelCustom2", c => c.String(maxLength: 2000));
-            AddColumn("dbo.Interaction", "ChannelCustomIndexed1", c => c.String(maxLength: 500));
-            AddColumn("dbo.Interaction", "InteractionLength", c => c.Double());
-            AddColumn("dbo.Interaction", "InteractionTimeToServe", c => c.Double());
+            AddColumn( "dbo.InteractionChannel", "ChannelCustom1Label", c => c.String( maxLength: 100 ) );
+            AddColumn( "dbo.InteractionChannel", "ChannelCustom2Label", c => c.String( maxLength: 100 ) );
+            AddColumn( "dbo.InteractionChannel", "ChannelCustomIndexed1Label", c => c.String( maxLength: 100 ) );
+            AddColumn( "dbo.Interaction", "ChannelCustom1", c => c.String( maxLength: 500 ) );
+            AddColumn( "dbo.Interaction", "ChannelCustom2", c => c.String( maxLength: 2000 ) );
+            AddColumn( "dbo.Interaction", "ChannelCustomIndexed1", c => c.String( maxLength: 500 ) );
+            AddColumn( "dbo.Interaction", "InteractionLength", c => c.Double() );
+            AddColumn( "dbo.Interaction", "InteractionTimeToServe", c => c.Double() );
+
+            //  Just in case these take a while,  PostV110DataMigrationsUpdateDateKeyValues will take care of creating indexes
+            /*
             CreateIndex("dbo.Interaction", "ChannelCustomIndexed1");
+            */
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.Interaction", new[] { "ChannelCustomIndexed1" });
-            DropColumn("dbo.Interaction", "InteractionTimeToServe");
-            DropColumn("dbo.Interaction", "InteractionLength");
-            DropColumn("dbo.Interaction", "ChannelCustomIndexed1");
-            DropColumn("dbo.Interaction", "ChannelCustom2");
-            DropColumn("dbo.Interaction", "ChannelCustom1");
-            DropColumn("dbo.InteractionChannel", "ChannelCustomIndexed1Label");
-            DropColumn("dbo.InteractionChannel", "ChannelCustom2Label");
-            DropColumn("dbo.InteractionChannel", "ChannelCustom1Label");
+            Sql( @"
+IF EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_ChannelCustomIndexed1'
+AND object_id = OBJECT_ID('Interaction')
+)
+BEGIN
+DROP INDEX [IX_ChannelCustomIndexed1] ON [dbo].[Interaction]
+END
+" );
+
+            DropColumn( "dbo.Interaction", "InteractionTimeToServe" );
+            DropColumn( "dbo.Interaction", "InteractionLength" );
+            DropColumn( "dbo.Interaction", "ChannelCustomIndexed1" );
+            DropColumn( "dbo.Interaction", "ChannelCustom2" );
+            DropColumn( "dbo.Interaction", "ChannelCustom1" );
+            DropColumn( "dbo.InteractionChannel", "ChannelCustomIndexed1Label" );
+            DropColumn( "dbo.InteractionChannel", "ChannelCustom2Label" );
+            DropColumn( "dbo.InteractionChannel", "ChannelCustom1Label" );
         }
     }
 }

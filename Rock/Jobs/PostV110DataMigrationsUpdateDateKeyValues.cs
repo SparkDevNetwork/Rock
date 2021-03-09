@@ -36,7 +36,7 @@ namespace Rock.Jobs
     [IntegerField(
         "Command Timeout",
         AttributeKey.CommandTimeout,
-        Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Attribute Values, this could take several minutes or more.",
+        Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of data, this could take several minutes or more.",
         IsRequired = false,
         DefaultIntegerValue = 60 * 60 )]
     public class PostV110DataMigrationsUpdateDateKeyValues : IJob
@@ -74,17 +74,192 @@ namespace Rock.Jobs
                 UpdateKeyDateColumnData( rockContext, "Step", "CompletedDateKey", "CompletedDateTime" );
                 UpdateKeyDateColumnData( rockContext, "Step", "StartDateKey", "StartDateTime" );
                 UpdateKeyDateColumnData( rockContext, "Step", "EndDateKey", "EndDateTime" );
+
+                UpdateDateKeyColumnsNotNull( rockContext );
+                CreateDateKeyIndexes( rockContext );
+
+                CreateInteractionChannelCustomIndexed1( rockContext );
             }
 
             DeleteJob( context.GetJobId() );
         }
 
+        /// <summary>
+        /// Creates the interaction channel custom indexed1.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private static void CreateInteractionChannelCustomIndexed1( RockContext rockContext )
+        {
+            rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_ChannelCustomIndexed1'
+    AND object_id = OBJECT_ID('Interaction')
+)
+BEGIN
+CREATE INDEX [IX_ChannelCustomIndexed1] ON [dbo].[Interaction]([ChannelCustomIndexed1])
+END" );
+        }
+
+        /// <summary>
+        /// Updates the date key columns not null.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private static void UpdateDateKeyColumnsNotNull( RockContext rockContext )
+        {
+            rockContext.Database.ExecuteSqlCommand( @"
+ALTER TABLE [dbo].[AttendanceOccurrence]
+ALTER COLUMN OccurrenceDateKey INT NOT NULL
+
+ALTER TABLE [dbo].BenevolenceRequest
+ALTER COLUMN RequestDateKey INT NOT NULL
+
+ALTER TABLE [dbo].FinancialPledge
+ALTER COLUMN StartDateKey INT NOT NULL
+
+ALTER TABLE [dbo].FinancialPledge
+ALTER COLUMN EndDateKey INT NOT NULL
+
+ALTER TABLE [dbo].Interaction
+ALTER COLUMN InteractionDateKey INT NOT NULL
+" );
+        }
+
+        /// <summary>
+        /// Creates the date key indexes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private static void CreateDateKeyIndexes( RockContext rockContext )
+        {
+
+
+            rockContext.Database.ExecuteSqlCommand( @"
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_CreatedDateKey' AND object_id = OBJECT_ID('Registration')
+)
+BEGIN
+CREATE INDEX [IX_CreatedDateKey] ON [dbo].[Registration] ([CreatedDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_OccurrenceDateKey' AND object_id = OBJECT_ID('AttendanceOccurrence')
+)
+BEGIN
+CREATE INDEX [IX_OccurrenceDateKey] ON [dbo].[AttendanceOccurrence] ([OccurrenceDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_StartDateKey' AND object_id = OBJECT_ID('Step')
+)
+BEGIN
+CREATE INDEX [IX_StartDateKey] ON [dbo].[Step] ([StartDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_EndDateKey' AND object_id = OBJECT_ID('Step')
+)
+BEGIN
+CREATE INDEX [IX_EndDateKey] ON [dbo].[Step] ([EndDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_CompletedDateKey' AND object_id = OBJECT_ID('Step')
+)
+BEGIN
+CREATE INDEX [IX_CompletedDateKey] ON [dbo].[Step] ([CompletedDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_RequestDateKey' AND object_id = OBJECT_ID('BenevolenceRequest')
+)
+BEGIN
+CREATE INDEX [IX_RequestDateKey] ON [dbo].[BenevolenceRequest] ([RequestDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_SendDateKey' AND object_id = OBJECT_ID('Communication')
+)
+BEGIN
+CREATE INDEX [IX_SendDateKey] ON [dbo].[Communication] ([SendDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_CreatedDateKey' AND object_id = OBJECT_ID('ConnectionRequest')
+)
+BEGIN
+CREATE INDEX [IX_CreatedDateKey] ON [dbo].[ConnectionRequest] ([CreatedDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_TransactionDateKey' AND object_id = OBJECT_ID('FinancialTransaction')
+)
+BEGIN
+CREATE INDEX [IX_TransactionDateKey] ON [dbo].[FinancialTransaction] ([TransactionDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_SettledDateKey' AND object_id = OBJECT_ID('FinancialTransaction')
+)
+BEGIN
+CREATE INDEX [IX_SettledDateKey] ON [dbo].[FinancialTransaction] ([SettledDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_StartDateKey' AND object_id = OBJECT_ID('FinancialPledge')
+)
+BEGIN
+CREATE INDEX [IX_StartDateKey] ON [dbo].[FinancialPledge] ([StartDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_EndDateKey' AND object_id = OBJECT_ID('FinancialPledge')
+)
+BEGIN
+CREATE INDEX [IX_EndDateKey] ON [dbo].[FinancialPledge] ([EndDateKey])
+END
+
+IF NOT EXISTS (
+SELECT *
+FROM sys.indexes
+WHERE name = 'IX_InteractionDateKey' AND object_id = OBJECT_ID('Interaction')
+)
+BEGIN
+CREATE INDEX [IX_InteractionDateKey] ON [dbo].[Interaction] ([InteractionDateKey])
+END
+" );
+        }
+
         private void UpdateKeyDateColumnData( RockContext rockContext, string tableName, string keyColumnName, string dateColumnName )
         {
             rockContext.Database.ExecuteSqlCommand( $@"
-                UPDATE [{tableName}]
-                SET [{keyColumnName}] = CONVERT(INT, (CONVERT(CHAR(8), [{dateColumnName}], 112)))
-            " );
+    UPDATE [{tableName}]
+    SET [{keyColumnName}] = CONVERT(INT, (CONVERT(CHAR(8), [{dateColumnName}], 112)))
+" );
         }
 
         /// <summary>
