@@ -785,7 +785,7 @@ namespace Rock.Model
             var match = matches.FirstOrDefault();
 
             // Check if we care about updating the person's primary email
-            if ( updatePrimaryEmail && match != null )
+            if ( updatePrimaryEmail && match != null && personMatchQuery.Email.IsNotNullOrWhiteSpace() )
             {
                 return UpdatePrimaryEmail( personMatchQuery.Email, match );
             }
