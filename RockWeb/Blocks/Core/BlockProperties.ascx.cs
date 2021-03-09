@@ -253,6 +253,14 @@ namespace RockWeb.Blocks.Core
             }
 
             BlockCache _block = BlockCache.Get( blockId.Value );
+            var _site = SiteCache.Get( _block.Page.SiteId );
+
+            // Change Pre/Post text labels if this is a mobile block
+            if ( _site.SiteType == SiteType.Mobile )
+            {
+                cePostHtml.Label = "Post-XAML";
+                cePreHtml.Label = "Pre-XAML";
+            }
 
             var blockControlType = _block.BlockType.GetCompiledType();
 
