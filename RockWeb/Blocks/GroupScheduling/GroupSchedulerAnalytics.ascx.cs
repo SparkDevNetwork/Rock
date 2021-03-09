@@ -993,7 +993,7 @@ var barChart = new Chart(barCtx, {{
                 foreach ( var declinedAttendance in declinedAttendances )
                 {
                     var declinedReason = DefinedValueCache.GetValue( declinedAttendance.DeclineReasonValueId );
-                    declinedReasons.Append( string.Format( "<li><span class=\"smalldate\">{0}</span> {1}</li>", declinedAttendance.StartDateTime.ToShortDateTimeString(), declinedReason.EncodeHtml() ) );
+                    declinedReasons.Append( string.Format( "<li><small>{0}</small> {1}</li>", declinedAttendance.StartDateTime.ToShortDateTimeString(), declinedReason.EncodeHtml() ) );
                 }
                 declinedReasons.Append( "</ul>" );
                 DeclinedReasons = declinedReasons.ToString();
