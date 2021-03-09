@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import { NumberUpDownInternal } from './NumberUpDown.js';
-import RockFormField from './RockFormField.js';
+import { defineComponent, PropType } from 'vue';
+import { NumberUpDownInternal } from './NumberUpDown';
+import RockFormField from './RockFormField';
 
 export type NumberUpDownGroupOption = {
     key: string,

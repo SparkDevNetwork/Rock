@@ -27,10 +27,11 @@ import ProgressBar from '../../../Elements/ProgressBar';
 import RegistrantPersonField from './RegistrantPersonField';
 import RegistrantAttributeField from './RegistrantAttributeField';
 import Alert from '../../../Elements/Alert';
-import { RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 import { Guid } from '../../../Util/Guid';
 import RockForm from '../../../Controls/RockForm';
 import FeeField from './FeeField';
+import { AddressControlModel } from '../../../Controls/AddressControl';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
@@ -61,7 +62,7 @@ export default defineComponent({
             selectedFamily: '',
             currentRegistrantIndex: 0,
             currentFormIndex: 0,
-            fieldValues: {} as Record<Guid, string>,
+            fieldValues: {} as Record<Guid, string | AddressControlModel>,
             feeQuantities: {} as Record<Guid, number>,
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
@@ -137,6 +138,13 @@ export default defineComponent({
             }
 
             return title;
+        },
+        firstName(): string {
+            // This is always on the first form
+            const form = this.viewModel.RegistrantForms[0];
+            const field = form?.Fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.FirstName);
+            const fieldValue = this.fieldValues[field?.Guid || ''] || '';
+            return typeof fieldValue === 'string' ? fieldValue : '';
         }
     },
     methods: {
@@ -189,7 +197,18 @@ export default defineComponent({
             handler() {
                 for (const form of this.viewModel.RegistrantForms) {
                     for (const field of form.Fields) {
-                        this.fieldValues[field.Guid] = this.fieldValues[field.Guid] || '';
+                        if (field.PersonFieldType === RegistrationPersonFieldType.Address) {
+                            this.fieldValues[field.Guid] = this.fieldValues[field.Guid] || {
+                                Street1: '',
+                                Street2: '',
+                                City: '',
+                                State: '',
+                                PostalCode: ''
+                            } as AddressControlModel;
+                        }
+                        else {
+                            this.fieldValues[field.Guid] = this.fieldValues[field.Guid] || '';
+                        }
                     }
                 }
             }
@@ -202,7 +221,7 @@ export default defineComponent({
 
     <RockForm @submit="onNext">
         <div v-if="possibleFamilyMembers && possibleFamilyMembers.length > 1 && currentFormIndex === 0" class="well js-registration-same-family">
-            <RadioButtonList :label="uppercaseRegistrantTerm + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" validationTitle="Family" />
+            <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" validationTitle="Family" />
         </div>
 
         <template v-for="field in currentFormFields" :key="field.Guid">

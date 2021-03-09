@@ -57,8 +57,8 @@ export default defineComponent({
         <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" />
     </div>
-    <div class="actions">
-        <RockButton btnType="primary" class="pull-right" @click="onNext">
+    <div class="actions text-right">
+        <RockButton btnType="primary" @click="onNext">
             Next
         </RockButton>
     </div>

@@ -114,7 +114,7 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                                                     props.label = 'Middle Name';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Campus:
-                                                    componentPath = 'Components/CampusPicker';
+                                                    componentPath = 'Controls/CampusPicker';
                                                     props.label = 'Campus';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Email:
@@ -127,6 +127,16 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
                                                     props.label = 'Birthday';
                                                     componentPath = 'Elements/BirthdayPicker';
+                                                    break;
+                                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
+                                                    componentPath = 'Controls/AddressControl';
+                                                    this.value = {
+                                                        Street1: '',
+                                                        Street2: '',
+                                                        City: '',
+                                                        State: '',
+                                                        PostalCode: ''
+                                                    };
                                                     break;
                                             }
                                             if (!componentPath) return [3 /*break*/, 2];

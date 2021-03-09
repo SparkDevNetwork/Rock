@@ -71,6 +71,10 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                     validationTitle: {
                         type: String,
                         default: ''
+                    },
+                    'class': {
+                        type: String,
+                        default: ''
                     }
                 },
                 emits: [
@@ -85,6 +89,9 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                 computed: {
                     isRequired: function () {
                         return this.rules.includes('required');
+                    },
+                    classAttr: function () {
+                        return this.class;
                     }
                 },
                 watch: {
@@ -95,7 +102,7 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<Field v-model=\"internalValue\" :name=\"validationTitle || label\" :rules=\"rules\" #default=\"{field, errors}\">\n    <slot name=\"pre\" />\n    <div class=\"form-group\" :class=\"[formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']\">\n        <RockLabel v-if=\"label || help\" :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <slot v-bind=\"{uniqueId, field, errors, disabled}\" />\n    </div>\n    <slot name=\"post\" />\n</Field>"
+                template: "\n<Field v-model=\"internalValue\" :name=\"validationTitle || label\" :rules=\"rules\" #default=\"{field, errors}\">\n    <slot name=\"pre\" />\n    <div class=\"form-group\" :class=\"[classAttr, formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']\">\n        <RockLabel v-if=\"label || help\" :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <slot v-bind=\"{uniqueId, field, errors, disabled}\" />\n    </div>\n    <slot name=\"post\" />\n</Field>"
             }));
         }
     };

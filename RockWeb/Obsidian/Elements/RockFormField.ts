@@ -57,6 +57,10 @@ export default defineComponent({
         validationTitle: {
             type: String as PropType<string>,
             default: ''
+        },
+        'class': {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -71,6 +75,9 @@ export default defineComponent({
     computed: {
         isRequired(): boolean {
             return this.rules.includes('required');
+        },
+        classAttr(): string {
+            return this.class;
         }
     },
     watch: {
@@ -84,7 +91,7 @@ export default defineComponent({
     template: `
 <Field v-model="internalValue" :name="validationTitle || label" :rules="rules" #default="{field, errors}">
     <slot name="pre" />
-    <div class="form-group" :class="[formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']">
+    <div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']">
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>

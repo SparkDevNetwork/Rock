@@ -16,6 +16,7 @@
 //
 
 import { defineComponent, markRaw, PropType } from 'vue';
+import { AddressControlModel } from '../../../Controls/AddressControl';
 import Alert from '../../../Elements/Alert';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
@@ -35,7 +36,7 @@ export default defineComponent({
             fieldControlComponent: null as unknown,
             fieldControlComponentProps: {},
             loading: true,
-            value: ''
+            value: '' as string | AddressControlModel
         };
     },
     watch: {
@@ -62,7 +63,7 @@ export default defineComponent({
                         props.label = 'Middle Name';
                         break;
                     case RegistrationPersonFieldType.Campus:
-                        componentPath = 'Components/CampusPicker';
+                        componentPath = 'Controls/CampusPicker';
                         props.label = 'Campus';
                         break;
                     case RegistrationPersonFieldType.Email:
@@ -75,6 +76,16 @@ export default defineComponent({
                     case RegistrationPersonFieldType.Birthdate:
                         props.label = 'Birthday';
                         componentPath = 'Elements/BirthdayPicker';
+                        break;
+                    case RegistrationPersonFieldType.Address:
+                        componentPath = 'Controls/AddressControl';
+                        this.value = {
+                            Street1: '',
+                            Street2: '',
+                            City: '',
+                            State: '',
+                            PostalCode: ''
+                        } as AddressControlModel;
                         break;
                 }
 

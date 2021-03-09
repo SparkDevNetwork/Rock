@@ -31,6 +31,7 @@ import DatePicker from '../../Elements/DatePicker.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import BirthdayPicker from '../../Elements/BirthdayPicker.js';
 import NumberUpDown from '../../Elements/NumberUpDown.js';
+import AddressControl, { AddressControlModel } from '../../Controls/AddressControl.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -64,7 +65,8 @@ export default defineComponent({
         EmailBox,
         DatePicker,
         BirthdayPicker,
-        NumberUpDown
+        NumberUpDown,
+        AddressControl
     },
     data() {
         return {
@@ -77,6 +79,13 @@ export default defineComponent({
             email: 'joe@joes.co',
             date: null as RockDateType | null,
             numberUpDown: 1,
+            address: {
+                Street1: '',
+                Street2: '',
+                City: '',
+                State: '',
+                PostalCode: ''
+            } as AddressControlModel,
             birthday: {
                 month: 1,
                 day: 1,
@@ -225,6 +234,18 @@ export default defineComponent({
             </template>
             <template #result>
                 {{numberUpDown}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                AddressControl
+            </template>
+            <template #gallery>
+                <AddressControl v-model="address" />
+                <AddressControl label="Address 2" v-model="address" />
+            </template>
+            <template #result>
+                <pre>{{JSON.stringify(address, null, 2)}}</pre>
             </template>
         </GalleryAndResult>
     </template>

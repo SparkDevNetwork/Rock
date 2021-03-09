@@ -48,6 +48,10 @@ export default defineComponent({
         formControlClasses: {
             type: String as PropType<string>,
             default: ''
+        },
+        placeholder: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     data: function () {
@@ -55,29 +59,11 @@ export default defineComponent({
             internalValue: this.blankValue
         };
     },
-    methods: {
-        syncValue() {
-            this.internalValue = this.modelValue;
-            const selectedOption = this.options.find(o => o.value === this.internalValue) || null;
-
-            if (!selectedOption) {
-                this.internalValue = this.showBlankItem ?
-                    this.blankValue :
-                    (this.options[0]?.value || this.blankValue);
-            }
-        }
-    },
     watch: {
         modelValue: {
             immediate: true,
             handler() {
-                this.syncValue();
-            }
-        },
-        options: {
-            immediate: true,
-            handler() {
-                this.syncValue();
+                this.internalValue = this.modelValue;
             }
         },
         internalValue() {
@@ -86,13 +72,13 @@ export default defineComponent({
     },
     template: `
 <RockFormField
-    v-model="internalValue"
+    :modelValue="internalValue"
     formGroupClasses="rock-drop-down-list"
     name="dropdownlist">
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-bind="field">
-                <option v-if="showBlankItem" :value="blankValue"></option>
+            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-model="internalValue">
+                <option v-if="showBlankItem" :value="blankValue">{{placeholder}}</option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
         </div>
