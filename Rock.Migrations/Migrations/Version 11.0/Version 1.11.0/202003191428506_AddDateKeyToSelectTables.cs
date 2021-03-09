@@ -30,34 +30,51 @@ namespace Rock.Migrations
         public override void Up()
         {
             AddColumn("dbo.Registration", "CreatedDateKey", c => c.Int());
-            AddColumn("dbo.AttendanceOccurrence", "OccurrenceDateKey", c => c.Int(nullable: false));
+
+            // Just in case it takes a while, PostV110DataMigrationsUpdateDateKeyValues will change this column to not null
+            AddColumn( "dbo.AttendanceOccurrence", "OccurrenceDateKey", c => c.Int());
+            
             AddColumn("dbo.Step", "StartDateKey", c => c.Int());
             AddColumn("dbo.Step", "EndDateKey", c => c.Int());
             AddColumn("dbo.Step", "CompletedDateKey", c => c.Int());
-            AddColumn("dbo.BenevolenceRequest", "RequestDateKey", c => c.Int(nullable: false));
+
+            // Just in case it takes a while, PostV110DataMigrationsUpdateDateKeyValues will change this column to not null
+            AddColumn( "dbo.BenevolenceRequest", "RequestDateKey", c => c.Int());
+            
             AddColumn("dbo.Communication", "SendDateKey", c => c.Int());
             AddColumn("dbo.ConnectionRequest", "CreatedDateKey", c => c.Int());
             AddColumn("dbo.FinancialTransaction", "TransactionDateKey", c => c.Int());
             AddColumn("dbo.FinancialTransaction", "SettledDateKey", c => c.Int());
-            AddColumn("dbo.FinancialPledge", "StartDateKey", c => c.Int(nullable: false));
-            AddColumn("dbo.FinancialPledge", "EndDateKey", c => c.Int(nullable: false));
-            AddColumn("dbo.Interaction", "InteractionDateKey", c => c.Int(nullable: false));
+
+            // Just in case it takes a while, PostV110DataMigrationsUpdateDateKeyValues will change this column to not null
+            AddColumn("dbo.FinancialPledge", "StartDateKey", c => c.Int());
+
+            // Just in case it takes a while, PostV110DataMigrationsUpdateDateKeyValues will change this column to not null
+            AddColumn( "dbo.FinancialPledge", "EndDateKey", c => c.Int());
+
+            // Just in case it takes a while, PostV110DataMigrationsUpdateDateKeyValues will change this column to not null            
+            AddColumn( "dbo.Interaction", "InteractionDateKey", c => c.Int());
+            
             AddColumn("dbo.MetricValue", "MetricValueDateKey", c => c.Int());
 
-            CreateIndex("dbo.Registration", "CreatedDateKey");
-            CreateIndex("dbo.AttendanceOccurrence", "OccurrenceDateKey");
-            CreateIndex("dbo.Step", "StartDateKey");
-            CreateIndex("dbo.Step", "EndDateKey");
-            CreateIndex("dbo.Step", "CompletedDateKey");
-            CreateIndex("dbo.BenevolenceRequest", "RequestDateKey");
-            CreateIndex("dbo.Communication", "SendDateKey");
-            CreateIndex("dbo.ConnectionRequest", "CreatedDateKey");
-            CreateIndex("dbo.FinancialTransaction", "TransactionDateKey");
-            CreateIndex("dbo.FinancialTransaction", "SettledDateKey");
-            CreateIndex("dbo.FinancialPledge", "StartDateKey");
-            CreateIndex("dbo.FinancialPledge", "EndDateKey");
-            CreateIndex("dbo.Interaction", "InteractionDateKey");
-            CreateIndex("dbo.MetricValue", "MetricValueDateKey");
+
+            //  Just in case these take a while,  PostV110DataMigrationsUpdateDateKeyValues will take care of creating indexes
+            /*
+            CreateIndex( "dbo.Registration", "CreatedDateKey" );
+            CreateIndex( "dbo.AttendanceOccurrence", "OccurrenceDateKey" );
+            CreateIndex( "dbo.Step", "StartDateKey" );
+            CreateIndex( "dbo.Step", "EndDateKey" );
+            CreateIndex( "dbo.Step", "CompletedDateKey" );
+            CreateIndex( "dbo.BenevolenceRequest", "RequestDateKey" );
+            CreateIndex( "dbo.Communication", "SendDateKey" );
+            CreateIndex( "dbo.ConnectionRequest", "CreatedDateKey" );
+            CreateIndex( "dbo.FinancialTransaction", "TransactionDateKey" );
+            CreateIndex( "dbo.FinancialTransaction", "SettledDateKey" );
+            CreateIndex( "dbo.FinancialPledge", "StartDateKey" );
+            CreateIndex( "dbo.FinancialPledge", "EndDateKey" );
+            CreateIndex( "dbo.Interaction", "InteractionDateKey" );
+            CreateIndex( "dbo.MetricValue", "MetricValueDateKey" );
+            */
 
             AddJobToUpdateDateKeyValues();
         }
@@ -67,20 +84,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.MetricValue", new[] { "MetricValueDateKey" });
-            DropIndex("dbo.Interaction", new[] { "InteractionDateKey" });
-            DropIndex("dbo.FinancialPledge", new[] { "EndDateKey" });
-            DropIndex("dbo.FinancialPledge", new[] { "StartDateKey" });
-            DropIndex("dbo.FinancialTransaction", new[] { "SettledDateKey" });
-            DropIndex("dbo.FinancialTransaction", new[] { "TransactionDateKey" });
-            DropIndex("dbo.ConnectionRequest", new[] { "CreatedDateKey" });
-            DropIndex("dbo.Communication", new[] { "SendDateKey" });
-            DropIndex("dbo.BenevolenceRequest", new[] { "RequestDateKey" });
-            DropIndex("dbo.Step", new[] { "CompletedDateKey" });
-            DropIndex("dbo.Step", new[] { "EndDateKey" });
-            DropIndex("dbo.Step", new[] { "StartDateKey" });
-            DropIndex("dbo.AttendanceOccurrence", new[] { "OccurrenceDateKey" });
-            DropIndex("dbo.Registration", new[] { "CreatedDateKey" });
+            DropDateKeyIndexesIfExist();
 
             DropColumn("dbo.MetricValue", "MetricValueDateKey");
             DropColumn("dbo.Interaction", "InteractionDateKey");
@@ -98,6 +102,132 @@ namespace Rock.Migrations
             DropColumn("dbo.Registration", "CreatedDateKey");
 
             RemoveJobToUpdateDateKeyValues();
+        }
+
+
+        /// <summary>
+        /// Drops the date key indexes if exist.
+        /// </summary>
+        private void DropDateKeyIndexesIfExist()
+        {
+            Sql( @"
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_CreatedDateKey' AND object_id = OBJECT_ID('Registration')
+        )
+BEGIN
+    DROP INDEX [IX_CreatedDateKey] ON [dbo].[Registration]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_OccurrenceDateKey' AND object_id = OBJECT_ID('AttendanceOccurrence')
+        )
+BEGIN
+    DROP INDEX [IX_OccurrenceDateKey] ON [dbo].[AttendanceOccurrence]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_StartDateKey' AND object_id = OBJECT_ID('Step')
+        )
+BEGIN
+    DROP INDEX [IX_StartDateKey] ON [dbo].[Step]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_EndDateKey' AND object_id = OBJECT_ID('Step')
+        )
+BEGIN
+    DROP INDEX [IX_EndDateKey] ON [dbo].[Step]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_CompletedDateKey' AND object_id = OBJECT_ID('Step')
+        )
+BEGIN
+    DROP INDEX [IX_CompletedDateKey] ON [dbo].[Step]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_RequestDateKey' AND object_id = OBJECT_ID('BenevolenceRequest')
+        )
+BEGIN
+    DROP INDEX [IX_RequestDateKey] ON [dbo].[BenevolenceRequest]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_SendDateKey' AND object_id = OBJECT_ID('Communication')
+        )
+BEGIN
+    DROP INDEX [IX_SendDateKey] ON [dbo].[Communication]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_CreatedDateKey' AND object_id = OBJECT_ID('ConnectionRequest')
+        )
+BEGIN
+    DROP INDEX [IX_CreatedDateKey] ON [dbo].[ConnectionRequest]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_TransactionDateKey' AND object_id = OBJECT_ID('FinancialTransaction')
+        )
+BEGIN
+    DROP INDEX [IX_TransactionDateKey] ON [dbo].[FinancialTransaction]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_SettledDateKey' AND object_id = OBJECT_ID('FinancialTransaction')
+        )
+BEGIN
+    DROP INDEX [IX_SettledDateKey] ON [dbo].[FinancialTransaction]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_StartDateKey' AND object_id = OBJECT_ID('FinancialPledge')
+        )
+BEGIN
+    DROP INDEX [IX_StartDateKey] ON [dbo].[FinancialPledge]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_EndDateKey' AND object_id = OBJECT_ID('FinancialPledge')
+        )
+BEGIN
+    DROP INDEX [IX_EndDateKey] ON [dbo].[FinancialPledge]
+END
+
+IF EXISTS (
+        SELECT *
+        FROM sys.indexes
+        WHERE name = 'IX_InteractionDateKey' AND object_id = OBJECT_ID('Interaction')
+        )
+BEGIN
+    DROP INDEX [IX_InteractionDateKey] ON [dbo].[Interaction]
+END
+" );
         }
 
         private void AddJobToUpdateDateKeyValues()
