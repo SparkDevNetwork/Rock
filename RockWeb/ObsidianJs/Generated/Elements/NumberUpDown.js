@@ -1,16 +1,19 @@
-System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["vue", "./RockFormField.js"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1;
+    var vue_1, RockFormField_js_1, NumberUpDownInternal;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
+            },
+            function (RockFormField_js_1_1) {
+                RockFormField_js_1 = RockFormField_js_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
-                name: 'NumberUpDown',
+            exports_1("NumberUpDownInternal", NumberUpDownInternal = vue_1.defineComponent({
+                name: 'NumberUpDownInternal',
                 props: {
                     modelValue: {
                         type: Number,
@@ -22,30 +25,92 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                     },
                     max: {
                         type: Number,
-                        default: 9
+                        default: 10
+                    },
+                    disabled: {
+                        type: Boolean,
+                        default: false
                     }
+                },
+                data: function () {
+                    return {
+                        internalValue: 0
+                    };
                 },
                 methods: {
                     goUp: function () {
                         if (!this.isUpDisabled) {
-                            this.$emit('update:modelValue', this.modelValue + 1);
+                            this.internalValue++;
                         }
                     },
                     goDown: function () {
                         if (!this.isDownDisabled) {
-                            this.$emit('update:modelValue', this.modelValue - 1);
+                            this.internalValue--;
                         }
                     }
                 },
                 computed: {
                     isUpDisabled: function () {
-                        return this.modelValue >= this.max;
+                        return this.internalValue >= this.max;
                     },
                     isDownDisabled: function () {
-                        return this.modelValue <= this.min;
+                        return this.internalValue <= this.min;
                     }
                 },
-                template: "\n<div class=\"numberincrement\">\n    <a @click=\"goDown\" class=\"numberincrement-down\" :class=\"{disabled: isDownDisabled}\" :disabled=\"isDownDisabled\">\n        <i class=\"fa fa-minus \"></i>\n    </a>\n    <span class=\"numberincrement-value\">{{modelValue}}</span>\n    <a @click=\"goUp\" class=\"numberincrement-up\" :class=\"{disabled: isUpDisabled}\" :disabled=\"isUpDisabled\">\n        <i class=\"fa fa-plus \"></i>\n    </a>\n</div>"
+                watch: {
+                    modelValue: {
+                        immediate: true,
+                        handler: function () {
+                            this.internalValue = this.modelValue;
+                        }
+                    },
+                    internalValue: function () {
+                        this.$emit('update:modelValue', this.internalValue);
+                    }
+                },
+                template: "\n<div class=\"numberincrement\">\n    <a @click=\"goDown\" class=\"numberincrement-down\" :class=\"{disabled: disabled || isDownDisabled}\" :disabled=\"disabled || isDownDisabled\">\n        <i class=\"fa fa-minus \"></i>\n    </a>\n    <span class=\"numberincrement-value\">{{modelValue}}</span>\n    <a @click=\"goUp\" class=\"numberincrement-up\" :class=\"{disabled: disabled || isUpDisabled}\" :disabled=\"disabled || isUpDisabled\">\n        <i class=\"fa fa-plus \"></i>\n    </a>\n</div>"
+            }));
+            exports_1("default", vue_1.defineComponent({
+                name: 'NumberUpDown',
+                components: {
+                    RockFormField: RockFormField_js_1.default,
+                    NumberUpDownInternal: NumberUpDownInternal
+                },
+                props: {
+                    modelValue: {
+                        type: Number,
+                        required: true
+                    },
+                    min: {
+                        type: Number,
+                        default: 1
+                    },
+                    max: {
+                        type: Number,
+                        default: 10
+                    },
+                    numberIncrementClasses: {
+                        type: String,
+                        default: ''
+                    }
+                },
+                data: function () {
+                    return {
+                        internalValue: 0
+                    };
+                },
+                watch: {
+                    modelValue: {
+                        immediate: true,
+                        handler: function () {
+                            this.internalValue = this.modelValue;
+                        }
+                    },
+                    internalValue: function () {
+                        this.$emit('update:modelValue', this.internalValue);
+                    }
+                },
+                template: "\n<RockFormField\n    :modelValue=\"internalValue\"\n    formGroupClasses=\"number-up-down\"\n    name=\"numberupdown\">\n    <template #default=\"{uniqueId, field, errors, disabled}\">\n        <div class=\"control-wrapper\">\n            <NumberUpDownInternal v-model=\"internalValue\" :min=\"min\" :max=\"max\" :class=\"numberIncrementClasses\" />\n        </div>\n    </template>\n</RockFormField>"
             }));
         }
     };

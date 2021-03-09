@@ -30,7 +30,15 @@ export function ruleArrayToString(rulesArray: string[]) {
 }
 
 defineRule('required', (value => {
-    if (isNullOrWhitespace(value)) {
+    if (typeof value === 'string' && isNullOrWhitespace(value)) {
+        return 'is required';
+    }
+
+    if (typeof value === 'number' && value === 0) {
+        return 'is required';
+    }
+
+    if (!value) {
         return 'is required';
     }
 
@@ -53,6 +61,10 @@ defineRule('email', (value => {
 
 defineRule('notequal', ((value, [compare]) => {
     return value !== compare;
+}) as ValidationRuleFunction);
+
+defineRule('greaterthan', ((value, [compare]) => {
+    return value > compare;
 }) as ValidationRuleFunction);
 
 defineRule('datekey', (value => {

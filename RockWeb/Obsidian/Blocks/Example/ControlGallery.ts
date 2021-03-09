@@ -30,6 +30,7 @@ import PanelWidget from '../../Elements/PanelWidget.js';
 import DatePicker from '../../Elements/DatePicker.js';
 import { RockDateType } from '../../Util/RockDate.js';
 import BirthdayPicker from '../../Elements/BirthdayPicker.js';
+import NumberUpDown from '../../Elements/NumberUpDown.js';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -62,7 +63,8 @@ export default defineComponent({
         CurrencyBox,
         EmailBox,
         DatePicker,
-        BirthdayPicker
+        BirthdayPicker,
+        NumberUpDown
     },
     data() {
         return {
@@ -74,6 +76,7 @@ export default defineComponent({
             currency: 1.234,
             email: 'joe@joes.co',
             date: null as RockDateType | null,
+            numberUpDown: 1,
             birthday: {
                 month: 1,
                 day: 1,
@@ -210,6 +213,18 @@ export default defineComponent({
                     <strong>Campus Id</strong>
                     {{campusId}}
                 </p>
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                NumberUpDown
+            </template>
+            <template #gallery>
+                <NumberUpDown label="NumberUpDown 1" v-model="numberUpDown" />
+                <NumberUpDown label="NumberUpDown 2" v-model="numberUpDown" />
+            </template>
+            <template #result>
+                {{numberUpDown}}
             </template>
         </GalleryAndResult>
     </template>

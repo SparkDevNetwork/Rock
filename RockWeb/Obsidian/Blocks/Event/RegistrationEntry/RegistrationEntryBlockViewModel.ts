@@ -74,6 +74,22 @@ export interface RegistrationEntryBlockViewModel {
     PluralRegistrantTerm: string;
     PluralFeeTerm: string;
     RegistrantForms: RegistrationEntryBlockFormViewModel[];
+    Fees: RegistrationEntryBlockFeeViewModel[]
+}
+
+export interface RegistrationEntryBlockFeeViewModel {
+    Name: string;
+    Guid: Guid;
+    AllowMultiple: boolean;
+    IsRequired: boolean;
+    Items: RegistrationEntryBlockFeeItemViewModel[];
+}
+
+export interface RegistrationEntryBlockFeeItemViewModel {
+    Name: string;
+    Guid: Guid;
+    Cost: number;
+    CountRemaining: number | null;
 }
 
 export interface RegistrationEntryBlockFormViewModel {

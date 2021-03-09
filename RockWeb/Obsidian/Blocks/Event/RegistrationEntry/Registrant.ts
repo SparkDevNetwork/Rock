@@ -30,6 +30,7 @@ import Alert from '../../../Elements/Alert';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
 import { Guid } from '../../../Util/Guid';
 import RockForm from '../../../Controls/RockForm';
+import FeeField from './FeeField';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
@@ -40,7 +41,8 @@ export default defineComponent({
         RegistrantPersonField,
         RegistrantAttributeField,
         Alert,
-        RockForm
+        RockForm,
+        FeeField
     },
     setup() {
         return {
@@ -60,6 +62,7 @@ export default defineComponent({
             currentRegistrantIndex: 0,
             currentFormIndex: 0,
             fieldValues: {} as Record<Guid, string>,
+            feeQuantities: {} as Record<Guid, number>,
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
                 PersonAttribute: RegistrationFieldSource.PersonAttribute,
@@ -94,8 +97,8 @@ export default defineComponent({
         currentPerson(): Person | null {
             return this.$store.state.currentPerson;
         },
-        registrantTerm(): string {
-            return this.viewModel.RegistrantTerm || 'registrant';
+        uppercaseRegistrantTerm(): string {
+            return StringFilter.toTitleCase(this.viewModel.RegistrantTerm);
         },
         pluralFeeTerm(): string {
             return StringFilter.toTitleCase(this.viewModel.PluralFeeTerm || 'fees');
@@ -126,8 +129,8 @@ export default defineComponent({
             const ordinal = NumberFilter.toOrdinal(this.currentRegistrantIndex + 1);
             let title = StringFilter.toTitleCase(
                 this.registrants.length <= 1 ?
-                    this.registrantTerm :
-                    ordinal + ' ' + this.registrantTerm);
+                    this.uppercaseRegistrantTerm :
+                    ordinal + ' ' + this.uppercaseRegistrantTerm);
 
             if (this.currentFormIndex > 0) {
                 title += ' (cont)';
@@ -199,7 +202,7 @@ export default defineComponent({
 
     <RockForm @submit="onNext">
         <div v-if="possibleFamilyMembers && possibleFamilyMembers.length > 1 && currentFormIndex === 0" class="well js-registration-same-family">
-            <RadioButtonList label="Individual is in the same immediate family as" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" validationTitle="Family" />
+            <RadioButtonList :label="uppercaseRegistrantTerm + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="possibleFamilyMembers" validationTitle="Family" />
         </div>
 
         <template v-for="field in currentFormFields" :key="field.Guid">
@@ -210,7 +213,9 @@ export default defineComponent({
 
         <div v-if="isLastForm" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>
-            Control here
+            <template v-for="fee in viewModel.Fees" :key="fee.Guid">
+                <FeeField :fee="fee" v-model="feeQuantities" />
+            </template>
         </div>
 
         <div class="actions">

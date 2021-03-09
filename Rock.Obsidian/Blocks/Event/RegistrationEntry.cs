@@ -116,6 +116,8 @@ namespace Rock.Obsidian.Blocks.Event
                     {
                         Guid = feeModel.Guid,
                         Name = feeModel.Name,
+                        AllowMultiple = feeModel.AllowMultiple,
+                        IsRequired = feeModel.IsRequired,
                         Items = new List<RegistrationEntryBlockFeeItemViewModel>()
                     };
 
@@ -125,7 +127,8 @@ namespace Rock.Obsidian.Blocks.Event
                         {
                             Cost = feeItemModel.Cost,
                             Name = feeItemModel.Name,
-                            Guid = feeItemModel.Guid
+                            Guid = feeItemModel.Guid,
+                            CountRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null )
                         } );
                     }
 

@@ -102,6 +102,22 @@ namespace Rock.ViewModel.Blocks
         /// The items.
         /// </value>
         public List<RegistrationEntryBlockFeeItemViewModel> Items { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multiple].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is required; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRequired { get; set; }
     }
 
     /// <summary>
@@ -132,6 +148,14 @@ namespace Rock.ViewModel.Blocks
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the count remaining.
+        /// </summary>
+        /// <value>
+        /// The count remaining.
+        /// </value>
+        public int? CountRemaining { get; set; }
     }
 
     /// <summary>

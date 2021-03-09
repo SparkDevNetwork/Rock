@@ -14,10 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { defineComponent, PropType } from 'vue';
+import RockFormField from './RockFormField.js';
 
-export default defineComponent({
-    name: 'NumberUpDown',
+export const NumberUpDownInternal = defineComponent({
+    name: 'NumberUpDownInternal',
     props: {
         modelValue: {
             type: Number as PropType<number>,
@@ -29,37 +30,110 @@ export default defineComponent({
         },
         max: {
             type: Number as PropType<number>,
-            default: 9
+            default: 10
+        },
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
+    },
+    data() {
+        return {
+            internalValue: 0
+        };
     },
     methods: {
         goUp() {
             if (!this.isUpDisabled) {
-                this.$emit('update:modelValue', this.modelValue + 1);
+                this.internalValue++;
             }
         },
         goDown() {
             if (!this.isDownDisabled) {
-                this.$emit('update:modelValue', this.modelValue - 1);
+                this.internalValue--;
             }
         }
     },
     computed: {
         isUpDisabled(): boolean {
-            return this.modelValue >= this.max;
+            return this.internalValue >= this.max;
         },
         isDownDisabled(): boolean {
-            return this.modelValue <= this.min;
+            return this.internalValue <= this.min;
+        }
+    },
+    watch: {
+        modelValue: {
+            immediate: true,
+            handler() {
+                this.internalValue = this.modelValue;
+            }
+        },
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
         }
     },
     template: `
 <div class="numberincrement">
-    <a @click="goDown" class="numberincrement-down" :class="{disabled: isDownDisabled}" :disabled="isDownDisabled">
+    <a @click="goDown" class="numberincrement-down" :class="{disabled: disabled || isDownDisabled}" :disabled="disabled || isDownDisabled">
         <i class="fa fa-minus "></i>
     </a>
     <span class="numberincrement-value">{{modelValue}}</span>
-    <a @click="goUp" class="numberincrement-up" :class="{disabled: isUpDisabled}" :disabled="isUpDisabled">
+    <a @click="goUp" class="numberincrement-up" :class="{disabled: disabled || isUpDisabled}" :disabled="disabled || isUpDisabled">
         <i class="fa fa-plus "></i>
     </a>
 </div>`
+});
+
+export default defineComponent({
+    name: 'NumberUpDown',
+    components: {
+        RockFormField,
+        NumberUpDownInternal
+    },
+    props: {
+        modelValue: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        min: {
+            type: Number as PropType<number>,
+            default: 1
+        },
+        max: {
+            type: Number as PropType<number>,
+            default: 10
+        },
+        numberIncrementClasses: {
+            type: String as PropType<string>,
+            default: ''
+        }
+    },
+    data() {
+        return {
+            internalValue: 0
+        };
+    },
+    watch: {
+        modelValue: {
+            immediate: true,
+            handler() {
+                this.internalValue = this.modelValue;
+            }
+        },
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
+        }
+    },
+    template: `
+<RockFormField
+    :modelValue="internalValue"
+    formGroupClasses="number-up-down"
+    name="numberupdown">
+    <template #default="{uniqueId, field, errors, disabled}">
+        <div class="control-wrapper">
+            <NumberUpDownInternal v-model="internalValue" :min="min" :max="max" :class="numberIncrementClasses" />
+        </div>
+    </template>
+</RockFormField>`
 });

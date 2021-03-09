@@ -27,7 +27,13 @@ System.register(["../Services/DateKey.js", "../Services/Email.js", "../Services/
         ],
         execute: function () {
             vee_validate_js_1.defineRule('required', (function (value) {
-                if (String_js_1.isNullOrWhitespace(value)) {
+                if (typeof value === 'string' && String_js_1.isNullOrWhitespace(value)) {
+                    return 'is required';
+                }
+                if (typeof value === 'number' && value === 0) {
+                    return 'is required';
+                }
+                if (!value) {
                     return 'is required';
                 }
                 return true;
@@ -46,6 +52,10 @@ System.register(["../Services/DateKey.js", "../Services/Email.js", "../Services/
             vee_validate_js_1.defineRule('notequal', (function (value, _a) {
                 var compare = _a[0];
                 return value !== compare;
+            }));
+            vee_validate_js_1.defineRule('greaterthan', (function (value, _a) {
+                var compare = _a[0];
+                return value > compare;
             }));
             vee_validate_js_1.defineRule('datekey', (function (value) {
                 var asString = value;

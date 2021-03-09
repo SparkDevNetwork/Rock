@@ -14,9 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import { newGuid } from '../Util/Guid.js';
-import RockFormField from './RockFormField.js';
+import { defineComponent, PropType } from 'vue';
+import RockFormField from './RockFormField';
 
 export type DropDownListOption = {
     key: string,
@@ -45,11 +44,14 @@ export default defineComponent({
         blankValue: {
             type: String as PropType<string>,
             default: ''
+        },
+        formControlClasses: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     data: function () {
         return {
-            uniqueId: `rock-dropdownlist-${newGuid()}`,
             internalValue: this.blankValue
         };
     },
@@ -89,7 +91,7 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field">
+            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-bind="field">
                 <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>

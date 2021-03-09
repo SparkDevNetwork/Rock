@@ -14,24 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
+import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
 import { newGuid } from '../Util/Guid.js';
+import { ruleStringToArray } from '../Rules/Index.js';
 
 export default defineComponent({
     name: 'CheckBox',
     props: {
         modelValue: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             required: true
         },
         label: {
-            type: String,
+            type: String as PropType<string>,
             required: true
+        },
+        inline: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        rules: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
-    emits: [
-        'update:modelValue'
-    ],
     data: function () {
         return {
             uniqueId: `rock-checkbox-${newGuid()}`,
@@ -39,20 +45,51 @@ export default defineComponent({
         };
     },
     methods: {
-        handleInput: function () {
-            this.$emit('update:modelValue', this.internalValue);
+        toggle() {
+            if (!this.isRequired) {
+                this.internalValue = !this.internalValue;
+            }
+            else {
+                this.internalValue = true;
+            }
+        }
+    },
+    computed: {
+        isRequired() {
+            const rules = ruleStringToArray(this.rules);
+            return rules.indexOf('required') !== -1;
         }
     },
     watch: {
-        value: function () {
+        modelValue() {
             this.internalValue = this.modelValue;
+        },
+        internalValue() {
+            this.$emit('update:modelValue', this.internalValue);
+        },
+        isRequired: {
+            immediate: true,
+            handler() {
+                if (this.isRequired) {
+                    this.internalValue = true;
+                }
+            }
         }
     },
-    template:
-`<div class="checkbox">
+    template: `
+<div v-if="inline" class="checkbox">
     <label title="">
         <input type="checkbox" v-model="internalValue" />
         <span class="label-text ">{{label}}</span>
     </label>
+</div>
+<div v-else class="form-group rock-check-box" :class="isRequired ? 'required' : ''">
+    <label class="control-label" :for="uniqueId">{{label}}</label>
+    <div class="control-wrapper">
+        <div class="rock-checkbox-icon" @click="toggle" :class="isRequired ? 'text-muted' : ''">
+            <i v-if="modelValue" class="fa fa-check-square-o fa-lg"></i>
+            <i v-else class="fa fa-square-o fa-lg"></i>
+        </div>
+    </div>
 </div>`
 });
