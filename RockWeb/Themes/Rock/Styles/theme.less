@@ -547,14 +547,11 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
     align-items: center;
+    border-bottom: 1px solid @panel-border;
 
     .row {
       width: 100%;
@@ -610,8 +607,9 @@ textarea,
   padding: 0;
 
   &::before {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 100%;
   }
 }
@@ -1149,40 +1147,6 @@ body.nav-open {
         }
       }
 
-      &.open {
-        background-color: @navbarside-sub-bg;
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-
-        @media @sm {
-          &::before {
-            position: absolute;
-            top: -(ceil(@navbarside-width * .35));
-            right: 0;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-
-          &::after {
-            position: absolute;
-            right: 0;
-            bottom: -(ceil(@navbarside-width * .35));
-            z-index: 1;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-        }
-      }
-
-      &.current,
-      &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-        > i {
-          color: @white;
-        }
-      }
-
       .nav-childpages {
         position: fixed;
         top: 0;
@@ -1296,14 +1260,45 @@ body.nav-open {
           border-radius: 10px;
         }
       }
-    }
 
-    > li.open {
-      .nav-childpages {
-        display: inline-block;
+      &.open {
+        background-color: @navbarside-sub-bg;
 
-        li.header {
-          padding-left: 0;
+        .nav-childpages {
+          display: inline-block;
+
+          li.header {
+            padding-left: 0;
+          }
+        }
+
+        @media @sm {
+          &::before {
+            position: absolute;
+            top: -(ceil(@navbarside-width * .35));
+            right: 0;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+
+          &::after {
+            position: absolute;
+            right: 0;
+            bottom: -(ceil(@navbarside-width * .35));
+            z-index: 1;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+        }
+      }
+
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-primary;
+        > i {
+          color: @white;
         }
       }
     }

@@ -48,6 +48,19 @@
   }
 }
 
+.panel-follow-full-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  > div {
+    position: relative;
+    float: left;
+    height: 100%;
+  }
+}
+
 .panel-section {
   border-width: 0;
   box-shadow: none !important;
@@ -344,14 +357,14 @@
     }
 
     .note-attributes {
-      margin: 24px 0 0;
       padding: 8px 0 0;
+      margin: 24px 0 0;
       border-top: 1px solid fade(@panel-border, 60%);
     }
 
     .note-attribute {
-      font-size: @font-size-small;
       margin: @form-group-margin-bottom 0 0;
+      font-size: @font-size-small;
     }
   }
 
