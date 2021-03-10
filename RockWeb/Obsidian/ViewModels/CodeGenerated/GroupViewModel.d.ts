@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-import Entity from '../Entity.js';
-import { RockDateType } from '../../Util/RockDate.js';
-import AttributeValue from './AttributeValueViewModel.js';
-import { Guid } from '../../Util/Guid.js';
+import Entity from '../Entity';
+import { RockDateType } from '../../Util/RockDate';
+import AttributeValue from './AttributeValueViewModel';
+import { Guid } from '../../Util/Guid';
 
 export default interface Group extends Entity {
     Id: number;

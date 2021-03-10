@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-import Entity from '../Entity.js';
-import { Guid } from '../../Util/Guid.js';
-import AttributeValue from './AttributeValueViewModel.js';
-import { RockDateType } from '../../Util/RockDate.js';
+import Entity from '../Entity';
+import { Guid } from '../../Util/Guid';
+import AttributeValue from './AttributeValueViewModel';
+import { RockDateType } from '../../Util/RockDate';
 
 export default interface WorkflowActionForm extends Entity {
     Id: number;

@@ -21,10 +21,10 @@
 // </copyright>
 //
 
-import Entity from '../Entity.js';
-import AttributeValue from './AttributeValueViewModel.js';
-import { RockDateType } from '../../Util/RockDate.js';
-import { Guid } from '../../Util/Guid.js';
+import Entity from '../Entity';
+import AttributeValue from './AttributeValueViewModel';
+import { RockDateType } from '../../Util/RockDate';
+import { Guid } from '../../Util/Guid';
 
 export default interface AchievementTypePrerequisite extends Entity {
     Id: number;
