@@ -1,4 +1,4 @@
-System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (exports_1, context_1) {
+System.register(["vuex", "./CommonEntities"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -11,19 +11,19 @@ System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (ex
         };
         return __assign.apply(this, arguments);
     };
-    var index_js_1, CommonEntities_js_1;
+    var vuex_1, CommonEntities_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (index_js_1_1) {
-                index_js_1 = index_js_1_1;
+            function (vuex_1_1) {
+                vuex_1 = vuex_1_1;
             },
-            function (CommonEntities_js_1_1) {
-                CommonEntities_js_1 = CommonEntities_js_1_1;
+            function (CommonEntities_1_1) {
+                CommonEntities_1 = CommonEntities_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", index_js_1.createStore({
+            exports_1("default", vuex_1.createStore({
                 state: {
                     areSecondaryBlocksShown: true,
                     currentPerson: null,
@@ -83,13 +83,13 @@ System.register(["../Vendor/Vuex/index.js", "./CommonEntities.js"], function (ex
                         var pageConfig = _a.pageConfig;
                         context.commit('setPageInitializationData', pageConfig);
                         // Initialize each common entity module
-                        for (var _i = 0, commonEntities_1 = CommonEntities_js_1.commonEntities; _i < commonEntities_1.length; _i++) {
+                        for (var _i = 0, commonEntities_1 = CommonEntities_1.commonEntities; _i < commonEntities_1.length; _i++) {
                             var commonEntity = commonEntities_1[_i];
                             context.dispatch(commonEntity.namespace + "/initialize");
                         }
                     }
                 },
-                modules: __assign({}, CommonEntities_js_1.commonEntityModules)
+                modules: __assign({}, CommonEntities_1.commonEntityModules)
             }));
         }
     };

@@ -44,22 +44,11 @@ namespace Rock.Obsidian.Blocks.Example
         /// <param name="personGuid">The person unique identifier.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetPersonViewModel( Guid personGuid )
+        public BlockActionResult GetPersonViewModel()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var personService = new PersonService( rockContext );
-                var person = personService.Get( personGuid );
-
-                if ( person == null )
-                {
-                    return new BlockActionResult( HttpStatusCode.NotFound );
-                }
-
-                var currentPerson = GetCurrentPerson();
-                var personViewModel = currentPerson.ToViewModel( currentPerson );
-                return new BlockActionResult( HttpStatusCode.OK, personViewModel );
-            }
+            var currentPerson = GetCurrentPerson();
+            var personViewModel = currentPerson.ToViewModel( currentPerson );
+            return new BlockActionResult( HttpStatusCode.OK, personViewModel );
         }
 
         /// <summary>
@@ -69,19 +58,27 @@ namespace Rock.Obsidian.Blocks.Example
         /// <param name="personArgs">The person arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult EditPerson( Guid personGuid, PersonViewModel personArgs )
+        public BlockActionResult EditPerson( PersonViewModel personArgs )
         {
+            var currentPerson = GetCurrentPerson();
+
+            if ( currentPerson == null )
+            {
+                return new BlockActionResult( HttpStatusCode.Unauthorized );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
-                var person = personService.Get( personGuid );
+                var person = personService.Get( currentPerson.Id );
+                var family = person?.GetFamily( rockContext );
 
-                if ( person == null )
+                if ( family == null )
                 {
                     return new BlockActionResult( HttpStatusCode.NotFound );
                 }
 
-                person.PrimaryFamily.CampusId = personArgs.PrimaryCampusId;
+                family.CampusId = personArgs.PrimaryCampusId;
                 person.Email = personArgs.Email;
                 person.FirstName = personArgs.FirstName;
                 person.NickName = personArgs.NickName;

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { defineComponent, PropType } from 'vue';
 
 export type FilterOptions = {
     Take: number;

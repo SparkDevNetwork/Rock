@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
-import { Guid } from '../Util/Guid.js';
-import { getFieldTypeProps, registerFieldType } from './Index.js';
-import { asDateString } from '../Services/Date.js';
-import DatePicker from '../Elements/DatePicker.js';
+import { defineComponent } from 'vue';
+import { Guid } from '../Util/Guid';
+import { getFieldTypeProps, registerFieldType } from './Index';
+import { asDateString } from '../Services/Date';
+import DatePicker from '../Elements/DatePicker';
 
 const fieldTypeGuid: Guid = '6B6AA175-4758-453F-8D83-FCD8044B5F36';
 

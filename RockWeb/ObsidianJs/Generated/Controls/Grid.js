@@ -1,9 +1,9 @@
-System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["vue"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, SortDirection;
+    var vue_1, SortDirection;
     var __moduleName = context_1 && context_1.id;
     function OfType() {
-        return vue_js_1.defineComponent({
+        return vue_1.defineComponent({
             name: 'Grid',
             props: {
                 gridData: {
@@ -68,8 +68,8 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
     exports_1("default", OfType);
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             }
         ],
         execute: function () {

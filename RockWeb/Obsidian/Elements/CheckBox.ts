@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import { newGuid } from '../Util/Guid.js';
-import { ruleStringToArray } from '../Rules/Index.js';
+import { defineComponent, PropType } from 'vue';
+import { newGuid } from '../Util/Guid';
+import { ruleStringToArray } from '../Rules/Index';
 
 export default defineComponent({
     name: 'CheckBox',

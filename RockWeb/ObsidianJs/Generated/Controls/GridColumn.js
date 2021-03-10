@@ -1,12 +1,12 @@
-System.register(["../Elements/JavaScriptAnchor.js", "../Vendor/Vue/vue.js", "./Grid.js"], function (exports_1, context_1) {
+System.register(["../Elements/JavaScriptAnchor", "vue", "./Grid"], function (exports_1, context_1) {
     "use strict";
-    var JavaScriptAnchor_js_1, vue_js_1, Grid_js_1;
+    var JavaScriptAnchor_1, vue_1, Grid_1;
     var __moduleName = context_1 && context_1.id;
     function OfType() {
-        return vue_js_1.defineComponent({
+        return vue_1.defineComponent({
             name: 'GridColumn',
             components: {
-                JavaScriptAnchor: JavaScriptAnchor_js_1.default
+                JavaScriptAnchor: JavaScriptAnchor_1.default
             },
             props: {
                 title: {
@@ -24,8 +24,8 @@ System.register(["../Elements/JavaScriptAnchor.js", "../Vendor/Vue/vue.js", "./G
             },
             setup: function () {
                 return {
-                    gridContext: vue_js_1.inject('gridContext'),
-                    rowContext: vue_js_1.inject('rowContext')
+                    gridContext: vue_1.inject('gridContext'),
+                    rowContext: vue_1.inject('rowContext')
                 };
             },
             computed: {
@@ -44,11 +44,11 @@ System.register(["../Elements/JavaScriptAnchor.js", "../Vendor/Vue/vue.js", "./G
                 },
                 isCurrentlySortedDesc: function () {
                     var _a;
-                    return this.isCurrentlySorted && ((_a = this.sortProperty) === null || _a === void 0 ? void 0 : _a.Direction) === Grid_js_1.SortDirection.Descending;
+                    return this.isCurrentlySorted && ((_a = this.sortProperty) === null || _a === void 0 ? void 0 : _a.Direction) === Grid_1.SortDirection.Descending;
                 },
                 isCurrentlySortedAsc: function () {
                     var _a;
-                    return this.isCurrentlySorted && ((_a = this.sortProperty) === null || _a === void 0 ? void 0 : _a.Direction) === Grid_js_1.SortDirection.Ascending;
+                    return this.isCurrentlySorted && ((_a = this.sortProperty) === null || _a === void 0 ? void 0 : _a.Direction) === Grid_1.SortDirection.Ascending;
                 }
             },
             methods: {
@@ -56,11 +56,11 @@ System.register(["../Elements/JavaScriptAnchor.js", "../Vendor/Vue/vue.js", "./G
                     this.$emit('click:header', this.property);
                     if (this.mySortExpression && this.sortProperty) {
                         if (this.isCurrentlySortedAsc) {
-                            this.sortProperty.Direction = Grid_js_1.SortDirection.Descending;
+                            this.sortProperty.Direction = Grid_1.SortDirection.Descending;
                         }
                         else {
                             this.sortProperty.Property = this.mySortExpression;
-                            this.sortProperty.Direction = Grid_js_1.SortDirection.Ascending;
+                            this.sortProperty.Direction = Grid_1.SortDirection.Ascending;
                         }
                     }
                 },
@@ -71,14 +71,14 @@ System.register(["../Elements/JavaScriptAnchor.js", "../Vendor/Vue/vue.js", "./G
     exports_1("default", OfType);
     return {
         setters: [
-            function (JavaScriptAnchor_js_1_1) {
-                JavaScriptAnchor_js_1 = JavaScriptAnchor_js_1_1;
+            function (JavaScriptAnchor_1_1) {
+                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Grid_js_1_1) {
-                Grid_js_1 = Grid_js_1_1;
+            function (Grid_1_1) {
+                Grid_1 = Grid_1_1;
             }
         ],
         execute: function () {

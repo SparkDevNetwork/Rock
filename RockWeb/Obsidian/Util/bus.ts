@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import mitt from '../Vendor/Mitt/index.js';
+import mitt from 'mitt';
 
 /**
  * The bus allows page components to send and receive arbitrary data from other page components.

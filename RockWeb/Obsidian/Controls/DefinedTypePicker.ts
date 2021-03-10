@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { CommonEntityOption, createCommonEntityPicker } from '../Store/Generators.js';
-import store from '../Store/index.js';
+import { CommonEntityOption, createCommonEntityPicker } from '../Store/Generators';
+import store from '../Store/Index';
 
 export default createCommonEntityPicker(
     'DefinedType',

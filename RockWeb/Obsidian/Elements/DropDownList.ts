@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from 'vue';
-import RockFormField from './RockFormField';
+import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { newGuid } from '../Util/Guid.js';
+import RockFormField from './RockFormField.js';
 
 export type DropDownListOption = {
     key: string,
@@ -44,26 +45,37 @@ export default defineComponent({
         blankValue: {
             type: String as PropType<string>,
             default: ''
-        },
-        formControlClasses: {
-            type: String as PropType<string>,
-            default: ''
-        },
-        placeholder: {
-            type: String as PropType<string>,
-            default: ''
         }
     },
     data: function () {
         return {
+            uniqueId: `rock-dropdownlist-${newGuid()}`,
             internalValue: this.blankValue
         };
+    },
+    methods: {
+        syncValue() {
+            this.internalValue = this.modelValue;
+            const selectedOption = this.options.find(o => o.value === this.internalValue) || null;
+
+            if (!selectedOption) {
+                this.internalValue = this.showBlankItem ?
+                    this.blankValue :
+                    (this.options[0]?.value || this.blankValue);
+            }
+        }
     },
     watch: {
         modelValue: {
             immediate: true,
             handler() {
-                this.internalValue = this.modelValue;
+                this.syncValue();
+            }
+        },
+        options: {
+            immediate: true,
+            handler() {
+                this.syncValue();
             }
         },
         internalValue() {
@@ -77,8 +89,8 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-model="internalValue">
-                <option v-if="showBlankItem" :value="blankValue">{{placeholder}}</option>
+            <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field" v-model="internalValue">
+                <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
         </div>

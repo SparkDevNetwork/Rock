@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import store from '../Store/Index.js';
+import { defineComponent, PropType } from 'vue';
+import store from '../Store/Index';
 
 export default defineComponent({
     name: 'PrimaryBlock',

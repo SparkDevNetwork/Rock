@@ -1,4 +1,4 @@
-System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplate.js", "../../Controls/Loading.js", "../../Store/Index.js", "../../Util/Guid.js", "../../Elements/JavaScriptAnchor.js", "../../Controls/RockForm.js", "../../Elements/TextBox.js", "../../Elements/RockButton.js", "../../Controls/AttributeValuesContainer.js"], function (exports_1, context_1) {
+System.register(["vue", "../../Templates/PaneledBlockTemplate", "../../Controls/Loading", "../../Store/Index", "../../Util/Guid", "../../Elements/JavaScriptAnchor", "../../Controls/RockForm", "../../Elements/TextBox", "../../Elements/RockButton", "../../Controls/AttributeValuesContainer"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,57 +36,57 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, PaneledBlockTemplate_js_1, Loading_js_1, Index_js_1, Guid_js_1, JavaScriptAnchor_js_1, RockForm_js_1, TextBox_js_1, RockButton_js_1, AttributeValuesContainer_js_1;
+    var vue_1, PaneledBlockTemplate_1, Loading_1, Index_1, Guid_1, JavaScriptAnchor_1, RockForm_1, TextBox_1, RockButton_1, AttributeValuesContainer_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (PaneledBlockTemplate_js_1_1) {
-                PaneledBlockTemplate_js_1 = PaneledBlockTemplate_js_1_1;
+            function (PaneledBlockTemplate_1_1) {
+                PaneledBlockTemplate_1 = PaneledBlockTemplate_1_1;
             },
-            function (Loading_js_1_1) {
-                Loading_js_1 = Loading_js_1_1;
+            function (Loading_1_1) {
+                Loading_1 = Loading_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
-            function (JavaScriptAnchor_js_1_1) {
-                JavaScriptAnchor_js_1 = JavaScriptAnchor_js_1_1;
+            function (JavaScriptAnchor_1_1) {
+                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             },
-            function (RockForm_js_1_1) {
-                RockForm_js_1 = RockForm_js_1_1;
+            function (RockForm_1_1) {
+                RockForm_1 = RockForm_1_1;
             },
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             },
-            function (RockButton_js_1_1) {
-                RockButton_js_1 = RockButton_js_1_1;
+            function (RockButton_1_1) {
+                RockButton_1 = RockButton_1_1;
             },
-            function (AttributeValuesContainer_js_1_1) {
-                AttributeValuesContainer_js_1 = AttributeValuesContainer_js_1_1;
+            function (AttributeValuesContainer_1_1) {
+                AttributeValuesContainer_1 = AttributeValuesContainer_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Crm.AttributeValues',
                 components: {
-                    PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
-                    Loading: Loading_js_1.default,
-                    JavaScriptAnchor: JavaScriptAnchor_js_1.default,
-                    RockForm: RockForm_js_1.default,
-                    TextBox: TextBox_js_1.default,
-                    RockButton: RockButton_js_1.default,
-                    AttributeValuesContainer: AttributeValuesContainer_js_1.default
+                    PaneledBlockTemplate: PaneledBlockTemplate_1.default,
+                    Loading: Loading_1.default,
+                    JavaScriptAnchor: JavaScriptAnchor_1.default,
+                    RockForm: RockForm_1.default,
+                    TextBox: TextBox_1.default,
+                    RockButton: RockButton_1.default,
+                    AttributeValuesContainer: AttributeValuesContainer_1.default
                 },
                 setup: function () {
                     return {
-                        invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
-                        configurationValues: vue_js_1.inject('configurationValues')
+                        invokeBlockAction: vue_1.inject('invokeBlockAction'),
+                        configurationValues: vue_1.inject('configurationValues')
                     };
                 },
                 data: function () {
@@ -97,7 +97,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                 },
                 computed: {
                     person: function () {
-                        return (Index_js_1.default.getters.personContext || null);
+                        return (Index_1.default.getters.personContext || null);
                     },
                     personGuid: function () {
                         var _a;
@@ -120,7 +120,7 @@ System.register(["../../Vendor/Vue/vue.js", "../../Templates/PaneledBlockTemplat
                             if (this.categoryGuids && !attribute) {
                                 continue;
                             }
-                            if (this.categoryGuids && !(attribute === null || attribute === void 0 ? void 0 : attribute.CategoryGuids.some(function (g1) { return _this.categoryGuids.some(function (g2) { return Guid_js_1.areEqual(g1, g2); }); }))) {
+                            if (this.categoryGuids && !(attribute === null || attribute === void 0 ? void 0 : attribute.CategoryGuids.some(function (g1) { return _this.categoryGuids.some(function (g2) { return Guid_1.areEqual(g1, g2); }); }))) {
                                 continue;
                             }
                             attributeValues.push(attributeValue);

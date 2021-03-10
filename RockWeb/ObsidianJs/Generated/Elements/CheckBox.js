@@ -1,21 +1,21 @@
-System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Rules/Index.js"], function (exports_1, context_1) {
+System.register(["vue", "../Util/Guid", "../Rules/Index"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Guid_js_1, Index_js_1;
+    var vue_1, Guid_1, Index_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'CheckBox',
                 props: {
                     modelValue: {
@@ -37,7 +37,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Rules/Index.js"]
                 },
                 data: function () {
                     return {
-                        uniqueId: "rock-checkbox-" + Guid_js_1.newGuid(),
+                        uniqueId: "rock-checkbox-" + Guid_1.newGuid(),
                         internalValue: this.modelValue
                     };
                 },
@@ -53,7 +53,7 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "../Rules/Index.js"]
                 },
                 computed: {
                     isRequired: function () {
-                        var rules = Index_js_1.ruleStringToArray(this.rules);
+                        var rules = Index_1.ruleStringToArray(this.rules);
                         return rules.indexOf('required') !== -1;
                     }
                 },

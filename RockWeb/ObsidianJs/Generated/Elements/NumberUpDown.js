@@ -1,14 +1,14 @@
-System.register(["vue", "./RockFormField.js"], function (exports_1, context_1) {
+System.register(["vue", "./RockFormField"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockFormField_js_1, NumberUpDownInternal;
+    var vue_1, RockFormField_1, NumberUpDownInternal;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
-            function (RockFormField_js_1_1) {
-                RockFormField_js_1 = RockFormField_js_1_1;
+            function (RockFormField_1_1) {
+                RockFormField_1 = RockFormField_1_1;
             }
         ],
         execute: function () {
@@ -73,7 +73,7 @@ System.register(["vue", "./RockFormField.js"], function (exports_1, context_1) {
             exports_1("default", vue_1.defineComponent({
                 name: 'NumberUpDown',
                 components: {
-                    RockFormField: RockFormField_js_1.default,
+                    RockFormField: RockFormField_1.default,
                     NumberUpDownInternal: NumberUpDownInternal
                 },
                 props: {

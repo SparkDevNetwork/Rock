@@ -14,16 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
-import { Module } from '../Vendor/Vuex/index.js';
-import { RootState } from './index.js';
-import cache from '../Util/cache.js';
-import http from '../Util/http.js';
-import { CommonEntity } from './commonEntities.js';
-import { splitCamelCase } from '../Services/String.js';
-import { Guid } from '../Util/Guid.js';
-import Entity from '../ViewModels/Entity.js';
+import { defineComponent, PropType } from 'vue';
+import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
+import { Module } from 'vuex';
+import { RootState } from './Index';
+import cache from '../Util/Cache';
+import http from '../Util/Http';
+import { CommonEntity } from './CommonEntities';
+import { splitCamelCase } from '../Services/String';
+import { Guid } from '../Util/Guid';
+import Entity from '../ViewModels/Entity';
 
 export type CommonEntityOption = {
     Guid: Guid;
@@ -51,7 +51,7 @@ export function createCommonEntityPicker(entityName: string, getOptionsFunc: () 
                 required: true
             },
             label: {
-                type: String,
+                type: String as PropType<string>,
                 default: entityNameForDisplay
             }
         },

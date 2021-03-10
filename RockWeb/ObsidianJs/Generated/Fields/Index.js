@@ -1,6 +1,6 @@
-System.register(["../Util/Guid.js"], function (exports_1, context_1) {
+System.register(["../Util/Guid"], function (exports_1, context_1) {
     "use strict";
-    var Guid_js_1, fieldTypeComponentPaths;
+    var Guid_1, fieldTypeComponentPaths;
     var __moduleName = context_1 && context_1.id;
     function getFieldTypeProps() {
         return {
@@ -20,7 +20,7 @@ System.register(["../Util/Guid.js"], function (exports_1, context_1) {
     }
     exports_1("getFieldTypeProps", getFieldTypeProps);
     function registerFieldType(fieldTypeGuid, component) {
-        var normalizedGuid = Guid_js_1.normalize(fieldTypeGuid);
+        var normalizedGuid = Guid_1.normalize(fieldTypeGuid);
         var dataToExport = {
             fieldTypeGuid: normalizedGuid,
             component: component
@@ -35,7 +35,7 @@ System.register(["../Util/Guid.js"], function (exports_1, context_1) {
     }
     exports_1("registerFieldType", registerFieldType);
     function getFieldTypeComponent(fieldTypeGuid) {
-        var field = fieldTypeComponentPaths[Guid_js_1.normalize(fieldTypeGuid)];
+        var field = fieldTypeComponentPaths[Guid_1.normalize(fieldTypeGuid)];
         if (field) {
             return field;
         }
@@ -45,8 +45,8 @@ System.register(["../Util/Guid.js"], function (exports_1, context_1) {
     exports_1("getFieldTypeComponent", getFieldTypeComponent);
     return {
         setters: [
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             }
         ],
         execute: function () {

@@ -14,25 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-import bus from '../../Util/Bus.js';
-import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
-import RockButton from '../../Elements/RockButton.js';
-import TextBox from '../../Elements/TextBox.js';
+import bus from '../../Util/Bus';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
+import RockButton from '../../Elements/RockButton';
+import TextBox from '../../Elements/TextBox';
 import { defineComponent, inject } from 'vue';
-import store from '../../Store/Index.js';
-import EmailBox from '../../Elements/EmailBox.js';
-import RockValidation from '../../Controls/RockValidation.js';
-import RockForm from '../../Controls/RockForm.js';
-import CampusPicker from '../../Controls/CampusPicker.js';
-import { Guid } from '../../Util/Guid.js';
-import Loading from '../../Controls/Loading.js';
-import PrimaryBlock from '../../Controls/PrimaryBlock.js';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
-import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
-import { asDateString } from '../../Services/Date.js';
+import store from '../../Store/Index';
+import EmailBox from '../../Elements/EmailBox';
+import RockValidation from '../../Controls/RockValidation';
+import RockForm from '../../Controls/RockForm';
+import CampusPicker from '../../Controls/CampusPicker';
+import { Guid } from '../../Util/Guid';
+import Loading from '../../Controls/Loading';
+import PrimaryBlock from '../../Controls/PrimaryBlock';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import Campus from '../../ViewModels/CodeGenerated/CampusViewModel';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
+import { asDateString } from '../../Services/Date';
 import RockDate, { RockDateType, toRockDate } from '../../Util/RockDate';
-import DatePicker from '../../Elements/DatePicker.js';
+import DatePicker from '../../Elements/DatePicker';
+import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
 
 declare type PersonViewModel = {
     Id: number;
@@ -59,7 +60,8 @@ export default defineComponent({
         CampusPicker,
         Loading,
         PrimaryBlock,
-        DatePicker
+        DatePicker,
+        AddressControl
     },
     setup() {
         return {
@@ -74,8 +76,9 @@ export default defineComponent({
             messageToPublish: '',
             receivedMessage: '',
             isLoading: false,
-            campusGuid: null as Guid | null,
-            birthdate: null as RockDateType | null
+            campusGuid: '' as Guid,
+            birthdate: null as RockDateType | null,
+            address: getDefaultAddressControlModel()
         };
     },
     methods: {
@@ -84,7 +87,7 @@ export default defineComponent({
         },
         doEdit(): void {
             this.personForEditing = this.person ? { ...this.person } : null;
-            this.campusGuid = this.campus?.Guid || null;
+            this.campusGuid = this.campus?.Guid || '';
             this.birthdate = this.birthdateOrNull ? toRockDate(this.birthdateOrNull) : null;
             this.setIsEditMode(true);
         },
@@ -103,7 +106,6 @@ export default defineComponent({
                 this.isLoading = true;
 
                 await this.invokeBlockAction('EditPerson', {
-                    personGuid: this.person.Guid,
                     personArgs: this.person
                 });
 
@@ -174,9 +176,7 @@ export default defineComponent({
 
                 // Sync the person with the guid
                 this.isLoading = true;
-                this.person = (await this.invokeBlockAction<PersonViewModel>('GetPersonViewModel', {
-                    personGuid: this.currentPersonGuid
-                })).data;
+                this.person = (await this.invokeBlockAction<PersonViewModel>('GetPersonViewModel')).data;
                 this.isLoading = false;
             }
         }
@@ -207,6 +207,9 @@ export default defineComponent({
                             <EmailBox v-model="personForEditing.Email" />
                             <CampusPicker v-model="campusGuid" />
                             <DatePicker label="Birthdate" v-model="birthdate" rules="required" />
+                        </div>
+                        <div class="col-sm-12">
+                            <AddressControl v-model="address" />
                         </div>
                     </div>
                     <div class="actions">

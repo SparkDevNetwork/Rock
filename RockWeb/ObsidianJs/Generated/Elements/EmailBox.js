@@ -1,24 +1,24 @@
-System.register(["../Rules/Index.js", "../Vendor/Vue/vue.js", "./TextBox.js"], function (exports_1, context_1) {
+System.register(["../Rules/Index", "vue", "./TextBox"], function (exports_1, context_1) {
     "use strict";
-    var Index_js_1, vue_js_1, TextBox_js_1;
+    var Index_1, vue_1, TextBox_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'EmailBox',
                 components: {
-                    TextBox: TextBox_js_1.default
+                    TextBox: TextBox_1.default
                 },
                 props: {
                     modelValue: {
@@ -44,11 +44,11 @@ System.register(["../Rules/Index.js", "../Vendor/Vue/vue.js", "./TextBox.js"], f
                 },
                 computed: {
                     computedRules: function () {
-                        var rules = Index_js_1.ruleStringToArray(this.rules);
+                        var rules = Index_1.ruleStringToArray(this.rules);
                         if (rules.indexOf('email') === -1) {
                             rules.push('email');
                         }
-                        return Index_js_1.ruleArrayToString(rules);
+                        return Index_1.ruleArrayToString(rules);
                     }
                 },
                 watch: {

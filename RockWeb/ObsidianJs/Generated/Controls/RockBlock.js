@@ -1,4 +1,4 @@
-System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js", "../Elements/Alert.js"], function (exports_1, context_1) {
+System.register(["../Util/Http", "vue", "../Store/Index", "../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -47,28 +47,28 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var http_js_1, vue_js_1, Index_js_1, Alert_js_1;
+    var Http_1, vue_1, Index_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (http_js_1_1) {
-                http_js_1 = http_js_1_1;
+            function (Http_1_1) {
+                Http_1 = Http_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (Alert_js_1_1) {
-                Alert_js_1 = Alert_js_1_1;
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'RockBlock',
                 components: {
-                    Alert: Alert_js_1.default
+                    Alert: Alert_1.default
                 },
                 props: {
                     config: {
@@ -86,7 +86,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                 },
                 setup: function (props) {
                     var _this = this;
-                    var log = vue_js_1.reactive([]);
+                    var log = vue_1.reactive([]);
                     var writeLog = function (method, url) {
                         log.push({
                             date: new Date(),
@@ -102,7 +102,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                                 switch (_a.label) {
                                     case 0:
                                         writeLog(method, url);
-                                        return [4 /*yield*/, http_js_1.doApiCall(method, url, params, data)];
+                                        return [4 /*yield*/, Http_1.doApiCall(method, url, params, data)];
                                     case 1: return [2 /*return*/, _a.sent()];
                                 }
                             });
@@ -137,7 +137,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, post("/api/blocks/action/" + props.config.blockGuid + "/" + actionName, undefined, __assign({ __context: {
-                                                pageParameters: Index_js_1.default.state.pageParameters
+                                                pageParameters: Index_1.default.state.pageParameters
                                             } }, data))];
                                     case 1: return [2 /*return*/, _a.sent()];
                                 }
@@ -145,9 +145,9 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                         });
                     };
                     var blockHttp = { get: get, post: post };
-                    vue_js_1.provide('http', blockHttp);
-                    vue_js_1.provide('invokeBlockAction', invokeBlockAction);
-                    vue_js_1.provide('configurationValues', props.config.configurationValues);
+                    vue_1.provide('http', blockHttp);
+                    vue_1.provide('invokeBlockAction', invokeBlockAction);
+                    vue_1.provide('configurationValues', props.config.configurationValues);
                 },
                 data: function () {
                     return {
@@ -169,7 +169,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                         return this.finishTimeMs - this.startTimeMs;
                     },
                     pageGuid: function () {
-                        return Index_js_1.default.state.pageGuid;
+                        return Index_1.default.state.pageGuid;
                     }
                 },
                 errorCaptured: function (err) {
@@ -187,7 +187,7 @@ System.register(["../Util/http.js", "../Vendor/Vue/vue.js", "../Store/Index.js",
                         subtitle = "(" + subtitle + ")";
                     }
                     if (nameParts.length) {
-                        Index_js_1.default.commit('reportOnLoadDebugTiming', {
+                        Index_1.default.commit('reportOnLoadDebugTiming', {
                             Title: nameParts[1] || '<Unnamed>',
                             Subtitle: subtitle,
                             StartTimeMs: this.startTimeMs,

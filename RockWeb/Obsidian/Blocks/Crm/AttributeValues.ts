@@ -14,20 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
-import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
-import Loading from '../../Controls/Loading.js';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import { ConfigurationValues } from '../../Index.js';
-import store from '../../Store/Index.js';
-import { areEqual, Guid } from '../../Util/Guid.js';
-import JavaScriptAnchor from '../../Elements/JavaScriptAnchor.js';
-import RockForm from '../../Controls/RockForm.js';
-import TextBox from '../../Elements/TextBox.js';
-import RockButton from '../../Elements/RockButton.js';
-import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
-import AttributeValue from '../../ViewModels/CodeGenerated/AttributeValueViewModel.js';
-import AttributeValuesContainer from '../../Controls/AttributeValuesContainer.js';
+import { defineComponent, inject } from 'vue';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
+import Loading from '../../Controls/Loading';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import { ConfigurationValues } from '../../Index';
+import store from '../../Store/Index';
+import { areEqual, Guid } from '../../Util/Guid';
+import JavaScriptAnchor from '../../Elements/JavaScriptAnchor';
+import RockForm from '../../Controls/RockForm';
+import TextBox from '../../Elements/TextBox';
+import RockButton from '../../Elements/RockButton';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
+import AttributeValue from '../../ViewModels/CodeGenerated/AttributeValueViewModel';
+import AttributeValuesContainer from '../../Controls/AttributeValuesContainer';
 
 export default defineComponent({
     name: 'Crm.AttributeValues',

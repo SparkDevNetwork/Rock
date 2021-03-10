@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, inject, ref } from '../Vendor/Vue/vue.js';
-import { GridContext, RowContext } from './Grid.js';
-import GridColumn from './GridColumn.js';
+import { defineComponent, inject, ref } from 'vue';
+import { GridContext, RowContext } from './Grid';
+import GridColumn from './GridColumn';
 
 export default function OfType<T>() {
     return defineComponent({

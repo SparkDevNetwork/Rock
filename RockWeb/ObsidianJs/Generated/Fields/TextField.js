@@ -1,20 +1,20 @@
-System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js", "../Services/Boolean.js"], function (exports_1, context_1) {
+System.register(["vue", "./Index", "../Elements/TextBox", "../Services/Boolean"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, Index_js_1, TextBox_js_1, Boolean_js_1, fieldTypeGuid, ConfigurationValueKey;
+    var vue_1, Index_1, TextBox_1, Boolean_1, fieldTypeGuid, ConfigurationValueKey;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             },
-            function (Boolean_js_1_1) {
-                Boolean_js_1 = Boolean_js_1_1;
+            function (Boolean_1_1) {
+                Boolean_1 = Boolean_1_1;
             }
         ],
         execute: function () {
@@ -24,12 +24,12 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js",
                 ConfigurationValueKey["MaxCharacters"] = "maxcharacters";
                 ConfigurationValueKey["ShowCountDown"] = "showcountdown";
             })(ConfigurationValueKey || (ConfigurationValueKey = {}));
-            exports_1("default", Index_js_1.registerFieldType(fieldTypeGuid, vue_js_1.defineComponent({
+            exports_1("default", Index_1.registerFieldType(fieldTypeGuid, vue_1.defineComponent({
                 name: 'TextField',
                 components: {
-                    TextBox: TextBox_js_1.default
+                    TextBox: TextBox_1.default
                 },
-                props: Index_js_1.getFieldTypeProps(),
+                props: Index_1.getFieldTypeProps(),
                 data: function () {
                     return {
                         internalValue: this.modelValue
@@ -50,7 +50,7 @@ System.register(["../Vendor/Vue/vue.js", "./Index.js", "../Elements/TextBox.js",
                         }
                         var showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
                         if (showCountDownConfig && showCountDownConfig.Value) {
-                            var showCountDownValue = Boolean_js_1.asBooleanOrNull(showCountDownConfig.Value) || false;
+                            var showCountDownValue = Boolean_1.asBooleanOrNull(showCountDownConfig.Value) || false;
                             if (showCountDownValue) {
                                 attributes.showCountDown = showCountDownValue;
                             }

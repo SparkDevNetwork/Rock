@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
-import { Guid } from '../Util/Guid.js';
-import { getFieldTypeProps, registerFieldType } from './Index.js';
-import { asYesNoOrNull, asTrueFalseOrNull } from '../Services/Boolean.js';
-import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
+import { defineComponent } from 'vue';
+import { Guid } from '../Util/Guid';
+import { getFieldTypeProps, registerFieldType } from './Index';
+import { asYesNoOrNull, asTrueFalseOrNull } from '../Services/Boolean';
+import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
 
 const fieldTypeGuid: Guid = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A';
 

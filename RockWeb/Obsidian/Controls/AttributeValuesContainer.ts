@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import { isNullOrWhitespace } from '../Services/String.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import AttributeValue from '../ViewModels/CodeGenerated/AttributeValueViewModel.js';
-import RockField from './RockField.js';
+import { isNullOrWhitespace } from '../Services/String';
+import { defineComponent, PropType } from 'vue';
+import AttributeValue from '../ViewModels/CodeGenerated/AttributeValueViewModel';
+import RockField from './RockField';
 
 export default defineComponent({
     name: 'AttributeValuesContainer',

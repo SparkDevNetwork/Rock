@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { generateCommonEntityModule } from './Generators.js';
+import { generateCommonEntityModule } from './Generators';
 
 export type CommonEntity = {
     namespace: string;

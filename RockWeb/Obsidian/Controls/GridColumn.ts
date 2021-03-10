@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import JavaScriptAnchor from '../Elements/JavaScriptAnchor.js';
-import { defineComponent, PropType, inject } from '../Vendor/Vue/vue.js';
-import { GridContext, RowContext, SortDirection, SortProperty } from './Grid.js';
+import JavaScriptAnchor from '../Elements/JavaScriptAnchor';
+import { defineComponent, PropType, inject } from 'vue';
+import { GridContext, RowContext, SortDirection, SortProperty } from './Grid';
 
 export default function OfType<T>() {
     return defineComponent({

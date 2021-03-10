@@ -1,24 +1,24 @@
-System.register(["vue", "../Util/RockDate.js", "./RockFormField.js"], function (exports_1, context_1) {
+System.register(["vue", "../Util/RockDate", "./RockFormField"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockDate_js_1, RockFormField_js_1;
+    var vue_1, RockDate_1, RockFormField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
-            function (RockDate_js_1_1) {
-                RockDate_js_1 = RockDate_js_1_1;
+            function (RockDate_1_1) {
+                RockDate_1 = RockDate_1_1;
             },
-            function (RockFormField_js_1_1) {
-                RockFormField_js_1 = RockFormField_js_1_1;
+            function (RockFormField_1_1) {
+                RockFormField_1 = RockFormField_1_1;
             }
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
                 name: 'DatePicker',
                 components: {
-                    RockFormField: RockFormField_js_1.default
+                    RockFormField: RockFormField_1.default
                 },
                 props: {
                     modelValue: {
@@ -36,7 +36,7 @@ System.register(["vue", "../Util/RockDate.js", "./RockFormField.js"], function (
                 },
                 computed: {
                     asRockDateOrNull: function () {
-                        return this.internalValue ? RockDate_js_1.default.toRockDate(new Date(this.internalValue)) : null;
+                        return this.internalValue ? RockDate_1.default.toRockDate(new Date(this.internalValue)) : null;
                     }
                 },
                 methods: {
@@ -55,9 +55,9 @@ System.register(["vue", "../Util/RockDate.js", "./RockFormField.js"], function (
                                 this.internalValue = null;
                                 return;
                             }
-                            var month = RockDate_js_1.default.getMonth(this.modelValue);
-                            var day = RockDate_js_1.default.getDay(this.modelValue);
-                            var year = RockDate_js_1.default.getYear(this.modelValue);
+                            var month = RockDate_1.default.getMonth(this.modelValue);
+                            var day = RockDate_1.default.getDay(this.modelValue);
+                            var year = RockDate_1.default.getYear(this.modelValue);
                             this.internalValue = month + "/" + day + "/" + year;
                         }
                     }

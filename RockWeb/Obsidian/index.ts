@@ -18,7 +18,7 @@ import { App, Component, createApp, markRaw } from 'vue';
 import RockBlock from './Controls/RockBlock';
 import store from './Store/Index';
 import { Guid } from './Util/Guid';
-import './Rules/Index.js';
+import './Rules/Index';
 import Person from './ViewModels/CodeGenerated/PersonViewModel';
 import Entity from './ViewModels/Entity';
 import PageDebugTimings, { DebugTimingViewModel } from './Controls/PageDebugTimings';

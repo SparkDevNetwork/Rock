@@ -1,4 +1,4 @@
-System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], function (exports_1, context_1) {
+System.register(["vue", "../Elements/DropDownList"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,22 +36,22 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], functio
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_js_1, DropDownList_js_1;
+    var vue_1, DropDownList_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (DropDownList_js_1_1) {
-                DropDownList_js_1 = DropDownList_js_1_1;
+            function (DropDownList_1_1) {
+                DropDownList_1 = DropDownList_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'DefinedValuePicker',
                 components: {
-                    DropDownList: DropDownList_js_1.default
+                    DropDownList: DropDownList_1.default
                 },
                 props: {
                     modelValue: {
@@ -69,7 +69,7 @@ System.register(["../Vendor/Vue/vue.js", "../Elements/DropDownList.js"], functio
                 },
                 setup: function () {
                     return {
-                        http: vue_js_1.inject('http')
+                        http: vue_1.inject('http')
                     };
                 },
                 emits: [

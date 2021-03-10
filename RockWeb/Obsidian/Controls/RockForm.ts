@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from 'vue';
+import { defineComponent, provide } from 'vue';
 import { Form } from 'vee-validate';
-import RockValidation from './RockValidation.js';
+import RockValidation from './RockValidation';
+
+export type FormState = {
+    submitCount: number
+};
 
 export default defineComponent({
     name: 'RockForm',
@@ -24,15 +28,25 @@ export default defineComponent({
         Form,
         RockValidation
     },
+    setup() {
+        const formState = {
+            submitCount: 0
+        } as FormState;
+
+        provide('formState', formState);
+
+        return {
+            formState
+        };
+    },
     data() {
         return {
-            errorsToDisplay: [],
-            submitCount: 0
+            errorsToDisplay: []
         };
     },
     methods: {
         onInternalSubmit(handleSubmit, $event) {
-            this.submitCount++;
+            this.formState.submitCount++;
             return handleSubmit($event, this.emitSubmit);
         },
         emitSubmit(payload) {
@@ -41,7 +55,7 @@ export default defineComponent({
     },
     template: `
 <Form as="" #default="{errors, handleSubmit}">
-    <RockValidation :submitCount="submitCount" :errors="errors" />
+    <RockValidation :submitCount="formState.submitCount" :errors="errors" />
     <form @submit="onInternalSubmit(handleSubmit, $event)">
         <slot />
     </form>

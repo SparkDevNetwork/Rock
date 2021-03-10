@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, inject, PropType } from '../Vendor/Vue/vue.js';
-import DropDownList, { DropDownListOption } from '../Elements/DropDownList.js';
-import { BlockHttp } from './RockBlock.js';
-import DefinedValue from '../ViewModels/CodeGenerated/DefinedValueViewModel.js';
+import { defineComponent, PropType, inject } from 'vue';
+import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
+import { BlockHttp } from './RockBlock';
+import DefinedValue from '../ViewModels/CodeGenerated/DefinedValueViewModel';
 
 export default defineComponent({
     name: 'DefinedValuePicker',

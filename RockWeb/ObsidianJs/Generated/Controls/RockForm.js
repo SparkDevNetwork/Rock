@@ -1,6 +1,6 @@
-System.register(["vue", "vee-validate", "./RockValidation.js"], function (exports_1, context_1) {
+System.register(["vue", "vee-validate", "./RockValidation"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, vee_validate_1, RockValidation_js_1;
+    var vue_1, vee_validate_1, RockValidation_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -10,8 +10,8 @@ System.register(["vue", "vee-validate", "./RockValidation.js"], function (export
             function (vee_validate_1_1) {
                 vee_validate_1 = vee_validate_1_1;
             },
-            function (RockValidation_js_1_1) {
-                RockValidation_js_1 = RockValidation_js_1_1;
+            function (RockValidation_1_1) {
+                RockValidation_1 = RockValidation_1_1;
             }
         ],
         execute: function () {
@@ -19,24 +19,32 @@ System.register(["vue", "vee-validate", "./RockValidation.js"], function (export
                 name: 'RockForm',
                 components: {
                     Form: vee_validate_1.Form,
-                    RockValidation: RockValidation_js_1.default
+                    RockValidation: RockValidation_1.default
+                },
+                setup: function () {
+                    var formState = {
+                        submitCount: 0
+                    };
+                    vue_1.provide('formState', formState);
+                    return {
+                        formState: formState
+                    };
                 },
                 data: function () {
                     return {
-                        errorsToDisplay: [],
-                        submitCount: 0
+                        errorsToDisplay: []
                     };
                 },
                 methods: {
                     onInternalSubmit: function (handleSubmit, $event) {
-                        this.submitCount++;
+                        this.formState.submitCount++;
                         return handleSubmit($event, this.emitSubmit);
                     },
                     emitSubmit: function (payload) {
                         this.$emit('submit', payload);
                     }
                 },
-                template: "\n<Form as=\"\" #default=\"{errors, handleSubmit}\">\n    <RockValidation :submitCount=\"submitCount\" :errors=\"errors\" />\n    <form @submit=\"onInternalSubmit(handleSubmit, $event)\">\n        <slot />\n    </form>\n</Form>"
+                template: "\n<Form as=\"\" #default=\"{errors, handleSubmit}\">\n    <RockValidation :submitCount=\"formState.submitCount\" :errors=\"errors\" />\n    <form @submit=\"onInternalSubmit(handleSubmit, $event)\">\n        <slot />\n    </form>\n</Form>"
             }));
         }
     };

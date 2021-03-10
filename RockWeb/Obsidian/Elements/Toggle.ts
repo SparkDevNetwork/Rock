@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import JavaScriptAnchor from './JavaScriptAnchor.js';
+import { defineComponent, PropType } from 'vue';
+import JavaScriptAnchor from './JavaScriptAnchor';
 
 export default defineComponent({
     name: 'Toggle',

@@ -1,75 +1,75 @@
-System.register(["../../Templates/PaneledBlockTemplate.js", "../../Controls/DefinedTypePicker.js", "../../Controls/DefinedValuePicker.js", "../../Controls/CampusPicker.js", "vue", "../../Store/Index.js", "../../Elements/TextBox.js", "../../Elements/EmailBox.js", "../../Elements/CurrencyBox.js", "../../Elements/PanelWidget.js", "../../Elements/DatePicker.js", "../../Elements/BirthdayPicker.js", "../../Elements/NumberUpDown.js", "../../Controls/AddressControl.js"], function (exports_1, context_1) {
+System.register(["../../Templates/PaneledBlockTemplate", "../../Controls/DefinedTypePicker", "../../Controls/DefinedValuePicker", "../../Controls/CampusPicker", "vue", "../../Store/Index", "../../Elements/TextBox", "../../Elements/EmailBox", "../../Elements/CurrencyBox", "../../Elements/PanelWidget", "../../Elements/DatePicker", "../../Elements/BirthdayPicker", "../../Elements/NumberUpDown", "../../Controls/AddressControl"], function (exports_1, context_1) {
     "use strict";
-    var PaneledBlockTemplate_js_1, DefinedTypePicker_js_1, DefinedValuePicker_js_1, CampusPicker_js_1, vue_1, Index_js_1, TextBox_js_1, EmailBox_js_1, CurrencyBox_js_1, PanelWidget_js_1, DatePicker_js_1, BirthdayPicker_js_1, NumberUpDown_js_1, AddressControl_js_1, GalleryAndResult;
+    var PaneledBlockTemplate_1, DefinedTypePicker_1, DefinedValuePicker_1, CampusPicker_1, vue_1, Index_1, TextBox_1, EmailBox_1, CurrencyBox_1, PanelWidget_1, DatePicker_1, BirthdayPicker_1, NumberUpDown_1, AddressControl_1, GalleryAndResult;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (PaneledBlockTemplate_js_1_1) {
-                PaneledBlockTemplate_js_1 = PaneledBlockTemplate_js_1_1;
+            function (PaneledBlockTemplate_1_1) {
+                PaneledBlockTemplate_1 = PaneledBlockTemplate_1_1;
             },
-            function (DefinedTypePicker_js_1_1) {
-                DefinedTypePicker_js_1 = DefinedTypePicker_js_1_1;
+            function (DefinedTypePicker_1_1) {
+                DefinedTypePicker_1 = DefinedTypePicker_1_1;
             },
-            function (DefinedValuePicker_js_1_1) {
-                DefinedValuePicker_js_1 = DefinedValuePicker_js_1_1;
+            function (DefinedValuePicker_1_1) {
+                DefinedValuePicker_1 = DefinedValuePicker_1_1;
             },
-            function (CampusPicker_js_1_1) {
-                CampusPicker_js_1 = CampusPicker_js_1_1;
+            function (CampusPicker_1_1) {
+                CampusPicker_1 = CampusPicker_1_1;
             },
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             },
-            function (EmailBox_js_1_1) {
-                EmailBox_js_1 = EmailBox_js_1_1;
+            function (EmailBox_1_1) {
+                EmailBox_1 = EmailBox_1_1;
             },
-            function (CurrencyBox_js_1_1) {
-                CurrencyBox_js_1 = CurrencyBox_js_1_1;
+            function (CurrencyBox_1_1) {
+                CurrencyBox_1 = CurrencyBox_1_1;
             },
-            function (PanelWidget_js_1_1) {
-                PanelWidget_js_1 = PanelWidget_js_1_1;
+            function (PanelWidget_1_1) {
+                PanelWidget_1 = PanelWidget_1_1;
             },
-            function (DatePicker_js_1_1) {
-                DatePicker_js_1 = DatePicker_js_1_1;
+            function (DatePicker_1_1) {
+                DatePicker_1 = DatePicker_1_1;
             },
-            function (BirthdayPicker_js_1_1) {
-                BirthdayPicker_js_1 = BirthdayPicker_js_1_1;
+            function (BirthdayPicker_1_1) {
+                BirthdayPicker_1 = BirthdayPicker_1_1;
             },
-            function (NumberUpDown_js_1_1) {
-                NumberUpDown_js_1 = NumberUpDown_js_1_1;
+            function (NumberUpDown_1_1) {
+                NumberUpDown_1 = NumberUpDown_1_1;
             },
-            function (AddressControl_js_1_1) {
-                AddressControl_js_1 = AddressControl_js_1_1;
+            function (AddressControl_1_1) {
+                AddressControl_1 = AddressControl_1_1;
             }
         ],
         execute: function () {
             GalleryAndResult = vue_1.defineComponent({
                 name: 'GalleryAndResult',
                 components: {
-                    PanelWidget: PanelWidget_js_1.default
+                    PanelWidget: PanelWidget_1.default
                 },
                 template: "\n<PanelWidget>\n    <template #header><slot name=\"header\" /></template>\n    <div class=\"row\">\n        <div class=\"col-md-6\">\n            <slot name=\"gallery\" />\n        </div>\n        <div class=\"col-md-6\">\n            <slot name=\"result\" />\n        </div>\n    </div>\n</PanelWidget>"
             });
             exports_1("default", vue_1.defineComponent({
                 name: 'Example.ControlGallery',
                 components: {
-                    PaneledBlockTemplate: PaneledBlockTemplate_js_1.default,
-                    DefinedTypePicker: DefinedTypePicker_js_1.default,
-                    DefinedValuePicker: DefinedValuePicker_js_1.default,
-                    CampusPicker: CampusPicker_js_1.default,
+                    PaneledBlockTemplate: PaneledBlockTemplate_1.default,
+                    DefinedTypePicker: DefinedTypePicker_1.default,
+                    DefinedValuePicker: DefinedValuePicker_1.default,
+                    CampusPicker: CampusPicker_1.default,
                     GalleryAndResult: GalleryAndResult,
-                    TextBox: TextBox_js_1.default,
-                    CurrencyBox: CurrencyBox_js_1.default,
-                    EmailBox: EmailBox_js_1.default,
-                    DatePicker: DatePicker_js_1.default,
-                    BirthdayPicker: BirthdayPicker_js_1.default,
-                    NumberUpDown: NumberUpDown_js_1.default,
-                    AddressControl: AddressControl_js_1.default
+                    TextBox: TextBox_1.default,
+                    CurrencyBox: CurrencyBox_1.default,
+                    EmailBox: EmailBox_1.default,
+                    DatePicker: DatePicker_1.default,
+                    BirthdayPicker: BirthdayPicker_1.default,
+                    NumberUpDown: NumberUpDown_1.default,
+                    AddressControl: AddressControl_1.default
                 },
                 data: function () {
                     return {
@@ -82,13 +82,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Controls/Defi
                         email: 'joe@joes.co',
                         date: null,
                         numberUpDown: 1,
-                        address: {
-                            Street1: '',
-                            Street2: '',
-                            City: '',
-                            State: '',
-                            PostalCode: ''
-                        },
+                        address: AddressControl_1.getDefaultAddressControlModel(),
                         birthday: {
                             month: 1,
                             day: 1,
@@ -103,7 +97,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Controls/Defi
                 },
                 computed: {
                     campus: function () {
-                        return Index_js_1.default.getters['campuses/getByGuid'](this.campusGuid) || null;
+                        return Index_1.default.getters['campuses/getByGuid'](this.campusGuid) || null;
                     },
                     campusName: function () {
                         var _a;
@@ -113,7 +107,7 @@ System.register(["../../Templates/PaneledBlockTemplate.js", "../../Controls/Defi
                         return this.campus ? this.campus.Id : null;
                     },
                     definedTypeName: function () {
-                        var definedType = Index_js_1.default.getters['definedTypes/getByGuid'](this.definedTypeGuid);
+                        var definedType = Index_1.default.getters['definedTypes/getByGuid'](this.definedTypeGuid);
                         return (definedType === null || definedType === void 0 ? void 0 : definedType.Name) || '';
                     },
                     definedValueName: function () {

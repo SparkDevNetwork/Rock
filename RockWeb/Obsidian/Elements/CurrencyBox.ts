@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { Field } from '../Vendor/VeeValidate/vee-validate.js';
-import { asFormattedString, toNumberOrNull } from '../Services/Number.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import RockLabel from './RockLabel.js';
-import { newGuid } from '../Util/Guid.js';
+import { Field } from 'vee-validate';
+import { asFormattedString, toNumberOrNull } from '../Services/Number';
+import { defineComponent, PropType } from 'vue';
+import RockLabel from './RockLabel';
+import { newGuid } from '../Util/Guid';
 
 export default defineComponent({
     name: 'CurrencyBox',

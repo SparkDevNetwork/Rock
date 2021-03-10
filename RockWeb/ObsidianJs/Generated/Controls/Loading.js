@@ -1,21 +1,21 @@
-System.register(["../Elements/LoadingIndicator.js", "../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["../Elements/LoadingIndicator", "vue"], function (exports_1, context_1) {
     "use strict";
-    var LoadingIndicator_js_1, vue_js_1;
+    var LoadingIndicator_1, vue_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (LoadingIndicator_js_1_1) {
-                LoadingIndicator_js_1 = LoadingIndicator_js_1_1;
+            function (LoadingIndicator_1_1) {
+                LoadingIndicator_1 = LoadingIndicator_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Loading',
                 components: {
-                    LoadingIndicator: LoadingIndicator_js_1.default
+                    LoadingIndicator: LoadingIndicator_1.default
                 },
                 props: {
                     isLoading: {

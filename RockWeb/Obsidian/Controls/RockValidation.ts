@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import Alert from '../Elements/Alert.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import Alert from '../Elements/Alert';
+import { defineComponent, PropType } from 'vue';
 
 export default defineComponent({
     name: 'RockValidation',

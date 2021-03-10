@@ -15,11 +15,11 @@
 // </copyright>
 //
 import { defineComponent } from 'vue';
-import { Guid } from '../Util/Guid.js';
-import { registerFieldType, getFieldTypeProps } from './Index.js';
-import DefinedValuePicker from '../Controls/DefinedValuePicker.js';
-import { toNumberOrNull } from '../Services/Number.js';
-import DefinedType from '../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
+import { Guid } from '../Util/Guid';
+import { registerFieldType, getFieldTypeProps } from './Index';
+import DefinedValuePicker from '../Controls/DefinedValuePicker';
+import { toNumberOrNull } from '../Services/Number';
+import DefinedType from '../ViewModels/CodeGenerated/DefinedTypeViewModel';
 
 const fieldTypeGuid: Guid = '59D5A94C-94A0-4630-B80A-BB25697D74C7';
 

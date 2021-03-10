@@ -1,21 +1,21 @@
-System.register(["../Vendor/Vue/vue.js", "./JavaScriptAnchor.js"], function (exports_1, context_1) {
+System.register(["vue", "./JavaScriptAnchor"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, JavaScriptAnchor_js_1;
+    var vue_1, JavaScriptAnchor_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (JavaScriptAnchor_js_1_1) {
-                JavaScriptAnchor_js_1 = JavaScriptAnchor_js_1_1;
+            function (JavaScriptAnchor_1_1) {
+                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Toggle',
                 components: {
-                    JavaScriptAnchor: JavaScriptAnchor_js_1.default
+                    JavaScriptAnchor: JavaScriptAnchor_1.default
                 },
                 props: {
                     modelValue: {

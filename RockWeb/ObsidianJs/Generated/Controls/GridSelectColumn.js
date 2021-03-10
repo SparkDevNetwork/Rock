@@ -1,19 +1,19 @@
-System.register(["../Vendor/Vue/vue.js", "./GridColumn.js"], function (exports_1, context_1) {
+System.register(["vue", "./GridColumn"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, GridColumn_js_1;
+    var vue_1, GridColumn_1;
     var __moduleName = context_1 && context_1.id;
     function OfType() {
-        return vue_js_1.defineComponent({
+        return vue_1.defineComponent({
             name: 'GridSelectColumn',
             components: {
-                GridColumn: GridColumn_js_1.default()
+                GridColumn: GridColumn_1.default()
             },
             setup: function () {
-                var gridContext = vue_js_1.inject('gridContext');
-                var rowContext = vue_js_1.inject('rowContext');
+                var gridContext = vue_1.inject('gridContext');
+                var rowContext = vue_1.inject('rowContext');
                 var selectAllRows = gridContext.selectAllRows;
                 var isThisRowSelected = gridContext.selectedRowIds[rowContext.rowId];
-                var isSelected = vue_js_1.ref(selectAllRows || isThisRowSelected);
+                var isSelected = vue_1.ref(selectAllRows || isThisRowSelected);
                 return {
                     gridContext: gridContext,
                     rowContext: rowContext,
@@ -52,11 +52,11 @@ System.register(["../Vendor/Vue/vue.js", "./GridColumn.js"], function (exports_1
     exports_1("default", OfType);
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (GridColumn_js_1_1) {
-                GridColumn_js_1 = GridColumn_js_1_1;
+            function (GridColumn_1_1) {
+                GridColumn_1 = GridColumn_1_1;
             }
         ],
         execute: function () {

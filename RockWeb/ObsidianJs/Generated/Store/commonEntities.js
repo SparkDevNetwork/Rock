@@ -1,11 +1,11 @@
-System.register(["./Generators.js"], function (exports_1, context_1) {
+System.register(["./Generators"], function (exports_1, context_1) {
     "use strict";
-    var Generators_js_1, commonEntities, commonEntityModules;
+    var Generators_1, commonEntities, commonEntityModules;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (Generators_js_1_1) {
-                Generators_js_1 = Generators_js_1_1;
+            function (Generators_1_1) {
+                Generators_1 = Generators_1_1;
             }
         ],
         execute: function () {
@@ -18,7 +18,7 @@ System.register(["./Generators.js"], function (exports_1, context_1) {
             // Generate a module for each config
             for (var _i = 0, commonEntities_1 = commonEntities; _i < commonEntities_1.length; _i++) {
                 var commonEntity = commonEntities_1[_i];
-                commonEntityModules[commonEntity.namespace] = Generators_js_1.generateCommonEntityModule(commonEntity);
+                commonEntityModules[commonEntity.namespace] = Generators_1.generateCommonEntityModule(commonEntity);
             }
         }
     };

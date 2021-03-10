@@ -15,8 +15,8 @@
 // </copyright>
 //
 
-import { Guid } from '../../../Util/Guid.js';
-import Entity from '../../../ViewModels/Entity.js';
+import { Guid } from '../../../Util/Guid';
+import Entity from '../../../ViewModels/Entity';
 
 export default interface PluginWidget extends Entity {
     Id: number;

@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import LoadingIndicator from '../Elements/LoadingIndicator.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import LoadingIndicator from '../Elements/LoadingIndicator';
+import { defineComponent, PropType } from 'vue';
 
 export default defineComponent({
     name: 'Loading',

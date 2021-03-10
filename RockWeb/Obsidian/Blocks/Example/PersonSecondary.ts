@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import bus from '../../Util/Bus.js';
-import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
-import SecondaryBlock from '../../Controls/SecondaryBlock.js';
-import RockButton from '../../Elements/RockButton.js';
-import TextBox from '../../Elements/TextBox.js';
-import { defineComponent } from '../../Vendor/Vue/vue.js';
-import store from '../../Store/Index.js';
-import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
+import bus from '../../Util/Bus';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
+import SecondaryBlock from '../../Controls/SecondaryBlock';
+import RockButton from '../../Elements/RockButton';
+import TextBox from '../../Elements/TextBox';
+import { defineComponent } from 'vue';
+import store from '../../Store/Index';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
 
 export default defineComponent({
     name: 'Example.PersonSecondary',

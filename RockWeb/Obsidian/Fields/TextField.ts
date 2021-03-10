@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
-import { Guid } from '../Util/Guid.js';
-import { registerFieldType, getFieldTypeProps } from './Index.js';
-import TextBox from '../Elements/TextBox.js';
-import { asBooleanOrNull } from '../Services/Boolean.js';
+import { defineComponent } from 'vue';
+import { Guid } from '../Util/Guid';
+import { registerFieldType, getFieldTypeProps } from './Index';
+import TextBox from '../Elements/TextBox';
+import { asBooleanOrNull } from '../Services/Boolean';
 
 const fieldTypeGuid: Guid = '9C204CD0-1233-41C5-818A-C5DA439445AA';
 

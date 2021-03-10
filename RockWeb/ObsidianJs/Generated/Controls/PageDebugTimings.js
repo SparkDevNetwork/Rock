@@ -1,4 +1,4 @@
-System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Index.js"], function (exports_1, context_1) {
+System.register(["../Services/Number", "vue", "../Store/Index"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -11,22 +11,22 @@ System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Inde
         };
         return __assign.apply(this, arguments);
     };
-    var Number_js_1, vue_js_1, Index_js_1, PageDebugTimingRow;
+    var Number_1, vue_1, Index_1, PageDebugTimingRow;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (Number_js_1_1) {
-                Number_js_1 = Number_js_1_1;
+            function (Number_1_1) {
+                Number_1 = Number_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             }
         ],
         execute: function () {
-            PageDebugTimingRow = vue_js_1.defineComponent({
+            PageDebugTimingRow = vue_1.defineComponent({
                 name: 'PageDebugTimingRow',
                 props: {
                     viewModel: {
@@ -43,7 +43,7 @@ System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Inde
                     }
                 },
                 methods: {
-                    numberAsFormattedString: Number_js_1.asFormattedString
+                    numberAsFormattedString: Number_1.asFormattedString
                 },
                 computed: {
                     indentStyle: function () {
@@ -76,7 +76,7 @@ System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Inde
                 },
                 template: "\n<tr>\n    <td class=\"debug-timestamp\">{{numberAsFormattedString(viewModel.TimestampMs, 2)}} ms</td>\n    <td :style=\"indentStyle\">\n        <strong v-if=\"viewModel.IsTitleBold\">\n            {{viewModel.Title}}\n        </strong>\n        <template v-else>\n            {{viewModel.Title}}\n        </template>\n        <small v-if=\"viewModel.SubTitle\" style=\"color:#A4A4A4; padding-left: 3px;\">\n            {{viewModel.SubTitle}}\n        </small>\n    </td>\n    <td class=\"debug-timestamp\">{{numberAsFormattedString(viewModel.DurationMs, 2)}} ms</td>\n    <td class=\"debug-waterfall\">\n        <span class=\"debug-chart-bar\" :title=\"waterfallTitle\" :style=\"waterfallStyle\"></span>\n    </td>\n</tr>"
             });
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'PageDebugTimings',
                 components: {
                     PageDebugTimingRow: PageDebugTimingRow
@@ -121,7 +121,7 @@ System.register(["../Services/Number.js", "../Vendor/Vue/vue.js", "../Store/Inde
                         return this.clientRelativeEndTimeMs - this.serverStartTimeMs;
                     },
                     clientViewModels: function () {
-                        return Index_js_1.default.state.debugTimings;
+                        return Index_1.default.state.debugTimings;
                     },
                     relativeClientViewModels: function () {
                         var _this = this;

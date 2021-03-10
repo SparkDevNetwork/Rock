@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,12 +52,15 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, Alert_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, AddressControl_1, Alert_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
+            },
+            function (AddressControl_1_1) {
+                AddressControl_1 = AddressControl_1_1;
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
@@ -76,68 +79,96 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                     field: {
                         type: Object,
                         required: true
+                    },
+                    fieldValues: {
+                        type: Object,
+                        required: true
+                    },
+                    isKnownFamilyMember: {
+                        type: Boolean,
+                        required: true
                     }
                 },
                 data: function () {
                     return {
                         fieldControlComponent: null,
-                        fieldControlComponentProps: {},
-                        loading: true,
-                        value: ''
+                        loading: true
                     };
+                },
+                computed: {
+                    fieldControlComponentProps: function () {
+                        var props = {
+                            rules: this.field.IsRequired ? 'required' : ''
+                        };
+                        switch (this.field.PersonFieldType) {
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName:
+                                props.label = 'First Name';
+                                props.disabled = this.isKnownFamilyMember;
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.LastName:
+                                props.label = 'Last Name';
+                                props.disabled = this.isKnownFamilyMember;
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.MiddleName:
+                                props.label = 'Middle Name';
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Campus:
+                                props.label = 'Campus';
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Email:
+                                props.label = 'Email';
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Gender:
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
+                                props.label = 'Birthday';
+                                break;
+                            case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
+                                break;
+                        }
+                        return props;
+                    }
                 },
                 watch: {
                     field: {
                         immediate: true,
                         handler: function () {
                             return __awaiter(this, void 0, void 0, function () {
-                                var componentPath, props, componentModule, _a, component;
+                                var componentPath, componentModule, _a, component;
                                 return __generator(this, function (_b) {
                                     switch (_b.label) {
                                         case 0:
                                             this.loading = true;
                                             componentPath = '';
-                                            props = {
-                                                rules: this.field.IsRequired ? 'required' : ''
-                                            };
                                             switch (this.field.PersonFieldType) {
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName:
                                                     componentPath = 'Elements/TextBox';
-                                                    props.label = 'First Name';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.LastName:
                                                     componentPath = 'Elements/TextBox';
-                                                    props.label = 'Last Name';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.MiddleName:
                                                     componentPath = 'Elements/TextBox';
-                                                    props.label = 'Middle Name';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Campus:
                                                     componentPath = 'Controls/CampusPicker';
-                                                    props.label = 'Campus';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Email:
                                                     componentPath = 'Elements/EmailBox';
-                                                    props.label = 'Email';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Gender:
                                                     componentPath = 'Elements/GenderDropDownList';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
-                                                    props.label = 'Birthday';
                                                     componentPath = 'Elements/BirthdayPicker';
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
                                                     componentPath = 'Controls/AddressControl';
-                                                    this.value = {
-                                                        Street1: '',
-                                                        Street2: '',
-                                                        City: '',
-                                                        State: '',
-                                                        PostalCode: ''
-                                                    };
+                                                    this.fieldValues[this.field.Guid] = AddressControl_1.getDefaultAddressControlModel();
                                                     break;
+                                            }
+                                            if (!(this.field.Guid in this.fieldValues)) {
+                                                this.fieldValues[this.field.Guid] = '';
                                             }
                                             if (!componentPath) return [3 /*break*/, 2];
                                             return [4 /*yield*/, context_1.import("../../../" + componentPath)];
@@ -151,11 +182,9 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                                             componentModule = _a;
                                             component = componentModule ? (componentModule.default || componentModule) : null;
                                             if (component) {
-                                                this.fieldControlComponentProps = props;
                                                 this.fieldControlComponent = vue_1.markRaw(component);
                                             }
                                             else {
-                                                this.fieldControlComponentProps = {};
                                                 this.fieldControlComponent = null;
                                             }
                                             this.loading = false;
@@ -166,7 +195,7 @@ System.register(["vue", "../../../Elements/Alert", "./RegistrationEntryBlockView
                         }
                     }
                 },
-                template: "\n<component v-if=\"fieldControlComponent\" :is=\"fieldControlComponent\" v-bind=\"fieldControlComponentProps\" v-model=\"value\" />\n<Alert v-else-if=\"!loading\" alertType=\"danger\">Could not resolve person field</Alert>"
+                template: "\n<component v-if=\"fieldControlComponent\" :is=\"fieldControlComponent\" v-bind=\"fieldControlComponentProps\" v-model=\"fieldValues[field.Guid]\" />\n<Alert v-else-if=\"!loading\" alertType=\"danger\">Could not resolve person field</Alert>"
             }));
         }
     };

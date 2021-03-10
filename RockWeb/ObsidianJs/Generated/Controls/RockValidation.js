@@ -1,21 +1,21 @@
-System.register(["../Elements/Alert.js", "../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["../Elements/Alert", "vue"], function (exports_1, context_1) {
     "use strict";
-    var Alert_js_1, vue_js_1;
+    var Alert_1, vue_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (Alert_js_1_1) {
-                Alert_js_1 = Alert_js_1_1;
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'RockValidation',
                 components: {
-                    Alert: Alert_js_1.default
+                    Alert: Alert_1.default
                 },
                 props: {
                     errors: {

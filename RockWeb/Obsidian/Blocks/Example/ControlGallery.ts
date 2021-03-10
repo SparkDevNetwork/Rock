@@ -14,24 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
-import DefinedTypePicker from '../../Controls/DefinedTypePicker.js';
-import DefinedValuePicker from '../../Controls/DefinedValuePicker.js';
-import CampusPicker from '../../Controls/CampusPicker.js';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
+import DefinedTypePicker from '../../Controls/DefinedTypePicker';
+import DefinedValuePicker from '../../Controls/DefinedValuePicker';
+import CampusPicker from '../../Controls/CampusPicker';
 import { defineComponent } from 'vue';
-import store from '../../Store/Index.js';
-import TextBox from '../../Elements/TextBox.js';
-import EmailBox from '../../Elements/EmailBox.js';
-import DefinedValue from '../../ViewModels/CodeGenerated/DefinedValueViewModel.js';
-import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
-import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel.js';
-import CurrencyBox from '../../Elements/CurrencyBox.js';
-import PanelWidget from '../../Elements/PanelWidget.js';
-import DatePicker from '../../Elements/DatePicker.js';
-import { RockDateType } from '../../Util/RockDate.js';
-import BirthdayPicker from '../../Elements/BirthdayPicker.js';
-import NumberUpDown from '../../Elements/NumberUpDown.js';
-import AddressControl, { AddressControlModel } from '../../Controls/AddressControl.js';
+import store from '../../Store/Index';
+import TextBox from '../../Elements/TextBox';
+import EmailBox from '../../Elements/EmailBox';
+import DefinedValue from '../../ViewModels/CodeGenerated/DefinedValueViewModel';
+import Campus from '../../ViewModels/CodeGenerated/CampusViewModel';
+import DefinedType from '../../ViewModels/CodeGenerated/DefinedTypeViewModel';
+import CurrencyBox from '../../Elements/CurrencyBox';
+import PanelWidget from '../../Elements/PanelWidget';
+import DatePicker from '../../Elements/DatePicker';
+import { RockDateType } from '../../Util/RockDate';
+import BirthdayPicker from '../../Elements/BirthdayPicker';
+import NumberUpDown from '../../Elements/NumberUpDown';
+import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -79,13 +79,7 @@ export default defineComponent({
             email: 'joe@joes.co',
             date: null as RockDateType | null,
             numberUpDown: 1,
-            address: {
-                Street1: '',
-                Street2: '',
-                City: '',
-                State: '',
-                PostalCode: ''
-            } as AddressControlModel,
+            address: getDefaultAddressControlModel(),
             birthday: {
                 month: 1,
                 day: 1,

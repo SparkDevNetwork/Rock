@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from 'vue';
-import RockFormField from './RockFormField.js';
+import RockFormField from './RockFormField';
 
 export const NumberUpDownInternal = defineComponent({
     name: 'NumberUpDownInternal',

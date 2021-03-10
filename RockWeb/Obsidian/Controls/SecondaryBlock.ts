@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../Vendor/Vue/vue.js';
-import store from '../Store/Index.js';
+import { defineComponent } from 'vue';
+import store from '../Store/Index';
 
 export default defineComponent({
     name: 'SecondaryBlock',

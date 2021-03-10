@@ -15,8 +15,8 @@
 // </copyright>
 //
 import { defineComponent, PropType } from 'vue';
-import RockDate, { RockDateType } from '../Util/RockDate.js';
-import RockFormField from './RockFormField.js';
+import RockDate, { RockDateType } from '../Util/RockDate';
+import RockFormField from './RockFormField';
 
 export default defineComponent({
     name: 'DatePicker',

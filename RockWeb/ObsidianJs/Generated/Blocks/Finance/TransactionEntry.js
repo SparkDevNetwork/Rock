@@ -1,4 +1,4 @@
-System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValuePicker.js", "../../Elements/CurrencyBox.js", "../../Vendor/Vue/vue.js", "../../SystemGuid/DefinedType.js", "../../Elements/DatePicker.js", "../../Elements/RockButton.js", "../../Util/Guid.js", "../../Elements/Alert.js", "../../Services/Number.js", "../../Elements/Toggle.js", "../../Store/Index.js", "../../Elements/TextBox.js", "../../Services/String.js", "../../Util/RockDate.js"], function (exports_1, context_1) {
+System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePicker", "../../Elements/CurrencyBox", "vue", "../../SystemGuid/DefinedType", "../../Elements/DatePicker", "../../Elements/RockButton", "../../Util/Guid", "../../Elements/Alert", "../../Services/Number", "../../Elements/Toggle", "../../Store/Index", "../../Elements/TextBox", "../../Services/String", "../../Util/RockDate"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,83 +36,83 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var CampusPicker_js_1, DefinedValuePicker_js_1, CurrencyBox_js_1, vue_js_1, DefinedType_js_1, DatePicker_js_1, RockButton_js_1, Guid_js_1, Alert_js_1, Number_js_1, Toggle_js_1, Index_js_1, TextBox_js_1, String_js_1, RockDate_js_1;
+    var CampusPicker_1, DefinedValuePicker_1, CurrencyBox_1, vue_1, DefinedType_1, DatePicker_1, RockButton_1, Guid_1, Alert_1, Number_1, Toggle_1, Index_1, TextBox_1, String_1, RockDate_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (CampusPicker_js_1_1) {
-                CampusPicker_js_1 = CampusPicker_js_1_1;
+            function (CampusPicker_1_1) {
+                CampusPicker_1 = CampusPicker_1_1;
             },
-            function (DefinedValuePicker_js_1_1) {
-                DefinedValuePicker_js_1 = DefinedValuePicker_js_1_1;
+            function (DefinedValuePicker_1_1) {
+                DefinedValuePicker_1 = DefinedValuePicker_1_1;
             },
-            function (CurrencyBox_js_1_1) {
-                CurrencyBox_js_1 = CurrencyBox_js_1_1;
+            function (CurrencyBox_1_1) {
+                CurrencyBox_1 = CurrencyBox_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (DefinedType_js_1_1) {
-                DefinedType_js_1 = DefinedType_js_1_1;
+            function (DefinedType_1_1) {
+                DefinedType_1 = DefinedType_1_1;
             },
-            function (DatePicker_js_1_1) {
-                DatePicker_js_1 = DatePicker_js_1_1;
+            function (DatePicker_1_1) {
+                DatePicker_1 = DatePicker_1_1;
             },
-            function (RockButton_js_1_1) {
-                RockButton_js_1 = RockButton_js_1_1;
+            function (RockButton_1_1) {
+                RockButton_1 = RockButton_1_1;
             },
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
-            function (Alert_js_1_1) {
-                Alert_js_1 = Alert_js_1_1;
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             },
-            function (Number_js_1_1) {
-                Number_js_1 = Number_js_1_1;
+            function (Number_1_1) {
+                Number_1 = Number_1_1;
             },
-            function (Toggle_js_1_1) {
-                Toggle_js_1 = Toggle_js_1_1;
+            function (Toggle_1_1) {
+                Toggle_1 = Toggle_1_1;
             },
-            function (Index_js_1_1) {
-                Index_js_1 = Index_js_1_1;
+            function (Index_1_1) {
+                Index_1 = Index_1_1;
             },
-            function (TextBox_js_1_1) {
-                TextBox_js_1 = TextBox_js_1_1;
+            function (TextBox_1_1) {
+                TextBox_1 = TextBox_1_1;
             },
-            function (String_js_1_1) {
-                String_js_1 = String_js_1_1;
+            function (String_1_1) {
+                String_1 = String_1_1;
             },
-            function (RockDate_js_1_1) {
-                RockDate_js_1 = RockDate_js_1_1;
+            function (RockDate_1_1) {
+                RockDate_1 = RockDate_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Finance.TransactionEntry',
                 components: {
-                    CurrencyBox: CurrencyBox_js_1.default,
-                    CampusPicker: CampusPicker_js_1.default,
-                    DefinedValuePicker: DefinedValuePicker_js_1.default,
-                    DatePicker: DatePicker_js_1.default,
-                    RockButton: RockButton_js_1.default,
-                    Alert: Alert_js_1.default,
-                    Toggle: Toggle_js_1.default,
-                    TextBox: TextBox_js_1.default
+                    CurrencyBox: CurrencyBox_1.default,
+                    CampusPicker: CampusPicker_1.default,
+                    DefinedValuePicker: DefinedValuePicker_1.default,
+                    DatePicker: DatePicker_1.default,
+                    RockButton: RockButton_1.default,
+                    Alert: Alert_1.default,
+                    Toggle: Toggle_1.default,
+                    TextBox: TextBox_1.default
                 },
                 setup: function () {
                     return {
-                        invokeBlockAction: vue_js_1.inject('invokeBlockAction'),
-                        configurationValues: vue_js_1.inject('configurationValues')
+                        invokeBlockAction: vue_1.inject('invokeBlockAction'),
+                        configurationValues: vue_1.inject('configurationValues')
                     };
                 },
                 data: function () {
                     return {
-                        transactionGuid: Guid_js_1.newGuid(),
+                        transactionGuid: Guid_1.newGuid(),
                         criticalError: '',
                         doGatewayControlSubmit: false,
                         pageIndex: 1,
                         page1Error: '',
-                        frequencyDefinedTypeGuid: DefinedType_js_1.FINANCIAL_FREQUENCY,
+                        frequencyDefinedTypeGuid: DefinedType_1.FINANCIAL_FREQUENCY,
                         gatewayControl: null,
                         args: {
                             IsGivingAsPerson: true,
@@ -136,7 +136,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                             CampusGuid: '',
                             BusinessGuid: null,
                             FrequencyValueGuid: '',
-                            GiftDate: RockDate_js_1.default.newDate(),
+                            GiftDate: RockDate_1.default.newDate(),
                             IsGiveAnonymously: false
                         }
                     };
@@ -150,25 +150,25 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                         return total;
                     },
                     totalAmountFormatted: function () {
-                        return "$" + Number_js_1.asFormattedString(this.totalAmount);
+                        return "$" + Number_1.asFormattedString(this.totalAmount);
                     },
                     gatewayControlSettings: function () {
                         var blockSettings = this.configurationValues || {};
                         return blockSettings['GatewayControlSettings'] || {};
                     },
                     currentPerson: function () {
-                        return Index_js_1.default.state.currentPerson;
+                        return Index_1.default.state.currentPerson;
                     },
                     accounts: function () {
                         return this.configurationValues['FinancialAccounts'] || [];
                     },
                     campus: function () {
-                        return Index_js_1.default.getters['campuses/getByGuid'](this.args.CampusGuid) || null;
+                        return Index_1.default.getters['campuses/getByGuid'](this.args.CampusGuid) || null;
                     },
                     accountAndCampusString: function () {
                         var accountNames = [];
                         var _loop_1 = function (accountGuid) {
-                            var account = this_1.accounts.find(function (a) { return Guid_js_1.areEqual(accountGuid, a.Guid); });
+                            var account = this_1.accounts.find(function (a) { return Guid_1.areEqual(accountGuid, a.Guid); });
                             if (!account || !account.PublicName) {
                                 return "continue";
                             }
@@ -179,9 +179,9 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                             _loop_1(accountGuid);
                         }
                         if (this.campus) {
-                            return String_js_1.asCommaAnd(accountNames) + " - " + this.campus.Name;
+                            return String_1.asCommaAnd(accountNames) + " - " + this.campus.Name;
                         }
-                        return String_js_1.asCommaAnd(accountNames);
+                        return String_1.asCommaAnd(accountNames);
                     }
                 },
                 methods: {
@@ -255,7 +255,7 @@ System.register(["../../Controls/CampusPicker.js", "../../Controls/DefinedValueP
                                         (controlComponentModule.default || controlComponentModule) :
                                         null;
                                     if (gatewayControl) {
-                                        this.gatewayControl = vue_js_1.markRaw(gatewayControl);
+                                        this.gatewayControl = vue_1.markRaw(gatewayControl);
                                     }
                                     _a.label = 2;
                                 case 2:

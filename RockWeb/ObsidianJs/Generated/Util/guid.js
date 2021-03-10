@@ -1,6 +1,5 @@
 System.register([], function (exports_1, context_1) {
     "use strict";
-    var EmptyGuid;
     var __moduleName = context_1 && context_1.id;
     /**
     * Generates a new Guid
@@ -33,7 +32,6 @@ System.register([], function (exports_1, context_1) {
     return {
         setters: [],
         execute: function () {
-            exports_1("EmptyGuid", EmptyGuid = '');
             exports_1("default", {
                 newGuid: newGuid,
                 normalize: normalize,

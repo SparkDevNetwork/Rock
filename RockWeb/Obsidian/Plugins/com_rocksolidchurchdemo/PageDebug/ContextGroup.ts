@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from '../../../Vendor/Vue/vue.js';
-import PaneledBlockTemplate from '../../../Templates/PaneledBlockTemplate.js';
-import store from '../../../Store/Index.js';
+import { defineComponent } from 'vue';
+import PaneledBlockTemplate from '../../../Templates/PaneledBlockTemplate';
+import store from '../../../Store/Index';
 
 export default defineComponent({
     name: 'com_rocksolidchurchdemo.PageDebug.ContextGroup',

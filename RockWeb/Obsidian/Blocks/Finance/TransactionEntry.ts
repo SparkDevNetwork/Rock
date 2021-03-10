@@ -14,26 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-import CampusPicker from '../../Controls/CampusPicker.js';
-import DefinedValuePicker from '../../Controls/DefinedValuePicker.js';
-import CurrencyBox from '../../Elements/CurrencyBox.js';
-import { Component, defineComponent, inject, markRaw } from '../../Vendor/Vue/vue.js';
-import { FINANCIAL_FREQUENCY } from '../../SystemGuid/DefinedType.js';
-import DatePicker from '../../Elements/DatePicker.js';
-import RockButton from '../../Elements/RockButton.js';
-import { areEqual, Guid, newGuid } from '../../Util/Guid.js';
-import Alert from '../../Elements/Alert.js';
-import { asFormattedString } from '../../Services/Number.js';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import { ConfigurationValues } from '../../Index.js';
-import Toggle from '../../Elements/Toggle.js';
-import Person from '../../ViewModels/CodeGenerated/PersonViewModel.js';
-import store from '../../Store/Index.js';
-import TextBox from '../../Elements/TextBox.js';
-import FinancialAccount from '../../ViewModels/CodeGenerated/FinancialAccountViewModel.js';
-import { asCommaAnd } from '../../Services/String.js';
-import Campus from '../../ViewModels/CodeGenerated/CampusViewModel.js';
-import RockDate, { RockDateType } from '../../Util/RockDate.js';
+import CampusPicker from '../../Controls/CampusPicker';
+import DefinedValuePicker from '../../Controls/DefinedValuePicker';
+import CurrencyBox from '../../Elements/CurrencyBox';
+import { defineComponent, inject, Component, markRaw } from 'vue';
+import { FINANCIAL_FREQUENCY } from '../../SystemGuid/DefinedType';
+import DatePicker from '../../Elements/DatePicker';
+import RockButton from '../../Elements/RockButton';
+import { areEqual, Guid, newGuid } from '../../Util/Guid';
+import Alert from '../../Elements/Alert';
+import { asFormattedString } from '../../Services/Number';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import { ConfigurationValues } from '../../Index';
+import Toggle from '../../Elements/Toggle';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
+import store from '../../Store/Index';
+import TextBox from '../../Elements/TextBox';
+import FinancialAccount from '../../ViewModels/CodeGenerated/FinancialAccountViewModel';
+import { asCommaAnd } from '../../Services/String';
+import Campus from '../../ViewModels/CodeGenerated/CampusViewModel';
+import RockDate, { RockDateType } from '../../Util/RockDate';
 
 export type ProcessTransactionArgs = {
     IsGivingAsPerson: boolean;

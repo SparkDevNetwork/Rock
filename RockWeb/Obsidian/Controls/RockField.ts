@@ -16,7 +16,7 @@
 //
 import { getFieldTypeComponent } from '../Fields/Index';
 import { Guid } from '../Util/Guid';
-import { Component, defineComponent, PropType } from '../Vendor/Vue/vue';
+import { Component, defineComponent, PropType } from 'vue';
 
 // Import and assign TextField because it is the fallback
 import TextField from '../Fields/TextField';

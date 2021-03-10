@@ -1,31 +1,31 @@
-System.register(["../Vendor/VeeValidate/vee-validate.js", "../Services/Number.js", "../Vendor/Vue/vue.js", "./RockLabel.js", "../Util/Guid.js"], function (exports_1, context_1) {
+System.register(["vee-validate", "../Services/Number", "vue", "./RockLabel", "../Util/Guid"], function (exports_1, context_1) {
     "use strict";
-    var vee_validate_js_1, Number_js_1, vue_js_1, RockLabel_js_1, Guid_js_1;
+    var vee_validate_1, Number_1, vue_1, RockLabel_1, Guid_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vee_validate_js_1_1) {
-                vee_validate_js_1 = vee_validate_js_1_1;
+            function (vee_validate_1_1) {
+                vee_validate_1 = vee_validate_1_1;
             },
-            function (Number_js_1_1) {
-                Number_js_1 = Number_js_1_1;
+            function (Number_1_1) {
+                Number_1 = Number_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (RockLabel_js_1_1) {
-                RockLabel_js_1 = RockLabel_js_1_1;
+            function (RockLabel_1_1) {
+                RockLabel_1 = RockLabel_1_1;
             },
-            function (Guid_js_1_1) {
-                Guid_js_1 = Guid_js_1_1;
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'CurrencyBox',
                 components: {
-                    RockLabel: RockLabel_js_1.default,
-                    Field: vee_validate_js_1.Field
+                    RockLabel: RockLabel_1.default,
+                    Field: vee_validate_1.Field
                 },
                 props: {
                     modelValue: {
@@ -54,13 +54,13 @@ System.register(["../Vendor/VeeValidate/vee-validate.js", "../Services/Number.js
                 ],
                 data: function () {
                     return {
-                        uniqueId: "rock-currencybox-" + Guid_js_1.newGuid(),
+                        uniqueId: "rock-currencybox-" + Guid_1.newGuid(),
                         internalValue: ''
                     };
                 },
                 methods: {
                     onChange: function () {
-                        this.internalValue = Number_js_1.asFormattedString(this.modelValue);
+                        this.internalValue = Number_1.asFormattedString(this.modelValue);
                     }
                 },
                 computed: {
@@ -70,12 +70,12 @@ System.register(["../Vendor/VeeValidate/vee-validate.js", "../Services/Number.js
                 },
                 watch: {
                     internalValue: function () {
-                        this.$emit('update:modelValue', Number_js_1.toNumberOrNull(this.internalValue));
+                        this.$emit('update:modelValue', Number_1.toNumberOrNull(this.internalValue));
                     },
                     modelValue: {
                         immediate: true,
                         handler: function () {
-                            this.internalValue = Number_js_1.asFormattedString(this.modelValue);
+                            this.internalValue = Number_1.asFormattedString(this.modelValue);
                         }
                     }
                 },

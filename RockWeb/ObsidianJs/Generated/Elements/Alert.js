@@ -1,11 +1,11 @@
-System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
+System.register(["vue"], function (exports_1, context_1) {
     "use strict";
-    var vue_js_1, AlertType;
+    var vue_1, AlertType;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             }
         ],
         execute: function () {
@@ -19,7 +19,7 @@ System.register(["../Vendor/Vue/vue.js"], function (exports_1, context_1) {
                 AlertType["validation"] = "validation";
             })(AlertType || (AlertType = {}));
             exports_1("AlertType", AlertType);
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'Alert',
                 props: {
                     dismissible: {

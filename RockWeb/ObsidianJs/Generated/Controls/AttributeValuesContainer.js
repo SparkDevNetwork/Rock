@@ -1,24 +1,24 @@
-System.register(["../Services/String.js", "../Vendor/Vue/vue.js", "./RockField.js"], function (exports_1, context_1) {
+System.register(["../Services/String", "vue", "./RockField"], function (exports_1, context_1) {
     "use strict";
-    var String_js_1, vue_js_1, RockField_js_1;
+    var String_1, vue_1, RockField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (String_js_1_1) {
-                String_js_1 = String_js_1_1;
+            function (String_1_1) {
+                String_1 = String_1_1;
             },
-            function (vue_js_1_1) {
-                vue_js_1 = vue_js_1_1;
+            function (vue_1_1) {
+                vue_1 = vue_1_1;
             },
-            function (RockField_js_1_1) {
-                RockField_js_1 = RockField_js_1_1;
+            function (RockField_1_1) {
+                RockField_1 = RockField_1_1;
             }
         ],
         execute: function () {
-            exports_1("default", vue_js_1.defineComponent({
+            exports_1("default", vue_1.defineComponent({
                 name: 'AttributeValuesContainer',
                 components: {
-                    RockField: RockField_js_1.default
+                    RockField: RockField_1.default
                 },
                 props: {
                     isEditMode: {
@@ -55,7 +55,7 @@ System.register(["../Services/String.js", "../Vendor/Vue/vue.js", "./RockField.j
                         if (this.showEmptyValues) {
                             return this.validAttributeValues;
                         }
-                        return this.validAttributeValues.filter(function (av) { return !String_js_1.isNullOrWhitespace(av.Value); });
+                        return this.validAttributeValues.filter(function (av) { return !String_1.isNullOrWhitespace(av.Value); });
                     }
                 },
                 template: "\n<div v-if=\"!isEditMode\" v-for=\"a in valuesToShow\" class=\"form-group static-control\">\n    <label class=\"control-label\">\n        {{ getAttributeLabel(a) }}\n    </label>\n    <div class=\"control-wrapper\">\n        <div class=\"form-control-static\">\n            <RockField :fieldTypeGuid=\"a.Attribute.FieldTypeGuid\" v-model=\"a.Value\" />\n        </div>\n    </div>\n</div>\n<template v-else>\n    <template v-for=\"a in validAttributeValues\">\n        <RockField\n            isEditMode\n            :fieldTypeGuid=\"a.Attribute.FieldTypeGuid\"\n            v-model=\"a.Value\"\n            :label=\"getAttributeLabel(a)\"\n            :help=\"a.Attribute.Description\"\n            :rules=\"a.Attribute.IsRequired ? 'required' : ''\"\n            :configurationValues=\"a.Attribute.QualifierValues\"  />\n    </template>\n</template>"

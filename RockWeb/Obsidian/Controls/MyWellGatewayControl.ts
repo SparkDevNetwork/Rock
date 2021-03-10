@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { ProcessTransactionArgs } from '../Blocks/Finance/TransactionEntry.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
+import { ProcessTransactionArgs } from '../Blocks/Finance/TransactionEntry';
+import { defineComponent, PropType } from 'vue';
 
 type Settings = {
     PublicApiKey: string;

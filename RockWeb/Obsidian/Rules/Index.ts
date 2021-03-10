@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-import DateKey from '../Services/DateKey.js';
-import { isEmail } from '../Services/Email.js';
-import { isNullOrWhitespace } from '../Services/String.js';
-import { defineRule } from '../Vendor/VeeValidate/vee-validate.js';
+import DateKey from '../Services/DateKey';
+import { isEmail } from '../Services/Email';
+import { isNullOrWhitespace } from '../Services/String';
+import { defineRule } from 'vee-validate';
 
 export type ValidationRuleFunction = (value: unknown) => boolean | string | Promise<boolean | string>;
 

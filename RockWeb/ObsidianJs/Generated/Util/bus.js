@@ -1,6 +1,6 @@
-System.register(["../Vendor/Mitt/index.js"], function (exports_1, context_1) {
+System.register(["mitt"], function (exports_1, context_1) {
     "use strict";
-    var index_js_1, bus, log, writeLog;
+    var mitt_1, bus, log, writeLog;
     var __moduleName = context_1 && context_1.id;
     /**
     * Send the payload to subscribers listening for the event name
@@ -23,12 +23,12 @@ System.register(["../Vendor/Mitt/index.js"], function (exports_1, context_1) {
     }
     return {
         setters: [
-            function (index_js_1_1) {
-                index_js_1 = index_js_1_1;
+            function (mitt_1_1) {
+                mitt_1 = mitt_1_1;
             }
         ],
         execute: function () {
-            bus = index_js_1.default();
+            bus = mitt_1.default();
             log = [];
             /**
             * Write a log entry that a payload was sent or received.

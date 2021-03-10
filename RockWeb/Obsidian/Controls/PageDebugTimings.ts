@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { asFormattedString } from '../Services/Number.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import store from '../Store/Index.js';
+import { asFormattedString } from '../Services/Number';
+import { defineComponent, PropType } from 'vue';
+import store from '../Store/Index';
 
 export type DebugTimingViewModel = {
     TimestampMs: number;

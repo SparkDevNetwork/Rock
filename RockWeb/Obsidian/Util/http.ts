@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import axios from '../Vendor/Axios/index.js';
+import axios from 'axios';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 export type HttpUrlParams = Record<string, unknown> | undefined | null;

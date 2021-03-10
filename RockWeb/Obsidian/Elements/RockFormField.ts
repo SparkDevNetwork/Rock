@@ -15,16 +15,31 @@
 // </copyright>
 //
 
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, inject, PropType } from 'vue';
 import { newGuid } from '../Util/Guid';
 import { Field } from 'vee-validate';
 import RockLabel from './RockLabel';
+import { FormState } from '../Controls/RockForm';
 
 export default defineComponent({
     name: 'RockFormField',
     components: {
         Field,
         RockLabel
+    },
+    setup() {
+        let formState: FormState | null = null;
+
+        try {
+            formState = inject('formState') as FormState;
+        }
+        catch {
+            // Not all fields are inside a form
+        }
+
+        return {
+            formState
+        };
     },
     props: {
         modelValue: {
@@ -78,6 +93,15 @@ export default defineComponent({
         },
         classAttr(): string {
             return this.class;
+        },
+        errorClasses(): (formState: FormState | null, errors: Record<string, string>) => string {
+            return (formState: FormState | null, errors: Record<string, string>) => {
+                if (!formState || formState.submitCount < 1) {
+                    return '';
+                }
+
+                return Object.keys(errors).length ? 'has-error' : '';
+            };
         }
     },
     watch: {
@@ -91,7 +115,7 @@ export default defineComponent({
     template: `
 <Field v-model="internalValue" :name="validationTitle || label" :rules="rules" #default="{field, errors}">
     <slot name="pre" />
-    <div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', Object.keys(errors).length ? 'has-error' : '']">
+    <div class="form-group" :class="[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses(formState, errors)]">
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>

@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { Component, PropType } from '../Vendor/Vue/vue.js';
-import { Guid, normalize } from '../Util/Guid.js';
+import { Component, PropType } from 'vue';
+import { Guid, normalize } from '../Util/Guid';
 
 const fieldTypeComponentPaths: Record<Guid, Component> = {};
 

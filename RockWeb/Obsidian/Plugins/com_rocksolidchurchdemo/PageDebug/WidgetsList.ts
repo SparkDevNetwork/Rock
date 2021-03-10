@@ -15,13 +15,13 @@
 // </copyright>
 //
 import { defineComponent, inject } from 'vue';
-import { InvokeBlockActionFunc } from '../../../Controls/RockBlock.js';
-import Alert from '../../../Elements/Alert.js';
-import PaneledBlockTemplate from '../../../Templates/PaneledBlockTemplate.js';
-import PluginWidget from './PluginWidget.js';
-import Grid from '../../../Controls/Grid.js';
-import GridRow from '../../../Controls/GridRow.js';
-import GridColumn from '../../../Controls/GridColumn.js';
+import { InvokeBlockActionFunc } from '../../../Controls/RockBlock';
+import Alert from '../../../Elements/Alert';
+import PaneledBlockTemplate from '../../../Templates/PaneledBlockTemplate';
+import PluginWidget from './PluginWidget';
+import Grid from '../../../Controls/Grid';
+import GridRow from '../../../Controls/GridRow';
+import GridColumn from '../../../Controls/GridColumn';
 
 export default defineComponent({
     name: 'com_rocksolidchurchdemo.PageDebug.WidgetsList',

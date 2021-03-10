@@ -1,4 +1,4 @@
-System.register(["../Vendor/Axios/index.js"], function (exports_1, context_1) {
+System.register(["axios"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../Vendor/Axios/index.js"], function (exports_1, context_1) {
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var index_js_1;
+    var axios_1;
     var __moduleName = context_1 && context_1.id;
     /**
      * Make an API call. This is only place Axios (or AJAX library) should be referenced to allow tools like performance metrics to provide
@@ -50,7 +50,7 @@ System.register(["../Vendor/Axios/index.js"], function (exports_1, context_1) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, index_js_1.default({
+                    case 0: return [4 /*yield*/, axios_1.default({
                             method: method,
                             url: url,
                             params: params,
@@ -145,8 +145,8 @@ System.register(["../Vendor/Axios/index.js"], function (exports_1, context_1) {
     exports_1("post", post);
     return {
         setters: [
-            function (index_js_1_1) {
-                index_js_1 = index_js_1_1;
+            function (axios_1_1) {
+                axios_1 = axios_1_1;
             }
         ],
         execute: function () {
@@ -158,4 +158,4 @@ System.register(["../Vendor/Axios/index.js"], function (exports_1, context_1) {
         }
     };
 });
-//# sourceMappingURL=http.js.map
+//# sourceMappingURL=Http.js.map

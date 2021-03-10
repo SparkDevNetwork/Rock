@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-import { ruleStringToArray, ruleArrayToString } from '../Rules/Index.js';
-import { defineComponent, PropType } from '../Vendor/Vue/vue.js';
-import TextBox from './TextBox.js';
+import { ruleStringToArray, ruleArrayToString } from '../Rules/Index';
+import { defineComponent, PropType } from 'vue';
+import TextBox from './TextBox';
 
 export default defineComponent({
     name: 'EmailBox',

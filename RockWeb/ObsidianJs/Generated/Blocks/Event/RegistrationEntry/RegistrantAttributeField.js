@@ -53,26 +53,29 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                 data: function () {
                     return {
                         fieldControlComponent: null,
-                        fieldControlComponentProps: {},
-                        value: ''
+                        fieldControlComponentProps: {}
                     };
                 },
                 methods: {
                     isRuleMet: function (rule) {
-                        var value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid].toLowerCase().trim();
+                        var value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid] || '';
+                        if (typeof value !== 'string') {
+                            return false;
+                        }
+                        var strVal = value.toLowerCase().trim();
                         var comparison = rule.ComparedToValue.toLowerCase().trim();
-                        if (!value) {
+                        if (!strVal) {
                             return false;
                         }
                         switch (rule.ComparisonType) {
                             case RegistrationEntryBlockViewModel_1.ComparisonType.EqualTo:
-                                return value === comparison;
+                                return strVal === comparison;
                             case RegistrationEntryBlockViewModel_1.ComparisonType.NotEqualTo:
-                                return value !== comparison;
+                                return strVal !== comparison;
                             case RegistrationEntryBlockViewModel_1.ComparisonType.Contains:
-                                return value.includes(comparison);
+                                return strVal.includes(comparison);
                             case RegistrationEntryBlockViewModel_1.ComparisonType.DoesNotContain:
-                                return !value.includes(comparison);
+                                return !strVal.includes(comparison);
                         }
                         return false;
                     }
@@ -109,7 +112,7 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                         };
                     }
                 },
-                template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-model=\"value\" v-bind=\"fieldProps\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
+                template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-bind=\"fieldProps\" v-model=\"this.fieldValues[this.field.Guid]\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
             }));
         }
     };

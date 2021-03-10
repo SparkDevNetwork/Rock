@@ -14,16 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate.js';
-import { defineComponent, inject } from '../../Vendor/Vue/vue.js';
-import store from '../../Store/Index.js';
-import Grid, { FilterOptions, SortDirection, SortProperty } from '../../Controls/Grid.js';
-import GridRow from '../../Controls/GridRow.js';
-import GridColumn from '../../Controls/GridColumn.js';
-import GridSelectColumn from '../../Controls/GridSelectColumn.js';
-import GridProfileLinkColumn from '../../Controls/GridProfileLinkColumn.js';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock.js';
-import Alert from '../../Elements/Alert.js';
+import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
+import { defineComponent, inject } from 'vue';
+import store from '../../Store/Index';
+import Grid, { FilterOptions, SortDirection, SortProperty } from '../../Controls/Grid';
+import GridRow from '../../Controls/GridRow';
+import GridColumn from '../../Controls/GridColumn';
+import GridSelectColumn from '../../Controls/GridSelectColumn';
+import GridProfileLinkColumn from '../../Controls/GridProfileLinkColumn';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import Alert from '../../Elements/Alert';
 
 type GroupMemberViewModel = {
     FullName: string;

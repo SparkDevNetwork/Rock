@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/http.js';
-import { Component, defineComponent, PropType, provide, reactive } from '../Vendor/Vue/vue.js';
-import { BlockConfig } from '../Index.js';
-import store, { ReportDebugTimingArgs } from '../Store/Index.js';
-import { Guid } from '../Util/Guid.js';
-import Alert from '../Elements/Alert.js';
+import { doApiCall, HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from '../Util/Http';
+import { Component, defineComponent, PropType, provide, reactive } from 'vue';
+import { BlockConfig } from '../Index';
+import store, { ReportDebugTimingArgs } from '../Store/Index';
+import { Guid } from '../Util/Guid';
+import Alert from '../Elements/Alert';
 
 export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
 

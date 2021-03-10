@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-import { DebugTimingViewModel } from '../Controls/PageDebugTimings.js';
-import { PageConfig } from '../Index.js';
-import { Guid } from '../Util/Guid.js';
-import { createStore, Store } from '../Vendor/Vuex/index.js';
-import Group from '../ViewModels/CodeGenerated/GroupViewModel.js';
-import Person from '../ViewModels/CodeGenerated/PersonViewModel.js';
-import Entity from '../ViewModels/Entity.js';
-import { commonEntities, commonEntityModules } from './CommonEntities.js';
+import { DebugTimingViewModel } from '../Controls/PageDebugTimings';
+import { PageConfig } from '../Index';
+import { Guid } from '../Util/Guid';
+import { createStore, Store } from 'vuex';
+import Group from '../ViewModels/CodeGenerated/GroupViewModel';
+import Person from '../ViewModels/CodeGenerated/PersonViewModel';
+import Entity from '../ViewModels/Entity';
+import { commonEntities, commonEntityModules } from './CommonEntities';
 
 export interface RootState {
     areSecondaryBlocksShown: boolean;
