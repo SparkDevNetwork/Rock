@@ -1,4 +1,4 @@
-import { Payload, Plugin } from './index';
+import { Payload, Plugin } from './Index';
 
 interface Logger extends Partial<Pick<Console, 'groupCollapsed' | 'group' | 'groupEnd'>> {
   log(message: string, color: string, payload: any): void;

@@ -3,7 +3,7 @@
  */
 
 import { ComponentCustomOptions } from 'vue';
-import { Store } from './index';
+import { Store } from './Index';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomOptions {

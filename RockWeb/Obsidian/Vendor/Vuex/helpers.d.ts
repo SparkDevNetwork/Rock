@@ -1,5 +1,5 @@
 import { ComponentPublicInstance } from 'vue';
-import { Dispatch, Commit } from './index';
+import { Dispatch, Commit } from './Index';
 
 type Computed = () => any;
 type InlineComputed<T extends Function> = T extends (...args: any[]) => infer R ? () => R : never
