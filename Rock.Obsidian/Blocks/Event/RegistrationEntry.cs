@@ -15,11 +15,13 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel.Blocks;
@@ -75,6 +77,24 @@ namespace Rock.Obsidian.Blocks.Event
                     .FirstOrDefault();
 
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
+                var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+
+                // Get family members
+                var familyMembers = currentPerson.GetFamilyMembers( true, rockContext )
+                    .Select( gm => new
+                    {
+                        FamilyGuid = gm.Group.Guid,
+                        Person = gm.Person
+                    } )
+                    .ToList()
+                    .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
+                    {
+                        Guid = gm.Person.Guid,
+                        FamilyGuid = gm.FamilyGuid,
+                        FullName = gm.Person.FullName,
+                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
+                    } )
+                    .ToList();
 
                 // Get the instructions
                 var instructions = registrationInstance?.RegistrationInstructions;
@@ -98,7 +118,7 @@ namespace Rock.Obsidian.Blocks.Event
                 // Get the registrant term
                 var registrantTerm = registrationTemplate?.RegistrantTerm;
 
-                if (registrantTerm.IsNullOrWhiteSpace())
+                if ( registrantTerm.IsNullOrWhiteSpace() )
                 {
                     registrantTerm = "Person";
                 }
@@ -118,31 +138,25 @@ namespace Rock.Obsidian.Blocks.Event
                         Name = feeModel.Name,
                         AllowMultiple = feeModel.AllowMultiple,
                         IsRequired = feeModel.IsRequired,
-                        Items = new List<RegistrationEntryBlockFeeItemViewModel>()
-                    };
-
-                    foreach ( var feeItemModel in feeModel.FeeItems )
-                    {
-                        feeViewModel.Items.Add( new RegistrationEntryBlockFeeItemViewModel
+                        Items = feeModel.FeeItems.Select( fi => new RegistrationEntryBlockFeeItemViewModel
                         {
-                            Cost = feeItemModel.Cost,
-                            Name = feeItemModel.Name,
-                            Guid = feeItemModel.Guid,
-                            CountRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null )
-                        } );
-                    }
+                            Cost = fi.Cost,
+                            Name = fi.Name,
+                            Guid = fi.Guid,
+                            CountRemaining = fi.GetUsageCountRemaining( registrationInstance, null )
+                        } )
+                    };
 
                     fees.Add( feeViewModel );
                 }
 
                 // Get forms with fields
-                var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
-                var forms = new List<RegistrationEntryBlockFormViewModel>();
+                var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
 
                 foreach ( var formModel in formModels )
                 {
                     var form = new RegistrationEntryBlockFormViewModel();
-                    var fieldModels = formModel.Fields.OrderBy( f => f.Order );
+                    var fieldModels = formModel.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order );
                     var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
 
                     foreach ( var fieldModel in fieldModels )
@@ -171,7 +185,7 @@ namespace Rock.Obsidian.Blocks.Event
                     }
 
                     form.Fields = fields;
-                    forms.Add( form );
+                    formViewModels.Add( form );
                 }
 
                 return new RegistrationEntryBlockViewModel
@@ -180,10 +194,109 @@ namespace Rock.Obsidian.Blocks.Event
                     RegistrantTerm = registrantTerm,
                     PluralRegistrantTerm = pluralRegistrantTerm,
                     PluralFeeTerm = pluralFeeTerm,
-                    RegistrantForms = forms,
-                    Fees = fees
+                    RegistrantForms = formViewModels,
+                    Fees = fees,
+                    FamilyMembers = familyMembers
                 };
             }
+        }
+
+        /// <summary>
+        /// Gets the field values.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="forms">The forms.</param>
+        /// <returns></returns>
+        private IDictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, IEnumerable<RegistrationTemplateForm> forms )
+        {
+            var fieldValues = new Dictionary<Guid, object>();
+
+            foreach ( var form in forms )
+            {
+                var fields = form.Fields.Where( f =>
+                    ( f.ShowCurrentValue && !f.IsInternal ) ||
+                    f.PersonFieldType == RegistrationPersonFieldType.FirstName ||
+                    f.PersonFieldType == RegistrationPersonFieldType.LastName
+                );
+
+                foreach ( var field in fields )
+                {
+                    var value = GetCurrentFieldValue( rockContext, person, field );
+
+                    if ( value != null )
+                    {
+                        fieldValues[field.Guid] = value;
+                    }
+                }
+            }
+
+            return fieldValues;
+        }
+
+        /// <summary>
+        /// Gets the current field value.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="field">The field.</param>
+        /// <returns></returns>
+        private object GetCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        {
+            switch ( field.FieldSource )
+            {
+                case RegistrationFieldSource.PersonField:
+                    return GetPersonCurrentFieldValue( rockContext, person, field );
+                case RegistrationFieldSource.PersonAttribute:
+                    return GetPersonCurrentAttributeValue( rockContext, person, field );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the current person field value.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="field">The field.</param>
+        /// <returns></returns>
+        private object GetPersonCurrentFieldValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        {
+            switch ( field.PersonFieldType )
+            {
+                case RegistrationPersonFieldType.FirstName:
+                    return person.NickName.IsNullOrWhiteSpace() ? person.FirstName : person.NickName;
+                case RegistrationPersonFieldType.LastName:
+                    return person.LastName;
+                case RegistrationPersonFieldType.MiddleName:
+                    return person.MiddleName;
+                case RegistrationPersonFieldType.Campus:
+                    var family = person.GetFamily( rockContext );
+                    return family?.Guid;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the current person attribute value.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="field">The field.</param>
+        /// <returns></returns>
+        private object GetPersonCurrentAttributeValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        {
+            var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
+
+            if ( attribute is null )
+            {
+                return null;
+            }
+
+            person.LoadAttributes( rockContext );
+            return person.GetAttributeValue( attribute.Key );
         }
     }
 }

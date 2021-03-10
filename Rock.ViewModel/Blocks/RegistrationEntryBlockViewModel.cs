@@ -72,6 +72,52 @@ namespace Rock.ViewModel.Blocks
         /// The fees.
         /// </value>
         public IEnumerable<RegistrationEntryBlockFeeViewModel> Fees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the family members.
+        /// </summary>
+        /// <value>
+        /// The family members.
+        /// </value>
+        public IEnumerable<RegistrationEntryBlockFamilyMemberViewModel> FamilyMembers { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationEntryBlockFamilyMemberViewModel
+    /// </summary>
+    public sealed class RegistrationEntryBlockFamilyMemberViewModel
+    {
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the family unique identifier.
+        /// </summary>
+        /// <value>
+        /// The family unique identifier.
+        /// </value>
+        public Guid FamilyGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the full name.
+        /// </summary>
+        /// <value>
+        /// The full name.
+        /// </value>
+        public string FullName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field values.
+        /// </summary>
+        /// <value>
+        /// The field values.
+        /// </value>
+        public IDictionary<Guid, object> FieldValues { get; set; }
     }
 
     /// <summary>
@@ -101,7 +147,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The items.
         /// </value>
-        public List<RegistrationEntryBlockFeeItemViewModel> Items { get; set; }
+        public IEnumerable<RegistrationEntryBlockFeeItemViewModel> Items { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow multiple].

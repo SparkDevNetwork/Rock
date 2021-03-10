@@ -75,6 +75,14 @@ export interface RegistrationEntryBlockViewModel {
     PluralFeeTerm: string;
     RegistrantForms: RegistrationEntryBlockFormViewModel[];
     Fees: RegistrationEntryBlockFeeViewModel[]
+    FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[]
+}
+
+export interface RegistrationEntryBlockFamilyMemberViewModel {
+    Guid: Guid;
+    FamilyGuid: Guid;
+    FullName: string;
+    FieldValues: Record<Guid, unknown>;
 }
 
 export interface RegistrationEntryBlockFeeViewModel {

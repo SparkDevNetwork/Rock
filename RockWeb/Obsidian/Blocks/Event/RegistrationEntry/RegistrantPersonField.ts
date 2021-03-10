@@ -16,8 +16,9 @@
 //
 
 import { defineComponent, markRaw, PropType } from 'vue';
-import { AddressControlModel } from '../../../Controls/AddressControl';
+import { getDefaultAddressControlModel } from '../../../Controls/AddressControl';
 import Alert from '../../../Elements/Alert';
+import { Guid } from '../../../Util/Guid';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
@@ -29,15 +30,57 @@ export default defineComponent({
         field: {
             type: Object as PropType<RegistrationEntryBlockFormFieldViewModel>,
             required: true
+        },
+        fieldValues: {
+            type: Object as PropType<Record<Guid, unknown>>,
+            required: true
+        },
+        isKnownFamilyMember: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     },
     data() {
         return {
             fieldControlComponent: null as unknown,
-            fieldControlComponentProps: {},
-            loading: true,
-            value: '' as string | AddressControlModel
+            loading: true
         };
+    },
+    computed: {
+        fieldControlComponentProps() {
+            const props: Record<string, unknown> = {
+                rules: this.field.IsRequired ? 'required' : ''
+            };
+
+            switch (this.field.PersonFieldType) {
+                case RegistrationPersonFieldType.FirstName:
+                    props.label = 'First Name';
+                    props.disabled = this.isKnownFamilyMember;
+                    break;
+                case RegistrationPersonFieldType.LastName:
+                    props.label = 'Last Name';
+                    props.disabled = this.isKnownFamilyMember;
+                    break;
+                case RegistrationPersonFieldType.MiddleName:
+                    props.label = 'Middle Name';
+                    break;
+                case RegistrationPersonFieldType.Campus:
+                    props.label = 'Campus';
+                    break;
+                case RegistrationPersonFieldType.Email:
+                    props.label = 'Email';
+                    break;
+                case RegistrationPersonFieldType.Gender:
+                    break;
+                case RegistrationPersonFieldType.Birthdate:
+                    props.label = 'Birthday';
+                    break;
+                case RegistrationPersonFieldType.Address:
+                    break;
+            }
+
+            return props;
+        }
     },
     watch: {
         field: {
@@ -45,59 +88,46 @@ export default defineComponent({
             async handler() {
                 this.loading = true;
                 let componentPath = '';
-                const props: Record<string, unknown> = {
-                    rules: this.field.IsRequired ? 'required' : ''
-                };
 
                 switch (this.field.PersonFieldType) {
                     case RegistrationPersonFieldType.FirstName:
                         componentPath = 'Elements/TextBox';
-                        props.label = 'First Name';
                         break;
                     case RegistrationPersonFieldType.LastName:
                         componentPath = 'Elements/TextBox';
-                        props.label = 'Last Name';
                         break;
                     case RegistrationPersonFieldType.MiddleName:
                         componentPath = 'Elements/TextBox';
-                        props.label = 'Middle Name';
                         break;
                     case RegistrationPersonFieldType.Campus:
                         componentPath = 'Controls/CampusPicker';
-                        props.label = 'Campus';
                         break;
                     case RegistrationPersonFieldType.Email:
                         componentPath = 'Elements/EmailBox';
-                        props.label = 'Email';
                         break;
                     case RegistrationPersonFieldType.Gender:
                         componentPath = 'Elements/GenderDropDownList';
                         break;
                     case RegistrationPersonFieldType.Birthdate:
-                        props.label = 'Birthday';
                         componentPath = 'Elements/BirthdayPicker';
                         break;
                     case RegistrationPersonFieldType.Address:
                         componentPath = 'Controls/AddressControl';
-                        this.value = {
-                            Street1: '',
-                            Street2: '',
-                            City: '',
-                            State: '',
-                            PostalCode: ''
-                        } as AddressControlModel;
+                        this.fieldValues[this.field.Guid] = getDefaultAddressControlModel();
                         break;
+                }
+
+                if (!(this.field.Guid in this.fieldValues)) {
+                    this.fieldValues[this.field.Guid] = '';
                 }
 
                 const componentModule = componentPath ? (await import(`../../../${componentPath}`)) : null;
                 const component = componentModule ? (componentModule.default || componentModule) : null;
 
                 if (component) {
-                    this.fieldControlComponentProps = props;
                     this.fieldControlComponent = markRaw(component);
                 }
                 else {
-                    this.fieldControlComponentProps = {};
                     this.fieldControlComponent = null;
                 }
 
@@ -106,6 +136,6 @@ export default defineComponent({
         }
     },
     template: `
-<component v-if="fieldControlComponent" :is="fieldControlComponent" v-bind="fieldControlComponentProps" v-model="value" />
+<component v-if="fieldControlComponent" :is="fieldControlComponent" v-bind="fieldControlComponentProps" v-model="fieldValues[field.Guid]" />
 <Alert v-else-if="!loading" alertType="danger">Could not resolve person field</Alert>`
 });

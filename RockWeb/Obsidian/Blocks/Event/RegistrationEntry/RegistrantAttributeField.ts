@@ -34,35 +34,40 @@ export default defineComponent({
             required: true
         },
         fieldValues: {
-            type: Object as PropType<Record<Guid, string>>,
+            type: Object as PropType<Record<Guid, unknown>>,
             required: true
         }
     },
     data() {
         return {
             fieldControlComponent: null as unknown,
-            fieldControlComponentProps: {},
-            value: ''
+            fieldControlComponentProps: {}
         };
     },
     methods: {
         isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel) {
-            const value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid].toLowerCase().trim();
+            const value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid] || '';
+
+            if (typeof value !== 'string') {
+                return false;
+            }
+
+            const strVal = value.toLowerCase().trim();
             const comparison = rule.ComparedToValue.toLowerCase().trim();
 
-            if (!value) {
+            if (!strVal) {
                 return false;
             }
 
             switch (rule.ComparisonType) {
                 case ComparisonType.EqualTo:
-                    return value === comparison;
+                    return strVal === comparison;
                 case ComparisonType.NotEqualTo:
-                    return value !== comparison;
+                    return strVal !== comparison;
                 case ComparisonType.Contains:
-                    return value.includes(comparison);
+                    return strVal.includes(comparison);
                 case ComparisonType.DoesNotContain:
-                    return !value.includes(comparison);
+                    return !strVal.includes(comparison);
             }
 
             return false;
@@ -103,7 +108,7 @@ export default defineComponent({
     },
     template: `
 <template v-if="isVisible">
-    <RockField v-if="attribute" v-model="value" v-bind="fieldProps" />
+    <RockField v-if="attribute" v-bind="fieldProps" v-model="this.fieldValues[this.field.Guid]" />
     <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
 </template>`
 });
