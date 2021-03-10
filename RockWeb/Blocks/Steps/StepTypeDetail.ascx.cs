@@ -1194,10 +1194,6 @@ namespace RockWeb.Blocks.Steps
             {
                 avcStepProgramAttributes.AddEditControls( stepType );
             }
-            else
-            {
-                avcStepProgramAttributes.AddDisplayControls( stepType );
-            }
         }
 
         /// <summary>
