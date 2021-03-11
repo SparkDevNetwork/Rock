@@ -144,7 +144,7 @@ export default defineComponent({
     </RockLabel>
     <div class="control-wrapper">
         <TextBox placeholder="Address Line 1" :rules="rules" v-model="modelValue.Street1" validationTitle="Address Line 1" />
-        <TextBox placeholder="Address Line 2" :rules="rules" v-model="modelValue.Street2" validationTitle="Address Line 2" />
+        <TextBox placeholder="Address Line 2" v-model="modelValue.Street2" validationTitle="Address Line 2" />
         <div class="form-row">
             <TextBox placeholder="City" :rules="rules" v-model="modelValue.City" class="col-sm-6" validationTitle="City" />
             <DropDownList :showBlankItem="false" v-model="modelValue.State" class="col-sm-3" :options="stateOptions" />

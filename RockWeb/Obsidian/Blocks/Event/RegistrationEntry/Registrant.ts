@@ -248,11 +248,12 @@ export default defineComponent({
     <ProgressBar :percent="completionPercentInt" />
 
     <RockForm @submit="onNext">
-        <div v-if="familyOptions.length > 1 && currentFormIndex === 0" class="well js-registration-same-family">
-            <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="familyOptions" validationTitle="Family" />
-        </div>
-
-        <DropDownList v-if="familyMemberOptions.length" v-model="familyMemberGuid" :options="familyMemberOptions" label="Family Member to Register" />
+        <template v-if="currentFormIndex === 0">
+            <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
+                <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="familyOptions" validationTitle="Family" />
+            </div>
+            <DropDownList v-if="familyMemberOptions.length" v-model="familyMemberGuid" :options="familyMemberOptions" label="Family Member to Register" />
+        </template>
 
         <template v-for="field in currentFormFields" :key="field.Guid">
             <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="fieldValues" :isKnownFamilyMember="!!familyMemberGuid" />

@@ -45,6 +45,10 @@ export default defineComponent({
         blankValue: {
             type: String as PropType<string>,
             default: ''
+        },
+        formControlClasses: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     data: function () {
@@ -89,7 +93,7 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :disabled="disabled" v-bind="field" v-model="internalValue">
+            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-bind="field" v-model="internalValue">
                 <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
