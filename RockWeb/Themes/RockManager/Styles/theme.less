@@ -107,9 +107,6 @@ h4 {
   justify-content: flex-end;
 }
 
-.navbar-zone-login {
-  display: flex;
-}
 
 /* #region
 // 1. HTML Overrides         */
@@ -209,6 +206,14 @@ textarea,
     width: auto;
     line-height: @line-height-base;
     text-align: center;
+  }
+}
+
+.badge {
+  .btn-xs &,
+  .btn-group-xs > .btn & {
+    top: -1px;
+    line-height: 1;
   }
 }
 
@@ -723,6 +728,23 @@ td.grid-actions {
   min-height: 100%;
 }
 
+.btn-nav-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 14px;
+  color: @navbartop-color;
+  background: transparent;
+  border: 1px solid @navbartop-color;
+  border-radius: @btn-border-radius-base;
+
+  &:hover,
+  &:focus {
+    background: fade(@white, 10%);
+  }
+}
+
 .rock-top-header {
   display: flex;
   margin-bottom: 0;
@@ -736,7 +758,12 @@ td.grid-actions {
   }
 
   .navbar-zone-login {
+    display: flex;
     float: right;
+
+    .btn {
+      &:extend(.btn-nav-zone all);
+    }
   }
 
   @media (min-width: @screen-sm-min) {
@@ -792,22 +819,9 @@ td.grid-actions {
 
   .navbar-nav.contextsetter {
     margin: ((@navbar-top-height - 40px) / 2);
-    color: @navbartop-color;
-    background-color: transparent;
-    border: 1px solid @navbartop-color;
-    border-radius: @btn-border-radius-base;
-    .dropdown-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 7px 14px;
-      color: @navbartop-color;
 
-      &:hover,
-      &:focus {
-        background: fade(@white, 10%);
-      }
+    .dropdown-toggle {
+      &:extend(.btn-nav-zone all);
 
       b {
         margin-left: 8px;
@@ -862,6 +876,10 @@ td.grid-actions {
   }
 }
 
+#zone-login .zone-content {
+  display: flex;
+  align-items: center;
+}
 
 #content-wrapper {
   position: relative;
