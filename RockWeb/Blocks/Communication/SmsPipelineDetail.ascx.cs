@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Communication
         {
             string argument = Request["__EVENTARGUMENT"].ToStringSafe();
             var segments = argument.SplitDelimitedValues();
-
+            var smsPipelineId = GetSmsPipelineId();
             //
             // Check for the event to add a new action.
             //
@@ -295,7 +295,7 @@ namespace RockWeb.Blocks.Communication
 
                 var action = new SmsAction
                 {
-                    SmsPipelineId = GetSmsPipelineId().Value,
+                    SmsPipelineId = smsPipelineId.Value,
                     Name = actionComponent.Title,
                     IsActive = true,
                     Order = order,
@@ -303,6 +303,7 @@ namespace RockWeb.Blocks.Communication
                 };
 
                 smsActionService.Queryable()
+                    .Where( a => a.SmsPipelineId == smsPipelineId)
                     .Where( a => a.Order >= order )
                     .ToList()
                     .ForEach( a => a.Order += 1 );
@@ -325,6 +326,7 @@ namespace RockWeb.Blocks.Communication
                 var smsActionService = new SmsActionService( rockContext );
 
                 var actions = smsActionService.Queryable()
+                    .Where(a => a.SmsPipelineId == smsPipelineId)
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id )
                     .ToList();
