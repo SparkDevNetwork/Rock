@@ -98,9 +98,14 @@ namespace RockWeb.Blocks.Communication
                 // have been initialized already and any new attributes created.
                 //
                 var smsActionEntityTypeId = EntityTypeCache.Get( typeof( SmsAction ) ).Id;
-                var attributes = AttributeCache.All()
+                var rockContext = new RockContext();
+
+                var attributes = new AttributeService( rockContext ).Queryable()
                     .Where( a => a.EntityTypeId == smsActionEntityTypeId )
-                    .Where( a => a.Key == "Order" || a.Key == "Active" );
+                    .Where( a => a.Key == "Order" || a.Key == "Active" )
+                    .ToList()
+                    .Select( a => AttributeCache.Get( a ) );
+
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
                 avcAttributes.ExcludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };
                 avcFilters.IncludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };
