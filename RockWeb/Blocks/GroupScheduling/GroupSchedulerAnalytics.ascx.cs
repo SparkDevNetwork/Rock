@@ -989,7 +989,7 @@ var barChart = new Chart(barCtx, {{
             private void SetDeclineReasonsField( List<Attendance> attendances )
             {
                 var declinedAttendances = attendances.Where( a => a.RSVP == RSVP.No );
-                var declinedReasons = new StringBuilder("<ul>");
+                var declinedReasons = new StringBuilder("<ul class='list-unstyled m-0'>");
                 foreach ( var declinedAttendance in declinedAttendances )
                 {
                     var declinedReason = DefinedValueCache.GetValue( declinedAttendance.DeclineReasonValueId );
