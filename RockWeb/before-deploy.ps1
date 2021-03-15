@@ -32,6 +32,12 @@ If (Test-Path "$webroot\Themes\Rock\Styles\_css-overrides.less"){
 	Copy-Item "$webroot\Themes\Rock\Styles\_css-overrides.less" "$rootfolder\temp" -force
 }
 
+# backup css overrides for Rock Manager theme
+If (Test-Path "$webroot\Themes\RockManager\Styles\_css-overrides.less"){
+	Write-Host "Moving _css-overrides.less to temp dir"
+	Copy-Item "$webroot\Themes\RockManager\Styles\_css-overrides.less" "$rootfolder\temp\RockManager" -force
+}
+
 # load the app offline template
 If (Test-Path "$webroot\app_offline-template.htm"){
 	Write-Host "Loading the app offline template"
