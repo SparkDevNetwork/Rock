@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/Alert", "../../../Elements/BirthdayPicker", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, AddressControl_1, Alert_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, AddressControl_1, Alert_1, BirthdayPicker_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -64,6 +64,9 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
+            },
+            function (BirthdayPicker_1_1) {
+                BirthdayPicker_1 = BirthdayPicker_1_1;
             },
             function (RegistrationEntryBlockViewModel_1_1) {
                 RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
@@ -134,12 +137,13 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
                         immediate: true,
                         handler: function () {
                             return __awaiter(this, void 0, void 0, function () {
-                                var componentPath, componentModule, _a, component;
+                                var componentPath, defaultValue, componentModule, _a, component;
                                 return __generator(this, function (_b) {
                                     switch (_b.label) {
                                         case 0:
                                             this.loading = true;
                                             componentPath = '';
+                                            defaultValue = '';
                                             switch (this.field.PersonFieldType) {
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName:
                                                     componentPath = 'Elements/TextBox';
@@ -161,14 +165,15 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
                                                     componentPath = 'Elements/BirthdayPicker';
+                                                    defaultValue = BirthdayPicker_1.getDefaultBirthdayPickerModel();
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
                                                     componentPath = 'Controls/AddressControl';
-                                                    this.fieldValues[this.field.Guid] = AddressControl_1.getDefaultAddressControlModel();
+                                                    defaultValue = AddressControl_1.getDefaultAddressControlModel();
                                                     break;
                                             }
                                             if (!(this.field.Guid in this.fieldValues)) {
-                                                this.fieldValues[this.field.Guid] = '';
+                                                this.fieldValues[this.field.Guid] = defaultValue;
                                             }
                                             if (!componentPath) return [3 /*break*/, 2];
                                             return [4 /*yield*/, context_1.import("../../../" + componentPath)];

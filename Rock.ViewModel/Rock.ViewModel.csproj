@@ -243,6 +243,8 @@
     <Compile Include="CodeGenerated\WorkflowActivityViewModel.cs" />
     <Compile Include="CodeGenerated\WorkflowTypeViewModel.cs" />
     <Compile Include="CodeGenerated\WorkflowViewModel.cs" />
+    <Compile Include="Controls\BirthdayPickerViewModel.cs" />
+    <Compile Include="Controls\AddressControlViewModel.cs" />
     <Compile Include="IViewModel.cs" />
     <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />

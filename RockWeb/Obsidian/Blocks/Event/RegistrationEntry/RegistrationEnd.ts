@@ -16,42 +16,41 @@
 //
 
 import { defineComponent, inject, PropType } from 'vue';
-import { ConfigurationValues } from '../../../Index';
+import AttributeValuesContainer from '../../../Controls/AttributeValuesContainer';
 import ProgressBar from '../../../Elements/ProgressBar';
 import RockButton from '../../../Elements/RockButton';
-import RegistrationTemplateForm from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormViewModel';
+import AttributeValue from '../../../ViewModels/CodeGenerated/AttributeValueViewModel';
 import { RegistrantInfo } from '../RegistrationEntry';
+import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
-    name: 'Event.RegistrationEntry.Registration',
+    name: 'Event.RegistrationEntry.RegistrationEnd',
     components: {
         RockButton,
-        ProgressBar
+        ProgressBar,
+        AttributeValuesContainer
     },
     setup() {
         return {
-            configurationValues: inject('configurationValues') as ConfigurationValues
+            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
         };
     },
     props: {
         registrants: {
             type: Array as PropType<RegistrantInfo[]>,
             required: true
+        },
+        numberOfPages: {
+            type: Number as PropType<number>,
+            required: true
         }
     },
     data() {
         return {
-            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[]
+            attributeValues: [] as AttributeValue[]
         };
     },
     computed: {
-        formCountPerRegistrant(): number {
-            return this.registrationTemplateForms.length;
-        },
-        numberOfPages(): number {
-            // All of the steps are 1 page except the "per-registrant"
-            return 3 + (this.registrants.length * this.formCountPerRegistrant);
-        },
         completionPercentDecimal(): number {
             return (this.numberOfPages - 2) / this.numberOfPages;
         },
@@ -67,10 +66,24 @@ export default defineComponent({
             this.$emit('next');
         }
     },
+    watch: {
+        viewModel: {
+            immediate: true,
+            handler() {
+                this.attributeValues = this.viewModel.RegistrationAttributesEnd.map(a => ({
+                    Attribute: a,
+                    AttributeId: a.Id,
+                    Value: ''
+                } as AttributeValue));
+            }
+        }
+    },
     template: `
 <div class="registrationentry-registration-attributes">
-    <h1>Registration Attributes</h1>
+    <h1>{{viewModel.RegistrationAttributeTitleEnd}}</h1>
     <ProgressBar :percent="completionPercentInt" />
+
+    <AttributeValuesContainer :attributeValues="attributeValues" isEditMode />
 
     <div class="actions">
         <RockButton btnType="default" @click="onPrevious">

@@ -69,6 +69,8 @@ export enum ComparisonType {
 }
 
 export interface RegistrationEntryBlockViewModel {
+    RegistrationAttributeTitleStart: string;
+    RegistrationAttributeTitleEnd: string;
     InstructionsHtml: string;
     RegistrantTerm: string;
     PluralRegistrantTerm: string;
@@ -76,6 +78,8 @@ export interface RegistrationEntryBlockViewModel {
     RegistrantForms: RegistrationEntryBlockFormViewModel[];
     Fees: RegistrationEntryBlockFeeViewModel[]
     FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[]
+    RegistrationAttributesStart: Attribute[]
+    RegistrationAttributesEnd: Attribute[]
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel {

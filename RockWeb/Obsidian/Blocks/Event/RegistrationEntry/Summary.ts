@@ -37,6 +37,10 @@ export default defineComponent({
         registrants: {
             type: Array as PropType<RegistrantInfo[]>,
             required: true
+        },
+        numberOfPages: {
+            type: Number as PropType<number>,
+            required: true
         }
     },
     data() {
@@ -45,13 +49,6 @@ export default defineComponent({
         };
     },
     computed: {
-        formCountPerRegistrant(): number {
-            return this.registrationTemplateForms.length;
-        },
-        numberOfPages(): number {
-            // All of the steps are 1 page except the "per-registrant"
-            return 3 + (this.registrants.length * this.formCountPerRegistrant);
-        },
         completionPercentDecimal(): number {
             return (this.numberOfPages - 1) / this.numberOfPages;
         },

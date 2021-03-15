@@ -17,8 +17,21 @@
 import { defineComponent, PropType } from 'vue';
 import { ruleArrayToString, ruleStringToArray } from '../Rules/Index';
 import DateKey from '../Services/DateKey';
-import Number from '../Services/Number';
 import RockFormField from './RockFormField';
+
+export interface BirthdayPickerModel {
+    Year: number,
+    Month: number;
+    Day: number;
+}
+
+export function getDefaultBirthdayPickerModel() {
+    return {
+        Year: 0,
+        Month: 0,
+        Day: 0
+    } as BirthdayPickerModel;
+}
 
 export default defineComponent({
     name: 'BirthdayPicker',
@@ -31,8 +44,8 @@ export default defineComponent({
             default: ''
         },
         modelValue: {
-            type: String as PropType<string>,
-            default: ''
+            type: Object as PropType<BirthdayPickerModel>,
+            required: true
         }
     },
     data() {
@@ -45,20 +58,12 @@ export default defineComponent({
         }
 
         return {
-            internalValue: {
-                day: '0',
-                month: '0',
-                year: '0'
-            },
             years
         };
     },
     computed: {
         internalDateKey(): string {
-            const dateKey = DateKey.toDateKey(
-                Number.toNumberOrNull(this.internalValue.year),
-                Number.toNumberOrNull(this.internalValue.month),
-                Number.toNumberOrNull(this.internalValue.day));
+            const dateKey = DateKey.toDateKey(this.modelValue.Year, this.modelValue.Month, this.modelValue.Day);
             return dateKey;
         },
         computedRules(): string {
@@ -71,22 +76,6 @@ export default defineComponent({
             return ruleArrayToString(rules);
         }
     },
-    watch: {
-        modelValue: {
-            immediate: true,
-            handler() {
-                this.internalValue.day = (DateKey.getDay(this.modelValue) || 0).toString();
-                this.internalValue.month = (DateKey.getMonth(this.modelValue) || 0).toString();
-                this.internalValue.year = (DateKey.getYear(this.modelValue) || 0).toString();
-            }
-        },
-        'internalDateKey': {
-            immediate: true,
-            handler() {
-                this.$emit('update:modelValue', this.internalDateKey);
-            }
-        }
-    },
     template: `
 <RockFormField
     :modelValue="internalDateKey"
@@ -96,7 +85,7 @@ export default defineComponent({
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
             <div class="form-control-group">
-                <select :id="uniqueId + '-month'" class="form-control input-width-sm" :disabled="disabled" v-model="internalValue.month">
+                <select :id="uniqueId + '-month'" class="form-control input-width-sm" :disabled="disabled" v-model="modelValue.Month">
                     <option value="0"></option>
                     <option value="1">Jan</option>
                     <option value="2">Feb</option>
@@ -112,7 +101,7 @@ export default defineComponent({
                     <option value="12">Dec</option>
                 </select>
                 <span class="separator">/</span>
-                <select :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="internalValue.day">
+                <select :id="uniqueId + '-day'" class="form-control input-width-sm" v-model="modelValue.Day">
                     <option value="0"></option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -147,7 +136,7 @@ export default defineComponent({
                     <option value="31">31</option>
                 </select>
                 <span class="separator">/</span>
-                <select :id="uniqueId + '-year'" class="form-control input-width-sm" v-model="internalValue.year">
+                <select :id="uniqueId + '-year'" class="form-control input-width-sm" v-model="modelValue.Year">
                     <option value="0"></option>
                     <option v-for="year in years" :value="year.toString()">{{year}}</option>
                 </select>

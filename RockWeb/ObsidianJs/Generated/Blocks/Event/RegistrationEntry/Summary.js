@@ -46,6 +46,10 @@ System.register(["vue", "../../../Elements/ProgressBar", "../../../Elements/Rock
                     registrants: {
                         type: Array,
                         required: true
+                    },
+                    numberOfPages: {
+                        type: Number,
+                        required: true
                     }
                 },
                 data: function () {
@@ -54,13 +58,6 @@ System.register(["vue", "../../../Elements/ProgressBar", "../../../Elements/Rock
                     };
                 },
                 computed: {
-                    formCountPerRegistrant: function () {
-                        return this.registrationTemplateForms.length;
-                    },
-                    numberOfPages: function () {
-                        // All of the steps are 1 page except the "per-registrant"
-                        return 3 + (this.registrants.length * this.formCountPerRegistrant);
-                    },
                     completionPercentDecimal: function () {
                         return (this.numberOfPages - 1) / this.numberOfPages;
                     },

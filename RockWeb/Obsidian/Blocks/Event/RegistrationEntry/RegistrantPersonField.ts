@@ -18,6 +18,7 @@
 import { defineComponent, markRaw, PropType } from 'vue';
 import { getDefaultAddressControlModel } from '../../../Controls/AddressControl';
 import Alert from '../../../Elements/Alert';
+import { getDefaultBirthdayPickerModel } from '../../../Elements/BirthdayPicker';
 import { Guid } from '../../../Util/Guid';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
@@ -88,6 +89,7 @@ export default defineComponent({
             async handler() {
                 this.loading = true;
                 let componentPath = '';
+                let defaultValue: unknown = '';
 
                 switch (this.field.PersonFieldType) {
                     case RegistrationPersonFieldType.FirstName:
@@ -110,15 +112,16 @@ export default defineComponent({
                         break;
                     case RegistrationPersonFieldType.Birthdate:
                         componentPath = 'Elements/BirthdayPicker';
+                        defaultValue = getDefaultBirthdayPickerModel();
                         break;
                     case RegistrationPersonFieldType.Address:
                         componentPath = 'Controls/AddressControl';
-                        this.fieldValues[this.field.Guid] = getDefaultAddressControlModel();
+                        defaultValue = getDefaultAddressControlModel();
                         break;
                 }
 
                 if (!(this.field.Guid in this.fieldValues)) {
-                    this.fieldValues[this.field.Guid] = '';
+                    this.fieldValues[this.field.Guid] = defaultValue;
                 }
 
                 const componentModule = componentPath ? (await import(`../../../${componentPath}`)) : null;

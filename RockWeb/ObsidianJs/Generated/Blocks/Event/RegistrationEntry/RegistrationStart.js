@@ -35,7 +35,7 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
-                name: 'Event.RegistrationEntry.Registration',
+                name: 'Event.RegistrationEntry.RegistrationStart',
                 components: {
                     RockButton: RockButton_1.default,
                     ProgressBar: ProgressBar_1.default,
@@ -47,26 +47,27 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                     };
                 },
                 props: {
-                    registrants: {
-                        type: Array,
+                    registrantCount: {
+                        type: Number,
+                        required: true
+                    },
+                    numberOfPages: {
+                        type: Number,
+                        required: true
+                    },
+                    registrationFieldValues: {
+                        type: Object,
                         required: true
                     }
                 },
                 data: function () {
                     return {
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || [])
+                        attributeValues: []
                     };
                 },
                 computed: {
-                    formCountPerRegistrant: function () {
-                        return this.registrationTemplateForms.length;
-                    },
-                    numberOfPages: function () {
-                        // All of the steps are 1 page except the "per-registrant"
-                        return 3 + (this.registrants.length * this.formCountPerRegistrant);
-                    },
                     completionPercentDecimal: function () {
-                        return (this.numberOfPages - 2) / this.numberOfPages;
+                        return 1 / this.numberOfPages;
                     },
                     completionPercentInt: function () {
                         return this.completionPercentDecimal * 100;
@@ -80,9 +81,34 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         this.$emit('next');
                     }
                 },
-                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <h1>{{viewModel.RegistrationAttributeTitleEnd}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
+                watch: {
+                    viewModel: {
+                        immediate: true,
+                        handler: function () {
+                            this.attributeValues = this.viewModel.RegistrationAttributesStart.map(function (a) { return ({
+                                Attribute: a,
+                                AttributeId: a.Id,
+                                Value: ''
+                            }); });
+                        }
+                    },
+                    attributeValues: {
+                        immediate: true,
+                        deep: true,
+                        handler: function () {
+                            for (var _i = 0, _a = this.attributeValues; _i < _a.length; _i++) {
+                                var attributeValue = _a[_i];
+                                var attribute = attributeValue.Attribute;
+                                if (attribute) {
+                                    this.registrationFieldValues[attribute.Guid] = attributeValue.Value;
+                                }
+                            }
+                        }
+                    }
+                },
+                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <h1>{{viewModel.RegistrationAttributeTitleStart}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };
 });
-//# sourceMappingURL=Registration.js.map
+//# sourceMappingURL=RegistrationStart.js.map

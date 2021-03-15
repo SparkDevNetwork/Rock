@@ -106,6 +106,16 @@ export default defineComponent({
             };
         }
     },
+    watch: {
+        field: {
+            immediate: true,
+            handler() {
+                if (!(this.field.Guid in this.fieldValues)) {
+                    this.fieldValues[this.field.Guid] = '';
+                }
+            }
+        }
+    },
     template: `
 <template v-if="isVisible">
     <RockField v-if="attribute" v-bind="fieldProps" v-model="this.fieldValues[this.field.Guid]" />

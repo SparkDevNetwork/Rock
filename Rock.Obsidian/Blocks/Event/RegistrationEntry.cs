@@ -21,10 +21,10 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel.Blocks;
+using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
 
 namespace Rock.Obsidian.Blocks.Event
@@ -188,8 +188,47 @@ namespace Rock.Obsidian.Blocks.Event
                     formViewModels.Add( form );
                 }
 
+                // Get the registration attributes term
+                var registrationAttributeTitleStart = ( registrationTemplate?.RegistrationAttributeTitleStart ).IsNullOrWhiteSpace() ?
+                    "Registration Information" :
+                    registrationTemplate.RegistrationAttributeTitleStart;
+
+                var registrationAttributeTitleEnd = ( registrationTemplate?.RegistrationAttributeTitleEnd ).IsNullOrWhiteSpace() ?
+                    "Registration Information" :
+                    registrationTemplate.RegistrationAttributeTitleEnd;
+
+                // Get the registration attributes
+                var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
+                var registrationAttributes = AttributeCache.All()
+                    .Where( a =>
+                        a.EntityTypeId == registrationEntityTypeId &&
+                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( registrationTemplate?.Id.ToStringSafe() ) &&
+                        a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name );
+
+                // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
+                var beforeAttributes = registrationAttributes
+                    .Where( a =>
+                        a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) )
+                    .Select( a => a.ToViewModel( currentPerson, false ) )
+                    .ToList();
+
+                // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
+                var afterAttributes = registrationAttributes
+                    .Where( a =>
+                        !a.Categories.Any() ||
+                        a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) )
+                    .Select( a => a.ToViewModel( currentPerson, false ) )
+                    .ToList();
+
                 return new RegistrationEntryBlockViewModel
                 {
+                    RegistrationAttributesStart = beforeAttributes,
+                    RegistrationAttributesEnd = afterAttributes,
+                    RegistrationAttributeTitleStart = registrationAttributeTitleStart,
+                    RegistrationAttributeTitleEnd = registrationAttributeTitleEnd,
                     InstructionsHtml = instructions,
                     RegistrantTerm = registrantTerm,
                     PluralRegistrantTerm = pluralRegistrantTerm,
@@ -274,6 +313,24 @@ namespace Rock.Obsidian.Blocks.Event
                 case RegistrationPersonFieldType.Campus:
                     var family = person.GetFamily( rockContext );
                     return family?.Guid;
+                case RegistrationPersonFieldType.Birthdate:
+                    return new BirthdayPickerViewModel
+                    {
+                        Year = person.BirthYear ?? 0,
+                        Month = person.BirthMonth ?? 0,
+                        Day = person.BirthDay ?? 0
+                    };
+                case RegistrationPersonFieldType.Address:
+                    var location = person.GetHomeLocation( rockContext );
+
+                    return new AddressControlViewModel
+                    {
+                        Street1 = location?.Street1 ?? string.Empty,
+                        Street2 = location?.Street2 ?? string.Empty,
+                        City = location?.City ?? string.Empty,
+                        State = location?.State ?? string.Empty,
+                        PostalCode = location?.PostalCode ?? string.Empty
+                    };
             }
 
             return null;

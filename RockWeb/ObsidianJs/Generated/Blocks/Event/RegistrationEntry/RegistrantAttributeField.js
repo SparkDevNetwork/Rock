@@ -112,6 +112,16 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                         };
                     }
                 },
+                watch: {
+                    field: {
+                        immediate: true,
+                        handler: function () {
+                            if (!(this.field.Guid in this.fieldValues)) {
+                                this.fieldValues[this.field.Guid] = '';
+                            }
+                        }
+                    }
+                },
                 template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-bind=\"fieldProps\" v-model=\"this.fieldValues[this.field.Guid]\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
             }));
         }

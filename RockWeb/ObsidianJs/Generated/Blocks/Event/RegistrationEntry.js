@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrant", "./RegistrationEntry/Registration", "./RegistrationEntry/Summary"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Intro_1, Registrant_1, Registration_1, Summary_1;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -26,14 +26,21 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
             },
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
+            },
             function (Intro_1_1) {
                 Intro_1 = Intro_1_1;
             },
-            function (Registrant_1_1) {
-                Registrant_1 = Registrant_1_1;
+            function (Registrants_1_1) {
+                Registrants_1 = Registrants_1_1;
+                Registrants_2 = Registrants_1_1;
             },
-            function (Registration_1_1) {
-                Registration_1 = Registration_1_1;
+            function (RegistrationStart_1_1) {
+                RegistrationStart_1 = RegistrationStart_1_1;
+            },
+            function (RegistrationEnd_1_1) {
+                RegistrationEnd_1 = RegistrationEnd_1_1;
             },
             function (Summary_1_1) {
                 Summary_1 = Summary_1_1;
@@ -44,22 +51,31 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                 name: 'Event.RegistrationEntry',
                 components: {
                     RockButton: RockButton_1.default,
+                    Registrants: Registrants_2.default,
                     RegistrationEntryIntro: Intro_1.default,
-                    RegistrationEntryRegistrant: Registrant_1.default,
-                    RegistrationEntryRegistration: Registration_1.default,
+                    RegistrationEntryRegistrants: Registrants_1.default,
+                    RegistrationEntryRegistrationStart: RegistrationStart_1.default,
+                    RegistrationEntryRegistrationEnd: RegistrationEnd_1.default,
                     RegistrationEntrySummary: Summary_1.default
+                },
+                setup: function () {
+                    return {
+                        viewModel: vue_1.inject('configurationValues')
+                    };
                 },
                 data: function () {
                     var steps = {
                         intro: 'intro',
+                        registrationStartForm: 'registrationStartForm',
                         perRegistrantForms: 'perRegistrantForms',
-                        registrationForm: 'registrationForm',
+                        registrationEndForm: 'registrationEndForm',
                         reviewAndPayment: 'reviewAndPayment'
                     };
                     return {
                         steps: steps,
                         currentStep: steps.intro,
-                        registrants: []
+                        registrants: [],
+                        registrationFieldValues: {}
                     };
                 },
                 methods: {
@@ -67,29 +83,54 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                         var numberOfRegistrants = _a.numberOfRegistrants;
                         // Resize the registrant array to match the selected number
                         while (numberOfRegistrants > this.registrants.length) {
-                            this.registrants.push({ FamilyGuid: null });
+                            this.registrants.push({
+                                FamilyGuid: null,
+                                FieldValues: {},
+                                FeeQuantities: {},
+                                Guid: Guid_1.newGuid()
+                            });
                         }
                         this.registrants.length = numberOfRegistrants;
                         // Advance to the next step
+                        this.currentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
+                    },
+                    onRegistrationStartPrevious: function () {
+                        this.currentStep = this.steps.intro;
+                    },
+                    onRegistrationStartNext: function () {
                         this.currentStep = this.steps.perRegistrantForms;
                     },
                     onRegistrantPrevious: function () {
-                        this.currentStep = this.steps.intro;
+                        this.currentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
                     },
                     onRegistrantNext: function () {
-                        this.currentStep = this.steps.registrationForm;
+                        this.currentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
                     },
-                    onRegistrationPrevious: function () {
+                    onRegistrationEndPrevious: function () {
                         this.currentStep = this.steps.perRegistrantForms;
                     },
-                    onRegistrationNext: function () {
+                    onRegistrationEndNext: function () {
                         this.currentStep = this.steps.reviewAndPayment;
                     },
                     onSummaryPrevious: function () {
-                        this.currentStep = this.steps.registrationForm;
+                        this.currentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
                     }
                 },
-                template: "\n<div>\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" :initialRegistrantCount=\"registrants.length\" />\n    <RegistrationEntryRegistrant v-else-if=\"currentStep === steps.perRegistrantForms\" :registrants=\"registrants\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistration v-else-if=\"currentStep === steps.registrationForm\" :registrants=\"registrants\" @next=\"onRegistrationNext\" @previous=\"onRegistrationPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" :registrants=\"registrants\" @previous=\"onSummaryPrevious\" />\n</div>"
+                computed: {
+                    hasPreAttributes: function () {
+                        return this.viewModel.RegistrationAttributesStart.length > 0;
+                    },
+                    hasPostAttributes: function () {
+                        return this.viewModel.RegistrationAttributesEnd.length > 0;
+                    },
+                    numberOfPages: function () {
+                        return 2 + // Intro and summary
+                            (this.hasPostAttributes ? 1 : 0) +
+                            (this.hasPreAttributes ? 1 : 0) +
+                            (this.viewModel.RegistrantForms.length * this.registrants.length);
+                    }
+                },
+                template: "\n<div>\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" :initialRegistrantCount=\"registrants.length\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" :registrationFieldValues=\"registrationFieldValues\" :registrantCount=\"registrants.length\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\"  :numberOfPages=\"numberOfPages\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" :registrants=\"registrants\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" :numberOfPages=\"numberOfPages\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" :registrationFieldValues=\"registrationFieldValues\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" :numberOfPages=\"numberOfPages\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" :registrants=\"registrants\" @previous=\"onSummaryPrevious\" />\n</div>"
             }));
         }
     };

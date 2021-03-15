@@ -51,8 +51,16 @@ export default defineComponent({
         };
     },
     props: {
+        currentRegistrantIndex: {
+            type: Number as PropType<number>,
+            required: true
+        },
         registrants: {
             type: Array as PropType<RegistrantInfo[]>,
+            required: true
+        },
+        numberOfPages: {
+            type: Number as PropType<number>,
             required: true
         }
     },
@@ -61,10 +69,7 @@ export default defineComponent({
             noFamilyValue: 'none',
             selectedFamily: '' as Guid,
             familyMemberGuid: '' as Guid,
-            currentRegistrantIndex: 0,
             currentFormIndex: 0,
-            fieldValues: {} as Record<Guid, unknown>,
-            feeQuantities: {} as Record<Guid, number>,
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
                 PersonAttribute: RegistrationFieldSource.PersonAttribute,
@@ -86,12 +91,9 @@ export default defineComponent({
         formCountPerRegistrant(): number {
             return this.viewModel.RegistrantForms.length;
         },
-        numberOfPages(): number {
-            // All of the steps are 1 page except the "per-registrant"
-            return 3 + (this.registrants.length * this.formCountPerRegistrant);
-        },
         completionPercentDecimal(): number {
-            return (1 + this.currentFormIndex + this.currentRegistrantIndex * this.formCountPerRegistrant) / this.numberOfPages;
+            const firstRegistrantPage = this.viewModel.RegistrationAttributesStart.length === 0 ? 1 : 2;
+            return (firstRegistrantPage + this.currentFormIndex + this.currentRegistrantIndex * this.formCountPerRegistrant) / this.numberOfPages;
         },
         completionPercentInt(): number {
             return this.completionPercentDecimal * 100;
@@ -157,7 +159,7 @@ export default defineComponent({
             // This is always on the first form
             const form = this.viewModel.RegistrantForms[0];
             const field = form?.Fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.FirstName);
-            const fieldValue = this.fieldValues[field?.Guid || ''];
+            const fieldValue = this.currentRegistrant.FieldValues[field?.Guid || ''];
             return typeof fieldValue === 'string' ? fieldValue : '';
         },
         familyMember(): RegistrationEntryBlockFamilyMemberViewModel | null {
@@ -211,14 +213,11 @@ export default defineComponent({
             this.familyMemberGuid = '';
         },
         viewModel: {
-            deep: true,
             immediate: true,
             handler() {
                 for (const form of this.viewModel.RegistrantForms) {
                     for (const field of form.Fields) {
-                        if (!(field.Guid in this.fieldValues)) {
-                            this.fieldValues[field.Guid] = '';
-                        }
+                        delete this.currentRegistrant.FieldValues[field.Guid];
                     }
                 }
             }
@@ -227,7 +226,7 @@ export default defineComponent({
             if (!this.familyMember) {
                 for (const form of this.viewModel.RegistrantForms) {
                     for (const field of form.Fields) {
-                        this.fieldValues[field.Guid] = '';
+                        delete this.currentRegistrant.FieldValues[field.Guid];
                     }
                 }
             }
@@ -235,7 +234,17 @@ export default defineComponent({
                 for (const form of this.viewModel.RegistrantForms) {
                     for (const field of form.Fields) {
                         if (field.Guid in this.familyMember.FieldValues) {
-                            this.fieldValues[field.Guid] = this.familyMember.FieldValues[field.Guid];
+                            const familyMemberValue = this.familyMember.FieldValues[field.Guid];
+
+                            if (!familyMemberValue) {
+                                delete this.currentRegistrant.FieldValues[field.Guid];
+                            }
+                            else if (typeof familyMemberValue === 'object') {
+                                this.currentRegistrant.FieldValues[field.Guid] = { ...familyMemberValue };
+                            }
+                            else {
+                                this.currentRegistrant.FieldValues[field.Guid] = familyMemberValue;
+                            }
                         }
                     }
                 }
@@ -243,40 +252,35 @@ export default defineComponent({
         }
     },
     template: `
-<div class="registrationentry-registrant">
-    <h1>{{currentRegistrantTitle}}</h1>
-    <ProgressBar :percent="completionPercentInt" />
-
-    <RockForm @submit="onNext">
-        <template v-if="currentFormIndex === 0">
-            <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
-                <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="familyOptions" validationTitle="Family" />
-            </div>
-            <DropDownList v-if="familyMemberOptions.length" v-model="familyMemberGuid" :options="familyMemberOptions" label="Family Member to Register" />
-        </template>
-
-        <template v-for="field in currentFormFields" :key="field.Guid">
-            <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="fieldValues" :isKnownFamilyMember="!!familyMemberGuid" />
-            <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="fieldValues" />
-            <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
-        </template>
-
-        <div v-if="isLastForm" class="well registration-additional-options">
-            <h4>{{pluralFeeTerm}}</h4>
-            <template v-for="fee in viewModel.Fees" :key="fee.Guid">
-                <FeeField :fee="fee" v-model="feeQuantities" />
-            </template>
+<RockForm @submit="onNext">
+    <template v-if="currentFormIndex === 0">
+        <div v-if="familyOptions.length > 1" class="well js-registration-same-family">
+            <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" v-model="selectedFamily" :options="familyOptions" validationTitle="Family" />
         </div>
+        <DropDownList v-if="familyMemberOptions.length" v-model="familyMemberGuid" :options="familyMemberOptions" label="Family Member to Register" />
+    </template>
 
-        <div class="actions">
-            <RockButton btnType="default" @click="onPrevious">
-                Previous
-            </RockButton>
-            <RockButton btnType="primary" class="pull-right" type="submit">
-                Next
-            </RockButton>
-        </div>
-    </RockForm>
-</div>
+    <template v-for="field in currentFormFields" :key="field.Guid">
+        <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="currentRegistrant.FieldValues" :isKnownFamilyMember="!!familyMemberGuid" />
+        <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="currentRegistrant.FieldValues" />
+        <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
+    </template>
+
+    <div v-if="isLastForm" class="well registration-additional-options">
+        <h4>{{pluralFeeTerm}}</h4>
+        <template v-for="fee in viewModel.Fees" :key="fee.Guid">
+            <FeeField :fee="fee" v-model="currentRegistrant.FeeQuantities" />
+        </template>
+    </div>
+
+    <div class="actions">
+        <RockButton btnType="default" @click="onPrevious">
+            Previous
+        </RockButton>
+        <RockButton btnType="primary" class="pull-right" type="submit">
+            Next
+        </RockButton>
+    </div>
+</RockForm>
 `
 });

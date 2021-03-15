@@ -80,6 +80,38 @@ namespace Rock.ViewModel.Blocks
         /// The family members.
         /// </value>
         public IEnumerable<RegistrationEntryBlockFamilyMemberViewModel> FamilyMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration attribute title end.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title end.
+        /// </value>
+        public string RegistrationAttributeTitleEnd { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration attribute title start.
+        /// </summary>
+        /// <value>
+        /// The registration attribute title start.
+        /// </value>
+        public string RegistrationAttributeTitleStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration attributes start.
+        /// </summary>
+        /// <value>
+        /// The registration attributes start.
+        /// </value>
+        public IEnumerable<AttributeViewModel> RegistrationAttributesStart { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration attributes end.
+        /// </summary>
+        /// <value>
+        /// The registration attributes end.
+        /// </value>
+        public IEnumerable<AttributeViewModel> RegistrationAttributesEnd { get; set; }
     }
 
     /// <summary>

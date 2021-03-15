@@ -29,9 +29,10 @@ import CurrencyBox from '../../Elements/CurrencyBox';
 import PanelWidget from '../../Elements/PanelWidget';
 import DatePicker from '../../Elements/DatePicker';
 import { RockDateType } from '../../Util/RockDate';
-import BirthdayPicker from '../../Elements/BirthdayPicker';
+import BirthdayPicker, { BirthdayPickerModel } from '../../Elements/BirthdayPicker';
 import NumberUpDown from '../../Elements/NumberUpDown';
 import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
+import Toggle from '../../Elements/Toggle';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -66,7 +67,8 @@ export default defineComponent({
         DatePicker,
         BirthdayPicker,
         NumberUpDown,
-        AddressControl
+        AddressControl,
+        Toggle
     },
     data() {
         return {
@@ -80,11 +82,12 @@ export default defineComponent({
             date: null as RockDateType | null,
             numberUpDown: 1,
             address: getDefaultAddressControlModel(),
+            toggle: false,
             birthday: {
-                month: 1,
-                day: 1,
-                year: 2020
-            }
+                Month: 1,
+                Day: 1,
+                Year: 2020
+            } as BirthdayPickerModel
         };
     },
     methods: {
@@ -170,11 +173,11 @@ export default defineComponent({
                 BirthdayPicker
             </template>
             <template #gallery>
-                <BirthdayPicker label="BirthdayPicker 1" v-model:day="birthday.day" v-model:month="birthday.month" v-model:year="birthday.year" />
-                <BirthdayPicker label="BirthdayPicker 2" v-model:day="birthday.day" v-model:month="birthday.month" v-model:year="birthday.year" />
+                <BirthdayPicker label="BirthdayPicker 1" v-model="birthday" />
+                <BirthdayPicker label="BirthdayPicker 2" v-model="birthday" />
             </template>
             <template #result>
-                {{birthday.month}} / {{birthday.day}} / {{birthday.year}}
+                {{birthday.Month}} / {{birthday.Day}} / {{birthday.Year}}
             </template>
         </GalleryAndResult>
         <GalleryAndResult>
@@ -240,6 +243,18 @@ export default defineComponent({
             </template>
             <template #result>
                 <pre>{{JSON.stringify(address, null, 2)}}</pre>
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                Toggle
+            </template>
+            <template #gallery>
+                <Toggle label="Toggle 1" v-model="toggle" />
+                <Toggle label="Toggle 2" v-model="toggle" />
+            </template>
+            <template #result>
+                {{toggle}}
             </template>
         </GalleryAndResult>
     </template>

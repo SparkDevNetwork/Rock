@@ -35,7 +35,7 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
-                name: 'Event.RegistrationEntry.Registration',
+                name: 'Event.RegistrationEntry.RegistrationEnd',
                 components: {
                     RockButton: RockButton_1.default,
                     ProgressBar: ProgressBar_1.default,
@@ -50,21 +50,18 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                     registrants: {
                         type: Array,
                         required: true
+                    },
+                    numberOfPages: {
+                        type: Number,
+                        required: true
                     }
                 },
                 data: function () {
                     return {
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || [])
+                        attributeValues: []
                     };
                 },
                 computed: {
-                    formCountPerRegistrant: function () {
-                        return this.registrationTemplateForms.length;
-                    },
-                    numberOfPages: function () {
-                        // All of the steps are 1 page except the "per-registrant"
-                        return 3 + (this.registrants.length * this.formCountPerRegistrant);
-                    },
                     completionPercentDecimal: function () {
                         return (this.numberOfPages - 2) / this.numberOfPages;
                     },
@@ -80,9 +77,21 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         this.$emit('next');
                     }
                 },
+                watch: {
+                    viewModel: {
+                        immediate: true,
+                        handler: function () {
+                            this.attributeValues = this.viewModel.RegistrationAttributesEnd.map(function (a) { return ({
+                                Attribute: a,
+                                AttributeId: a.Id,
+                                Value: ''
+                            }); });
+                        }
+                    }
+                },
                 template: "\n<div class=\"registrationentry-registration-attributes\">\n    <h1>{{viewModel.RegistrationAttributeTitleEnd}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };
 });
-//# sourceMappingURL=Registration.js.map
+//# sourceMappingURL=RegistrationEnd.js.map

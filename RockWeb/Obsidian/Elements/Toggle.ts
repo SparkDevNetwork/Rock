@@ -16,16 +16,26 @@
 //
 import { defineComponent, PropType } from 'vue';
 import JavaScriptAnchor from './JavaScriptAnchor';
+import RockFormField from './RockFormField';
 
 export default defineComponent({
     name: 'Toggle',
     components: {
-        JavaScriptAnchor
+        JavaScriptAnchor,
+        RockFormField
     },
     props: {
         modelValue: {
             type: Boolean as PropType<boolean>,
             required: true
+        },
+        trueText: {
+            type: String as PropType<string>,
+            default: 'On'
+        },
+        falseText: {
+            type: String as PropType<string>,
+            default: 'Off'
         }
     },
     data() {
@@ -40,12 +50,23 @@ export default defineComponent({
         }
     },
     template: `
-<div class="btn-group btn-toggle btn-group-justified">
-    <JavaScriptAnchor :class="modelValue ? selectedClasses : unselectedClasses" @click="onClick(true)">
-        <slot name="on">On</slot>
-    </JavaScriptAnchor>
-    <JavaScriptAnchor :class="modelValue ? unselectedClasses : selectedClasses" @click="onClick(false)">
-        <slot name="off">Off</slot>
-    </JavaScriptAnchor>
-</div>`
+<RockFormField
+    :modelValue="modelValue"
+    formGroupClasses="toggle"
+    name="toggle">
+    <template #default="{uniqueId, field, errors, disabled}">
+        <div class="control-wrapper">
+            <div class="toggle-container">
+                <div class="btn-group btn-toggle">
+                    <JavaScriptAnchor :class="modelValue ? unselectedClasses : selectedClasses" @click="onClick(false)">
+                        <slot name="off">{{falseText}}</slot>
+                    </JavaScriptAnchor>
+                    <JavaScriptAnchor :class="modelValue ? selectedClasses : unselectedClasses" @click="onClick(true)">
+                        <slot name="on">{{trueText}}</slot>
+                    </JavaScriptAnchor>
+                </div>
+            </div>
+        </div>
+    </template>
+</RockFormField>`
 });
