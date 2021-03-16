@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Reporting
             /// <value>
             /// The count.
             /// </value>
-            public new int Count { get; set; }
+            public int Count { get; set; }
         }
     }
 }

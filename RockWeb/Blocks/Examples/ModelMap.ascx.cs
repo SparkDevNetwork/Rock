@@ -341,6 +341,7 @@ namespace RockWeb.Blocks.Examples
                             .ToArray();
                         foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
                         {
+#pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
                             var property = new MProperty
                             {
                                 Name = p.Name,
@@ -356,6 +357,7 @@ namespace RockWeb.Blocks.Examples
                                 IsEnum = p.PropertyType.IsEnum,
                                 IsDefinedValue = p.Name.EndsWith( "ValueId" ) && p.IsDefined( typeof( DefinedValueAttribute ) )
                             };
+#pragma warning restore CS0618 // LavaIncludeAttribute is obsolete
 
                             if ( property.IsEnum )
                             {
