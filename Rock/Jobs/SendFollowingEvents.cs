@@ -26,6 +26,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -367,6 +368,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Helper class for following event notifications
     /// </summary>
+    [LavaType( "EventType", "Notices" )]
     [DotLiquid.LiquidType( "EventType", "Notices" )]
     public class FollowingEventTypeNotices
     {

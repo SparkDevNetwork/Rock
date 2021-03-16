@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Data
 {
@@ -111,7 +112,7 @@ namespace Rock.Data
         /// <value>
         /// The created by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? CreatedByPersonId
         {
@@ -131,7 +132,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the created by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string CreatedByPersonName
         {
@@ -151,7 +152,7 @@ namespace Rock.Data
         /// <value>
         /// The modified by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? ModifiedByPersonId
         {
@@ -171,7 +172,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the modified by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string ModifiedByPersonName
         {
@@ -584,7 +585,7 @@ namespace Rock.Data
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public override bool ContainsKey( object key )
+        public override bool ContainsKey( string key )
         {
             string attributeKey = key.ToStringSafe();
 
@@ -641,7 +642,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -652,7 +653,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Web.Cache;
-using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -120,7 +120,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The start time.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public DateTime? StartTime
         {
             get

@@ -609,6 +609,38 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Data\LavaIgnoreAttribute.cs" />
+    <Compile Include="Data\LavaIncludeAttribute.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\InteractionWrite.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Javascript.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\JsonProperty.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockEntity.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Search.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Sql.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Stylesheet.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\TagList.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\WebRequest.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\WorkflowActivate.cs" />
+    <Compile Include="Lava\RockLiquid\LavaFileSystem.cs" />
+    <Compile Include="Lava\RockLiquid\RockLiquidFilters.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeInline.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\IRockShortcode.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBase.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -647,6 +679,7 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -686,10 +719,11 @@
     <Compile Include="Lava\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\Blocks\InteractionWrite.cs" />
     <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
-    <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />
     <Compile Include="Lava\Blocks\CalendarEvents.cs" />
+    <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaElementAttributes.cs" />
-    <Compile Include="Lava\LavaFileSystem.cs" />
+    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
+    <Compile Include="Lava\RockFilters.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
@@ -760,9 +794,9 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
+    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
-    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Model\IdentityVerification.cs" />
     <Compile Include="Model\IdentityVerificationCode.cs" />
@@ -1082,7 +1116,6 @@
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
     <Compile Include="Lava\Shortcodes\Scripturize.cs" />
-    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Badge\Component\Assessment.cs" />
     <Compile Include="Model\Step.cs" />
     <Compile Include="Model\Streak.cs" />
@@ -1186,7 +1219,6 @@
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
-    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
@@ -1323,8 +1355,6 @@
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\IService.cs" />
-    <Compile Include="Data\LavaIgnoreAttribute.cs" />
-    <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Data\Model.cs" />
@@ -1553,7 +1583,6 @@
     <Compile Include="Jobs\UpdatePersistedDataviews.cs" />
     <Compile Include="Lava\Blocks\Execute.cs" />
     <Compile Include="Lava\Blocks\RockEntity.cs" />
-    <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
     <Compile Include="Lava\Blocks\Search.cs" />
     <Compile Include="Lava\Blocks\Javascript.cs" />
     <Compile Include="Lava\Blocks\Cache.cs" />
@@ -1562,18 +1591,10 @@
     <Compile Include="Lava\Blocks\WebRequest.cs" />
     <Compile Include="Lava\Blocks\Sql.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
-    <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
-    <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\LegacyLavaUpdater.cs" />
-    <Compile Include="Lava\RockFilters.cs" />
-    <Compile Include="Lava\Shortcodes\DynamicShortcodeBlock.cs" />
-    <Compile Include="Lava\Shortcodes\DynamicShortcodeInline.cs" />
-    <Compile Include="Lava\Shortcodes\IRockShortcode.cs" />
-    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
-    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
@@ -3167,6 +3188,14 @@
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj">
+      <Project>{37e293dd-f282-4a34-91fa-5fb8503d5672}</Project>
+      <Name>Rock.Lava</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>

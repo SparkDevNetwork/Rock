@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -77,7 +78,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>

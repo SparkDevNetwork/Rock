@@ -91,9 +91,24 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rock\Lava\Filters\MiscellaneousFilterTests.cs" />
+    <Compile Include="Rock\Lava\LiquidKeywordTests.cs" />
+    <Compile Include="Rock\UnitTestHelper.cs" />
     <Compile Include="Rock\Lava\LavaHelperTests.cs" />
     <Compile Include="Rock\Lava\RockFiltersTests.cs" />
-    <Compile Include="Rock\Lava\ShortcodeTests.cs" />
+    <Compile Include="Rock\Lava\Filters\CollectionFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\ColorFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\DateFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\EncodingFilterTests.cs" />
+    <Compile Include="Rock\Lava\LavaUnitTestBase.cs" />
+    <Compile Include="Rock\Lava\Filters\NumericFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\ObjectFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\SerializationFilterTests.cs" />
+    <Compile Include="Rock\Lava\Filters\TextFilterTests.cs" />
+    <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
+    <Compile Include="Rock\Lava\DynamicObjectTests.cs" />
+    <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
+    <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
     <Compile Include="Rock\Model\CommunicationTemplateTests.cs" />
@@ -107,6 +122,7 @@
     <Compile Include="Rock\Model\BinaryFileTypeTests.cs" />
     <Compile Include="Rock\Reporting\ValueFilterTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateTimeExtensionTests.cs" />
+    <Compile Include="Rock\Lava\LavaTestHelper.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\DateKeyExtensionTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
@@ -115,6 +131,7 @@
     <Compile Include="Rock\Utility\RockSerializableListTests.cs" />
     <Compile Include="Rock\Utility\RockSerializableDictionaryTests.cs" />
     <Compile Include="Rock\Utility\RockDynamicTests.cs" />
+    <Compile Include="Rock\Utility\ScripturizeTests.cs" />
     <Compile Include="Rock\Utility\TimeIntervalSettingTests.cs" />
     <Compile Include="Rock\Utility\RockCacheabilityTests.cs" />
     <Compile Include="Rock\Utility\ReflectionTests.cs" />
@@ -123,12 +140,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="lava-dotliquid-engine.runsettings" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj">
+      <Project>{37e293dd-f282-4a34-91fa-5fb8503d5672}</Project>
+      <Name>Rock.Lava</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>
@@ -155,6 +181,9 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lava-fluid-engine.runsettings" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

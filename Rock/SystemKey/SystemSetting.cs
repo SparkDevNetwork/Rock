@@ -231,5 +231,9 @@ namespace Rock.SystemKey
         /// Settings for Giving Analytics
         /// </summary>
         public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
+
+        /// Lava Engine Type.
+        /// </summary>
+        public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
     }
 }

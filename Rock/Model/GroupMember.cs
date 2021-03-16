@@ -33,6 +33,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -254,7 +255,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>

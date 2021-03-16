@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-using DotLiquid;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -35,19 +33,11 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Web
     /// </summary>
-    public class WebRequest : RockLavaBlockBase
+    public class WebRequest : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
-
-        /// <summary>
-        /// Method that will be run at Rock startup
-        /// </summary>
-        public override void OnStartup()
-        {
-            Template.RegisterTag<WebRequest>( "webrequest" );
-        }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -56,11 +46,11 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.Initialize( tagName, markup, tokens );
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -68,13 +58,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void Render( Context context, TextWriter result )
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
+                result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
+                base.OnRender( context, result );
                 return;
             }
 
@@ -127,10 +117,12 @@ namespace Rock.Lava.Blocks
                         else
                         {
                             result.Write( "When using the 'body' parameter you must also provide a 'requestcontenttype' also." );
-                            base.Render( context,  result );
+                            base.OnRender( context,  result );
                             return ;
                         }
                     }
+
+                    System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
 
                     IRestResponse response = client.Execute( request );
 
@@ -165,8 +157,10 @@ namespace Rock.Lava.Blocks
                         {
                             responseData = content;
                         }
-
-                        context.Scopes.Last()[parms["return"]] = responseData;
+                    }
+                    else if ( response.ErrorException != null )
+                    {
+                        responseData = $"Error: {response.ErrorMessage}";
                     }
                     else
                     {
@@ -177,12 +171,12 @@ namespace Rock.Lava.Blocks
                     throw;
                 }
 
-                context.Scopes.Last()[parms["return"]] = responseData;
+                context.SetMergeField( parms["return"], responseData, LavaContextRelativeScopeSpecifier.Root );
             }
             else {
                 result.Write( "No url parameter was found." );
             }
-            base.Render( context, result );
+            base.OnRender( context, result );
         }
 
         /// <summary>
@@ -191,28 +185,10 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
-
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            foreach( var environment in context.Environments )
-            {
-                foreach ( var item in environment )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
+            var internalMergeFields = context.GetMergeFields();
 
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 

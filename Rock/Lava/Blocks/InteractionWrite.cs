@@ -17,8 +17,6 @@
 using System.Collections.Generic;
 using System.IO;
 
-using DotLiquid;
-
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -28,7 +26,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows an Interaction to be written.
     /// </summary>
-    public class InteractionWrite : RockLavaBlockBase
+    public class InteractionWrite : LavaBlockBase
     {
         #region Parameter Keys
 
@@ -67,24 +65,16 @@ namespace Rock.Lava.Blocks
         private string _markup;
 
         /// <summary>
-        /// Method that will be run at Rock startup
-        /// </summary>
-        public override void OnStartup()
-        {
-            Template.RegisterTag<InteractionWrite>( "interactionwrite" );
-        }
-
-        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.Initialize( tagName, markup, tokens );
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -92,13 +82,13 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void Render( Context context, TextWriter result )
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
             if ( !this.IsAuthorized( context ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
+                result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
+                base.OnRender( context, result );
                 return;
             }
 
@@ -160,7 +150,7 @@ namespace Rock.Lava.Blocks
             string data = null;
             using ( TextWriter twData = new StringWriter() )
             {
-                base.Render( context, twData );
+                base.OnRender( context, twData );
                 data = twData.ToString();
             }
 

@@ -25,8 +25,6 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
 
-using DotLiquid;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -40,10 +38,13 @@ namespace Rock.Lava.Blocks
     /// <summary>
     ///
     /// </summary>
-    /// <seealso cref="DotLiquid.Block" />
-    public class RockEntity : RockLavaBlockBase
+    public class RockEntity : LavaBlockBase
     {
-        string _entityName = string.Empty;
+        /// <summary>
+        /// The type name of the target entity.
+        /// </summary>
+        public string EntityName { get; set; }
+
         string _markup = string.Empty;
 
         /// <summary>
@@ -52,11 +53,11 @@ namespace Rock.Lava.Blocks
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
-            _entityName = tagName;
+            //_entityName = tagName;
             _markup = markup;
-            base.Initialize( tagName, markup, tokens );
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -65,13 +66,15 @@ namespace Rock.Lava.Blocks
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
         /// <exception cref="System.Exception">Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist.</exception>
-        public override void Render( Context context, TextWriter result )
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
-            if ( !this.IsAuthorized( context ) )
+            var commandTypeName = this.GetType().Name.ToLower();
+
+            if ( !this.IsAuthorized( context, commandTypeName ) )
             {
-                result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
+                result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, commandTypeName ) );
+                base.OnRender( context, result );
                 return;
             }
 
@@ -80,13 +83,13 @@ namespace Rock.Lava.Blocks
             var modelName = string.Empty;
 
             // get a service for the entity based off it's friendly name
-            if ( _entityName == "business" )
+            if ( EntityName == "business" )
             {
                 modelName = "Rock.Model.Person";
             }
             else
             {
-                modelName = "Rock.Model." + _entityName;
+                modelName = "Rock.Model." + EntityName;
             }
 
             // Check first to see if this is a core model. use the createIfNotFound = false option
@@ -102,14 +105,14 @@ namespace Rock.Lava.Blocks
                         e.IsEntity &&
                         !e.Name.StartsWith( "Rock.Model" ) &&
                         e.FriendlyName != null &&
-                        e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
+                        e.FriendlyName.RemoveSpaces().ToLower() == EntityName )
                     .OrderBy( e => e.Id )
                     .FirstOrDefault();
 
                 // If still null check to see if this was a duplicate class and full class name was used as entity name
                 if ( entityTypeCache == null )
                 {
-                    modelName = _entityName.Replace( '_', '.' );
+                    modelName = EntityName.Replace( '_', '.' );
                     entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, modelName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                 }
             }
@@ -243,7 +246,7 @@ namespace Rock.Lava.Blocks
                         var queryResult = getResult as IQueryable<IEntity>;
 
                         // process entity specific filters
-                        switch ( _entityName )
+                        switch ( EntityName )
                         {
                             case "person":
                                 {
@@ -347,12 +350,12 @@ namespace Rock.Lava.Blocks
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
                             int countResult = queryResult.Count();
-                            context.Scopes.Last()["count"] = countResult;
+                            context.SetMergeField( "count", countResult, LavaContextRelativeScopeSpecifier.Root );
                         }
                         else
                         {
                             // Run security check on each result if enabled and entity is not a person (we do not check security on people)
-                            if ( parms["securityenabled"].AsBoolean() && _entityName != "person" )
+                            if ( parms["securityenabled"].AsBoolean() && EntityName != "person" )
                             {
                                 var items = queryResult.ToList();
                                 var itemsSecured = new List<IEntity>();
@@ -420,24 +423,25 @@ namespace Rock.Lava.Blocks
 
                             var resultList = queryResult.ToList();
 
-                            // if there is only one item to return set an alternative non-array based variable
+                            // Add the result to the current context.
+                            context.SetMergeField( parms["iterator"], resultList, LavaContextRelativeScopeSpecifier.Current );
+
                             if ( resultList.Count == 1 )
                             {
-                                context.Scopes.Last()[_entityName] = resultList.FirstOrDefault();
+                                // If there is only one item, set a singleton variable in addition to the result list.
+                                context.SetMergeField( EntityName, resultList.FirstOrDefault(), LavaContextRelativeScopeSpecifier.Current );
                             }
-
-                            context.Scopes.Last()[parms["iterator"]] = resultList;
                         }
                     }
                 }
             }
             else
             {
-                result.Write( string.Format( "Could not find a model for {0}.", _entityName ) );
-                base.Render( context, result );
+                result.Write( string.Format( "Could not find a model for {0}.", EntityName ) );
+                base.OnRender( context, result );
             }
 
-            base.Render( context, result );
+            base.OnRender( context, result );
         }
 
         #region Entity Specific Filters
@@ -504,7 +508,7 @@ namespace Rock.Lava.Blocks
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
-            Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( "business" );
+            LavaEngine.CurrentEngine.RegisterBlock( "business", ( name ) => { return new RockEntity(); } );
 
             // Register the core models first
             foreach ( var entityType in entityTypes
@@ -538,13 +542,20 @@ namespace Rock.Lava.Blocks
                 string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
 
                 // if entity name is already registered, use the full class name with namespace
-                Type tagType = Template.GetTagType( entityName );
-                if ( tagType != null )
+
+                var lavaEngine = LavaEngine.CurrentEngine;
+
+                if ( lavaEngine.GetRegisteredElements().ContainsKey( entityName ) )
                 {
                     entityName = entityType.Name.Replace( '.', '_' );
                 }
 
-                Template.RegisterTag<Rock.Lava.Blocks.RockEntity>( entityName );
+                lavaEngine.RegisterBlock( entityName,
+                    ( name ) =>
+                    {
+                        // Return a block having a tag name corresponding to the entity name.
+                        return new RockEntity() { SourceElementName = entityName, EntityName = entityName };
+                    } );
             }
         }
 
@@ -553,21 +564,12 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static Person GetCurrentPerson( DotLiquid.Context context )
+        private static Person GetCurrentPerson( ILavaRenderContext context )
         {
             Person currentPerson = null;
 
             // First check for a person override value included in lava context
-            if ( context.Scopes != null )
-            {
-                foreach ( var scopeHash in context.Scopes )
-                {
-                    if ( scopeHash.ContainsKey( "CurrentPerson" ) )
-                    {
-                        currentPerson = scopeHash["CurrentPerson"] as Person;
-                    }
-                }
-            }
+            currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
 
             if ( currentPerson == null )
             {
@@ -587,13 +589,16 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
             // first run lava across the inputted markup
+            var internalMergeFields = context.GetMergeFields();
+
+            /*
             var internalMergeFields = new Dictionary<string, object>();
 
             // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
+            foreach ( var scope in context.GetScopes )
             {
                 foreach ( var item in scope )
                 {
@@ -602,17 +607,19 @@ namespace Rock.Lava.Blocks
             }
 
             // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
+            if ( context.GetEnvironments.Count > 0 )
             {
-                foreach ( var item in context.Environments[0] )
+                foreach ( var item in context.GetEnvironments[0] )
                 {
                     internalMergeFields.AddOrReplace( item.Key, item.Value );
                 }
             }
+            */
+
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();
-            parms.Add( "iterator", string.Format( "{0}Items", _entityName ) );
+            parms.Add( "iterator", string.Format( "{0}Items", EntityName ) );
             parms.Add( "securityenabled", "true" );
 
             var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )

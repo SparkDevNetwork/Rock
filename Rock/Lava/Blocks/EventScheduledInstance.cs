@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using DotLiquid;
 using Rock.Model;
 
 namespace Rock.Lava.Blocks
@@ -30,7 +29,7 @@ namespace Rock.Lava.Blocks
     /// The <c>EventItems</c> collection contains information about the Event instances.
     /// The <c>EventScheduledInstances</c> collection contains the occurrences of the Event that match the filter parameters.
     /// </summary>
-    public class EventScheduledInstance : RockLavaBlockBase
+    public class EventScheduledInstance : LavaBlockBase
     {
         /// <summary>
         /// The name of the element as it is used in the source document.
@@ -43,24 +42,16 @@ namespace Rock.Lava.Blocks
         LavaElementAttributes _settings = new LavaElementAttributes();
 
         /// <summary>
-        /// Method that will be run at Rock startup
-        /// </summary>
-        public override void OnStartup()
-        {
-            Template.RegisterTag<EventScheduledInstance>( TagSourceName );
-        }
-
-        /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
         /// <param name="tagName">Name of the tag.</param>
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _attributesMarkup = markup;
 
-            base.Initialize( tagName, markup, tokens );
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -68,7 +59,7 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void Render( Context context, TextWriter result )
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             try
             {
@@ -80,7 +71,9 @@ namespace Rock.Lava.Blocks
 
                 AddLavaMergeFieldsToContext( context, events );
 
-                RenderAll( this.NodeList, context, result );
+                base.OnRender( context, result );
+
+                //RenderAll( this.NodeList, context, result );
             }
             catch ( Exception ex )
             {
@@ -97,7 +90,7 @@ namespace Rock.Lava.Blocks
             }
         }
 
-        private void AddLavaMergeFieldsToContext( Context context, List<EventOccurrenceSummary> eventOccurrenceSummaries )
+        private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<EventOccurrenceSummary> eventOccurrenceSummaries )
         {
             var eventSummaries = eventOccurrenceSummaries
                 .OrderBy( e => e.DateTime )

@@ -28,6 +28,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -348,7 +349,7 @@ namespace Rock.Model
         /// <value>
         /// A Location object representing the parent location of the current location. If this Location does not have a parent Location, this value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
@@ -397,7 +398,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupLocation"/> entities that reference this Location.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
@@ -429,7 +430,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedAddress
         {
             get { return GetFullStreetAddress(); }
@@ -441,7 +442,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted HTML address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedHtmlAddress
         {
             get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
@@ -506,7 +507,7 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int? CampusId
         {
             get
@@ -568,7 +569,7 @@ namespace Rock.Model
         /// <value>
         /// The polygon for google maps.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string GooglePolygon
         {
             get { return EncodeGooglePolygon(); }

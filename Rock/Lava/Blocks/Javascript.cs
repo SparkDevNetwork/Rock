@@ -22,9 +22,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using DotLiquid;
-
-using Rock.Utility;
 using Rock.Web.UI;
 
 namespace Rock.Lava.Blocks
@@ -32,27 +29,11 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows a snippet of JavaScript to be executed in the browser.
     /// </summary>
-    public class Javascript : DotLiquid.Block, IRockStartup
+    public class Javascript : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
         string _markup = string.Empty;
-
-        /// <summary>
-        /// Method that will be run at Rock startup
-        /// </summary>
-        public void OnStartup()
-        {
-            Template.RegisterTag<Javascript>( "javascript" );
-        }
-
-        /// <summary>
-        /// All IRockStartup classes will be run in order by this value. If class does not depend on an order, return zero.
-        /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
-        public int StartupOrder { get { return 0; } }
 
         /// <summary>
         /// Initializes the specified tag name.
@@ -61,11 +42,11 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="tokens">The tokens.</param>
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        public override void Initialize( string tagName, string markup, List<string> tokens )
+        public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
             _markup = markup;
 
-            base.Initialize( tagName, markup, tokens );
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -73,15 +54,21 @@ namespace Rock.Lava.Blocks
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="result">The result.</param>
-        public override void Render( Context context, TextWriter result )
+        public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            // Get the current page object if it is available.
+            RockPage page = null;
+
+            if ( HttpContext.Current != null )
+            {
+                page = HttpContext.Current.Handler as RockPage;
+            }
 
             var parms = ParseMarkup( _markup, context );
 
             using ( TextWriter twJavascript = new StringWriter() )
             {
-                base.Render( context, twJavascript );
+                base.OnRender( context, twJavascript );
 
                 if ( parms["url"].IsNullOrWhiteSpace() )
                 {
@@ -98,50 +85,85 @@ namespace Rock.Lava.Blocks
                         javascript = twJavascript.ToString();
                     }
 
+                    var scriptText = $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}";
+
                     if ( parms.ContainsKey( "id" ) )
                     {
                         var identifier = parms["id"];
                         if ( identifier.IsNotNullOrWhiteSpace() )
                         {
                             var controlId = "js-" + identifier;
+                            System.Web.UI.Control scriptControl = null;
 
-                            var scriptControl = page.Header.FindControl( controlId );
-                            if ( scriptControl == null )
+                            if ( page != null )
                             {
-                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" );
-                                scriptControl.ID = controlId;
-                                page.Header.Controls.Add( scriptControl );
+                                scriptControl = page.Header.FindControl( controlId );
+
+                                if ( scriptControl == null )
+                                {
+                                    scriptControl = new System.Web.UI.LiteralControl( scriptText );
+                                    scriptControl.ID = controlId;
+                                    page.Header.Controls.Add( scriptControl );
+                                }
+                            }
+                            else
+                            {
+                                result.Write( scriptText );
                             }
                         }
                     }
                     else
                     {
-                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script>{javascript}</script>{Environment.NewLine}" ) );
+                        if ( page != null )
+                        {
+                            page.Header.Controls.Add( new System.Web.UI.LiteralControl( scriptText ) );
+                        }
+                        else
+                        {
+                            result.Write( scriptText );
+                        }
                     }
                 }
                 else
                 {
                     var url = ResolveRockUrl( parms["url"] );
 
+                    var scriptText = $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}";
                     if ( parms.ContainsKey( "id" ) )
                     {
                         var identifier = parms["id"];
                         if ( identifier.IsNotNullOrWhiteSpace() )
                         {
                             var controlId = "js-" + identifier;
+                            System.Web.UI.Control scriptControl = null;
 
-                            var scriptControl = page.Header.FindControl( controlId );
-                            if ( scriptControl == null )
+                            if ( page != null )
                             {
-                                scriptControl = new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}" );
-                                scriptControl.ID = controlId;
-                                page.Header.Controls.Add( scriptControl );
+                                scriptControl = page.Header.FindControl( controlId );
+
+                                if ( scriptControl == null )
+                                {
+                                    scriptControl = new System.Web.UI.LiteralControl( scriptText );
+                                    scriptControl.ID = controlId;
+                                    page.Header.Controls.Add( scriptControl );
+                                }
+                            }
+                            else
+                            {
+                                result.Write( scriptText );
                             }
                         }
                     }
                     else
                     {
-                        page.Header.Controls.Add( new System.Web.UI.LiteralControl( $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}" ) );
+                        if ( page != null )
+                        {
+                            page.Header.Controls.Add( new System.Web.UI.LiteralControl( scriptText ) );
+                        }
+                        else
+                        {
+                            result.Write( scriptText );
+                        }
                     }
                 }
             }
@@ -154,6 +176,12 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         private string ResolveRockUrl(string url )
         {
+            // If we are not operating in the context of a page, return the unresolved URL.
+            if ( HttpContext.Current == null )
+            {
+                return url;
+            }
+
             RockPage page = HttpContext.Current.Handler as RockPage;
 
             if ( url.StartsWith( "~~" ) )
@@ -180,28 +208,11 @@ namespace Rock.Lava.Blocks
         /// <param name="markup">The markup.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private Dictionary<string, string> ParseMarkup( string markup, Context context )
+        private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = new Dictionary<string, object>();
+            var internalMergeFields = context.GetMergeFields();
 
-            // get variables defined in the lava source
-            foreach ( var scope in context.Scopes )
-            {
-                foreach ( var item in scope )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
-
-            // get merge fields loaded by the block or container
-            if ( context.Environments.Count > 0 )
-            {
-                foreach ( var item in context.Environments[0] )
-                {
-                    internalMergeFields.AddOrReplace( item.Key, item.Value );
-                }
-            }
             var resolvedMarkup = markup.ResolveMergeFields( internalMergeFields );
 
             var parms = new Dictionary<string, string>();

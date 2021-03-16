@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -107,7 +108,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DefinedType DefinedType { get; set; }
 
         #endregion

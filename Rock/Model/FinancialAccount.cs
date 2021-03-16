@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -236,7 +237,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the parent FinancialAccount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
@@ -245,7 +246,7 @@ namespace Rock.Model
         /// <value>
         /// the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -286,7 +287,7 @@ namespace Rock.Model
         /// <value>
         /// The parent account ids.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public List<int> ParentAccountIds
         {
             get

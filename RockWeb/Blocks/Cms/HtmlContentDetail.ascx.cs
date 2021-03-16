@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -626,7 +627,8 @@ namespace RockWeb.Blocks.Cms
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
+
+                if ( LavaHelper.IsLavaDataObject( contextEntity ) )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                     if ( type != null )

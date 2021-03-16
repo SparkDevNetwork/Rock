@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -181,7 +182,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that the exception occurred on. If this did not occur on a site, this value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Rock.Model.Site Site { get; set; }
 
         /// <summary>
@@ -191,7 +192,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> that the exception occurred on. If this exception was not thrown on a <see cref="Rock.Model.Page"/>
         /// this value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Rock.Model.Page Page { get; set; }
 
         #endregion
