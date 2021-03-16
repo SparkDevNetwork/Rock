@@ -38,7 +38,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     ///
     /// </summary>
-    public class RockEntity : LavaBlockBase
+    public class RockEntityBlock : LavaBlockBase
     {
         /// <summary>
         /// The type name of the target entity.
@@ -69,11 +69,9 @@ namespace Rock.Lava.Blocks
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // first ensure that entity commands are allowed in the context
-            var commandTypeName = this.GetType().Name.ToLower();
-
-            if ( !this.IsAuthorized( context, commandTypeName ) )
+            if ( !this.IsAuthorized( context, "rockentity" ) )
             {
-                result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, commandTypeName ) );
+                result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, "rockentity" ) );
                 base.OnRender( context, result );
                 return;
             }
@@ -508,7 +506,7 @@ namespace Rock.Lava.Blocks
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
-            LavaEngine.CurrentEngine.RegisterBlock( "business", ( name ) => { return new RockEntity(); } );
+            LavaEngine.CurrentEngine.RegisterBlock( "business", ( name ) => { return new RockEntityBlock(); } );
 
             // Register the core models first
             foreach ( var entityType in entityTypes
@@ -554,7 +552,7 @@ namespace Rock.Lava.Blocks
                     ( name ) =>
                     {
                         // Return a block having a tag name corresponding to the entity name.
-                        return new RockEntity() { SourceElementName = entityName, EntityName = entityName };
+                        return new RockEntityBlock() { SourceElementName = entityName, EntityName = entityName };
                     } );
             }
         }

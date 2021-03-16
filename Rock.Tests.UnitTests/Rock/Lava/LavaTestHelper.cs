@@ -18,13 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Data;
 using Rock.Lava;
 using Rock.Tests.Shared;
 using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -32,11 +29,12 @@ namespace Rock.Tests.UnitTests.Lava
     {
         public static LavaTestHelper New( LavaEngineTypeSpecifier? engineType = null )
         {
-            var engineOptions = new LavaEngineConfigurationOptions
+            var engineOptions = new LavaEngineConfigurationOptions();
+
+            if ( engineType != LavaEngineTypeSpecifier.RockLiquid )
             {
-                // Use the default Rock template provider for testing.
-                CacheService = new LavaTemplateCache()
-            };
+                engineOptions.CacheService = new WebsiteLavaTemplateCache();
+            }
 
             global::Rock.Lava.LavaEngine.Initialize( engineType, engineOptions );
 
@@ -45,13 +43,13 @@ namespace Rock.Tests.UnitTests.Lava
             if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
             {
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                engine.RegisterFilters( typeof( global::Rock.Lava.RockLiquid.RockLiquidFilters ) );
+                engine.RegisterFilters( typeof( global::Rock.Lava.RockFilters ) );
             }
             else
             {
                 // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                engine.RegisterFilters( typeof( global::Rock.Lava.RockFilters ) );
+                engine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
             }
 
             var helper = new LavaTestHelper();

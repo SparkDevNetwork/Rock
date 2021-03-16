@@ -59,7 +59,16 @@ namespace Rock.Lava
             {
                 if ( _sourceElementName == null )
                 {
-                    return this.GetType().Name.ToLower();
+                    // If the tag does not have an assigned name, use the Type name by convention -
+                    // but remove the "...Tag" suffix if it exists.
+                    var name = this.GetType().Name.ToLower();
+
+                    if ( name.EndsWith( "tag" ) )
+                    {
+                        name = name.Substring( 0, name.Length - 3 );
+                    }
+
+                    return name;
                 }
 
                 return _sourceElementName;

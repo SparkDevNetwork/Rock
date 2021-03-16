@@ -39,6 +39,11 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void DotLiquid_FilterRegisteredToDotLiquidFramework_ProducesCorrectResultInLavaLibrary()
         {
+            if ( !this.AssertCurrentEngineIs( LavaEngineTypeSpecifier.RockLiquid) )
+            {
+                return;
+            }
+
             DotLiquid.Template.RegisterFilter( typeof( TestDotLiquidFilter ) );
 
             var rockContext = new RockContext();

@@ -26,7 +26,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows an Interaction to be written.
     /// </summary>
-    public class InteractionWrite : LavaBlockBase
+    public class InteractionWriteBlock : LavaBlockBase
     {
         #region Parameter Keys
 

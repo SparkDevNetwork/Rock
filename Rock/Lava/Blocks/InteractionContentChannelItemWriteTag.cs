@@ -30,7 +30,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows a Content Channel Item Interaction to be written.
     /// </summary>
-    public class InteractionContentChannelItemWrite : LavaTagBase
+    public class InteractionContentChannelItemWriteTag : LavaTagBase
     {
         #region Parameter Keys
 

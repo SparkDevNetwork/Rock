@@ -37,7 +37,16 @@ namespace Rock.Lava
             {
                 if ( _sourceElementName == null )
                 {
-                    return this.GetType().Name.ToLower();
+                    // If the block does not have an assigned name, use the Type name by convention -
+                    // but remove the "...Block" suffix if it exists.
+                    var name = this.GetType().Name.ToLower();
+
+                    if ( name.EndsWith("block" ) )
+                    {
+                        name = name.Substring( 0, name.Length - 5 );
+                    }
+
+                    return name;
                 }
 
                 return _sourceElementName;
@@ -50,7 +59,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// The name of the block as it appears in the source tag.
+        /// The name of the block as it is appears in the source tag.
         /// </summary>
         public string InternalElementName
         {

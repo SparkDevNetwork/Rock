@@ -74,7 +74,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    public class WorkflowActivate : LavaBlockBase
+    public class WorkflowActivateBlock : LavaBlockBase
     {
         private string _markup;
 

@@ -217,13 +217,14 @@ namespace Rock.CheckIn
         public bool ContainsKey( object key )
         {
             var additionalProperties = new List<string> { "StartTime", "LastCheckIn" };
-            if ( additionalProperties.Contains( key.ToStringSafe() ) )
+            var propertyKey = key.ToStringSafe();
+            if ( additionalProperties.Contains( propertyKey ) )
             {
                 return true;
             }
             else
             {
-                return Schedule.ContainsKey( key );
+                return Schedule.ContainsKey( propertyKey );
             }
         }
 

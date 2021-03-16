@@ -25,7 +25,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Web
     /// </summary>
-    public class JsonProperty : LavaBlockBase
+    public class JsonPropertyBlock : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 

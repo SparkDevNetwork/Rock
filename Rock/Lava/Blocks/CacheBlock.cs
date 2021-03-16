@@ -34,7 +34,7 @@ namespace Rock.Lava.Blocks
     ///     My Lava is now fast!
     /// {% endcache %}
     /// </summary>
-    public class Cache : LavaBlockBase
+    public class CacheBlock : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 

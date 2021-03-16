@@ -757,9 +757,25 @@ namespace Rock.Web.Cache
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        public override bool ContainsKey( object key )
+        {
+            return ContainsKey( key.ToStringSafe() );
+        }
+
+        #endregion
+
+        #region ILavaDataDictionary
+
+        /// <summary>
+        /// Determines whether the specified Attribute key exists.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public override bool ContainsKey( string key )
         {
-            var propInfo = GetType().GetProperty( key.ToStringSafe() );
+            var propInfo = GetType().GetProperty( key );
             return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any();
         }
 

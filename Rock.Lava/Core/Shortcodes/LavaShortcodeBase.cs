@@ -21,7 +21,6 @@ using System.Text.Encodings.Web;
 
 namespace Rock.Lava
 {
-
     /// <summary>
     /// Provides base functionality for a Lava shortcode element.
     /// </summary>
@@ -39,7 +38,16 @@ namespace Rock.Lava
             {
                 if ( _elementName == null )
                 {
-                    return this.GetType().Name.ToLower();
+                    // If the shortcode does not have an assigned name, use the Type name by convention -
+                    // but remove the "...Shortcode" suffix if it exists.
+                    var name = this.GetType().Name.ToLower();
+
+                    if ( name.EndsWith( "shortcode" ) )
+                    {
+                        name = name.Substring( 0, name.Length - 9 );
+                    }
+
+                    return name;
                 }
 
                 return _elementName;

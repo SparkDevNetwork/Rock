@@ -68,7 +68,7 @@ namespace Rock.Tests.Integration.Lava
         {
             var options = new LavaEngineConfigurationOptions();
 
-            var cacheService = new LavaTemplateCache() as ILavaTemplateCacheService;
+            var cacheService = new WebsiteLavaTemplateCache() as ILavaTemplateCacheService;
 
             cacheService.ClearCache();
 

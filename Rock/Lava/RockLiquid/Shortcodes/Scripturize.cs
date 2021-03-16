@@ -24,9 +24,8 @@ using System.Text.RegularExpressions;
 using DotLiquid;
 
 using Rock.Utility;
-using Rock.Lava.Shortcodes;
 
-namespace Rock.Lava.RockLiquid.Shortcodes
+namespace Rock.Lava.Shortcodes
 {
     /// <summary>
     /// Lava shortcode for displaying scripture links

@@ -159,7 +159,7 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public virtual bool ContainsKey( string key )
+        public bool ContainsKey( string key )
         {
             string propertyKey = key.ToStringSafe();
             var propInfo = GetType().GetProperty( propertyKey );
@@ -176,7 +176,7 @@ namespace Rock.Communication.SmsActions
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public virtual bool ContainsKey( object key )
         {
             string propertyKey = key.ToStringSafe();
             var propInfo = GetType().GetProperty( propertyKey );

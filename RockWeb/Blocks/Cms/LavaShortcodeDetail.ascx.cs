@@ -133,11 +133,11 @@ namespace RockWeb.Blocks.Core
                 // register shortcode
                 if ( lavaShortcode.TagType == TagType.Block )
                 {
-                    Template.RegisterShortcode<Rock.Lava.RockLiquid.Shortcodes.DynamicShortcodeBlock>( lavaShortcode.TagName );
+                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( lavaShortcode.TagName );
                 }
                 else
                 {
-                    Template.RegisterShortcode<Rock.Lava.RockLiquid.Shortcodes.DynamicShortcodeInline>( lavaShortcode.TagName );
+                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( lavaShortcode.TagName );
                 }
 
                 // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other

@@ -25,7 +25,7 @@ namespace Rock.Lava.Shortcodes
     /// <summary>
     ///
     /// </summary>
-    public class BootstrapAlert : LavaShortcodeBase, ILavaBlock
+    public class BootstrapAlertShortcode : LavaShortcodeBase, ILavaBlock
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 

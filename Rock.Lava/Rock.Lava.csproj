@@ -266,7 +266,6 @@
     <Compile Include="Core\LavaRenderContextBase.cs" />
     <Compile Include="Implementations\Fluid\LavaObjectMemberAccessStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Core\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Utilities\LavaTypeInfo.cs" />
     <Compile Include="Utilities\ListExtensionMethods.cs" />
     <Compile Include="Utilities\RockSerializableDictionary.cs" />

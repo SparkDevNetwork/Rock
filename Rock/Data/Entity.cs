@@ -583,6 +583,8 @@ namespace Rock.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete("Use ContainsKey(string) instead.")]
+        [RockObsolete( "13.0" )]
         public virtual bool ContainsKey( object key )
         {
             string propertyKey = key.ToStringSafe();

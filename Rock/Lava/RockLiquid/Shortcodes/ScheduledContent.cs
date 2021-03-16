@@ -24,13 +24,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using DotLiquid;
-using DotLiquid.Util;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Lava.Shortcodes;
 
-namespace Rock.Lava.RockLiquid.Shortcodes
+namespace Rock.Lava.Shortcodes
 {
     /// <summary>
     /// Lava shortcode for displaying content at scheduled times.

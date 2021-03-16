@@ -32,7 +32,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Universal Search Lava Command
     /// </summary>
-    public class Search : LavaBlockBase
+    public class SearchBlock : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Lava.RockLiquid.Shortcodes
+namespace Rock.Lava.Shortcodes
 {
     /// <summary>
     /// A custom attribute for defining the shortcode documentation that will show

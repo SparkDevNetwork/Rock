@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
     /// The <c>EventItems</c> collection contains information about the Event instances.
     /// The <c>EventScheduledInstances</c> collection contains the actual occurrences of the event that match the filter.
     /// </summary>
-    public class CalendarEvents : LavaBlockBase
+    public class CalendarEventsBlock : LavaBlockBase
     {
         /// <summary>
         /// The name of the element as it is used in the source document.

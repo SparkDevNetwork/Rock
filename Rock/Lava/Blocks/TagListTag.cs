@@ -24,7 +24,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows you to list all of the registered Lava commands on your server.
     /// </summary>
-    public class TagList : LavaTagBase
+    public class TagListTag : LavaTagBase
     {
         /// <summary>
         /// Renders the specified context.

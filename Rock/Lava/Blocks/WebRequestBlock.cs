@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Web
     /// </summary>
-    public class WebRequest : LavaBlockBase
+    public class WebRequestBlock : LavaBlockBase
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 

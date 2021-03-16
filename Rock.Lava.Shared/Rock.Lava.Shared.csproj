@@ -81,7 +81,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\CommonMergeFieldsOptions.cs" />
     <Compile Include="Core\DynamicShortcodeDefinition.cs" />
     <Compile Include="Core\ILavaDataDictionary.cs" />
     <Compile Include="Core\ILavaDataDictionarySource.cs" />

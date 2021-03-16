@@ -23,15 +23,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 using DotLiquid;
-using DotLiquid.Util;
 
 using Rock.Lava.Blocks;
-using Rock.Lava.Shortcodes;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Lava.RockLiquid.Shortcodes
+namespace Rock.Lava.Shortcodes
 {
     /// <summary>
     ///

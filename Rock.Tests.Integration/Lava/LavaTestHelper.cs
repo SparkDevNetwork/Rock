@@ -34,11 +34,14 @@ namespace Rock.Tests.Integration.Lava
         {
             engineType = engineType ?? LavaEngineTypeSpecifier.DotLiquid;
 
-            var engineOptions = new LavaEngineConfigurationOptions
+            var engineOptions = new LavaEngineConfigurationOptions();
+
+            engineOptions.FileSystem = new MockFileProvider();
+
+            if ( engineType != LavaEngineTypeSpecifier.RockLiquid )
             {
-                FileSystem = new MockFileProvider(),
-                CacheService = new LavaTemplateCache()
-            };
+                engineOptions.CacheService = new WebsiteLavaTemplateCache();
+            }
 
             global::Rock.Lava.LavaEngine.Initialize( engineType, engineOptions );
 
@@ -63,11 +66,11 @@ namespace Rock.Tests.Integration.Lava
             if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
             {
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                engine.RegisterFilters( typeof( Rock.Lava.RockLiquid.RockLiquidFilters ) );
+                engine.RegisterFilters( typeof( Rock.Lava.RockFilters ) );
             }
             else
             {
-                engine.RegisterFilters( typeof( Rock.Lava.RockFilters ) );
+                engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
             }
         }
@@ -233,7 +236,17 @@ namespace Rock.Tests.Integration.Lava
 
                 foreach ( var shortcodeType in shortcodeTypes )
                 {
-                    engine.RegisterStaticShortcode( shortcodeType.Name, ( shortcodeName ) =>
+                    // Create an instance of the shortcode to get the registration name.
+                    var instance = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
+
+                    var name = instance.SourceElementName;
+
+                    if ( string.IsNullOrWhiteSpace( name ) )
+                    {
+                        name = shortcodeType.Name;
+                    }
+
+                    engine.RegisterStaticShortcode( name, ( shortcodeName ) =>
                     {
                         var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
 

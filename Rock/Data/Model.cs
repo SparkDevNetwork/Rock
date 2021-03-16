@@ -585,11 +585,27 @@ namespace Rock.Data
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete("Use ContainsKey(string) instead.")]
+        [RockObsolete("13.0")]
+        public override bool ContainsKey( object key )
+        {
+            return ContainsKey( key.ToStringSafe() );
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// This method is only necessary to support the old way of getting attribute values in 
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public override bool ContainsKey( string key )
         {
-            string attributeKey = key.ToStringSafe();
-
-            if ( attributeKey == "AttributeValues")
+            if ( key == "AttributeValues" )
             {
                 return true;
             }
@@ -603,18 +619,18 @@ namespace Rock.Data
                     this.LoadAttributes();
                 }
 
-                if ( attributeKey.EndsWith( "_unformatted" ) )
+                if ( key.EndsWith( "_unformatted" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_unformatted", "" );
+                    key = key.Replace( "_unformatted", "" );
                 }
-                else if ( attributeKey.EndsWith( "_url" ) )
+                else if ( key.EndsWith( "_url" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_url", "" );
+                    key = key.Replace( "_url", "" );
                 }
 
-                if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                if ( this.Attributes != null && this.Attributes.ContainsKey( key ) )
                 {
-                    var attribute = this.Attributes[attributeKey];
+                    var attribute = this.Attributes[key];
                     if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                     {
                         return true;
