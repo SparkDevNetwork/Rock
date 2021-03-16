@@ -110,7 +110,9 @@ namespace Rock.Web.UI.Controls
 
             this._hasAttributes = note.Attributes.Any();
 
-            this._avcNoteAttributes.AddEditControls( note );
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+
+            this._avcNoteAttributes.AddEditControls( note, Authorization.EDIT, rockPage?.CurrentPerson );
         }
 
         /// <summary>
@@ -605,8 +607,9 @@ namespace Rock.Web.UI.Controls
                 tempNoteForNewAttributes.SetAttributeValue( attribute.Key, tempNoteForExistingAttributeValueEdits.GetAttributeValue( attribute.Key ) );
             }
 
-            _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes );
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
 
+            _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
         }
 
         /// <summary>

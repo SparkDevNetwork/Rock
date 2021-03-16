@@ -33,7 +33,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunity" )]
     [DataContract]
     public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered

@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection activity type
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionActivityType" )]
     [DataContract]
     public partial class ConnectionActivityType : Model<ConnectionActivityType>, IHasActiveFlag

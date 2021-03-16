@@ -64,7 +64,7 @@ namespace Rock.Client
         public int? RegistrationId { get; set; }
 
         /// <summary />
-        public int? RegistrationInstanceId { get; set; }
+        public int RegistrationInstanceId { get; set; }
 
         /// <summary />
         public DateTime SessionStartDateTime { get; set; }

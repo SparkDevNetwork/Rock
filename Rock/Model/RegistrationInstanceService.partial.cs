@@ -55,11 +55,16 @@ namespace Rock.Model
             this.RelatedEntities.SetRelatedToSourceEntity( registrationInstance.Id, groups, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement );
         }
 
+        /// <summary>
+        /// Sets the registration instance placement groups.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="groups">The groups.</param>
+        /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
         public void SetRegistrationInstancePlacementGroups( RegistrationInstance registrationInstance, List<Group> groups, int registrationTemplatePlacementId )
         {
             this.RelatedEntities.SetRelatedToSourceEntity( registrationInstance.Id, groups, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, registrationTemplatePlacementId.ToString() );
         }
-
 
         /// <summary>
         /// Adds the registration instance placement group. Returns false if the group is already a placement group for this instance.

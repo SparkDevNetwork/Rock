@@ -563,7 +563,7 @@ namespace Rock.SystemGuid
         public const string CMS_CONFIGURATION = "B4A24AB7-9369-4055-883F-4F4892C39AE3";
 
         /// <summary>
-        /// Gets the Communication page guid
+        /// Gets the Communication page guid (stock external page)
         /// ParentPage: Support Pages
         /// </summary>
         public const string COMMUNICATION = "60002BC0-790A-4052-8F8D-B08C2C5D261C";

@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection opportunity group configuration
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunityGroupConfig" )]
     [DataContract]
     public partial class ConnectionOpportunityGroupConfig : Model<ConnectionOpportunityGroupConfig>

@@ -82,7 +82,7 @@
 
                     <div class="panel-body">
                         <small class="pull-right">Show:
-                            <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> inherited</span>
+                            <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> methods</span>
                         </small>
 
                         <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>
@@ -126,6 +126,7 @@
                 // Hide and unhide inherited properties and methods
                 $('.js-model-inherited').on('click', function () {
                     $(this).find('i.js-model-check').toggleClass('fa-check-square-o fa-square-o');
+                    $(this).closest('.panel-body').find('h4.js-model').toggleClass('non-hidden hidden ');
                     $(this).closest('.panel-body').find('li.js-model').toggleClass('non-hidden hidden ');
                 });
 
