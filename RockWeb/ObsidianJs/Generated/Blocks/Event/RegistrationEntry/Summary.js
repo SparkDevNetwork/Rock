@@ -14,17 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/ProgressBar", "../../../Elements/RockButton"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/RockButton"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, ProgressBar_1, RockButton_1;
+    var vue_1, RockButton_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
-            },
-            function (ProgressBar_1_1) {
-                ProgressBar_1 = ProgressBar_1_1;
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
@@ -34,43 +31,14 @@ System.register(["vue", "../../../Elements/ProgressBar", "../../../Elements/Rock
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry.Summary',
                 components: {
-                    ProgressBar: ProgressBar_1.default,
                     RockButton: RockButton_1.default
-                },
-                setup: function () {
-                    return {
-                        configurationValues: vue_1.inject('configurationValues')
-                    };
-                },
-                props: {
-                    registrants: {
-                        type: Array,
-                        required: true
-                    },
-                    numberOfPages: {
-                        type: Number,
-                        required: true
-                    }
-                },
-                data: function () {
-                    return {
-                        registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || [])
-                    };
-                },
-                computed: {
-                    completionPercentDecimal: function () {
-                        return (this.numberOfPages - 1) / this.numberOfPages;
-                    },
-                    completionPercentInt: function () {
-                        return this.completionPercentDecimal * 100;
-                    }
                 },
                 methods: {
                     onPrevious: function () {
                         this.$emit('previous');
                     }
                 },
-                template: "\n<div>\n    <h1>Summary</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n    </div>\n</div>"
+                template: "\n<div>\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };

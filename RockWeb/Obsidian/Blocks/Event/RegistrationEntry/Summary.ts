@@ -15,46 +15,13 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from 'vue';
-import ProgressBar from '../../../Elements/ProgressBar';
+import { defineComponent } from 'vue';
 import RockButton from '../../../Elements/RockButton';
-import RegistrationTemplateForm from '../../../ViewModels/CodeGenerated/RegistrationTemplateFormViewModel';
-import { ConfigurationValues } from '../../../Index';
-import { RegistrantInfo } from '../RegistrationEntry';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Summary',
     components: {
-        ProgressBar,
         RockButton
-    },
-    setup() {
-        return {
-            configurationValues: inject('configurationValues') as ConfigurationValues
-        };
-    },
-    props: {
-        registrants: {
-            type: Array as PropType<RegistrantInfo[]>,
-            required: true
-        },
-        numberOfPages: {
-            type: Number as PropType<number>,
-            required: true
-        }
-    },
-    data() {
-        return {
-            registrationTemplateForms: (this.configurationValues['registrationTemplateForms'] || []) as RegistrationTemplateForm[]
-        };
-    },
-    computed: {
-        completionPercentDecimal(): number {
-            return (this.numberOfPages - 1) / this.numberOfPages;
-        },
-        completionPercentInt(): number {
-            return this.completionPercentDecimal * 100;
-        }
     },
     methods: {
         onPrevious() {
@@ -63,8 +30,6 @@ export default defineComponent({
     },
     template: `
 <div>
-    <h1>Summary</h1>
-    <ProgressBar :percent="completionPercentInt" />
     <div class="actions">
         <RockButton btnType="default" @click="onPrevious">
             Previous

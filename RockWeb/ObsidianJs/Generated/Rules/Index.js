@@ -26,9 +26,15 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             }
         ],
         execute: function () {
-            vee_validate_1.defineRule('required', (function (value) {
-                if (typeof value === 'string' && String_1.isNullOrWhitespace(value)) {
-                    return 'is required';
+            vee_validate_1.defineRule('required', (function (value, _a) {
+                var optionsJson = _a[0];
+                var options = optionsJson ? JSON.parse(optionsJson) : {};
+                if (typeof value === 'string') {
+                    var allowEmptyString = !!(options.allowEmptyString);
+                    if (!allowEmptyString && String_1.isNullOrWhitespace(value)) {
+                        return 'is required';
+                    }
+                    return true;
                 }
                 if (typeof value === 'number' && value === 0) {
                     return 'is required';

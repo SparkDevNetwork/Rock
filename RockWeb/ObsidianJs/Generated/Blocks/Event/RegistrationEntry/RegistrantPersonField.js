@@ -133,17 +133,36 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
                     }
                 },
                 watch: {
+                    fieldValues: {
+                        immediate: true,
+                        deep: true,
+                        handler: function () {
+                            // Set the default value if needed
+                            if (this.field.Guid in this.fieldValues) {
+                                return;
+                            }
+                            var defaultValue = '';
+                            switch (this.field.PersonFieldType) {
+                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
+                                    defaultValue = BirthdayPicker_1.getDefaultBirthdayPickerModel();
+                                    break;
+                                case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
+                                    defaultValue = AddressControl_1.getDefaultAddressControlModel();
+                                    break;
+                            }
+                            this.fieldValues[this.field.Guid] = defaultValue;
+                        }
+                    },
                     field: {
                         immediate: true,
                         handler: function () {
                             return __awaiter(this, void 0, void 0, function () {
-                                var componentPath, defaultValue, componentModule, _a, component;
+                                var componentPath, componentModule, _a, component;
                                 return __generator(this, function (_b) {
                                     switch (_b.label) {
                                         case 0:
                                             this.loading = true;
                                             componentPath = '';
-                                            defaultValue = '';
                                             switch (this.field.PersonFieldType) {
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName:
                                                     componentPath = 'Elements/TextBox';
@@ -165,15 +184,10 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Elements/A
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
                                                     componentPath = 'Elements/BirthdayPicker';
-                                                    defaultValue = BirthdayPicker_1.getDefaultBirthdayPickerModel();
                                                     break;
                                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
                                                     componentPath = 'Controls/AddressControl';
-                                                    defaultValue = AddressControl_1.getDefaultAddressControlModel();
                                                     break;
-                                            }
-                                            if (!(this.field.Guid in this.fieldValues)) {
-                                                this.fieldValues[this.field.Guid] = defaultValue;
                                             }
                                             if (!componentPath) return [3 /*break*/, 2];
                                             return [4 /*yield*/, context_1.import("../../../" + componentPath)];

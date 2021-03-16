@@ -29,9 +29,17 @@ export function ruleArrayToString(rulesArray: string[]) {
     return rulesArray.join('|');
 }
 
-defineRule('required', (value => {
-    if (typeof value === 'string' && isNullOrWhitespace(value)) {
-        return 'is required';
+defineRule('required', ((value, [optionsJson]) => {
+    const options = optionsJson ? JSON.parse(optionsJson) : {};
+
+    if (typeof value === 'string') {
+        const allowEmptyString = !!(options.allowEmptyString);
+
+        if (!allowEmptyString && isNullOrWhitespace(value)) {
+            return 'is required';
+        }
+
+        return true;
     }
 
     if (typeof value === 'number' && value === 0) {

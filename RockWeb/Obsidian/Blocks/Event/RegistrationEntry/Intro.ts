@@ -15,9 +15,11 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from 'vue';
+import { defineComponent, inject } from 'vue';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
+import { newGuid } from '../../../Util/Guid';
+import { RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
@@ -27,26 +29,33 @@ export default defineComponent({
         RockButton
     },
     setup() {
+        const registrationEntryState = inject('registrationEntryState') as RegistrationEntryState;
+
         return {
-            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
+            numberOfRegistrants: registrationEntryState.Registrants.length || 1,
+            registrationEntryState
         };
     },
-    props: {
-        initialRegistrantCount: {
-            type: Number as PropType<number>,
-            default: 1
+    computed: {
+        viewModel(): RegistrationEntryBlockViewModel {
+            return this.registrationEntryState.ViewModel;
         }
-    },
-    data() {
-        return {
-            numberOfRegistrants: this.initialRegistrantCount || 1
-        };
     },
     methods: {
         onNext() {
-            this.$emit('next', {
-                numberOfRegistrants: this.numberOfRegistrants
-            });
+            // Resize the registrant array to match the selected number
+            while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
+                this.registrationEntryState.Registrants.push({
+                    FamilyGuid: null,
+                    FieldValues: {},
+                    FeeQuantities: {},
+                    Guid: newGuid(),
+                    PersonGuid: ''
+                });
+            }
+
+            this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+            this.$emit('next');
         },
     },
     template: `

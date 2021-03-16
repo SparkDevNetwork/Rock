@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../Elements/ProgressBar", "../../../Elements/RockButton"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../Elements/RockButton"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, AttributeValuesContainer_1, ProgressBar_1, RockButton_1;
+    var vue_1, AttributeValuesContainer_1, RockButton_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,9 +25,6 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
             },
             function (AttributeValuesContainer_1_1) {
                 AttributeValuesContainer_1 = AttributeValuesContainer_1_1;
-            },
-            function (ProgressBar_1_1) {
-                ProgressBar_1 = ProgressBar_1_1;
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
@@ -38,36 +35,17 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                 name: 'Event.RegistrationEntry.RegistrationEnd',
                 components: {
                     RockButton: RockButton_1.default,
-                    ProgressBar: ProgressBar_1.default,
                     AttributeValuesContainer: AttributeValuesContainer_1.default
                 },
                 setup: function () {
                     return {
-                        viewModel: vue_1.inject('configurationValues')
+                        registrationEntryState: vue_1.inject('registrationEntryState')
                     };
-                },
-                props: {
-                    registrants: {
-                        type: Array,
-                        required: true
-                    },
-                    numberOfPages: {
-                        type: Number,
-                        required: true
-                    }
                 },
                 data: function () {
                     return {
                         attributeValues: []
                     };
-                },
-                computed: {
-                    completionPercentDecimal: function () {
-                        return (this.numberOfPages - 2) / this.numberOfPages;
-                    },
-                    completionPercentInt: function () {
-                        return this.completionPercentDecimal * 100;
-                    }
                 },
                 methods: {
                     onPrevious: function () {
@@ -81,15 +59,28 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                     viewModel: {
                         immediate: true,
                         handler: function () {
-                            this.attributeValues = this.viewModel.RegistrationAttributesEnd.map(function (a) { return ({
+                            this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesEnd.map(function (a) { return ({
                                 Attribute: a,
                                 AttributeId: a.Id,
                                 Value: ''
                             }); });
                         }
+                    },
+                    attributeValues: {
+                        immediate: true,
+                        deep: true,
+                        handler: function () {
+                            for (var _i = 0, _a = this.attributeValues; _i < _a.length; _i++) {
+                                var attributeValue = _a[_i];
+                                var attribute = attributeValue.Attribute;
+                                if (attribute) {
+                                    this.registrationEntryState.RegistrationFieldValues[attribute.Guid] = attributeValue.Value;
+                                }
+                            }
+                        }
                     }
                 },
-                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <h1>{{viewModel.RegistrationAttributeTitleEnd}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
+                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };

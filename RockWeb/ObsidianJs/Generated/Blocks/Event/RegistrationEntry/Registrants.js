@@ -29,22 +29,44 @@ System.register(["vue", "./Registrant"], function (exports_1, context_1) {
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
-                name: 'Event.RegistrationEntry.Registrant',
+                name: 'Event.RegistrationEntry.Registrants',
                 components: {
                     Registrant: Registrant_1.default
                 },
-                props: {
-                    registrants: {
-                        type: Array,
-                        required: true
-                    }
-                },
-                data: function () {
+                setup: function () {
                     return {
-                        currentRegistrantIndex: 0
+                        registrationEntryState: vue_1.inject('registrationEntryState')
                     };
                 },
-                template: "\n<div class=\"registrationentry-registrant\">\n    <h1>{{currentRegistrantTitle}}</h1>\n    <ProgressBar :percent=\"completionPercentInt\" />\n\n    <Registrant v-for=\"(r, i) in registrants\" v-if=\"currentRegistrantIndex === i\" :currentRegistrantIndex=\"i\" :key=\"r.Guid\" />\n</div>"
+                methods: {
+                    onPrevious: function () {
+                        if (this.registrationEntryState.CurrentRegistrantIndex <= 0) {
+                            this.$emit('previous');
+                            return;
+                        }
+                        var lastFormIndex = this.registrationEntryState.ViewModel.RegistrantForms.length - 1;
+                        this.registrationEntryState.CurrentRegistrantIndex--;
+                        this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
+                    },
+                    onNext: function () {
+                        var lastIndex = this.registrationEntryState.Registrants.length - 1;
+                        if (this.registrationEntryState.CurrentRegistrantIndex >= lastIndex) {
+                            this.$emit('next');
+                            return;
+                        }
+                        this.registrationEntryState.CurrentRegistrantIndex++;
+                        this.registrationEntryState.CurrentRegistrantFormIndex = 0;
+                    }
+                },
+                computed: {
+                    registrants: function () {
+                        return this.registrationEntryState.Registrants;
+                    },
+                    currentRegistrantIndex: function () {
+                        return this.registrationEntryState.CurrentRegistrantIndex;
+                    }
+                },
+                template: "\n<div class=\"registrationentry-registrant\">\n    <template v-for=\"(r, i) in registrants\" :key=\"r.Guid\">\n        <Registrant v-show=\"currentRegistrantIndex === i\" :currentRegistrant=\"r\" @next=\"onNext\" @previous=\"onPrevious\" />\n    </template>\n</div>"
             }));
         }
     };

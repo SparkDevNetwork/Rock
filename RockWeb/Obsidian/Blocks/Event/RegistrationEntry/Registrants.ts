@@ -15,31 +15,55 @@
 // </copyright>
 //
 
-import { defineComponent, PropType } from 'vue';
-import { RegistrantInfo } from '../RegistrationEntry';
+import { defineComponent, inject } from 'vue';
 import Registrant from './Registrant';
+import { RegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
 
 export default defineComponent({
-    name: 'Event.RegistrationEntry.Registrant',
+    name: 'Event.RegistrationEntry.Registrants',
     components: {
         Registrant
     },
-    props: {
-        registrants: {
-            type: Array as PropType<RegistrantInfo[]>,
-            required: true
+    setup() {
+        return {
+            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
+        };
+    },
+    methods: {
+        onPrevious() {
+            if (this.registrationEntryState.CurrentRegistrantIndex <= 0) {
+                this.$emit('previous');
+                return;
+            }
+
+            const lastFormIndex = this.registrationEntryState.ViewModel.RegistrantForms.length - 1;
+            this.registrationEntryState.CurrentRegistrantIndex--;
+            this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
+        },
+        onNext() {
+            const lastIndex = this.registrationEntryState.Registrants.length - 1;
+
+            if (this.registrationEntryState.CurrentRegistrantIndex >= lastIndex) {
+                this.$emit('next');
+                return;
+            }
+
+            this.registrationEntryState.CurrentRegistrantIndex++;
+            this.registrationEntryState.CurrentRegistrantFormIndex = 0;
         }
     },
-    data() {
-        return {
-            currentRegistrantIndex: 0
-        };
+    computed: {
+        registrants(): RegistrantInfo[] {
+            return this.registrationEntryState.Registrants;
+        },
+        currentRegistrantIndex(): number {
+            return this.registrationEntryState.CurrentRegistrantIndex;
+        }
     },
     template: `
 <div class="registrationentry-registrant">
-    <h1>{{currentRegistrantTitle}}</h1>
-    <ProgressBar :percent="completionPercentInt" />
-
-    <Registrant v-for="(r, i) in registrants" v-if="currentRegistrantIndex === i" :currentRegistrantIndex="i" :key="r.Guid" />
+    <template v-for="(r, i) in registrants" :key="r.Guid">
+        <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" @next="onNext" @previous="onPrevious" />
+    </template>
 </div>`
 });

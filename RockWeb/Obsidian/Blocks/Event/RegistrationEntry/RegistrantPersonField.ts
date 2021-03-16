@@ -84,12 +84,34 @@ export default defineComponent({
         }
     },
     watch: {
+        fieldValues: {
+            immediate: true,
+            deep: true,
+            handler() {
+                // Set the default value if needed
+                if (this.field.Guid in this.fieldValues) {
+                    return;
+                }
+
+                let defaultValue: unknown = '';
+
+                switch (this.field.PersonFieldType) {
+                    case RegistrationPersonFieldType.Birthdate:
+                        defaultValue = getDefaultBirthdayPickerModel();
+                        break;
+                    case RegistrationPersonFieldType.Address:
+                        defaultValue = getDefaultAddressControlModel();
+                        break;
+                }
+
+                this.fieldValues[this.field.Guid] = defaultValue;
+            }
+        },
         field: {
             immediate: true,
             async handler() {
                 this.loading = true;
                 let componentPath = '';
-                let defaultValue: unknown = '';
 
                 switch (this.field.PersonFieldType) {
                     case RegistrationPersonFieldType.FirstName:
@@ -112,16 +134,10 @@ export default defineComponent({
                         break;
                     case RegistrationPersonFieldType.Birthdate:
                         componentPath = 'Elements/BirthdayPicker';
-                        defaultValue = getDefaultBirthdayPickerModel();
                         break;
                     case RegistrationPersonFieldType.Address:
                         componentPath = 'Controls/AddressControl';
-                        defaultValue = getDefaultAddressControlModel();
                         break;
-                }
-
-                if (!(this.field.Guid in this.fieldValues)) {
-                    this.fieldValues[this.field.Guid] = defaultValue;
                 }
 
                 const componentModule = componentPath ? (await import(`../../../${componentPath}`)) : null;

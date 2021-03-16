@@ -15,48 +15,27 @@
 // </copyright>
 //
 
-import { defineComponent, inject, PropType } from 'vue';
+import { defineComponent, inject } from 'vue';
 import AttributeValuesContainer from '../../../Controls/AttributeValuesContainer';
-import ProgressBar from '../../../Elements/ProgressBar';
 import RockButton from '../../../Elements/RockButton';
 import AttributeValue from '../../../ViewModels/CodeGenerated/AttributeValueViewModel';
-import { RegistrantInfo } from '../RegistrationEntry';
-import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryState } from '../RegistrationEntry';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.RegistrationEnd',
     components: {
         RockButton,
-        ProgressBar,
         AttributeValuesContainer
     },
     setup() {
         return {
-            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
+            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
         };
-    },
-    props: {
-        registrants: {
-            type: Array as PropType<RegistrantInfo[]>,
-            required: true
-        },
-        numberOfPages: {
-            type: Number as PropType<number>,
-            required: true
-        }
     },
     data() {
         return {
             attributeValues: [] as AttributeValue[]
         };
-    },
-    computed: {
-        completionPercentDecimal(): number {
-            return (this.numberOfPages - 2) / this.numberOfPages;
-        },
-        completionPercentInt(): number {
-            return this.completionPercentDecimal * 100;
-        }
     },
     methods: {
         onPrevious() {
@@ -70,19 +49,29 @@ export default defineComponent({
         viewModel: {
             immediate: true,
             handler() {
-                this.attributeValues = this.viewModel.RegistrationAttributesEnd.map(a => ({
+                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesEnd.map(a => ({
                     Attribute: a,
                     AttributeId: a.Id,
                     Value: ''
                 } as AttributeValue));
             }
+        },
+        attributeValues: {
+            immediate: true,
+            deep: true,
+            handler() {
+                for (const attributeValue of this.attributeValues) {
+                    const attribute = attributeValue.Attribute;
+
+                    if (attribute) {
+                        this.registrationEntryState.RegistrationFieldValues[attribute.Guid] = attributeValue.Value;
+                    }
+                }
+            }
         }
     },
     template: `
 <div class="registrationentry-registration-attributes">
-    <h1>{{viewModel.RegistrationAttributeTitleEnd}}</h1>
-    <ProgressBar :percent="completionPercentInt" />
-
     <AttributeValuesContainer :attributeValues="attributeValues" isEditMode />
 
     <div class="actions">

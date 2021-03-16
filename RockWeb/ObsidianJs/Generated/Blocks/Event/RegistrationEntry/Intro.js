@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/RockButton"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/RockButton", "../../../Util/Guid"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, NumberUpDown_1, RockButton_1;
+    var vue_1, NumberUpDown_1, RockButton_1, Guid_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -28,6 +28,9 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
+            },
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             }
         ],
         execute: function () {
@@ -38,26 +41,31 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
                     RockButton: RockButton_1.default
                 },
                 setup: function () {
+                    var registrationEntryState = vue_1.inject('registrationEntryState');
                     return {
-                        viewModel: vue_1.inject('configurationValues')
+                        numberOfRegistrants: registrationEntryState.Registrants.length || 1,
+                        registrationEntryState: registrationEntryState
                     };
                 },
-                props: {
-                    initialRegistrantCount: {
-                        type: Number,
-                        default: 1
+                computed: {
+                    viewModel: function () {
+                        return this.registrationEntryState.ViewModel;
                     }
-                },
-                data: function () {
-                    return {
-                        numberOfRegistrants: this.initialRegistrantCount || 1
-                    };
                 },
                 methods: {
                     onNext: function () {
-                        this.$emit('next', {
-                            numberOfRegistrants: this.numberOfRegistrants
-                        });
+                        // Resize the registrant array to match the selected number
+                        while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
+                            this.registrationEntryState.Registrants.push({
+                                FamilyGuid: null,
+                                FieldValues: {},
+                                FeeQuantities: {},
+                                Guid: Guid_1.newGuid(),
+                                PersonGuid: ''
+                            });
+                        }
+                        this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+                        this.$emit('next');
                     },
                 },
                 template: "\n<div class=\"registrationentry-intro\">\n    <div class=\"text-left\" v-html=\"viewModel.InstructionsHtml\">\n    </div>\n    <div class=\"registrationentry-intro\">\n        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>\n        <NumberUpDown v-model=\"numberOfRegistrants\" class=\"margin-t-sm\" numberIncrementClasses=\"input-lg\" />\n    </div>\n    <div class=\"actions text-right\">\n        <RockButton btnType=\"primary\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"

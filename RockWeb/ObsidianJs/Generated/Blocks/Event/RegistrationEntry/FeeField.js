@@ -132,6 +132,33 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/CheckBox",
                     }
                 },
                 watch: {
+                    modelValue: {
+                        immediate: true,
+                        deep: true,
+                        handler: function () {
+                            // Set the drop down selecton
+                            if (this.isDropDown) {
+                                this.dropDownValue = '';
+                                for (var _i = 0, _a = this.fee.Items; _i < _a.length; _i++) {
+                                    var item = _a[_i];
+                                    if (!this.dropDownValue && this.modelValue[item.Guid]) {
+                                        // Pick the first option that has a qty
+                                        this.modelValue[item.Guid] = 1;
+                                        this.dropDownValue = item.Guid;
+                                    }
+                                    else if (this.modelValue[item.Guid]) {
+                                        // Any other quantities need to be zeroed since only one can be picked
+                                        this.modelValue[item.Guid] = 0;
+                                    }
+                                }
+                            }
+                            // Set the checkbox selection
+                            if (this.isCheckbox && this.singleItem) {
+                                this.checkboxValue = !!this.modelValue[this.singleItem.Guid];
+                                this.modelValue[this.singleItem.Guid] = this.checkboxValue ? 1 : 0;
+                            }
+                        }
+                    },
                     fee: {
                         immediate: true,
                         handler: function () {

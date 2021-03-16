@@ -15,9 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, inject } from 'vue';
+import { defineComponent, inject, provide, reactive } from 'vue';
 import RockButton from '../../Elements/RockButton';
-import { Guid, newGuid } from '../../Util/Guid';
+import { Guid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrants from './RegistrationEntry/Registrants';
 import { RegistrationEntryBlockViewModel } from './RegistrationEntry/RegistrationEntryBlockViewModel';
@@ -25,12 +25,27 @@ import RegistrationEntryRegistrationStart from './RegistrationEntry/Registration
 import RegistrationEntryRegistrationEnd from './RegistrationEntry/RegistrationEnd';
 import RegistrationEntrySummary from './RegistrationEntry/Summary';
 import Registrants from './RegistrationEntry/Registrants';
+import ProgressBar from '../../Elements/ProgressBar';
+import NumberFilter from '../../Services/Number';
+import StringFilter from '../../Services/String';
+import Alert from '../../Elements/Alert';
 
 export type RegistrantInfo = {
     FamilyGuid: Guid | null;
+    PersonGuid: Guid;
     FieldValues: Record<Guid, unknown>;
     FeeQuantities: Record<Guid, number>;
     Guid: Guid;
+};
+
+export type RegistrationEntryState = {
+    Steps: Record<string, string>;
+    ViewModel: RegistrationEntryBlockViewModel;
+    CurrentStep: string;
+    CurrentRegistrantIndex: number;
+    CurrentRegistrantFormIndex: number;
+    Registrants: RegistrantInfo[];
+    RegistrationFieldValues: Record<Guid, unknown>;
 };
 
 export default defineComponent({
@@ -42,14 +57,11 @@ export default defineComponent({
         RegistrationEntryRegistrants,
         RegistrationEntryRegistrationStart,
         RegistrationEntryRegistrationEnd,
-        RegistrationEntrySummary
+        RegistrationEntrySummary,
+        ProgressBar,
+        Alert
     },
     setup() {
-        return {
-            viewModel: inject('configurationValues') as RegistrationEntryBlockViewModel
-        };
-    },
-    data() {
         const steps = {
             intro: 'intro',
             registrationStartForm: 'registrationStartForm',
@@ -58,53 +70,36 @@ export default defineComponent({
             reviewAndPayment: 'reviewAndPayment'
         };
 
+        const viewModel = inject('configurationValues') as RegistrationEntryBlockViewModel;
+
+        const registrationEntryState = reactive({
+            Steps: steps,
+            ViewModel: viewModel,
+            CurrentStep: steps.intro,
+            CurrentRegistrantFormIndex: 0,
+            CurrentRegistrantIndex: 0,
+            Registrants: [] as RegistrantInfo[],
+            RegistrationFieldValues: {} as Record<Guid, unknown>
+        }) as RegistrationEntryState;
+
+        provide('registrationEntryState', registrationEntryState);
+
         return {
+            viewModel,
             steps,
-            currentStep: steps.intro,
-            registrants: [] as RegistrantInfo[],
-            registrationFieldValues: {} as Record<Guid, unknown>
+            registrationEntryState
         };
     },
-    methods: {
-        onIntroNext({ numberOfRegistrants }) {
-            // Resize the registrant array to match the selected number
-            while (numberOfRegistrants > this.registrants.length) {
-                this.registrants.push({
-                    FamilyGuid: null,
-                    FieldValues: {},
-                    FeeQuantities: {},
-                    Guid: newGuid()
-                });
-            }
-
-            this.registrants.length = numberOfRegistrants;
-
-            // Advance to the next step
-            this.currentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
-        },
-        onRegistrationStartPrevious() {
-            this.currentStep = this.steps.intro;
-        },
-        onRegistrationStartNext() {
-            this.currentStep = this.steps.perRegistrantForms;
-        },
-        onRegistrantPrevious() {
-            this.currentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
-        },
-        onRegistrantNext() {
-            this.currentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
-        },
-        onRegistrationEndPrevious() {
-            this.currentStep = this.steps.perRegistrantForms;
-        },
-        onRegistrationEndNext() {
-            this.currentStep = this.steps.reviewAndPayment;
-        },
-        onSummaryPrevious() {
-            this.currentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
-        }
-    },
     computed: {
+        viewModel(): RegistrationEntryBlockViewModel {
+            return this.registrationEntryState.ViewModel;
+        },
+        currentStep(): string {
+            return this.registrationEntryState.CurrentStep;
+        },
+        registrants(): RegistrantInfo[] {
+            return this.registrationEntryState.Registrants;
+        },
         hasPreAttributes(): boolean {
             return this.viewModel.RegistrationAttributesStart.length > 0;
         },
@@ -116,14 +111,105 @@ export default defineComponent({
                 (this.hasPostAttributes ? 1 : 0) +
                 (this.hasPreAttributes ? 1 : 0) +
                 (this.viewModel.RegistrantForms.length * this.registrants.length);
+        },
+        completionPercentDecimal(): number {
+            if (this.currentStep === this.steps.intro) {
+                return 0;
+            }
+
+            if (this.currentStep === this.steps.registrationStartForm) {
+                return 1 / this.numberOfPages;
+            }
+
+            if (this.currentStep === this.steps.perRegistrantForms) {
+                const firstRegistrantPage = this.viewModel.RegistrationAttributesStart.length === 0 ? 1 : 2;
+                const finishedRegistrantForms = this.registrationEntryState.CurrentRegistrantIndex * this.viewModel.RegistrantForms.length;
+                return (firstRegistrantPage + this.registrationEntryState.CurrentRegistrantFormIndex + finishedRegistrantForms) / this.numberOfPages;
+            }
+
+            if (this.currentStep === this.steps.registrationEndForm) {
+                return (this.numberOfPages - 2) / this.numberOfPages;
+            }
+
+            if (this.currentStep === this.steps.reviewAndPayment) {
+                return (this.numberOfPages - 1) / this.numberOfPages;
+            }
+
+            return 0;
+        },
+        completionPercentInt(): number {
+            return this.completionPercentDecimal * 100;
+        },
+        uppercaseRegistrantTerm(): string {
+            return StringFilter.toTitleCase(this.viewModel.RegistrantTerm);
+        },
+        currentRegistrantTitle(): string {
+            const ordinal = NumberFilter.toOrdinal(this.registrationEntryState.CurrentRegistrantIndex + 1);
+            let title = StringFilter.toTitleCase(
+                this.registrants.length <= 1 ?
+                    this.uppercaseRegistrantTerm :
+                    ordinal + ' ' + this.uppercaseRegistrantTerm);
+
+            if (this.registrationEntryState.CurrentRegistrantFormIndex > 0) {
+                title += ' (cont)';
+            }
+
+            return title;
+        },
+        stepTitle(): string {
+            if (this.currentStep === this.steps.registrationStartForm) {
+                return this.viewModel.RegistrationAttributeTitleStart;
+            }
+
+            if (this.currentStep === this.steps.perRegistrantForms) {
+                return this.currentRegistrantTitle;
+            }
+
+            if (this.currentStep === this.steps.registrationStartForm) {
+                return this.viewModel.RegistrationAttributeTitleEnd;
+            }
+
+            return '';
+        }
+    },
+    methods: {
+        onIntroNext() {
+            this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
+        },
+        onRegistrationStartPrevious() {
+            this.registrationEntryState.CurrentStep = this.steps.intro;
+        },
+        onRegistrationStartNext() {
+            this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+        },
+        onRegistrantPrevious() {
+            this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
+        },
+        onRegistrantNext() {
+            this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
+        },
+        onRegistrationEndPrevious() {
+            this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+        },
+        onRegistrationEndNext() {
+            this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
+        },
+        onSummaryPrevious() {
+            this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
         }
     },
     template: `
 <div>
-    <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" :initialRegistrantCount="registrants.length" />
-    <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" :registrationFieldValues="registrationFieldValues" :registrantCount="registrants.length" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious"  :numberOfPages="numberOfPages" />
-    <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" :registrants="registrants" @next="onRegistrantNext" @previous="onRegistrantPrevious" :numberOfPages="numberOfPages" />
-    <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" :registrationFieldValues="registrationFieldValues" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" :numberOfPages="numberOfPages" />
-    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" :registrants="registrants" @previous="onSummaryPrevious" />
+    <template v-if="currentStep !== steps.intro">
+        <h1>{{stepTitle}}</h1>
+        <ProgressBar :percent="completionPercentInt" />
+    </template>
+
+    <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
+    <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
+    <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
+    <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
+    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @previous="onSummaryPrevious" />
+    <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
 </div>`
 });
