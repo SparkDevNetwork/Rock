@@ -32,7 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection request
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionRequest" )]
     [DataContract]
     public partial class ConnectionRequest : Model<ConnectionRequest>, IOrdered
