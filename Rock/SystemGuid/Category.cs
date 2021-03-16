@@ -118,6 +118,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";
 
+        /// <summary>
+        /// History of connection request changes
+        /// </summary>
+        public const string HISTORY_CONNECTION_REQUEST = "A8542DD2-91B1-4CCA-873A-D052BCD6EE06";
+
         #endregion
 
         #region Schedule Categories
