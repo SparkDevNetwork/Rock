@@ -252,14 +252,17 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            BlockCache _block = BlockCache.Get( blockId.Value );
-            var _site = SiteCache.Get( _block.Page.SiteId );
-
-            // Change Pre/Post text labels if this is a mobile block
-            if ( _site.SiteType == SiteType.Mobile )
+            var _block = BlockCache.Get( blockId.Value );
+            if ( _block.Page != null )
             {
-                cePostHtml.Label = "Post-XAML";
-                cePreHtml.Label = "Pre-XAML";
+                var _site = SiteCache.Get( _block.Page.SiteId );
+
+                // Change Pre/Post text labels if this is a mobile block
+                if ( _site.SiteType == SiteType.Mobile )
+                {
+                    cePostHtml.Label = "Post-XAML";
+                    cePreHtml.Label = "Pre-XAML";
+                }
             }
 
             var blockControlType = _block.BlockType.GetCompiledType();
