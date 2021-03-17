@@ -112,6 +112,22 @@ namespace Rock.ViewModel.Blocks
         /// The registration attributes end.
         /// </value>
         public IEnumerable<AttributeViewModel> RegistrationAttributesEnd { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum registrants.
+        /// </summary>
+        /// <value>
+        /// The maximum registrants.
+        /// </value>
+        public int MaxRegistrants { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [do ask for family].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [do ask for family]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DoAskForFamily { get; set; }
     }
 
     /// <summary>
@@ -310,6 +326,22 @@ namespace Rock.ViewModel.Blocks
         /// The visibility rules.
         /// </value>
         public IEnumerable<RegistrationEntryBlockVisibilityViewModel> VisibilityRules { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pre HTML.
+        /// </summary>
+        /// <value>
+        /// The pre HTML.
+        /// </value>
+        public string PreHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the post HTML.
+        /// </summary>
+        /// <value>
+        /// The post HTML.
+        /// </value>
+        public string PostHtml { get; set; }
     }
 
     /// <summary>

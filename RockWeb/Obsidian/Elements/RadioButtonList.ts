@@ -75,30 +75,3 @@ export default defineComponent({
     </div>
 </RockFormField>`
 });
-
-/*
-<div class="form-group rock-radio-button-list required">
-    <label class="control-label" for="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions">
-        Particip4nt is in the same immediate family as
-    </label>
-    <div class="control-wrapper">
-        <div class="controls js-rockradiobuttonlist rockradiobuttonlist rockradiobuttonlist-vertical">
-            <span id="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions">
-                <div class="radio">
-                    <label class="" for="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions_0">
-                        <input id="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions_0" type="radio" name="ctl00$main$ctl23$ctl02$ctl06$rblFamilyOptions" value="8611f5e6-c63f-4c2a-ae5c-859cdb350cd0">
-                        <span class="label-text">Joe Hello</span>
-                    </label>
-                </div>
-                <div class="radio">
-                    <label class="" for="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions_1">
-                        <input id="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions_1" type="radio" name="ctl00$main$ctl23$ctl02$ctl06$rblFamilyOptions" value="300e6c88-3b7f-43a4-9542-ef44ee5bf73b">
-                        <span class="label-text">None of the above</span>
-                    </label>
-                </div>
-            </span>
-        </div>
-    </div>
-    <span id="ctl00_main_ctl23_ctl02_ctl06_rblFamilyOptions_rblFamilyOptions_rfv" class="validation-error help-inline" style="display:none;">Answer to which family is required.</span>
-</div>
-*/

@@ -18,8 +18,7 @@
 import { defineComponent, inject } from 'vue';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
-import { newGuid } from '../../../Util/Guid';
-import { RegistrationEntryState } from '../RegistrationEntry';
+import { getDefaultRegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent({
@@ -45,13 +44,7 @@ export default defineComponent({
         onNext() {
             // Resize the registrant array to match the selected number
             while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
-                this.registrationEntryState.Registrants.push({
-                    FamilyGuid: null,
-                    FieldValues: {},
-                    FeeQuantities: {},
-                    Guid: newGuid(),
-                    PersonGuid: ''
-                });
+                this.registrationEntryState.Registrants.push(getDefaultRegistrantInfo());
             }
 
             this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
@@ -62,9 +55,9 @@ export default defineComponent({
 <div class="registrationentry-intro">
     <div class="text-left" v-html="viewModel.InstructionsHtml">
     </div>
-    <div class="registrationentry-intro">
+    <div v-if="viewModel.MaxRegistrants > 1" class="registrationentry-intro">
         <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>
-        <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" />
+        <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.MaxRegistrants" />
     </div>
     <div class="actions text-right">
         <RockButton btnType="primary" @click="onNext">

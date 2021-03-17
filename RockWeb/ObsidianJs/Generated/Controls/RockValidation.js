@@ -39,23 +39,31 @@ System.register(["../Elements/Alert", "vue"], function (exports_1, context_1) {
                         return Object.keys(this.errorsToShow).length > 0;
                     }
                 },
+                methods: {
+                    syncErrorsDebounced: function () {
+                        // There are errors that come in at different cycles. We don't want the screen jumping around as the
+                        // user fixes errors. But, we do want the validations from the submit cycle to all get through even
+                        // though they come at different times. The "debounce" 1000ms code is to try to allow all of those
+                        // through, but then prevent changes once the user starts fixing the form.
+                        var now = new Date().getTime();
+                        var msSinceLastChange = now - this.lastErrorChangeMs;
+                        this.lastErrorChangeMs = now;
+                        var wasSubmitted = this.lastSubmitCount < this.submitCount;
+                        if (msSinceLastChange > 1000 || !wasSubmitted) {
+                            return;
+                        }
+                        this.errorsToShow = this.errors;
+                        this.lastSubmitCount = this.submitCount;
+                    }
+                },
                 watch: {
+                    submitCount: function () {
+                        this.syncErrorsDebounced();
+                    },
                     errors: {
                         immediate: true,
                         handler: function () {
-                            // There are errors that come in at different cycles. We don't want the screen jumping around as the
-                            // user fixes errors. But, we do want the validations from the submit cycle to all get through even
-                            // though they come at different times. The "debounce" 1000ms code is to try to allow all of those
-                            // through, but then prevent changes once the user starts fixing the form.
-                            var now = new Date().getTime();
-                            var msSinceLastChange = now - this.lastErrorChangeMs;
-                            this.lastErrorChangeMs = now;
-                            var wasSubmitted = this.lastSubmitCount < this.submitCount;
-                            if (msSinceLastChange > 1000 || !wasSubmitted) {
-                                return;
-                            }
-                            this.errorsToShow = this.errors;
-                            this.lastSubmitCount = this.submitCount;
+                            this.syncErrorsDebounced();
                         }
                     }
                 },

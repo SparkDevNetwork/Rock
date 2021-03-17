@@ -17,6 +17,7 @@
 
 import { defineComponent, inject } from 'vue';
 import AttributeValuesContainer from '../../../Controls/AttributeValuesContainer';
+import RockForm from '../../../Controls/RockForm';
 import RockButton from '../../../Elements/RockButton';
 import AttributeValue from '../../../ViewModels/CodeGenerated/AttributeValueViewModel';
 import { RegistrationEntryState } from '../RegistrationEntry';
@@ -25,7 +26,8 @@ export default defineComponent({
     name: 'Event.RegistrationEntry.RegistrationStart',
     components: {
         RockButton,
-        AttributeValuesContainer
+        AttributeValuesContainer,
+        RockForm
     },
     setup() {
         return {
@@ -76,15 +78,17 @@ export default defineComponent({
     },
     template: `
 <div class="registrationentry-registration-attributes">
-    <AttributeValuesContainer :attributeValues="attributeValues" isEditMode />
+    <RockForm @submit="onNext">
+        <AttributeValuesContainer :attributeValues="attributeValues" isEditMode />
 
-    <div class="actions">
-        <RockButton btnType="default" @click="onPrevious">
-            Previous
-        </RockButton>
-        <RockButton btnType="primary" class="pull-right" @click="onNext">
-            Next
-        </RockButton>
-    </div>
+        <div class="actions">
+            <RockButton btnType="default" @click="onPrevious">
+                Previous
+            </RockButton>
+            <RockButton btnType="primary" class="pull-right" type="submit">
+                Next
+            </RockButton>
+        </div>
+    </RockForm>
 </div>`
 });

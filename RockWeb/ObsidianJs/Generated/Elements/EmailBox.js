@@ -1,6 +1,6 @@
-System.register(["../Rules/Index", "vue", "./TextBox"], function (exports_1, context_1) {
+System.register(["../Rules/Index", "vue", "./RockFormField"], function (exports_1, context_1) {
     "use strict";
-    var Index_1, vue_1, TextBox_1;
+    var Index_1, vue_1, RockFormField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -10,24 +10,20 @@ System.register(["../Rules/Index", "vue", "./TextBox"], function (exports_1, con
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
-            function (TextBox_1_1) {
-                TextBox_1 = TextBox_1_1;
+            function (RockFormField_1_1) {
+                RockFormField_1 = RockFormField_1_1;
             }
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
                 name: 'EmailBox',
                 components: {
-                    TextBox: TextBox_1.default
+                    RockFormField: RockFormField_1.default
                 },
                 props: {
                     modelValue: {
                         type: String,
                         required: true
-                    },
-                    label: {
-                        type: String,
-                        default: 'Email'
                     },
                     rules: {
                         type: String,
@@ -59,7 +55,7 @@ System.register(["../Rules/Index", "vue", "./TextBox"], function (exports_1, con
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<TextBox v-model.trim=\"internalValue\" :label=\"label\" :rules=\"computedRules\" />"
+                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    formGroupClasses=\"rock-text-box\"\n    name=\"textbox\"\n    :rules=\"computedRules\">\n    <template #default=\"{uniqueId, field, errors, disabled}\">\n        <div class=\"control-wrapper\">\n            <div class=\"input-group\">\n                <span class=\"input-group-addon\">\n                    <i class=\"fa fa-envelope\"></i>\n                </span>\n                <input :id=\"uniqueId\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n            </div>\n        </div>\n    </template>\n</RockFormField>"
             }));
         }
     };

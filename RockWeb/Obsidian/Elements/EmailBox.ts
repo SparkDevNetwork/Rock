@@ -16,21 +16,17 @@
 //
 import { ruleStringToArray, ruleArrayToString } from '../Rules/Index';
 import { defineComponent, PropType } from 'vue';
-import TextBox from './TextBox';
+import RockFormField from './RockFormField';
 
 export default defineComponent({
     name: 'EmailBox',
     components: {
-        TextBox
+        RockFormField
     },
     props: {
         modelValue: {
             type: String as PropType<string>,
             required: true
-        },
-        label: {
-            type: String as PropType<string>,
-            default: 'Email'
         },
         rules: {
             type: String as PropType<string>,
@@ -65,5 +61,20 @@ export default defineComponent({
         }
     },
     template: `
-<TextBox v-model.trim="internalValue" :label="label" :rules="computedRules" />`
+<RockFormField
+    v-model="internalValue"
+    formGroupClasses="rock-text-box"
+    name="textbox"
+    :rules="computedRules">
+    <template #default="{uniqueId, field, errors, disabled}">
+        <div class="control-wrapper">
+            <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="fa fa-envelope"></i>
+                </span>
+                <input :id="uniqueId" class="form-control" v-bind="field" :disabled="disabled" />
+            </div>
+        </div>
+    </template>
+</RockFormField>`
 });

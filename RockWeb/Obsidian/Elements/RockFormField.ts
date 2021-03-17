@@ -28,14 +28,7 @@ export default defineComponent({
         RockLabel
     },
     setup() {
-        let formState: FormState | null = null;
-
-        try {
-            formState = inject('formState') as FormState;
-        }
-        catch {
-            // Not all fields are inside a form
-        }
+        const formState = inject<FormState | null>('formState', null); 
 
         return {
             formState

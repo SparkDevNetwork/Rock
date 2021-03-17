@@ -17,7 +17,7 @@
 
 import { defineComponent, inject, provide, reactive } from 'vue';
 import RockButton from '../../Elements/RockButton';
-import { Guid } from '../../Util/Guid';
+import { Guid, newGuid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrants from './RegistrationEntry/Registrants';
 import { RegistrationEntryBlockViewModel } from './RegistrationEntry/RegistrationEntryBlockViewModel';
@@ -27,7 +27,7 @@ import RegistrationEntrySummary from './RegistrationEntry/Summary';
 import Registrants from './RegistrationEntry/Registrants';
 import ProgressBar from '../../Elements/ProgressBar';
 import NumberFilter from '../../Services/Number';
-import StringFilter from '../../Services/String';
+import StringFilter, { isNullOrWhitespace } from '../../Services/String';
 import Alert from '../../Elements/Alert';
 
 export type RegistrantInfo = {
@@ -47,6 +47,16 @@ export type RegistrationEntryState = {
     Registrants: RegistrantInfo[];
     RegistrationFieldValues: Record<Guid, unknown>;
 };
+
+export function getDefaultRegistrantInfo() {
+    return {
+        FamilyGuid: null,
+        FieldValues: {},
+        FeeQuantities: {},
+        Guid: newGuid(),
+        PersonGuid: ''
+    } as RegistrantInfo;
+} 
 
 export default defineComponent({
     name: 'Event.RegistrationEntry',
@@ -71,14 +81,21 @@ export default defineComponent({
         };
 
         const viewModel = inject('configurationValues') as RegistrationEntryBlockViewModel;
+        const hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
+        let currentStep = steps.intro;
+
+        if (viewModel.MaxRegistrants === 1 && isNullOrWhitespace(viewModel.InstructionsHtml)) {
+            // There is no need to show the numer of registrants selector or instructions. Start at the second page.
+            currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
+        }
 
         const registrationEntryState = reactive({
             Steps: steps,
             ViewModel: viewModel,
-            CurrentStep: steps.intro,
+            CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: [] as RegistrantInfo[],
+            Registrants: [getDefaultRegistrantInfo()] as RegistrantInfo[],
             RegistrationFieldValues: {} as Record<Guid, unknown>
         }) as RegistrationEntryState;
 
@@ -167,6 +184,10 @@ export default defineComponent({
 
             if (this.currentStep === this.steps.registrationStartForm) {
                 return this.viewModel.RegistrationAttributeTitleEnd;
+            }
+
+            if (this.currentStep === this.steps.reviewAndPayment) {
+                return 'Review Registration';
             }
 
             return '';

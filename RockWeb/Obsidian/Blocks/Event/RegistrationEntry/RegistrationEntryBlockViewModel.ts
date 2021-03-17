@@ -69,6 +69,8 @@ export enum ComparisonType {
 }
 
 export interface RegistrationEntryBlockViewModel {
+    DoAskForFamily: boolean;
+    MaxRegistrants: number;
     RegistrationAttributeTitleStart: string;
     RegistrationAttributeTitleEnd: string;
     InstructionsHtml: string;
@@ -115,6 +117,8 @@ export interface RegistrationEntryBlockFormFieldViewModel {
     Attribute: Attribute;
     VisibilityRuleType: FilterExpressionType;
     VisibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
+    PreHtml: string;
+    PostHtml: string;
     Guid: Guid;
 }
 

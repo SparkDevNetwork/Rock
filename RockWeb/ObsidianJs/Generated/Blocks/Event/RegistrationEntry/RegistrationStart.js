@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../Elements/RockButton"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../Controls/RockForm", "../../../Elements/RockButton"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, AttributeValuesContainer_1, RockButton_1;
+    var vue_1, AttributeValuesContainer_1, RockForm_1, RockButton_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,6 +25,9 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
             },
             function (AttributeValuesContainer_1_1) {
                 AttributeValuesContainer_1 = AttributeValuesContainer_1_1;
+            },
+            function (RockForm_1_1) {
+                RockForm_1 = RockForm_1_1;
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
@@ -35,7 +38,8 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                 name: 'Event.RegistrationEntry.RegistrationStart',
                 components: {
                     RockButton: RockButton_1.default,
-                    AttributeValuesContainer: AttributeValuesContainer_1.default
+                    AttributeValuesContainer: AttributeValuesContainer_1.default,
+                    RockForm: RockForm_1.default
                 },
                 setup: function () {
                     return {
@@ -84,7 +88,7 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         }
                     }
                 },
-                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n    <div class=\"actions\">\n        <RockButton btnType=\"default\" @click=\"onPrevious\">\n            Previous\n        </RockButton>\n        <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
+                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <RockForm @submit=\"onNext\">\n        <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\">\n                Next\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

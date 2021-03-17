@@ -41,13 +41,7 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                     RockLabel: RockLabel_1.default
                 },
                 setup: function () {
-                    var formState = null;
-                    try {
-                        formState = vue_1.inject('formState');
-                    }
-                    catch (_a) {
-                        // Not all fields are inside a form
-                    }
+                    var formState = vue_1.inject('formState', null);
                     return {
                         formState: formState
                     };

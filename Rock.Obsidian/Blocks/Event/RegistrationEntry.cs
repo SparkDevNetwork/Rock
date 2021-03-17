@@ -80,21 +80,23 @@ namespace Rock.Obsidian.Blocks.Event
                 var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
                 // Get family members
-                var familyMembers = currentPerson.GetFamilyMembers( true, rockContext )
-                    .Select( gm => new
-                    {
-                        FamilyGuid = gm.Group.Guid,
-                        Person = gm.Person
-                    } )
-                    .ToList()
-                    .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
-                    {
-                        Guid = gm.Person.Guid,
-                        FamilyGuid = gm.FamilyGuid,
-                        FullName = gm.Person.FullName,
-                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
-                    } )
-                    .ToList();
+                var familyMembers = registrationTemplate.ShowCurrentFamilyMembers ?
+                    currentPerson.GetFamilyMembers( true, rockContext )
+                        .Select( gm => new
+                        {
+                            FamilyGuid = gm.Group.Guid,
+                            Person = gm.Person
+                        } )
+                        .ToList()
+                        .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
+                        {
+                            Guid = gm.Person.Guid,
+                            FamilyGuid = gm.FamilyGuid,
+                            FullName = gm.Person.FullName,
+                            FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
+                        } )
+                        .ToList() :
+                        new List<RegistrationEntryBlockFamilyMemberViewModel>();
 
                 // Get the instructions
                 var instructions = registrationInstance?.RegistrationInstructions;
@@ -170,6 +172,8 @@ namespace Rock.Obsidian.Blocks.Event
                         field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
                         field.IsRequired = fieldModel.IsRequired;
                         field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
+                        field.PreHtml = fieldModel.PreText;
+                        field.PostHtml = fieldModel.PostText;
 
                         field.VisibilityRules = fieldModel.FieldVisibilityRules
                             .RuleList
@@ -223,6 +227,11 @@ namespace Rock.Obsidian.Blocks.Event
                     .Select( a => a.ToViewModel( currentPerson, false ) )
                     .ToList();
 
+                // Get the maximum number of registrants
+                var maxRegistrants = ( registrationTemplate?.AllowMultipleRegistrants == true ) ?
+                    ( registrationTemplate.MaxRegistrants ?? 1 ) :
+                    1;
+
                 return new RegistrationEntryBlockViewModel
                 {
                     RegistrationAttributesStart = beforeAttributes,
@@ -235,7 +244,9 @@ namespace Rock.Obsidian.Blocks.Event
                     PluralFeeTerm = pluralFeeTerm,
                     RegistrantForms = formViewModels,
                     Fees = fees,
-                    FamilyMembers = familyMembers
+                    FamilyMembers = familyMembers,
+                    MaxRegistrants = maxRegistrants,
+                    DoAskForFamily = registrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask
                 };
             }
         }

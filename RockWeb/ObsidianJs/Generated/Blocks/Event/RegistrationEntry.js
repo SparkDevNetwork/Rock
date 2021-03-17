@@ -14,10 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Intro_1, Registrants_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
+    function getDefaultRegistrantInfo() {
+        return {
+            FamilyGuid: null,
+            FieldValues: {},
+            FeeQuantities: {},
+            Guid: Guid_1.newGuid(),
+            PersonGuid: ''
+        };
+    }
+    exports_1("getDefaultRegistrantInfo", getDefaultRegistrantInfo);
     return {
         setters: [
             function (vue_1_1) {
@@ -25,6 +35,9 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
+            },
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
             function (Intro_1_1) {
                 Intro_1 = Intro_1_1;
@@ -78,13 +91,19 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                         reviewAndPayment: 'reviewAndPayment'
                     };
                     var viewModel = vue_1.inject('configurationValues');
+                    var hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
+                    var currentStep = steps.intro;
+                    if (viewModel.MaxRegistrants === 1 && String_1.isNullOrWhitespace(viewModel.InstructionsHtml)) {
+                        // There is no need to show the numer of registrants selector or instructions. Start at the second page.
+                        currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
+                    }
                     var registrationEntryState = vue_1.reactive({
                         Steps: steps,
                         ViewModel: viewModel,
-                        CurrentStep: steps.intro,
+                        CurrentStep: currentStep,
                         CurrentRegistrantFormIndex: 0,
                         CurrentRegistrantIndex: 0,
-                        Registrants: [],
+                        Registrants: [getDefaultRegistrantInfo()],
                         RegistrationFieldValues: {}
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
@@ -161,6 +180,9 @@ System.register(["vue", "../../Elements/RockButton", "./RegistrationEntry/Intro"
                         }
                         if (this.currentStep === this.steps.registrationStartForm) {
                             return this.viewModel.RegistrationAttributeTitleEnd;
+                        }
+                        if (this.currentStep === this.steps.reviewAndPayment) {
+                            return 'Review Registration';
                         }
                         return '';
                     }

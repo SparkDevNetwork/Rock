@@ -93,6 +93,10 @@ export default defineComponent({
         familyOptions(): DropDownListOption[] {
             const options = [] as DropDownListOption[];
 
+            if (!this.viewModel.DoAskForFamily) {
+                return options;
+            }
+
             if (this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName) {
                 options.push({
                     key: this.currentPerson.PrimaryFamilyGuid,
@@ -216,7 +220,7 @@ export default defineComponent({
             <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
         </template>
 
-        <div v-if="isLastForm" class="well registration-additional-options">
+        <div v-if="isLastForm && viewModel.Fees.length" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>
             <template v-for="fee in viewModel.Fees" :key="fee.Guid">
                 <FeeField :fee="fee" v-model="currentRegistrant.FeeQuantities" />
