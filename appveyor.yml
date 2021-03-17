@@ -75,7 +75,7 @@ build:
   project: Rock.sln
   publish_wap: true
   parallel: true
-  verbosity: minimal
+  verbosity: detailed
 
 # flag to stop building if an error throws
 matrix:
