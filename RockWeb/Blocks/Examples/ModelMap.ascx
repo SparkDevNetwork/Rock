@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ModelMap.ascx.cs" Inherits="RockWeb.Blocks.Examples.ModelMap" %>
-
+<%@ Import namespace="Rock" %>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfSelectedCategoryGuid" runat="server" />
@@ -16,7 +16,7 @@
                                 <li class='<%# GetCategoryClass( Eval("Guid") ) %>'>
                                     <asp:LinkButton ID="lbCategory" runat="server" CommandArgument='<%# Eval("Guid") %>' CommandName="Display">
                                         <i class='<%# Eval("IconCssClass") %>'></i>
-                                        <h3><%# Eval("Name") %> </h3>
+                                        <h3><%# Eval("Name").ToString().SplitCase() %> </h3>
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>

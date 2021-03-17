@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 var attendees = GetAttendees( rockContext );
 
-                var attendeesSorted = attendees.OrderByDescending( a => a.Status == RosterAttendeeStatus.Present ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
+                var attendeesSorted = attendees.OrderByDescending( a => a.MeetsRosterStatusFilter( RosterStatusFilter.Present ) ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
 
                 gAttendees.DataSource = attendeesSorted;
                 gAttendees.DataBind();
