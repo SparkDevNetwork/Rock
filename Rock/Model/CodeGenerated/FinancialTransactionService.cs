@@ -19,7 +19,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.TransactionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
  
             if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.OriginalTransactionId == item.Id ) )
             {
@@ -84,6 +90,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this FinancialTransaction object to a new FinancialTransaction object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static FinancialTransaction CloneWithoutIdentity( this FinancialTransaction source )
+        {
+            var target = new FinancialTransaction();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>

@@ -176,14 +176,24 @@ namespace Rock.Model
             }
         }
 
+        #region Additional Lava Properties
+
+        /*
+            2021-02-17 - DJL
+
+            These properties exist to simplify Lava code that needs to query if the schedule or check-in is currently active.
+            They have been reinstated at the request of the community after being marked obsolete in v1.8.
+
+            Reason: Community Request, Issue #3471 (https://github.com/SparkDevNetwork/Rock/issues/3471)
+        */
+
         /// <summary>
         /// Gets a value indicating whether this schedule is currently active.
         /// </summary>
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", true )]
+        [LavaInclude]
         public virtual bool IsScheduleActive
         {
             get
@@ -198,8 +208,7 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", true )]
+        [LavaInclude]
         public virtual bool IsCheckInActive
         {
             get
@@ -207,6 +216,8 @@ namespace Rock.Model
                 return WasCheckInActive( RockDateTime.Now );
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Gets a value indicating whether this schedule (or it's check-in window) is currently active.
@@ -1269,7 +1280,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.ToFriendlyScheduleText();
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
+            }
+            else
+            {
+                return this.ToFriendlyScheduleText();
+            }
         }
 
         #endregion

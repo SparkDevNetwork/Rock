@@ -512,6 +512,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the total fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        [LavaInclude]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        public virtual decimal? TotalFeeCoverageAmount
+        {
+            get
+            {
+                var hasFeeConverageInfo = false;
+                var totalFeeCoverage = 0m;
+
+                foreach ( var detail in TransactionDetails )
+                {
+                    hasFeeConverageInfo |= detail.FeeCoverageAmount.HasValue;
+                    totalFeeCoverage += detail.FeeCoverageAmount ?? 0m;
+                }
+
+                return hasFeeConverageInfo ? totalFeeCoverage : ( decimal? ) null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the history changes.
         /// </summary>
         /// <value>

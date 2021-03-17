@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -405,12 +406,11 @@ namespace RockWeb.Blocks.Communication
 
             if ( GetAttributeValue( AttributeKey.SendImmediately ).AsBoolean() )
             {
-                var transaction = new Rock.Transactions.SendCommunicationTransaction
+                var processSendCommunicationMsg = new ProcessSendCommunication.Message
                 {
                     CommunicationId = communication.Id,
-                    PersonAlias = CurrentPersonAlias
                 };
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                processSendCommunicationMsg.Send();
             }
         }
 

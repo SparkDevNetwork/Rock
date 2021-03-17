@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -1464,12 +1465,14 @@ namespace RockWeb.Blocks.Communication
         {
             if ( person != null )
             {
-                literal.Text = String.Format( "<strong>{0}</strong> {1}", labelText, person.FullName );
+                literal.Text = String.Format( "<dt>{0}</dt><dd>{1}", labelText, person.FullName );
 
                 if ( datetime.HasValue )
                 {
                     literal.Text += String.Format( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", datetime.Value.ToString(), datetime.Value.ToRelativeDateString() );
                 }
+
+                literal.Text += "</dd>";
             }
         }
 
@@ -1871,78 +1874,152 @@ namespace RockWeb.Blocks.Communication
         private string GetMediumData( Rock.Model.Communication communication )
         {
             StringBuilder sb = new StringBuilder();
+            // If the first tab has been rendered set to true.
+            bool firstTabRendered = false;
 
-            switch ( communication.CommunicationType )
+            // Booleans to prevent having to check conditions twice.
+            bool showEmailTab = false;
+            bool showSmsTab = false;
+            bool showPushTab = false;
+
+            sb.AppendLine("<ul class='nav nav-pills' role='tablist'>");
+
+            if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.RecipientPreference && communication.Message.IsNotNullOrWhiteSpace() )
             {
-                case CommunicationType.Email:
-                case CommunicationType.RecipientPreference:
-                    {
-                        sb.AppendLine( "<div class='row'>" );
-                        sb.AppendLine( "<div class='col-md-6'>" );
-                        sb.AppendLine( "<dl>" );
-
-                        AppendMediumData( sb, "From Name", communication.FromName );
-                        AppendMediumData( sb, "From Address", communication.FromEmail );
-                        AppendMediumData( sb, "Reply To", communication.ReplyToEmail );
-                        AppendMediumData( sb, "CC", communication.CCEmails );
-                        AppendMediumData( sb, "BCC", communication.BCCEmails );
-                        AppendMediumData( sb, "Subject", communication.Subject );
-
-                        sb.AppendLine( "</div>" );
-
-                        sb.AppendLine( "<div class='col-md-6'>" );
-                        var emailAttachments = communication.GetAttachments( CommunicationType.Email );
-                        if ( emailAttachments.Any() )
-                        {
-                            sb.Append( "<ul>" );
-                            foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
-                            {
-                                sb.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
-                                    System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
-                            }
-                            sb.Append( "</ul>" );
-                        }
-
-                        sb.AppendLine( "</dl>" );
-
-                        sb.AppendLine( "</div>" );
-
-                        sb.AppendLine( "</div>" );
-
-                        if ( communication.Message.IsNotNullOrWhiteSpace() )
-                        {
-                            AppendMediumData( sb, "HTML Message", string.Format( @"
-                        <iframe id='js-email-body-iframe' class='email-body'></iframe>
-                        <script id='email-body' type='text/template'>{0}</script>
-                        <script id='load-email-body' type='text/javascript'>
-                            var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
-                            doc.open();
-                            doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
-                            doc.close();
-                        </script>
-                    ", communication.Message ) );
-                        }
-
-                        break;
-                    }
-
-                case CommunicationType.SMS:
-                    {
-                        AppendMediumData( sb, "From Value", communication.SMSFromDefinedValue != null ? communication.SMSFromDefinedValue.Value : string.Empty );
-                        AppendMediumData( sb, "Message", communication.SMSMessage );
-
-                        break;
-                    }
-
-                case CommunicationType.PushNotification:
-                    {
-                        AppendMediumData( sb, "Title", communication.PushTitle );
-                        AppendMediumData( sb, "Message", communication.PushMessage );
-                        AppendMediumData( sb, "Sound", communication.PushSound );
-
-                        break;
-                    }
+                firstTabRendered = true;
+                showEmailTab = true;
+                sb.AppendLine("<li class='active'><a href='#emailTabContent' role='tab' id='email-tab' data-toggle='tab' aria-controls='email'>Email</a></li>");
             }
+
+            if ( communication.CommunicationType == CommunicationType.SMS || communication.CommunicationType == CommunicationType.RecipientPreference )
+            {
+                showSmsTab = true;
+                if ( firstTabRendered )
+                {
+                    sb.AppendLine("<li>");
+                }
+                else
+                {
+                    firstTabRendered = true;
+                    sb.AppendLine("<li class='active'>");
+                }
+
+                sb.AppendLine("<a href='#smsTabContent' role='tab' id='sms-tab' data-toggle='tab' aria-controls='sms'>SMS</a></li>");
+            }
+
+            if ( communication.CommunicationType == CommunicationType.PushNotification || communication.CommunicationType == CommunicationType.RecipientPreference && communication.PushMessage.IsNotNullOrWhiteSpace() )
+            {
+                showPushTab = true;
+                if ( firstTabRendered )
+                {
+                    sb.AppendLine("<li>");
+                }
+                else
+                {
+                    firstTabRendered = true;
+                    sb.AppendLine("<li class='active'>");
+                }
+
+                sb.AppendLine("<a href='#pushTabContent' role='tab' id='push-tab' data-toggle='tab' aria-controls='push'>Push</a></li>");
+            }
+
+            sb.AppendLine("</ul><hr/>");
+
+
+            sb.AppendLine( "<div class='tab-content flex-fill'>" );
+
+            if ( showEmailTab )
+            {
+                sb.AppendLine( "<div id='emailTabContent' class='tab-pane active'>" );
+                sb.AppendLine( "<div class='row'>" );
+
+                AppendStaticControlMediumData( sb, "From",
+                string.Format( "{0} ({1})", communication.FromName, communication.FromEmail ));
+
+                AppendStaticControlMediumData( sb, "Subject", communication.Subject, "col-sm-8" );
+                sb.AppendLine( "</div>" );
+
+                sb.AppendLine( "<div class='row'>" );
+                AppendStaticControlMediumData( sb, "Reply To", communication.ReplyToEmail );
+                AppendStaticControlMediumData( sb, "CC", communication.CCEmails );
+                AppendStaticControlMediumData( sb, "BCC", communication.BCCEmails );
+                sb.AppendLine( "</div>" );
+
+                var emailAttachments = communication.GetAttachments( CommunicationType.Email );
+                if ( emailAttachments.Any() )
+                {
+                    sb.Append( "<div class='row'><div class='col-md-12'><ul>" );
+                    foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
+                    {
+                        sb.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                            System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
+                    }
+                    sb.Append( "</ul></div></div>" );
+                }
+
+                sb.AppendLine( string.Format( @"
+            <div class='bg-gray-100 flex-fill position-relative mb-3 mb-sm-0 styled-scroll' style='min-height:400px'>
+            <div class='position-absolute w-100 h-100 inset-0 overflow-auto'>
+            <iframe id='js-email-body-iframe' class='w-100' scrolling='yes' onload='resizeIframe(this)'></iframe>
+            </div>
+            </div>
+            <script id='email-body' type='text/template'>{0}</script>
+            <script id='load-email-body' type='text/javascript'>
+                var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
+                doc.open();
+                doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
+                doc.close();
+            </script>
+        ", communication.Message ) );
+
+
+                sb.AppendLine( "</div>" );
+
+            }
+
+            if ( showSmsTab )
+            {
+                if ( communication.CommunicationType == CommunicationType.SMS )
+                {
+                    sb.AppendLine( "<div id='smsTabContent' class='tab-pane active h-100'><div class='row'>" );
+                }
+                else
+                {
+                    sb.AppendLine( "<div id='smsTabContent' class='tab-pane h-100'><div class='row'>" );
+                }
+
+                if ( communication.SMSFromDefinedValue != null )
+                {
+                    AppendStaticControlMediumData( sb, "From", string.Format( "{0} ({1})", communication.SMSFromDefinedValue.Description, communication.SMSFromDefinedValue.Value ), "col-xs-12" );
+                }
+
+                AppendStaticControlMediumData( sb, "Message", communication.SMSMessage, "col-xs-12" );
+                sb.AppendLine( "</div></div>" );
+            }
+
+            if ( showPushTab )
+            {
+                if ( communication.CommunicationType == CommunicationType.PushNotification || !showSmsTab )
+                {
+                    sb.AppendLine( "<div id='pushTabContent' class='tab-pane active h-100'><div class='row'>" );
+                }
+                else
+                {
+                    sb.AppendLine( "<div id='pushTabContent' class='tab-pane h-100'><div class='row'>" );
+                }
+
+                AppendStaticControlMediumData( sb, "Title", communication.PushTitle, "col-sm-8" );
+
+                if ( communication.PushOpenAction != null ) {
+                    AppendMediumData( sb, "Open Action", Regex.Replace( communication.PushOpenAction.ToStringSafe(), @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1" ));
+                }
+                AppendStaticControlMediumData( sb, "Message", communication.PushMessage, "col-sm-12" );
+
+
+                sb.AppendLine( "</div></div>" );
+            }
+
+            sb.AppendLine( "</div>" );
 
             return sb.ToString();
         }
@@ -1958,6 +2035,20 @@ namespace RockWeb.Blocks.Communication
             if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
                 sb.AppendFormat( "<dt>{0}</dt><dd>{1}</dd>", key, value );
+            }
+        }
+
+        /// <summary>
+        /// Add a value to the Communication description summary.
+        /// </summary>
+        /// <param name="sb"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        private void AppendStaticControlMediumData( StringBuilder sb, string key, string value, string colclass = "col-sm-4" )
+        {
+            if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
+            {
+                sb.AppendFormat( "<div class='{2}'><div class='form-group static-control'><span class='control-label'>{0}</span><div class='control-wrapper'><div class='form-control-static'>{1}</div></div></div></div>", key, value, colclass );
             }
         }
 

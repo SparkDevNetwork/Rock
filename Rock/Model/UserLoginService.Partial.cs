@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Data;
@@ -497,7 +498,25 @@ namespace Rock.Model
 
             var historyList = HistoryService.GetChanges( typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, null, null, null, null, null );
 
-            new Rock.Transactions.SaveHistoryTransaction( historyList ).Enqueue();
+            if ( historyList.Any() )
+            {
+                Task.Run( async () =>
+                {
+                    // Wait 1 second to allow all post save actions to complete
+                    await Task.Delay( 1000 );
+                    try
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            rockContext.BulkInsert( historyList );
+                        }
+                    }
+                    catch ( SystemException ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
+                } );
+            }
         }
 
         /// <summary>

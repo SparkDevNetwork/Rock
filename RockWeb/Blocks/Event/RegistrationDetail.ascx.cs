@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -840,11 +841,13 @@ namespace RockWeb.Blocks.Event
                 string appRoot = ResolveRockUrlIncludeRoot(  "~/" );
                 string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
-                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                confirmation.RegistrationId = RegistrationId.Value;
-                confirmation.AppRoot = appRoot;
-                confirmation.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message
+                {
+                    RegistrationId = RegistrationId.Value,
+                    AppRoot = appRoot,
+                    ThemeRoot = themeRoot
+                };
+                processSendRegistrationConfirmationMsg.Send();
 
                 var changes = new History.HistoryChangeList();
                 changes.AddChange( History.HistoryVerb.Sent, History.HistoryChangeType.Record, "Confirmation" ).SetRelatedData( "Resent", null, null );

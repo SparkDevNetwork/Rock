@@ -579,6 +579,15 @@ namespace Rock.Model
         [DataMember]
         public PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is registration metering enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is registration metering enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsRegistrationMeteringEnabled { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties

@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                avcAttributes.AddEditControls( connectionRequest, false );
+                avcAttributes.AddEditControls( connectionRequest, true );
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();

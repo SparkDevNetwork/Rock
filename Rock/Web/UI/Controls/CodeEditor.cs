@@ -570,22 +570,8 @@ namespace Rock.Web.UI.Controls
 
             // add editor div
             var encodedText = HttpUtility.HtmlEncode( this.Text );
-            string customDiv = $@"<div class='code-editor-container {this.CssClass}' style='position:relative; height: {editorHeight}px'><pre id='codeeditor-div-{this.ClientID}'>{encodedText}</pre></div>";
+            string customDiv = $@"<div class='code-editor-container {this.CssClass}' style='position:relative; height: {editorHeight}px'><pre id='codeeditor-div-{this.ClientID}' class='position-absolute inset-0 m-0 ace_editor'>{encodedText}</pre></div>";
             writer.Write( customDiv );
-
-            // write custom css for the code editor
-            string styleTag = $@"
-                <style type='text/css' media='screen'>
-                    #codeeditor-div-{this.ClientID} {{
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        bottom: 0;
-                        left: 0;
-                    }}
-                </style>
-";
-            writer.Write( styleTag );
 
             // make textbox hidden
             ( (WebControl)this ).Style.Add( HtmlTextWriterStyle.Display, "none" );

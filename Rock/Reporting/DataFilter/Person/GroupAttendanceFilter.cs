@@ -236,7 +236,7 @@ namespace Rock.Reporting.DataFilter.Person
             var schedulePicker = controls[5] as SchedulePicker;
 
             // Row 1
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-6" );
@@ -247,7 +247,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             // Row 2
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-6" );
@@ -258,7 +258,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             // Row 3
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-4" );
@@ -275,11 +275,11 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             slidingDateRangePicker.RenderControl( writer );
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // Row 4
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-12" );

@@ -288,8 +288,9 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
@@ -412,6 +413,7 @@
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
@@ -537,6 +539,8 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -599,6 +603,7 @@
     <Compile Include="Communication\IAsyncTransport.cs" />
     <Compile Include="Communication\IAsyncMediumComponent.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
+    <Compile Include="Communication\ISmsPipelineWebhook.cs" />
     <Compile Include="Communication\PushData.cs" />
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
@@ -609,12 +614,18 @@
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
     <Compile Include="Tasks\DeleteBinaryFileAttribute.cs" />
+    <Compile Include="Tasks\DeleteEntityTypeIndex.cs" />
     <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
     <Compile Include="Tasks\LaunchGroupMemberPlacedElsewhereWorkflow.cs" />
     <Compile Include="Tasks\LaunchGroupScheduleCancellationWorkflow.cs" />
+    <Compile Include="Tasks\LaunchMemberAttendedGroupWorkflow.cs" />
     <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
+    <Compile Include="Tasks\LaunchWorkflows.cs" />
     <Compile Include="Tasks\ProcessConnectionRequestActivityChange.cs" />
+    <Compile Include="Tasks\ProcessConnectionRequestChange.cs" />
     <Compile Include="Tasks\ProcesSendRegistrationNotification.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeBulkIndex.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeIndex.cs" />
     <Compile Include="Tasks\ProcessRunJobNow.cs" />
     <Compile Include="Tasks\ProcessRebuildStreakType.cs" />
     <Compile Include="Tasks\ProcessSendCommunication.cs" />
@@ -622,7 +633,10 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
+    <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />
+    <Compile Include="Tasks\UpdateAchievementAttempt.cs" />
     <Compile Include="Tasks\UpdateDataViewStatistics.cs" />
     <Compile Include="Tasks\UpdateDigitalSignatureDocument.cs" />
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
@@ -642,11 +656,15 @@
     <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
+    <Compile Include="Field\Types\AttendanceFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
+    <Compile Include="Field\Types\CheckinConfigurationTypeFieldType.cs" />
     <Compile Include="Field\Types\LocationListFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
+    <Compile Include="Financial\IFeeCoverageGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
@@ -677,9 +695,15 @@
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
+    <Compile Include="Model\CommunicationResponseAttachment.cs" />
+    <Compile Include="Model\FinancialTransactionAlert.cs" />
+    <Compile Include="Model\FinancialTransactionAlertType.cs" />
+    <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
@@ -734,6 +758,7 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />
@@ -2839,6 +2864,7 @@
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
+    <Compile Include="Web\Utilities\Enums\DotNetVersionCheckResult.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Web\BrowserClient.cs" />
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />

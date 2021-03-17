@@ -27,6 +27,8 @@ namespace Rock.Transactions
     /// Launches multiple workflows and optionally sets the entity, name and/or attribute values
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use LaunchWorkflows Task instead." )]
+    [RockObsolete( "1.13" )]
     public class LaunchWorkflowsTransaction : ITransaction
     {
         /// <summary>

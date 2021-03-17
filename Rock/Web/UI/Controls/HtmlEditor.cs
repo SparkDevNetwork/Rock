@@ -588,6 +588,7 @@ namespace Rock.Web.UI.Controls
             _ceEditor = new CodeEditor();
             _ceEditor.ID = this.ID + "_codeEditor";
             _ceEditor.EditorMode = CodeEditorMode.Lava;
+            _ceEditor.EditorHeight = this.Height.Value.ToString();
             if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
@@ -721,6 +722,9 @@ $(document).ready( function() {{
           ]
         }},
         callbacks: {{
+            onInit: function() {{
+                $(this).parent().removeClass('loading').css('min-height', '');
+            }},
            {callbacksOption}
         }},
 
@@ -781,7 +785,13 @@ $(document).ready( function() {{
             // set this textbox hidden until we can run the js to attach summernote to it
             this.Style[HtmlTextWriterStyle.Display] = "none";
 
+            writer.AddAttribute( "class", "html-editor-container loading" );
+            writer.AddStyleAttribute("min-height", this.Height.ToString());
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             base.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
     }
 }
