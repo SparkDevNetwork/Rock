@@ -1,0 +1,12 @@
+<div id="controls" class="bg-gray-lighter soft-half" style="border-bottom: 1px solid #ccc">
+  <div class="row row-condensed">
+    <div class="col-xs-12 col-sm-12 col-md-4">
+        <input id="zip-input" type="tel" autocomplete="off" class="form-control sans-serif stronger letter-spacing-condensed sm-push-half-bottom xs-push-half-bottom" style="-webkit-appearance: none;
+ outline: 0; border: 0; width: 100%; padding-top: 8px;" placeholder="Enter your ZIP code">
+    </div><div class="col-xs-6 col-sm-6 col-md-4">
+        <a href="#" id="open-filters" class="btn btn-block btn-default">Filters</a>
+    </div><div class="col-xs-6 col-sm-6 col-md-4">
+        <a href="#" id="find-groups" class="btn btn-block btn-primary">Find Groups</a>
+    </div>
+  </div>
+</div>

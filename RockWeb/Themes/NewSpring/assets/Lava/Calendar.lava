@@ -1,0 +1,151 @@
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+{% assign pageSize = 9 %}
+{% assign currentPage = 'Global' | PageParameter:'Page' | AsInteger %}
+{% assign offset = pageSize | Times:currentPage | Minus:pageSize %}
+{% assign defaultImage = 'Global' | Attribute:'ImageLandscape' %}
+
+{% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+{% endif %}
+
+<section>
+  <div class="row">
+    {% for eventItemOccurrence in EventItemOccurrences limit:pageSize offset:offset %}<div class="col-md-4 col-sm-6 col-xs-12">
+
+      {% eventitem id:'{{ eventItemOccurrence.EventItemOccurrence.EventItemId }}' iterator:'items' %}
+        {% assign event = items | First %}
+        {% assign imageurl = event | Attribute:'ImageLandscape' | WithFallback:'', defaultImage %}
+      {% endeventitem %}
+
+      {% assign title = eventItemOccurrence.Name | Replace:"'","’" %}
+      {% assign subtitle = eventItemOccurrence.EventItemOccurrence.Campus.Name | WithFallback:'', 'All Campuses' %}
+
+      {% assign childcare = eventItemOccurrence.EventItemOccurrence | Attribute:'Childcare' %}
+      {% assign food = eventItemOccurrence.EventItemOccurrence | Attribute:'Food' %}
+
+      {% assign effectiveStartDate = eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate %}
+      {% capture formattedStartDate %}{[ formatDate date:effectiveStartDate ]}{% endcapture %}
+
+      {%- capture content -%}
+        <p>{{ formattedStartDate }} {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate | Date:'st' }}</p>
+      {%- endcapture -%}
+
+      {% if eventItemOccurrence.DetailPage != null %}
+        {% assign linkurl = eventItemOccurrence.DetailPage %}
+      {% else %}
+        {% capture linkurl %}{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}{% endcapture %}
+      {% endif %}
+
+      {[ card title:'{{ title }}' titlesize:'h3' subtitle:'{{ subtitle }}' type:'Event' content:'{{ content }}' imageurl:'{{ imageurl }}' linkurl:'{{ linkurl }}' linktext:'Event Details' ]}
+
+    </div>{% endfor %}
+  </div>
+</section>
+
+{[ pagination itemcount:'{{ eventItemOccurrenceCount }}' pagesize:'{{ pageSize }}' ]}
+
+{% comment %} {% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+{% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+{% endif %}
+
+
+<section class="bg-white soft-double push-bottom xs-push-half-bottom rounded shadowed">
+<div class="row">
+  {% for eventItemOccurrence in EventItemOccurrences %}<div class="col-md-4 col-sm-6 col-xs-12">
+
+    {% assign title = eventItemOccurrence.Name | Replace:"'","’" %}
+
+    {% if eventItemOccurrence.DetailPage != null %}
+      {% assign linkurl = eventItemOccurrence.DetailPage %}
+    {% else %}
+      {% capture linkurl %}{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}{% endcapture %}
+    {% endif %}
+
+    {% capture subtitle %}
+    {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate and eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+              {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+            {% else %}
+              {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+            {% endif %}
+    {% endcapture %}
+
+    <h3 class="flush">{{ title }}</h3>
+    <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
+
+
+  </div>{% endfor %}
+</div>
+</section> {% endcomment %}
+
+{% comment %} {% for eventItemOccurrence in EventItemOccurrences %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+      <h2 class="panel-title pull-left">
+        {{ eventItemOccurrence.Name }}
+      </h2>
+      <div class="pull-right">
+        {% if eventItemOccurrence.DetailPage != null %}
+        <a href="{{ eventItemOccurrence.DetailPage }}">
+          View Details <i class="fa fa-chevron-right"></i>
+        </a>
+		{% else %}
+		<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+            View Details <i class="fa fa-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="col-md-2">
+        <div class="row">
+          <strong>Date</strong>
+        </div>
+        <div class="row">
+          {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+          {% else %}
+            {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="row">
+          <strong>Time</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Time }}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="row">
+          <strong>Location</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Location }}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <strong>Summary</strong>
+        </div>
+        <div class="row">
+          {{ eventItemOccurrence.Summary }}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %} {% endcomment %}
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

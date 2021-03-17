@@ -1,0 +1,9 @@
+{% capture dateFormatted %}
+    {% assign monthsToAbbreviate = 'January,February,August,September,October,November,December' %}
+    {% assign dateMonth = date | Date:'MMMM' %}
+    {% if monthsToAbbreviate contains dateMonth %}
+        {{ date | Date:'MMM d, yyyy' }}
+    {% else %}
+        {{ date | Date:'MMMM d, yyyy' }}
+    {% endif %}
+{% endcapture %}{{ dateFormatted | Trim }}

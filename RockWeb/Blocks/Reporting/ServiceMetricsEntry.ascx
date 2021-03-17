@@ -15,8 +15,7 @@
 
                 <asp:Panel ID="pnlSelection" runat="server">
 
-                    <h3>
-                        <asp:Literal ID="lSelection" runat="server"></asp:Literal></h3>
+                    <h3><asp:Literal ID="lSelection" runat="server"></asp:Literal></h3>
 
                     <asp:Repeater ID="rptrSelection" runat="server" OnItemCommand="rptrSelection_ItemCommand">
                         <ItemTemplate>

@@ -1,0 +1,49 @@
+{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','twitter:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','twitter:description' }}
+
+{{ Group | Attribute:'OpportunityTitle' | AddMetaTagToHead:'property','og:title' }}
+{{ Group | Attribute:'OpportunitySummary' | AddMetaTagToHead:'property','og:description' }}
+
+{% assign opportunityPhotoUrl = item | Attribute:'OpportunityPhoto','Url' %}
+{% if opportunityPhotoUrl != '' %}
+    {{ opportunityPhotoUrl | AddMetaTagToHead:'property','og:image' }}
+    {{ opportunityPhotoUrl | AddMetaTagToHead:'property','twitter:image' }}
+    {{ 'summary_large_image' | AddMetaTagToHead:'property','twitter:card' }}
+{% endif %}
+
+<div class='row'>
+    <img src='{{ GroupMember.Person.PhotoUrl }}' class='img-circle pull-left margin-r-md' width=100 class='pull-left margin-all-md' />
+    <h2>{{ GroupMember.Person.FullName | Possessive }} {{ Group | Attribute:'OpportunityType' }}</h2>
+    {% assign dateRangeParts = Group | Attribute:'OpportunityDateRange','RawValue' | Split:',' %}
+    {% assign dateRangePartsSize = dateRangeParts | Size %}
+    {% if dateRangePartsSize == 2 %}
+      {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }} to {{ dateRangeParts[1] | Date:'MMMM dd, yyyy' }}<br/>
+    {% elsif dateRangePartsSize == 1  %}      
+      {{ dateRangeParts[0] | Date:'MMMM dd, yyyy' }}
+    {% endif %}
+    {{ Group | Attribute:'OpportunityLocation' }}
+</div>
+
+<p class='margin-v-lg'>
+    {{ GroupMember | Attribute:'PersonalOpportunityIntroduction' }}
+</p>
+
+<script>function fbs_click() { u = location.href; t = document.title; window.open('http://www.facebook.com/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+
+<ul class='socialsharing margin-b-lg'>
+	<li>
+		<a href='http://www.facebook.com/share.php?u=<url>' onclick='return fbs_click()' target='_blank' class='socialicon socialicon-facebook' title='' data-original-title='Share via Facebook'>
+			<i class='fa fa-fw fa-facebook'></i>
+		</a>
+	</li>
+	<li>
+		<a href='http://twitter.com/home?status=Help%20Fund%20Me {{ 'Global' | Page:'Url' | Escape }}' class='socialicon socialicon-twitter' title='' data-original-title='Share via Twitter'>
+			<i class='fa fa-fw fa-twitter'></i>
+		</a>
+	</li>
+	<li>
+		<a href='mailto:?subject={{ Group | Attribute:'OpportunityTitle' | Escape }}&body=%0D%0A{{ 'Global' | Page:'Url' }}'  class='socialicon socialicon-email' title='' data-original-title='Share via Email'>
+			<i class='fa fa-fw fa-envelope-o'></i>
+		</a>
+	</li>
+</ul>

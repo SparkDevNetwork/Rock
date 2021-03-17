@@ -1,0 +1,25 @@
+// Breakpoint Visualization Utility
+body:after {
+	content: 'Xtra Small';
+	font-family: @font-family-sans-serif;
+	font-weight: 700;
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 1000;
+	color: white;
+	background-color: red;
+	padding: @base-spacing-unit/2;
+
+	@media (min-width: @screen-sm-min) {
+		content: 'Small';
+	}
+
+	@media (min-width: @screen-md-min) {
+		content: 'Medium';
+	}
+
+	@media (min-width: @screen-lg-min) {
+		content: 'Large';
+	}
+}
