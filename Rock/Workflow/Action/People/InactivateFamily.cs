@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -149,8 +165,8 @@ namespace Rock.Workflow.Action
                 inactiveNote = action.GetWorkflowAttributeValue( guid );
             }
 
+            var personService = new PersonService( rockContext );
             var multiFamilyLogic = GetAttributeValue( action, AttributeKey.MultiFamilyLogic ).AsInteger();
-
             if ( multiFamilyLogic == (int) LogicOption.InactivateIndividualsPrimaryFamily )
             {
                 if ( person.PrimaryFamily != null )
@@ -158,7 +174,7 @@ namespace Rock.Workflow.Action
                     var familyMembers = person.PrimaryFamily.Members.Select( a => a.Person );
                     foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                     {
-                        InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                        personService.InactivatePerson( familyMember, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
                     }
                 }
             }
@@ -167,36 +183,18 @@ namespace Rock.Workflow.Action
                 var familyMembers = person.GetFamilyMembers( true, rockContext ).Select( a => a.Person ).Distinct();
                 foreach ( var familyMember in familyMembers.Where( a => a.RecordStatusValueId != inactiveStatusValueId ) )
                 {
-                    InactivatePerson( familyMember, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                    personService.InactivatePerson( familyMember, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
                 }
             }
             else
             {
-                InactivatePerson( person, inactiveStatusValueId, inactiveReasonValueId, inactiveNote );
+                personService.InactivatePerson( person, DefinedValueCache.Get( inactiveReasonValueId ), inactiveNote );
             }
 
             rockContext.SaveChanges();
 
             action.AddLogEntry( "Inactivate Family ran successfully." );
             return true;
-        }
-
-        /// <summary>
-        /// Update the person status to inactive.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="inactiveStatusValueId">The inactive status value identifier.</param>
-        /// <param name="inactiveReasonValueId">The inactive reason value identifier.</param>
-        /// <param name="inactiveNote">The inactive note.</param>
-        /// <returns></returns>
-        private void InactivatePerson( Person person, int inactiveStatusValueId, int inactiveReasonValueId, string inactiveNote )
-        {
-            person.RecordStatusValueId = inactiveStatusValueId;
-            person.RecordStatusReasonValueId = inactiveReasonValueId;
-            if ( inactiveNote.IsNotNullOrWhiteSpace() )
-            {
-                person.InactiveReasonNote = inactiveNote;
-            }
         }
 
         /// <summary>

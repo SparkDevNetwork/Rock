@@ -4,56 +4,54 @@
     Rock.controls = Rock.controls || {};
 
     Rock.controls.priorityNav = (function() {
-        const RESIZE_DURATION = 500;
-        const TAB_KEYCODE = 9;
-
-        const ClassName = {
+        var RESIZE_DURATION = 500;
+        var TAB_KEYCODE = 9;
+        var ClassName = {
             PRIORITY: 'priority',
             HIDE: 'sr-only',
             RESIZING: 'resizing'
         };
-
-        const Selector = {
+        var Selector = {
             NAV_ELEMENTS: "li:not('.overflow-nav')",
             FIRST_ELEMENT: 'li:first',
             PRIORITY_ELEMENT: '.priority'
         };
-
-        const MenuLabelDefault = 'More';
-        const MenuLabelAllHiddenDefault = 'Menu';
-
+        var MenuLabelDefault = 'More';
+        var MenuLabelAllHiddenDefault = 'Menu';
+        var MenuLabelCarat = '<i class="ml-1 fa fa-angle-down" />'
         var MenuTemplate = function(MenuLabel) {
-            return '<li class="overflow-nav dropdown"><a href="#" class="dropdown-toggle nav-link overflow-nav-link" data-toggle="dropdown" role="button" aria-haspopup="true">' + MenuLabel + '</a><ul class="overflow-nav-list dropdown-menu dropdown-menu-right"></ul></li>';
+            return '<li class="overflow-nav dropdown d-none"><a href="#" class="dropdown-toggle nav-link overflow-nav-link" data-toggle="dropdown" role="button" aria-haspopup="true">' + MenuLabel + '</a><ul class="overflow-nav-list dropdown-menu dropdown-menu-right"></ul></li>';
+        };
+        var PriorityNav = function (options) {
+            var element = $('.nav-tabs');
+
+            if (options && options.controlId) {
+                element = $('#' + options.controlId);
+            } else {
+                options = '';
+            }
+
+            this._element = element;
+            this._config = options;
+
+            if ($(element).is('ul')) {
+                this._$menu = $(element);
+            } else {
+                this._$menu = $(element)
+                    .find('ul')
+                    .first();
+            }
+            this._initMenu();
+            this._$allNavElements = this._$menu.find(Selector.NAV_ELEMENTS);
+            this._bindUIActions();
+            this._setupMenu();
         };
 
-        var exports = {
-            initialize: function(options) {
-                let element = $('.nav-tabs');
-
-                if (options && options.id) {
-                    element = $('#' + options.id);
-                } else {
-                    options = '';
-                }
-
-                this._element = element;
-                this._config = options;
-
-                if ($(element).is('ul')) {
-                    this._$menu = $(element);
-                } else {
-                    this._$menu = $(element)
-                        .find('ul')
-                        .first();
-                }
-                this._initMenu();
-                this._$allNavElements = this._$menu.find(Selector.NAV_ELEMENTS);
-                this._bindUIActions();
-                this._setupMenu();
-            },
-
+        PriorityNav.prototype = {
+            constructor: PriorityNav,
+            initialize: function() {},
             _initMenu: function() {
-                let MenuLabel = this._config.MenuLabel
+                var MenuLabel = this._config.MenuLabel
 
                 if (typeof MenuLabel === 'undefined') {
                   MenuLabel = MenuLabelDefault
@@ -64,23 +62,23 @@
             },
 
             _setupMenu: function() {
-                const $allNavElements = this._$allNavElements;
+                var $allNavElements = this._$allNavElements;
 
                 // Checking top position of first item (sometimes changes)
-                const firstPos = this._$menu.find(Selector.FIRST_ELEMENT).position();
+                var firstPos = this._$menu.find(Selector.FIRST_ELEMENT).position();
 
                 // Empty collection in which to put menu items to move
-                let $wrappedElements = $();
+                var $wrappedElements = $();
 
                 // Used to snag the previous menu item in addition to ones that have wrapped
-                let first = true;
+                var first = true;
 
                 // Loop through all the nav items...
                 this._$allNavElements.each(function(i) {
-                    const $elm = $(this);
+                    var $elm = $(this);
 
                     // ...in which to find wrapped elements
-                    const pos = $elm.position();
+                    var pos = $elm.position();
 
                     if (pos.top !== firstPos.top) {
                         // If element is wrapped, add it to set
@@ -96,7 +94,7 @@
 
                 if ($wrappedElements.length) {
                     // Clone set before altering
-                    const newSet = $wrappedElements.clone();
+                    var newSet = $wrappedElements.clone();
 
                     // Hide ones that we're moving
                     $wrappedElements.addClass(ClassName.HIDE);
@@ -106,15 +104,15 @@
                     this._$menu.find('.overflow-nav-list').append(newSet);
 
                     // Show new menu
-                    this._$menu.find('.overflow-nav').removeClass('hidden');
+                    this._$menu.find('.overflow-nav').removeClass('d-none');
 
                     // Check if menu doesn't overflow after process
                     if (this._$menu.find('.overflow-nav').position().top !== firstPos.top) {
-                        const $item = $(this._element)
+                        var $item = $(this._element)
                             .find('.' + ClassName.HIDE)
                             .first()
                             .prev();
-                        const $itemDuplicate = $item.clone();
+                        var $itemDuplicate = $item.clone();
 
                         $item.addClass(ClassName.HIDE);
                         $item.find('a').attr('tabindex', -1);
@@ -123,10 +121,10 @@
                     }
 
                     if ($allNavElements.length == $wrappedElements.length) {
-                        this._$menu.find('.overflow-nav-link').text(MenuLabelAllHiddenDefault);
+                        this._$menu.find('.overflow-nav-link').html(MenuLabelAllHiddenDefault + ' ' + MenuLabelCarat);
                         this._$menu.find('.overflow-nav-list').removeClass('dropdown-menu-right');
                     } else {
-                        this._$menu.find('.overflow-nav-link').text(MenuLabelDefault);
+                        this._$menu.find('.overflow-nav-link').html(MenuLabelDefault + ' ' + MenuLabelCarat);
                         this._$menu.find('.overflow-nav-list').addClass('dropdown-menu-right');
                     }
                 }
@@ -137,19 +135,20 @@
 
             _tearDown: function() {
                 this._$menu.find('.overflow-nav-list').empty();
-                this._$menu.find('.overflow-nav').addClass('hidden');
+                this._$menu.find('.overflow-nav').addClass('d-none');
                 this._$allNavElements.removeClass(ClassName.HIDE);
                 this._$allNavElements.find('a').attr('tabindex', 0);
             },
 
             _bindUIActions: function() {
+                var self = this;
                 $(window).on('resize', function() {
-                    this._$menu.addClass(ClassName.RESIZING);
+                    self._$menu.addClass(ClassName.RESIZING);
 
                     setTimeout( function() {
-                        this._tearDown();
-                        this._setupMenu();
-                        this._$menu.removeClass(ClassName.RESIZING);
+                        self._tearDown();
+                        self._setupMenu();
+                        self._$menu.removeClass(ClassName.RESIZING);
                     }, RESIZE_DURATION);
                 });
 
@@ -157,6 +156,26 @@
                     if (e.which === TAB_KEYCODE) {
                         $(e.target).dropdown('toggle');
                     }
+                });
+            }
+        }
+
+        var exports = {
+            defaults: {
+                controlId: null,
+                name: 'prioritynav'
+            },
+            controls: {},
+            initialize: function (options) {
+                var settings = $.extend({}, exports.defaults, options);
+
+                if (!settings.controlId) throw 'controlId is required';
+
+                var priorityNav = new PriorityNav(settings);
+
+                // Delay initialization until after the DOM is ready
+                $(function () {
+                    priorityNav.initialize();
                 });
             }
         };

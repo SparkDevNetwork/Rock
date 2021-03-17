@@ -16,9 +16,9 @@
             </div>
             <div class="panel-body">
                  <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
-                     <h2><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</h2>
-                     <p>As of Rock McKinley v6, Rock requires Microsoft .NET Framework 4.5.2 or greater on the hosting server.
-                        This framework version was released by Microsoft on May 5th, 2014.</p>
+                     <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
+                     <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
+                        This framework version was released by Microsoft on April 30th, 2018.</p>
                  </Rock:NotificationBox>
                  <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
                     <h2><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</h2>

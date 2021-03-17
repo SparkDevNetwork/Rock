@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
@@ -26,6 +27,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes entity audits 
     /// </summary>
+    [Obsolete( "Use a System.Task instead." )]
+    [RockObsolete( "1.13" )]
     public class AuditTransaction : ITransaction
     {
         /// <summary>

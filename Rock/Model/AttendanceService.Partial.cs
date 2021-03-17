@@ -329,7 +329,7 @@ namespace Rock.Model
 
             if ( endDate.HasValue )
             {
-                endDate = endDate.Value.Date.AddDays(1);
+                endDate = endDate.Value.Date.AddDays( 1 );
                 qryAttendance = qryAttendance.Where( a => a.Occurrence.SundayDate < endDate.Value );
             }
 
@@ -845,11 +845,30 @@ namespace Rock.Model
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
 
             var sendConfirmationIndividuals = sendConfirmationAttendancesQueryList
-                .GroupBy( a => new
+                .GroupBy( a =>
                 {
-                    a.PersonAlias.Person,
-                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
-                    a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                    {
+                        CommunicationType communicationPreference;
+                        var groupMember = a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            communicationPreference = groupMember.CommunicationPreference;
+                        }
+                        else
+                        {
+                            // person isn't a member of the group, so just use their Person.CommunicationPreference
+                            communicationPreference = a.PersonAlias?.Person?.CommunicationPreference ?? CommunicationType.Email;
+                        }
+
+                        var groupBy = new
+                        {
+                            a.PersonAlias.Person,
+                            CommunicationPreference = communicationPreference,
+                            a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                        };
+
+                        return groupBy;
+                    }
                 } )
                 .Select( s => new SendSystemCommunicationIndividual
                 {
@@ -890,11 +909,30 @@ namespace Rock.Model
 
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
             var sendReminderIndividuals = sendReminderAttendancesQueryList
-                .GroupBy( a => new
+                .GroupBy( a =>
                 {
-                    a.PersonAlias.Person,
-                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
-                    a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                    {
+                        CommunicationType communicationPreference;
+                        var groupMember = a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            communicationPreference = groupMember.CommunicationPreference;
+                        }
+                        else
+                        {
+                            // person isn't a member of the group, so just use their Person.CommunicationPreference
+                            communicationPreference = a.PersonAlias?.Person?.CommunicationPreference ?? CommunicationType.Email;
+                        }
+
+                        var groupBy = new
+                        {
+                            a.PersonAlias.Person,
+                            CommunicationPreference = communicationPreference,
+                            a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                        };
+
+                        return groupBy;
+                    }
                 } )
                 .Select( s => new SendSystemCommunicationIndividual
                 {
@@ -1971,12 +2009,13 @@ namespace Rock.Model
 
             var endOfOccurrenceDay = attendanceOccurrence.OccurrenceDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
             var groupMemberAssignmentsList = groupMemberAssignmentsQuery
-                .Select( a => new {
+                .Select( a => new
+                {
                     GroupMemberId = a.GroupMember.Id,
                     a.GroupMember.PersonId,
                     a.LocationId,
                     a.ScheduleId
-                })
+                } )
                 .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
                     ( gma, a ) => new GroupMemberAssignmentInfo
                     {

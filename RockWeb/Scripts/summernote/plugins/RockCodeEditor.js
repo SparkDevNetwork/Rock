@@ -3,15 +3,19 @@
     initializeCodeEditor(context);
 
     function initializeCodeEditor(context) {
-        var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
-        var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
-        $codeEditorContainer.hide();
-        $codeEditorContainer.height(context.layoutInfo.editingArea.height());
-        var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
-        $inCodeEditorModeHiddenField.val("0");
-        // move code editor into summernote div
-        var element = $codeEditorContainer.detach();
-        context.layoutInfo.editingArea.closest('.note-editor').append(element);
+        // Prevent CodeEditor from being repeatedly re-initialized
+        if (typeof context.options.codeEditorOptions.initialized === 'undefined') {
+            var $codeEditor = $('#codeeditor-div-' + context.options.codeEditorOptions.controlId);
+            var $codeEditorContainer = $codeEditor.closest('.code-editor-container');
+            $codeEditorContainer.hide();
+
+            var $inCodeEditorModeHiddenField = $('#' + context.options.codeEditorOptions.inCodeEditorModeHiddenFieldId);
+            $inCodeEditorModeHiddenField.val("0");
+            // move code editor into summernote div
+            var element = $codeEditorContainer.detach();
+            context.layoutInfo.editingArea.closest('.note-editor').append(element);
+            context.options.codeEditorOptions.initialized = true;
+        }
     }
 
     // create button
@@ -40,6 +44,7 @@
                     $('.js-wysiwyg-warning').hide();
                     context.code(content);
                     context.layoutInfo.editingArea.show();
+                    context.layoutInfo.editor.removeClass('code-editor-visible');
                     context.layoutInfo.statusbar.show();
                     $codeEditorContainer.hide();
                     $inCodeEditorModeHiddenField.val("0");
@@ -62,6 +67,7 @@
                 }
 
                 context.layoutInfo.editingArea.hide();
+                context.layoutInfo.editor.addClass('code-editor-visible');
                 context.layoutInfo.statusbar.hide();
 
                 // HtmlEditor.cs will initialize this with keepEditorContent = true and set the codeEditor content instead of the summernoteNote editor content

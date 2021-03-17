@@ -524,35 +524,17 @@ namespace RockWeb.Blocks.Event
             if ( oldOccurrence != null )
             {
                 // clone the workflow type
-                eventItemOccurrence = oldOccurrence.Clone( false );
+                eventItemOccurrence = oldOccurrence.CloneWithoutIdentity();
                 eventItemOccurrence.Schedule = oldOccurrence.Schedule;
                 eventItemOccurrence.EventItem = oldOccurrence.EventItem;
                 eventItemOccurrence.ContactPersonAlias = oldOccurrence.ContactPersonAlias;
-                eventItemOccurrence.CreatedByPersonAlias = null;
-                eventItemOccurrence.CreatedByPersonAliasId = null;
-                eventItemOccurrence.CreatedDateTime = RockDateTime.Now;
-                eventItemOccurrence.ModifiedByPersonAlias = null;
-                eventItemOccurrence.ModifiedByPersonAliasId = null;
-                eventItemOccurrence.ModifiedDateTime = RockDateTime.Now;
-                eventItemOccurrence.Id = 0;
-                eventItemOccurrence.Guid = Guid.NewGuid();
 
                 // Clone the linkage
                 var linkages = oldOccurrence.Linkages.ToList();
                 foreach ( var linkage in linkages )
                 {
-                    var eventItemOccurrenceGroupMap = new EventItemOccurrenceGroupMap();
-
-                    eventItemOccurrenceGroupMap = linkage.Clone( false );
+                    var eventItemOccurrenceGroupMap = linkage.CloneWithoutIdentity();
                     eventItemOccurrenceGroupMap.EventItemOccurrenceId = 0;
-                    eventItemOccurrenceGroupMap.CreatedByPersonAlias = null;
-                    eventItemOccurrenceGroupMap.CreatedByPersonAliasId = null;
-                    eventItemOccurrenceGroupMap.CreatedDateTime = RockDateTime.Now;
-                    eventItemOccurrenceGroupMap.ModifiedByPersonAlias = null;
-                    eventItemOccurrenceGroupMap.ModifiedByPersonAliasId = null;
-                    eventItemOccurrenceGroupMap.ModifiedDateTime = RockDateTime.Now;
-                    eventItemOccurrenceGroupMap.Id = 0;
-                    eventItemOccurrenceGroupMap.Guid = Guid.NewGuid();
                     eventItemOccurrenceGroupMap.RegistrationInstance = linkage.RegistrationInstance != null ? linkage.RegistrationInstance.Clone( false ) : new RegistrationInstance();
                     eventItemOccurrenceGroupMap.RegistrationInstanceId = null;
                     eventItemOccurrenceGroupMap.RegistrationInstance.Id = 0;

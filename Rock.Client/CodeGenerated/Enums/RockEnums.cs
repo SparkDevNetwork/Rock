@@ -54,6 +54,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AlertType
+    {
+        Gratitude = 0x0,
+        FollowUp = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AssessmentRequestStatus
     {
         Pending = 0x0,
@@ -757,6 +765,15 @@ namespace Rock.Client.Enums
     {
         All = 0x0,
         Any = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SessionStatus
+    {
+        Transient = 0x0,
+        PaymentPending = 0x1,
+        Completed = 0x2,
     }
 
     /// <summary>

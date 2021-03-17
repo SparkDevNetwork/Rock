@@ -19,7 +19,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
@@ -67,6 +67,12 @@ namespace Rock.Model
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementSuccessWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
             }  
  
@@ -120,6 +126,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this WorkflowType object to a new WorkflowType object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static WorkflowType CloneWithoutIdentity( this WorkflowType source )
+        {
+            var target = new WorkflowType();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>

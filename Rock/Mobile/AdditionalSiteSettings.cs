@@ -226,6 +226,14 @@ namespace Rock.Mobile
         public string NavigationBarActionXaml { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the lava to use for homepage routing logic.
+        /// </summary>
+        /// <value>
+        /// The lava to use for homepage routing logic.
+        /// </value>
+        public string HomepageRoutingLogic { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the campus filter data view identifier.
         /// </summary>
         /// <value>

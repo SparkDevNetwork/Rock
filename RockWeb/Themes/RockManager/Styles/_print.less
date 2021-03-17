@@ -12,7 +12,7 @@
   }
 
   body {
-    font-size: 10px;
+    background: #fff;
   }
 
   // default sidebar navs on most pages
@@ -30,29 +30,49 @@
     content: "" !important;
   }
 
-  // center the page better after removing the left nav
-  #page-wrapper {
-    position: absolute;
-    left: -70px;
-  }
-
+  .page-wrapper,
   #content-wrapper {
-    margin-left: 70px !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   // remove the breadcrumbs
-  .breadcrumb {
-    display: none;
-  }
-
-  // Remove the footer
+  .picker-lg .picker-label > b,
+  .breadcrumb,
   footer {
     display: none;
   }
 
   // style panels
+  .panel {
+    border-color: #ddd;
+    box-shadow: none;
+
+    .panel-heading {
+      background: #fff;
+      border: 0;
+    }
+  }
+
+
   .panel .panel-heading .panel-title {
-    font-size: 12px !important;
+    font-size: 16px !important;
+  }
+
+  .grid-panel {
+    .table {
+      .print-first-col,
+      td:first-child,
+      th:first-child {
+        border-left: 0 !important;
+      }
+
+      .print-last-col,
+      th:last-child,
+      td:last-child {
+        border-right: 0 !important;
+      }
+    }
   }
 
   // style the grid
@@ -62,16 +82,17 @@
 
   .table td,
   .table > thead > tr > th {
-    font-size: 8px;
+    font-size: 12px;
+  }
+
+  .table > thead > tr > th,
+  .table > tbody > tr > th,
+  .table > tbody > tr > td {
+    padding: 6px;
   }
 
   .table .grid-columncommand,
   .table .grid-select-field {
     display: none !important;
-  }
-
-  .table > tbody > tr > th,
-  .table > tbody > tr > td {
-    padding: 4px;
   }
 }

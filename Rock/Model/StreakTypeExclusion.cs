@@ -21,6 +21,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -126,11 +127,36 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            // Add a transaction to process denormalized data refreshes
-            new StreakTypeExclusionChangeTransaction( entry ).Enqueue();
+            // Add a bus to process denormalized data refreshes
+            var processStreakTypeExclusionChangeMsg = GetProcessStreakTypeExclusionChangeMsg( entry );
+            processStreakTypeExclusionChangeMsg.Send();
             base.PreSaveChanges( dbContext, entry );
         }
 
         #endregion Update Hook
+
+        #region Private Methods
+
+        /// <summary>
+        /// Get ProcessStreakTypeExclusionChange Message.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
+        private ProcessStreakTypeExclusionChange.Message GetProcessStreakTypeExclusionChangeMsg( DbEntityEntry entry )
+        {
+            var processStreakTypeExclusionChangeMsg = new ProcessStreakTypeExclusionChange.Message();
+            var isAdded = entry.State == EntityState.Added;
+            var mapIsModified = entry.State == EntityState.Modified && entry.Property( "ExclusionMap" )?.IsModified == true;
+
+            if ( !isAdded && !mapIsModified )
+            {
+                return processStreakTypeExclusionChangeMsg;
+            }
+
+            var streakTypeExclusion = entry.Entity as StreakTypeExclusion;
+            processStreakTypeExclusionChangeMsg.StreakTypeId = streakTypeExclusion?.StreakTypeId ?? default;
+            return processStreakTypeExclusionChangeMsg;
+        }
+
+        #endregion Private Methods
     }
 }

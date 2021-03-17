@@ -1,25 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CommunicationDetail.ascx.cs" Inherits="RockWeb.Blocks.Communication.CommunicationDetail" %>
 
-<script type="text/javascript">
-    function clearActiveDialog() {
-        $('#<%=hfActiveDialog.ClientID %>').val('');
-    }
-</script>
-
-<style>
-    .chart-banner {
-        width: 100%;
-    }
-
-    .chart-banner canvas {
-        height: 350px;
-    }
-
-    .clickable {
-        cursor: pointer
-    }
-</style>
-
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
@@ -50,7 +30,7 @@
                             <asp:LinkButton ID="lnkTabRecipientDetails" runat="server" Text="Recipient Details" OnClick="lbTab_Click" />
                         </li>
                     </ul>
-                    <div class="tab-content margin-t-md">
+                    <div class="tab-content">
                         <%-- Tab Pane: Analytics --%>
                         <asp:Panel ID="pnlAnalyticsTab" runat="server" CssClass="tab-panel">
                             <asp:Panel ID="pnlAnalyticsDeliveryStatusSummary" runat="server" CssClass="margin-t-md">
@@ -111,8 +91,8 @@
                                                 <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
                                                 <%-- Main Opens/Clicks Line Chart --%>
                                                 <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" Visible="false" />
-                                                <div class="chart-container chart-banner">
-                                                    <canvas id="openClicksLineChartCanvas" runat="server" class="js-chart-canvas-main" />
+                                                <div class="chart-container chart-banner w-100">
+                                                    <canvas id="openClicksLineChartCanvas" runat="server" class="js-chart-canvas-main" style="height:350px;" />
                                                 </div>
                                             </div>
                                         </div>
@@ -252,21 +232,19 @@
                         <asp:Panel ID="pnlMessage" runat="server" CssClass="tab-panel">
                             <asp:UpdatePanel runat="server" UpdateMode="Conditional">
                                 <ContentTemplate>
-                                    <div class="margin-t-lg">
-                                        <div class="form-horizontal">
-                                            <asp:Literal ID="lFutureSend" runat="server"></asp:Literal>
-                                            <div class="row margin-b-lg">
-                                                <div class="col-md-6">
-                                                    <asp:Literal ID="lCreatedBy" runat="server"></asp:Literal>
-                                                </div>
-                                                <div class="col-md-6 text-right">
-                                                    <asp:Literal ID="lApprovedBy" runat="server"></asp:Literal>
-                                                </div>
-                                            </div>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <dl>
+                                                <asp:Literal ID="lFutureSend" runat="server"></asp:Literal>
+                                                <asp:Literal ID="lCreatedBy" runat="server"></asp:Literal>
+                                                <asp:Literal ID="lApprovedBy" runat="server"></asp:Literal>
+                                            </dl>
                                         </div>
-
                                         <%-- Message Content --%>
-                                        <asp:Literal ID="lDetails" runat="server" />
+                                        <div class="col-md-8">
+                                            <asp:Literal ID="lDetails" runat="server" />
+                                        </div>
+                                    </div>
 
                                         <%-- Message Actions --%>
                                         <div class="actions">
@@ -293,7 +271,7 @@
 
                         </asp:Panel>
                         <%-- Tab Pane: Activity --%>
-                        <asp:Panel ID="pnlActivity" runat="server" CssClass="tab-panel">
+                        <asp:Panel ID="pnlActivity" runat="server" CssClass="tab-panel padding-t-md">
                             <asp:UpdatePanel ID="upnlActivity" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="true">
                                 <ContentTemplate>
                                     <asp:HiddenField ID="hfActiveRecipient" runat="server" />
@@ -389,13 +367,10 @@
         </asp:UpdatePanel>
 
         <script>
-            $('.js-date-rollover').tooltip();
-        </script>
-
-        <script>
             Sys.Application.add_load(function () {
                 loadCharts();
                 refreshMessageContent();
+                $('.js-date-rollover').tooltip();
 
                 <%-- Hook the bootstrap tab change event to force the charts on a previously inactive tab to reload.
                      If we don't do this, the charts will not be visible following a postback from a different tab. --%>
@@ -404,10 +379,20 @@
                 });
             });
 
+            <%-- Clear modal when canceled --%>
+            function clearActiveDialog() {
+                $('#<%=hfActiveDialog.ClientID %>').val('');
+            }
+
             <%-- Load the Message Content --%>
             function refreshMessageContent() {
                 var scriptText = $('#load-email-body').html();
                 eval(scriptText);
+            }
+
+            <%-- Set the iframe height for styled scrolling on load --%>
+            function resizeIframe(el) {
+                el.style.height = el.contentWindow.document.documentElement.scrollHeight + 'px';
             }
 
             <%-- Load the Analytics Charts --%>

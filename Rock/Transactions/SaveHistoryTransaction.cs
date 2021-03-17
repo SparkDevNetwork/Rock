@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,8 @@ namespace Rock.Transactions
     /// 
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
+    [Obsolete( "Use a System.Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SaveHistoryTransaction : ITransaction
     {
         /// <summary>

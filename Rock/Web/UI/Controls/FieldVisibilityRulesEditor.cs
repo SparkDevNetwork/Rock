@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
 
             pnlContainer.Controls.Add( _nbNoFieldsAvailable );
 
-            Panel pnlRulesHeaderRow = new Panel { CssClass = "filtervisibilityrules-rulesheader margin-b-sm clearfix" };
+            Panel pnlRulesHeaderRow = new Panel { CssClass = "filtervisibilityrules-rulesheader" };
             pnlContainer.Controls.Add( pnlRulesHeaderRow );
             Panel pnlRulesList = new Panel { CssClass = "filtervisibilityrules-ruleslist " };
             pnlContainer.Controls.Add( pnlRulesList );
@@ -160,7 +160,7 @@ namespace Rock.Web.UI.Controls
             _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
 
             // Filter Type controls
-            _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type form-inline form-inline-all pull-left" };
+            _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type form-inline form-inline-all" };
             pnlRulesHeaderRow.Controls.Add( _pnlFilterType );
 
             _ddlFilterShowHide = new RockDropDownList();

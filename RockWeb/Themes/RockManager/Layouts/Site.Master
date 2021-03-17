@@ -55,12 +55,10 @@
 
 </head>
 <body runat="server" id="body" class="">
-    <asp:label id="myRequestCookie"></asp:label>
     <form id="form1" runat="server">
-
         <div class="page-wrapper">
 
-            <nav class="navbar navbar-fixed-top rock-top-header">
+            <nav class="navbar navbar-fixed-top rock-top-header d-print-none">
                 <Rock:Lava ID="siteNameLava" runat="server">
                 {% if CurrentPerson %}
                 <div class="navbar-toggle navbar-toggle-side-left collapsed" data-toggle="collapse" data-target=".navbar-static-side">
@@ -77,7 +75,7 @@
                 </div>
             </nav>
 
-            <nav class="navbar-default navbar-static-side collapse" role="navigation">
+            <nav class="navbar-default navbar-static-side collapse d-print-none" role="navigation">
                 <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
                     <i class="fa fa-bars"></i>
                 </div>
@@ -113,11 +111,11 @@
     <script>
         Sys.Application.add_load(navs);
         function navs(){
-            $('.navbar-static-side').on('show.bs.collapse hide.bs.collapse', function(e) {
+            $('.navbar-static-side').off('show.bs.collapse hide.bs.collapse').on('show.bs.collapse hide.bs.collapse', function(e) {
                 e.preventDefault();
             }),
 
-            $('.navbar-toggle-side-left').on('click', function(e) {
+            $('.navbar-toggle-side-left').off('click').on('click', function(e) {
                 e.preventDefault();
                 if (! $('.navbar-static-side').hasClass('in') && !$('body').hasClass('nav-open-lg')) {
                     $('.navbar-static-side').addClass('in');

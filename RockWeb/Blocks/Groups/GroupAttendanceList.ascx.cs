@@ -680,14 +680,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( occurrence.Location != null )
             {
-                if ( occurrence.Location.Name.IsNotNullOrWhiteSpace() )
-                {
-                    LocationName = occurrence.Location.Name;
-                }
-                else
-                {
-                    LocationName = occurrence.Location.ToString();
-                }
+                LocationName = occurrence.Location.ToString( true );
             }
 
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;

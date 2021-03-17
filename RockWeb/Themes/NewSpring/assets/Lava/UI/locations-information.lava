@@ -14,7 +14,7 @@
     <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
         <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
             <h3 class="push-half-bottom">Sunday Gatherings</h3>
-            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.{% if campusSlug == 'Rock Hill' %} We will be gathering outdoors. Please bring a chair.{% elseif campusSlug == 'Eastlan' %} <a href="/kidspring">KidSpring</a> is open during the 9:30am and 11:30am gatherings.{% endif %}</small></p>
+            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
             <p class="lead">{{ serviceTimes }}
             {% if getDirections != empty %}
                 <a href="{{ getDirections }}" >Get Directions</a>

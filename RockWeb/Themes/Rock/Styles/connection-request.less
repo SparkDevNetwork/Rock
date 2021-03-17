@@ -17,7 +17,7 @@
   min-height: 0;
 }
 
-.panel-collapsable {
+.panel-collapsible {
   box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
 
   .panel-drawer {
@@ -32,6 +32,13 @@
   overflow-y: hidden;
 }
 
+.board-column-container {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
 .board-column {
   position: relative;
   -moz-box-sizing: border-box;
@@ -41,9 +48,14 @@
   flex-direction: column;
   width: @board-column-width;
   max-width: @board-column-width;
-  height: 100%;
+  // height: 100%;
   padding: 5px 0 0;
   border-radius: 6px;
+}
+
+.board-heading {
+  padding: 0 1rem;
+  margin-top: 1rem;
 }
 
 .board-column-title {
@@ -52,6 +64,8 @@
 
 .board-heading-pill {
   height: 4px;
+  margin-top: .5rem;
+  margin-bottom: 1rem;
   border-radius: 2px;
 }
 
@@ -105,6 +119,15 @@
   touch-action: none;
 }
 
+.board-card-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.board-card-body {
+  display: flex;
+}
+
 .board-card-photo {
   position: relative;
   -moz-box-sizing: border-box;
@@ -114,6 +137,7 @@
   justify-content: center;
   width: @line-height-computed;
   height: @line-height-computed;
+  margin-bottom: 4px;
   vertical-align: top;
   background: ~"center/cover #cbd4db";
   border-radius: 50%;
@@ -144,6 +168,7 @@
 }
 
 .grid-table .board-card-pills {
+  flex-wrap: nowrap;
   margin: 0;
 }
 
@@ -154,6 +179,8 @@
 }
 
 .board-card-meta {
+  display: flex;
+  justify-content: space-between;
   font-size: 11px;
 }
 
@@ -189,6 +216,7 @@
 .request-modal-photo {
   width: 100%;
   max-width: 200px;
+  margin: 0 auto 16px;
   background: ~"center/cover #cbd4db";
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .07);
