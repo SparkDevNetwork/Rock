@@ -118,6 +118,8 @@ namespace Rock.Model
             {
                 CommunicationType = CommunicationType.Email,
                 Status = CommunicationStatus.Approved,
+                ReviewedDateTime = RockDateTime.Now,
+                ReviewerPersonAliasId = senderPersonAliasId,
                 SenderPersonAliasId = senderPersonAliasId
             };
 
@@ -171,18 +173,20 @@ namespace Rock.Model
             }
 
             // add communication for reply
-            var communication = new Rock.Model.Communication();
-            communication.Name = communicationName;
-            communication.CommunicationType = CommunicationType.SMS;
-
-            // NOTE: if this communication was created from a mobile device, fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
-            communication.SenderPersonAliasId = fromPerson?.PrimaryAliasId;
-
-            communication.IsBulkCommunication = false;
-            communication.Status = CommunicationStatus.Approved;
-            communication.SMSMessage = message;
-            communication.SMSFromDefinedValueId = fromPhone.Id;
-
+            var communication = new Rock.Model.Communication
+            {
+                Name = communicationName,
+                CommunicationType = CommunicationType.SMS,
+                Status = CommunicationStatus.Approved,
+                ReviewedDateTime = RockDateTime.Now,
+                // NOTE: if this communication was created from a mobile device, fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
+                ReviewerPersonAliasId = fromPerson?.PrimaryAliasId,
+                SenderPersonAliasId = fromPerson?.PrimaryAliasId,
+                IsBulkCommunication = false,
+                SMSMessage = message,
+                SMSFromDefinedValueId = fromPhone.Id
+            };
+            
             if ( toPersonAliasId != null )
             {
                 var recipient = new Rock.Model.CommunicationRecipient();
@@ -241,7 +245,11 @@ namespace Rock.Model
             {
                 // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago) or are Scheduled to be sent at some point
                 queuedQry = queuedQry.Where( c =>
-                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Use the reviewed date to get the communications to send
+                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
+                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
+                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Get all future communications.
                     || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow ) );
             }
             else
@@ -249,7 +257,11 @@ namespace Rock.Model
                 // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago)
                 // or are Scheduled to be sent (also within that reasonable timeframe. In other words, if it was scheduled to be sent, but stil hasn't been sent 3 days after it was scheduled, don't include it)
                 queuedQry = queuedQry.Where( c =>
-                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Use the reviewed date to get the communications to send
+                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
+                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
+                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Get all future communication that are need to be sent.
                     || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
             }
 

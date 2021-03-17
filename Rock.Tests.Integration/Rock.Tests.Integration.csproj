@@ -147,12 +147,12 @@
     <Compile Include="Lava\MiscellaneousFilterTests.cs" />
     <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
     <Compile Include="Lava\CalendarEventsCommandTests.cs" />
-    <Compile Include="Lava\LavaCommentsTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />
     <Compile Include="Lava\RockEntityTests.cs" />
+    <Compile Include="Model\BinaryFileTests.cs" />
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
@@ -161,6 +161,7 @@
     <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Model\StepProgramServiceTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
+    <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="Rock.Oidc\RockSigningCredentialsTests.cs" />
     <Compile Include="Rock.Security\OidcClientTests.cs" />
@@ -217,6 +218,7 @@
     <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
     <Compile Include="Utility\Settings\RockInstanceConfigurationTests.cs" />
+    <Compile Include="Web\Utilities\RockUpdateHelperTests.cs" />
     <Compile Include="Workflow\Action\BackgroundCheckRequestTests.cs" />
   </ItemGroup>
   <ItemGroup>

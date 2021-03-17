@@ -34,8 +34,8 @@
 
             </div>
 
-            <div class="sms-conversations-container">
-                <div class="conversation-list">
+            <div class="sms-conversations-container styled-scroll">
+                <div class="conversation-list d-flex flex-column">
                     <div class="header">
                         <div class="clearfix">
                         <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
@@ -45,7 +45,7 @@
                             <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
                         </div>
                     </div>
-                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll d-flex flex-grow-1">
+                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
                         <ContentTemplate>
                             <Rock:Grid ID="gRecipients" runat="server" OnRowSelected="gRecipients_RowSelected" OnRowDataBound="gRecipients_RowDataBound" ShowHeader="false" ShowActionRow="false" DisplayType="Light" EnableResponsiveTable="False">
                                 <Columns>
@@ -84,29 +84,38 @@
                             <asp:LinkButton ID="lbLinkConversation" runat="server" Text="Link To Person" Visible="false" CausesValidation="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbLinkConversation_Click"></asp:LinkButton>
                         </div>
                         <div class="messages-outer-container">
-                            <div class="conversation">
-                                <asp:Repeater ID="rptConversation" runat="server" OnItemDataBound="rptConversation_ItemDataBound" Visible="false">
-                                    <ItemTemplate>
-                                        <div class="message outbound" id="divCommunication" runat="server">
-                                            <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
-                                            <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
-                                            <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
-                                            <div class="message-meta">
-                                                <span class="sender-name"><asp:Literal ID="lSenderName" runat="server" /></span>
-                                                <asp:Label ID="lblMessageDateTime" runat="server" CssClass="date" />
+                            <div class="messages-scroll-container">
+                                <div class="conversation">
+                                    <asp:Repeater ID="rptConversation" runat="server" OnItemDataBound="rptConversation_ItemDataBound" Visible="false">
+                                        <ItemTemplate>
+                                            <div class="message outbound" id="divCommunication" runat="server">
+                                                <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
+                                                <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
+                                                <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
+                                                <div id="divCommicationAttachments" runat="server"><asp:Literal ID="lSMSAttachments" runat="server" /></div>
+                                                <div class="message-meta">
+                                                    <span class="sender-name"><asp:Literal ID="lSenderName" runat="server" /></span>
+                                                    <asp:Label ID="lblMessageDateTime" runat="server" CssClass="date" />
+                                                </div>
                                             </div>
-                                        </div>
-                                    </ItemTemplate>
-                                    <FooterTemplate>
-                                        <asp:Label ID="lblNoConversationsFound" runat="server" Visible='<%# rptConversation.Items.Count == 0 %>' Text="<tr><td>No conversations found.</td></tr>" CssClass="text-muted" />
-                                    </FooterTemplate>
-                                </asp:Repeater>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            <asp:Label ID="lblNoConversationsFound" runat="server" Visible='<%# rptConversation.Items.Count == 0 %>' Text="<tr><td>No conversations found.</td></tr>" CssClass="text-muted" />
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                            <div class="js-send-image sms-image-uploader-container" style="display: none;">
+                                <asp:LinkButton ID="lbDismiss" runat="server" CssClass="close" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-times"></i></asp:LinkButton>
+                                <div class="sms-image-uploader">
+                                    <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
+                                </div>
                             </div>
                         </div>
-
                         <div class="footer">
                             <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
-                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
+                            <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default btn-md image-button btn-square pull-right" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
+                            <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
                         </div>
                     </ContentTemplate>
                 </asp:UpdatePanel>
@@ -115,7 +124,7 @@
 
             <script>
                 Sys.Application.add_load(function () {
-                    var objDiv = $(".messages-outer-container")[0];
+                    var objDiv = $(".messages-scroll-container")[0];
                     objDiv.scrollTop = objDiv.scrollHeight;
 
                     $("#<%=upConversation.ClientID %> .js-back").on("click", function () {
@@ -167,6 +176,9 @@
 
                 <%-- multi-line textbox --%>
                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+
+                <%-- image uploader --%>
+                <Rock:ImageUploader ID="ImageUploaderModal" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
             </Content>
         </Rock:ModalDialog>
 

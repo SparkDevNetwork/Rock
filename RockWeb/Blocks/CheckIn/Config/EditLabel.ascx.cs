@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         #region Properties
         private Regex regexPrintWidth = new Regex( @"\^PW(\d+)" );
         private Regex regexPrintHeight = new Regex( @"\^LL(\d+)" );
-        private const string LABELARY_URL = "https://labelary2.cfapps.io/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}";
+        private const string LABELARY_URL = "https://api.labelary.com/v1/printers/{0}dpmm/labels/{1}x{2}/{3}/{4}";
 
         // ^JUS will save changes to EEPROM. Doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
         private const string REMOVE_ZPL_CONFIG_UPDATE_CODE = "^JUS";

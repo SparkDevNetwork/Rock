@@ -335,7 +335,7 @@
         </asp:Panel>
 
         <%-- Panel for active checkin --%>
-        <asp:Panel ID="pnlActive" runat="server" CssClass="js-active">
+        <asp:Panel ID="pnlActive" runat="server" CssClass="checkin-active js-active">
 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">

@@ -145,6 +145,7 @@ namespace RockWeb.Blocks.Farm
                     var service = new WebFarmNodeService( RockContext );
                     _node = service.Queryable()
                         .AsNoTracking()
+                        .Where( wfn => wfn.Id == nodeId )
                         .Select( wfn => new WebFarmNodeService.NodeViewModel
                         {
                             PollingIntervalSeconds = wfn.CurrentLeadershipPollingIntervalSeconds,

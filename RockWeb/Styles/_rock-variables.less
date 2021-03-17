@@ -85,7 +85,7 @@
 @nav-sub-heading-color:       darken(@theme-2-text, 20%); // The text color of the heading on the secondary navigation.
 @nav-sub-heading-border:      darken(@nav-sub-heading-color, 30%); // The border color of the heading on the secondary navigation.
 @nav-sub-text-rollover-color: @nav-sub-color; // The text color on roll-over for the secondary navigation.
-@nav-sub-text-rollover-bg:    @nav-bg; // The background color for text on roll-over for the seconday navigation.
+@nav-sub-text-rollover-bg:    @nav-bg; // The background color for text on roll-over for the secondary navigation.
 
 //// Page Title
 @pagetitle-bg:                @theme-4; // The background color of the page title section.
@@ -162,6 +162,9 @@
 @datepicker-highlight-bg:     @theme-7; // Background color for highlighting dates and selector elements of the datepicker.
 @datepicker-highlight-color:  @theme-7-text; // Text color for highlighting dates and selector elements of the datepicker.
 
+//// HTML Editor
+@html-editor-toolbar-height:  43px; // Height of the Summernote toolbar. Used to prevent page repaint.
+
 //// Image Editor
 @imageeditor-bg:              @photo-border; // The background for the image editor roll-over. This control is used to upload images.
 @imageeditor-color:           contrast(@photo-border); // The icon color for the image editor roll-over. This control is used to upload images.
@@ -206,7 +209,7 @@
 
 @card-img-overlay-padding:          1.25rem;
 
-@card-group-margin:                 @grid-gutter-width / 2;
+@card-group-margin:                 (@grid-gutter-width / 2);
 @card-deck-margin:                  @card-group-margin;
 
 
@@ -288,7 +291,7 @@
 
 // Note Types
 
-//// Alert / Hightlight Note
+//// Alert / Highlight Note
 @note-highlight-bg:           @alert-danger-bg;
 @note-highlight-text:         @alert-danger-text;
 @note-highlight-border:       @alert-danger-border;
@@ -338,7 +341,7 @@
 @autocomplete-bg:             @theme-4;
 @autocomplete-border:         darken(@autocomplete-bg, 10%);
 @autocomplete-text:           @theme-4-text;
-@autocomplete-rollover-bg:    darken(@autocomplete-bg, 10%); // the background color of the rollover for autocompletes.
+@autocomplete-rollover-bg:    darken(@autocomplete-bg, 10%); // the background color of the rollover for autocomplete.
 @autocomplete-rollover-color: @text-color;
 
 // Smart Search
@@ -407,7 +410,7 @@
 @alert-validation-text:       @text-color;
 
 // Custom Labels { The bootstrap labels use the brand colors. }
-@label-campus-bg:             #83758f; // Used for identifing campuses.
+@label-campus-bg:             #83758f; // Used for identifying campuses.
 @label-campus-color:          #fff;
 @label-type-bg:               @theme-8; // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
 @label-type-color:          #fff;

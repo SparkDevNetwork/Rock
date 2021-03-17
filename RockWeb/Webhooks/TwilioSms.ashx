@@ -18,17 +18,12 @@
 
 using System;
 using System.Web;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Threading;
-using Newtonsoft.Json;
+using System.Net;
 using Rock;
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using RockWeb;
 
 /// <summary>
 /// This the Twilio Webwook that processes incoming SMS messages thru the SMS Pipeline. See https://community.rockrms.com/Rock/BookContent/8#smstwilio
@@ -92,23 +87,54 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
+
+                int? numberOfAttachments = request.Params["NumMedia"].IsNotNullOrWhiteSpace() ? request.Params["NumMedia"].AsIntegerOrNull() : null;
+
+                if ( numberOfAttachments != null )
+                {
+                    Guid imageGuid;
+                    for ( int i = 0; i < numberOfAttachments.Value; i++ )
+                    {
+                        string imageUrl = request.Params[string.Format( "MediaUrl{0}", i )];
+                        string mimeType = request.Params[string.Format( "MediaContentType{0}", i )];
+                        imageGuid = Guid.NewGuid();
+
+                        System.IO.Stream stream = null;
+                        var httpWebRequest = ( HttpWebRequest ) HttpWebRequest.Create( imageUrl );
+                        var httpWebResponse = ( HttpWebResponse ) httpWebRequest.GetResponse();
+
+                        if ( httpWebResponse.ContentLength == 0 )
+                        {
+                            continue;
+                        }
+
+                        string fileExtension = Rock.Utility.FileUtilities.GetFileExtensionFromContentType( mimeType );
+                        string fileName = string.Format( "SMS-Attachment-{0}-{1}.{2}", imageGuid, i, fileExtension );
+                        stream = httpWebResponse.GetResponseStream();
+                        var binaryFile = new BinaryFileService( rockContext ).AddFileFromStream( stream, mimeType, httpWebResponse.ContentLength, fileName, Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT, imageGuid );
+                        message.Attachments.Add( binaryFile );
+                    }
+                }
+
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
                 var twilioMessage = new Twilio.TwiML.Message();
 
-                if ( smsResponse != null )
+                if ( smsResponse == null )
                 {
-                    if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
-                    {
-                        twilioMessage.Body( smsResponse.Message );
-                    }
+                    return null;
+                }
 
-                    if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
+                {
+                    twilioMessage.Body( smsResponse.Message );
+                }
+
+                if ( smsResponse.Attachments != null && smsResponse.Attachments.Any() )
+                {
+                    foreach ( var binaryFile in smsResponse.Attachments )
                     {
-                        foreach ( var binaryFile in smsResponse.Attachments )
-                        {
-                            twilioMessage.Media( binaryFile.Url );
-                        }
+                        twilioMessage.Media( binaryFile.Url );
                     }
                 }
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -21,6 +22,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 
 namespace Rock.Model
@@ -63,7 +65,7 @@ namespace Rock.Model
         /// The progress.
         /// </value>
         [DataMember]
-        [DecimalPrecision(18, 9)]
+        [DecimalPrecision( 18, 9 )]
         public decimal Progress { get; set; }
 
         /// <summary>
@@ -161,9 +163,36 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
-            // Add a transaction to process workflows and add steps
-            new AchievementAttemptChangeTransaction( entry ).Enqueue();
+            var updateAchievementAttemptMsg = GetUpdateAchievementAttemptMessage( entry );
+            updateAchievementAttemptMsg.Send();
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        private UpdateAchievementAttempt.Message GetUpdateAchievementAttemptMessage( DbEntityEntry entry )
+        {
+            var updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message();
+            if ( entry.State != System.Data.Entity.EntityState.Added && entry.State != System.Data.Entity.EntityState.Modified )
+            {
+                return updateAchievementAttemptMsg;
+            }
+
+            var achievementAttempt = entry.Entity as AchievementAttempt;
+
+            var wasClosed = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsClosed" )?.OriginalValue as bool? ?? false );
+            var wasSuccessful = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
+
+            // Add a transaction to process workflows and add steps
+            updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message
+            {
+                AchievementAttemptGuid = achievementAttempt.Guid,
+                IsNowStarting = entry.State == System.Data.Entity.EntityState.Added,
+                IsNowEnding = !wasClosed && achievementAttempt.IsClosed,
+                IsNowSuccessful = !wasSuccessful && achievementAttempt.IsSuccessful,
+                AchievementTypeId = achievementAttempt.AchievementTypeId,
+                StartDate = achievementAttempt.AchievementAttemptStartDateTime,
+                EndDate = achievementAttempt.AchievementAttemptEndDateTime
+            };
+            return updateAchievementAttemptMsg;
         }
 
         #endregion Overrides

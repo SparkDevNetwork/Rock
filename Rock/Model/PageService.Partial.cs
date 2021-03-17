@@ -187,17 +187,11 @@ namespace Rock.Model
         /// <returns></returns>
         private Page GeneratePageCopy( Page sourcePage, Dictionary<Guid, Guid> pageGuidDictionary, Dictionary<Guid, Guid> blockGuidDictionary, bool includeChildPages, int? currentPersonAliasId = null, bool isRootOfTheCopyOperation = true )
         {
-            var targetPage = sourcePage.Clone( false );
-            targetPage.CreatedByPersonAlias = null;
+            var targetPage = sourcePage.CloneWithoutIdentity();
             targetPage.CreatedByPersonAliasId = currentPersonAliasId;
-            targetPage.CreatedDateTime = RockDateTime.Now;
-            targetPage.ModifiedByPersonAlias = null;
             targetPage.ModifiedByPersonAliasId = currentPersonAliasId;
-            targetPage.ModifiedDateTime = RockDateTime.Now;
-            targetPage.BodyCssClass = sourcePage.BodyCssClass;
-            targetPage.Id = 0;
-            targetPage.Guid = Guid.NewGuid();
             targetPage.IsSystem = false;
+
             pageGuidDictionary.Add( sourcePage.Guid, targetPage.Guid );
 
             if ( isRootOfTheCopyOperation )
@@ -207,18 +201,12 @@ namespace Rock.Model
 
             foreach ( var block in sourcePage.Blocks )
             {
-                var newBlock = block.Clone( false );
-                newBlock.CreatedByPersonAlias = null;
+                var newBlock = block.CloneWithoutIdentity();
                 newBlock.CreatedByPersonAliasId = currentPersonAliasId;
-                newBlock.CreatedDateTime = RockDateTime.Now;
-                newBlock.ModifiedByPersonAlias = null;
                 newBlock.ModifiedByPersonAliasId = currentPersonAliasId;
-                newBlock.ModifiedDateTime = RockDateTime.Now;
-                newBlock.Id = 0;
-                newBlock.Guid = Guid.NewGuid();
-                newBlock.PageId = 0;
                 newBlock.IsSystem = false;
-
+                newBlock.PageId = 0;
+                
                 blockGuidDictionary.Add( block.Guid, newBlock.Guid );
                 targetPage.Blocks.Add( newBlock );
             }
@@ -267,31 +255,21 @@ namespace Rock.Model
 
             foreach ( var pageAuth in pageAuths )
             {
-                var newPageAuth = pageAuth.Clone( false );
-                newPageAuth.CreatedByPersonAlias = null;
+                var newPageAuth = pageAuth.CloneWithoutIdentity();
                 newPageAuth.CreatedByPersonAliasId = currentPersonAliasId;
-                newPageAuth.CreatedDateTime = RockDateTime.Now;
-                newPageAuth.ModifiedByPersonAlias = null;
                 newPageAuth.ModifiedByPersonAliasId = currentPersonAliasId;
-                newPageAuth.ModifiedDateTime = RockDateTime.Now;
-                newPageAuth.Id = 0;
-                newPageAuth.Guid = Guid.NewGuid();
                 newPageAuth.EntityId = pageIntDictionary[pageGuidDictionary[pageIntDictionary.Where( d => d.Value == pageAuth.EntityId.Value ).FirstOrDefault().Key]];
+
                 authService.Add( newPageAuth );
             }
 
             foreach ( var blockAuth in blockAuths )
             {
-                var newBlockAuth = blockAuth.Clone( false );
-                newBlockAuth.CreatedByPersonAlias = null;
+                var newBlockAuth = blockAuth.CloneWithoutIdentity();
                 newBlockAuth.CreatedByPersonAliasId = currentPersonAliasId;
-                newBlockAuth.CreatedDateTime = RockDateTime.Now;
-                newBlockAuth.ModifiedByPersonAlias = null;
                 newBlockAuth.ModifiedByPersonAliasId = currentPersonAliasId;
-                newBlockAuth.ModifiedDateTime = RockDateTime.Now;
-                newBlockAuth.Id = 0;
-                newBlockAuth.Guid = Guid.NewGuid();
                 newBlockAuth.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == blockAuth.EntityId.Value ).FirstOrDefault().Key]];
+
                 authService.Add( newBlockAuth );
             }
 
@@ -329,15 +307,9 @@ namespace Rock.Model
                 var fieldType = attribute?.FieldType.Field as Field.FieldType;
                 var currentValue = attributeValue;
 
-                var newAttributeValue = attributeValue.Clone( false );
-                newAttributeValue.CreatedByPersonAlias = null;
+                var newAttributeValue = attributeValue.CloneWithoutIdentity();
                 newAttributeValue.CreatedByPersonAliasId = currentPersonAliasId;
-                newAttributeValue.CreatedDateTime = RockDateTime.Now;
-                newAttributeValue.ModifiedByPersonAlias = null;
                 newAttributeValue.ModifiedByPersonAliasId = currentPersonAliasId;
-                newAttributeValue.ModifiedDateTime = RockDateTime.Now;
-                newAttributeValue.Id = 0;
-                newAttributeValue.Guid = Guid.NewGuid();
                 newAttributeValue.EntityId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == attributeValue.EntityId.Value ).FirstOrDefault().Key]];
 
                 if ( fieldType != null && currentValue != null && currentValue.Value != null )
@@ -380,15 +352,9 @@ namespace Rock.Model
 
             foreach ( var htmlContent in htmlContents )
             {
-                var newHtmlContent = htmlContent.Clone( false );
-                newHtmlContent.CreatedByPersonAlias = null;
+                var newHtmlContent = htmlContent.CloneWithoutIdentity();
                 newHtmlContent.CreatedByPersonAliasId = currentPersonAliasId;
-                newHtmlContent.CreatedDateTime = RockDateTime.Now;
-                newHtmlContent.ModifiedByPersonAlias = null;
                 newHtmlContent.ModifiedByPersonAliasId = currentPersonAliasId;
-                newHtmlContent.ModifiedDateTime = RockDateTime.Now;
-                newHtmlContent.Id = 0;
-                newHtmlContent.Guid = Guid.NewGuid();
                 newHtmlContent.BlockId = blockIntDictionary[blockGuidDictionary[blockIntDictionary.Where( d => d.Value == htmlContent.BlockId ).FirstOrDefault().Key]];
 
                 htmlContentService.Add( newHtmlContent );

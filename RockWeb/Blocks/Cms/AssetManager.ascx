@@ -1,5 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AssetManager.ascx.cs" Inherits="RockWeb.Blocks.Cms.AssetManager" %>
-
+<style>
+    .asset-has-error {
+        color: red !important;
+    }
+</style>
 <asp:Panel ID="pnlAssetManager" runat="server" CssClass="picker-wrapper clearfix">
     <div class="picker-folders js-pickerfolders">
         <asp:UpdatePanel ID="upnlFolders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
@@ -102,13 +106,13 @@
                     </div>
 
                     <table class="table table-striped table-responsive table-no-border assetmanager-files">
-                        <asp:Repeater ID="rptFiles" runat="server">
+                        <asp:Repeater ID="rptFiles" runat="server" OnItemDataBound="rptFiles_ItemDataBound">
                             <ItemTemplate>
-                                <tr>
+                                <tr id="rptFileRow" runat="server">
                                     <td><Rock:RockCheckBox ID="cbSelected" runat="server" CssClass="js-checkbox" /></td>
                                     <td><img id="imgIconPath" src='<%# Eval("IconPath") %>' style='max-width:60px;' runat="server"></td>
                                     <td>
-                                        <asp:Label ID="lbName" runat="server" Text='<%# Eval("Name") %>' CssClass="align-middle js-assetManager-name"></asp:Label>
+                                        <asp:Label ID="lbName" runat="server" CssClass="align-middle js-assetManager-name"></asp:Label>
                                         <asp:Label ID="lbUrl" runat="server" Text='<%# Eval("Uri") %>' style="display: none" CssClass="js-assetManager-uri" ></asp:Label>
                                     </td>
                                     <td data-priority="3"><asp:Label ID="lbLastModified" runat="server" Text='<%# Eval("LastModifiedDateTime") %>'></asp:Label></td>

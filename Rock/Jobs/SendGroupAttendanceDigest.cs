@@ -45,7 +45,7 @@ namespace Rock.Jobs
     [GroupField(
         "Parent Group",
         Key = AttributeKey.ParentGroup,
-        Description ="The parent group that contains all of the leadership groups who have section leaders who will receive the digest emails containing a summary of the attendance entry of the groups under them.",
+        Description = "The parent group that contains all of the leadership groups who have section leaders who will receive the digest emails containing a summary of the attendance entry of the groups under them.",
         IsRequired = true,
         Order = 1 )]
 
@@ -169,7 +169,7 @@ namespace Rock.Jobs
             var systemCommunicationGuid = dataMap.Get( AttributeKey.SystemCommunication ).ToString().AsGuidOrNull();
             if ( systemCommunicationGuid == null )
             {
-                _errors.Add( "The seleted system communication is not valid." );
+                _errors.Add( "The selected system communication is not valid." );
                 return;
             }
 
@@ -237,10 +237,10 @@ namespace Rock.Jobs
         {
             switch ( dateRange )
             {
-                case ( DateRange.CurrentWeek ):
+                case DateRange.CurrentWeek:
                     endDate = RockDateTime.Today.SundayDate();
                     break;
-                case ( DateRange.PreviousWeek ):
+                case DateRange.PreviousWeek:
                     endDate = RockDateTime.Today.AddDays( -7 ).SundayDate();
                     break;
                 default:
@@ -374,7 +374,7 @@ namespace Rock.Jobs
             // Get the regional groups under the parent group.
             var regionalGroups = _groupService.Queryable()
                 .AsNoTracking()
-                .Where( g => g.ParentGroupId == parentGroup.Id )
+                .Where( g => g.ParentGroupId == parentGroup.Id && g.IsActive == true )
                 .ToList();
 
             if ( !regionalGroups.Any() )

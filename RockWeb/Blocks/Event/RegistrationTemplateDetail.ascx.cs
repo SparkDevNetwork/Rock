@@ -821,15 +821,7 @@ The logged-in person's information will be used to complete the registrar inform
                 LoadStateDetails( registrationTemplate, rockContext );
 
                 // clone the registration template
-                var newRegistrationTemplate = registrationTemplate.Clone( false );
-                newRegistrationTemplate.CreatedByPersonAlias = null;
-                newRegistrationTemplate.CreatedByPersonAliasId = null;
-                newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.ModifiedByPersonAlias = null;
-                newRegistrationTemplate.ModifiedByPersonAliasId = null;
-                newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.Id = 0;
-                newRegistrationTemplate.Guid = Guid.NewGuid();
+                var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
                 newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
                 // Create temporary state objects for the new registration template

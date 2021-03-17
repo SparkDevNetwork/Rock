@@ -148,7 +148,7 @@
                 }
 
                 function isValidName(name) {
-                    var regex = new RegExp("^[^*/><?\\|:,~]+$");
+                    var regex = new RegExp("^[^*/><?\\\\|:,~]+$");
                     return regex.test(name);
                 }
 

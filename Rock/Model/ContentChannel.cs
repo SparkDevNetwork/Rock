@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -365,8 +366,13 @@ namespace Rock.Model
 
             foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var transaction = new DeleteIndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
-                transaction.Enqueue();
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = contentChannelItemEntityTypeId,
+                    EntityId = contentChannelItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
             }
         }
 
@@ -387,8 +393,13 @@ namespace Rock.Model
 
             foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var transaction = new IndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
-                transaction.Enqueue();
+                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                {
+                    EntityTypeId = contentChannelItemEntityTypeId,
+                    EntityId = contentChannelItemId
+                };
+
+                processEntityTypeIndexMsg.Send();
             }
         }
 

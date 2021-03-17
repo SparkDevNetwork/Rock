@@ -187,7 +187,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static GroupLocationHistorical CreateCurrentRowFromGroupLocation( GroupLocation groupLocation, DateTime effectiveDateTime )
         {
-            var locationName = groupLocation.Location?.ToString();
+            var locationName = groupLocation.Location?.ToString( true );
 
             var groupLocationHistoricalCurrent = new GroupLocationHistorical
             {

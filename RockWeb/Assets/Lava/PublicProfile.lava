@@ -245,11 +245,7 @@
         	                                {{ familyMember.Person.Gender }}
         	                            </li>
         	                        {% endif %}
-        	                    </ul>
-        	                </div>
-        	                <div class="col-md-4 mb-4">
-        	                    {% capture contactInfo %}
-        	                        {% if familyMember.Person.MaritalStatusValueId %}
+                                    {% if familyMember.Person.MaritalStatusValueId %}
         	                            <ul class="person-demographics list-unstyled">
         	                                <li>
         	                                    {% assign maritalStatusValue = familyMember.Person.MaritalStatusValueId | FromCache:'DefinedValue' %}
@@ -263,8 +259,12 @@
         	                                </li>
         	                            </ul>
         	                        {% endif %}
+        	                    </ul>
+        	                </div>
+        	                <div class="col-md-4 mb-4">
+        	                    {% capture contactInfo %}
 
-        	                        {% if ShowPhoneNumbers %}
+                                    {% if ShowPhoneNumbers %}
         	                            {%- assign phoneCount = familyMember.Person.PhoneNumbers | Size -%}
         	                            {% if phoneCount > 0 %}
         	                                <ul class="phone-list list-unstyled">

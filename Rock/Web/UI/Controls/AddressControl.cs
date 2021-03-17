@@ -684,8 +684,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( string.IsNullOrWhiteSpace( selectedCountry )
-                 && !_ShowCountrySelection )
+            if ( string.IsNullOrWhiteSpace( selectedCountry ) )
             {
                 selectedCountry = GetDefaultCountry();
                 selectedState = GetDefaultState();
@@ -1251,7 +1250,7 @@ namespace Rock.Web.UI.Controls
                 .ToString();
 
             List<StateListSelectionItem> stateList = null;
-            
+
             if ( countryGuid.IsNotNullOrWhiteSpace() )
             {
                 var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
@@ -1282,7 +1281,7 @@ namespace Rock.Web.UI.Controls
             }
 
             if ( this.HasStateList )
-            { 
+            {
 
                 _ddlState.Visible = true;
                 _tbState.Visible = false;

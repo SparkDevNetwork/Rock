@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -104,6 +103,8 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         #endregion PageParameterKeys
+
+        protected override bool LoadUnencryptedLocalDeviceConfig { get { return true; } }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -211,7 +212,7 @@ namespace RockWeb.Blocks.CheckIn
                 ddlKiosk.DataSource = new DeviceService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId
-                    && d.IsActive)
+                    && d.IsActive )
                     .OrderBy( d => d.Name )
                     .Select( d => new
                     {
@@ -535,8 +536,7 @@ tryGeoLocation();
             if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
-                var localDeviceConfigValue = this.LocalDeviceConfig.ToJson( Newtonsoft.Json.Formatting.None );
-                Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
+                LocalDeviceConfig.SaveToCookie();
             }
 
             if ( !RockPage.Site.Theme.Equals( LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )

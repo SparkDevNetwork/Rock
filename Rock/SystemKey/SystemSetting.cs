@@ -213,8 +213,23 @@ namespace Rock.SystemKey
         public const string WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS = "WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS";
 
         /// <summary>
+        /// The webfarm leadership minimum polling difference seconds
+        /// </summary>
+        public const string WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS = "WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS";
+
+        /// <summary>
+        /// The webfarm leadership maximum wait seconds
+        /// </summary>
+        public const string WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS = "WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS";
+
+        /// <summary>
         /// The RockCleanup Last Run DateTime
         /// </summary>
         public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
+
+        /// <summary>
+        /// Settings for Giving Analytics
+        /// </summary>
+        public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
     }
 }
