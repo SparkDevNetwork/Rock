@@ -510,20 +510,30 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string NumberToOrdinal( object input )
         {
+            return NumberToOrdinal( input.ToStringOrDefault( null ) );
+        }
+
+        /// <summary>
+        /// takes 1, 2 and returns 1st, 2nd
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinal( string input )
+        {
             if ( input == null )
             {
-                return string.Empty;
+                return input;
             }
 
             int number;
 
-            if ( int.TryParse( input.ToString(), out number ) )
+            if ( int.TryParse( input, out number ) )
             {
                 return number.Ordinalize();
             }
             else
             {
-                return input.ToString();
+                return input;
             }
         }
 
@@ -534,20 +544,30 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string NumberToWords( object input )
         {
+            return NumberToWords( input.ToStringOrDefault( null ) );
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns one, two
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToWords( string input )
+        {
             if ( input == null )
             {
-                return string.Empty;
+                return input;
             }
 
             int number;
 
-            if ( int.TryParse( input.ToString(), out number ) )
+            if ( int.TryParse( input, out number ) )
             {
                 return number.ToWords();
             }
             else
             {
-                return input.ToString();
+                return input;
             }
         }
 
@@ -558,20 +578,30 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string NumberToOrdinalWords( object input )
         {
+            return NumberToOrdinalWords( input.ToStringOrDefault( null ) );
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns first, second
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToOrdinalWords( string input )
+        {
             if ( input == null )
             {
-                return string.Empty;
+                return input;
             }
 
             int number;
 
-            if ( int.TryParse( input.ToString(), out number ) )
+            if ( int.TryParse( input, out number ) )
             {
                 return number.ToOrdinalWords();
             }
             else
             {
-                return input.ToString();
+                return input;
             }
         }
 
@@ -582,20 +612,30 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string NumberToRomanNumerals( object input )
         {
+            return NumberToRomanNumerals( input.ToStringOrDefault( null ) );
+        }
+
+        /// <summary>
+        /// takes 1,2 and returns I, II, IV
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string NumberToRomanNumerals( string input )
+        {
             if ( input == null )
             {
-                return string.Empty;
+                return input;
             }
 
             int number;
 
-            if ( int.TryParse( input.ToString(), out number ) )
+            if ( int.TryParse( input, out number ) )
             {
                 return number.ToRoman();
             }
             else
             {
-                return input.ToString();
+                return input;
             }
         }
 
@@ -1343,6 +1383,18 @@ namespace Rock.Lava
         {
             var integerAmount = amount.ToStringSafe().AsInteger();
 
+            return DateAdd( input, integerAmount, interval );
+        }
+
+        /// <summary>
+        /// Adds a time interval to a date
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="interval">The interval.</param>
+        /// <returns></returns>
+        public static DateTime? DateAdd( object input, int amount, string interval = "d" )
+        {
             DateTime? date = null;
 
             if ( input == null )
@@ -1369,25 +1421,25 @@ namespace Rock.Lava
                 switch ( interval )
                 {
                     case "y":
-                        date = date.Value.AddYears( integerAmount );
+                        date = date.Value.AddYears( amount );
                         break;
                     case "M":
-                        date = date.Value.AddMonths( integerAmount );
+                        date = date.Value.AddMonths( amount );
                         break;
                     case "w":
-                        date = date.Value.AddDays( integerAmount * 7 );
+                        date = date.Value.AddDays( amount * 7 );
                         break;
                     case "d":
-                        date = date.Value.AddDays( integerAmount );
+                        date = date.Value.AddDays( amount );
                         break;
                     case "h":
-                        date = date.Value.AddHours( integerAmount );
+                        date = date.Value.AddHours( amount );
                         break;
                     case "m":
-                        date = date.Value.AddMinutes( integerAmount );
+                        date = date.Value.AddMinutes( amount );
                         break;
                     case "s":
-                        date = date.Value.AddSeconds( integerAmount );
+                        date = date.Value.AddSeconds( amount );
                         break;
                 }
             }
@@ -1770,11 +1822,24 @@ namespace Rock.Lava
         /// <param name="includeCurrentDay">if set to <c>true</c> includes the current day as the current week.</param>
         /// <param name="numberOfWeeks">The number of weeks (must be non-zero).</param>
         /// <returns></returns>
-        public static DateTime? NextDayOfTheWeek( object input, string sDayOfWeek, object includeCurrentDay = null, object numberOfWeeks = null )
+        public static DateTime? NextDayOfTheWeek( object input, string sDayOfWeek, object includeCurrentDay, object numberOfWeeks = null )
         {
-            int weeks = numberOfWeeks.ToStringSafe().AsIntegerOrNull() ?? 1;
             bool includeCurrent = includeCurrentDay.ToStringSafe().AsBoolean( false );
+            int weeks = numberOfWeeks.ToStringSafe().AsIntegerOrNull() ?? 1;
 
+            return NextDayOfTheWeek( input, sDayOfWeek, includeCurrent, weeks );
+        }
+
+        /// <summary>
+        /// Advances the date to a specific day in the next 7 days.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="sDayOfWeek">The starting day of week.</param>
+        /// <param name="includeCurrentDay">if set to <c>true</c> includes the current day as the current week.</param>
+        /// <param name="numberOfWeeks">The number of weeks (must be non-zero).</param>
+        /// <returns></returns>
+        public static DateTime? NextDayOfTheWeek( object input, string sDayOfWeek, bool includeCurrentDay = false, int numberOfWeeks = 1 )
+        {
             DateTime date;
             DayOfWeek dayOfWeek;
 
@@ -1784,7 +1849,7 @@ namespace Rock.Lava
             }
 
             // Check for invalid number of weeks
-            if ( weeks == 0 )
+            if ( numberOfWeeks == 0 )
             {
                 return null;
             }
@@ -1820,7 +1885,7 @@ namespace Rock.Lava
             // Calculate the offset
             int daysUntilWeekDay;
 
-            if ( includeCurrent )
+            if ( includeCurrentDay )
             {
                 daysUntilWeekDay = ( (int)dayOfWeek - (int)date.DayOfWeek + 7 ) % 7;
             }
@@ -1832,12 +1897,12 @@ namespace Rock.Lava
             // When a positive number of weeks is given, since the number of weeks defaults to 1
             // (which means the current week) we need to shift the numberOfWeeks down by 1 so
             // the calculation below is correct.
-            if ( weeks >= 1 )
+            if ( numberOfWeeks >= 1 )
             {
-                weeks--;
+                numberOfWeeks--;
             }
 
-            return date.AddDays( daysUntilWeekDay + ( weeks * 7 ) );
+            return date.AddDays( daysUntilWeekDay + ( numberOfWeeks * 7 ) );
         }
 
         /// <summary>
