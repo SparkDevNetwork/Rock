@@ -667,8 +667,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var enablePresence = parentGroupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
                 NavData.AllowCheckout = allowCheckedOut;
                 NavData.EnablePresence = enablePresence;
-                pnlPending.Visible = enablePresence;
-                pnlCheckedOut.Visible = allowCheckedOut;
+
+                pnlPendingCount.Visible = enablePresence;
+
+                if ( enablePresence)
+                {
+                    pnlPendingCount.Visible = true;
+                    lPresentPeopleLabel.Text = "Present";
+                    lPendingPeopleLabel.Text = "Checked-In";
+                }
+                else
+                {
+                    lPresentPeopleLabel.Text = "Checked-In";
+                    pnlPendingCount.Visible = false;
+                }
+
+                pnlCheckedOutCount.Visible = allowCheckedOut;
                 lGroupTypeName.Text = parentGroupType.Name ?? string.Empty;
 
                 // Get the groups
@@ -850,7 +864,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         } ) )
                 {
                     List<int> pendingPeople = new List<int>();
-                    List<int> checkedInPeople = new List<int>();
+                    List<int> presentPeople = new List<int>();
                     List<int> checkedOutPeople = new List<int>();
 
                     var groupAttendanceList = groupLoc.Select( gl => gl ).Where( a => a.PersonAliasId.HasValue ).ToList();
@@ -866,7 +880,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         else if ( attendance.PresentDateTime.HasValue )
                         {
                             // if the attendance has PresentDateTime, they are checked in (which is called present when Presence is Enabled)
-                            checkedInPeople.Add( personId );
+                            presentPeople.Add( personId );
                         }
                         else
                         {
@@ -880,13 +894,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             else
                             {
                                 // Shouldn't happen, but if EnablePresence is false, AND PresentDatetime is null, consider them checked-in (not pending)
-                                checkedInPeople.Add( personId );
+                                presentPeople.Add( personId );
                             }
                         }
                     }
 
-                    AddPersonCountByGroup( groupLoc.Key.GroupId, pendingPeople, checkedInPeople, checkedOutPeople );
-                    AddPersonCountByLocation( groupLoc.Key.LocationId, pendingPeople, checkedInPeople, checkedOutPeople );
+                    AddPersonCountByGroup( groupLoc.Key.GroupId, pendingPeople, presentPeople, checkedOutPeople );
+                    AddPersonCountByLocation( groupLoc.Key.LocationId, pendingPeople, presentPeople, checkedOutPeople );
                 }
 
                 foreach ( DateTime chartTime in chartTimes )
@@ -972,47 +986,47 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return groupTypeTemplateGuid;
         }
 
-        private void AddPersonCountByLocation( int locationId, List<int> pendingPeople, List<int> checkedInPeople, List<int> checkedOutPeople )
+        private void AddPersonCountByLocation( int locationId, List<int> pendingPeople, List<int> presentPeople, List<int> checkedOutPeople )
         {
             var navLocation = NavData.Locations.FirstOrDefault( g => g.Id == locationId );
             if ( navLocation != null )
             {
-                navLocation.CheckedInPeople = navLocation.CheckedInPeople.Union( checkedInPeople ).ToList();
+                navLocation.PresentPeople = navLocation.PresentPeople.Union( presentPeople ).ToList();
                 navLocation.CheckedOutPeople = navLocation.CheckedOutPeople.Union( checkedOutPeople ).ToList();
                 navLocation.PendingPeople = navLocation.PendingPeople.Union( pendingPeople ).ToList();
 
                 if ( navLocation.ParentId.HasValue )
                 {
-                    AddPersonCountByLocation( navLocation.ParentId.Value, pendingPeople, checkedInPeople, checkedOutPeople );
+                    AddPersonCountByLocation( navLocation.ParentId.Value, pendingPeople, presentPeople, checkedOutPeople );
                 }
             }
         }
 
-        private void AddPersonCountByGroup( int groupId, List<int> pendingPeople, List<int> checkedInPeople, List<int> checkedOutPeople )
+        private void AddPersonCountByGroup( int groupId, List<int> pendingPeople, List<int> presentPeople, List<int> checkedOutPeople )
         {
             var navGroup = NavData.Groups.FirstOrDefault( g => g.Id == groupId );
             if ( navGroup != null )
             {
-                navGroup.CheckedInPeople = navGroup.CheckedInPeople.Union( checkedInPeople ).ToList();
-                navGroup.CheckedOutPeople = navGroup.PendingPeople.Union( checkedOutPeople ).ToList();
+                navGroup.PresentPeople = navGroup.PresentPeople.Union( presentPeople ).ToList();
+                navGroup.CheckedOutPeople = navGroup.CheckedOutPeople.Union( checkedOutPeople ).ToList();
                 navGroup.PendingPeople = navGroup.PendingPeople.Union( pendingPeople ).ToList();
 
-                AddCountByGroupType( navGroup.GroupTypeId, pendingPeople, checkedInPeople, checkedOutPeople );
+                AddCountByGroupType( navGroup.GroupTypeId, pendingPeople, presentPeople, checkedOutPeople );
             }
         }
 
-        private void AddCountByGroupType( int groupTypeId, List<int> pendingPeople, List<int> checkedInPeople, List<int> checkedOutPeople )
+        private void AddCountByGroupType( int groupTypeId, List<int> pendingPeople, List<int> presentPeople, List<int> checkedOutPeople )
         {
             var navGroupType = NavData.GroupTypes.FirstOrDefault( g => g.Id == groupTypeId );
             if ( navGroupType != null )
             {
-                navGroupType.CheckedInPeople = navGroupType.CheckedInPeople.Union( checkedInPeople ).ToList();
-                navGroupType.CheckedOutPeople = navGroupType.PendingPeople.Union( checkedOutPeople ).ToList();
+                navGroupType.PresentPeople = navGroupType.PresentPeople.Union( presentPeople ).ToList();
+                navGroupType.CheckedOutPeople = navGroupType.CheckedOutPeople.Union( checkedOutPeople ).ToList();
                 navGroupType.PendingPeople = navGroupType.PendingPeople.Union( pendingPeople ).ToList();
 
                 if ( navGroupType.ParentId.HasValue )
                 {
-                    AddCountByGroupType( navGroupType.ParentId.Value, pendingPeople, checkedInPeople, checkedOutPeople );
+                    AddCountByGroupType( navGroupType.ParentId.Value, pendingPeople, presentPeople, checkedOutPeople );
                 }
             }
         }
@@ -1313,7 +1327,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             pnlNavHeading.Visible = item != null;
             int pendingPeople = navItems.SelectMany( a => a.PendingPeople ).Distinct().Count();
-            int checkedInPeople = navItems.SelectMany( a => a.CheckedInPeople ).Distinct().Count();
+            int presentPeople = navItems.SelectMany( a => a.PresentPeople ).Distinct().Count();
             int checkedOutPeople = navItems.SelectMany( a => a.CheckedOutPeople ).Distinct().Count();
 
             if ( item != null )
@@ -1398,7 +1412,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
 
                     pendingPeople += item.PendingPeople.Count;
-                    checkedInPeople += item.CheckedInPeople.Count;
+                    presentPeople += item.PresentPeople.Count;
                     checkedOutPeople += item.CheckedOutPeople.Count;
 
                     rptPeople.Visible = true;
@@ -1417,9 +1431,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 rptPeople.Visible = false;
             }
 
-            lCheckedInPeople.Text = checkedInPeople.ToString();
-            lPendingPeople.Text = pendingPeople.ToString();
-            lCheckedOutPeople.Text = checkedOutPeople.ToString();
+            lPresentPeopleCount.Text = presentPeople.ToString();
+            lPendingPeopleCount.Text = pendingPeople.ToString();
+            lCheckedOutPeopleCount.Text = checkedOutPeople.ToString();
 
             rptNavItems.Visible = navItems.Any();
             rptNavItems.DataSource = navItems
@@ -1526,9 +1540,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
             }
 
+
+            /// <summary>
+            /// Gets or sets the checked in (not Present) people count.
+            /// </summary>
+            /// <value>
+            /// The checked in people count.
+            /// </value>
             public List<int> PendingPeople { get; set; }
 
-            public List<int> CheckedInPeople { get; set; }
+            /// <summary>
+            /// Gets or sets the Present people
+            /// </summary>
+            /// <value>
+            /// The checked in people.
+            /// </value>
+            public List<int> PresentPeople { get; set; }
 
             public List<int> CheckedOutPeople { get; set; }
 
@@ -1575,7 +1602,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 SoftThreshold = location.SoftRoomThreshold;
                 FirmThreshold = location.FirmRoomThreshold;
                 ChildLocationIds = new List<int>();
-                CheckedInPeople = new List<int>();
+                PresentPeople = new List<int>();
                 CheckedOutPeople = new List<int>();
                 PendingPeople = new List<int>();
             }
@@ -1606,7 +1633,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 ChildGroupTypeIds = new List<int>();
                 ChildGroupIds = new List<int>();
-                CheckedInPeople = new List<int>();
+                PresentPeople = new List<int>();
                 CheckedOutPeople = new List<int>();
                 PendingPeople = new List<int>();
             }
@@ -1640,7 +1667,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 GroupTypeId = group.GroupTypeId;
                 ChildLocationIds = new List<int>();
                 ChildGroupIds = new List<int>();
-                CheckedInPeople = new List<int>();
+                PresentPeople = new List<int>();
                 CheckedOutPeople = new List<int>();
                 PendingPeople = new List<int>();
             }

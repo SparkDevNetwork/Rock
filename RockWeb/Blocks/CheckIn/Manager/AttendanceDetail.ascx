@@ -44,7 +44,11 @@
                     <Rock:RockLiteral ID="lCheckedOutByPerson" runat="server" Label=" " />
                 </div>
             </asp:Panel>
-        </div>
 
+            <div class="actions">
+                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn-link" OnClick="btnDelete_Click" />
+            </div>
+
+        </div>
     </ContentTemplate>
 </asp:UpdatePanel>

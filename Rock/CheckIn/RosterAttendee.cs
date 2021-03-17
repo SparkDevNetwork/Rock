@@ -251,12 +251,20 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the current status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public RosterAttendeeStatus Status => GetCurrentStatus();
+
+        /// <summary>
         /// Gets the status.
         /// </summary>
         /// <value>
         /// The status.
         /// </value>
-        public RosterAttendeeStatus Status { get; private set; }
+        private RosterAttendeeStatus[] Statuses { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this attendee's room has Enable Presence;
@@ -305,12 +313,21 @@ namespace Rock.CheckIn
         public int? GroupTypeId { get; private set; }
 
         /// <summary>
-        /// Gets the ScheduleId for the attendance's occurrence
+        /// Gets the ScheduleId for the attendee's (Most Recent) occurrence
         /// </summary>
         /// <value>
         /// The schedule identifier.
         /// </value>
         public int ScheduleId { get; private set; }
+
+        /// <summary>
+        /// The list of schedules that the person is currently attending.
+        /// This is useful if a person is checked into multiple services.
+        /// </summary>
+        /// <value>
+        /// The schedule ids.
+        /// </value>
+        public int[] ScheduleIds { get; private set; }
 
         /// <summary>
         /// Gets the name of the room (Occurrence Location.Name)
@@ -358,9 +375,29 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetStatusIconHtmlTag( bool isMobile )
         {
+            RosterAttendeeStatus currentStatus = GetCurrentStatus();
+
+            var statusBuilder = new StringBuilder();
+            foreach( var status in this.Statuses.Distinct())
+            {
+                statusBuilder.Append( GetStatusIconHtmlTagForStatus( isMobile, status ) );
+            }    
+
+            return statusBuilder.ToString() ;
+        }
+
+        /// <summary>
+        /// Gets the status icon HTML tag for status.
+        /// </summary>
+        /// <param name="isMobile">if set to <c>true</c> [is mobile].</param>
+        /// <param name="currentStatus">The current status.</param>
+        /// <returns></returns>
+        private string GetStatusIconHtmlTagForStatus( bool isMobile, RosterAttendeeStatus currentStatus )
+        {
             string statusClass = string.Empty;
             string mobileIcon = string.Empty;
-            switch ( this.Status )
+
+            switch ( currentStatus )
             {
                 case RosterAttendeeStatus.CheckedIn:
                     statusClass = "warning";
@@ -382,8 +419,40 @@ namespace Rock.CheckIn
             }
             else
             {
-                return $"<span class='badge badge-{statusClass}'>{StatusString}</span>";
+                return $"<span class='badge badge-{statusClass}'>{currentStatus.GetDescription()}</span>";
             }
+        }
+
+        /// <summary>
+        /// Gets the current status.
+        /// As determined in precendance 
+        /// </summary>
+        /// <returns></returns>
+        private RosterAttendeeStatus GetCurrentStatus()
+        {
+            RosterAttendeeStatus matchingStatus;
+
+            // The attendee might be in multiple statuses, pick the status that makes the most sense, which would be based on the precendance:
+            // Present, Checked In, Checked Out
+            if ( Statuses.Contains( RosterAttendeeStatus.Present ) )
+            {
+                matchingStatus = RosterAttendeeStatus.Present;
+            }
+            else if ( Statuses.Contains( RosterAttendeeStatus.CheckedIn ) )
+            {
+                matchingStatus = RosterAttendeeStatus.CheckedIn;
+            }
+            else if ( Statuses.Contains( RosterAttendeeStatus.CheckedOut ) )
+            {
+                matchingStatus = RosterAttendeeStatus.CheckedOut;
+            }
+            else
+            {
+                // shouldn't happen because RosterAttendeeStatus only has the above as possible values , but just in case
+                matchingStatus = RosterAttendeeStatus.CheckedOut;
+            }
+
+            return matchingStatus;
         }
 
         /// <summary>
@@ -494,9 +563,11 @@ namespace Rock.CheckIn
             }
 
             // Status: if this Attendee has multiple AttendanceOccurrences, the highest AttendeeStatus value among them wins.
-            var latestAttendance = this.Attendances.OrderByDescending( a => a.StartDateTime ).First();
+            var latestAttendance = this.Attendances
+                .OrderByDescending( a => a.StartDateTime )
+                .First();
 
-            this.Status = GetRosterAttendeeStatus( latestAttendance.EndDateTime, latestAttendance.PresentDateTime );
+            this.Statuses = this.Attendances.Select( s => GetRosterAttendeeStatus( s.EndDateTime, s.PresentDateTime ) ).ToArray();
 
             // Check-in Time: if this Attendee has multiple AttendanceOccurrences, the latest StartDateTime value among them wins.
             this.CheckInTime = latestAttendance.StartDateTime;
@@ -514,6 +585,8 @@ namespace Rock.CheckIn
 
             // ScheduleId should have a value, but just in case, we'll do some null safety.
             this.ScheduleId = latestAttendance.Occurrence?.ScheduleId ?? 0;
+
+            this.ScheduleIds = this.Attendances.Select( a => a.Occurrence?.ScheduleId ?? 0 ).Distinct().ToArray();
 
             this.RoomName = latestAttendance.Occurrence?.Location?.Name;
         }
@@ -541,20 +614,44 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Returns true if this record meets the specified RosterStatusFilter criteria
+        /// Determines if Attendance the meets roster status filter.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <returns></returns>
+        public static bool AttendanceMeetsRosterStatusFilter( Attendance attendance, RosterStatusFilter rosterStatusFilter )
+        {
+            RosterAttendeeStatus rosterAttendeeStatus = GetRosterAttendeeStatus( attendance.EndDateTime, attendance.PresentDateTime );
+
+            return AppliesToRosterStatusFilter( rosterAttendeeStatus, rosterStatusFilter );
+        }
+
+        /// <summary>
+        /// Returns true if any of this Attendee's current <see cref="Attendances"/> meets the specified RosterStatusFilter criteria
         /// </summary>
         /// <param name="rosterStatusFilter">The roster status filter.</param>
         /// <returns></returns>
         public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter )
         {
+            return this.Statuses.Any( x => AppliesToRosterStatusFilter( x, rosterStatusFilter ) );
+        }
+
+        /// <summary>
+        /// Returns true if the rosterAttendeeStatus meets the rosterStatusFilter
+        /// </summary>
+        /// <param name="rosterAttendeeStatus">The roster attendee status.</param>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <returns></returns>
+        private static bool AppliesToRosterStatusFilter( RosterAttendeeStatus rosterAttendeeStatus, RosterStatusFilter rosterStatusFilter )
+        {
             switch ( rosterStatusFilter )
             {
                 case RosterStatusFilter.CheckedIn:
-                    return Status == RosterAttendeeStatus.CheckedIn;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.CheckedIn;
                 case RosterStatusFilter.CheckedOut:
-                    return Status == RosterAttendeeStatus.CheckedOut;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.CheckedOut;
                 case RosterStatusFilter.Present:
-                    return Status == RosterAttendeeStatus.Present;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.Present;
                 case RosterStatusFilter.All:
                     return true;
                 default:
