@@ -31,7 +31,7 @@ namespace Rock.Lava
         public static string ShortcodeInternalNameSuffix = "_";
 
         private static ILavaEngine _instance = null;
-        private static LavaEngineTypeSpecifier _liquidFramework = LavaEngineTypeSpecifier.DotLiquid;
+        private static LavaEngineTypeSpecifier _liquidFramework = LavaEngineTypeSpecifier.RockLiquid;
         private static object _initializationLock = new object();
 
         /// <summary>
@@ -43,7 +43,10 @@ namespace Rock.Lava
         {
             lock ( _initializationLock )
             {
-                _liquidFramework = engineType ?? LavaEngineTypeSpecifier.DotLiquid;
+                // Release the current instance.
+                _instance = null;
+
+                _liquidFramework = engineType ?? LavaEngineTypeSpecifier.RockLiquid;
 
                 ILavaEngine engine;
 
@@ -73,6 +76,7 @@ namespace Rock.Lava
 
                 engine.Initialize( options );
 
+                // Assign the current instance.
                 _instance = engine;
             }
         }
@@ -88,8 +92,9 @@ namespace Rock.Lava
                 {
                     if ( _instance == null )
                     {
-                        // Initialize a default instance.
-                        Initialize( _liquidFramework, new LavaEngineConfigurationOptions() );
+                        // Make sure that the engine has been intentionally initialized before it is first accessed.
+                        // This provides more certainty for the order of events in the Rock application startup process.
+                        throw new LavaException( "LavaEngine not initialized. The Initialize() method must be called before the engine instance can be accessed." );
                     }
                 }
 

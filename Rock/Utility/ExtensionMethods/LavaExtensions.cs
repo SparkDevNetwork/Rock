@@ -46,13 +46,10 @@ namespace Rock
         /// </summary>
         static ExtensionMethods()
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                //
-                // Register any 3rd party library classes that are safe to use.
-                //
-                Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
-            }
+            //
+            // Register any 3rd party library classes that are safe to use.
+            //
+            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
         }
 
         #endregion
