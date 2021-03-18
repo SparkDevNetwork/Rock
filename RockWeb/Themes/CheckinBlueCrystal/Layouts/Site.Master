@@ -40,10 +40,14 @@
             volume: 0.8
         });
 
-        // Use add_load to fire with page load and postbacks
-        Sys.Application.add_load(function() {
+        // Apply Rock Fade in With Document Ready for Modal Compatibility
+        $(document).ready(function() {
             // add quick fade-in effect to the page
             $('body').rockFadeIn();
+        });
+
+        // Use add_load to fire with page load and postbacks
+        Sys.Application.add_load(function() {
             checkinSounds();
         });
 
