@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel.Blocks;
@@ -41,6 +42,8 @@ namespace Rock.Obsidian.Blocks.Event
 
     public class RegistrationEntry : ObsidianBlockType
     {
+        #region Keys
+
         /// <summary>
         /// Page Parameter
         /// </summary>
@@ -48,6 +51,10 @@ namespace Rock.Obsidian.Blocks.Event
         {
             public const string RegistrationInstanceId = "RegistrationInstanceId";
         }
+
+        #endregion Keys
+
+        #region Obsidian Block Type Overrides
 
         /// <summary>
         /// Gets the property values that will be sent to the browser.
@@ -62,18 +69,8 @@ namespace Rock.Obsidian.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                var now = RockDateTime.Now;
-
-                var registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
+                var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
                     .AsNoTracking()
-                    .Where( r =>
-                        r.Id == registrationInstanceId &&
-                        r.IsActive &&
-                        r.RegistrationTemplate != null &&
-                        r.RegistrationTemplate.IsActive &&
-                        ( !r.StartDateTime.HasValue || r.StartDateTime <= now ) &&
-                        ( !r.EndDateTime.HasValue || r.EndDateTime > now ) )
                     .FirstOrDefault();
 
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
@@ -251,6 +248,121 @@ namespace Rock.Obsidian.Blocks.Event
             }
         }
 
+        #endregion Obsidian Block Type Overrides
+
+        #region Block Actions
+
+        /// <summary>
+        /// Checks the discount code.
+        /// </summary>
+        /// <param name="code">The code.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult CheckDiscountCode( string code )
+        {
+            // Return a common "not found" result if any condition means the code is not valid
+            Func<BlockActionResult> getNotFoundResult = () => new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+            var today = RockDateTime.Today;
+
+            if ( code.IsNullOrWhiteSpace() )
+            {
+                return getNotFoundResult();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstance = GetRegistrationInstanceQuery( rockContext, string.Empty )
+                    .Include( "RegistrationTemplate" )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
+                var registrationTemplate = registrationInstance?.RegistrationTemplate;
+
+                if ( registrationTemplate == null )
+                {
+                    return getNotFoundResult();
+                }
+
+                var discount = registrationTemplate.Discounts
+                    .Where( d => d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+
+                if ( discount == null )
+                {
+                    // The code is not found
+                    return getNotFoundResult();
+                }
+
+                if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
+                {
+                    // Before the discount starts
+                    return getNotFoundResult();
+                }
+
+                if ( discount.EndDate.HasValue && today > discount.EndDate.Value )
+                {
+                    // Discount has expired
+                    return getNotFoundResult();
+                }
+
+                int? usagesRemaining = null;
+
+                if ( discount.MaxUsage.HasValue )
+                {
+                    // Check the number of people that have already used this code
+                    var usageCount = new RegistrationService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Count( r =>
+                            r.RegistrationInstanceId == registrationInstance.Id &&
+                            r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+
+                    usagesRemaining = discount.MaxUsage.Value - usageCount;
+
+                    if ( usagesRemaining <= 0 )
+                    {
+                        // Discount has been used up
+                        return getNotFoundResult();
+                    }
+                }
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new {
+                    DiscountCode = discount.Code,
+                    UsagesRemaining = usagesRemaining,
+                    discount.DiscountAmount,
+                    discount.DiscountPercentage
+                } );
+            }
+        }
+
+        #endregion Block Actions
+
+        #region Helpers
+
+        /// <summary>
+        /// Gets the registration instance query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="includes">The includes.</param>
+        /// <returns></returns>
+        private IQueryable<RegistrationInstance> GetRegistrationInstanceQuery( RockContext rockContext, string includes )
+        {
+            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
+            var now = RockDateTime.Now;
+
+            var query = new RegistrationInstanceService( rockContext )
+                .Queryable( includes )
+                .Where( r =>
+                    r.Id == registrationInstanceId &&
+                    r.IsActive &&
+                    r.RegistrationTemplate != null &&
+                    r.RegistrationTemplate.IsActive &&
+                    ( !r.StartDateTime.HasValue || r.StartDateTime <= now ) &&
+                    ( !r.EndDateTime.HasValue || r.EndDateTime > now ) );
+
+            return query;
+        }
+
         /// <summary>
         /// Gets the field values.
         /// </summary>
@@ -366,5 +478,7 @@ namespace Rock.Obsidian.Blocks.Event
             person.LoadAttributes( rockContext );
             return person.GetAttributeValue( attribute.Key );
         }
+
+        #endregion Helpers
     }
 }

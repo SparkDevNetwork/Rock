@@ -15,13 +15,20 @@
 // </copyright>
 //
 
-import { defineComponent } from 'vue';
+import { defineComponent, inject } from 'vue';
+import { InvokeBlockActionFunc } from '../../../Controls/RockBlock';
 import RockForm from '../../../Controls/RockForm';
 import CheckBox from '../../../Elements/CheckBox';
 import EmailBox from '../../../Elements/EmailBox';
-import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
 import TextBox from '../../../Elements/TextBox';
+
+type CheckDiscountCodeResult = {
+    DiscountCode: string;
+    UsagesRemaining: number | null;
+    DiscountAmount: number;
+    DiscountPercentage: number;
+};
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Summary',
@@ -30,12 +37,36 @@ export default defineComponent({
         TextBox,
         CheckBox,
         EmailBox,
-        RockForm,
-        JavaScriptAnchor
+        RockForm
+    },
+    setup() {
+        return {
+            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc
+        };
+    },
+    data() {
+        return {
+            isDiscountCodeLoading: false,
+            discountCodeInput: ''
+        };
     },
     methods: {
         onPrevious() {
             this.$emit('previous');
+        },
+        async tryDiscountCode() {
+            this.isDiscountCodeLoading = true;
+
+            try {
+                const result = await this.invokeBlockAction<CheckDiscountCodeResult>('CheckDiscountCode', {
+                    code: this.discountCodeInput
+                });
+
+                console.log(result);
+            }
+            finally {
+                this.isDiscountCodeLoading = false;
+            }
         }
     },
     template: `
@@ -65,8 +96,10 @@ export default defineComponent({
                 <div class="form-group pull-right">
                     <label class="control-label">Discount Code</label>
                     <div class="input-group">
-                        <input type="text" class="form-control input-width-md input-sm" />
-                        <JavaScriptAnchor class="btn btn-default btn-sm margin-l-sm">Apply</JavaScriptAnchor>
+                        <input type="text" :disabled="isDiscountCodeLoading" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
+                        <RockButton btnSize="sm" :isLoading="isDiscountCodeLoading" class="margin-l-sm" @click="tryDiscountCode">
+                            Apply
+                        </RockButton>
                     </div>
                 </div>
             </div>
