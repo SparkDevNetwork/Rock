@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -100,7 +101,7 @@ namespace Rock.Model
         /// <value>
         /// The group member.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace Rock.Model
         /// <value>
         /// The group requirement.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupRequirement GroupRequirement { get; set; }
 
         #endregion

@@ -32,7 +32,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a type or category of docuemnt in Rock.
     /// </summary>
-    [RockDomain( "CRM" )]
+    [RockDomain( "Core" )]
     [Table( "DocumentType" )]
     [DataContract]
     public partial class DocumentType : Model<DocumentType>, IOrdered, ICacheable

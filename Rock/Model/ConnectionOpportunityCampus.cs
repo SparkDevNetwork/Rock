@@ -20,13 +20,14 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection opportunity campus
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunityCampus" )]
     [DataContract]
     public partial class ConnectionOpportunityCampus : Model<ConnectionOpportunityCampus>
@@ -73,7 +74,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
@@ -82,7 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -91,7 +92,7 @@ namespace Rock.Model
         /// <value>
         /// The default connector person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias DefaultConnectorPersonAlias { get; set; }
 
         #endregion

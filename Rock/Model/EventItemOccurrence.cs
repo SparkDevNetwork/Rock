@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -123,7 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EventItem"/> that this EventItemOccurrence is a member of.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>

@@ -94,20 +94,19 @@
                             </div>
 
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <%-- tabular data --%>
-                                <Rock:Grid ID="gData" runat="server" AllowPaging="true" EmptyDataText="No Data Found" ShowActionsInHeader="true" AllowSorting="true" OnGridRebind="gData_GridRebind">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="Name" SortExpression="Name" HeaderText="Name" />
-                                        <Rock:RockBoundField DataField="ScheduledCountText" SortExpression="ScheduledCount" HeaderText="Scheduled" />
-                                        <Rock:RockBoundField DataField="NoResponseCountText" SortExpression="NoResponseCount" HeaderText="No Response" />
-                                        <Rock:RockBoundField DataField="DeclineCountText" SortExpression="DeclineCount" HeaderText="Declines" />
-                                        <Rock:RockBoundField DataField="AttendedCountText" SortExpression="AttendedCount" HeaderText="Attended" />
-                                        <Rock:RockBoundField DataField="CommittedNoShowCountText" SortExpression="CommittedNoShowCount" HeaderText="Did Not Show" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
+                        <div class="grid margin-t-sm">
+                            <%-- tabular data --%>
+                            <Rock:Grid ID="gData" runat="server" AllowPaging="true" EmptyDataText="No Data Found" ShowActionsInHeader="true" AllowSorting="true" OnGridRebind="gData_GridRebind">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" SortExpression="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="ScheduledCountText" SortExpression="ScheduledCount" HeaderText="Scheduled" />
+                                    <Rock:RockBoundField DataField="NoResponseCountText" SortExpression="NoResponseCount" HeaderText="No Response" />
+                                    <Rock:RockBoundField DataField="DeclineCountText" SortExpression="DeclineCount" HeaderText="Declines" />
+                                    <Rock:RockBoundField DataField="AttendedCountText" SortExpression="AttendedCount" HeaderText="Attended" />
+                                    <Rock:RockBoundField DataField="DeclinedReasons" HeaderText="Decline Reason" HtmlEncode="false" />
+                                    <Rock:RockBoundField DataField="CommittedNoShowCountText" SortExpression="CommittedNoShowCount" HeaderText="Did Not Show" />
+                                </Columns>
+                            </Rock:Grid>
                         </div>
 
                     </div>

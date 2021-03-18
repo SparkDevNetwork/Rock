@@ -15,7 +15,7 @@ namespace Rock.Tests.Integration.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
-    public class EventScheduledInstanceCommandTests
+    public class EventScheduledInstanceCommandTests : LavaIntegrationTestBase
     {
         private static string StaffMeetingEventGuidString = "93104654-DAFA-489B-A175-5F2AB3A846F1";
 
@@ -30,23 +30,6 @@ namespace Rock.Tests.Integration.Lava
   {% endfor %}
 {% endeventscheduledinstance %}
 ";
-
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            InitializeTestData();
-
-            // Initialize the Lava Engine.
-            Liquid.UseRubyDateFormat = false;
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
-            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-
-            // Register the Lava commands required for testing.
-            var lavaCommand = new EventScheduledInstance();
-
-            lavaCommand.OnStartup();
-        }
 
         private string GetTestTemplate( string parameters )
         {

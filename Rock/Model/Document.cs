@@ -34,7 +34,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents any document in Rock.  
     /// </summary>
-    [RockDomain( "CRM" )]
+    [RockDomain( "Core" )]
     [Table( "Document" )]
     [DataContract]
     public partial class Document : Model<Document>, IRockIndexable

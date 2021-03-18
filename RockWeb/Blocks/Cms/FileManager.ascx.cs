@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Web;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Security;
@@ -55,6 +56,14 @@ namespace RockWeb.Blocks.Cms
         Order = 2,
         Key = AttributeKey.FileEditorPage )]
 
+    [BooleanField(
+        "Enable Zip Upload",
+        Key = AttributeKey.ZipUploaderEnabled,
+        Description = "Set this to true to enable the Zip File uploader.",
+        DefaultBooleanValue = false,
+        Order = 3
+        )]
+
     #endregion Block Attributes
     public partial class FileManager : RockBlock
     {
@@ -65,6 +74,7 @@ namespace RockWeb.Blocks.Cms
             public const string RootFolder = "RootFolder";
             public const string BrowseMode = "BrowseMode";
             public const string FileEditorPage = "FileEditorPage";
+            public const string ZipUploaderEnabled = "ZipUploaderEnabled";
         }
 
         #endregion Attribute Keys
@@ -118,14 +128,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void SetupIFrame()
         {
-            var globalAttributesCache = GlobalAttributesCache.Get();
-
-            string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
-            string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
-            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
-
             var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
             string rootFolder = GetAttributeValue( AttributeKey.RootFolder );
+            bool zipUploaderEnabled = GetAttributeValue( AttributeKey.ZipUploaderEnabled ).AsBoolean();
             string browseMode = GetAttributeValue( AttributeKey.BrowseMode );
             string url = LinkedPageUrl( AttributeKey.FileEditorPage );
             if ( string.IsNullOrWhiteSpace( browseMode ) )
@@ -134,20 +139,20 @@ namespace RockWeb.Blocks.Cms
             }
 
             iframeUrl += "?RootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
-            iframeUrl += "&BrowseMode=" + browseMode;
-            iframeUrl += "&FileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
-            iframeUrl += "&FileTypeWhiteList=" + HttpUtility.UrlEncode( fileTypeWhiteList );
+
+            if ( zipUploaderEnabled )
+            {
+                iframeUrl += "&ZipUploaderEnabled=" + HttpUtility.UrlEncode( Encryption.EncryptString( zipUploaderEnabled.ToTrueFalse() ) );
+            }
+
+            iframeUrl += "&BrowserMode=" + browseMode;
             iframeUrl += "&EditFilePage=" + HttpUtility.UrlEncode( url );
 
             if ( PageParameter( PageParameterKey.RelativeFilePath ).IsNotNullOrWhiteSpace() )
             {
                 iframeUrl += "&RelativeFilePath=" + HttpUtility.UrlEncode( PageParameter( PageParameterKey.RelativeFilePath ) );
             }
-
-            if ( browseMode == "image" )
-            {
-                iframeUrl += "&ImageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
-            }
+            
             iframeUrl += "&Theme=" + this.RockPage.Site.Theme;
 
             iframeFileBrowser.Src = iframeUrl;

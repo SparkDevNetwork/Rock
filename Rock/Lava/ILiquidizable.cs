@@ -14,23 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Lava
 {
     /// <summary>
-    /// Represents an object model that can be used with Lava
+    /// Represents an object model that can be used with Lava.
+    /// This is a Rock-specific superset of the same-named DotLiquid interface.
     /// </summary>
-    public interface ILiquidizable: DotLiquid.ILiquidizable, DotLiquid.IIndexable
+    [RockObsolete( "13.0" )] // "Implement the Rock.Lava.ILavaDataDictionary interface instead."
+    public interface ILiquidizable : global::DotLiquid.ILiquidizable, global::DotLiquid.IIndexable
     {
-
         /// <summary>
         /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
         /// </value>
-        List<string> AvailableKeys { get;  }
-
+        List<string> AvailableKeys { get; }
     }
 }

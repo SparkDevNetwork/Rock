@@ -104,11 +104,20 @@
                 </Content>
             </Rock:ModalDialog>
 
-            <!-- Confirm Checkout modal -->
+            <!-- Confirm Checkout All modal -->
             <Rock:ModalDialog ID="mdConfirmCheckoutAll" runat="server" Title="Confirm" ValidationGroup="vgConfirmCheckoutAll" SaveButtonText="Check Out" OnSaveClick="mdConfirmCheckoutAll_SaveClick">
                 <Content>
                     <asp:Literal ID="lConfirmCheckoutAll" runat="server" Text="Which schedules would you like to check out for:" />
                     <Rock:RockCheckBoxList ID="cblSchedulesCheckoutAll" runat="server" Label="Schedules" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmCheckoutAll" />
+                </Content>
+            </Rock:ModalDialog>
+
+            <!-- Confirm Checkout Attendee modal -->
+            <Rock:ModalDialog ID="mdConfirmCheckoutAttendee" runat="server" Title="Confirm" ValidationGroup="vgConfirmCheckoutAttendee" SaveButtonText="Check Out" OnSaveClick="mdConfirmCheckoutAttendee_SaveClick" >
+                <Content>
+                    <asp:HiddenField ID="hfConfirmCheckoutAttendeeAttendanceIds" runat="server" />
+                    <asp:Literal ID="lConfirmCheckoutAttendee" runat="server" Text="Which schedules would you like to check out for:" />
+                    <Rock:RockCheckBoxList ID="cblSchedulesCheckoutAttendee" runat="server" Label="Schedules" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmCheckoutAttendee" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

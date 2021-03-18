@@ -25,6 +25,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -234,7 +235,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template form.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplateForm RegistrationTemplateForm { get; set; }
 
         /// <summary>

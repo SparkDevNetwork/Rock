@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ModelMap.ascx.cs" Inherits="RockWeb.Blocks.Examples.ModelMap" %>
-
+<%@ Import namespace="Rock" %>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfSelectedCategoryGuid" runat="server" />
@@ -16,7 +16,7 @@
                                 <li class='<%# GetCategoryClass( Eval("Guid") ) %>'>
                                     <asp:LinkButton ID="lbCategory" runat="server" CommandArgument='<%# Eval("Guid") %>' CommandName="Display">
                                         <i class='<%# Eval("IconCssClass") %>'></i>
-                                        <h3><%# Eval("Name") %> </h3>
+                                        <h3><%# Eval("Name").ToString().SplitCase() %> </h3>
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>
@@ -40,7 +40,7 @@
                                 <ItemTemplate>
                                     <li class='<%# GetEntityClass( Eval("Id") ) %>'>
                                         <asp:LinkButton ID="lbModel" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                            <%# Eval("FriendlyName") %> 
+                                            <%# Eval("FriendlyName") %>
                                         </asp:LinkButton>
                                     </li>
                                 </ItemTemplate>
@@ -55,9 +55,9 @@
 
                 <asp:Panel ID="pnlClassDetail" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title rollover-container"><asp:Literal ID="lClassName" runat="server" /></h1>
-                        <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color pull-left margin-l-sm"><i class="fa fa-link"></i></asp:HyperLink>
-                        <p class='description'><asp:Literal ID="lClassDescription" runat="server" /></p>
+                        <h1 class="panel-title text-nowrap rollover-container"><asp:Literal ID="lClassName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm"><i class="fa fa-link"></i></asp:HyperLink></h1>
+
+                        <span class='block-description small ml-3'><asp:Literal ID="lClassDescription" runat="server" /></span>
                     </div>
 
                     <Rock:GridFilter ID="gfSettings" runat="server" OnApplyFilterClick="gfSettings_ApplyFilterClick" OnClearFilterClick="gfSettings_ClearFilterClick">
@@ -79,10 +79,10 @@
                             <asp:ListItem Value="False" Text="No" />
                         </Rock:RockDropDownList>
                     </Rock:GridFilter>
-                    
+
                     <div class="panel-body">
-                        <small class="pull-right">Show: 
-                            <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> inherited</span>
+                        <small class="pull-right">Show:
+                            <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> methods</span>
                         </small>
 
                         <asp:Literal ID="lClasses" runat="server" ViewStateMode="Disabled"></asp:Literal>
@@ -92,28 +92,28 @@
         </div>
 
         <asp:Panel ID="pnlKey" runat="server" CssClass="well" Visible="false" >
-   
+
                     <h4>Key</h4>
                     <div class="row">
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><strong class="text-danger">*</strong></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">A required field.</div>
                         </div>
-                        <hr />
+                        <hr class="my-3" />
                         <div class="row">
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><i class='fa fa-database fa-fw'></i></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">A property on the database.</div>
                         </div>
-                         <hr />
+                         <hr class="my-3" />
                         <div class="row">
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><i class='fa fa-square-o fa-fw'></i></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">Not mapped to the database.  These fields are computed and are only available in the object.</div>
                         </div>
-                        <hr />
+                        <hr class="my-3" />
                         <div class="row">
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">These fields are available where Lava is supported.</div>
                         </div>
-                        <hr />
+                        <hr class="my-3" />
                         <div class="row">
                             <div class="col-xs-5 col-sm-3 col-md-1 text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></div>
                             <div class="col-xs-7 col-sm-9 col-md-10">These methods or fields are obsolete and should not be used anymore.</div>
@@ -126,6 +126,7 @@
                 // Hide and unhide inherited properties and methods
                 $('.js-model-inherited').on('click', function () {
                     $(this).find('i.js-model-check').toggleClass('fa-check-square-o fa-square-o');
+                    $(this).closest('.panel-body').find('h4.js-model').toggleClass('non-hidden hidden ');
                     $(this).closest('.panel-body').find('li.js-model').toggleClass('non-hidden hidden ');
                 });
 

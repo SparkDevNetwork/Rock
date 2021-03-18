@@ -25,12 +25,15 @@ var ZebraPrintPlugin = {
             return true;
         }
 
+        if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage !== "undefined") {
+            return true;
+        }
+
         return false;
     },
 
     // print tags
     printTags: function (tagJson, success, fail) {
-
         // do some logic to clean up null values
         var labels = JSON.parse(tagJson);
 
@@ -66,6 +69,13 @@ var ZebraPrintPlugin = {
             } else if (navigator.userAgent.match(/.NET CLR/)) {
                 console.log('Printing with Rock Windows Client 1.0');
                 window.external.PrintLabels(tagJson);
+            } else if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage !== "undefined") {
+                console.log('Printing with Rock Windows Client 4.0');
+                var browserCommand = {
+                    eventName: "PRINT_LABELS",
+                    eventData: tagJson
+                };
+                window.chrome.webview.postMessage(browserCommand);
             } else {
                 console.log('Printing with Rock Windows Client 3.0');
                 window.external.PrintLabels(tagJson);

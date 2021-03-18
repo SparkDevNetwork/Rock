@@ -1561,6 +1561,10 @@ namespace RockWeb.Blocks.Examples
                 foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
                 {
                     attendance.PersonAliasId = aliasKeyValue.Value;
+
+                    // make sure the attendance has a unique guid
+                    attendance.Guid = Guid.NewGuid();
+
                     attendanceService.Add( attendance );
                 }
             }

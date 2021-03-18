@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -400,8 +401,16 @@ namespace RockWeb.Blocks.Connection
             var template = this.GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
 
+            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
+            }
+            else
+            {
+                mergeFields.Add( "OpportunitySummary", opportunitySummary );
+            }
+            
             string result = null;
             using ( var rockContext = new RockContext() )
             {
@@ -621,7 +630,15 @@ namespace RockWeb.Blocks.Connection
                             IsUnassigned = opportunitySummary.UnassignedConnectionRequests.Contains( connectionRequestId )
                         };
 
-                        mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+                        if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                        {
+                            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+                        }
+                        else
+                        {
+                            mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+                        }
+                        
                         mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );
                         lStatusIcons.Text = connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
                     }

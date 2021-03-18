@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Data
 {
@@ -111,7 +112,7 @@ namespace Rock.Data
         /// <value>
         /// The created by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? CreatedByPersonId
         {
@@ -131,7 +132,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the created by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string CreatedByPersonName
         {
@@ -151,7 +152,7 @@ namespace Rock.Data
         /// <value>
         /// The modified by person identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual int? ModifiedByPersonId
         {
@@ -171,7 +172,7 @@ namespace Rock.Data
         /// <value>
         /// The name of the modified by person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [HideFromReporting]
         public virtual string ModifiedByPersonName
         {
@@ -584,11 +585,27 @@ namespace Rock.Data
         /// </remarks>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete("Use ContainsKey(string) instead.")]
+        [RockObsolete("13.0")]
         public override bool ContainsKey( object key )
         {
-            string attributeKey = key.ToStringSafe();
+            return ContainsKey( key.ToStringSafe() );
+        }
 
-            if ( attributeKey == "AttributeValues")
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <remarks>
+        /// This method is only necessary to support the old way of getting attribute values in 
+        /// liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
+        /// deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
+        /// supported (e.g. {{ Person | Attribute:'BaptismDate' }} ), this method can be removed
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override bool ContainsKey( string key )
+        {
+            if ( key == "AttributeValues" )
             {
                 return true;
             }
@@ -602,18 +619,18 @@ namespace Rock.Data
                     this.LoadAttributes();
                 }
 
-                if ( attributeKey.EndsWith( "_unformatted" ) )
+                if ( key.EndsWith( "_unformatted" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_unformatted", "" );
+                    key = key.Replace( "_unformatted", "" );
                 }
-                else if ( attributeKey.EndsWith( "_url" ) )
+                else if ( key.EndsWith( "_url" ) )
                 {
-                    attributeKey = attributeKey.Replace( "_url", "" );
+                    key = key.Replace( "_url", "" );
                 }
 
-                if ( this.Attributes != null && this.Attributes.ContainsKey( attributeKey ) )
+                if ( this.Attributes != null && this.Attributes.ContainsKey( key ) )
                 {
-                    var attribute = this.Attributes[attributeKey];
+                    var attribute = this.Attributes[key];
                     if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                     {
                         return true;
@@ -641,7 +658,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -652,7 +669,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, AttributeValueCache> AttributeValues { get; set; }
 
         /// <summary>

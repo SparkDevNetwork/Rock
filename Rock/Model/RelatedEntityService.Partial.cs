@@ -42,10 +42,32 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<IEntity> GetRelatedToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey )
         {
+            return GetRelatedToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey, null );
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> target entities for the given entity types, purpose key, and qualifier value.
+        /// </summary>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetRelatedToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey, string qualifierValue )
+        {
             EntityTypeCache relatedEntityTypeCache = EntityTypeCache.Get( relatedEntityTypeId );
             if ( relatedEntityTypeCache.AssemblyName != null )
             {
-                IQueryable<RelatedEntity> query = GetRelatedEntityRecordsToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey );
+                IQueryable<RelatedEntity> query;
+                if ( qualifierValue.IsNotNullOrWhiteSpace() )
+                {
+                    query = GetRelatedEntityRecordsToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey, qualifierValue );
+                }
+                else
+                {
+                    query = GetRelatedEntityRecordsToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey );
+                }
 
                 var rockContext = this.Context as RockContext;
                 Type relatedEntityType = relatedEntityTypeCache.GetEntityType();
@@ -91,6 +113,28 @@ namespace Rock.Model
             {
                 query = query.Where( a => a.PurposeKey == purposeKey );
             }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> target entities (related to the given source entity) for the given entity types, purpose key, and qualifier value.
+        /// </summary>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<RelatedEntity> GetRelatedEntityRecordsToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey, string qualifierValue )
+        {
+            var query = Queryable()
+            .Where( a => a.SourceEntityTypeId == sourceEntityTypeId
+                && a.SourceEntityId == sourceEntityId
+                && a.TargetEntityTypeId == relatedEntityTypeId
+                && a.QualifierValue == qualifierValue );
+
+            query = purposeKey.IsNullOrWhiteSpace() ? query.Where( a => string.IsNullOrEmpty( a.PurposeKey ) ) : query.Where( a => a.PurposeKey == purposeKey );
 
             return query;
         }

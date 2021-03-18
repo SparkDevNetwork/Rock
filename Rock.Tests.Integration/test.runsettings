@@ -29,7 +29,10 @@
     <!-- Google Cloud Storage Provider tests -->
     <Parameter name="GoogleBucketName" value="" />
     <Parameter name="GoogleServiceAccountJsonKey" value="" />
-    
+
+    <!-- Lava Engine Tests: [Fluid] | DotLiquid -->
+    <Parameter name="LavaEngineType" value="Fluid" />
+
   </TestRunParameters>
   
   <!-- MSTest adapter -->

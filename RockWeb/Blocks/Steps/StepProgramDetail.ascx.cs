@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
-using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -35,6 +33,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Steps
 {
@@ -130,6 +129,8 @@ namespace RockWeb.Blocks.Steps
         {
             base.LoadViewState( savedState );
 
+            LoadAttributesViewState();
+
             string json;
 
             json = ViewState["StatusesState"] as string ?? string.Empty;
@@ -165,6 +166,8 @@ namespace RockWeb.Blocks.Steps
             ViewState["StatusesState"] = JsonConvert.SerializeObject( StatusesState, Formatting.None, jsonSetting );
             ViewState["WorkflowsState"] = JsonConvert.SerializeObject( WorkflowsState, Formatting.None, jsonSetting );
 
+            SaveAttributesViewState( jsonSetting );
+
             return base.SaveViewState();
         }
 
@@ -183,6 +186,9 @@ namespace RockWeb.Blocks.Steps
             InitializeChartScripts();
             InitializeChartFilter();
             InitializeSettingsNotification( upStepProgram );
+
+            var editAllowed = IsUserAuthorized( Authorization.EDIT );
+            InitializeAttributesGrid( editAllowed );
         }
 
         /// <summary>
@@ -1025,6 +1031,8 @@ namespace RockWeb.Blocks.Steps
             {
                 rockContext.SaveChanges();
 
+                Helper.SaveAttributeEdits( AttributesState, new StepType().TypeId, "StepProgramId", stepProgram.Id.ToString(), rockContext );
+
                 stepProgram = stepProgramService.Get( stepProgram.Id );
 
                 if ( stepProgram == null )
@@ -1170,7 +1178,10 @@ namespace RockWeb.Blocks.Steps
             // Step Statuses
             StatusesState = stepProgram.StepStatuses.ToList();
 
+            LoadAttributeDefinitions( new StepType().TypeId, "StepProgramId", stepProgram.Id );
+
             BindStepStatusesGrid();
+            BindAttributesGrid();
 
             // Workflow Triggers
             WorkflowsState = new List<StepWorkflowTriggerViewModel>();
@@ -1893,6 +1904,312 @@ namespace RockWeb.Blocks.Steps
             }
         }
 
+        #endregion
+
+        #region Attributes Grid
+        private List<Attribute> AttributesState { get; set; }
+
+        /// <summary>
+        /// Loads the state details.
+        /// </summary>
+        /// <param name="connectionType">Type of the connection.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void LoadAttributeDefinitions( int targetEntityTypeId, string targetEntityParentForeignKeyName, int targetEntityParentId )
+        {
+            if ( targetEntityParentId == 0 )
+            {
+                // If this is a new step type, then there are no attributes to load
+                AttributesState = new List<Attribute>();
+                return;
+            }
+
+            var dataContext = this.GetDataContext();
+
+            var attributeService = new AttributeService( dataContext );
+
+            AttributesState = attributeService
+                .GetByEntityTypeId( targetEntityTypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( targetEntityParentForeignKeyName, StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( targetEntityParentId.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Load the Attribute Definitions associated with the current record from ViewState.
+        /// </summary>
+        private void LoadAttributesViewState()
+        {
+            string json = ViewState["AttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                AttributesState = new List<Attribute>();
+            }
+            else
+            {
+                AttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+        }
+
+        /// <summary>
+        /// Save the Attribute Definitions associated with the current record into ViewState.
+        /// </summary>
+        private void SaveAttributesViewState( JsonSerializerSettings jsonSetting )
+        {
+            ViewState["AttributesState"] = JsonConvert.SerializeObject( AttributesState, Formatting.None, jsonSetting );
+        }
+
+
+        /// <summary>
+        /// Get the implementing type of the Attribute Definition.
+        /// This is the type to which the attribute definition is attached, not the type with which the attribute values are associated.
+        /// </summary>
+        /// <returns></returns>
+        private Type GetAttributeParentEntityType()
+        {
+            return typeof( StepProgram );
+        }
+
+        /// <summary>
+        /// Get the prompt shown in the Attribute Definition dialog for the current parent entity.
+        /// </summary>
+        /// <returns></returns>
+        private string GetAttributeDefinitionDialogPrompt()
+        {
+            return string.Format( "Edit Attribute for Step Types in Step Program \"{0}\"", tbName.Text );
+        }
+
+        /// <summary>
+        /// Set the properties of the Attributes grid.
+        /// </summary>
+        /// <param name="showAdd"></param>
+        private void InitializeAttributesGrid( bool showAdd )
+        {
+            gAttributes.DataKeyNames = new string[] { "Guid" };
+            gAttributes.AllowPaging = false;
+            gAttributes.DisplayType = GridDisplayType.Light;
+            gAttributes.ShowConfirmDeleteDialog = false;
+            gAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+
+            gAttributes.Actions.ShowAdd = showAdd;
+            gAttributes.Actions.AddClick += gAttributes_Add;
+
+            gAttributes.GridRebind += gAttributes_GridRebind;
+            gAttributes.GridReorder += gAttributes_GridReorder;
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Add( object sender, EventArgs e )
+        {
+            gAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
+        {
+            var attributeGuid = ( Guid ) e.RowKeyValue;
+
+            gAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Shows the edit attribute dialog.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        protected void gAttributes_ShowEdit( Guid attributeGuid )
+        {
+            var entityType = GetAttributeParentEntityType();
+            var prompt = GetAttributeDefinitionDialogPrompt();
+
+            this.ShowAttributeDefinitionDialog( attributeGuid, entityType, prompt );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            SortAttributes( AttributesState, e.OldIndex, e.NewIndex );
+
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
+        {
+            var attributeGuid = ( Guid ) e.RowKeyValue;
+
+            AttributesState.RemoveEntity( attributeGuid );
+
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Show the Attribute Definition Properties Dialog.
+        /// </summary>
+        private void ShowAttributeDefinitionDialog( Guid attributeGuid, Type attachToEntityType, string title )
+        {
+            Attribute attribute;
+
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+            }
+            else
+            {
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+            }
+
+            edtAttributes.ActionTitle = title;
+
+            var reservedKeyNames = new List<string>();
+
+            AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+
+            edtAttributes.AllowSearchVisible = true;
+            edtAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+            edtAttributes.SetAttributeProperties( attribute, attachToEntityType );
+
+            hfActiveDialog.Value = "ATTRIBUTES";
+
+            dlgAttribute.Show();
+        }
+
+        /// <summary>
+        /// Hide the Attribute Definition Properties Dialog.
+        /// </summary>
+        private void HideAttributeDefinitionDialog()
+        {
+            dlgAttribute.Hide();
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgConnectionTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgAttribute_SaveClick( object sender, EventArgs e )
+        {
+            var attribute = new Rock.Model.Attribute();
+            edtAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            AttributesState.Add( attribute );
+            ReOrderAttributes( AttributesState );
+            BindAttributesGrid();
+
+            HideAttributeDefinitionDialog();
+        }
+
+        /// <summary>
+        /// Binds the Connection Type attributes grid.
+        /// </summary>
+        private void BindAttributesGrid()
+        {
+            gAttributes.DataSource = AttributesState
+                         .OrderBy( a => a.Order )
+                         .ThenBy( a => a.Name )
+                         .Select( a => new
+                         {
+                             a.Id,
+                             a.Guid,
+                             a.Name,
+                             a.Description,
+                             a.IsRequired,
+                             a.IsGridColumn,
+                             a.AllowSearch
+                         } )
+                         .ToList();
+            gAttributes.DataBind();
+        }
+
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void SortAttributes( List<Attribute> attributeList, int oldIndex, int newIndex )
+        {
+            var movedItem = attributeList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in attributeList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in attributeList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        /// <summary>
+        /// Reorders the attributes.
+        /// </summary>
+        /// <param name="attributeList">The attribute list.</param>
+        private void ReOrderAttributes( List<Attribute> attributeList )
+        {
+            attributeList = attributeList.OrderBy( a => a.Order ).ToList();
+            int order = 0;
+            attributeList.ForEach( a => a.Order = order++ );
+        }
         #endregion
     }
 }

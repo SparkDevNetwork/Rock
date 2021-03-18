@@ -20,13 +20,14 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection activity type
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionActivityType" )]
     [DataContract]
     public partial class ConnectionActivityType : Model<ConnectionActivityType>, IHasActiveFlag
@@ -78,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the connection.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion

@@ -27,6 +27,7 @@ using Rock.Web.UI.Controls;
 using System.Linq;
 using System.Collections.Generic;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -297,10 +298,10 @@ namespace RockWeb.Blocks.Crm
         #region Helper Classes
 
         /// <summary>
-        /// A class to store personal device for lava
+        /// A class to store personal device data for Lava.
         /// </summary>
         [DotLiquid.LiquidType( "PersonalDevice", "DeviceIconCssClass", "PlatformValue" )]
-        public class PersonalDeviceItem
+        public class PersonalDeviceItem : LavaDataObject
         {
             /// <summary>
             /// Gets or sets the personal device.

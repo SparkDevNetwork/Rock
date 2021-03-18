@@ -20,13 +20,14 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection opportunity group
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunityGroup" )]
     [DataContract]
     public partial class ConnectionOpportunityGroup : Model<ConnectionOpportunityGroup>
@@ -64,7 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>

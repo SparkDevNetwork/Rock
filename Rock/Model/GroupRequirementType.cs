@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -167,7 +168,7 @@ namespace Rock.Model
         /// <value>
         /// The data view.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataView DataView { get; set; }
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <value>
         /// The warning data view.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataView WarningDataView { get; set; }
 
         #endregion

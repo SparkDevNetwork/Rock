@@ -3730,7 +3730,7 @@ TransactionAccountDetails: [
         /// </summary>
         [Serializable]
         [DotLiquid.LiquidType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
-        protected class AccountItem
+        protected class AccountItem : LavaDataObject
         {
             public int Id { get; set; }
 

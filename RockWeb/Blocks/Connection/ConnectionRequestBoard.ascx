@@ -113,6 +113,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
+        Rock.controls.fullScreen.initialize();
         // Transfer mode: when user selects "Select Connector" show the connector picker
         var syncTransferConnectorControls = function () {
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
@@ -128,7 +129,7 @@
     };
 </script>
 
-<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional" class="styled-scroll">
     <ContentTemplate>
 
         <asp:UpdatePanel ID="upnlBlockLevelControls" runat="server">
@@ -138,9 +139,9 @@
             </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow">
+            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow-fullscreen">
                 <ContentTemplate>
 
                         <h2 class="panel-title">
@@ -152,8 +153,10 @@
                                 Campaign Requests
                             </asp:LinkButton>
                         </div>
-                        <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
-
+                        <div class="panel-follow-full-container">
+                            <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" title="Click to Follow"></asp:Panel>
+                            <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
+                        </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -245,7 +248,7 @@
                                         <i class="fa fa-sort"></i>
                                         <asp:Literal runat="server" ID="lSortText" />
                                     </button>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu dropdown-menu-right">
                                         <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
                                             <ItemTemplate>
                                                 <li>
@@ -325,24 +328,26 @@
                         </div>
                     </div>
 
-            <asp:UpdatePanel ID="upnlGridView" runat="server">
+            <asp:UpdatePanel ID="upnlGridView" runat="server" class="grid-view-container">
                 <ContentTemplate>
-                    <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
-                        <Columns>
-                            <Rock:SelectField></Rock:SelectField>
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
-                            <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
-                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                            <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
-                            <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
-                            <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
-                            <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:SecurityField />
-                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
-                            <Rock:DeleteField OnClick="gRequests_Delete" />
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="panel-body p-0">
+                        <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
+                            <Columns>
+                                <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
+                                <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
+                                <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
+                                <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
+                                <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
+                                <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:SecurityField />
+                                <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                <Rock:DeleteField OnClick="gRequests_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -683,7 +688,7 @@
 <script id="js-template-column" type="text/template">
     <div class="board-column">
         <div class="board-heading">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="board-heading-details">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
@@ -697,7 +702,7 @@
 </script>
 
 <script id="js-template-column-sentry" type="text/template">
-    <div class="board-card-base board-column-sentry text-muted small p-3">
+    <div class="board-card-base board-column-sentry small">
         <p class="mb-2"><strong>More requests exist</strong></p>
         <p>Please adjust sorting, use filters, or even use the grid mode to interact with them.</p>
     </div>
@@ -710,13 +715,13 @@
                 {{StatusIconsHtml}}
                 {{CampusHtml}}
             </div>
-            <div class="board-card-body">
+            <div class="board-card-main">
                 <div class="flex-grow-1 mb-2">
                     <div class="board-card-photo" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
-                    <span class="board-card-assigned d-block text-muted">
+                    <span class="board-card-assigned">
                         {{ConnectorPersonFullname}}
                     </span>
                 </div>
@@ -747,11 +752,11 @@
                 </div>
             </div>
             <div class="board-card-meta">
-                <span class="text-muted" title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
+                <span title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
                     <i class="fa fa-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}
                 </span>
-                <span class="text-muted" title="{{DaysSinceOpeningLongText}}">
+                <span title="{{DaysSinceOpeningLongText}}">
                     <i class="fa fa-calendar"></i>
                     {{DaysSinceOpeningShortText}}
                 </span>

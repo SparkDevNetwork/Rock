@@ -48,6 +48,8 @@ namespace Rock.Rest
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
             config.Services.Replace( typeof( IExceptionLogger ), new RockApiExceptionLogger() );
             config.Services.Replace( typeof( IExceptionHandler ), new RockApiExceptionHandler() );
+            config.Services.Replace( typeof( System.Web.Http.Dispatcher.IAssembliesResolver ), new RockAssembliesResolver() );
+
             config.Formatters.Insert( 0, new Rock.Utility.RockJsonMediaTypeFormatter() );
 
             // Change DateTimeZoneHandling to Unspecified instead of the default of RoundTripKind since Rock doesn't store dates in a timezone aware format
@@ -318,7 +320,7 @@ namespace Rock.Rest
                 } );
 
             // build OData model and create service route (mainly for metadata)
-            ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
+            ODataConventionModelBuilder builder = new ODataConventionModelBuilder( config );
 
             var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
                 .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<DataContractAttribute>() != null ) )

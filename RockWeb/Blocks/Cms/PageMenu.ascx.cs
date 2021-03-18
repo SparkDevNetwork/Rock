@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -32,6 +30,9 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Model;
 using Rock.Web;
+using Rock.Lava;
+using DotLiquid;
+using Rock.Lava.DotLiquid;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -208,19 +209,43 @@ namespace RockWeb.Blocks.Cms
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-           
-                var lavaTemplate = GetTemplate();
 
-                // Apply Enabled Lava Commands
-                var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
-
-                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
-
-                // Check for Lava rendering errors.
-                if ( lavaTemplate.Errors.Any() )
+                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
-                    throw lavaTemplate.Errors.First();
+                    var lavaTemplate = GetTemplate();
+
+                    // Apply Enabled Lava Commands
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                    lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands );
+
+                    content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+
+                    // Check for Lava rendering errors.
+                    if ( lavaTemplate.Errors.Any() )
+                    {
+                        throw lavaTemplate.Errors.First();
+                    }
+                }
+                else
+                {
+                    var lavaTemplate = GetLavaTemplate();
+
+                    // Apply Enabled Lava Commands
+                    var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( pageProperties );
+
+                    var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+
+                    lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
+
+                    List<Exception> errors;
+
+                    lavaTemplate.TryRender( lavaContext, out content, out errors );
+
+                    // Check for Lava rendering errors.
+                    if ( errors.Any() )
+                    {
+                        throw errors.First();
+                    }
                 }
 
                 phContent.Controls.Clear();
@@ -259,10 +284,17 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
+        #region RockLiquid Lava code
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
-            return cacheTemplate != null ? cacheTemplate.Template : null;
+            return cacheTemplate != null ? cacheTemplate.Template as Template : null;
+        }
+        #endregion
+
+        private ILavaTemplate GetLavaTemplate()
+        {
+            return LavaEngine.CurrentEngine.TemplateCacheService.GetOrAddTemplate( GetAttributeValue( AttributeKey.Template ) );
         }
 
         /// <summary>
