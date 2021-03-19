@@ -13,7 +13,7 @@ namespace Rock.Tests.Shared
     public static partial class AssertExtensions
     {
         /// <summary>
-        /// Asserts that the two string can be considered equivalent regardless of newlines.
+        /// Asserts that the two strings can be considered equivalent regardless of newlines.
         /// </summary>
         /// <param name="expected">The expected string.</param>
         /// <param name="actual">The actual sting.</param>
@@ -33,6 +33,30 @@ namespace Rock.Tests.Shared
             }
 
             Assert.AreEqual( expected.Trim().ToStripNewlines(), actual.Trim().ToStripNewlines() );
+        }
+
+        /// <summary>
+        /// Asserts that the two strings can be considered equivalent regardless of whitespace.
+        /// </summary>
+        /// <param name="expected">The expected string.</param>
+        /// <param name="actual">The actual sting.</param>
+        public static void AreEqualIgnoreWhitespace( this Assert assert, string expected, string actual )
+        {
+            if ( expected == null
+                 && actual == null )
+            {
+                return;
+            }
+            else if ( expected == null )
+            {
+                throw new NullReferenceException( "The expected string was null" );
+            }
+            else if ( actual == null )
+            {
+                throw new NullReferenceException( "The actual string was null" );
+            }
+
+            Assert.AreEqual( expected.ToStripNewlines().RemoveSpaces(), actual.ToStripNewlines().RemoveSpaces() );
         }
 
         public static void AreEqual<T>( this Assert assert, T expected, T actual )
