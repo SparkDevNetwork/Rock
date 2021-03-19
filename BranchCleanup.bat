@@ -1,6 +1,9 @@
 RMDIR "DotLiquid\Bin" /S /Q
 RMDIR "DotLiquid\Obj" /S /Q
 
+RMDIR "Rock\Bin" /S /Q
+RMDIR "Rock\Obj" /S /Q
+
 RMDIR "Rock.Checkr\Bin" /S /Q
 RMDIR "Rock.Checkr\Obj" /S /Q
 
@@ -10,8 +13,20 @@ RMDIR "Rock.Client\Obj" /S /Q
 RMDIR "Rock.CodeGeneration\Bin" /S /Q
 RMDIR "Rock.CodeGeneration\Obj" /S /Q
 
+RMDIR "Rock.Common\Bin" /S /Q
+RMDIR "Rock.Common\Obj" /S /Q
+
+RMDIR "Rock.Common.Web\Bin" /S /Q
+RMDIR "Rock.Common.Web\Obj" /S /Q
+
 RMDIR "Rock.DownhillCss\Bin" /S /Q
 RMDIR "Rock.DownhillCss\Obj" /S /Q
+
+RMDIR "Rock.Lava\Bin" /S /Q
+RMDIR "Rock.Lava\Obj" /S /Q
+
+RMDIR "Rock.Lava.Shared\Bin" /S /Q
+RMDIR "Rock.Lava.Shared\Obj" /S /Q
 
 RMDIR "Rock.Mailgun\Bin" /S /Q
 RMDIR "Rock.Mailgun\Obj" /S /Q
@@ -39,6 +54,9 @@ RMDIR "Rock.Plugin\Obj" /S /Q
 
 RMDIR "Rock.RestClient\Bin" /S /Q
 RMDIR "Rock.RestClient\Obj" /S /Q
+
+RMDIR "Rock.Rest\Bin" /S /Q
+RMDIR "Rock.Rest\Obj" /S /Q
 
 RMDIR "Rock.Rest\Bin" /S /Q
 RMDIR "Rock.Rest\Obj" /S /Q
@@ -85,8 +103,15 @@ RMDIR "Rock.WebStartup\Obj" /S /Q
 RMDIR "SignNowSDK\Bin" /S /Q
 RMDIR "SignNowSDK\Obj" /S /Q
 
+REN RockWeb\Bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll Microsoft.CodeDom.Providers.DotNetCompilerPlatform.bak
+REN RockWeb\Bin\Rock.Common.Mobile.dll Rock.Common.Mobile.bak
+
 DEL "RockWeb\Bin\*.dll"
 DEL "RockWeb\Bin\*.pdb"
 DEL "RockWeb\Bin\*.xml"
+
+REN RockWeb\Bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.bak Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+REN RockWeb\Bin\Rock.Common.Mobile.bak Rock.Common.Mobile.dll
+
 
 FOR /D %%f in (packages\*) DO RMDIR %%f /S /Q
