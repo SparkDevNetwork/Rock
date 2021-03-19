@@ -38,7 +38,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     ///
     /// </summary>
-    public class RockEntityBlock : LavaBlockBase
+    public class RockEntityBlock : LavaBlockBase, ILavaSecured
     {
         /// <summary>
         /// The type name of the target entity.
@@ -959,5 +959,18 @@ namespace Rock.Lava.Blocks
         /// An enum to specify and vs or comparisons
         /// </summary>
         enum ExpressionComparisonType { And, Or };
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "RockEntity";
+            }
+        }
+
+        #endregion
     }
 }

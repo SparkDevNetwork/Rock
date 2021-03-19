@@ -26,7 +26,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows an Interaction to be written.
     /// </summary>
-    public class InteractionWriteBlock : LavaBlockBase
+    public class InteractionWriteBlock : LavaBlockBase, ILavaSecured
     {
         #region Parameter Keys
 
@@ -186,5 +186,18 @@ namespace Rock.Lava.Blocks
             var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
         }
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "InteractionWrite";
+            }
+        }
+
+        #endregion        
     }
 }

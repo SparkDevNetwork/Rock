@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\DynamicShortcodeDefinition.cs" />
+    <Compile Include="Core\ILavaSecured.cs" />
     <Compile Include="Core\ILavaDataDictionary.cs" />
     <Compile Include="Core\ILavaDataDictionarySource.cs" />
     <Compile Include="Core\ILavaTemplateCacheService.cs" />

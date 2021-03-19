@@ -28,11 +28,10 @@ using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
 {
-
     /// <summary>
     /// Universal Search Lava Command
     /// </summary>
-    public class SearchBlock : LavaBlockBase
+    public class SearchBlock : LavaBlockBase, ILavaSecured
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
@@ -208,6 +207,18 @@ namespace Rock.Lava.Blocks
             return parms;
         }
 
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "Search";
+            }
+        }
+
+        #endregion
 
         /// <summary>
         ///

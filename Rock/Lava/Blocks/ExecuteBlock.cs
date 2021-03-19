@@ -27,7 +27,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Renders a Lava template as a C# function with a string return value, executes the function and returns the output.
     /// </summary>
-    public class ExecuteBlock : LavaBlockBase
+    public class ExecuteBlock : LavaBlockBase, ILavaSecured
     {
         private RuntimeType _runtimeType = RuntimeType.SCRIPT;
         private List<string> _imports = new List<string>();
@@ -178,6 +178,19 @@ namespace Rock.Lava.Blocks
             }
             return parms;
         }
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "Execute";
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>

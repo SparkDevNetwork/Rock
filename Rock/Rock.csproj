@@ -1047,7 +1047,7 @@
     <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
     <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Jobs\ChargeFutureTransactions.cs" />
-    <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Lava\Shortcodes\ScheduledContentShortcode.cs" />
     <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
     <Compile Include="Financial\AutomatedPaymentArgs.cs" />
     <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
@@ -1119,7 +1119,7 @@
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
-    <Compile Include="Lava\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\Shortcodes\ScripturizeShortcode.cs" />
     <Compile Include="Badge\Component\Assessment.cs" />
     <Compile Include="Model\Step.cs" />
     <Compile Include="Model\Streak.cs" />
@@ -1599,7 +1599,7 @@
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\LegacyLavaUpdater.cs" />
-    <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />

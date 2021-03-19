@@ -30,7 +30,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Tag which allows a Content Channel Item Interaction to be written.
     /// </summary>
-    public class InteractionContentChannelItemWriteTag : LavaTagBase
+    public class InteractionContentChannelItemWriteTag : LavaTagBase, ILavaSecured
     {
         #region Parameter Keys
 
@@ -139,5 +139,18 @@ namespace Rock.Lava.Blocks
             var interactionTransaction = new InteractionTransaction( info );
             interactionTransaction.Enqueue();
         }
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "InteractionContentChannelItemWrite";
+            }
+        }
+
+        #endregion
     }
 }

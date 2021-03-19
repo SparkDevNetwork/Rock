@@ -29,7 +29,7 @@ namespace Rock.Lava.Blocks
     /// The <c>EventItems</c> collection contains information about the Event instances.
     /// The <c>EventScheduledInstances</c> collection contains the occurrences of the Event that match the filter parameters.
     /// </summary>
-    public class EventScheduledInstanceBlock : LavaBlockBase
+    public class EventScheduledInstanceBlock : LavaBlockBase, ILavaSecured
     {
         /// <summary>
         /// The name of the element as it is used in the source document.
@@ -106,5 +106,18 @@ namespace Rock.Lava.Blocks
             context["EventItems"] = eventSummaries;
             context["EventScheduledInstances"] = eventOccurrenceSummaries;
         }
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "EventScheduledInstance";
+            }
+        }
+
+        #endregion
     }
 }
