@@ -613,6 +613,7 @@
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
+    <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
