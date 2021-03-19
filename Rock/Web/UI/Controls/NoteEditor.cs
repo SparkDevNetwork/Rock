@@ -610,6 +610,7 @@ namespace Rock.Web.UI.Controls
             var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
 
             _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
+            _hasAttributes = tempNoteForNewAttributes.Attributes.Any();
         }
 
         /// <summary>

@@ -108,15 +108,20 @@ namespace RockWeb.Blocks.Examples
                 {
                     entityTypeId = PageParameter( "EntityType" ).AsIntegerOrNull();
 
-                    if ( entityTypeId == null )
+                    EntityTypeCache entityType = null;
+                    if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
+                        entityType = EntityTypeCache.Get( entityTypeId.Value );
+                    }
+                    else
+                    {
+                        entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
+                    }
 
-                        if ( entityType != null )
-                        {
-                            entityTypeId = entityType.Id;
-                            categoryGuid = EntityCategories.Where( c => c.RockEntityIds.Contains( entityType.Id ) ).Select( c => c.Guid ).FirstOrDefault();
-                        }
+                    if ( entityType != null )
+                    {
+                        entityTypeId = entityType.Id;
+                        categoryGuid = EntityCategories.Where( c => c.RockEntityIds.Contains( entityType.Id ) ).Select( c => c.Guid ).FirstOrDefault();
                     }
                 }
 
@@ -378,7 +383,7 @@ namespace RockWeb.Blocks.Examples
                                     var definedValues = DefinedTypeCache.Get( definedTypeGuid ).DefinedValues;
                                     foreach ( var definedValue in definedValues )
                                     {
-                                        property.KeyValues.AddOrReplace( definedValue.Value, definedValue.Description );
+                                        property.KeyValues.AddOrReplace( string.Format( "{0} = {1}", definedValue.Id, definedValue.Value ), definedValue.Description );
                                     }
                                 }
                             }
@@ -635,7 +640,19 @@ namespace RockWeb.Blocks.Examples
         private string MakeSummaryHtml( string innerXml )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*)"" />" );
+            if ( match.Success )
+            {
+                var entityType = EntityTypeCache.Get( match.Groups[1].Value );
+                if ( entityType != null )
+                {
+                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                }
+                else
+                {
+                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                }
+            }
             return innerXml;
         }
 
