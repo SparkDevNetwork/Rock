@@ -180,22 +180,53 @@ namespace Rock.Lava
 
             try
             {
-                /*
-                    7/6/2020 - JH
-                    Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
-                    In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
-                    We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
-                    inheriting from the RockLavaBlockBase class.
-                */
-                foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaBlock ) )
-                    .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaTag ) ) )
-                    .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.LavaBlockBase ) ) )
-                    .Select( a => a.Value )
-                    .OrderBy( a => a.Name )
-                    .ToList() )
+                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
-                    lavaCommands.Add( blockType.Name );
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    /*
+                        7/6/2020 - JH
+                        Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
+                        In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
+                        We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
+                        inheriting from the RockLavaBlockBase class.
+                    */
+                    foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
+                        .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
+                        .Select( a => a.Value )
+                        .OrderBy( a => a.Name )
+                        .ToList() )
+                    {
+                        lavaCommands.Add( blockType.Name );
+                        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    }
+                }
+                else
+                {
+                    //TODO: 2021-03-19 - DL - This implemention requires a broader fix which will be added in a future commit.
+                    var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaBlock ) )
+                        .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaTag ) ) )
+                        .Select( a => a.Value )
+                        .OrderBy( a => a.Name )
+                        .ToList();
+
+                    foreach ( var blockType in commandTypes )
+                    {
+                        var name = blockType.Name;
+
+                        if ( name.EndsWith( "Block" ) )
+                        {
+                            name = name.Substring( 0, name.Length - "Block".Length );
+                        }
+                        else if ( name.EndsWith( "Tag" ) )
+                        {
+                            name = name.Substring( 0, name.Length - "Tag".Length );
+                        }
+                        else if ( name.EndsWith( "Shortcode" ) )
+                        {
+                            name = name.Substring( 0, name.Length - "Shortcode".Length );
+                        }
+
+                        lavaCommands.Add( name );
+                    }
                 }
             }
             catch { }
