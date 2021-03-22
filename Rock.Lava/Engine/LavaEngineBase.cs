@@ -36,7 +36,13 @@ namespace Rock.Lava
                 options = new LavaEngineConfigurationOptions();
             }
 
+            // Connect the cache service to this Lava Engine instance.
             _cacheService = options.CacheService;
+
+            if ( _cacheService != null )
+            {
+                _cacheService.LavaEngine = this;
+            }
 
             _defaultEnabledCommands = options.DefaultEnabledCommands;
 
