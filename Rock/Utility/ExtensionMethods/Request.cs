@@ -42,7 +42,7 @@ namespace Rock
             // If no proxy just return the request URL
             var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
 
-            if ( isRequestForwaredFromProxy )
+            if ( !isRequestForwaredFromProxy )
             {
                 return request.Url;
             }
