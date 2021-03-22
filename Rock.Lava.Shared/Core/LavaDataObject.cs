@@ -28,11 +28,16 @@ namespace Rock.Lava
     /// This Type can be used as a base class for a derived Type, as a proxy for an existing object, or
     /// as a dictionary of values populated dynamically at runtime.
     /// </summary>
+    /// <remarks>
+    /// This class does not serialize dynamic properties, but is marked as serializable to ensure that attempting to serialize a derived classes does not fail with an exception.
+    /// </remarks>
+    [Serializable]
     public class LavaDataObject : ILavaDataDictionary
     {
         // The internal implementation of the DynamicObject that is used to manage access to the LavaDataObject properties.
         // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
         // for Lava developers looking to implement a simple Lava data source.
+        [NonSerialized]
         private LavaDataObjectInternal _lavaDataObjectInternal;
 
         #region Constructors
