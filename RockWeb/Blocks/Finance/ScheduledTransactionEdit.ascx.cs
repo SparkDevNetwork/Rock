@@ -38,6 +38,7 @@ namespace RockWeb.Blocks.Finance
 
     /// <summary>
     /// Edit an existing scheduled transaction.
+    /// This is the *Public* block for editing scheduled transactions
     /// </summary>
     [DisplayName( "Scheduled Transaction Edit" )]
     [Category( "Finance" )]

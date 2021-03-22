@@ -118,9 +118,9 @@
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
                 $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle(selectedOptionIsSelectConnector);
             };
-
+                        
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
-        syncTransferConnectorControls();
+        $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
     });
 
     const toggleFilterDrawer = function () {
@@ -297,13 +297,16 @@
                                     <div class="col-md-4">
                                         <Rock:PersonPicker ID="ppRequesterFilter" runat="server" Label="Requester" />
                                     </div>
-                                </div>
-                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStatusFilter" runat="server" Label="Status" DataValueField="Value" DataTextField="Text" />
                                     </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblStateFilter" runat="server" Label="State" DataValueField="Value" DataTextField="Text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockCheckBox ID="rcbPastDueOnly" runat="server" Label="Only Past Due" Help="Only show future follow-up requests that are past due." />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:RockCheckBoxList ID="cblLastActivityFilter" runat="server" Label="Last Activity" DataValueField="Value" DataTextField="Text" />
@@ -328,14 +331,14 @@
                     <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
                         <Columns>
                             <Rock:SelectField></Rock:SelectField>
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
                             <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
                             <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
                             <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
                             <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
-                            <Rock:RockLiteralField ID="lState" HeaderText="State" />
-                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" />
+                            <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
                             <Rock:SecurityField />
                             <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
                             <Rock:DeleteField OnClick="gRequests_Delete" />
@@ -448,7 +451,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <asp:Literal ID="lRequestModalViewModeMainDescription" runat="server" />
+                                    <asp:Literal ID="lRequestModalViewModeComments" runat="server" />
                                 </div>
                             </div>
                             <asp:Literal ID="lRequestModalViewModeBadgeBar" runat="server" />
@@ -480,17 +483,17 @@
                                     </asp:Panel>
                                 </div>
                             </div>
-                            <div class="actions mb-4 mt-md-4 mb-md-5">
+                            <div class="actions d-flex mb-4 mt-md-4 mb-md-5">
                                 <asp:LinkButton ID="btnRequestModalViewModeEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnRequestModalViewModeEdit_Click" CausesValidation="false" />
                                 <asp:LinkButton ID="btnRequestModalViewModeTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeTransfer_Click" />
-                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
+                                <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-primary ml-auto" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
                             </div>
 
                             <div runat="server" id="divRequestModalViewModeActivityGridMode" class="mb-4">
                                 <div class="row">
-                                    <h5 class="col-md-6">Activities</h5>
+                                    <div class="col-md-6"><h5 class="mt-0">Activities</h5></div>
                                     <div class="col-md-6 text-right">
-                                        <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" OnClick="lbRequestModalViewModeAddActivity_Click" CssClass="small">
+                                        <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" OnClick="lbRequestModalViewModeAddActivity_Click" CssClass="btn btn-default btn-xs">
                                             <i class="fa fa-plus"></i>
                                             Add Activity
                                         </asp:LinkButton>
@@ -572,6 +575,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeStatus" runat="server" Label="Status" />
+                                        <Rock:CampusPicker ID="cpTransferCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpTransferCampus_SelectedIndexChanged" />
                                     </div>
                                 </div>
                                 <Rock:RockTextBox ID="tbRequestModalViewModeTransferModeNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />

@@ -144,6 +144,9 @@ namespace Rock.Client
         public ICollection<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
 
         /// <summary />
+        public ICollection<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
+
+        /// <summary />
         public ICollection<WebFarmNodeLog> WrittenWebFarmNodeLogs { get; set; }
 
         /// <summary>

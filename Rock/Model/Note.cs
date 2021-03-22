@@ -482,8 +482,17 @@ namespace Rock.Model
                 {
                     return true;
                 }
-                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals == false )
+                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals != true )
                 {
+                    /*
+                    1/21/2021 - Shaun
+                    If this Note does not have an assigned NoteType, it should be assumed that the NoteType does not
+                    require approvals.  This is likely because a new instance of a Note entity was created to check
+                    authorization for viewing Note entities in general, and in this case the first check (to
+                    base.IsAuthorized) is sufficient to permit access.
+
+                    Reason:  Notes should be available for DataViews.
+                    */
                     return true;
                 }
                 else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
@@ -495,7 +504,7 @@ namespace Rock.Model
             }
             else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
             {
-                // If this note was created by the logged person, they should be be able to EDIT their own note,
+                // If this note was created by the logged person, they should be able to EDIT their own note,
                 // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
                 if ( CreatedByPersonAlias?.PersonId == person?.Id )
                 {
@@ -508,7 +517,7 @@ namespace Rock.Model
             }
             else
             {
-                // If this note was created by the logged person, they should be be able to do any action (except for APPROVE)
+                // If this note was created by the logged person, they should be able to do any action (except for APPROVE)
                 if ( CreatedByPersonAlias?.PersonId == person?.Id )
                 {
                     return true;

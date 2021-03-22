@@ -130,7 +130,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <value></value>
         public override bool SortReversed( string selection )
         {
-            // sort reversed since we are sorting by by Birthdate instead Age since Birthdate will sort much faster than the calculated age
+            // sort reversed since we are sorting by Birthdate instead Age since Birthdate will sort much faster than the calculated age
             return true;
         }
 

@@ -19,10 +19,12 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Web.UI;
-using Rock.NMI;
+
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Web.UI.HtmlControls;
+using Rock.Financial;
+using Rock.Web.Cache;
 
 namespace Rock.NMI.Controls
 {
@@ -31,11 +33,20 @@ namespace Rock.NMI.Controls
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="System.Web.UI.INamingContainer" />
-    public class NMIHostedPaymentControl : CompositeControl, INamingContainer, Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+    public class NMIHostedPaymentControl : CompositeControl,
+        INamingContainer,
+        Rock.Financial.IHostedGatewayPaymentControlTokenEvent,
+        Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
     {
         private static class ViewStateKey
         {
             public const string EnabledPaymentTypes = "EnabledPaymentTypes";
+        }
+
+        private static class PostbackKey
+        {
+            public const string TokenizerPostback = "TokenizerPostback";
+            public const string CurrencyTypeChange = "CurrencyTypeChange";
         }
 
         #region Controls
@@ -75,6 +86,48 @@ namespace Rock.NMI.Controls
         public event EventHandler<Rock.Financial.HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
 
         #endregion Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+
+        #region Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
+
+        /// <summary>
+        /// Occurs when the CurrencyType option is changed (ACH or CreditCard)
+        /// </summary>
+        public event EventHandler<HostedGatewayPaymentControlCurrencyTypeEventArgs> CurrencyTypeChange;
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        /// <value>
+        /// The currency type value.
+        /// </value>
+        public DefinedValueCache CurrencyTypeValue
+        {
+            get
+            {
+                EnsureChildControls();
+                var currencyTypeValue = _hfSelectedPaymentType.Value.ConvertToEnumOrNull<NMIPaymentType>();
+                if ( currencyTypeValue == null )
+                {
+                    if ( EnabledPaymentTypes.Contains( NMIPaymentType.card ) )
+                    {
+                        currencyTypeValue = NMIPaymentType.card;
+                    }
+                    else
+                    {
+                        currencyTypeValue = NMIPaymentType.ach;
+                    }
+                }
+
+                if ( currencyTypeValue == NMIPaymentType.ach )
+                {
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                }
+
+                return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+            }
+        }
+
+        #endregion Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent     
 
         /// <summary>
         /// Gets or sets the enabled payment types.
@@ -182,20 +235,25 @@ namespace Rock.NMI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            var updatePanel = this.ParentUpdatePanel();
+            string postbackControlId;
+            if ( updatePanel != null )
+            {
+                postbackControlId = updatePanel.ClientID;
+            }
+            else
+            {
+                postbackControlId = this.ID;
+            }
+
             if ( TokenReceived != null )
             {
-                var updatePanel = this.ParentUpdatePanel();
-                string postbackControlId;
-                if ( updatePanel != null )
-                {
-                    postbackControlId = updatePanel.ClientID;
-                }
-                else
-                {
-                    postbackControlId = this.ID;
-                }
+                this.Attributes["data-tokenizer-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}=TokenizerPostback')";
+            }
 
-                this.Attributes["data-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}=TokenizerPostback')";
+            if ( CurrencyTypeChange != null )
+            {
+                this.Attributes["data-currencychange-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}={PostbackKey.CurrencyTypeChange}')";
             }
 
             base.Render( writer );
@@ -211,42 +269,80 @@ namespace Rock.NMI.Controls
 
             if ( this.Page.IsPostBack )
             {
-                string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+                HandleCustomPostbackEvents();
+            }
+        }
 
-                if ( eventArgs.Length >= 2 )
+        /// <summary>
+        /// Handles the custom postback events.
+        /// </summary>
+        private void HandleCustomPostbackEvents()
+        {
+            string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+
+            if ( eventArgs.Length < 2 )
+            {
+                // Nothing custom is in postback.
+                return;
+            }
+
+            if ( eventArgs[0] != this.ID )
+            {
+                // Not from this control.
+                return;
+            }
+
+            // The gatewayCollect script will pass back '{this.ID}=TokenizerPostback' in a postback. If so, we know this is a postback from that
+            // For currency changes (ACH vs Card) The gatewayCollect script will pass back '{this.ID}=CurrencyTypeChange' in a postback. If so, we know this is a postback from that.
+            if ( eventArgs[1] == "TokenizerPostback" )
+            {
+                HandleTokenizerPostback();
+            }
+            else if ( eventArgs[1] == PostbackKey.CurrencyTypeChange )
+            {
+                HandleCurrencyTypeChangePostback();
+            }
+        }
+
+        /// <summary>
+        /// Handles the currency type change postback.
+        /// </summary>
+        private void HandleCurrencyTypeChangePostback()
+        {
+            CurrencyTypeChange?.Invoke( this, new HostedGatewayPaymentControlCurrencyTypeEventArgs { hostedGatewayPaymentControl = this } );
+        }
+
+        /// <summary>
+        /// Handles the tokenizer postback.
+        /// </summary>
+        private void HandleTokenizerPostback()
+        {
+            Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
+
+            var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+
+            if ( tokenResponse?.IsSuccessStatus() != true )
+            {
+                hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
+
+                if ( tokenResponse.HasValidationError() )
                 {
-                    // gatewayTokenizer will pass back '{this.ID}=TokenizerPostback' in a postback. If so, we know this is a postback from that
-                    if ( eventArgs[0] == this.ID && eventArgs[1] == "TokenizerPostback" )
-                    {
-                        Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
-
-                        var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
-
-                        if ( tokenResponse?.IsSuccessStatus() != true )
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
-
-                            if ( tokenResponse.HasValidationError() )
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse.ValidationMessage );
-                            }
-                            else
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken" );
-                            }
-                        }
-                        else
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = true;
-                            hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
-                        }
-
-                        hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
-
-                        TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
-                    }
+                    hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse.ValidationMessage );
+                }
+                else
+                {
+                    hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = FriendlyMessageHelper.GetFriendlyMessage( tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken" );
                 }
             }
+            else
+            {
+                hostedGatewayPaymentControlTokenEventArgs.IsValid = true;
+                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
+            }
+
+            hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
+
+            TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
         }
 
         /// <summary>
@@ -266,6 +362,7 @@ namespace Rock.NMI.Controls
 
             _hfEnabledPaymentTypesJSON.Value = this.EnabledPaymentTypes.ToJson();
 
+            // This will have 'ach' or 'card' as a value.
             _hfSelectedPaymentType = new HiddenFieldWithClass() { ID = "_hfSelectedPaymentType", CssClass = "js-selected-payment-type" };
             Controls.Add( _hfSelectedPaymentType );
 
@@ -277,7 +374,7 @@ namespace Rock.NMI.Controls
 
                 lPaymentSelectorHTML.Text = $@"
 <div class='gateway-type-selector btn-group btn-group-justified' role='group'>
-    <a class='btn btn-default active js-payment-creditcard payment-creditcard' runat='server'>
+    <a class='btn btn-primary active js-payment-creditcard payment-creditcard' runat='server'>
         Card
     </a>
     <a class='btn btn-default js-payment-ach payment-ach' runat='server'>
@@ -315,7 +412,6 @@ namespace Rock.NMI.Controls
                 _gatewayCreditCardContainer.Controls.Add( _divCreditCardCVV );
             }
 
-
             /* ACH Inputs */
             if ( EnabledPaymentTypes.Contains( NMIPaymentType.ach ) )
             {
@@ -337,7 +433,7 @@ namespace Rock.NMI.Controls
 
             /* Submit Payment */
 
-            // collectJs needs a payment button to work, so add it but don't show it
+            // The collectJs script needs a payment button to work, so add it but don't show it.
             _aPaymentButton = new HtmlGenericControl( "button" );
             _aPaymentButton.Attributes["type"] = "button";
             _aPaymentButton.Style[HtmlTextWriterStyle.Display] = "none";

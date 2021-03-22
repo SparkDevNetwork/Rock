@@ -17,6 +17,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Http.TestLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;

@@ -1,5 +1,73 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WebFarmSettings.ascx.cs" Inherits="RockWeb.Blocks.Farm.WebFarmSettings" %>
 
+<style>
+    .card .indicator {
+        height: 4px;
+    }
+
+    .server-meta {
+        font-size: 20px;
+    }
+
+    .bg-disabled {
+        background: #F5F5F5;
+        color: #AEAEAE;
+    }
+
+    .bg-disabled .indicator {
+        background: #A3A3A3;
+    }
+</style>
+<script>
+    (function () {
+        var options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    display: false,
+                    ticks: {
+                        min: 0,
+                        max: 100
+                    }
+                }],
+                xAxes: [{
+                    display: false
+                }]
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: false
+            },
+            tooltips: {
+                hasIndicator: true,
+                intersect: false,
+                callbacks: {
+                    label: function (tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || '';
+                        if (label) {
+                            label = 'CPU: ' + label + '%';
+                        }
+
+                        return label;
+                    }
+                }
+            }
+        };
+
+        $(document).ready(function () {
+            $('.js-chart').each(function () {
+                var el = $(this);
+                var data = el.attr('data-chart') ? JSON.parse(el.attr('data-chart')) : {};
+                var chart = new Chart(el, { type: 'line', data: data, options: options });
+            });
+        });
+    })();
+</script>
+
 <asp:UpdatePanel ID="upUpdatePanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
@@ -23,38 +91,46 @@
                         </div>
                         <div class="col-md-8">
                             <h5>Nodes</h5>
-                            <div class="row">
-                                <asp:Repeater ID="rNodes" runat="server">
-                                    <ItemTemplate>
-                                        <div class="col-sm-6 col-md-4 col-lg-3">
-                                            <h6><%# Eval("NodeName") %></h6>
-                                            <dl>
-                                                <dt>Active</dt>
-                                                <dd><%# Eval("IsActive") %></dd>
-                                                <dt>Leader</dt>
-                                                <dd><%# Eval("IsLeader") %></dd>
-                                                <dt>Job Runner</dt>
-                                                <dd><%# Eval("IsJobRunner") %></dd>
-                                                <dt>Last Seen</dt>
-                                                <dd><%# Eval("LastSeen") %></dd>
-                                                <dt>Polling Interval Seconds</dt>
-                                                <dd><%# Eval("PollingIntervalSeconds") %></dd>
-                                            </dl>
-                                        </div>
-                                    </ItemTemplate>
-                                </asp:Repeater>
+                                <div class="row">
+                                    <asp:Repeater ID="rNodes" runat="server" OnItemCommand="rNodes_ItemCommand" OnItemDataBound="rNodes_ItemDataBound">
+                                        <ItemTemplate>
+                                            <div class="col-sm-6 col-md-6 col-lg-4">
+                                                <asp:LinkButton runat="server" style="color: inherit;" CommandArgument='<%# Eval("Id") %>'>
+                                                    <div class="card border-top-0 mb-4 <%# !(bool)Eval("IsActive") ? "bg-disabled" : "" %>">
+                                                        <div class="indicator <%# (bool)Eval("IsActive") ? "bg-success" : "" %> <%# (bool)Eval("IsUnresponsive") ? "bg-danger" : "" %>"></div>
+                                                        <div class="card-header bg-transparent d-flex justify-content-between py-2 px-2">
+                                                            <span class="server-meta flex-fill d-flex flex-nowrap align-items-center leading-snug overflow-hidden" title='Polling Interval: <%# Eval("PollingIntervalSeconds") %>'>
+                                                                <i class="fa fa-<%# (bool)Eval("IsActive") ? "server" : "exclamation-triangle" %>"></i>
+                                                                <p class="ml-1 font-weight-bold text-truncate text-black mb-0">
+                                                                    <%# Eval("NodeName") %>
+                                                                </p>
+                                                            </span>
+                                                            <%# (bool)Eval("IsLeader") ? "<span class='ml-2 flex-shrink-0' title='Leader'><i class='fa fa-user-tie'></i></span>" :"" %>
+                                                            <%# (bool)Eval("IsJobRunner") ? "<span class='ml-2 flex-shrink-0' title='Job Runner'><i class='fa fa-cog'></i></span>" :"" %>
+                                                        </div>
+                                                        <div class="card-body p-0" style="height:88px;">
+                                                            <span id="spanLastSeen" runat="server" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
+                                                                <asp:Literal ID="lLastSeen" runat="server" />
+                                                            </span>
+                                                            <asp:Literal ID="lChart" runat="server" />
+                                                        </div>
+                                                    </div>
+                                                </asp:LinkButton>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="actions">
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         </div>
                     </div>
 
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
-                    </div>
-                </div>
-
                 <div id="pnlEditDetails" runat="server">
                     <div class="alert alert-info">
-                        In order to respect any new setting changes made here, please restart Rock on each node after saving. 
+                        In order to respect any new setting changes made here, please restart Rock on each node after saving.
                     </div>
 
                     <div class="row">
@@ -76,6 +152,7 @@
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
+
             </div>
         </asp:Panel>
     </ContentTemplate>

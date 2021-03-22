@@ -470,7 +470,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                         {
                             foreach ( var statusId in statusIds )
                             {
-                                var state = states[random.Next( states.Count - 1 )];
+                                var state = states[random.Next( states.Count )];
 
                                 var requestWithNoConnector = new ConnectionRequest
                                 {
@@ -521,6 +521,15 @@ namespace Rock.Tests.Integration.RockTests.Model
                                         }
                                     }
                                 };
+
+                                // Make about half the future follow up dates past due
+                                if ( state == ConnectionState.FutureFollowUp )
+                                {
+                                    var isPastDue = random.Next( 2 ) == 0;
+                                    var followupDate = RockDateTime.Now.AddDays( isPastDue ? -2 : 2 );
+                                    requestWithConnector.FollowupDate = followupDate;
+                                    requestWithNoConnector.FollowupDate = followupDate;
+                                }
 
                                 connectionRequestService.Add( requestWithConnector );
                                 connectionRequestService.Add( requestWithNoConnector );
@@ -669,12 +678,16 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeCareTeamId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( false, result );
         }
@@ -690,11 +703,17 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = 1,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeCareTeamId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = 1,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
+                ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( true, result );
         }
@@ -709,11 +728,17 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Active
-            }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Active
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
+                ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( true, result );
         }
@@ -728,11 +753,16 @@ namespace Rock.Tests.Integration.RockTests.Model
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
 
-            var result = service.CanConnect( new ConnectionRequestViewModel
-            {
-                PlacementGroupId = null,
-                ConnectionState = ConnectionState.Inactive
-            }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
+            var result = service.CanConnect(
+                new ConnectionRequestViewModel
+                {
+                    PlacementGroupId = null,
+                    ConnectionState = ConnectionState.Inactive
+                },
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( false, result );
         }
@@ -1068,6 +1098,56 @@ namespace Rock.Tests.Integration.RockTests.Model
                     Assert.That.AreEqual( expectedState, request.ConnectionState );
                 }
             }
+        }
+
+        /// <summary>
+        /// Tests GetConnectionBoardStatusViewModels.
+        /// </summary>
+        [TestMethod]
+        public void GetConnectionBoardStatusViewModels_FiltersPastDueOnly()
+        {
+            var rockContext = new RockContext();
+            var service = new ConnectionRequestService( rockContext );
+
+            var args = new ConnectionRequestViewModelQueryArgs
+            {
+                IsFutureFollowUpPastDueOnly = true
+            };
+
+            var result = service.GetConnectionBoardStatusViewModels(
+                PersonAliasSimonSandsId,
+                CareTeamOpportunityHospitalVisitorId,
+                args );
+
+            var midnightToday = RockDateTime.Today.AddDays( 1 );
+            Assert.That.IsNotNull( result );
+            Assert.That.IsTrue( result.Count > 0 );
+
+            var foundFutureFollowup = false;
+            var foundOtherState = false;
+
+            foreach ( var statusViewModel in result )
+            {
+                Assert.That.IsNotNull( statusViewModel.Requests );
+                Assert.That.IsTrue( statusViewModel.Requests.Count > 0 );
+
+                foreach ( var request in statusViewModel.Requests )
+                {
+                    if ( request.ConnectionState == ConnectionState.FutureFollowUp )
+                    {
+                        foundFutureFollowup = true;
+                        Assert.IsNotNull( request.FollowupDate );
+                        Assert.That.IsTrue( request.FollowupDate.Value < midnightToday );
+                    }
+                    else
+                    {
+                        foundOtherState = true;
+                    }
+                }
+            }
+
+            Assert.IsTrue( foundOtherState );
+            Assert.IsTrue( foundFutureFollowup );
         }
 
         /// <summary>

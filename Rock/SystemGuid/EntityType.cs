@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
 
         /// <summary>
+        /// The guid for the Rock.Model.Attendance entity.
+        /// </summary>
+        public const string ATTENDANCE = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E";
+
+        /// <summary>
         /// The guid for the Rock.Model.Attribute entity.
         /// </summary>
         public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
@@ -263,6 +268,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CMS_HERO_BLOCK_TYPE = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView
+        /// </summary>
+        public const string MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
         /// </summary>
         public const string MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9";
@@ -273,9 +283,24 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE = "5A26F32F-892E-4E76-B64A-0F54A77C863D";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
+        /// </summary>
+        public const string MOBILE_EVENTS_CALENDAREVENTITEMOCCURRENCEVIEW_BLOCK_TYPE = "04C43693-C524-4679-9F65-047F94A74CAB";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CommunicationListSubscribe
         /// </summary>
         public const string MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE = "C4B81A58-6380-4C38-85E8-0536E584310E";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.EventItemOccurrenceListByAudienceLava
+        /// </summary>
+        public const string MOBILE_EVENTS_EVENTITEMOCCURRENCELISTBYAUDIENCELAVA_BLOCK_TYPE = "95BAF1B3-5B4B-430C-BDCC-268142C708BD";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSession
@@ -467,5 +492,10 @@ namespace Rock.SystemGuid
         /// The SMS Conversation Action
         /// </summary>
         public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
+
+        /// <summary>
+        /// Rock.Model.Site EntityType guid
+        /// </summary>
+        public const string SITE = "7244C10B-5D87-467B-A7F5-12DC29910CA8";
     }
 }

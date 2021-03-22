@@ -24,7 +24,7 @@ using Rock.Utility;
 namespace Rock.NMI
 {
     /// <summary>
-    /// 
+    /// 'card' or 'ach'
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum NMIPaymentType

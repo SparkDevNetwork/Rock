@@ -18,13 +18,21 @@
 
     .list-as-blocks ul li .follow-toggle {
         position: absolute;
-        border: none;
-        background: none;
+        border: 0;
+        background: transparent;
         min-height: 0;
         top: 0;
         height: 35px;
         width: 35px;
         right: 15px; /* padding of the list-as-block li */
+    }
+
+    .list-as-blocks ul li .follow-toggle:hover {
+        background: transparent;
+    }
+
+    .list-as-blocks ul li .follow-toggle:hover i {
+        color: #626262;
     }
 
     .list-as-blocks ul li .follow-toggle i {
@@ -40,11 +48,10 @@
                     <i class='fa fa-plug'></i>
                     Connections
                 </h1>
-                <div class="pull-right">
-                    <div class="pull-left">
-                        <Rock:Switch ID="tglMyActiveOpportunities" runat="server" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" />
+                <div class="pull-right d-flex align-items-center">
+                    <div class="small mr-3">
+                        <Rock:Switch ID="tglMyActiveOpportunities" runat="server" OnCheckedChanged="tglMyActiveOpportunities_CheckedChanged" AutoPostBack="true" Text="My Active Opportunities" />
                     </div>
-                    <span class="padding-r-lg">My Active Opportunities</span>
                     <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"> <i title="Options" class="fa fa-gear"></i></asp:LinkButton>
                 </div>
             </div>

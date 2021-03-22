@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => !excludedCurrencyTypes.Contains( t.Transaction.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
             }
 
-            qry = qry.OrderByDescending( t => t.Transaction.TransactionDateTime );
+            qry = qry.OrderBy( t => t.Transaction.TransactionDateTime );
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "StatementStartDate", "1/1/" + statementYear.ToString() );
@@ -338,6 +338,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
             mergeFields.Add( "Salutation", salutation );
+            mergeFields.Add( "TargetPerson", targetPerson );
 
             var mailingAddress = targetPerson.GetMailingLocation();
             if ( mailingAddress != null )

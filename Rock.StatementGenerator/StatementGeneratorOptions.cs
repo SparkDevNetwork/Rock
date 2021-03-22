@@ -210,6 +210,14 @@ namespace Rock.StatementGenerator
         /// The size of the chapter.
         /// </value>
         public int? StatementsPerChapter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [group by page count].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [group by page count]; otherwise, <c>false</c>.
+        /// </value>
+        public bool GroupByPageCount { get; set; }
     }
 
     /// <summary>

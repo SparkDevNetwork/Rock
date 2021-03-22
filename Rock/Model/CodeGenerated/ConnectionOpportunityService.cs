@@ -57,6 +57,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionOpportunity.FriendlyTypeName, ConnectionRequestActivity.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.ConnectionOpportunityId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionOpportunity.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -104,6 +110,9 @@ namespace Rock.Model
             target.Order = source.Order;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
+            target.ShowCampusOnTransfer = source.ShowCampusOnTransfer;
+            target.ShowConnectButton = source.ShowConnectButton;
+            target.ShowStatusOnTransfer = source.ShowStatusOnTransfer;
             target.Summary = source.Summary;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

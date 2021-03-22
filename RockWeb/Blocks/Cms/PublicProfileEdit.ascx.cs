@@ -485,7 +485,26 @@ namespace RockWeb.Blocks.Cms
                             .OrderBy( m => m.GroupRole.Order )
                             .ToList();
 
-            mergeFields.Add( MergeFieldKey.FamilyMembers, familyMembers );
+            var orderedMembers = new List<GroupMember>();
+
+            // Add adult males
+            orderedMembers.AddRange( familyMembers
+                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                    m.Person.Gender == Gender.Male )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            // Add adult females
+            orderedMembers.AddRange( familyMembers
+                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                    m.Person.Gender != Gender.Male )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            // Add non-adults
+            orderedMembers.AddRange( familyMembers
+                .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            mergeFields.Add( MergeFieldKey.FamilyMembers, orderedMembers );
 
             mergeFields.Add( MergeFieldKey.ShowFamilyMembers, GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() );
             mergeFields.Add( MergeFieldKey.Families, personFamilies );
@@ -1165,6 +1184,7 @@ namespace RockWeb.Blocks.Cms
                 // invalid situation; return and report nothing.
                 return;
             }
+
             hfEditPersonGuid.Value = personGuid.ToString();
             var person = new Person();
 
@@ -1496,7 +1516,7 @@ namespace RockWeb.Blocks.Cms
                 tbEmail.Required = false;
                 _isEditRecordAdult = false;
             }
-            
+
             avcPersonAttributesAdult.Visible = _isEditRecordAdult;
             avcPersonAttributesChild.Visible = !_isEditRecordAdult;
 
