@@ -286,6 +286,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the attendances.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="rsvp">The RSVP.</param>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, Rock.Model.RSVP rsvp )
+        {
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
+                .Where( a => a.Occurrence.OccurrenceDate == date.Date
+                    && a.Occurrence.LocationId == locationId
+                    && a.Occurrence.ScheduleId == scheduleId
+                    && a.RSVP == rsvp );
+        }
+
+        /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <param name="groupBy">The group by.</param>
