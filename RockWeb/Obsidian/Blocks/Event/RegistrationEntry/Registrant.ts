@@ -19,13 +19,13 @@ import { defineComponent, inject, PropType } from 'vue';
 import DropDownList, { DropDownListOption } from '../../../Elements/DropDownList';
 import RadioButtonList from '../../../Elements/RadioButtonList';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
-import { RegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
+import { getRegistrantBasicInfo, RegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
 import StringFilter from '../../../Services/String';
 import RockButton from '../../../Elements/RockButton';
 import RegistrantPersonField from './RegistrantPersonField';
 import RegistrantAttributeField from './RegistrantAttributeField';
 import Alert from '../../../Elements/Alert';
-import { RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
 import { areEqual } from '../../../Util/Guid';
 import RockForm from '../../../Controls/RockForm';
 import FeeField from './FeeField';
@@ -66,6 +66,9 @@ export default defineComponent({
         };
     },
     computed: {
+        showPrevious(): boolean {
+            return this.registrationEntryState.FirstStep !== this.registrationEntryState.Steps.perRegistrantForms;
+        },
         viewModel(): RegistrationEntryBlockViewModel {
             return this.registrationEntryState.ViewModel;
         },
@@ -132,11 +135,7 @@ export default defineComponent({
             return StringFilter.toTitleCase(this.viewModel.RegistrantTerm);
         },
         firstName(): string {
-            // This is always on the first form
-            const form = this.viewModel.RegistrantForms[0];
-            const field = form?.Fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.FirstName);
-            const fieldValue = this.currentRegistrant.FieldValues[field?.Guid || ''];
-            return typeof fieldValue === 'string' ? fieldValue : '';
+            return getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.RegistrantForms).FirstName;
         },
         familyMember(): RegistrationEntryBlockFamilyMemberViewModel | null {
             const personGuid = this.currentRegistrant.PersonGuid;
@@ -227,13 +226,17 @@ export default defineComponent({
             </template>
         </div>
 
-        <div class="actions">
-            <RockButton btnType="default" @click="onPrevious">
-                Previous
-            </RockButton>
-            <RockButton btnType="primary" class="pull-right" type="submit">
-                Next
-            </RockButton>
+        <div class="actions row">
+            <div class="col-xs-6">
+                <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
+                    Previous
+                </RockButton>
+            </div>
+            <div class="col-xs-6 text-right">
+                <RockButton btnType="primary" type="submit">
+                    Next
+                </RockButton>
+            </div>
         </div>
     </RockForm>
 </div>

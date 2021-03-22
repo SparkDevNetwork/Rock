@@ -51,7 +51,7 @@ export default defineComponent({
         viewModel: {
             immediate: true,
             handler() {
-                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesStart.map(a => {
+                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesEnd.map(a => {
                     const currentValue = this.registrationEntryState.RegistrationFieldValues[a.Guid] || '';
 
                     return {

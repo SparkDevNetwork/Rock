@@ -39,6 +39,11 @@ export default defineComponent({
             attributeValues: [] as AttributeValue[]
         };
     },
+    computed: {
+        showPrevious(): boolean {
+            return this.registrationEntryState.FirstStep === this.registrationEntryState.Steps.intro;
+        }
+    },
     methods: {
         onPrevious() {
             this.$emit('previous');
@@ -81,13 +86,17 @@ export default defineComponent({
     <RockForm @submit="onNext">
         <AttributeValuesContainer :attributeValues="attributeValues" isEditMode />
 
-        <div class="actions">
-            <RockButton btnType="default" @click="onPrevious">
-                Previous
-            </RockButton>
-            <RockButton btnType="primary" class="pull-right" type="submit">
-                Next
-            </RockButton>
+        <div class="actions row">
+            <div class="col-xs-6">
+                <RockButton v-if="showPrevious" btnType="default" @click="onPrevious">
+                    Previous
+                </RockButton>
+            </div>
+            <div class="col-xs-6 text-right">
+                <RockButton btnType="primary" type="submit">
+                    Next
+                </RockButton>
+            </div>
         </div>
     </RockForm>
 </div>`

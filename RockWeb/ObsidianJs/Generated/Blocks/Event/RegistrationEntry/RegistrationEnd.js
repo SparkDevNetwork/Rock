@@ -64,7 +64,7 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         immediate: true,
                         handler: function () {
                             var _this = this;
-                            this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesStart.map(function (a) {
+                            this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesEnd.map(function (a) {
                                 var currentValue = _this.registrationEntryState.RegistrationFieldValues[a.Guid] || '';
                                 return {
                                     Attribute: a,

@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
         return {
@@ -28,6 +28,19 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
         };
     }
     exports_1("getDefaultRegistrantInfo", getDefaultRegistrantInfo);
+    function getRegistrantBasicInfo(registrant, registrantForms) {
+        var _a, _b, _c;
+        var fields = (registrantForms === null || registrantForms === void 0 ? void 0 : registrantForms.flatMap(function (f) { return f.Fields; })) || [];
+        var firstNameGuid = ((_a = fields.find(function (f) { return f.PersonFieldType === RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName; })) === null || _a === void 0 ? void 0 : _a.Guid) || '';
+        var lastNameGuid = ((_b = fields.find(function (f) { return f.PersonFieldType === RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.LastName; })) === null || _b === void 0 ? void 0 : _b.Guid) || '';
+        var emailGuid = ((_c = fields.find(function (f) { return f.PersonFieldType === RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Email; })) === null || _c === void 0 ? void 0 : _c.Guid) || '';
+        return {
+            FirstName: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[firstNameGuid]) || ''),
+            LastName: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[lastNameGuid]) || ''),
+            Email: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[emailGuid]) || '')
+        };
+    }
+    exports_1("getRegistrantBasicInfo", getRegistrantBasicInfo);
     return {
         setters: [
             function (vue_1_1) {
@@ -45,6 +58,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             function (Registrants_1_1) {
                 Registrants_1 = Registrants_1_1;
                 Registrants_2 = Registrants_1_1;
+            },
+            function (RegistrationEntryBlockViewModel_1_1) {
+                RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
             },
             function (RegistrationStart_1_1) {
                 RegistrationStart_1 = RegistrationStart_1_1;
@@ -69,6 +85,14 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             }
         ],
         execute: function () {
+            (function (Step) {
+                Step["intro"] = "intro";
+                Step["registrationStartForm"] = "registrationStartForm";
+                Step["perRegistrantForms"] = "perRegistrantForms";
+                Step["registrationEndForm"] = "registrationEndForm";
+                Step["reviewAndPayment"] = "reviewAndPayment";
+            })(Step || (Step = {}));
+            exports_1("Step", Step);
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry',
                 components: {
@@ -83,13 +107,14 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     Alert: Alert_1.default
                 },
                 setup: function () {
-                    var steps = {
-                        intro: 'intro',
-                        registrationStartForm: 'registrationStartForm',
-                        perRegistrantForms: 'perRegistrantForms',
-                        registrationEndForm: 'registrationEndForm',
-                        reviewAndPayment: 'reviewAndPayment'
-                    };
+                    var _a;
+                    var steps = (_a = {},
+                        _a[Step.intro] = Step.intro,
+                        _a[Step.registrationStartForm] = Step.registrationStartForm,
+                        _a[Step.perRegistrantForms] = Step.perRegistrantForms,
+                        _a[Step.registrationEndForm] = Step.registrationEndForm,
+                        _a[Step.reviewAndPayment] = Step.reviewAndPayment,
+                        _a);
                     var viewModel = vue_1.inject('configurationValues');
                     var hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
                     var currentStep = steps.intro;
@@ -100,11 +125,18 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     var registrationEntryState = vue_1.reactive({
                         Steps: steps,
                         ViewModel: viewModel,
+                        FirstStep: currentStep,
                         CurrentStep: currentStep,
                         CurrentRegistrantFormIndex: 0,
                         CurrentRegistrantIndex: 0,
                         Registrants: [getDefaultRegistrantInfo()],
-                        RegistrationFieldValues: {}
+                        RegistrationFieldValues: {},
+                        Registrar: {
+                            NickName: '',
+                            LastName: '',
+                            Email: '',
+                            UpdateEmail: true
+                        }
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
                     return {

@@ -51,6 +51,11 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         attributeValues: []
                     };
                 },
+                computed: {
+                    showPrevious: function () {
+                        return this.registrationEntryState.FirstStep === this.registrationEntryState.Steps.intro;
+                    }
+                },
                 methods: {
                     onPrevious: function () {
                         this.$emit('previous');
@@ -88,7 +93,7 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         }
                     }
                 },
-                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <RockForm @submit=\"onNext\">\n        <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\">\n                Next\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div class=\"registrationentry-registration-attributes\">\n    <RockForm @submit=\"onNext\">\n        <AttributeValuesContainer :attributeValues=\"attributeValues\" isEditMode />\n\n        <div class=\"actions row\">\n            <div class=\"col-xs-6\">\n                <RockButton v-if=\"showPrevious\" btnType=\"default\" @click=\"onPrevious\">\n                    Previous\n                </RockButton>\n            </div>\n            <div class=\"col-xs-6 text-right\">\n                <RockButton btnType=\"primary\" type=\"submit\">\n                    Next\n                </RockButton>\n            </div>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

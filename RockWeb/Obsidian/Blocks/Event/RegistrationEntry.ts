@@ -20,7 +20,7 @@ import RockButton from '../../Elements/RockButton';
 import { Guid, newGuid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrants from './RegistrationEntry/Registrants';
-import { RegistrationEntryBlockViewModel } from './RegistrationEntry/RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from './RegistrationEntry/RegistrationEntryBlockViewModel';
 import RegistrationEntryRegistrationStart from './RegistrationEntry/RegistrationStart';
 import RegistrationEntryRegistrationEnd from './RegistrationEntry/RegistrationEnd';
 import RegistrationEntrySummary from './RegistrationEntry/Summary';
@@ -30,6 +30,14 @@ import NumberFilter from '../../Services/Number';
 import StringFilter, { isNullOrWhitespace } from '../../Services/String';
 import Alert from '../../Elements/Alert';
 
+export enum Step {
+    'intro' = 'intro',
+    'registrationStartForm' = 'registrationStartForm',
+    'perRegistrantForms' = 'perRegistrantForms',
+    'registrationEndForm' = 'registrationEndForm',
+    'reviewAndPayment' = 'reviewAndPayment'
+}
+
 export type RegistrantInfo = {
     FamilyGuid: Guid | null;
     PersonGuid: Guid;
@@ -38,14 +46,23 @@ export type RegistrantInfo = {
     Guid: Guid;
 };
 
+export type RegistrarInfo = {
+    NickName: string;
+    LastName: string;
+    Email: string;
+    UpdateEmail: boolean;
+};
+
 export type RegistrationEntryState = {
-    Steps: Record<string, string>;
+    Steps: Record<Step, Step>;
     ViewModel: RegistrationEntryBlockViewModel;
     CurrentStep: string;
+    FirstStep: string;
     CurrentRegistrantIndex: number;
     CurrentRegistrantFormIndex: number;
     Registrants: RegistrantInfo[];
     RegistrationFieldValues: Record<Guid, unknown>;
+    Registrar: RegistrarInfo;
 };
 
 export function getDefaultRegistrantInfo() {
@@ -56,7 +73,22 @@ export function getDefaultRegistrantInfo() {
         Guid: newGuid(),
         PersonGuid: ''
     } as RegistrantInfo;
-} 
+}
+
+export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[]):
+    { FirstName: string, LastName: string, Email: string } {
+    const fields = registrantForms?.flatMap(f => f.Fields) || [];
+
+    const firstNameGuid = fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.FirstName)?.Guid || '';
+    const lastNameGuid = fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.LastName)?.Guid || '';
+    const emailGuid = fields.find(f => f.PersonFieldType === RegistrationPersonFieldType.Email)?.Guid || '';
+
+    return {
+        FirstName: (registrant?.FieldValues[firstNameGuid] || '') as string,
+        LastName: (registrant?.FieldValues[lastNameGuid] || '') as string,
+        Email: (registrant?.FieldValues[emailGuid] || '') as string
+    };
+}
 
 export default defineComponent({
     name: 'Event.RegistrationEntry',
@@ -72,12 +104,12 @@ export default defineComponent({
         Alert
     },
     setup() {
-        const steps = {
-            intro: 'intro',
-            registrationStartForm: 'registrationStartForm',
-            perRegistrantForms: 'perRegistrantForms',
-            registrationEndForm: 'registrationEndForm',
-            reviewAndPayment: 'reviewAndPayment'
+        const steps: Record<Step, Step> = {
+            [Step.intro]: Step.intro,
+            [Step.registrationStartForm]: Step.registrationStartForm,
+            [Step.perRegistrantForms]: Step.perRegistrantForms,
+            [Step.registrationEndForm]: Step.registrationEndForm,
+            [Step.reviewAndPayment]: Step.reviewAndPayment
         };
 
         const viewModel = inject('configurationValues') as RegistrationEntryBlockViewModel;
@@ -92,11 +124,18 @@ export default defineComponent({
         const registrationEntryState = reactive({
             Steps: steps,
             ViewModel: viewModel,
+            FirstStep: currentStep,
             CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: [getDefaultRegistrantInfo()] as RegistrantInfo[],
-            RegistrationFieldValues: {} as Record<Guid, unknown>
+            Registrants: [getDefaultRegistrantInfo()],
+            RegistrationFieldValues: {},
+            Registrar: {
+                NickName: '',
+                LastName: '',
+                Email: '',
+                UpdateEmail: true
+            }
         }) as RegistrationEntryState;
 
         provide('registrationEntryState', registrationEntryState);

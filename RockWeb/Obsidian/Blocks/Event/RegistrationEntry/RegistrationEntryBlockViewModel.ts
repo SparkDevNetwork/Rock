@@ -68,6 +68,13 @@ export enum ComparisonType {
     RegularExpression = 0x2000
 }
 
+export enum RegistrarOption {
+    PromptForRegistrar = 0,
+    PrefillFirstRegistrant = 1,
+    UseFirstRegistrant = 2,
+    UseLoggedInPerson = 3
+}
+
 export interface RegistrationEntryBlockViewModel {
     DoAskForFamily: boolean;
     MaxRegistrants: number;
@@ -82,6 +89,9 @@ export interface RegistrationEntryBlockViewModel {
     FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[]
     RegistrationAttributesStart: Attribute[]
     RegistrationAttributesEnd: Attribute[]
+    ForceEmailUpdate: boolean
+    RegistrarOption: RegistrarOption
+    Cost: number
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel {

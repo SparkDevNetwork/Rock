@@ -40,9 +40,107 @@ namespace Rock.Obsidian.Blocks.Event
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "fa fa-clipboard-list" )]
 
+    #region Block Attributes
+
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        Order = 0 )]
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 1 )]
+
+    [DefinedValueField( "Source",
+        Key = AttributeKey.Source,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        Description = "The Financial Source Type to use when creating transactions",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
+        Order = 2 )]
+
+    [TextField( "Batch Name Prefix",
+        Key = AttributeKey.BatchNamePrefix,
+        Description = "The batch prefix name to use when creating a new batch",
+        IsRequired = false,
+        DefaultValue = "Event Registration",
+        Order = 3 )]
+
+    [BooleanField( "Display Progress Bar",
+        Key = AttributeKey.DisplayProgressBar,
+        Description = "Display a progress bar for the registration.",
+        DefaultBooleanValue = true,
+        Order = 4 )]
+
+    [BooleanField( "Allow InLine Digital Signature Documents",
+        Key = AttributeKey.SignInline,
+        Description = "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline",
+        DefaultBooleanValue = true,
+        Order = 6 )]
+
+    [SystemCommunicationField( "Confirm Account Template",
+        Description = "Confirm Account Email Template",
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Order = 7,
+        Key = AttributeKey.ConfirmAccountTemplate )]
+
+    [TextField( "Family Term",
+        Description = "The term to use for specifying which household or family a person is a member of.",
+        IsRequired = true,
+        DefaultValue = "immediate family",
+        Order = 8,
+        Key = AttributeKey.FamilyTerm )]
+
+    [BooleanField( "Force Email Update",
+        Description = "Force the email to be updated on the person's record.",
+        DefaultBooleanValue = false,
+        Order = 9,
+        Key = AttributeKey.ForceEmailUpdate )]
+
+    [BooleanField( "Show Field Descriptions",
+        Description = "Show the field description as help text",
+        DefaultBooleanValue = true,
+        Order = 10,
+        Key = AttributeKey.ShowFieldDescriptions )]
+
+    [BooleanField( "Enabled Saved Account",
+        Key = AttributeKey.EnableSavedAccount,
+        Description = "Set this to false to disable the using Saved Account as a payment option, and to also disable the option to create saved account for future use.",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+
+    #endregion Block Attributes
+
     public class RegistrationEntry : ObsidianBlockType
     {
         #region Keys
+
+        /// <summary>
+        /// Attribute Key
+        /// </summary>
+        private static class AttributeKey {
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
+            public const string Source = "Source";
+            public const string BatchNamePrefix = "BatchNamePrefix";
+            public const string DisplayProgressBar = "DisplayProgressBar";
+            public const string SignInline = "SignInline";
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+            public const string FamilyTerm = "FamilyTerm";
+            public const string ForceEmailUpdate = "ForceEmailUpdate";
+            public const string ShowFieldDescriptions = "ShowFieldDescriptions";
+            public const string EnableSavedAccount = "EnableSavedAccount";
+        }
 
         /// <summary>
         /// Page Parameter
@@ -229,6 +327,9 @@ namespace Rock.Obsidian.Blocks.Event
                     ( registrationTemplate.MaxRegistrants ?? 1 ) :
                     1;
 
+                // Force the registrar to update their email?
+                var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
                 return new RegistrationEntryBlockViewModel
                 {
                     RegistrationAttributesStart = beforeAttributes,
@@ -243,7 +344,12 @@ namespace Rock.Obsidian.Blocks.Event
                     Fees = fees,
                     FamilyMembers = familyMembers,
                     MaxRegistrants = maxRegistrants,
-                    DoAskForFamily = registrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask
+                    DoAskForFamily = registrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask,
+                    ForceEmailUpdate = forceEmailUpdate,
+                    RegistrarOption = ( int ) registrationTemplate.RegistrarOption,
+                    Cost = registrationTemplate.SetCostOnInstance == true ?
+                        ( registrationInstance.Cost ?? registrationTemplate.Cost ) :
+                        registrationTemplate.Cost
                 };
             }
         }

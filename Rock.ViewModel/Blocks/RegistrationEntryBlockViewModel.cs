@@ -128,6 +128,30 @@ namespace Rock.ViewModel.Blocks
         ///   <c>true</c> if [do ask for family]; otherwise, <c>false</c>.
         /// </value>
         public bool DoAskForFamily { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [force email update].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force email update]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceEmailUpdate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrar option.
+        /// </summary>
+        /// <value>
+        /// The registrar option.
+        /// </value>
+        public int RegistrarOption { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cost.
+        /// </summary>
+        /// <value>
+        /// The cost.
+        /// </value>
+        public decimal Cost { get; set; }
     }
 
     /// <summary>

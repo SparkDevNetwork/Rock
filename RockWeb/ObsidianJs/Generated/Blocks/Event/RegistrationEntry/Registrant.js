@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/RadioButtonList", "../../../Services/String", "../../../Elements/RockButton", "./RegistrantPersonField", "./RegistrantAttributeField", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel", "../../../Util/Guid", "../../../Controls/RockForm", "./FeeField"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/RadioButtonList", "../RegistrationEntry", "../../../Services/String", "../../../Elements/RockButton", "./RegistrantPersonField", "./RegistrantAttributeField", "../../../Elements/Alert", "./RegistrationEntryBlockViewModel", "../../../Util/Guid", "../../../Controls/RockForm", "./FeeField"], function (exports_1, context_1) {
     "use strict";
     var __assign = (this && this.__assign) || function () {
         __assign = Object.assign || function(t) {
@@ -27,7 +27,7 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
         };
         return __assign.apply(this, arguments);
     };
-    var vue_1, DropDownList_1, RadioButtonList_1, String_1, RockButton_1, RegistrantPersonField_1, RegistrantAttributeField_1, Alert_1, RegistrationEntryBlockViewModel_1, Guid_1, RockForm_1, FeeField_1;
+    var vue_1, DropDownList_1, RadioButtonList_1, RegistrationEntry_1, String_1, RockButton_1, RegistrantPersonField_1, RegistrantAttributeField_1, Alert_1, RegistrationEntryBlockViewModel_1, Guid_1, RockForm_1, FeeField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -39,6 +39,9 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
             },
             function (RadioButtonList_1_1) {
                 RadioButtonList_1 = RadioButtonList_1_1;
+            },
+            function (RegistrationEntry_1_1) {
+                RegistrationEntry_1 = RegistrationEntry_1_1;
             },
             function (String_1_1) {
                 String_1 = String_1_1;
@@ -104,6 +107,9 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                     };
                 },
                 computed: {
+                    showPrevious: function () {
+                        return this.registrationEntryState.FirstStep !== this.registrationEntryState.Steps.perRegistrantForms;
+                    },
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
                     },
@@ -166,11 +172,7 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         return String_1.default.toTitleCase(this.viewModel.RegistrantTerm);
                     },
                     firstName: function () {
-                        // This is always on the first form
-                        var form = this.viewModel.RegistrantForms[0];
-                        var field = form === null || form === void 0 ? void 0 : form.Fields.find(function (f) { return f.PersonFieldType === RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.FirstName; });
-                        var fieldValue = this.currentRegistrant.FieldValues[(field === null || field === void 0 ? void 0 : field.Guid) || ''];
-                        return typeof fieldValue === 'string' ? fieldValue : '';
+                        return RegistrationEntry_1.getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.RegistrantForms).FirstName;
                     },
                     familyMember: function () {
                         var personGuid = this.currentRegistrant.PersonGuid;
@@ -236,7 +238,7 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         }
                     }
                 },
-                template: "\n<div>\n    <RockForm @submit=\"onNext\">\n        <template v-if=\"currentFormIndex === 0\">\n            <div v-if=\"familyOptions.length > 1\" class=\"well js-registration-same-family\">\n                <RadioButtonList :label=\"(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'\" rules='required:{\"allowEmptyString\": true}' v-model=\"currentRegistrant.FamilyGuid\" :options=\"familyOptions\" validationTitle=\"Family\" />\n            </div>\n            <DropDownList v-if=\"familyMemberOptions.length\" v-model=\"currentRegistrant.PersonGuid\" :options=\"familyMemberOptions\" label=\"Family Member to Register\" />\n        </template>\n\n        <template v-for=\"field in currentFormFields\" :key=\"field.Guid\">\n            <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" :isKnownFamilyMember=\"!!currentRegistrant.PersonGuid\" />\n            <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" />\n            <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n        </template>\n\n        <div v-if=\"isLastForm && viewModel.Fees.length\" class=\"well registration-additional-options\">\n            <h4>{{pluralFeeTerm}}</h4>\n            <template v-for=\"fee in viewModel.Fees\" :key=\"fee.Guid\">\n                <FeeField :fee=\"fee\" v-model=\"currentRegistrant.FeeQuantities\" />\n            </template>\n        </div>\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\">\n                Next\n            </RockButton>\n        </div>\n    </RockForm>\n</div>\n"
+                template: "\n<div>\n    <RockForm @submit=\"onNext\">\n        <template v-if=\"currentFormIndex === 0\">\n            <div v-if=\"familyOptions.length > 1\" class=\"well js-registration-same-family\">\n                <RadioButtonList :label=\"(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'\" rules='required:{\"allowEmptyString\": true}' v-model=\"currentRegistrant.FamilyGuid\" :options=\"familyOptions\" validationTitle=\"Family\" />\n            </div>\n            <DropDownList v-if=\"familyMemberOptions.length\" v-model=\"currentRegistrant.PersonGuid\" :options=\"familyMemberOptions\" label=\"Family Member to Register\" />\n        </template>\n\n        <template v-for=\"field in currentFormFields\" :key=\"field.Guid\">\n            <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" :isKnownFamilyMember=\"!!currentRegistrant.PersonGuid\" />\n            <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" />\n            <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n        </template>\n\n        <div v-if=\"isLastForm && viewModel.Fees.length\" class=\"well registration-additional-options\">\n            <h4>{{pluralFeeTerm}}</h4>\n            <template v-for=\"fee in viewModel.Fees\" :key=\"fee.Guid\">\n                <FeeField :fee=\"fee\" v-model=\"currentRegistrant.FeeQuantities\" />\n            </template>\n        </div>\n\n        <div class=\"actions row\">\n            <div class=\"col-xs-6\">\n                <RockButton v-if=\"showPrevious\" btnType=\"default\" @click=\"onPrevious\">\n                    Previous\n                </RockButton>\n            </div>\n            <div class=\"col-xs-6 text-right\">\n                <RockButton btnType=\"primary\" type=\"submit\">\n                    Next\n                </RockButton>\n            </div>\n        </div>\n    </RockForm>\n</div>\n"
             }));
         }
     };

@@ -16,7 +16,7 @@
 //
 System.register([], function (exports_1, context_1) {
     "use strict";
-    var RegistrationPersonFieldType, RegistrationFieldSource, FilterExpressionType, ComparisonType;
+    var RegistrationPersonFieldType, RegistrationFieldSource, FilterExpressionType, ComparisonType, RegistrarOption;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [],
@@ -71,6 +71,13 @@ System.register([], function (exports_1, context_1) {
                 ComparisonType[ComparisonType["RegularExpression"] = 8192] = "RegularExpression";
             })(ComparisonType || (ComparisonType = {}));
             exports_1("ComparisonType", ComparisonType);
+            (function (RegistrarOption) {
+                RegistrarOption[RegistrarOption["PromptForRegistrar"] = 0] = "PromptForRegistrar";
+                RegistrarOption[RegistrarOption["PrefillFirstRegistrant"] = 1] = "PrefillFirstRegistrant";
+                RegistrarOption[RegistrarOption["UseFirstRegistrant"] = 2] = "UseFirstRegistrant";
+                RegistrarOption[RegistrarOption["UseLoggedInPerson"] = 3] = "UseLoggedInPerson";
+            })(RegistrarOption || (RegistrarOption = {}));
+            exports_1("RegistrarOption", RegistrarOption);
         }
     };
 });
