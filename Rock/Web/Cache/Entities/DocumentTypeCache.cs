@@ -51,7 +51,7 @@ namespace Rock.Web.Cache
         /// The name.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity type id.
@@ -116,7 +116,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public string DefaultDocumentNameTemplate
         {
-            get; set;
+            get; private set;
         }
 
         /// <summary>
@@ -126,7 +126,25 @@ namespace Rock.Web.Cache
         /// The binary file type type identifier.
         /// </value>
         [DataMember]
-        public int BinaryFileTypeId { get; set; }
+        public int BinaryFileTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the maximum documents per entity.  This would limit the documents of that type per entity. A blank value means no limit.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> that represents the maximum documents per entity.
+        /// </value>
+        [DataMember]
+        public int? MaxDocumentsPerEntity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsImage flag for the <see cref="Rock.Model.DocumentType"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> for the IsImage flag.
+        /// </value>
+        [DataMember]
+        public bool IsImage { get; set; }
 
         #endregion
 
@@ -153,6 +171,8 @@ namespace Rock.Web.Cache
             Order = documentType.Order;
             BinaryFileTypeId = documentType.BinaryFileTypeId;
             DefaultDocumentNameTemplate = documentType.DefaultDocumentNameTemplate;
+            MaxDocumentsPerEntity = documentType.MaxDocumentsPerEntity;
+            IsImage = documentType.IsImage;
         }
 
         /// <summary>
@@ -248,6 +268,4 @@ namespace Rock.Web.Cache
 
         #endregion
     }
-
-
 }

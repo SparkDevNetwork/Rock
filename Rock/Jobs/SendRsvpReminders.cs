@@ -339,7 +339,7 @@ namespace Rock.Jobs
                 // This block is unnecessary if the event has a name (because the name will take priority over the schedule, anyway), but it
                 // has been intentionally left in place to prevent anyone from creating an unintentional bug in the future, as it affects
                 // the logic below.
-                DDay.iCal.Event calendarEvent = occurrence.Schedule.GetCalendarEvent();
+                var calendarEvent = occurrence.Schedule.GetICalEvent();
                 if ( calendarEvent == null )
                 {
                     hasSchedule = false;
@@ -355,7 +355,7 @@ namespace Rock.Jobs
                 return string.Format(
                     "{0} - {1}",
                     occurrence.Group.Name,
-                    occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString() );
+                    occurrence.Schedule.GetICalEvent().DtStart.Value.TimeOfDay.ToTimeString() );
             }
             else
             {

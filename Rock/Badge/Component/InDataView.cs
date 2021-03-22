@@ -58,10 +58,14 @@ namespace Rock.Badge.Component
                 var dataView = dataViewService.Get( dataViewAttributeGuid );
                 if ( dataView != null )
                 {
-                    var errors = new List<string>();
-
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    var qry = dataView.GetQuery( null, 30, out errors );
+                    var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                    {
+                        DatabaseTimeoutSeconds = 30
+                    };
+
+                    var qry = dataView.GetQuery( dataViewGetQueryArgs );
+
                     var isEntityFound = false;
                     if ( qry != null )
                     {

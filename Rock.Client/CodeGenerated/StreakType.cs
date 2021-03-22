@@ -144,9 +144,6 @@ namespace Rock.Client
         public ICollection<Streak> Streaks { get; set; }
 
         /// <summary />
-        public ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
-
-        /// <summary />
         public ICollection<StreakTypeExclusion> StreakTypeExclusions { get; set; }
 
         /// <summary>

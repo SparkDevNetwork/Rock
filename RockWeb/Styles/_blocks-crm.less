@@ -138,7 +138,7 @@
         top: -61px;
         left: 8px;
         font-size: 24px;
-        color: #fff;
+        color: @white;
         opacity: 0;
         transition: 1s;
       }
@@ -1859,8 +1859,8 @@ tr.inactive {
   border: 1px solid @panel-border;
 
   &.active {
-    border-color: var(--brand-color);
     border-color: @brand-primary;
+    border-color: var(--brand-primary, @brand-primary);
   }
 
   a {

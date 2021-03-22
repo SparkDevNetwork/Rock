@@ -78,6 +78,8 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.ContentChannel">ContentChannel</see>.
         /// </returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Used, not needed. Could cause an exception." )]
         public IEnumerable<ContentChannel> GetAllAssociatedDescendents( int parentContentChannelId )
         {
             return this.ExecuteQuery(
@@ -104,6 +106,8 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.ContentChannelPath">ContentChannelPath</see> objects.
         /// </returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Used, not needed. Could cause an exception." )]
         public IEnumerable<ContentChannelPath> GetAllAssociatedDescendentsPath( int parentContentChannelId )
         {
             return this.Context.Database.SqlQuery<ContentChannelPath>(
@@ -138,6 +142,8 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.ContentChannel">ContentChannel</see>.
         /// </returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Not Used, not needed. Could cause an exception." )]
         public IEnumerable<ContentChannel> GetAllAssociatedDescendents( Guid parentContentChannelGuid )
         {
             return this.GetAllAssociatedDescendents( this.Get( parentContentChannelGuid ).Id );

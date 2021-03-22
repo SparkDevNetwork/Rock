@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
-using Rock.Transactions;
+using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI
@@ -27,7 +27,7 @@ namespace Rock.Web.UI
     /// <summary>
     /// Block displaying some information about a person model
     /// </summary>
-    [ContextAware( typeof(Person) )]
+    [ContextAware( typeof( Person ) )]
     public abstract class PersonBlock : ContextEntityBlock
     {
         /// <summary>
@@ -79,13 +79,14 @@ namespace Rock.Web.UI
                 Person.PrimaryAlias != null &&
                 Person.PrimaryAlias.Id != CurrentPersonAlias.Id )
             {
-                var transaction = new PersonViewTransaction();
-                transaction.DateTimeViewed = RockDateTime.Now;
-                transaction.TargetPersonAliasId = Person.PrimaryAlias.Id;
-                transaction.ViewerPersonAliasId = CurrentPersonAlias.Id;
-                transaction.Source = RockPage.PageTitle;
-                transaction.IPAddress = Request.UserHostAddress;
-                RockQueue.TransactionQueue.Enqueue( transaction );
+                new AddPersonViewed.Message
+                {
+                    DateTimeViewed = RockDateTime.Now,
+                    TargetPersonAliasId = Person.PrimaryAlias.Id,
+                    ViewerPersonAliasId = CurrentPersonAlias.Id,
+                    Source = RockPage.PageTitle,
+                    IPAddress = Request.UserHostAddress
+                }.Send();
 
                 Context.AddOrReplaceItem( "PersonViewed", "Handled" );
             }

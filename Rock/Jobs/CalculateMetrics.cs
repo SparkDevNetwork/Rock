@@ -112,7 +112,6 @@ namespace Rock.Jobs
                                     // get the metric value from the DataView
                                     if ( metric.DataView != null )
                                     {
-                                        var errorMessages = new List<string>();
                                         if ( metricPartitions.Count > 1 || metricPartitions.First().EntityTypeId.HasValue )
                                         {
                                             throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
@@ -120,7 +119,8 @@ namespace Rock.Jobs
                                         else
                                         {
                                             Stopwatch stopwatch = Stopwatch.StartNew();
-                                            var qry = metric.DataView.GetQuery( null, null, out errorMessages );
+                                            var dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                                            var qry = metric.DataView.GetQuery( dataViewGetQueryArgs );
                                             var resultValue = new ResultValue();
                                             resultValue.Value = Convert.ToDecimal( qry.Count() );
                                             stopwatch.Stop();
@@ -361,7 +361,7 @@ namespace Rock.Jobs
                 }
                 catch ( Exception ex )
                 {
-                    metricExceptions.Add( new Exception( string.Format( "Exception when calculating metric for {0} ", metric ), ex ) );
+                    metricExceptions.Add( new Exception( $"Exception when calculating metric for {metric}: {ex.Message}", ex ) );
                 }
             }
 

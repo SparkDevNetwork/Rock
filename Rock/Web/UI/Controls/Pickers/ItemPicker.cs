@@ -192,6 +192,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator.ValidationGroup;
             }
+
             set
             {
                 RequiredFieldValidator.ValidationGroup = value;
@@ -340,7 +341,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the item ids.
+        /// Gets the item ids (including "0").
+        /// NOTE: Make sure to exclude "0" when using this to get a list of actual selected items
         /// </summary>
         /// <value>
         /// The item ids.
@@ -437,7 +439,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected values.
+        /// Gets or sets the selected values (including "0").
+        /// NOTE: Make sure to exclude "0", or use <see cref="SelectedIds" />, when using this to get a list of actual selected items.
         /// </summary>
         /// <value>
         /// The selected values.
@@ -712,7 +715,7 @@ $@"Rock.controls.itemPicker.initialize({{
             Controls.Add( _hfItemRestUrlExtraParams );
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
-            
+
             RockControlHelper.CreateChildControls( this, Controls );
 
             RequiredFieldValidator.InitialValue = Constants.None.IdValue;
@@ -743,6 +746,11 @@ $@"Rock.controls.itemPicker.initialize({{
             {
                 writer.AddAttribute( "id", this.ClientID.ToString() );
                 writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
+                foreach( string styleKey in this.Style.Keys)
+                {
+                    writer.AddStyleAttribute( styleKey, this.Style[styleKey] );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _hfItemId.RenderControl( writer );
@@ -807,7 +815,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
                 // render any additional picker actions that a child class if ItemPicker implements
                 RenderCustomPickerActions( writer );
-                
+
                 writer.WriteLine();
                 writer.RenderEndTag();
 
@@ -897,7 +905,16 @@ $@"Rock.controls.itemPicker.initialize({{
         }
 
         /// <summary>
-        /// Selecteds the values as int.
+        /// Gets the selected ids (not including 0)
+        /// </summary>
+        /// <value>
+        /// The selected ids.
+        /// </value>
+        public int[] SelectedIds => SelectedValuesAsInt().Where( a => a > 0 ).ToArray();
+
+        /// <summary>
+        /// Gets Selected numeric values as int (including 0).
+        /// Note: In most cases, you should use <see cref="SelectedIds"/> instead.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<int> SelectedValuesAsInt()
@@ -938,7 +955,6 @@ $@"Rock.controls.itemPicker.initialize({{
                 SetValueOnSelect();
             }
 
-            
             _selectItem?.Invoke( sender, e );
             _valueChanged?.Invoke( sender, e );
         }

@@ -240,6 +240,10 @@ namespace RockWeb
                 return;
             }
 
+            // Add cache validation headers
+            context.Response.AddHeader( "Last-Modified", binaryFileMetaData.ModifiedDateTime.ToUniversalTime().ToString( "R" ) );
+            context.Response.AddHeader( "ETag", binaryFileMetaData.ModifiedDateTime.ToString().XxHash() );
+
             //// if the binaryFile's BinaryFileType requires view security, check security
             //// note: we put a RequiresViewSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
             if ( binaryFileMetaData.BinaryFileType_RequiresViewSecurity )

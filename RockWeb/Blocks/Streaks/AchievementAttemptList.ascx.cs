@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Achievement;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +36,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Streaks
 {
     [DisplayName( "Achievement Attempt List" )]
-    [Category( "Streaks" )]
+    [Category( "Achievements" )]
     [Description( "Lists all the people that have made an attempt at earning an achievement." )]
 
     [LinkedPage(
@@ -68,17 +69,12 @@ namespace RockWeb.Blocks.Streaks
             /// <summary>
             /// The achievement type id page parameter key
             /// </summary>
-            public const string StreakTypeAchievementTypeId = "StreakTypeAchievementTypeId";
+            public const string AchievementTypeId = "AchievementTypeId";
 
             /// <summary>
-            /// The streak identifier
+            /// The achievement attempt identifier
             /// </summary>
-            public const string StreakId = "StreakId";
-
-            /// <summary>
-            /// The streak achievement attempt identifier
-            /// </summary>
-            public const string StreakAchievementAttemptId = "StreakAchievementAttemptId";
+            public const string AchievementAttemptId = "AchievementAttemptId";
         }
 
         /// <summary>
@@ -87,14 +83,9 @@ namespace RockWeb.Blocks.Streaks
         private static class FilterKey
         {
             /// <summary>
-            /// The first name filter key
+            /// The achiever name filter key
             /// </summary>
-            public const string FirstName = "FirstName";
-
-            /// <summary>
-            /// The last name filter key
-            /// </summary>
-            public const string LastName = "LastName";
+            public const string AchieverName = "AchieverName";
 
             /// <summary>
             /// The attempt start date filter key
@@ -117,8 +108,6 @@ namespace RockWeb.Blocks.Streaks
         #region Private Variables
 
         // Cache these fields since they could get called many times in GridRowDataBound
-        private readonly string _fullNameFieldId = "lExportFullName";
-        private readonly string _nameWithHtmlFieldId = "lNameWithHtml";
         private readonly string _progressFieldId = "lProgress";
 
         #endregion Private Variables
@@ -132,10 +121,8 @@ namespace RockWeb.Blocks.Streaks
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            InitializeScripts();
             InitializeFilter();
             InitializeGrid();
-            IntializeRowButtons();
             InitializeSettingsNotification( upMain );
         }
 
@@ -164,8 +151,6 @@ namespace RockWeb.Blocks.Streaks
         #endregion Base Control Methods
 
         #region Grid
-
-        private readonly string _photoFormat = "<div class=\"photo-icon photo-round photo-round-xs pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
 
         /// <summary>
         /// Handles the Delete event of the gAttempts control.
@@ -214,40 +199,10 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            var enrollmentId = achievementViewModel.Id;
-            var person = achievementViewModel.Person;
-
-            var lFullName = e.Row.FindControl( _fullNameFieldId ) as Literal;
-            if ( lFullName != null )
-            {
-                lFullName.Text = person.FullNameReversed;
-            }
-
             var lProgress = e.Row.FindControl( _progressFieldId ) as Literal;
             if ( lProgress != null )
             {
                 lProgress.Text = GetProgressBarHtml( achievementViewModel.Progress );
-            }
-
-            var lNameWithHtml = e.Row.FindControl( _nameWithHtmlFieldId ) as Literal;
-            if ( lNameWithHtml != null )
-            {
-                var sbNameHtml = new StringBuilder();
-
-                sbNameHtml.AppendFormat( _photoFormat, person.Id, person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
-                sbNameHtml.Append( person.FullName );
-
-                if ( person.TopSignalColor.IsNotNullOrWhiteSpace() )
-                {
-                    sbNameHtml.Append( person.GetSignalMarkup() );
-                }
-
-                lNameWithHtml.Text = sbNameHtml.ToString();
-            }
-
-            if ( person.IsDeceased )
-            {
-                e.Row.AddCssClass( "is-deceased" );
             }
         }
 
@@ -267,7 +222,7 @@ namespace RockWeb.Blocks.Streaks
 
             var attemptId = e.RowKeyId;
             NavigateToLinkedPage( AttributeKey.DetailPage, new Dictionary<string, string> {
-                { PageParameterKey.StreakAchievementAttemptId, attemptId.ToString() }
+                { PageParameterKey.AchievementAttemptId, attemptId.ToString() }
             } );
         }
 
@@ -278,11 +233,11 @@ namespace RockWeb.Blocks.Streaks
         /// <returns></returns>
         private string GetProgressBarHtml( decimal progress )
         {
-            var progressInt = Convert.ToInt32( decimal.Round( progress * 100 ) );
-            var progressBarWidth = progressInt < 0 ? 0 : ( progressInt > 100 ? 100 : progressInt );
-            var insideProgress = progressInt >= 50 ? progressInt : ( int? ) null;
-            var outsideProgress = progressInt < 50 ? progressInt : ( int? ) null;
-            var progressBarClass = progressInt >= 100 ? "progress-bar-success" : string.Empty;
+            var progressLong = Convert.ToInt64( decimal.Round( progress * 100 ) );
+            var progressBarWidth = progressLong < 0 ? 0 : ( progressLong > 100 ? 100 : progressLong );
+            var insideProgress = progressLong >= 50 ? progressLong : ( long? ) null;
+            var outsideProgress = progressLong < 50 ? progressLong : ( long? ) null;
+            var progressBarClass = progressLong >= 100 ? "progress-bar-success" : string.Empty;
 
             return string.Format(
 @"<div class=""progress"" style=""margin-bottom: 0;"">
@@ -300,8 +255,7 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterKey.FirstName, "First Name", tbFirstName.Text );
-            rFilter.SaveUserPreference( FilterKey.LastName, "Last Name", tbLastName.Text );
+            rFilter.SaveUserPreference( FilterKey.AchieverName, "Achiever Name", tbAchieverName.Text );
             rFilter.SaveUserPreference( FilterKey.AttemptStartDateRange, "Start Date", drpStartDate.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.Status, "Status", ddlStatus.SelectedValue );
             rFilter.SaveUserPreference( FilterKey.AchievementType, "Achievement Type", statPicker.SelectedValue );
@@ -319,12 +273,11 @@ namespace RockWeb.Blocks.Streaks
             switch ( e.Key )
             {
                 case FilterKey.AchievementType:
-                    var achievementTypeCache = StreakTypeAchievementTypeCache.Get( e.Value.AsInteger() );
+                    var achievementTypeCache = AchievementTypeCache.Get( e.Value.AsInteger() );
                     e.Value = achievementTypeCache != null ? achievementTypeCache.Name : string.Empty;
                     break;
                 case FilterKey.Status:
-                case FilterKey.FirstName:
-                case FilterKey.LastName:
+                case FilterKey.AchieverName:
                     break;
                 case FilterKey.AttemptStartDateRange:
                     e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
@@ -364,17 +317,11 @@ namespace RockWeb.Blocks.Streaks
         protected void gAttempts_Add( object sender, EventArgs e )
         {
             var parameters = new Dictionary<string, string>();
-            var achievementType = GetAchievementType();
-            var streak = GetStreak();
-
-            if ( streak != null )
-            {
-                parameters[PageParameterKey.StreakId] = streak.Id.ToString();
-            }
+            var achievementType = GetAchievementTypeCache();
 
             if ( achievementType != null )
             {
-                parameters[PageParameterKey.StreakTypeAchievementTypeId] = achievementType.Id.ToString();
+                parameters[PageParameterKey.AchievementTypeId] = achievementType.Id.ToString();
             }
 
             NavigateToLinkedPage( AttributeKey.DetailPage, parameters );
@@ -417,116 +364,93 @@ namespace RockWeb.Blocks.Streaks
         /// Gets the attempt service.
         /// </summary>
         /// <returns></returns>
-        private StreakAchievementAttemptService GetAttemptService()
+        private AchievementAttemptService GetAttemptService()
         {
             if ( _attemptService == null )
             {
                 var rockContext = GetRockContext();
-                _attemptService = new StreakAchievementAttemptService( rockContext );
+                _attemptService = new AchievementAttemptService( rockContext );
             }
 
             return _attemptService;
         }
-        private StreakAchievementAttemptService _attemptService = null;
+        private AchievementAttemptService _attemptService = null;
 
         /// <summary>
         /// Gets the achievement type service.
         /// </summary>
         /// <returns></returns>
-        private StreakTypeAchievementTypeService GetAchievementTypeService()
+        private AchievementTypeService GetAchievementTypeService()
         {
             if ( _achievementTypeService == null )
             {
                 var rockContext = GetRockContext();
-                _achievementTypeService = new StreakTypeAchievementTypeService( rockContext );
+                _achievementTypeService = new AchievementTypeService( rockContext );
             }
 
             return _achievementTypeService;
         }
-        private StreakTypeAchievementTypeService _achievementTypeService = null;
-
-        /// <summary>
-        /// Gets the streak service.
-        /// </summary>
-        /// <returns></returns>
-        private StreakService GetStreakService()
-        {
-            if ( _streakService == null )
-            {
-                var rockContext = GetRockContext();
-                _streakService = new StreakService( rockContext );
-            }
-
-            return _streakService;
-        }
-        private StreakService _streakService = null;
+        private AchievementTypeService _achievementTypeService = null;
 
         /// <summary>
         /// Gets the type of the achievement.
         /// </summary>
         /// <returns></returns>
-        private StreakTypeAchievementType GetAchievementType()
+        private AchievementTypeCache GetAchievementTypeCache()
         {
-            if ( _achievementType == null )
+            if ( _achievementTypeCache == null )
             {
-                var achievementTypeId = PageParameter( PageParameterKey.StreakTypeAchievementTypeId ).AsIntegerOrNull();
+                var achievementTypeId = PageParameter( PageParameterKey.AchievementTypeId ).AsIntegerOrNull();
 
                 if ( achievementTypeId.HasValue )
                 {
-                    _achievementType = GetAchievementTypeService().Get( achievementTypeId.Value );
+                    _achievementTypeCache = AchievementTypeCache.Get( achievementTypeId.Value );
                 }
             }
 
-            return _achievementType;
+            return _achievementTypeCache;
         }
-        private StreakTypeAchievementType _achievementType = null;
-
-        /// <summary>
-        /// Gets the streak.
-        /// </summary>
-        /// <returns></returns>
-        private Streak GetStreak()
-        {
-            if ( _streak == null )
-            {
-                var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
-
-                if ( streakId.HasValue )
-                {
-                    _streak = GetStreakService().Get( streakId.Value );
-                }
-            }
-
-            return _streak;
-        }
-        private Streak _streak = null;
+        private AchievementTypeCache _achievementTypeCache = null;
 
         /// <summary>
         /// Gets the attempts query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<StreakAchievementAttempt> GetAttemptsQuery()
+        private IQueryable<AchieverAttemptItem> GetAttemptsQuery()
         {
-            var achievementType = GetAchievementType();
-            var streak = GetStreak();
-            var attemptService = GetAttemptService();
+            if ( _attemptsQuery != null )
+            {
+                return _attemptsQuery;
+            }
 
-            var query = attemptService.Queryable()
-                .Include( saa => saa.Streak.PersonAlias.Person )
-                .AsNoTracking();
+            var rockContext = GetRockContext();
+            var achievementType = GetAchievementTypeCache();
+            var achievementTypes = AchievementTypeCache.All().Where( at => at.IsActive );
 
             if ( achievementType != null )
             {
-                query = query.Where( saa => saa.StreakTypeAchievementTypeId == achievementType.Id );
+                achievementTypes = achievementTypes.Where( at => at.Id == achievementType.Id );
             }
 
-            if ( streak != null )
+            var subQueries = new List<IQueryable<AchieverAttemptItem>>();
+
+            foreach ( var at in achievementTypes )
             {
-                query = query.Where( saa => saa.StreakId == streak.Id );
+                var component = at.AchievementComponent;
+
+                if (component == null)
+                {
+                    continue;
+                }
+
+                var componentQuery = component.GetAchieverAttemptQuery( at, rockContext ).AsNoTracking();
+                subQueries.Add( componentQuery );
             }
 
-            return query;
+            _attemptsQuery = subQueries.DefaultIfEmpty().Aggregate( ( a, b ) => a.Union( b ) );
+            return _attemptsQuery;
         }
+        private IQueryable<AchieverAttemptItem> _attemptsQuery = null;
 
         /// <summary>
         /// Determines whether the person is authorized to view attempts of this achievement type.
@@ -535,20 +459,11 @@ namespace RockWeb.Blocks.Streaks
         {
             if ( !_canView.HasValue )
             {
-                var achievementType = GetAchievementType();
+                var achievementType = GetAchievementTypeCache();
 
                 if ( achievementType != null )
                 {
                     _canView = achievementType.IsAuthorized( Authorization.VIEW, CurrentPerson );
-                }
-                else
-                {
-                    var streak = GetStreak();
-
-                    if ( streak != null )
-                    {
-                        _canView = streak.IsAuthorized( Authorization.VIEW, CurrentPerson );
-                    }
                 }
             }
 
@@ -576,20 +491,11 @@ namespace RockWeb.Blocks.Streaks
 
             if ( !Page.IsPostBack )
             {
-                var achievementType = GetAchievementType();
+                var achievementType = GetAchievementTypeCache();
 
                 if ( achievementType != null )
                 {
                     rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", achievementType.Guid );
-                }
-                else
-                {
-                    var streak = GetStreak();
-
-                    if ( streak != null )
-                    {
-                        rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", streak.Guid );
-                    }
                 }
 
                 BindFilter();
@@ -602,14 +508,13 @@ namespace RockWeb.Blocks.Streaks
         private void InitializeGrid()
         {
             gAttempts.DataKeyNames = new string[] { "Id" };
-            gAttempts.PersonIdField = "Person Id";
             gAttempts.GridRebind += gAttempts_GridRebind;
             gAttempts.Actions.AddClick += gAttempts_Add;
             gAttempts.Actions.ShowAdd = !GetAttributeValue( AttributeKey.DetailPage ).IsNullOrWhiteSpace();
             gAttempts.RowItemText = "Attempt";
             gAttempts.ExportSource = ExcelExportSource.DataSource;
 
-            var achievementType = GetAchievementType();
+            var achievementType = GetAchievementTypeCache();
 
             if ( achievementType != null )
             {
@@ -619,15 +524,6 @@ namespace RockWeb.Blocks.Streaks
                 if ( achievementNameCol != null )
                 {
                     achievementNameCol.Visible = false;
-                }
-            }
-            else if( GetStreak() != null )
-            {
-                var nameCol = gAttempts.ColumnsOfType<RockLiteralField>().FirstOrDefault( c => c.ID == _nameWithHtmlFieldId );
-
-                if ( nameCol != null )
-                {
-                    nameCol.Visible = false;
                 }
             }
         }
@@ -640,7 +536,6 @@ namespace RockWeb.Blocks.Streaks
         private void Block_BlockUpdated( object sender, EventArgs e )
         {
             BindFilter();
-            IntializeRowButtons();
             BindGrid();
         }
 
@@ -649,7 +544,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void BindFilter()
         {
-            if ( GetAchievementType() == null )
+            if ( GetAchievementTypeCache() == null )
             {
                 statPicker.SelectedValue = rFilter.GetUserPreference( FilterKey.AchievementType );
             }
@@ -659,78 +554,9 @@ namespace RockWeb.Blocks.Streaks
                 statPicker.Visible = false;
             }
 
-            if ( GetStreak() == null )
-            {
-                tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
-                tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
-            }
-            else
-            {
-                tbFirstName.Text = string.Empty;
-                tbLastName.Text = string.Empty;
-                tbFirstName.Visible = false;
-                tbLastName.Visible = false;
-            }
-
+            tbAchieverName.Text = rFilter.GetUserPreference( FilterKey.AchieverName );
             drpStartDate.DelimitedValues = rFilter.GetUserPreference( FilterKey.AttemptStartDateRange );
             ddlStatus.SelectedValue = rFilter.GetUserPreference( FilterKey.Status );
-        }
-
-        /// <summary>
-        /// Initialize the row buttons
-        /// </summary>
-        private void IntializeRowButtons()
-        {
-            RemoveRowButtons();
-            AddRowButtons();
-        }
-
-        /// <summary>
-        /// Remove the row buttons
-        /// </summary>
-        private void RemoveRowButtons()
-        {
-            var hyperLink = gAttempts.Columns.OfType<HyperLinkField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( hyperLink != null )
-            {
-                gAttempts.Columns.Remove( hyperLink );
-            }
-
-            var buttonColumn = gAttempts.Columns.OfType<LinkButtonField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
-            if ( buttonColumn != null )
-            {
-                gAttempts.Columns.Remove( buttonColumn );
-            }
-        }
-
-        /// <summary>
-        /// Add the row buttons
-        /// </summary>
-        private void AddRowButtons()
-        {
-            // Add Link to Profile Page Column
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
-            {
-                var column = CreatePersonProfileLinkColumn( "PersonId" );
-                gAttempts.Columns.Add( column );
-            }
-        }
-
-        /// <summary>
-        /// Adds the column with a link to profile page.
-        /// </summary>
-        private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
-        {
-            HyperLinkField hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
-            hlPersonProfileLink.DataTextField = fieldName;
-
-            return hlPersonProfileLink;
         }
 
         /// <summary>
@@ -738,7 +564,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         protected void BindGrid()
         {
-            var achievementType = GetAchievementType();
+            var achievementType = GetAchievementTypeCache();
 
             if ( achievementType != null )
             {
@@ -751,20 +577,11 @@ namespace RockWeb.Blocks.Streaks
 
             var query = GetAttemptsQuery();
 
-            // Filter by First Name
-            var firstName = tbFirstName.Text;
-            if ( !firstName.IsNullOrWhiteSpace() )
+            // Filter by Achiever Name
+            var achieverName = tbAchieverName.Text;
+            if ( !achieverName.IsNullOrWhiteSpace() )
             {
-                query = query.Where( saa =>
-                    saa.Streak.PersonAlias.Person.FirstName.StartsWith( firstName ) ||
-                    saa.Streak.PersonAlias.Person.NickName.StartsWith( firstName ) );
-            }
-
-            // Filter by Last Name
-            var lastName = tbLastName.Text;
-            if ( !lastName.IsNullOrWhiteSpace() )
-            {
-                query = query.Where( saa => saa.Streak.PersonAlias.Person.LastName.StartsWith( lastName ) );
+                query = query.Where( aa => aa.AchieverName.StartsWith( achieverName ) );
             }
 
             // Filter by start Date
@@ -772,19 +589,19 @@ namespace RockWeb.Blocks.Streaks
 
             if ( startDateRange.Start.HasValue )
             {
-                query = query.Where( saa => saa.AchievementAttemptStartDateTime >= startDateRange.Start.Value );
+                query = query.Where( aa => aa.AchievementAttempt.AchievementAttemptStartDateTime >= startDateRange.Start.Value );
             }
 
             if ( startDateRange.End.HasValue )
             {
-                query = query.Where( saa => saa.AchievementAttemptStartDateTime <= startDateRange.End.Value );
+                query = query.Where( aa => aa.AchievementAttempt.AchievementAttemptStartDateTime <= startDateRange.End.Value );
             }
 
             // Filter by achievement type
             var achievementTypeId = statPicker.SelectedValue.AsIntegerOrNull();
             if ( achievementTypeId.HasValue )
             {
-                query = query.Where( saa => saa.StreakTypeAchievementTypeId == achievementTypeId.Value );
+                query = query.Where( aa => aa.AchievementAttempt.AchievementTypeId == achievementTypeId.Value );
             }
 
             // Filter by status
@@ -795,31 +612,28 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( status == "successful" )
                 {
-                    query = query.Where( saa => saa.IsSuccessful );
+                    query = query.Where( aa => aa.AchievementAttempt.IsSuccessful );
                 }
                 else if ( status == "unsuccessful" )
                 {
-                    query = query.Where( saa => !saa.IsSuccessful && saa.IsClosed );
+                    query = query.Where( aa => !aa.AchievementAttempt.IsSuccessful && aa.AchievementAttempt.IsClosed );
                 }
                 else if ( status == "open" )
                 {
-                    query = query.Where( saa => !saa.IsClosed );
+                    query = query.Where( aa => !aa.AchievementAttempt.IsClosed );
                 }
             }
 
-            var viewModelQuery = query.Select( saa => new AttemptViewModel
+            var viewModelQuery = query.Select( aa => new AttemptViewModel
             {
-                Id = saa.Id,
-                PersonId = saa.Streak.PersonAlias.PersonId,
-                LastName = saa.Streak.PersonAlias.Person.LastName,
-                NickName = saa.Streak.PersonAlias.Person.NickName,
-                StartDate = saa.AchievementAttemptStartDateTime,
-                Person = saa.Streak.PersonAlias.Person,
-                EndDate = saa.AchievementAttemptEndDateTime,
-                IsSuccessful = saa.IsSuccessful,
-                IsClosed = saa.IsClosed,
-                Progress = saa.Progress,
-                AchievementName = saa.StreakTypeAchievementType.Name
+                Id = aa.AchievementAttempt.Id,
+                AchieverName = aa.AchieverName,
+                StartDate = aa.AchievementAttempt.AchievementAttemptStartDateTime,
+                EndDate = aa.AchievementAttempt.AchievementAttemptEndDateTime,
+                IsSuccessful = aa.AchievementAttempt.IsSuccessful,
+                IsClosed = aa.AchievementAttempt.IsClosed,
+                Progress = aa.AchievementAttempt.Progress,
+                AchievementName = aa.AchievementAttempt.AchievementType.Name
             } );
 
             // Sort the grid
@@ -834,20 +648,11 @@ namespace RockWeb.Blocks.Streaks
                 viewModelQuery = viewModelQuery
                     .OrderBy( avm => avm.IsClosed )
                     .OrderByDescending( avm => avm.StartDate )
-                    .ThenBy( avm => avm.LastName );
+                    .ThenBy( avm => avm.AchieverName );
             }
 
             gAttempts.SetLinqDataSource( viewModelQuery );
             gAttempts.DataBind();
-        }
-
-        /// <summary>
-        /// Add JavaScript to the page
-        /// </summary>
-        private void InitializeScripts()
-        {
-            /// add lazyload so that person-link-popover javascript works
-            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
         }
 
         #endregion
@@ -873,16 +678,29 @@ namespace RockWeb.Blocks.Streaks
         public class AttemptViewModel
         {
             public int Id { get; set; }
-            public int PersonId { get; set; }
-            public string LastName { get; set; }
-            public string NickName { get; set; }
+            public string AchieverName { get; set; }
             public DateTime StartDate { get; set; }
             public DateTime? EndDate { get; set; }
             public bool IsSuccessful { get; set; }
             public bool IsClosed { get; set; }
-            public Person Person { get; set; }
             public decimal Progress { get; set; }
             public string AchievementName { get; set; }
+        }
+
+        /// <summary>
+        /// View Model for when the attempt qu
+        /// </summary>
+        public class JoinedQueryViewModel
+        {
+            /// <summary>
+            /// Gets or sets the achievement attempt.
+            /// </summary>
+            public AchievementAttempt AchievementAttempt { get; set; }
+
+            /// <summary>
+            /// Gets or sets the achiever.
+            /// </summary>
+            public IEntity Achiever { get; set; }
         }
 
         #endregion View Models

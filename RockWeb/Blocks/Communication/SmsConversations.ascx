@@ -10,26 +10,24 @@
                 <h1 class="panel-title"><i class="fa fa-comments"></i>SMS Conversations</h1>
 
 
-                <div class="panel-labels">
+                <div class="panel-labels m-0">
                     <!--  style="position:absolute;right:15px;top:10px;" -->
                     <Rock:HighlightLabel ID="hlSmsNumber" runat="server" CssClass="pull-left input-width-lg input-xs" />
                     <asp:HiddenField ID="hfSmsNumber" runat="server" />
                     <Rock:RockDropDownList ID="ddlSmsNumbers" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlSmsNumbers_SelectedIndexChanged" CssClass="pull-left input-width-lg input-xs" />
 
-                    <a href="#" class="btn btn-xs btn-default pull-left margin-l-sm" onclick="$('.js-sms-configuration').toggle()">
+                    <a href="#" class="btn btn-xs btn-default btn-square ml-2 pull-left" onclick="$('.js-sms-configuration').slideToggle()">
                         <i class="fa fa-cog"></i>
                     </a>
                 </div>
             </div>
 
             <div class="js-sms-configuration" style="display: none">
-                <div class="well margin-b-none">
+                <div class="well mb-0 border-top-0 border-right-0 border-left-0 rounded-0">
                     <div class="row">
+                        <div class="col-md-3">
                         <%-- The list of phone numbers that do not have "Enable Mobile Conversations" enabled --%>
-                        <div class="col-md-3">
-                            <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
-                        </div>
-                        <div class="col-md-3">
+                        <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
                         </div>
                     </div>
                 </div>
@@ -39,9 +37,15 @@
             <div class="sms-conversations-container">
                 <div class="conversation-list">
                     <div class="header">
+                        <div class="clearfix">
                         <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="fa fa-filter"></i></asp:LinkButton>
+                        </div>
+                        <div id="divPersonFilter" runat="server" class="js-person-filter" style="display: none;">
+                            <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
+                        </div>
                     </div>
-                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll">
+                    <asp:UpdatePanel ID="upRecipients" runat="server" class="overflow-scroll d-flex flex-grow-1">
                         <ContentTemplate>
                             <Rock:Grid ID="gRecipients" runat="server" OnRowSelected="gRecipients_RowSelected" OnRowDataBound="gRecipients_RowDataBound" ShowHeader="false" ShowActionRow="false" DisplayType="Light" EnableResponsiveTable="False">
                                 <Columns>
@@ -73,7 +77,7 @@
                         <Rock:HiddenFieldWithClass ID="hfSelectedRecipientPersonAliasId" runat="server" CssClass="js-selected-recipient-id" />
                         <Rock:HiddenFieldWithClass ID="hfSelectedMessageKey" runat="server" CssClass="js-selected-message-key" />
                         <div class="header">
-                            <a href="#" class="conversation-back js-back pull-left margin-r-md">
+                            <a href="#" class="conversation-back js-back pull-left mr-3">
                                 <i class="fa fa-chevron-left"></i>
                             </a>
                             <asp:Literal ID="litSelectedRecipientDescription" runat="server"></asp:Literal>
@@ -174,7 +178,7 @@
                 <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
                 <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgLinkToPerson" />
 
-                <Rock:Toggle ID="tglLinkPersonMode" runat="server" OnText="Link Existing Person" CssClass="margin-b-md" OffText="Add New Person" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglLinkPersonMode_CheckedChanged" />
+                <Rock:Toggle ID="tglLinkPersonMode" runat="server" OnText="Link Existing Person" CssClass="mb-3" OffText="Add New Person" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglLinkPersonMode_CheckedChanged" />
 
                 <asp:Panel ID="pnlLinkToNewPerson" runat="server">
                     <Rock:PersonBasicEditor ID="newPersonEditor" runat="server" ValidationGroup="vgLinkToPerson" />

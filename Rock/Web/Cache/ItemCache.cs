@@ -16,10 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
+using Rock.Bus.Message;
 
 namespace Rock.Web.Cache
 {
@@ -295,6 +294,7 @@ namespace Rock.Web.Cache
             var qualifiedKey = QualifiedKey( key );
 
             RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+            CacheWasUpdatedMessage.Publish<T>( qualifiedKey );
         }
 
         /// <summary>
@@ -326,6 +326,8 @@ namespace Rock.Web.Cache
                 allIds.Remove( key );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allIds );
             }
+
+            CacheWasUpdatedMessage.Publish<T>( key );
         }
 
         /// <summary>
@@ -345,6 +347,7 @@ namespace Rock.Web.Cache
             }
             
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
+            CacheWasUpdatedMessage.Publish<T>();
         }
 
 

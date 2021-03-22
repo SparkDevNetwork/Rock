@@ -45,7 +45,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the return reason <see cref="Rock.Model.DefinedValue"/> indicating
-        /// the reason why a refund was issued for the the original transaction.
+        /// the reason why a refund was issued for the original transaction.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the DefinedValueId of the refund reason <see cref="Rock.Model.DefinedValue"/> 

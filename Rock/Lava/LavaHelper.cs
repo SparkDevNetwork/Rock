@@ -35,6 +35,15 @@ namespace Rock.Lava
     /// </summary>
     public static class LavaHelper
     {
+        #region Constructors
+
+        static LavaHelper()
+        {
+            InitializeLavaCommentsRegex();
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the common merge fields for Lava operations. By default it'll include CurrentPerson, Context, PageParameter, and Campuses
         /// </summary>
@@ -395,5 +404,65 @@ namespace Rock.Lava
 
             return false;
         }
+
+        #region Lava Comments
+
+        private static string LavaTokenBlockCommentStart = @"/-";
+        private static string LavaTokenBlockCommentEnd = @"-/";
+        private static string LavaTokenLineComment = @"//-";
+
+        private static Regex _lavaCommentMatchGroupsRegex = null;
+
+        /// <summary>
+        /// Build the regular expression that will be used to remove Lava-style comments from the template.
+        /// </summary>
+        private static void InitializeLavaCommentsRegex()
+        {
+            const string stringElement = @"(('|"")[^'""]*('|""))+";
+
+            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
+
+            var blockCommentElement = Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd );
+
+            var rawBlock = @"\{%\sraw\s%\}(.*?)\{%\sendraw\s%\}";
+
+            var templateElementMatchGroups = rawBlock + "|" + blockCommentElement + "|" + lineCommentElement + "|" + stringElement;
+
+            // Create and compile the Regex, because it will be used very frequently.
+            _lavaCommentMatchGroupsRegex = new Regex( templateElementMatchGroups, RegexOptions.Compiled | RegexOptions.Singleline );
+        }
+
+        /// <summary>
+        /// Remove Lava-style comments from a Lava template.
+        /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
+        /// and can can be in one of the following forms:
+        /// 
+        /// /- This Lava block comment style...
+        ///    ... can span multiple lines -/
+        ///
+        /// //- This Lava line comment style can be appended to any single line.
+        /// 
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public static string RemoveLavaComments( string lavaTemplate )
+        {
+            // Remove comments from the content.
+            var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
+                me => {
+                    // If the match group is a line comment, retain the end-of-line marker.
+                    if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) || me.Value.StartsWith( LavaTokenLineComment ) )
+                    {
+                        return me.Value.StartsWith( LavaTokenLineComment ) ? Environment.NewLine : string.Empty;
+                    }
+
+                    // Keep the literal strings
+                    return me.Value;
+                } );
+
+            return lavaWithoutComments;
+        }
+
+        #endregion
     }
 }

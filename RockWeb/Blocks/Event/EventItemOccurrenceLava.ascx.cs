@@ -20,16 +20,14 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Event
 {
@@ -121,108 +119,128 @@ namespace RockWeb.Blocks.Event
 
         private void DisplayDetails()
         {
-            int eventItemOccurrenceId = 0;
-            RockContext rockContext = new RockContext();
+            var registrationSlug = PageParameter( "Slug" );
 
-            // get the calendarItem id
-            if ( !string.IsNullOrWhiteSpace( PageParameter( "EventOccurrenceId" ) ) )
+            var eventItemOccurrenceId = PageParameter( "EventOccurrenceId" ).AsInteger();
+
+            if ( eventItemOccurrenceId == 0 && registrationSlug.IsNullOrWhiteSpace() )
             {
-                eventItemOccurrenceId = Convert.ToInt32( PageParameter( "EventOccurrenceId" ) );
+                lOutput.Text = "<div class='alert alert-warning'>No event was available from the querystring.</div>";
+                return;
             }
 
-            if ( eventItemOccurrenceId > 0 )
+            EventItemOccurrence eventItemOccurrence = null;
+            Dictionary<int, int> registrationCounts = null;
+
+            using ( var rockContext = new RockContext() )
             {
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var qry = eventItemOccurrenceService
                     .Queryable( "EventItem, EventItem.Photo, Campus, Linkages" )
-                    .Where( i => i.Id == eventItemOccurrenceId );
+                    .Include( e => e.Linkages.Select( l => l.RegistrationInstance ) );
 
-                var eventItemOccurrence = qry.FirstOrDefault();
-
-                if ( eventItemOccurrence != null )
+                if ( eventItemOccurrenceId > 0 )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
-
-                    var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
-                    var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-
-                    if ( contextCampus != null )
-                    {
-                        mergeFields.Add( "CampusContext", contextCampus );
-                    }
-
-                    // determine registration status (Register, Full, or Join Wait List) for each unique registration instance
-                    Dictionary<int, string> registrationStatusLabels = new Dictionary<int, string>();
-                    foreach ( var registrationInstance in eventItemOccurrence.Linkages.Select( a => a.RegistrationInstance ).Distinct().ToList() )
-                    {
-                        int? maxRegistrantCount = null;
-                        var currentRegistrationCount = 0;
-
-                        if ( registrationInstance != null )
-                        {
-                            maxRegistrantCount = registrationInstance.MaxAttendees;
-                        }
-
-
-                        int? registrationSpotsAvailable = null;
-                        if ( maxRegistrantCount.HasValue )
-                        {
-                            currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
-                                                            .Where( r =>
-                                                                r.Registration.RegistrationInstanceId == registrationInstance.Id
-                                                                && r.OnWaitList == false )
-                                                            .Count();
-                            registrationSpotsAvailable = maxRegistrantCount - currentRegistrationCount;
-                        }
-
-                        string registrationStatusLabel = "Register";
-                        
-                        if ( registrationSpotsAvailable.HasValue && registrationSpotsAvailable.Value < 1 )
-                        {
-                            if ( registrationInstance.RegistrationTemplate.WaitListEnabled )
-                            {
-                                registrationStatusLabel = "Join Wait List";
-                            }
-                            else
-                            {
-                                registrationStatusLabel = "Full";
-                            }
-                        }
-
-                        registrationStatusLabels.Add( registrationInstance.Id, registrationStatusLabel );
-                    }
-
-                    // Status of first registration instance
-                    mergeFields.Add( "RegistrationStatusLabel", registrationStatusLabels.Values.FirstOrDefault() );
-
-
-                    // Status of each registration instance 
-                    mergeFields.Add( "RegistrationStatusLabels", registrationStatusLabels );
-
-                    mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
-                    mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
-                    mergeFields.Add( "CurrentPerson", CurrentPerson );
-
-                    lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
-
-                    if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
-                    {
-                        string pageTitle = eventItemOccurrence != null ? eventItemOccurrence.EventItem.Name : "Event";
-                        RockPage.PageTitle = pageTitle;
-                        RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                        RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
-                    }
-
+                    qry = qry.Where( i => i.Id == eventItemOccurrenceId );
                 }
                 else
                 {
-                    lOutput.Text = "<div class='alert alert-warning'>We could not find that event.</div>";
+                    qry = qry.Where( i => i.Linkages.Any( l => l.UrlSlug == registrationSlug ) );
                 }
-            }
-            else
-            {
-                lOutput.Text = "<div class='alert alert-warning'>No event was available from the querystring.</div>";
+
+
+                eventItemOccurrence = qry.FirstOrDefault();
+
+                registrationCounts = qry
+                    .SelectMany( o => o.Linkages )
+                    .SelectMany( l => l.RegistrationInstance.Registrations )
+                    .Select( r => new { r.RegistrationInstanceId, RegistrantCount = r.Registrants.Where( reg => reg.OnWaitList ).Count() } )
+                    .GroupBy( r => r.RegistrationInstanceId )
+                    .Select( r => new { RegistrationInstanceId = r.Key, TotalRegistrantCount = r.Sum( rr => rr.RegistrantCount ) } )
+                    .ToDictionary( r => r.RegistrationInstanceId, r => r.TotalRegistrantCount );
+
+
+                if ( eventItemOccurrence == null )
+                {
+                    lOutput.Text = "<div class='alert alert-warning'>We could not find that event.</div>";
+                    return;
+                }
+
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );
+
+                var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
+                var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+
+                if ( contextCampus != null )
+                {
+                    mergeFields.Add( "CampusContext", contextCampus );
+                }
+
+                // determine registration status (Register, Full, or Join Wait List) for each unique registration instance
+                Dictionary<int, string> registrationStatusLabels = new Dictionary<int, string>();
+                var registrationInstances = eventItemOccurrence
+                    .Linkages
+                    .Where( l => l.RegistrationInstanceId != null )
+                    .Select( a => a.RegistrationInstance )
+                    .Distinct();
+
+                foreach ( var registrationInstance in registrationInstances )
+                {
+                    int? maxRegistrantCount = null;
+                    var currentRegistrationCount = 0;
+
+                    if ( registrationInstance != null )
+                    {
+                        maxRegistrantCount = registrationInstance.MaxAttendees;
+                    }
+
+
+                    int? registrationSpotsAvailable = null;
+                    int registrationCount = 0;
+                    if ( maxRegistrantCount.HasValue && registrationCounts.TryGetValue( registrationInstance.Id, out registrationCount ) )
+                    {
+                        currentRegistrationCount = registrationCount;
+                        registrationSpotsAvailable = maxRegistrantCount - currentRegistrationCount;
+                    }
+
+                    string registrationStatusLabel = "Register";
+
+                    if ( registrationSpotsAvailable.HasValue && registrationSpotsAvailable.Value < 1 )
+                    {
+                        if ( registrationInstance.RegistrationTemplate.WaitListEnabled )
+                        {
+                            registrationStatusLabel = "Join Wait List";
+                        }
+                        else
+                        {
+                            registrationStatusLabel = "Full";
+                        }
+                    }
+
+                    registrationStatusLabels.Add( registrationInstance.Id, registrationStatusLabel );
+                }
+
+                // Status of first registration instance
+                mergeFields.Add( "RegistrationStatusLabel", registrationStatusLabels.Values.FirstOrDefault() );
+
+
+                // Status of each registration instance 
+                mergeFields.Add( "RegistrationStatusLabels", registrationStatusLabels );
+
+                mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );
+                mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
+                mergeFields.Add( "CurrentPerson", CurrentPerson );
+
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+
+                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                {
+                    string pageTitle = eventItemOccurrence != null ? eventItemOccurrence.EventItem.Name : "Event";
+                    RockPage.PageTitle = pageTitle;
+                    RockPage.BrowserTitle = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                    RockPage.Header.Title = String.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+                }
             }
         }
         #endregion

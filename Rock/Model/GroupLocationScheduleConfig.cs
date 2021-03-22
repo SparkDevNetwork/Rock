@@ -117,8 +117,8 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationScheduleConfiguration()
         {
-            this.HasRequired( a => a.GroupLocation ).WithMany( a => a.GroupLocationScheduleConfigs ).HasForeignKey( a => a.GroupLocationId ).WillCascadeOnDelete( false );
-            this.HasRequired( a => a.Schedule ).WithMany().HasForeignKey( a => a.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.GroupLocation ).WithMany( a => a.GroupLocationScheduleConfigs ).HasForeignKey( a => a.GroupLocationId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.Schedule ).WithMany().HasForeignKey( a => a.ScheduleId ).WillCascadeOnDelete( true );
         }
     }
 }

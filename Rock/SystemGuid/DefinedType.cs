@@ -85,6 +85,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
+        /// Guid for Content Channel Audience Type
+        /// </summary>
+        public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
@@ -405,5 +410,10 @@ namespace Rock.SystemGuid
         /// Logging Domain.
         /// </summary>
         public const string LOGGING_DOMAINS = "60487370-DE7E-4962-B58F-1865303F0414";
+
+        /// <summary>
+        /// The check in attendance types
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPES = "C0508751-3BDD-40A7-BE37-8AA4FC56E00E";
     }
 }

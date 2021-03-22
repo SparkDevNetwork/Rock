@@ -91,7 +91,11 @@ namespace Rock.Web.Cache
             {
                 var httpContext = HttpContext.Current;
                 var request = httpContext?.Request;
-                if ( request == null ) return ConfiguredTheme;
+
+                if ( request == null )
+                {
+                    return ConfiguredTheme;
+                }
 
                 var cookieName = $"Site:{ Id }:theme";
                 var cookie = request.Cookies[cookieName];
@@ -104,17 +108,8 @@ namespace Rock.Web.Cache
                         // Don't allow switching to an invalid theme
                         if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
                         {
-                            if ( cookie == null )
-                            {
-                                cookie = new HttpCookie( cookieName, theme );
-                            }
-                            else
-                            {
-                                cookie.Value = theme;
-                            }
-
-                            httpContext.Response.SetCookie( cookie );
-
+                            // Add the cookie with the updated theme string to the response.
+                            Rock.Web.UI.RockPage.AddOrUpdateCookie( new HttpCookie( cookieName, theme ) );
                             return theme;
                         }
                     }
@@ -123,20 +118,23 @@ namespace Rock.Web.Cache
                         // if a blank theme was specified, remove any cookie (use default)
                         if ( cookie != null )
                         {
+                            // The request cookie can include the SameSite property, which defaults to None and we can change.
+                            // So create a new cookie to save to the response.
                             cookie.Expires = RockDateTime.Now.AddDays( -10 );
                             cookie.Value = null;
-                            httpContext.Response.SetCookie( cookie );
+                            Rock.Web.UI.RockPage.AddOrUpdateCookie( cookie );
                             return ConfiguredTheme;
                         }
                     }
                 }
 
-                if ( cookie == null ) return ConfiguredTheme;
-
-                theme = cookie.Value;
+                if ( cookie == null )
+                {
+                    return ConfiguredTheme;
+                }
 
                 // Don't allow switching to an invalid theme
-                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + theme ) ) )
+                if ( System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + cookie.Value ) ) )
                 {
                     return cookie.Value;
                 }
@@ -144,7 +142,7 @@ namespace Rock.Web.Cache
                 // Delete the invalid cookie
                 cookie.Expires = RockDateTime.Now.AddDays( -10 );
                 cookie.Value = null;
-                httpContext.Response.SetCookie( cookie );
+                Rock.Web.UI.RockPage.AddOrUpdateCookie( cookie );
 
                 return ConfiguredTheme;
             }
@@ -488,7 +486,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive { get; private set; }
 
         /// <summary>
         /// Gets or sets the additional settings.
@@ -497,7 +495,7 @@ namespace Rock.Web.Cache
         /// The additional settings.
         /// </value>
         [DataMember]
-        public string AdditionalSettings { get; set; }
+        public string AdditionalSettings { get; private set; }
 
         /// <summary>
         /// Gets or sets the type of the site.
@@ -506,7 +504,7 @@ namespace Rock.Web.Cache
         /// The type of the site.
         /// </value>
         [DataMember]
-        public SiteType SiteType { get; set; }
+        public SiteType SiteType { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration mobile phone file identifier.
@@ -515,7 +513,7 @@ namespace Rock.Web.Cache
         /// The configuration mobile phone file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
+        public int? ConfigurationMobilePhoneBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration tablet binary file identifier.
@@ -524,7 +522,7 @@ namespace Rock.Web.Cache
         /// The configuration tablet binary file identifier.
         /// </value>
         [DataMember]
-        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
+        public int? ConfigurationMobileTabletBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the thumbnail file identifier.
@@ -533,7 +531,7 @@ namespace Rock.Web.Cache
         /// The thumbnail file identifier.
         /// </value>
         [DataMember]
-        public int? ThumbnailBinaryFileId { get; set; }
+        public int? ThumbnailBinaryFileId { get; private set; }
 
         /// <summary>
         /// Gets or sets the latest version date time.
@@ -541,7 +539,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The latest version date time.
         /// </value>
-        public DateTime? LatestVersionDateTime { get; set; }
+        public DateTime? LatestVersionDateTime { get; private set; }
 
         /// <summary>
         /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
@@ -550,7 +548,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool EnableExclusiveRoutes { get; set; }
+        public bool EnableExclusiveRoutes { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration mobile file path.
@@ -558,7 +556,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The configuration mobile file path.
         /// </value>
-        public string ConfigurationMobilePhoneFileUrl { get; set; }
+        public string ConfigurationMobilePhoneFileUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration tablet file path.
@@ -566,7 +564,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The configuration tablet file path.
         /// </value>
-        public string ConfigurationMobileTabletFileUrl { get; set; }
+        public string ConfigurationMobileTabletFileUrl { get; private set; }
 
         /// <summary>
         /// Gets or sets the thumbnail file URL.
@@ -574,7 +572,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The thumbnail file URL.
         /// </value>
-        public string ThumbnailFileUrl { get; set; }
+        public string ThumbnailFileUrl { get; private set; }
 
         #endregion
 

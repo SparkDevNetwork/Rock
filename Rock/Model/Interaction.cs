@@ -39,8 +39,9 @@ namespace Rock.Model
         /* Custom Indexes:
          *
          * InteractionComponentId, InteractionDateTime
-         *      Includes InteractionTimeToServe, Operation
+         *      Includes InteractionTimeToServe, Operation, InteractionSessionId
          *      This was added for <see cref="Rock.Jobs.RockCleanup.UpdateMedianPageLoadTimes"/>
+         *          and CleanupOldInteractions
          *
          *  InteractionDateTime
          *      Includes InteractionComponentId, PersonAliasId
@@ -379,7 +380,7 @@ namespace Rock.Model
         /// The interaction source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate InteractionSourceDate { get; set; }
+        public virtual AnalyticsSourceDate InteractionSourceDate { get; set; }
 
         #endregion Virtual Properties
 
@@ -407,7 +408,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleInteractionRecord( this ) );
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

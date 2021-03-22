@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest
 {
@@ -130,7 +131,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "GetByAttributeValue" )]
         [EnableQuery]
-        public virtual IQueryable<T> GetByAttributeValue( [FromUri]int? attributeId = null, [FromUri]string attributeKey = null, [FromUri]string value = null, [FromUri]bool caseSensitive = false )
+        public virtual IQueryable<T> GetByAttributeValue( [FromUri] int? attributeId = null, [FromUri] string attributeKey = null, [FromUri] string value = null, [FromUri] bool caseSensitive = false )
         {
             // Value is always required
             if ( value.IsNullOrWhiteSpace() )
@@ -169,7 +170,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets items associated with a campus uisng the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// Gets items associated with a campus using the EntityCampusFilter model. The Entity must implement ICampusFilterable.
         /// </summary>
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
@@ -177,7 +178,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "GetByCampus" )]
         [EnableQuery]
-        public virtual IQueryable<T> GetByCampus( [FromUri]int campusId )
+        public virtual IQueryable<T> GetByCampus( [FromUri] int campusId )
         {
             if ( !typeof( T ).GetInterfaces().Contains( typeof( ICampusFilterable ) ) )
             {
@@ -201,7 +202,7 @@ namespace Rock.Rest
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
-        public virtual HttpResponseMessage Post( [FromBody]T value )
+        public virtual HttpResponseMessage Post( [FromBody] T value )
         {
             if ( value == null )
             {
@@ -240,7 +241,7 @@ namespace Rock.Rest
         /// <exception cref="HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        public virtual void Put( int id, [FromBody]T value )
+        public virtual void Put( int id, [FromBody] T value )
         {
             if ( value == null )
             {
@@ -282,7 +283,7 @@ namespace Rock.Rest
         /// <exception cref="HttpResponseException">
         /// </exception>
         [Authenticate, Secured]
-        public virtual void Patch( int id, [FromBody]Dictionary<string, object> values )
+        public virtual void Patch( int id, [FromBody] Dictionary<string, object> values )
         {
             // Check that something was sent in the body
             if ( values == null || !values.Keys.Any() )
@@ -429,27 +430,14 @@ namespace Rock.Rest
         [EnableQuery]
         public IQueryable<T> GetDataView( int id )
         {
-            var dataView = new DataViewService( new RockContext() ).Get( id );
+            var rockContext = new RockContext();
+            var dataView = new DataViewService( rockContext ).Get( id );
 
-            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
-            CheckCanView( dataView, GetPerson() );
+            ValidateDataView( dataView );
 
-            SetProxyCreation( false );
-
-            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
-            {
-                var errorMessages = new List<string>();
-
-                var paramExpression = Service.ParameterExpression;
-                var whereExpression = dataView.GetExpression( Service, paramExpression, out errorMessages );
-
-                if ( paramExpression != null )
-                {
-                    return Service.GetNoTracking( paramExpression, whereExpression );
-                }
-            }
-
-            return null;
+            var paramExpression = Service.ParameterExpression;
+            var whereExpression = dataView.GetExpression( Service, paramExpression );
+            return Service.GetNoTracking( paramExpression, whereExpression );
         }
 
         /// <summary>
@@ -468,19 +456,41 @@ namespace Rock.Rest
 
             var dataView = new DataViewService( rockContext ).Get( dataViewId );
 
-            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
-            CheckCanView( dataView, GetPerson() );
+            ValidateDataView( dataView );
 
-            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                var errorMessages = new List<string>();
-                var qryGroupsInDataView = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<T>;
-                qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
+                DbContext = rockContext
+            };
 
-                return qryGroupsInDataView.Any();
+            var qryGroupsInDataView = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
+            qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
+
+            return qryGroupsInDataView.Any();
+        }
+
+        /// <summary>
+        /// Checks to makes sure DataView exists, has the correct entityType, and person has View rights, etc
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        private void ValidateDataView( DataView dataView )
+        {
+            if ( dataView == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
             }
 
-            return false;
+            var controllerEntityType = EntityTypeCache.Get<T>();
+            if ( dataView.EntityTypeId != controllerEntityType?.Id )
+            {
+                HttpResponseMessage errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"{dataView.Name} is not a {controllerEntityType?.Name} dataview" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // since DataViews can be secured at the DataView or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
         }
 
         /// <summary>
@@ -577,7 +587,7 @@ namespace Rock.Rest
                 return Service.GetFollowed( personId.Value );
             }
 
-            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified"  } );
+            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified" } );
         }
 
         /// <summary>
@@ -680,15 +690,10 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
-            var contextCookie = httpContext.Request.Cookies[cookieName];
-            if ( contextCookie == null )
-            {
-                contextCookie = new System.Web.HttpCookie( cookieName );
-            }
-
+            var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            httpContext.Response.Cookies.Add( contextCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );
         }

@@ -144,7 +144,7 @@ namespace Rock.Communication.Transport
                 {
                     var currentPerson = communication.CreatedByPersonAlias?.Person;
                     var globalAttributes = GlobalAttributesCache.Get();
-                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                     var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, currentPerson );
 
                     string serverKey = GetAttributeValue( "ServerKey" );
@@ -166,7 +166,7 @@ namespace Rock.Communication.Transport
                             {
                                 try
                                 {
-                                    int personAlias = recipient.PersonAliasId;
+                                    int personAlias = recipient.PersonAliasId.Value;
 
                                     var service = new PersonalDeviceService( recipientRockContext );
                                     List<string> devices = service.Queryable()

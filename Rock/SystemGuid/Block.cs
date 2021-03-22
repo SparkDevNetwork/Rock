@@ -77,8 +77,41 @@ namespace Rock.SystemGuid
         public const string LOG_VIEWER = "BDEF9AA0-55FC-4A66-8938-2AB2E075521B";
 
         /// <summary>
-        /// The phone number lookup
+        /// The phone number lookup block instance.
         /// </summary>
-        public const string PHONE_NUMBER_LOOKUP = "86BFD8F5-C55C-417C-B625-69AB84296637";        
+        public const string PHONE_NUMBER_LOOKUP = "86BFD8F5-C55C-417C-B625-69AB84296637";
+
+        /// <summary>
+        /// The oidc authorize block instance.
+        /// </summary>
+        public const string OIDC_AUTHORIZE = "7751BBAD-FEF3-4128-AA76-21ABE5388612";
+        /// <summary>
+        /// The oidc logout block instance.
+        /// </summary>
+        public const string OIDC_LOGOUT = "27315B8B-084A-496D-A4F5-125993C71616";
+        /// <summary>
+        /// The oidc scope list block instance.
+        /// </summary>
+        public const string OIDC_SCOPE_LIST = "47AA56D8-D8F7-4747-BD11-EBAC536E5888";
+        /// <summary>
+        /// The oidc scope detail block instance.
+        /// </summary>
+        public const string OIDC_SCOPE_DETAIL = "C048B2F4-7BB1-4ADA-9C91-B2F6062C05C4";
+        /// <summary>
+        /// The oidc claims block instance.
+        /// </summary>
+        public const string OIDC_CLAIMS = "1081CD35-AE21-4ED1-BA9C-3BEA0C3DE7F2";
+        /// <summary>
+        /// The oidc clients block instance.
+        /// </summary>
+        public const string OIDC_CLIENT_LIST = "39EB743B-8D75-4873-B613-D71A94B2E48D";
+        /// <summary>
+        /// The oidc client detail block instance.
+        /// </summary>
+        public const string OIDC_CLIENT_DETAIL = "19B3433E-4C40-44D3-9974-5B2373F8AF8A";
+        /// <summary>
+        /// The workflow configuration change log notes block
+        /// </summary>
+        public const string WORKFLOW_CONFIGURATION_CHANGE_LOG_NOTES = "2194F555-1261-4D23-B5E0-F19380DFB10A";
     }
 }

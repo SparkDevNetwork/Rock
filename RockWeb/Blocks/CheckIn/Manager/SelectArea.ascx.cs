@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,32 +21,34 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Block used to select a type of check-in area before managing locations
     /// </summary>
     [DisplayName( "Select Check-In Area" )]
     [Category( "Check-in > Manager" )]
-    [Description( "Block used to select a type of check-in area before managing locations." )]
+    [Description( "Block used to select the check-in area (Check-in Configuration) for Check-in Manager." )]
 
-    [LinkedPage( "Location Page", "Page used to display locations", order: 2 )]
+    [LinkedPage(
+        "Check-in Manager Page",
+        Key = AttributeKey.ManagerPage,
+        Order = 2 )]
     public partial class SelectArea : Rock.Web.UI.RockBlock
     {
-        #region Fields
-    
-        #endregion
+        #region Attribute Keys
 
-        #region Properties
+        private static class AttributeKey
+        {
+            // this used to be called "LocationPage", so we'll keep it that way
+            public const string ManagerPage = "LocationPage";
+        }
 
         #endregion
 
@@ -102,11 +103,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="PostBackEventArgs"/> instance containing the event data.</param>
-        void upnlContent_OnPostBack( object sender, PostBackEventArgs e )
+        protected void upnlContent_OnPostBack( object sender, PostBackEventArgs e )
         {
-            var parms = new Dictionary<string, string>();
-            parms.Add("Area", e.EventArgument);
-            NavigateToLinkedPage( "LocationPage", parms );
+            var checkinAreaGuid = e.EventArgument.AsGuid();
+            CheckinManagerHelper.SetSelectedCheckinAreaGuidToCookie( checkinAreaGuid );
+            NavigateToLinkedPage( AttributeKey.ManagerPage );
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        void rptNavItems_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void rptNavItems_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var groupType = e.Item.DataItem as GroupType;
             var li = e.Item.FindControl( "liNavItem" ) as HtmlGenericControl;
@@ -124,29 +125,25 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
         }
 
-
         #endregion
 
         #region Methods
 
         private void BindData()
         {
-            Guid? guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
-            if ( guid.HasValue )
+            Guid guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+
+            using ( var rockContext = new RockContext() )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    rptNavItems.DataSource = new GroupTypeService( rockContext )
-                        .Queryable()
-                        .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid.Value ) )
-                        .OrderBy( g => g.Name )
-                        .ToList();
-                    rptNavItems.DataBind();
-                }
+                rptNavItems.DataSource = new GroupTypeService( rockContext )
+                    .Queryable()
+                    .Where( g => g.GroupTypePurposeValue.Guid.Equals( guid ) )
+                    .OrderBy( g => g.Name )
+                    .ToList();
+                rptNavItems.DataBind();
             }
         }
 
         #endregion
-
     }
 }

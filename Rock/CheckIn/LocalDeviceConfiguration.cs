@@ -46,7 +46,8 @@ namespace Rock.CheckIn
         public int? CurrentKioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current checkin type identifier (which is a <see cref="Rock.Model.GroupType" />)
+        /// Gets or sets the current 'Check-in Configuration' Id (which is a <see cref="Rock.Model.GroupType" /> Id).
+        /// For example "Weekly Service Check-in".
         /// </summary>
         /// <value>
         /// The current checkin type identifier.
@@ -131,21 +132,15 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the LocalDeviceConfig to the <seealso cref="CheckInCookieKey.LocalDeviceConfig"/> cookie
+        /// Saves the LocalDeviceConfig to the cookie.
         /// </summary>
         /// <param name="page">The page.</param>
+        [Obsolete( "Use Rock.Web.UI.RockPage.AddOrUpdateCookie instead." )]
+        [RockObsolete( "1.12" )]
         public void SaveToCookie( System.Web.UI.Page page )
         {
-            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
-
-            var localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
-            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            localDeviceConfigCookie.Value = this.ToJson( Newtonsoft.Json.Formatting.None );
-            localDeviceConfigCookie.Path += sameSiteCookieValue;
-
-            page.Request.Cookies.Remove(CheckInCookieKey.LocalDeviceConfig);
-            page.Response.Cookies.Add( localDeviceConfigCookie );
+            var localDeviceConfigValue = this.ToJson( Newtonsoft.Json.Formatting.None );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, localDeviceConfigValue, RockDateTime.Now.AddYears( 1 ) );
         }
 
         /// <summary>

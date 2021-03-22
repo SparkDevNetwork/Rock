@@ -117,6 +117,8 @@ namespace Rock.Web.UI.Controls
                 // Get 
                 var categoryGuids = CategoryGuids ?? new List<Guid>();
 
+                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+
                 using ( var rockContext = new RockContext() )
                 {
                     var allEntityFilters = new DataViewFilterService( rockContext )
@@ -132,9 +134,9 @@ namespace Rock.Web.UI.Controls
                         var category = dataView.CategoryId.HasValue ? CategoryCache.Get( dataView.CategoryId.Value ) : null;
                         if ( !categoryGuids.Any() || ( category != null && categoryGuids.Contains( category.Guid ) ) )
                         { 
-                            var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                            if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson ) &&
-                                dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
+                            if ( dataView.IsAuthorized( Authorization.VIEW, currentPerson )
+                                && dataView.DataViewFilter != null
+                                && dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, currentPerson, allEntityFilters ) )
                             {
                                 this.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
                             }

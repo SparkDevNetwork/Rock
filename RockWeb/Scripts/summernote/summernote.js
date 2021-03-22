@@ -2903,11 +2903,13 @@ class range_WrappedRange {
 
 
   pasteHTML(markup) {
+    markup = external_jQuery_default.a.trim(markup);
     const contentsContainer = external_jQuery_default()('<div></div>').html(markup)[0];
-    let childNodes = lists.from(contentsContainer.childNodes);
-    const rng = this.wrapBodyInlineWithPara().deleteContents();
+    let childNodes = lists.from(contentsContainer.childNodes); // const rng = this.wrapBodyInlineWithPara().deleteContents();
 
-    if (rng.so > 0) {
+    const rng = this;
+
+    if (rng.so >= 0) {
       childNodes = childNodes.reverse();
     }
 

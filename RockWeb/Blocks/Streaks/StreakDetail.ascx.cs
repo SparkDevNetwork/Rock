@@ -39,13 +39,6 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given streak for editing." )]
 
-    [LinkedPage(
-        "Achievement Attempts Page",
-        Description = "Page used for viewing a list of achievement attempts for this streak.",
-        Key = AttributeKey.AttemptsPage,
-        IsRequired = false,
-        Order = 1 )]
-
     public partial class StreakDetail : RockBlock, IDetailBlock
     {
         /// <summary>
@@ -54,17 +47,6 @@ namespace RockWeb.Blocks.Streaks
         private static int ChartBitsToShow = 350;
 
         #region Keys
-
-        /// <summary>
-        /// Keys to use for Attributes
-        /// </summary>
-        private static class AttributeKey
-        {
-            /// <summary>
-            /// The attempts page
-            /// </summary>
-            public const string AttemptsPage = "AttemptsPage";
-        }
 
         /// <summary>
         /// Keys to use for Page Parameters
@@ -170,16 +152,6 @@ namespace RockWeb.Blocks.Streaks
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Button to go to the attempts page
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void btnAttempts_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( AttributeKey.AttemptsPage );
-        }
 
         /// <summary>
         /// Navigate to a linked page
@@ -644,19 +616,6 @@ namespace RockWeb.Blocks.Streaks
             lStreakData.Text = streakDetailsList.Html;
 
             RenderStreakChart();
-            SetLinkVisibility( btnAttempts, AttributeKey.AttemptsPage );
-
-            // Show the count of successful attempts on the button
-            var successfulAttemptCount = GetSuccessfulAttemptCount();
-
-            if ( successfulAttemptCount > 0 )
-            {
-                btnAttempts.Text = string.Format( @"<i class=""fa fa-medal""></i> Achievements <span class=""badge"">{0}</span>", successfulAttemptCount );
-            }
-            else
-            {
-                btnAttempts.Text = @"<i class=""fa fa-medal""></i> Achievements";
-            }
         }
 
         /// <summary>
@@ -876,28 +835,6 @@ namespace RockWeb.Blocks.Streaks
             return _streak;
         }
         private Streak _streak = null;
-
-        /// <summary>
-        /// Gets the successful attempt count.
-        /// </summary>
-        /// <returns></returns>
-        private int GetSuccessfulAttemptCount()
-        {
-            if ( !_successfulAttempts.HasValue )
-            {
-                var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
-
-                if ( streakId.HasValue && streakId.Value > 0 )
-                {
-                    var rockContext = GetRockContext();
-                    var service = new StreakAchievementAttemptService( rockContext );
-                    _successfulAttempts = service.Queryable().AsNoTracking().Count( saa => saa.StreakId == streakId && saa.IsSuccessful );
-                }
-            }
-
-            return _successfulAttempts ?? 0;
-        }
-        private int? _successfulAttempts = null;
 
         /// <summary>
         /// Get the streak models for the person

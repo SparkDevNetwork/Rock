@@ -94,7 +94,7 @@ namespace Rock.Rest.Controllers
                 var personalDeviceService = new PersonalDeviceService( rockContext );
                 var personalDevice = personalDeviceService.Queryable()
                     .AsNoTracking()
-                    .Where( a => a.DeviceUniqueIdentifier == deviceIdentifier && a.PersonalDeviceTypeValueId == mobileDeviceTypeValueId )
+                    .Where( a => a.DeviceUniqueIdentifier == deviceIdentifier && a.PersonalDeviceTypeValueId == mobileDeviceTypeValueId && a.SiteId == site.Id )
                     .FirstOrDefault();
 
                 if ( personalDevice == null )
@@ -103,12 +103,25 @@ namespace Rock.Rest.Controllers
                     {
                         DeviceUniqueIdentifier = deviceIdentifier,
                         PersonalDeviceTypeValueId = mobileDeviceTypeValueId,
+                        SiteId = site.Id,
                         PlatformValueId = deviceData.DevicePlatform.GetDevicePlatformValueId(),
                         PersonAliasId = person?.PrimaryAliasId,
-                        NotificationsEnabled = true
+                        NotificationsEnabled = true,
+                        Manufacturer = deviceData.Manufacturer,
+                        Model = deviceData.Model,
+                        Name = deviceData.Name
                     };
 
                     personalDeviceService.Add( personalDevice );
+                    rockContext.SaveChanges();
+                }
+                else if ( !personalDevice.IsActive || personalDevice.Name != deviceData.Name )
+                {
+                    personalDevice.IsActive = true;
+                    personalDevice.Manufacturer = deviceData.Manufacturer;
+                    personalDevice.Model = deviceData.Model;
+                    personalDevice.Name = deviceData.Name;
+
                     rockContext.SaveChanges();
                 }
 

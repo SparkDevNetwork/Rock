@@ -68,47 +68,45 @@
                 <div id="pnlEditDetails" runat="server">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
                         </div>
                     </div>
 
-                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <Rock:StreakTypePicker ID="stpStreakType" runat="server" Label="Streak Type" />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.StreakTypeAchievementType" />
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" Label="Icon CSS Class" PropertyName="AchievementIconCssClass" ValidateRequestMode="Disabled" Help="The font awesome icon class to use for this achievement." />                            
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <Rock:RockCheckBox ID="cbAllowOverachievement" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" PropertyName="AllowOverAchievement" Label="Allow Overachievement" Checked="false" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbAllowOverachievement_CheckedChanged" Help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <Rock:NumberBox ID="nbMaxAccomplishments" runat="server" SourceTypeName="Rock.Model.StreakTypeAchievementType, Rock" PropertyName="MaxAccomplishmentsAllowed" Label="Max Accomplishments Allowed" MinimumValue="1" Help="How many times are people allowed to earn this achievement. This must be 1 in order to track overachievement." />
-                        </div>
-                    </div>
-
-                    <hr />
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:ComponentPicker ID="cpAchievementComponent" runat="server" Label="Achievement Component" Required="true" ContainerType="Rock.Achievement.AchievementContainer" AutoPostBack="true" OnSelectedIndexChanged="cpAchievementComponent_SelectedIndexChanged" Help="The achievement type allows different methods for calculating a successful achievement." />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.AchievementType" />
                         </div>
+                        <div class="col-md-3 col-sm-6">
+                            <Rock:RockCheckBox ID="cbAllowOverachievement" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="AllowOverAchievement" Label="Allow Overachievement" Checked="false" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbAllowOverachievement_CheckedChanged" Help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <Rock:NumberBox ID="nbMaxAccomplishments" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="MaxAccomplishmentsAllowed" Label="Max Accomplishments Allowed" MinimumValue="1" Help="How many times are people allowed to earn this achievement. This must be 1 in order to track overachievement." />
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6">
-                            <p class="panel-body">
-                                <asp:Literal ID="lComponentDescription" runat="server" />
-                            </p>
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" Label="Icon CSS Class" PropertyName="AchievementIconCssClass" ValidateRequestMode="Disabled" Help="The font awesome icon class to use for this achievement." />
                         </div>
                     </div>
 
-                    <Rock:AttributeValuesContainer ID="avcComponentAttributes" runat="server" NumberOfColumns="2" />
-
-                    <hr />
+                    <div class="well">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:ComponentPicker ID="cpAchievementComponent" runat="server" Label="Achievement Event" Required="true" ContainerType="Rock.Achievement.AchievementContainer" AutoPostBack="true" OnSelectedIndexChanged="cpAchievementComponent_SelectedIndexChanged" Help="The achievement events allow different methods for calculating a successful achievement." />
+                            </div>
+                            <div class="col-md-6">
+                                <p class="panel-body">
+                                    <asp:Literal ID="lComponentDescription" runat="server" />
+                                </p>
+                            </div>
+                        </div>
+                        <Rock:AttributeValuesContainer ID="avcComponentAttributes" runat="server" NumberOfColumns="2" />
+                    </div>
 
                     <Rock:PanelWidget ID="pwStep" runat="server" Title="Step Configuration">
                         <div class="row">

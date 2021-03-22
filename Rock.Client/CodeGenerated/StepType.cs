@@ -98,6 +98,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public bool IsDateRequired { get; set; }
+
+        /// <summary />
         public string MergeTemplateDescriptor { get; set; }
 
         /// <summary />
@@ -165,6 +168,7 @@ namespace Rock.Client
             this.HighlightColor = source.HighlightColor;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
+            this.IsDateRequired = source.IsDateRequired;
             this.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
             this.MergeTemplateId = source.MergeTemplateId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -188,6 +192,9 @@ namespace Rock.Client
     public partial class StepType : StepTypeEntity
     {
         /// <summary />
+        public ICollection<AchievementType> AchievementTypes { get; set; }
+
+        /// <summary />
         public DataView AudienceDataView { get; set; }
 
         /// <summary />
@@ -210,9 +217,6 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<StepWorkflowTrigger> StepWorkflowTriggers { get; set; }
-
-        /// <summary />
-        public ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

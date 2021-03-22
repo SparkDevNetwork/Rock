@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.Http;
-
+using Ical.Net;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -88,10 +88,10 @@ namespace Rock.Rest.Controllers
             private void GetOccurrenceTitle()
             {
                 bool hasSchedule = ( Occurrence.Schedule != null );
-                DDay.iCal.Event calendarEvent = null;
+                
                 if ( hasSchedule )
                 {
-                    calendarEvent = Occurrence.Schedule.GetCalendarEvent();
+                    var calendarEvent = Occurrence.Schedule.GetICalEvent();
                     if ( calendarEvent == null )
                     {
                         hasSchedule = false;
@@ -105,7 +105,7 @@ namespace Rock.Rest.Controllers
                         "{0} - {1}, {2}",
                         Occurrence.Group.Name,
                         Occurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" ),
-                        Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString() );
+                        Occurrence.Schedule.GetICalEvent().DtStart.Value.TimeOfDay.ToTimeString() );
                 }
                 else
                 {

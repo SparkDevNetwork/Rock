@@ -78,6 +78,9 @@ namespace Rock.Client
         public int? GroupId { get; set; }
 
         /// <summary />
+        public bool? IsFirstTime { get; set; }
+
+        /// <summary />
         // Made Obsolete in Rock "1.8"
         [Obsolete( "Use Occurrence.LocationId instead", true )]
         public int? LocationId { get; set; }
@@ -195,6 +198,7 @@ namespace Rock.Client
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsFirstTime = source.IsFirstTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
             this.OccurrenceId = source.OccurrenceId;

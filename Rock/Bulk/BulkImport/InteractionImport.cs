@@ -62,6 +62,22 @@ namespace Rock.BulkImport
         public string InteractionChannelName { get; set; }
 
         /// <summary>
+        /// Gets or sets the InteractionChannel ChannelTypeMediumValueId.
+        /// </summary>
+        /// <value>
+        /// The InteractionChannel ChannelTypeMediumValueId
+        /// </value>
+        public int? InteractionChannelChannelTypeMediumValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the InteractionChannel ChannelTypeMediumValueGuid.
+        /// </summary>
+        /// <value>
+        /// The InteractionChannel ChannelTypeMediumValueGuid.
+        /// </value>
+        public Guid? InteractionChannelChannelTypeMediumValueGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the interaction component identifier.
         /// If this isn't specified, <see cref="InteractionComponentGuid"/> or <see cref="InteractionComponentForeignKey"/> must be specified
         /// </summary>

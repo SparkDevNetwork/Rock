@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementStepTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<StepTypePrerequisite>( Context ).Queryable().Any( a => a.PrerequisiteStepTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, StepTypePrerequisite.FriendlyTypeName );
@@ -61,12 +67,6 @@ namespace Rock.Model
             if ( new Service<StepWorkflowTrigger>( Context ).Queryable().Any( a => a.StepTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, StepWorkflowTrigger.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementStepTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -118,6 +118,7 @@ namespace Rock.Model
             target.HighlightColor = source.HighlightColor;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsDateRequired = source.IsDateRequired;
             target.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
             target.MergeTemplateId = source.MergeTemplateId;
             target.Name = source.Name;

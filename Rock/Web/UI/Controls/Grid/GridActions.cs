@@ -448,7 +448,8 @@ namespace Rock.Web.UI.Controls
             _aAdd.ID = "aAdd";
             _aAdd.Attributes.Add( "href", "#" );
             _aAdd.Attributes.Add( "class", "btn btn-grid-action btn-add btn-default btn-sm" );
-            _aAdd.InnerText = "Add";
+
+            _aAdd.InnerHtml = "<i class='fa fa-plus-circle fa-fw'></i>";
 
             _lbAdd = new LinkButton();
             Controls.Add( _lbAdd );

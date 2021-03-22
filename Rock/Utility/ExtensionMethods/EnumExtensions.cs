@@ -31,18 +31,34 @@ namespace Rock
         /// <summary>
         /// Converts to the enum value to its string value.
         /// </summary>
-        /// <param name="eff">The eff.</param>
-        /// <param name="SplitCase">if set to <c>true</c> [split case].</param>
+        /// <param name="enumValue">The enumValue.</param>
+        /// <param name="splitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static String ConvertToString( this Enum eff, bool SplitCase = true )
+        public static string ConvertToStringSafe( this Enum enumValue, bool splitCase = true )
         {
-            if ( SplitCase )
+            if ( enumValue == null )
             {
-                return Enum.GetName( eff.GetType(), eff ).SplitCase();
+                return string.Empty;
+            }
+
+            return ConvertToString( enumValue, splitCase );
+        }
+
+        /// <summary>
+        /// Converts to the enum value to its string value.
+        /// </summary>
+        /// <param name="enumValue">The enumValue.</param>
+        /// <param name="splitCase">if set to <c>true</c> [split case].</param>
+        /// <returns></returns>
+        public static string ConvertToString( this Enum enumValue, bool splitCase = true )
+        {
+            if ( splitCase )
+            {
+                return Enum.GetName( enumValue.GetType(), enumValue ).SplitCase();
             }
             else
             {
-                return Enum.GetName( eff.GetType(), eff );
+                return Enum.GetName( enumValue.GetType(), enumValue );
             }
         }
 

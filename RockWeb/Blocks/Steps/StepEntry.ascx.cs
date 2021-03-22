@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Steps
 
                     if ( workflow.Id != 0 )
                     {
-                        qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                        qryParam.Add( "WorkflowGuid", workflow.Guid.ToString() );
                     }
 
                     var entryPage = this.GetAttributeValue( AttributeKey.WorkflowEntryPage );
@@ -582,6 +582,7 @@ namespace RockWeb.Blocks.Steps
 
             rdpEndDate.Visible = stepType.HasEndDate;
             rdpStartDate.Label = stepType.HasEndDate ? "Start Date" : "Date";
+            rdpStartDate.Required = stepType.IsDateRequired;
 
             var step = GetStep();
             if ( step != null )

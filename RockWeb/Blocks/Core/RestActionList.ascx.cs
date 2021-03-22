@@ -234,14 +234,14 @@ namespace RockWeb.Blocks.Administration
                 hfControllerActionId.Value = controllerActionId.ToString();
 
                 var cacheHeader = restAction.CacheControlHeader;
-                if(cacheHeader == null )
+                if ( cacheHeader == null )
                 {
                     cacheHeader = new Rock.Utility.RockCacheability
                     {
                         RockCacheablityType = Rock.Utility.RockCacheablityType.NoCache
                     };
                 }
-                cpActionCacheSettings.CurrentCacheablity = cacheHeader;
+                cpActionCacheSettings.CurrentCacheability = cacheHeader;
 
                 modalActionSettings.Show();
             }
@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Administration
             var restAction = new RestActionService( rockContext ).Get( controllerActionId );
             if ( restAction != null )
             {
-                restAction.CacheControlHeaderSettings = cpActionCacheSettings.CurrentCacheablity.ToJson();
+                restAction.CacheControlHeaderSettings = cpActionCacheSettings.CurrentCacheability.ToJson();
                 rockContext.SaveChanges();
             }
 

@@ -73,7 +73,7 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClientClick="Rock.dialogs.confirmDelete(event, 'merge template');" OnClick="btnDelete_Click" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <div class="pull-right">
-                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                                <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                             </div>
                         </div>
                     </fieldset>

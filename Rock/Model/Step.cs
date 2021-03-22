@@ -35,6 +35,17 @@ namespace Rock.Model
     [DataContract]
     public partial class Step : Model<Step>, IOrdered
     {
+        /* Custom Indexes:
+         *
+         * PersonAliasId, StepTypeId
+         *      Includes CompletedDateTime
+         *      This was added for Step Program Achievement
+         *      
+         *  StepTypeId, PersonAliasId
+         *      Includes CompletedDateTime
+         *      This was added for Step Program Achievement
+         */
+
         #region Entity Properties
 
         /// <summary>
@@ -199,7 +210,7 @@ namespace Rock.Model
         /// The start source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate StartSourceDate { get; set; }
+        public virtual AnalyticsSourceDate StartSourceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end source date.
@@ -208,7 +219,7 @@ namespace Rock.Model
         /// The end source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate EndSourceDate { get; set; }
+        public virtual AnalyticsSourceDate EndSourceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the completed source date.
@@ -217,7 +228,7 @@ namespace Rock.Model
         /// The completed source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate CompletedSourceDate { get; set; }
+        public virtual AnalyticsSourceDate CompletedSourceDate { get; set; }
         #endregion Virtual Properties
 
         #region Overrides

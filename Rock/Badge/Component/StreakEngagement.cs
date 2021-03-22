@@ -154,7 +154,6 @@ namespace Rock.Badge.Component
             var timeUnit = isDaily ? "day" : "week";
             var timeUnits = isDaily ? "days" : "weeks";
 
-            var minBarHeight = GetAttributeValue( badge, AttributeKey.MinBarHeight ).AsIntegerOrNull() ?? AttributeDefault.MinBarHeight;
             var unitsToDisplay = GetAttributeValue( badge, AttributeKey.BarCount ).AsIntegerOrNull() ?? AttributeDefault.BarCount;
             var doAnimateBars = GetAttributeValue( badge, AttributeKey.AnimateBars ).AsBooleanOrNull() ?? AttributeDefault.AnimateBars;
 
@@ -163,48 +162,65 @@ namespace Rock.Badge.Component
             var tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
 
             var chartHtml = $"<div class='badge badge-attendance{animateClass} badge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip}'></div>";
-
-            var script = $@"
-<script>
-    Sys.Application.add_load(function () {{
-        $.ajax({{
-                type: 'GET',
-                url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{Person.Id}?unitCount={unitsToDisplay}' ,
-                statusCode: {{
-                    200: function (data, status, xhr) {{
-                            var chartHtml = ['<ul class=\'attendance-chart list-unstyled\'>'];
-
-                            if (data) {{
-                                for(var i = data.length - 1; i >= 0; i--) {{
-                                    var occurrenceEngagement = data[i];
-                                    var isBitSet = occurrenceEngagement && occurrenceEngagement.HasEngagement;
-                                    var title = occurrenceEngagement ? new Date(occurrenceEngagement.DateTime).toLocaleDateString() : '';
-                                    var barHeight = isBitSet ? 100 : {minBarHeight};                                
-                                    chartHtml.push('<li title=""' + title + '""><span style=\'height: ' + barHeight + '%\'></span></li>');
-                                }}
-                            }}
-
-                            chartHtml.push('</ul>');
-                            $('.badge-attendance.badge-id-{badge.Id}').html(chartHtml.join(''));
-
-                        }}
-                }},
-        }});
-    }});
-</script>";
-
             var linkedPageGuid = GetAttributeValue( badge, AttributeKey.StreakDetailPage ).AsGuidOrNull();
             var linkedPageId = linkedPageGuid.HasValue ? PageCache.GetId( linkedPageGuid.Value ) : null;
 
             if ( !linkedPageId.HasValue )
             {
-                writer.Write( $"{chartHtml}{script}" );
+                writer.Write( $"{chartHtml}" );
             }
             else
             {
                 var link = $"/page/{linkedPageId.Value}?StreakTypeId={streakTypeCache.Id}&PersonId={Person.Id}";
-                writer.Write( $@"<a href=""{link}"">{chartHtml}</a>{script}" );
+                writer.Write( $@"<a href=""{link}"">{chartHtml}</a>" );
             }
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
+            {
+                return null;
+            }
+
+            var streakTypeCache = GetStreakTypeCache( badge );
+
+            if ( streakTypeCache == null )
+            {
+                return null;
+            }
+
+            var unitsToDisplay = GetAttributeValue( badge, AttributeKey.BarCount ).AsIntegerOrNull() ?? AttributeDefault.BarCount;
+            var minBarHeight = GetAttributeValue( badge, AttributeKey.MinBarHeight ).AsIntegerOrNull() ?? AttributeDefault.MinBarHeight;
+
+            return $@"
+$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{Person.Id}?unitCount={unitsToDisplay}' ,
+    statusCode: {{
+        200: function (data, status, xhr) {{
+            var chartHtml = ['<ul class=\'attendance-chart list-unstyled\'>'];
+
+            if (data) {{
+                for(var i = data.length - 1; i >= 0; i--) {{
+                    var occurrenceEngagement = data[i];
+                    var isBitSet = occurrenceEngagement && occurrenceEngagement.HasEngagement;
+                    var title = occurrenceEngagement ? new Date(occurrenceEngagement.DateTime).toLocaleDateString() : '';
+                    var barHeight = isBitSet ? 100 : {minBarHeight};
+                    chartHtml.push('<li title=""' + title + '""><span style=\'height: ' + barHeight + '%\'></span></li>');
+                }}
+            }}
+
+            chartHtml.push('</ul>');
+            $('.badge-attendance.badge-id-{badge.Id}').html(chartHtml.join(''));
+        }}
+    }},
+}});";
         }
 
         /// <summary>

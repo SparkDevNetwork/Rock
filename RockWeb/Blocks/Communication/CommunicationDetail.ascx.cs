@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Communication
     [BooleanField
         ( "Enable Personal Templates",
           Key = AttributeKey.EnablePersonalTemplates,
-          Description = "Should support for personal templates be enabled ? These are templates that a user can create and are personal to them.If enabled, they will be able to create a new template based on the current communication.",
+          Description = "Should support for personal templates be enabled? These are templates that a user can create and are personal to them. If enabled, they will be able to create a new template based on the current communication.",
           DefaultValue = "false",
           Order = 0 )]
     [TextField
@@ -826,8 +826,6 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 nbTemplateCreated.Visible = true;
-
-                upPanel.Update();
             }
 
             HideDialog();
@@ -1718,7 +1716,10 @@ namespace RockWeb.Blocks.Communication
             }
             catch ( Exception ex )
             {
-                throw new Exception( "An unexpected error occurred while building the Recipients List.", ex );
+                ExceptionLogService.LogException( ex );
+                nbAnalyticsNotAvailable.Visible = true;
+                nbAnalyticsNotAvailable.Text = "An unexpected error occurred while building the Recipients List.";
+                return;
             }
 
             // If the grid is sorted by a communication-specific column, apply the sort now.

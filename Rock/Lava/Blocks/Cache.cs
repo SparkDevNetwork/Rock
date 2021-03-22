@@ -166,7 +166,7 @@ namespace Rock.Lava.Blocks
             }
 
             // Get content from cache
-            var cachedResult = RockCache.Get( cacheKey ) as CacheLavaTag;
+            var cachedResult = RockCache.Get( cacheKey, true ) as CacheLavaTag;
 
             // Check that the cached value is current
             if ( cachedResult != null )

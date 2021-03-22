@@ -123,8 +123,6 @@ namespace RockWeb.Blocks.Event
             gRegistrations.SelectedKeys.ToList().ForEach( r => registrationsSelected.Add( r.ToString().AsInteger() ) );
             if ( registrationsSelected.Any() )
             {
-                var appRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
-                
                 if ( _registrationInstance == null )
                 {
                     int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();

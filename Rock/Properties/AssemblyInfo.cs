@@ -32,3 +32,6 @@ using System.Runtime.InteropServices;
 [assembly: Guid( "a2b98b90-6dcb-4049-ad04-353c9b46a113" )]
 
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]

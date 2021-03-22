@@ -50,6 +50,9 @@ namespace Rock.Client
         public decimal? FeeAmount { get; set; }
 
         /// <summary />
+        public decimal? FeeCoverageAmount { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -104,6 +107,7 @@ namespace Rock.Client
             this.EntityId = source.EntityId;
             this.EntityTypeId = source.EntityTypeId;
             this.FeeAmount = source.FeeAmount;
+            this.FeeCoverageAmount = source.FeeCoverageAmount;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

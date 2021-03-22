@@ -62,10 +62,11 @@
         });
 
         // configure and load the dragula script for structure components
-        self.structureDrake = dragula([self.editorToolbarStructure, document.querySelector('.structure-dropzone')], {
+        self.structureDrake = dragula([self.editorToolbarStructure, document.querySelector('.dropzone, .structure-dropzone')], {
           isContainer: function (el)
           {
-            return el.classList.contains('structure-dropzone');
+            var isContainer = el.classList.contains('structure-dropzone') || (el.classList.contains('dropzone') && !el.classList.contains('disable-columns') && !el.parentElement.classList.contains('component'));
+            return isContainer;
           },
           copy: function (el, source)
           {
@@ -79,6 +80,7 @@
           {
             var isStructureRelated = $(el).closest($(self.editorToolbarStructure)).length // is it from the structures toolbar
               || $(el).closest('.component').hasClass('component-section'); // is it an existing structure component in the email
+              console.log($(el).closest('.component').hasClass('component-section'));
             return !isStructureRelated;
           },
           ignoreInputTextSelection: true

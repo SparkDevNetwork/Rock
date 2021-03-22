@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -246,5 +247,7 @@ namespace Rock.CheckIn
         /// This cookie should expire 8 hours after last use
         /// </summary>
         public static readonly string AttendanceSessionGuids = "Checkin.AttendanceSessionGuids";
+
+        
     }
 }

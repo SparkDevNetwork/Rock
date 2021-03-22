@@ -101,6 +101,7 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
+            target.Order = source.Order;
             target.PhotoId = source.PhotoId;
             target.PublicName = source.PublicName;
             target.Summary = source.Summary;
