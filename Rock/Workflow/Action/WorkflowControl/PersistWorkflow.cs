@@ -29,7 +29,7 @@ namespace Rock.Workflow.Action
     /// Changes an unpersisted workflow be persisted
     /// </summary>
     [ActionCategory( "Workflow Control" )]
-    [Description( "Changes an unpersisted workflow be persisted" )]
+    [Description( "Changes an unpersisted workflow to be persisted" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Persist" )]
 

@@ -293,7 +293,12 @@ namespace RockWeb.Blocks.Examples
                     lCategoryName.Text = category.Name + " Models";
                     pnlModels.Visible = true;
 
-                    entityTypeList = category.RockEntityIds.Select( a => EntityTypeCache.Get( a ) ).Where( a => a != null ).ToList();
+                    entityTypeList = category
+                        .RockEntityIds
+                        .Select( a => EntityTypeCache.Get( a ) )
+                        .Where( a => a != null )
+                        .OrderBy( et => et.FriendlyName )
+                        .ToList();
                     if ( entityTypeId.HasValue )
                     {
                         entityType = entityTypeList.Where( t => t.Id == entityTypeId.Value ).FirstOrDefault();
@@ -564,7 +569,7 @@ namespace RockWeb.Blocks.Examples
         /// <returns>an XmlComment object</returns>
         private string GetObsoleteMessage( MemberInfo p )
         {
-            if ( ! p.IsDefined( typeof( ObsoleteAttribute ) ) )
+            if ( !p.IsDefined( typeof( ObsoleteAttribute ) ) )
             {
                 return null;
             }

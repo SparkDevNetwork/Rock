@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Crm
                     var sb = new StringBuilder();
 
                     string personName = personItem.NickName + " " + personItem.LastName;
-                    personName = string.IsNullOrWhiteSpace( _personProfileUrl ) ? personName : string.Format( "<a href='{0}'>{1}</a>", string.Format(_personProfileUrl, personItem.Id), personName );
+                    personName = string.IsNullOrWhiteSpace( _personProfileUrl ) ? personName : string.Format( "<a href='{0}'>{1}</a>", string.Format( _personProfileUrl, personItem.Id ), personName );
 
                     sb.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", personItem.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) ) );
                     sb.Append( "<div class=\"pull-left margin-l-sm\">" );
@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( _showGrade )
                     {
-                        if ( !string.IsNullOrWhiteSpace( personItem.Grade ))
+                        if ( !string.IsNullOrWhiteSpace( personItem.Grade ) )
                         {
                             if ( sb.Length > 0 )
                             {
@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( _showEnvelopeNumber && _envelopeNumbers != null )
                     {
-                        var envelopeNumber = _envelopeNumbers.ContainsKey(personItem.Id) ? _envelopeNumbers[personItem.Id] : null;
+                        var envelopeNumber = _envelopeNumbers.ContainsKey( personItem.Id ) ? _envelopeNumbers[personItem.Id] : null;
                         if ( !string.IsNullOrWhiteSpace( envelopeNumber ) )
                         {
                             if ( sb.Length > 0 )
@@ -551,78 +551,76 @@ namespace RockWeb.Blocks.Crm
             using ( var rockContext = new RockContext() )
             {
                 var dataView = new DataViewService( rockContext ).Get( _dataViewGuid ?? Guid.Empty );
-                if ( dataView != null )
+                if ( dataView == null )
                 {
-                    var personService = new PersonService( rockContext );
+                    rptPeople.Visible = false;
+                    rptFamilies.Visible = false;
+                    ShowMessages( new List<string> { "This block requires a valid Data View setting." } );
+                    return;
+                }
 
-                    // Filter people by dataview
-                    var errorMessages = new List<string>();
-                    var paramExpression = personService.ParameterExpression;
-                    var whereExpression = dataView.GetExpression( personService, paramExpression, out errorMessages );
-                    var personQry = personService
-                        .Queryable( false, false ).AsNoTracking()
-                        .Where( paramExpression, whereExpression, null );
+                var personService = new PersonService( rockContext );
 
-                    var dvPersonIdQry = personQry.Select( p => p.Id );
+                // Filter people by dataview
+                var paramExpression = personService.ParameterExpression;
+                var whereExpression = dataView.GetExpression( personService, paramExpression );
+                var personQry = personService
+                    .Queryable( false, false ).AsNoTracking()
+                    .Where( paramExpression, whereExpression, null );
 
-                    bool filteredQry = false;
+                var dvPersonIdQry = personQry.Select( p => p.Id );
 
-                    // Filter by first name
-                    string firstName = tbFirstName.Text.Trim();
-                    if ( !string.IsNullOrWhiteSpace( firstName ) )
+                bool useFilteredQuery = false;
+
+                // Filter by first name
+                string firstName = tbFirstName.Text.Trim();
+                if ( !string.IsNullOrWhiteSpace( firstName ) )
+                {
+                    personQry = personQry.Where( p =>
+                        p.FirstName.StartsWith( firstName ) ||
+                        p.NickName.StartsWith( firstName ) );
+                    useFilteredQuery = true;
+                }
+
+                // Filter by last name
+                string lastName = tbLastName.Text.Trim();
+                if ( !string.IsNullOrWhiteSpace( lastName ) )
+                {
+                    personQry = personQry.Where( p =>
+                        p.LastName.StartsWith( lastName ) );
+                    useFilteredQuery = true;
+                }
+
+
+                if ( useFilteredQuery || _showAllPeople )
+                {
+                    SetColumnWidths();
+
+                    if ( _optOutGroupGuid.HasValue )
                     {
+                        var optOutPersonIdQry = new GroupMemberService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( g => g.Group.Guid.Equals( _optOutGroupGuid.Value ) )
+                            .Select( g => g.PersonId );
+
                         personQry = personQry.Where( p =>
-                            p.FirstName.StartsWith( firstName ) ||
-                            p.NickName.StartsWith( firstName ) );
-                        filteredQry = true;
+                            !optOutPersonIdQry.Contains( p.Id ) );
                     }
 
-                    // Filter by last name
-                    string lastName = tbLastName.Text.Trim();
-                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    if ( _showFamily )
                     {
-                        personQry = personQry.Where( p =>
-                            p.LastName.StartsWith( lastName ) );
-                        filteredQry = true;
-                    }
-
-
-                    if ( filteredQry || _showAllPeople )
-                    {
-                        SetColumnWidths();
-
-                        if ( _optOutGroupGuid.HasValue )
-                        {
-                            var optOutPersonIdQry = new GroupMemberService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( g => g.Group.Guid.Equals( _optOutGroupGuid.Value ) )
-                                .Select( g => g.PersonId );
-
-                            personQry = personQry.Where( p =>
-                                !optOutPersonIdQry.Contains( p.Id ) );
-                        }
-
-                        if ( _showFamily )
-                        {
-                            BindFamilies( rockContext, personQry, dvPersonIdQry );
-                        }
-                        else
-                        {
-                            BindPeople( rockContext, personQry );
-                        }
-
+                        BindFamilies( rockContext, personQry, dvPersonIdQry );
                     }
                     else
                     {
-                        rptPeople.Visible = false;
-                        rptFamilies.Visible = false;
+                        BindPeople( rockContext, personQry );
                     }
+
                 }
                 else
                 {
                     rptPeople.Visible = false;
                     rptFamilies.Visible = false;
-                    ShowMessages( new List<string> { "This block requires a valid Data View setting." } );
                 }
 
                 if ( CurrentPerson != null && _optOutGroupGuid.HasValue )
@@ -635,7 +633,6 @@ namespace RockWeb.Blocks.Crm
                     lbOptInOut.Text = optedOut ? "Opt in to the Directory" : "Opt Out of the Directory";
                 }
             }
-
         }
 
         private void BindPeople( RockContext rockContext, IQueryable<Person> personQry )
@@ -691,7 +688,7 @@ namespace RockWeb.Blocks.Crm
                             {
                                 PersonId = g.Key,
                                 HomeLocations = g.SelectMany( m => m.HomeLocations ).ToList()
-                            })
+                            } )
                             .ToDictionary( k => k.PersonId, v => v.HomeLocations );
                     }
                 }
@@ -973,7 +970,8 @@ namespace RockWeb.Blocks.Crm
             }
             public Gender Gender { get; set; }
             public int? GraduationYear { get; set; }
-            public string Grade {
+            public string Grade
+            {
                 get
                 {
                     return Person.GradeFormattedFromGraduationYear( this.GraduationYear );

@@ -153,6 +153,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the named picker root location identifier, which will be passed to the Rest endpoint. Leave the default value of 0 to get all locations.
+        /// Note: Setting this property will overwrite any value currently in the ItemPicker.ItemRestUrlExtraParams property.
+        /// </summary>
+        /// <value>
+        /// The named picker root location identifier.
+        /// </value>
+        public int NamedPickerRootLocationId
+        {
+            get
+            {
+                return ( ViewState["NamedPickerRootLocationId"] as string ).AsInteger();
+            }
+            set
+            {
+                ViewState["NamedPickerRootLocationId"] = value.ToString();
+                if ( _namedPicker != null )
+                {
+                    _namedPicker.RootLocationId = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -475,6 +498,7 @@ namespace Rock.Web.UI.Controls
             _namedPicker.ID = this.ID + "_namedPicker";
             _namedPicker.SelectItem += _namedPicker_SelectItem;
             _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;
+            _namedPicker.RootLocationId = this.NamedPickerRootLocationId;
 
             _addressPicker = new LocationAddressPicker();
             _addressPicker.ID = this.ID + "_addressPicker";

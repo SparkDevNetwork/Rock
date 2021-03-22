@@ -33,6 +33,7 @@
 
                     <%-- Exceptions List --%>
                     <h4>Log Summary</h4>
+                    <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" Visible="false" />
                     <div class="row">
                         <div class="col-md-9">
                             <p>

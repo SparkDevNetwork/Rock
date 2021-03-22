@@ -43,7 +43,7 @@ namespace Rock.UniversalSearch.IndexComponents
     [ExportMetadata( "ComponentName", "Elasticsearch 2.x" )]
 
     [TextField( "Node URL", "The URL of the ElasticSearch node (http://myserver:9200)", true, key: "NodeUrl" )]
-    [IntegerField("Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1)]
+    [IntegerField( "Shard Count", "The number of shards to use for each index. More shards support larger databases, but can make the results less accurate. We recommend using 1 unless your database get's very large (> 50GB).", true, 1 )]
     public class Elasticsearch : IndexComponent
     {
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
                 }
 
-                return (_client.Ping().IsValid);
+                return _client.Ping().IsValid;
             }
         }
 
@@ -139,7 +139,9 @@ namespace Rock.UniversalSearch.IndexComponents
                     config.DisableDirectStreaming();
                     _client = new ElasticClient( config );
                 }
-                catch {}
+                catch
+                {
+                }
             }
         }
 
@@ -164,7 +166,6 @@ namespace Rock.UniversalSearch.IndexComponents
 
             _client.IndexAsync<T>( document, c => c.Index( indexName ).Type( mappingType ) );
         }
-
 
         /// <summary>
         /// Deletes the type of the documents by.
@@ -235,10 +236,10 @@ namespace Rock.UniversalSearch.IndexComponents
                 var typeMapping = new TypeMapping();
                 typeMapping.Dynamic = DynamicMapping.Allow;
                 typeMapping.Properties = new Properties();
-                
+
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
 
-                var model = (IndexModelBase)instance;
+                var model = ( IndexModelBase ) instance;
 
                 // get properties from the model and add them to the index (hint: attributes will be added dynamically as the documents are loaded)
                 var modelProperties = documentType.GetProperties();
@@ -249,7 +250,7 @@ namespace Rock.UniversalSearch.IndexComponents
                     var indexAttribute = property.GetCustomAttributes( typeof( RockIndexField ), false );
                     if ( indexAttribute.Length > 0 )
                     {
-                        var attribute = (RockIndexField)indexAttribute[0];
+                        var attribute = ( RockIndexField ) indexAttribute[0];
 
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
@@ -266,35 +267,38 @@ namespace Rock.UniversalSearch.IndexComponents
                         switch ( attribute.Type )
                         {
                             case IndexFieldType.Boolean:
-                                {
-                                    typeMapping.Properties.Add( propertyName, new BooleanProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                    break;
-                                }
+                            {
+                                typeMapping.Properties.Add( propertyName, new BooleanProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                break;
+                            }
+
                             case IndexFieldType.Date:
-                                {
-                                    typeMapping.Properties.Add( propertyName, new DateProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                    break;
-                                }
+                            {
+                                typeMapping.Properties.Add( propertyName, new DateProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                break;
+                            }
+
                             case IndexFieldType.Number:
-                                {
-                                    typeMapping.Properties.Add( propertyName, new NumberProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
-                                    break;
-                                }
+                            {
+                                typeMapping.Properties.Add( propertyName, new NumberProperty() { Name = propertyName, Boost = attribute.Boost, Index = nsIndexOption } );
+                                break;
+                            }
+
                             default:
+                            {
+                                var stringProperty = new StringProperty();
+                                stringProperty.Name = propertyName;
+                                stringProperty.Boost = attribute.Boost;
+                                stringProperty.Index = ( FieldIndexOption ) attribute.Index;
+
+                                if ( !string.IsNullOrWhiteSpace( attribute.Analyzer ) )
                                 {
-                                    var stringProperty = new StringProperty();
-                                    stringProperty.Name = propertyName;
-                                    stringProperty.Boost = attribute.Boost;
-                                    stringProperty.Index = (FieldIndexOption)attribute.Index;
-
-                                    if ( !string.IsNullOrWhiteSpace(attribute.Analyzer) )
-                                    {
-                                        stringProperty.Analyzer = attribute.Analyzer;
-                                    }
-
-                                    typeMapping.Properties.Add( propertyName, stringProperty );
-                                    break;
+                                    stringProperty.Analyzer = attribute.Analyzer;
                                 }
+
+                                typeMapping.Properties.Add( propertyName, stringProperty );
+                                break;
+                            }
                         }
                     }
                 }
@@ -342,7 +346,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 if ( classInstance != null && bulkItemsMethod != null )
                 {
-                    return (bool)bulkItemsMethod.Invoke( classInstance, null );
+                    return ( bool ) bulkItemsMethod.Invoke( classInstance, null );
                 }
             }
 
@@ -418,148 +422,145 @@ namespace Rock.UniversalSearch.IndexComponents
                 switch ( searchType )
                 {
                     case SearchType.ExactMatch:
+                    {
+                        if ( !string.IsNullOrWhiteSpace( query ) )
                         {
-                            if ( !string.IsNullOrWhiteSpace( query ) )
-                            {
-                                queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
-                            }
+                            queryContainer &= new QueryStringQuery { Query = query, AnalyzeWildcard = true };
+                        }
+
+                        // special logic to support emails
+                        if ( query.Contains( "@" ) )
+                        {
+                            queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
+                        }
+
+                        // special logic to support phone search
+                        if ( query.IsDigitsOnly() )
+                        {
+                            queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
+                        }
+
+                        // add a search for all the words as one single search term
+                        queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+
+                        if ( matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        results = _client.Search<dynamic>( searchDescriptor );
+                        break;
+                    }
+
+                    case SearchType.Fuzzy:
+                    {
+                        results = _client.Search<dynamic>( d =>
+                                    d.AllIndices().AllTypes()
+                                    .Query( q =>
+                                        q.Fuzzy( f => f.Value( query )
+                                            .Rewrite( MultiTermQueryRewrite.TopTerms( size ?? 10 ) ) ) ) );
+                        break;
+                    }
+
+                    case SearchType.Wildcard:
+                    {
+                        bool enablePhraseSearch = true;
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            QueryContainer wildcardQuery = null;
+
+                            // break each search term into a separate query and add the * to the end of each
+                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
 
                             // special logic to support emails
-                            if ( query.Contains( "@" ) )
+                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
                             {
-                                queryContainer |= new QueryStringQuery { Query = "email:" + query, Analyzer = "whitespace" }; // analyzer = whitespace to keep the email from being parsed into 3 variables because the @ will act as a delimitor by default
+                                wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
+                                enablePhraseSearch = false;
                             }
-
-                            // special logic to support phone search
-                            if ( query.IsDigitsOnly() )
+                            else
                             {
-                                queryContainer |= new QueryStringQuery { Query = "phone:*" + query + "*", AnalyzeWildcard = true };
-                            }
+                                // We want to require each of the terms to exists for a result to be returned.
+                                var searchString = "+" + queryTerms.JoinStrings( "* +" ) + "*";
+                                wildcardQuery &= new QueryStringQuery { Query = searchString, Analyzer = "whitespace", MinimumShouldMatch = "100%", MultiTermQueryRewrite = MultiTermQueryRewrite.ScoringBoolean };
 
-                            // add a search for all the words as one single search term
-                            queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
-
-                            if ( matchQuery != null )
-                            {
-                                queryContainer &= matchQuery;
-                            }
-
-                            if ( size.HasValue )
-                            {
-                                searchDescriptor.Size( size.Value );
-                            }
-
-                            if ( from.HasValue )
-                            {
-                                searchDescriptor.From( from.Value );
-                            }
-
-                            searchDescriptor.Query( q => queryContainer );
-
-                            results = _client.Search<dynamic>( searchDescriptor );
-                            break;
-                        }
-                    case SearchType.Fuzzy:
-                        {
-                            results = _client.Search<dynamic>( d =>
-                                        d.AllIndices().AllTypes()
-                                        .Query( q =>
-                                            q.Fuzzy( f => f.Value( query )
-                                                .Rewrite(MultiTermQueryRewrite.TopTerms(size ?? 10)) )
-                                        )
-                                    );
-                            break;
-                        }
-                    case SearchType.Wildcard:
-                        {
-                            bool enablePhraseSearch = true;
-
-                            if ( !string.IsNullOrWhiteSpace( query ) )
-                            {
-                                QueryContainer wildcardQuery = null;
-
-                                // break each search term into a separate query and add the * to the end of each
-                                var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
-
-                                // special logic to support emails
-                                if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                                // add special logic to help boost last names
+                                if ( queryTerms.Count > 1 )
                                 {
-                                    wildcardQuery |= new QueryStringQuery { Query = "email:*" + query + "*", Analyzer = "whitespace" };
-                                    enablePhraseSearch = false;
-                                }
-                                else
-                                {
-                                    foreach ( var queryTerm in queryTerms )
-                                    {
-                                        if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                        {
-                                            wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", MultiTermQueryRewrite = MultiTermQueryRewrite.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
-                                        }
-                                    }
-
-                                    // add special logic to help boost last names
-                                    if (queryTerms.Count > 1 )
-                                    {
-                                        QueryContainer nameQuery = null;
-                                        nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
-                                        nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
-                                        wildcardQuery |= nameQuery;
-                                    }
-
-                                    // special logic to support phone search
-                                    if ( query.IsDigitsOnly() )
-                                    {
-                                        wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
-                                    }
+                                    QueryContainer nameQuery = null;
+                                    nameQuery &= new QueryStringQuery { Query = "lastName:" + queryTerms.Last() + "*", Analyzer = "whitespace", Boost = 30 };
+                                    nameQuery &= new QueryStringQuery { Query = "firstName:" + queryTerms.First() + "*", Analyzer = "whitespace" };
+                                    wildcardQuery |= nameQuery;
                                 }
 
-                                queryContainer &= wildcardQuery;
+                                // special logic to support phone search
+                                if ( query.IsDigitsOnly() )
+                                {
+                                    wildcardQuery |= new QueryStringQuery { Query = "phoneNumbers:*" + query, Analyzer = "whitespace" };
+                                }
                             }
+
+                            queryContainer &= wildcardQuery;
 
                             // add a search for all the words as one single search term
                             if ( enablePhraseSearch )
                             {
-                                queryContainer |= new QueryStringQuery { Query = query, AnalyzeWildcard = true, PhraseSlop = 0 };
+                                var searchString = "+" + queryTerms.JoinStrings( " +" );
+                                queryContainer |= new QueryStringQuery { Query = searchString, AnalyzeWildcard = true, PhraseSlop = 0 };
                             }
+                        }
 
-                            if ( matchQuery != null )
+                        if ( matchQuery != null )
+                        {
+                            queryContainer &= matchQuery;
+                        }
+
+                        if ( size.HasValue )
+                        {
+                            searchDescriptor.Size( size.Value );
+                        }
+
+                        if ( from.HasValue )
+                        {
+                            searchDescriptor.From( from.Value );
+                        }
+
+                        searchDescriptor.Query( q => queryContainer );
+
+                        var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
+
+                        if ( indexBoost.IsNotNullOrWhiteSpace() )
+                        {
+                            var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( var boostItem in boostItems )
                             {
-                                queryContainer &= matchQuery;
-                            }
+                                var boostParms = boostItem.Split( new char[] { '^' } );
 
-                            if ( size.HasValue )
-                            {
-                                searchDescriptor.Size( size.Value );
-                            }
-
-                            if ( from.HasValue )
-                            {
-                                searchDescriptor.From( from.Value );
-                            }
-
-                            searchDescriptor.Query( q => queryContainer );
-
-                            var indexBoost = GlobalAttributesCache.Value( "UniversalSearchIndexBoost" );
-
-                            if ( indexBoost.IsNotNullOrWhiteSpace() )
-                            {
-                                var boostItems = indexBoost.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                                foreach (var boostItem in boostItems )
+                                if ( boostParms.Length == 2 )
                                 {
-                                    var boostParms = boostItem.Split( new char[] { '^' } );
-
-                                    if ( boostParms.Length == 2 )
-                                    {
-                                        int boost = 1;
-                                        Int32.TryParse( boostParms[1], out boost );
-                                        searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
-                                    }
+                                    int boost = 1;
+                                    Int32.TryParse( boostParms[1], out boost );
+                                    searchDescriptor.IndicesBoost( b => b.Add( boostParms[0], boost ) );
                                 }
                             }
-
-                            results = _client.Search<dynamic>( searchDescriptor );
-                            break;
                         }
+
+                        results = _client.Search<dynamic>( searchDescriptor );
+                        break;
+                    }
                 }
 
                 totalResultsAvailable = results.Total;
@@ -575,16 +576,15 @@ namespace Rock.UniversalSearch.IndexComponents
                         {
                             if ( hit.Source != null )
                             {
-
-                                Type indexModelType = Type.GetType( $"{ ((string)((JObject)hit.Source)["indexModelType"])}, { ((string)((JObject)hit.Source)["indexModelAssembly"])}" );
+                                Type indexModelType = Type.GetType( $"{ ( ( string ) ( ( JObject ) hit.Source )["indexModelType"] )}, { ( ( string ) ( ( JObject ) hit.Source )["indexModelAssembly"] )}" );
 
                                 if ( indexModelType != null )
                                 {
-                                    document = (IndexModelBase)((JObject)hit.Source).ToObject( indexModelType ); // return the source document as the derived type
+                                    document = ( IndexModelBase ) ( ( JObject ) hit.Source ).ToObject( indexModelType ); // return the source document as the derived type
                                 }
                                 else
                                 {
-                                    document = ((JObject)hit.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                                    document = ( ( JObject ) hit.Source ).ToObject<IndexModelBase>(); // return the source document as the base type
                                 }
                             }
 
@@ -597,7 +597,10 @@ namespace Rock.UniversalSearch.IndexComponents
 
                             documents.Add( document );
                         }
-                        catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+                        catch
+                        {
+                            // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+                        }
                     }
                 }
             }
@@ -613,7 +616,6 @@ namespace Rock.UniversalSearch.IndexComponents
         /// <param name="propertyValue">The property value.</param>
         public override void DeleteDocumentByProperty( Type documentType, string propertyName, object propertyValue )
         {
-
             string jsonSearch = string.Format( @"{{
 ""term"": {{
       ""{0}"": {{
@@ -664,25 +666,22 @@ namespace Rock.UniversalSearch.IndexComponents
 
             if ( result.Source != null )
             {
-                Type indexModelType = Type.GetType( (string)((JObject)result.Source)["indexModelType"] );
+                Type indexModelType = Type.GetType( ( string ) ( ( JObject ) result.Source )["indexModelType"] );
 
                 if ( indexModelType != null )
                 {
-                    document = (IndexModelBase)((JObject)result.Source).ToObject( indexModelType ); // return the source document as the derived type
+                    document = ( IndexModelBase ) ( ( JObject ) result.Source ).ToObject( indexModelType ); // return the source document as the derived type
                 }
                 else
                 {
-                    document = ((JObject)result.Source).ToObject<IndexModelBase>(); // return the source document as the base type
+                    document = ( ( JObject ) result.Source ).ToObject<IndexModelBase>(); // return the source document as the base type
                 }
             }
 
             return document;
-
         }
     }
 }
 
-
 // forbidden characters in field names _ . , #
-
 // cluster state: http://localhost:9200/_cluster/state?filter_nodes=false&filter_metadata=true&filter_routing_table=true&filter_blocks=true&filter_indices=true

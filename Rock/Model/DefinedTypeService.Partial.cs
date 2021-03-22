@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -69,5 +70,122 @@ namespace Rock.Model
             return null;
 
         }
+
+        #region Operations
+
+        /// <summary>
+        /// Add or update a value for a Defined Type.
+        /// </summary>
+        /// <param name="definedTypeGuidString">A string representing the Guid identifier of the <see cref="Rock.Model.DefinedType"/> to which a new value will be added.</param>
+        /// <param name="value">A string containing the Value of the new <see cref="Rock.Model.DefinedValue"/>.</param>
+        /// <param name="description">A string containing the Description of the new <see cref="Rock.Model.DefinedValue"/>.</param>
+        /// <param name="attributeValues">A dictionary of key-value pairs holding the value of the Attributes associated with the new <see cref="Rock.Model.DefinedValue"/>.</param>
+        public void AddOrUpdateValue( string definedTypeGuidString, string value, string description, Dictionary<string, object> attributeValues )
+        {
+            var dataContext = ( RockContext ) this.Context;
+
+            // Execute this operation in a transaction to allow rollback if there are any problems updating the value attributes.
+            dataContext.WrapTransaction( () =>
+            {
+                // Resolve the Defined Type.
+                var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuidString ) );
+
+                if ( definedType == null )
+                {
+                    throw new Exception( $"Defined Type is invalid. Could not map identifier \"{ definedTypeGuidString }\" to an existing Defined Type." );
+                }
+
+                // Get the existing Defined Value or create a new entry.
+                var definedValueService = new DefinedValueService( dataContext );
+
+                var definedValue = definedValueService.Queryable().FirstOrDefault( x => x.DefinedTypeId == definedType.Id && x.Value == value );
+
+                if ( definedValue == null )
+                {
+                    // Create a new Defined Value.
+                    definedValue = new DefinedValue();
+
+                    definedValueService.Add( definedValue );
+
+                    definedValue.DefinedTypeId = definedType.Id;
+                    definedValue.IsSystem = false;
+                    definedValue.IsActive = true;
+                }
+
+                definedValue.Value = value;
+                definedValue.Description = description;
+
+                dataContext.SaveChanges();
+
+                // Set the attributes of the defined value.
+                definedValue.LoadAttributes();
+
+                foreach ( var keyValuePair in attributeValues )
+                {
+                    if ( !definedValue.Attributes.ContainsKey( keyValuePair.Key ) )
+                    {
+                        throw new Exception( $"Defined Type Attribute is invalid. Could not map key \"{ keyValuePair.Key }\" to an existing Attribute." );
+                    }
+
+                    definedValue.SetAttributeValue( keyValuePair.Key, keyValuePair.Value.ToStringSafe() );
+                }
+
+                definedValue.SaveAttributeValues( dataContext );
+            } );
+        }
+
+        /// <summary>
+        /// Delete a value from a Defined Type.
+        /// </summary>
+        /// <param name="definedTypeGuidString">A string representing the Guid identifier of the <see cref="Rock.Model.DefinedType"/> to which a new value will be added.</param>
+        /// <param name="value">A string containing the Value of the <see cref="Rock.Model.DefinedValue"/> to be deleted.</param>
+        public void DeleteValue( string definedTypeGuidString, string value )
+        {
+            DeleteValues( definedTypeGuidString, new List<string> { value } );
+        }
+
+        /// <summary>
+        /// Delete a set of values from a Defined Type.
+        /// </summary>
+        /// <param name="definedTypeGuidString">A string representing the Guid identifier of the <see cref="Rock.Model.DefinedType"/> to which a new value will be added.</param>
+        /// <param name="values">A collection of strings containing the Values of the <see cref="Rock.Model.DefinedValue"/> entries to be deleted.</param>
+        public void DeleteValues( string definedTypeGuidString, IEnumerable<string> values )
+        {
+            if ( values == null )
+            {
+                return;
+            }
+
+            var valueList = values.ToList();
+
+            if ( !valueList.Any() )
+            {
+                return;
+            }
+
+            var dataContext = ( RockContext ) this.Context;
+
+            // Resolve the Defined Type.
+            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuidString ) );
+
+            if ( definedType == null )
+            {
+                throw new Exception( $"Defined Type is invalid. Could not map identifier \"{ definedTypeGuidString }\" to an existing Defined Type." );
+            }
+
+            // Delete the existing Defined Value if it exists.
+            var definedValueService = new DefinedValueService( dataContext );
+
+            var definedValues = definedValueService.Queryable().Where( x => x.DefinedTypeId == definedType.Id && valueList.Contains( x.Value ) );
+
+            if ( definedValues.Any() )
+            {
+                definedValueService.DeleteRange( definedValues );
+
+                dataContext.SaveChanges();
+            }
+        }
+
+        #endregion
     }
 }

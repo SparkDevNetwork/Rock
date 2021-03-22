@@ -48,8 +48,20 @@ namespace Rock.Model
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="browserSessionId">The browser session identifier.</param>
         /// <returns></returns>
-        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionSummary, string interactionData, int? personAliasId, DateTime dateTime,
-            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        public Interaction AddInteraction(
+            int interactionComponentId,
+            int? entityId,
+            string operation,
+            string interactionSummary,
+            string interactionData,
+            int? personAliasId,
+            DateTime dateTime,
+            string deviceApplication,
+            string deviceOs,
+            string deviceClientType,
+            string deviceTypeData,
+            string ipAddress,
+            Guid? browserSessionId )
         {
             Interaction interaction = CreateInteraction( interactionComponentId, entityId, operation, interactionSummary, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
             this.Add( interaction );
@@ -122,8 +134,7 @@ namespace Rock.Model
             var deviceApplication = uaParser.ParseUserAgent( userAgent ).ToString();
             var deviceClientType = InteractionDeviceType.GetClientType( userAgent );
 
-            var interaction = CreateInteraction( interactionComponentId, null, null, string.Empty, null, null, RockDateTime.Now,
-                deviceApplication, deviceOs, deviceClientType, userAgent, ipAddress, browserSessionId );
+            var interaction = CreateInteraction( interactionComponentId, null, null, string.Empty, null, null, RockDateTime.Now, deviceApplication, deviceOs, deviceClientType, userAgent, ipAddress, browserSessionId );
 
             interaction.SetUTMFieldsFromURL( url );
 
@@ -146,8 +157,19 @@ namespace Rock.Model
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="browserSessionId">The browser session identifier (RockSessionId).</param>
         /// <returns></returns>
-        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
-            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress, Guid? browserSessionId )
+        public Interaction AddInteraction(
+            int interactionComponentId,
+            int? entityId,
+            string operation,
+            string interactionData,
+            int? personAliasId,
+            DateTime dateTime,
+            string deviceApplication,
+            string deviceOs,
+            string deviceClientType,
+            string deviceTypeData,
+            string ipAddress,
+            Guid? browserSessionId )
         {
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, browserSessionId );
         }
@@ -167,8 +189,18 @@ namespace Rock.Model
         /// <param name="deviceTypeData">The device type data.</param>
         /// <param name="ipAddress">The ip address.</param>
         /// <returns></returns>
-        public Interaction AddInteraction( int interactionComponentId, int? entityId, string operation, string interactionData, int? personAliasId, DateTime dateTime,
-            string deviceApplication, string deviceOs, string deviceClientType, string deviceTypeData, string ipAddress )
+        public Interaction AddInteraction(
+            int interactionComponentId,
+            int? entityId,
+            string operation,
+            string interactionData,
+            int? personAliasId,
+            DateTime dateTime,
+            string deviceApplication,
+            string deviceOs,
+            string deviceClientType,
+            string deviceTypeData,
+            string ipAddress )
         {
             return AddInteraction( interactionComponentId, entityId, operation, string.Empty, interactionData, personAliasId, dateTime, deviceApplication, deviceOs, deviceClientType, deviceTypeData, ipAddress, null );
         }
@@ -205,9 +237,16 @@ namespace Rock.Model
         /// <param name="deviceTypeData">The device type data (either a plain DeviceType name or the whole useragent string).</param>
         /// <returns></returns>
         [Obsolete]
-        [RockObsolete( "1.12" )]
+        [RockObsolete( "1.11" )]
         public InteractionDeviceType GetInteractionDeviceType( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
+            /*
+             * 2020-10-22 ETD
+             * This method was used by GetInteractionDeviceTypeId(). Discussed with Mike and Nick and it was
+             * decided to mark it as obsolete and create private method GetOrCreateInteractionDeviceTypeId()
+             * instead.
+             */
+
             var rockContext = new RockContext();
             InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
             InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
@@ -241,10 +280,10 @@ namespace Rock.Model
         private int GetOrCreateInteractionDeviceTypeId( string application, string operatingSystem, string clientType, string deviceTypeData )
         {
             var rockContext = new RockContext();
-                InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
-                InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
-                    .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
-                    .FirstOrDefault();
+            InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
+            InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
+                .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
+                .FirstOrDefault();
 
             if ( interactionDeviceType == null )
             {
@@ -293,6 +332,7 @@ namespace Rock.Model
             }
 
             var currentDateTime = RockDateTime.Now;
+
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
             int interactionSessionId = this.Context.Database.SqlQuery<int>(
                 @"BEGIN
@@ -328,8 +368,8 @@ namespace Rock.Model
                 new SqlParameter( "@browserSessionId", browserSessionId ),
                 new SqlParameter( "@ipAddress", ipAddress.Truncate( 45 ) ),
                 new SqlParameter( "@interactionDeviceTypeId", deviceTypeId ),
-                new SqlParameter( "@currentDateTime", currentDateTime )
-                ).FirstOrDefault();
+                new SqlParameter( "@currentDateTime", currentDateTime ) )
+                .FirstOrDefault();
 
             return interactionSessionId;
         }
@@ -411,6 +451,21 @@ namespace Rock.Model
                     interactionImport.InteractionChannelId = InteractionChannelCache.Get( interactionImport.InteractionChannelId.Value )?.Id;
                 }
 
+                // Determine which Channel Type Medium this should be set to
+                if ( interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    // make sure it is a valid Id
+                    interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.Get( interactionImport.InteractionChannelChannelTypeMediumValueId.Value )?.Id;
+                }
+
+                if ( !interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    if ( interactionImport.InteractionChannelChannelTypeMediumValueGuid.HasValue )
+                    {
+                        interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.GetId( interactionImport.InteractionChannelChannelTypeMediumValueGuid.Value );
+                    }
+                }
+
                 if ( !interactionImport.InteractionChannelId.HasValue )
                 {
                     if ( interactionImport.InteractionChannelGuid.HasValue )
@@ -421,7 +476,7 @@ namespace Rock.Model
                     // if InteractionChannelId is still null, lookup (or create) an InteractionChannel from InteractionChannelForeignKey (if it is specified) 
                     if ( interactionImport.InteractionChannelId == null && interactionImport.InteractionChannelForeignKey.IsNotNullOrWhiteSpace() )
                     {
-                        interactionImport.InteractionChannelId = InteractionChannelCache.GetChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName );
+                        interactionImport.InteractionChannelId = InteractionChannelCache.GetCreateChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName, interactionImport.InteractionChannelChannelTypeMediumValueId );
                     }
                     else
                     {
@@ -543,7 +598,7 @@ namespace Rock.Model
             // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
             // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit, so update the streak using a task.
-            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i ) ) );
+            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
         }
     }
 

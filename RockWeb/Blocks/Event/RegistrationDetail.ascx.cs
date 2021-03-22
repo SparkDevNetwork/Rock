@@ -2120,17 +2120,19 @@ namespace RockWeb.Blocks.Event
 
                     int registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
 
+                    var transactionDetailQuery = new FinancialTransactionDetailService( rockContext )
+                        .Queryable()
+                        .Where( d => d.EntityTypeId.HasValue &&
+                                    d.EntityTypeId.Value == registrationEntityTypeId &&
+                                    d.EntityId.HasValue &&
+                                    d.EntityId.Value == Registration.Id );
+
+                    var transactionIds = transactionDetailQuery.Select( a => a.TransactionId ).ToList();
+
                     // Get all the transactions related to this registration
                     var qry = new FinancialTransactionService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( t =>
-                            t.TransactionDateTime.HasValue &&
-                            t.TransactionDetails
-                                .Any( d =>
-                                    d.EntityTypeId.HasValue &&
-                                    d.EntityTypeId.Value == registrationEntityTypeId &&
-                                    d.EntityId.HasValue &&
-                                    d.EntityId.Value == Registration.Id ) );
+                        .Where( t => transactionIds.Contains( t.Id ) );
 
                     SortProperty sortProperty = gPayments.SortProperty;
                     if ( sortProperty != null )
@@ -2156,7 +2158,9 @@ namespace RockWeb.Blocks.Event
                         qry = qry.OrderByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
                     }
 
-                    gPayments.DataSource = qry.ToList().Select( p => new
+                    var transactionList = qry.AsNoTracking().ToList();
+
+                    gPayments.DataSource = transactionList.Select( p => new
                     {
                         p.Id,
                         TransactionDateTime = p.TransactionDateTime.Value.ToShortDateString() + "<br/>" +
@@ -2164,6 +2168,7 @@ namespace RockWeb.Blocks.Event
                         Details = FormatDetails( p ),
                         p.TotalAmount
                     } );
+
                     gPayments.DataBind();
                 }
             }

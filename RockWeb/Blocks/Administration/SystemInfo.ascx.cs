@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Administration
             ResponseWrite( "Database:", lDatabase.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Execution Location:", lExecLocation.Text, response );
             ResponseWrite( "Migrations:", GetLastMigrationData().Replace( "<br />", Environment.NewLine.ToString() ), response );
-            ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response ); ;
+            ResponseWrite( "Cache:", lCacheOverview.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Routes:", lRoutes.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
             ResponseWrite( "Threads:", lThreads.Text.Replace( "<br />", Environment.NewLine.ToString() ), response );
 
@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Administration
             var result = DbService.ExecuteScaler( "SELECT TOP 1 [MigrationId] FROM [__MigrationHistory] ORDER BY [MigrationId] DESC ", CommandType.Text, null );
             if ( result != null )
             {
-                sb.AppendFormat( "Last Core Migration: {0}{1}", (string)result, Environment.NewLine );
+                sb.AppendFormat( "Last Core Migration: {0}{1}", ( string ) result, Environment.NewLine );
             }
 
             var tableResult = DbService.GetDataTable( @"
@@ -300,11 +300,11 @@ namespace RockWeb.Blocks.Administration
             var cacheStats = RockCache.GetAllStatistics();
             foreach ( CacheItemStatistics cacheItemStat in cacheStats.OrderBy( s => s.Name ) )
             {
-                foreach( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
+                foreach ( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
                 {
                     var stats = new List<string>();
                     cacheHandleStat.Stats.ForEach( s => stats.Add( string.Format( "{0}: {1:N0}", s.CounterType.ConvertToString(), s.Count ) ) );
-                    sb.AppendFormat( "<p><strong>{0}:</strong><br/>{1}</p>{2}", cacheItemStat.Name, stats.AsDelimited(", "), Environment.NewLine );
+                    sb.AppendFormat( "<p><strong>{0}:</strong><br/>{1}</p>{2}", cacheItemStat.Name, stats.AsDelimited( ", " ), Environment.NewLine );
                 }
             }
 
@@ -316,7 +316,7 @@ namespace RockWeb.Blocks.Administration
         private string GetRoutesInfo()
         {
             var pageService = new PageService( new RockContext() );
-            
+
             var routes = new Dictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes.OfType<System.Web.Routing.Route>() )
             {
@@ -331,9 +331,9 @@ namespace RockWeb.Blocks.Administration
             sb.AppendLine( "<tr><th>Route</th><th>Pages</th></tr>" );
             foreach ( var routeItem in routes )
             {
-                var pages = routeItem.Value.PageIds().Select( s => pageLookup.GetValueOrNull(s) ).ToList();
+                var pages = routeItem.Value.PageIds().Select( s => pageLookup.GetValueOrNull( s ) ).ToList();
 
-                sb.AppendLine( string.Format("<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Where(a => a != null).Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() )) );
+                sb.AppendLine( string.Format( "<tr><td>{0}</td><td>{1}</td></tr>", routeItem.Key, string.Join( "<br />", pages.Where( a => a != null ).Select( n => n.InternalName + " (" + n.Id.ToString() + ")" ).ToArray() ) ) );
             }
 
             sb.AppendLine( "</table>" );
@@ -531,14 +531,22 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + RockInstanceConfig.PhysicalDirectory;
-
+            lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
+            lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;
+            
             lLastMigrations.Text = GetLastMigrationData();
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );
 
-            lCacheOverview.Text = GetCacheInfo();
+            var cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
+            if ( cacheStatisticsEnabled )
+            {
+                pnlHideCacheStatistics.Visible = false;
+                pnlShowCacheStatistics.Visible = true;
+                lCacheOverview.Text = GetCacheInfo();
+            }
+
             lRoutes.Text = GetRoutesInfo();
             lThreads.Text = GetThreadInfo();
         }

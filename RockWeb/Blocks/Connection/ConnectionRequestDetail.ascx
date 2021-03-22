@@ -1,5 +1,36 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
+<style>
+    #<%= upDetail.ClientID %> .request-photo {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto 16px;
+        background: center/cover #cbd4db;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+    }
+
+    #<%= upDetail.ClientID %> .request-photo:after {
+        content: "";
+        display: block;
+        padding-bottom: 100%;
+    }
+
+    #<%= upDetail.ClientID %> .board-card-photo {
+        width: 24px;
+        height: 24px;
+        align-items: center;
+        background: center/cover #cbd4db;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: inline-flex;
+        justify-content: center;
+        position: relative;
+        vertical-align: top;
+    }
+</style>
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
@@ -31,36 +62,53 @@
                 <div class="panel-body">
                     <asp:Literal ID="lHeading" runat="server"></asp:Literal>
                     <div class="row">
-                        <div class="col-md-2">
-                            <div class="photo">
-                                <asp:Literal ID="lPortrait" runat="server" />
-                            </div>
+                        <div class="col-sm-2">
+                            <div id="divPhoto" runat="server" class="request-photo mb-1"></div>
                         </div>
-                        <div class="col-md-10">
+                        <div class="col-sm-10">
+                            <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="small pull-right">
+                                <i class="fa fa-user"></i>
+                                Person Profile
+                            </asp:HyperLink>
+                            <h3 class="mt-0 mb-3">
+                                <asp:Literal ID="lTitle" runat="server" />
+                            </h3>
                             <div class="row">
-                                <div class="col-md-9">
-                                    <h3 class="margin-t-none"><asp:Literal ID="lTitle" runat="server" /></h3>
+                                <div class="col-sm-6 col-md-5 mb-3">
+                                    <h6 class="mt-0 mb-1">Contact Information</h6>
+                                    <div class="personcontact">
+                                        <Rock:RockLiteral ID="lContactInfo" runat="server" />
+                                    </div>
                                 </div>
-                                <div class="text-right col-md-3">
-                                    <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:HyperLink>
+                                <div class="col-sm-6 col-md-4 mb-3">
+                                    <h6 class="mt-0 mb-1">Connector</h6>
+                                    <div class="btn-group">
+                                        <div class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+                                            <asp:Literal runat="server" ID="lConnectorProfilePhoto" />
+                                            <asp:Literal ID="lConnectorFullName" runat="server" />
+                                        </div>
+                                        <ul class="dropdown-menu">
+                                            <asp:Repeater ID="rConnectorSelect" runat="server" OnItemCommand="rConnectorSelect_ItemCommand">
+                                                <ItemTemplate>
+                                                    <li>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("PersonAliasId") %>'>
+                                                            <%# Eval("FullName") %>
+                                                        </asp:LinkButton>
+                                                    </li>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-3 text-left text-md-right mb-3">
+                                    <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
+                                    <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
                                 </div>
                             </div>
 
                             <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlBadges">
                                 <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
-                                    <Rock:RockLiteral ID="lConnector" runat="server" Label="Connector" />
-                                </div>
-                                <div class="col-md-6">
-                                    <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
-                                    <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
-                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
-                                </div>
-                            </div>
 
                         </div>
 

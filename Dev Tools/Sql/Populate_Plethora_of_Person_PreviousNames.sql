@@ -1,7 +1,7 @@
 
 SET NOCOUNT ON
 
--- NOTE: Set @maxPerson to the number of previous names you want to add. Setting it as high as 99999 might take up to 15 seconds.
+-- NOTE: Set @maxPerson to the number of previous names you want to add. Setting it as high a3s 99999 might take up to 15 seconds.
 DECLARE @maxPerson INT = 999
     ,@lastName NVARCHAR(50)
     ,@personCounter INT = 0
@@ -10,35 +10,35 @@ DECLARE @maxPerson INT = 999
 BEGIN
 
 	-- Create a random sample table of all person aliases
-    IF OBJECT_ID('tempdb..#randomSampleTable') IS NOT NULL
-        DROP TABLE #randomSampleTable
+    IF OBJECT_ID('tempdb..#randomPersonAliasPreviousPersonSampleTable') IS NOT NULL
+        DROP TABLE #randomPersonAliasPreviousPersonSampleTable
 
-	CREATE TABLE #randomSampleTable (
+	CREATE TABLE #randomPersonAliasPreviousPersonSampleTable (
 		RowNum INT NOT NULL IDENTITY(1,1)
 		,Counter INT NOT NULL
         ,Id INT NOT NULL
        );
 
 	-- Populate all PersonAlias rows into the randomSampleTable
-	INSERT INTO #randomSampleTable
+	INSERT INTO #randomPersonAliasPreviousPersonSampleTable
 	SELECT Counter = 0, Id = Id
 	FROM [PersonAlias] as t
 
 	---- Now add two indexes
-	CREATE INDEX IX_RowNum ON #randomSampleTable (RowNum);
-	CREATE INDEX IX_Id ON #randomSampleTable (Id);
+	CREATE INDEX IX_RowNum ON #randomPersonAliasPreviousPersonSampleTable (RowNum);
+	CREATE INDEX IX_Id ON #randomPersonAliasPreviousPersonSampleTable (Id);
 
 	-- Create a table of random last names
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#personPreviousLastNames') IS NOT NULL
+        DROP TABLE #personPreviousLastNames
 
-    CREATE TABLE #lastNames (
+    CREATE TABLE #personPreviousLastNames (
         number INT NOT NULL IDENTITY(1, 1)
         ,surname NVARCHAR(23) NOT NULL
-        ,CONSTRAINT pk_fakelastnames PRIMARY KEY CLUSTERED (number)
+        ,CONSTRAINT pk_fakepreviouslastnames PRIMARY KEY CLUSTERED (number)
         );
 
-    INSERT INTO #lastNames
+    INSERT INTO #personPreviousLastNames
     VALUES (N'Edington')
         ,(N'Mcdonough')
         ,(N'Dorantes')
@@ -1040,7 +1040,7 @@ BEGIN
         ,(N'Ashmore')
         ,(N'Boettcher')
 
-    INSERT INTO #lastNames
+    INSERT INTO #personPreviousLastNames
     VALUES (N'Skillern')
         ,(N'Weyandt')
         ,(N'Fallis')
@@ -2042,7 +2042,7 @@ BEGIN
         ,(N'Netherton')
         ,(N'Chatham')
 
-    INSERT INTO #lastNames
+    INSERT INTO #personPreviousLastNames
     VALUES (N'Phillips')
         ,(N'Livesay')
         ,(N'Ayala')
@@ -3044,7 +3044,7 @@ BEGIN
         ,(N'Comeau')
         ,(N'Mcnerney')
 
-    INSERT INTO #lastNames
+    INSERT INTO #personPreviousLastNames
     VALUES (N'Truesdale')
         ,(N'Courtney')
         ,(N'Vandenberg')
@@ -3690,12 +3690,12 @@ BEGIN
 
     DECLARE @totalRows INT = (
             SELECT count(*)
-            FROM #randomSampleTable
+            FROM #randomPersonAliasPreviousPersonSampleTable
             );
 
     DECLARE @lastNameCount INT = (
             SELECT count(*)
-            FROM #lastNames
+            FROM #personPreviousLastNames
             );
 	
 	DECLARE @personAliasId INT;
@@ -3704,12 +3704,12 @@ BEGIN
     BEGIN
         -- get a random person's personalias
 		SET @randRow = ( SELECT CEILING((rand() + .000001) * @totalRows) )
-		SET @personAliasId = ( SELECT Id FROM #randomSampleTable WHERE RowNum = @randRow )
+		SET @personAliasId = ( SELECT Id FROM #randomPersonAliasPreviousPersonSampleTable WHERE RowNum = @randRow )
 
         -- get a random lastname
-        SELECT @lastName = #lastNames.surname
-        FROM #lastNames WITH (NOLOCK)
-        WHERE #lastNames.number = ROUND(rand() * @lastNameCount, 0)
+        SELECT @lastName = #personPreviousLastNames.surname
+        FROM #personPreviousLastNames WITH (NOLOCK)
+        WHERE #personPreviousLastNames.number = ROUND(rand() * @lastNameCount, 0)
 
         INSERT INTO [PersonPreviousName] (
             [PersonAliasId]
@@ -3731,11 +3731,11 @@ BEGIN
 
     COMMIT TRANSACTION
 
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#personPreviousLastNames') IS NOT NULL
+        DROP TABLE #personPreviousLastNames
 
-    IF OBJECT_ID('tempdb..#randomSampleTable') IS NOT NULL
-        DROP TABLE #randomSampleTable
+    IF OBJECT_ID('tempdb..#randomPersonAliasPreviousPersonSampleTable') IS NOT NULL
+        DROP TABLE #randomPersonAliasPreviousPersonSampleTable
 
 	-- Report...
     SELECT COUNT(*) [Total Person Previous Names]

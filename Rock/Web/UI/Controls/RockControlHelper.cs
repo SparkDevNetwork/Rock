@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -252,5 +253,36 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Renders a div using the panel panel-attributes, panel-heading, panel-title, and panel-body pattern.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <param name="writer">The writer.</param>
+        /// <param name="renderSection">The render section.</param>
+        public static void RenderSection( string title, string cssClass, HtmlTextWriter writer, Action<HtmlTextWriter> renderSection )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-section " + cssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
+            writer.RenderBeginTag( "h5" );
+            writer.Write( title );
+            writer.RenderEndTag(); // h5
+
+            writer.RenderEndTag(); // div panel-heading
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            renderSection( writer );
+
+            writer.RenderEndTag(); // div panel-body
+
+            writer.RenderEndTag(); // div panel
+        }
     }
 }

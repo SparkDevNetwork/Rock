@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -64,29 +63,36 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var benevolenceRequestService = new BenevolenceRequestService( rockContext );
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using (var rockContext = new RockContext() )
             {
+                var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
-                var benevolenceRequest = BuildBenevolenceRequest( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                benevolenceRequestService.Add( benevolenceRequest );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var benevolenceRequest = BuildBenevolenceRequest( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    benevolenceRequestService.Add( benevolenceRequest );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
-
-            var benevolenceRequests = benevolenceRequestService.
-                                Queryable( "AnalyticsSourceDate" ).
+            using ( var rockContext = new RockContext() )
+            {
+                var benevolenceRequestService = new BenevolenceRequestService( rockContext );
+                var benevolenceRequests = benevolenceRequestService.
+                                Queryable().
                                 Where( i => i.ForeignKey == benevolenceRequestForeignKey ).
                                 Where( i => i.RequestSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, benevolenceRequests.Count() );
+                Assert.AreEqual( expectedRecordCount, benevolenceRequests.Count() );
+                Assert.IsNotNull( benevolenceRequests.First().RequestSourceDate );
+            }
         }
 
         private BenevolenceRequest BuildBenevolenceRequest( RockContext rockContext, DateTime requestDate )

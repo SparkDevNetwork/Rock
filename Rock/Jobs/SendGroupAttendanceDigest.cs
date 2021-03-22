@@ -34,7 +34,7 @@ using Rock.Utility;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// A run once job for V10.3
+    /// Send Group Attendance Digest
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Send Group Attendance Digest" )]

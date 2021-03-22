@@ -2157,5 +2157,64 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202006091841047_Rollup_0609_spDbaRebuildIndexes", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (SELECT Id FROM [LavaShortcode] WHERE [Guid] = &apos;8A49FD01-D59E-4611-8FF4-9E226C99FB22&apos;)
+        ///BEGIN
+        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///VALUES (N&apos;KPI&apos;, N&apos;Create quick key performance indicators.&apos;, N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ e [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202011102025121_Rollup_1110_kpisortcode {
+            get {
+                return ResourceManager.GetString("_202011102025121_Rollup_1110_kpisortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        /// &lt;summary&gt;
+        ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
+        /// &lt;/summary&gt;
+        /// 
+        /// &lt;remarks&gt; 
+        ///  Uses the following constants:
+        ///   * Group Type - Family: &apos;790E3215-3B10-442B-AF69-616C0DCB998E&apos;
+        ///            * Location Type - Home: &apos;8C52E53C-2A66-435A-AE6E-5EE307D9A0DC&apos;
+        ///            * Phone Type - Home: &apos;AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303&apos;
+        ///            * Phone Type - Cell: &apos;407E7E45-7B2E-4FCD-9605-ECB1339F2453&apos;
+        /// &lt;/remarks&gt;
+        /// &lt;code&gt;
+        ///  EX [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder {
+            get {
+                return ResourceManager.GetString("_202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder", resourceCulture);
+            }
+        }
     }
 }

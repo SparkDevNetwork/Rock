@@ -50,6 +50,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string HighlightColor { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
@@ -65,6 +68,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public int Order { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -104,11 +110,13 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HighlightColor = source.HighlightColor;
             this.IsActive = source.IsActive;
             this.IsCritical = source.IsCritical;
             this.IsDefault = source.IsDefault;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

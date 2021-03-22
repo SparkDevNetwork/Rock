@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Interaction>( Context ).Queryable().Any( a => a.PersonalDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonalDevice.FriendlyTypeName, Interaction.FriendlyTypeName );
@@ -101,10 +107,14 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.MACAddress = source.MACAddress;
+            target.Manufacturer = source.Manufacturer;
+            target.Model = source.Model;
+            target.Name = source.Name;
             target.NotificationsEnabled = source.NotificationsEnabled;
             target.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;
             target.PersonAliasId = source.PersonAliasId;
             target.PlatformValueId = source.PlatformValueId;
+            target.SiteId = source.SiteId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

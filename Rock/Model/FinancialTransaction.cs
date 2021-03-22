@@ -580,7 +580,7 @@ namespace Rock.Model
         /// The transaction source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate TransactionSourceDate { get; set; }
+        public virtual AnalyticsSourceDate TransactionSourceDate { get; set; }
 
         /// <summary>
         /// Gets or sets the settled source date.
@@ -589,7 +589,7 @@ namespace Rock.Model
         /// The settled source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate SettledSourceDate { get; set; }
+        public virtual AnalyticsSourceDate SettledSourceDate { get; set; }
         #endregion Virtual Properties
 
         #region Public Methods

@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         private RockTextOrDropDownList _tbddlCriteriaValue;
 
         private RockTextBox _tbActionTypeName;
-        private WorkflowActionTypePicker  _wfatpEntityType;
+        private WorkflowActionTypePicker _wfatpEntityType;
         private RockLiteral _rlEntityTypeOverview;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
@@ -251,13 +251,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 result.WorkflowForm = _formEditor.GetForm();
                 if ( result.WorkflowForm == null )
                 {
-                    result.WorkflowForm = new WorkflowActionForm();
-                    result.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
-                    var systemEmail = new SystemCommunicationService(new RockContext()).Get(SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid());
-                    if ( systemEmail != null )
-                    {
-                        result.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
-                    }
+                    result.WorkflowForm = CreateNewWorkflowForm();
                 }
             }
             else
@@ -268,7 +262,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             result.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
 
-            if (expandInvalid && !result.IsValid)
+            if ( expandInvalid && !result.IsValid )
             {
                 Expanded = true;
             }
@@ -277,11 +271,33 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        private static WorkflowActionForm CreateNewWorkflowForm()
+        {
+            var workflowActionForm = new WorkflowActionForm();
+
+            workflowActionForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
+            workflowActionForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            workflowActionForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+
+            workflowActionForm.Actions = "Submit^^^Your information has been submitted successfully.";
+            var systemEmail = new SystemCommunicationService( new RockContext() ).Get( SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+            if ( systemEmail != null )
+            {
+                workflowActionForm.NotificationSystemCommunicationId = systemEmail.Id;
+            }
+
+            return workflowActionForm;
+        }
+
+        /// <summary>
         /// Sets the type of the workflow action.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
-        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
+        public void SetWorkflowActionType( WorkflowActionType value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
         {
             EnsureChildControls();
             _hfActionTypeGuid.Value = value.Guid.ToString();
@@ -310,15 +326,9 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Get( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                if (value.WorkflowForm == null)
+                if ( value.WorkflowForm == null )
                 {
-                    value.WorkflowForm = new WorkflowActionForm();
-                    value.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
-                    var systemEmail = new SystemCommunicationService( new RockContext() ).Get( SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
-                    if ( systemEmail != null )
-                    {
-                        value.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
-                    }
+                    value.WorkflowForm = CreateNewWorkflowForm();
                 }
                 _formEditor.SetForm( value.WorkflowForm, workflowTypeAttributes );
                 _cbIsActionCompletedOnSuccess.Checked = true;

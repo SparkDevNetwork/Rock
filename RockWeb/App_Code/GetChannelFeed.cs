@@ -211,7 +211,7 @@ namespace RockWeb
 
                 // resolve any relative links
                 var globalAttributes = GlobalAttributesCache.Get();
-                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
                 item.Content = item.Content.Replace( @" src=""/", @" src=""" + publicAppRoot );
                 item.Content = item.Content.Replace( @" href=""/", @" href=""" + publicAppRoot );
 

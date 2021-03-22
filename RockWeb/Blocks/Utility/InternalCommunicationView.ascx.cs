@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( cacheDuration > 0 && _currentPage == 0 )
             {
-                var serializedCachedItem = RockCache.Get( cacheKey );
+                var serializedCachedItem = RockCache.Get( cacheKey, true );
                 if ( serializedCachedItem != null
                     && serializedCachedItem is string
                     && !string.IsNullOrWhiteSpace( ( string ) serializedCachedItem ) )

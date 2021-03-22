@@ -30,8 +30,8 @@ namespace Rock.Web.UI.Controls
         string HeaderText { get; set; }
 
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included 
+        /// in the export. See <seealso cref="ExcelExportBehavior"/>.
         /// </summary>
         ExcelExportBehavior ExcelExportBehavior { get; set; }
 
@@ -45,22 +45,22 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// Enum that defines when a column should be included in an Excel export ( when in ColumnOutput ExportSource )
+    /// Enum that defines when a column should be included in an Excel export
     /// </summary>
     public enum ExcelExportBehavior
     {
         /// <summary>
-        /// The always include
+        /// Always include this in the export regardless of <see cref="ExcelExportSource"/> and visibility
         /// </summary>
         AlwaysInclude,
 
         /// <summary>
-        /// The include if visible
+        /// Only include this in the export if this column is visible and only when <see cref="ExcelExportSource"/> is <see cref="ExcelExportSource.ColumnOutput"/>
         /// </summary>
         IncludeIfVisible,
 
         /// <summary>
-        /// The never include
+        /// Never include this field in the export
         /// </summary>
         NeverInclude,
     }

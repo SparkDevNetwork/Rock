@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Checkin
             ddlDidAttend.SetValue( filterValue );
         }
 
-        private List<GroupTypePath> _groupTypePaths;
+        private List<CheckinAreaPath> _checkinAreaPaths;
         private Dictionary<int, string> _locationPaths;
 
         /// <summary>
@@ -410,8 +410,8 @@ namespace RockWeb.Blocks.Checkin
                 qry = qry.OrderByDescending( p => p.StartDateTime );
             }
 
-            // build a lookup for _groupTypePaths for OnRowDatabound
-            _groupTypePaths = new GroupTypeService( rockContext ).GetAllCheckinGroupTypePaths().ToList();
+            // build a lookup for _checkinAreaPaths for OnRowDatabound
+            _checkinAreaPaths = new GroupTypeService( rockContext ).GetAllCheckinAreaPaths().ToList();
 
             // build a lookup for _locationpaths for OnRowDatabound
             _locationPaths = new Dictionary<int, string>();
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Checkin
                     string groupTypePath = null;
                     if ( groupTypeId.HasValue )
                     {
-                        var path = _groupTypePaths.FirstOrDefault( a => a.GroupTypeId == groupTypeId.Value );
+                        var path = _checkinAreaPaths.FirstOrDefault( a => a.GroupTypeId == groupTypeId.Value );
                         if ( path != null )
                         {
                             groupTypePath = path.Path;

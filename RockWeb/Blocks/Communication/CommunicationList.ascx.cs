@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web;
@@ -484,23 +485,19 @@ namespace RockWeb.Blocks.Communication
                 gCommunication.SetLinqDataSource( queryable );
                 gCommunication.DataBind();
             }
-            catch ( Exception e )
+            catch ( Exception exception )
             {
-                ExceptionLogService.LogException( e );
+                ExceptionLogService.LogException( exception );
 
-                Exception sqlException = e;
-                while ( sqlException != null && !( sqlException is System.Data.SqlClient.SqlException ) )
-                {
-                    sqlException = sqlException.InnerException;
-                }
+                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( exception );
 
                 nbBindError.Text = string.Format( "<p>An error occurred trying to retrieve the communication history. Please try adjusting your filter settings and try again.</p><p>Error: {0}</p>",
-                    sqlException != null ? sqlException.Message : e.Message );
+                    sqlTimeoutException != null ? sqlTimeoutException.Message : exception.Message );
 
+                // if an error occurred, bind the grid with an empty object list
                 gCommunication.DataSource = new List<object>();
                 gCommunication.DataBind();
             }
-
         }
 
         #endregion

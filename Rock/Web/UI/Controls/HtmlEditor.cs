@@ -390,8 +390,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether root folder should be specific to user.  If true
-        /// a folder name equal to the the current user's login will be added to the root path.
+        /// Gets or sets a value indicating whether root folder should be specific to user.  If true,
+        /// a folder name equal to the current user's login will be added to the root path.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [user specific root]; otherwise, <c>false</c>.

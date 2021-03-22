@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -50,6 +51,15 @@ namespace Rock.Web.UI.Controls
             }
         }
         private List<BadgeCache> _badgeTypes = new List<BadgeCache>();
+
+        /// <summary>
+        /// The Entity to use for the Badges.
+        /// If this is left null, the Entity will be determined using <see cref="ContextEntityBlock"> Context Awareness</see>
+        /// </summary>
+        /// <value>
+        /// The entity.
+        /// </value>
+        public IEntity Entity { get; set; }
 
         /// <summary>
         /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
@@ -100,6 +110,7 @@ namespace Rock.Web.UI.Controls
                     if ( badgeType.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
                         var badgeControl = new BadgeControl();
+                        badgeControl.Entity = this.Entity;
                         badgeControl.BadgeCache = badgeType;
                         _badges.Add( badgeControl );
                         Controls.Add( badgeControl );
@@ -116,6 +127,7 @@ namespace Rock.Web.UI.Controls
         {
             foreach ( var badgeControl in _badges )
             {
+                badgeControl.Entity = this.Entity;
                 badgeControl.RenderControl( writer );
             }
         }

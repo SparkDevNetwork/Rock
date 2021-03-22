@@ -30,7 +30,9 @@ namespace Rock.Web.UI.Controls
         private RegularExpressionValidator _regexValidator;
         // https://www.regextester.com/1965
         // Modified from link above to support urls like "http://localhost:6229/Person/1/Edit" (Url does not have a period)
-        private readonly string _regex = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*$";
+        private readonly string _regexUrl = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*$";
+        private readonly string _regexUrlWithTrailingForwardSlash = @"^(http[s]?:\/\/)?[^\s([" + '"' + @" <,>]*\.?[^\s[" + '"' + @",><]*\/$";
+        private readonly string _validationErrorMessage = "The link provided is not valid.";
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -63,6 +65,42 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether a trailing forward slash should be required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [should require forward slash]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldRequireTrailingForwardSlash { get; set; }
+
+        /// <summary>
+        /// Gets the regular expression for validating the URL depending on whether or not
+        /// the trailing forward slash is required.
+        /// </summary>
+        /// <returns></returns>
+        private string GetUrlRegEx()
+        {
+            if ( ShouldRequireTrailingForwardSlash )
+            {
+                return _regexUrlWithTrailingForwardSlash;
+            }
+            return _regexUrl;
+        }
+
+        /// <summary>
+        /// Gets the validation error message for value depending on whether or not
+        /// the trailing forward slash is required.
+        /// </summary>
+        /// <returns></returns>
+        private string GetValidationErrorMessage()
+        {
+            if ( ShouldRequireTrailingForwardSlash )
+            {
+                return _validationErrorMessage + " Please ensure the URL ends with a forward slash.";
+            }
+            return _validationErrorMessage;
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -74,8 +112,8 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            _regexValidator.ValidationExpression = _regex;
-            _regexValidator.ErrorMessage = "The link provided is not valid";
+            _regexValidator.ValidationExpression = GetUrlRegEx();
+            _regexValidator.ErrorMessage = GetValidationErrorMessage();
             Controls.Add( _regexValidator );
         }
 
@@ -106,8 +144,8 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderDataValidator( writer );
 
-            _regexValidator.ValidationExpression = _regex;
-            _regexValidator.ErrorMessage = "The link provided is not valid";
+            _regexValidator.ValidationExpression = GetUrlRegEx();
+            _regexValidator.ErrorMessage = GetValidationErrorMessage();
 
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );

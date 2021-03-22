@@ -63,6 +63,8 @@
                                     <Rock:PagePicker ID="ppDetailPage" runat="server" Label="Detail Page" />
                                     <Rock:RockCheckBox ID="cbEnableTags" runat="server" Label="Enable Tag List" Text="Yes"
                                         Help="Determines if the 'ItemTagList' lava merge field will be populated and passed to the lava template. The ItemTagList is a list of objects with the following fields 'Id', 'Guid', 'Name', 'Count'. Example: {% for tag in ItemTagList %} {{ tag.Name }} ({{ tag.Count }}) {% endfor %} <small><span class='tip tip-lava'></span></small>" />
+                                    <Rock:RockCheckBox ID="cbEnableArchiveSummary" runat="server" Label="Enable Archive Summary" Text="Yes"
+                                        Help="When enabled an additional 'ArchiveSummary' collection will be available in Lava to help create a summary list of content channel items by month/year. This collection will be cached using the same duration as the Item Cache and will hold the following properties: Month (int), MonthName, Year, Count." />
                                 </div>
                             </div>
 

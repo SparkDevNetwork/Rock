@@ -130,7 +130,7 @@ namespace Rock.SystemKey
         #endregion Display
 
         /// <summary>
-        /// Attribute key to filter the the GroupTypes available for the defined values of the "Inactive Group Reasons" defined type
+        /// Attribute key to filter the GroupTypes available for the defined values of the "Inactive Group Reasons" defined type
         /// </summary>
         public const string INACTIVE_REASONS_GROUPTYPE_FILTER = "core_InactiveReasonsGroupTypeFilter";
     }

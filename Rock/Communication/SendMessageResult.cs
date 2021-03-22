@@ -22,10 +22,28 @@ namespace Rock.Communication
     /// <summary>
     /// This is the list of results that a task can have.
     /// </summary>
-    internal class SendMessageResult
+    public class SendMessageResult
     {
+        /// <summary>
+        /// Gets or sets the warnings.
+        /// </summary>
+        /// <value>
+        /// The warnings.
+        /// </value>
         public List<string> Warnings { get; set; } = new List<string>();
+        /// <summary>
+        /// Gets or sets the errors.
+        /// </summary>
+        /// <value>
+        /// The errors.
+        /// </value>
         public List<string> Errors { get; set; } = new List<string>();
+        /// <summary>
+        /// Gets or sets the messages sent.
+        /// </summary>
+        /// <value>
+        /// The messages sent.
+        /// </value>
         public int MessagesSent { get; set; }
     }
 }

@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Connection" )]
     [Table( "ConnectionOpportunity" )]
     [DataContract]
-    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag
+    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered
     {
 
         #region Entity Properties
@@ -115,12 +116,16 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion
 
@@ -297,12 +302,23 @@ namespace Rock.Model
         /// <returns></returns>
         private PersonAlias GetDefaultConnectorPersonAlias( int? campusId )
         {
-            if ( campusId.HasValue &&
-                ConnectionOpportunityCampuses != null )
+            if ( ConnectionOpportunityCampuses == null )
             {
-                var connectionOpportunityCampus = this.ConnectionOpportunityCampuses
+                return null;
+            }
+
+            if ( !campusId.HasValue && CampusCache.All().Count == 1 )
+            {
+                // Rock hides campus pickers if there is only one campus
+                campusId = CampusCache.All().First().Id;
+            }
+
+            if ( campusId.HasValue )
+            {
+                var connectionOpportunityCampus = ConnectionOpportunityCampuses
                     .Where( c => c.CampusId == campusId.Value )
                     .FirstOrDefault();
+
                 if ( connectionOpportunityCampus != null )
                 {
                     return connectionOpportunityCampus.DefaultConnectorPersonAlias;

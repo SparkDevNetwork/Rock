@@ -2672,7 +2672,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( scheduleId, schedule.GetCalendarEvent().DTStart.Value );
+                    _scheduleTimes.Add( scheduleId, schedule.GetICalEvent().DtStart.Value );
                 }
             }
 
@@ -2689,7 +2689,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( altScheduleId, schedule.GetCalendarEvent().DTStart.Value );
+                    _scheduleTimes.Add( altScheduleId, schedule.GetICalEvent().DtStart.Value );
                 }
             }
 
@@ -3190,7 +3190,6 @@ namespace RockWeb.Blocks.Examples
             {
                 byte[] imageData = webClient.DownloadData( imageUrl );
                 stopwatch.Stop();
-                Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 

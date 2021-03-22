@@ -22,7 +22,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -248,13 +248,24 @@ namespace Rock.Model
         [LavaInclude]
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
+        /*
+	        08/25/2020 - MSB
+	        We have added the JsonIgnore attribute to address in application crash issue
+            caused by a Content Channel referencing itself when the object is serialized
+            to a JSON string.
+
+            https://github.com/SparkDevNetwork/Rock/issues/4250
+	
+            Reason: Web Api Controller	
+        */
+
         /// <summary>
         /// Gets or sets the collection of ContentChannels that this ContentChannel allows as children.
         /// </summary>
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaIgnore]
+        [DataMember, LavaIgnore, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }

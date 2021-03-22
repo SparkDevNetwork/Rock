@@ -54,7 +54,7 @@ namespace Rock.Achievement
             base.Refresh();
 
             // Create any attributes that need to be created
-            int modelEntityTypeId = EntityTypeCache.Get( typeof( StreakTypeAchievementType ) ).Id;
+            int modelEntityTypeId = EntityTypeCache.Get( typeof( AchievementType ) ).Id;
 
             using ( var rockContext = new RockContext() )
             {
@@ -62,7 +62,13 @@ namespace Rock.Achievement
                 {
                     var componentType = component.Value.Value.GetType();
                     var componentEntityTypeId = EntityTypeCache.Get( componentType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( componentType, modelEntityTypeId, "AchievementEntityTypeId", componentEntityTypeId.ToString(), rockContext );
+
+                    Rock.Attribute.Helper.UpdateAttributes(
+                        componentType,
+                        modelEntityTypeId,
+                        nameof( AchievementType.ComponentEntityTypeId ),
+                        componentEntityTypeId.ToString(),
+                        rockContext );
                 }
             }
         }

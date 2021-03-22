@@ -70,6 +70,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.DayHeaderTemplate,
         Order = 3 )]
 
+    [BooleanField( "Enable Campus Filtering",
+        Description = "If enabled then events will be filtered by campus to the campus context of the page and user.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.EnableCampusFiltering,
+        Order = 4 )]
+
     #endregion
 
     public class CalendarEventList : RockMobileBlockType
@@ -100,6 +108,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The day header template
             /// </summary>
             public const string DayHeaderTemplate = "DayHeaderTemplate";
+
+            /// <summary>
+            /// The enable campus filtering
+            /// </summary>
+            public const string EnableCampusFiltering = "EnableCampusFiltering";
         }
 
         /// <summary>
@@ -163,6 +176,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// The day header template.
         /// </value>
         protected string DayHeaderTemplate => GetAttributeValue( AttributeKeys.DayHeaderTemplate );
+
+        /// <summary>
+        /// Gets a value indicating whether campus filtering is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if campus filtering is enabled; otherwise, <c>false</c>.
+        /// </value>
+        protected bool EnableCampusFiltering => GetAttributeValue( AttributeKeys.EnableCampusFiltering ).AsBoolean();
 
         #endregion
 
@@ -273,6 +294,35 @@ namespace Rock.Blocks.Types.Mobile.Events
                             m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == eventCalendar.Id ) &&
                             m.EventItem.IsActive &&
                             m.EventItem.IsApproved );
+
+                // Check for Campus Parameter or Campus Context.
+                if ( EnableCampusFiltering )
+                {
+                    var campusGuid = RequestContext.GetPageParameter( "CampusGuid" ).AsGuidOrNull();
+                    if ( campusGuid.HasValue )
+                    {
+                        // Check if there's a campus with this guid.
+                        var campus = CampusCache.Get( campusGuid.Value );
+                        if ( campus != null )
+                        {
+                            qry = qry.Where( a => !a.CampusId.HasValue || a.CampusId == campus.Id );
+                        }
+                    }
+                    else
+                    {
+                        var contextCampus = RequestContext.GetContextEntity<Campus>();
+                        if ( contextCampus != null )
+                        {
+                            qry = qry.Where( a => !a.CampusId.HasValue || a.Campus.Id == contextCampus.Id );
+                        }
+                        else if ( RequestContext.CurrentPerson != null && RequestContext.CurrentPerson.PrimaryCampusId.HasValue )
+                        {
+                            var campusId = RequestContext.CurrentPerson.PrimaryCampusId.Value;
+
+                            qry = qry.Where( a => !a.CampusId.HasValue || a.CampusId == campusId );
+                        }
+                    }
+                }
 
                 // Get the occurrences
                 var occurrences = qry.ToList()

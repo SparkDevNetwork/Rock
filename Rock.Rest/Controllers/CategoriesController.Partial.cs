@@ -79,9 +79,9 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets all category and non-category item decendents for the provided <see cref="CategoryItem"/>, which should represent a <see cref="Metric"/> or <see cref="MetricCategory"/>.
+        /// Gets all category and non-category item decendents for the provided <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.
         /// </summary>
-        /// <param name="categoryItem">The <see cref="CategoryItem"/>, which should represent a <see cref="Metric"/> or <see cref="MetricCategory"/>.</param>
+        /// <param name="categoryItem">The <see cref="CategoryItem" />, which should represent a <see cref="Metric" /> or <see cref="MetricCategory" />.</param>
         /// <param name="includedCategoryIds">The included category ids.</param>
         /// <param name="metricCategoryService">The <see cref="MetricCategoryService"/>.</param>
         /// <returns></returns>
@@ -261,7 +261,7 @@ namespace Rock.Rest.Controllers
 
                     if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
                     {
-                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
+                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByOrderAndNextScheduledDateTime().OfType<ICategorized>().ToList();
                     }
                     else
                     {
@@ -431,7 +431,8 @@ namespace Rock.Rest.Controllers
                     var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                     if ( childItems != null )
                     {
-                        foreach ( var categorizedItem in childItems.OrderBy( c => c.Name ) )
+                        var sortedChildren = childItems.ToList().OrderBy( c => c.Name );
+                        foreach ( var categorizedItem in sortedChildren )
                         {
                             if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                             {

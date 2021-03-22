@@ -837,6 +837,7 @@ namespace RockWeb.Blocks.Cms
                     RockCheckBoxList filterConfig = new RockCheckBoxList();
                     filterConfig.Label = filterOptions.FilterLabel;
                     filterConfig.CssClass = "js-entity-id-" + entity.Id.ToString();
+                    filterConfig.CssClass += " js-entity-filter-field";
                     filterConfig.RepeatDirection = RepeatDirection.Horizontal;
                     filterConfig.Attributes.Add( "entity-id", entity.Id.ToString() );
                     filterConfig.Attributes.Add( "entity-filter-field", filterOptions.FilterField );

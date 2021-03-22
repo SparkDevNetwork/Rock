@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -121,7 +122,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    result = null; 
+                    result = null;
                 }
 
                 return result;
@@ -170,7 +171,7 @@ namespace RockWeb.Blocks.Finance
                 ddlBatch.SetValue( hfBatchId.Value );
                 hfDataViewId.Value = this.GetBlockUserPreference( "DataViewId" );
                 dvpDataView.SetValue( hfDataViewId.Value.AsIntegerOrNull() );
-                BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull() , hfDataViewId.Value.AsIntegerOrNull() );
+                BindHtmlGrid( hfBatchId.Value.AsIntegerOrNull(), hfDataViewId.Value.AsIntegerOrNull() );
                 LoadEntityDropDowns();
             }
         }
@@ -307,7 +308,7 @@ namespace RockWeb.Blocks.Finance
                         else
                         {
                             // if there is no groupMember, make sure the controls don't have anything selected
-                            ddlGroup.SetValue( (int?) null );
+                            ddlGroup.SetValue( ( int? ) null );
                             ddlGroupMember.Items.Clear();
                             ddlGroupMember.SetValue( ( int? ) null );
                         }
@@ -493,32 +494,66 @@ namespace RockWeb.Blocks.Finance
             lHeaderHtml.Text = headers.ToString();
 
             int? transactionId = this.PageParameter( "TransactionId" ).AsIntegerOrNull();
+            DataView dataView = null;
 
             if ( batchId.HasValue || dataViewId.HasValue || transactionId.HasValue )
             {
-                var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable()
+                nbErrorMessage.Visible = false;
+                try
+                {
+                    var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable()
                     .Include( a => a.Transaction )
                     .Include( a => a.Transaction.AuthorizedPersonAlias.Person );
-                if ( batchId.HasValue )
+                    if ( batchId.HasValue )
+                    {
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value );
+                    }
+
+                    if ( dataViewId.HasValue && dataViewId > 0 )
+                    {
+                        dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
+                        var transactionDetailIdsQry = dataView.GetQuery( new DataViewGetQueryArgs { DbContext = rockContext } ).Select( a => a.Id );
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionDetailIdsQry.Contains( a.Id ) );
+                    }
+
+                    if ( transactionId.HasValue )
+                    {
+                        financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionId == a.TransactionId );
+                    }
+
+                    int maxResults = this.GetAttributeValue( "MaxNumberofResults" ).AsIntegerOrNull() ?? 1000;
+                    _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).Take( maxResults ).ToList();
+                }
+                catch (Exception ex)
                 {
-                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == batchId.Value );
+                    ExceptionLogService.LogException( ex );
+                    var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+
+                    if ( sqlTimeoutException != null )
+                    {
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Warning;
+                        nbErrorMessage.Text = "This report did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                    }
+                    else
+                    {
+                        if ( ex is RockDataViewFilterExpressionException )
+                        {
+                            RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
+                            nbErrorMessage.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
+                        }
+                        else
+                        {
+                            nbErrorMessage.Text = "There was a problem with one of the filters for this report's dataview.";
+                        }
+
+                        nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+
+                        nbErrorMessage.Details = ex.Message;
+                        nbErrorMessage.Visible = true;
+                        return;
+                    }
                 }
 
-                if ( dataViewId.HasValue && dataViewId > 0 )
-                {
-                    var dataView = new DataViewService( rockContext ).Get( dataViewId.Value );
-                    List<string> errorMessages;
-                    var transactionDetailIdsQry = dataView.GetQuery( null, rockContext, null, out errorMessages ).Select( a => a.Id );
-                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionDetailIdsQry.Contains( a.Id ) );
-                }
-
-                if ( transactionId.HasValue )
-                {
-                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => transactionId == a.TransactionId );
-                }
-
-                int maxResults = this.GetAttributeValue( "MaxNumberofResults" ).AsIntegerOrNull() ?? 1000;
-                _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).Take( maxResults ).ToList();
                 phTableRows.Controls.Clear();
                 btnSave.Visible = _financialTransactionDetailList.Any();
                 string appRoot = this.ResolveRockUrl( "~/" );
@@ -881,7 +916,7 @@ namespace RockWeb.Blocks.Finance
             else if ( gtpGroupType.Visible )
             {
                 this.SetAttributeValue( "EntityTypeQualifierValue", gtpGroupType.SelectedValue );
-                this.SetAttributeValue( "LimitToActiveGroups", cbLimitToActiveGroups.Checked.ToString());
+                this.SetAttributeValue( "LimitToActiveGroups", cbLimitToActiveGroups.Checked.ToString() );
             }
             else
             {
