@@ -1912,6 +1912,16 @@ ORDER BY [Text]";
         /// <returns></returns>
         private bool ValidateInfo()
         {
+            // First, verify that the page controls are valid using built-in validators.
+            // If validation fails, exit and allow the controls to display the messages they have generated.
+            Page.Validate();
+
+            if ( !Page.IsValid )
+            {
+                return false;
+            }
+
+            // Next, perform custom validation that is specific to this action.
             var errorMessages = new List<string>();
 
             if ( tbFirstName1.Text.IsNullOrWhiteSpace() && tbFirstName2.Text.IsNullOrWhiteSpace() )

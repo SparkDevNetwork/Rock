@@ -5289,13 +5289,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Wheres the specified input.
+        /// Filters a collection of items by applying the specified Linq predicate.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filter )
+        {
+            if ( input is IEnumerable )
+            {
+                var enumerableInput = ( IEnumerable ) input;
+                return enumerableInput.Where( filter );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Filters a collection of items on a specified property and value.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="filterKey">The filter key.</param>
         /// <param name="filterValue">The filter value.</param>
+        /// <param name="comparisonType">The type of comparison for the filter value, either "equal" (default) or "notequal".</param>
         /// <returns></returns>
-        public static object Where( object input, string filterKey, object filterValue )
+        public static object Where( object input, string filterKey, object filterValue, string comparisonType = "equal" )
         {
             if ( input == null )
             {
@@ -5306,24 +5324,45 @@ namespace Rock.Lava
             {
                 var result = new List<object>();
 
-                foreach ( var value in ( (IEnumerable)input ) )
+                foreach ( var value in ( ( IEnumerable )input ) )
                 {
                     if ( value is ILiquidizable )
                     {
                         var liquidObject = value as ILiquidizable;
                         var condition = Condition.Operators["=="];
 
-                        if ( liquidObject.ContainsKey( filterKey ) && condition( liquidObject[filterKey], filterValue ) )
+                        if ( liquidObject.ContainsKey( filterKey )
+                                && ( ( condition( liquidObject[filterKey], filterValue ) && comparisonType == "equal" )
+                                     || ( !condition( liquidObject[filterKey], filterValue ) && comparisonType == "notequal" ) ) )
                         {
                             result.Add( liquidObject );
                         }
+
                     }
                     else if ( value is IDictionary<string, object> )
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey ) && (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue )
+                        if ( dictionaryObject.ContainsKey( filterKey )
+                                 && ( ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue && comparisonType == "equal"
+                                        || ( ( dynamic ) dictionaryObject[filterKey] != ( dynamic ) filterValue && comparisonType == "notequal" ) ) )
                         {
                             result.Add( dictionaryObject );
+                        }
+                    }
+                    else if ( value is object )
+                    {
+                        var propertyValue = value.GetPropertyValue( filterKey );
+
+                        // Allow for null checking as an empty string. Could be differing opinions on this...?!
+                        if ( propertyValue.IsNull() )
+                        {
+                            propertyValue = string.Empty;
+                        }
+
+                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
+                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                        {
+                            result.Add( value );
                         }
                     }
                 }

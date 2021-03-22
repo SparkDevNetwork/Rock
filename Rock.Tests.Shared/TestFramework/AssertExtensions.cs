@@ -14,7 +14,7 @@ namespace Rock.Tests.Shared
     public static partial class AssertExtensions
     {
         /// <summary>
-        /// Asserts that the two string can be considered equivalent regardless of newlines.
+        /// Asserts that the two strings can be considered equivalent regardless of newlines.
         /// </summary>
         /// <param name="expected">The expected string.</param>
         /// <param name="actual">The actual sting.</param>
@@ -37,7 +37,7 @@ namespace Rock.Tests.Shared
         }
 
         /// <summary>
-        /// Asserts that the two string can be considered equivalent regardless of whitespace.
+        /// Asserts that the two strings can be considered equivalent regardless of whitespace.
         /// </summary>
         /// <param name="expected">The expected string.</param>
         /// <param name="actual">The actual sting.</param>
