@@ -141,8 +141,7 @@ namespace Rock.Field.Types
             {
                 formattedValue = "Step Type: " + stepType.Name;
             }
-
-            if ( stepProgram != null )
+            else if ( stepProgram != null )
             {
                 formattedValue = "Step Program: " + stepProgram.Name;
             }

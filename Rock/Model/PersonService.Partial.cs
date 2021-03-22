@@ -1900,7 +1900,7 @@ namespace Rock.Model
             var groupMemberService = new GroupMemberService( ( RockContext ) this.Context );
 
             // construct the linq in a way that will return the group members sorted by the GroupOrder setting of the person
-            var groupMembers = groupMemberService.Queryable( true )
+            var groupMembersQry = groupMemberService.Queryable( true )
                 .Where( m =>
                     m.PersonId == personId &&
                     m.Group.GroupTypeId == groupTypeId )
@@ -1914,11 +1914,19 @@ namespace Rock.Model
                 } )
                 .SelectMany( x => x.SortedMembers )
                 .OrderBy( a => a.PersonGroupOrder ?? int.MaxValue )
-                .Select( a => a.GroupMember )
-                .Where( m => includeDeceased || !m.Person.IsDeceased )
-                .Where( m => includeSelf || m.PersonId != personId );
+                .Select( a => a.GroupMember );
 
-            return groupMembers.Include( a => a.Person ).Include( a => a.GroupRole );
+            if ( !includeDeceased )
+            {
+                groupMembersQry = groupMembersQry.Where( m => !m.Person.IsDeceased );
+            }
+
+            if ( !includeSelf )
+            {
+                groupMembersQry = groupMembersQry.Where( m => m.PersonId != personId );
+            }
+
+            return groupMembersQry.Include( a => a.Person ).Include( a => a.GroupRole );
         }
 
         /// <summary>
@@ -2929,37 +2937,17 @@ namespace Rock.Model
         #region Update Person
 
         /// <summary>
-        /// Inactivates a person.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="reason">The reason.</param>
-        /// <param name="reasonNote">The reason note.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "", true )]
-        public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
-        {
-            History.HistoryChangeList historyChangeList;
-
-            // since this is an obsolete method now, convert the definedValueCache to a DefinedValueCache
-            DefinedValueCache cacheReason = null;
-            if ( reason != null )
-            {
-                cacheReason = DefinedValueCache.Get( reason.Id );
-            }
-
-            InactivatePerson( person, cacheReason, reasonNote, out historyChangeList );
-
-            return historyChangeList.Select( a => a.Summary ).ToList();
-        }
-
-        /// <summary>
-        /// Inactivates a person.
+        /// Inactivates a person and adds additional info to the HistoryChangeList. The Person model already checks for and adds changes to the History table.
+        /// Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for "Record Status", "Record Status Reason", and "Inactive Reason Note".
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="reason">The reason.</param>
         /// <param name="reasonNote">The reason note.</param>
         /// <param name="historyChangeList">The history change list.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( @"Use one of the InactivatePerson overloads without the HistoryChangeList out param. The Person model takes care of updating the HistoryChangeList.
+            Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for
+            ""Record Status"", ""Record Status Reason"", and ""Inactive Reason Note""." )]
         public void InactivatePerson( Person person, DefinedValueCache reason, string reasonNote, out History.HistoryChangeList historyChangeList )
         {
             historyChangeList = new History.HistoryChangeList();
@@ -2975,6 +2963,50 @@ namespace Rock.Model
                 person.RecordStatusReasonValueId = reason.Id;
                 person.InactiveReasonNote = reasonNote;
             }
+        }
+
+        /// <summary>
+        /// Inactivates the person.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="inactiveReasonDefinedValue">The inactive reason defined value.</param>
+        /// <param name="inactiveReasonNote">The inactive reason note.</param>
+        public void InactivatePerson( Person person, DefinedValueCache inactiveReasonDefinedValue, string inactiveReasonNote )
+        {
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            if ( inactiveStatus == null || inactiveReasonDefinedValue == null )
+            {
+                return;
+            }
+
+            // History is Checked in Person.PreSaveChanges() and saved in Person.PostSaveChanges().
+            person.RecordStatusValueId = inactiveStatus.Id;
+            person.RecordStatusReasonValueId = inactiveReasonDefinedValue.Id;
+            person.InactiveReasonNote = inactiveReasonNote;
+        }
+
+        /// <summary>
+        /// Inactivates the person. Use this one to also update ReviewReason and ReviewReasonNote.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="inactiveReasonDefinedValue">The inactive reason defined value.</param>
+        /// <param name="inactiveReasonNote">The inactive reason note.</param>
+        /// <param name="reviewReasonDefinedValue">The review reason defined value.</param>
+        /// <param name="reviewReasonNote">The review reason note.</param>
+        public void InactivatePerson( Person person, DefinedValueCache inactiveReasonDefinedValue, string inactiveReasonNote, DefinedValueCache reviewReasonDefinedValue, string reviewReasonNote )
+        {
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            if ( inactiveStatus == null || inactiveReasonDefinedValue == null || reviewReasonDefinedValue == null )
+            {
+                return;
+            }
+
+            // History is Checked in Person.PreSaveChanges() and saved in Person.PostSaveChanges().
+            person.RecordStatusValueId = inactiveStatus.Id;
+            person.RecordStatusReasonValueId = inactiveReasonDefinedValue.Id;
+            person.InactiveReasonNote = inactiveReasonNote;
+            person.ReviewReasonValueId = reviewReasonDefinedValue.Id;
+            person.ReviewReasonNote = reviewReasonNote;
         }
 
         /// <summary>

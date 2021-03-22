@@ -22,7 +22,7 @@ namespace Rock.SystemGuid
     public static class Layout
     {
         /// <summary>
-        /// Gets the Left Sidebar layout
+        /// Gets the Left Sidebar layout (Internal Site)
         /// </summary>
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
 
@@ -32,7 +32,7 @@ namespace Rock.SystemGuid
         public const string FULL_WIDTH = "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD";
 
         /// <summary>
-        /// Gets the Person Detail layout
+        /// Gets the Person Detail layout (Internal Site)
         /// </summary>
         public const string PERSON_DETAIL = "F66758C6-3E3D-4598-AF4C-B317047B5987";
 
@@ -40,5 +40,10 @@ namespace Rock.SystemGuid
         /// Gets the Full Width layout (Internal Site)
         /// </summary>
         public const string FULL_WIDTH_INTERNAL_SITE = "D65F783D-87A9-4CC9-8110-E83466A0EADB";
+
+        /// <summary>
+        /// Gets the Left Sidebar layout (Checkin Manager Site)
+        /// </summary>
+        public const string CHECKIN_MANAGER_LEFT_SIDEBAR = "2669A579-48A5-4160-88EA-C3A10024E1E1";
     }
 }

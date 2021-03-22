@@ -701,6 +701,7 @@ namespace Rock
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
+        [RockObsolete("1.12")]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {
             return str.SubstringSafe( startIndex, maxLength );

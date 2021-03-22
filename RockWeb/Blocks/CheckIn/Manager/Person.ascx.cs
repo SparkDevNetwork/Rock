@@ -23,12 +23,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
-using Rock.CheckIn;
-using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -40,10 +36,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
+    /// ######### OBSOLETE: Use PersonLeft/PersonRight instead #######
     /// </summary>
-    [DisplayName( "Person Profile" )]
+    [DisplayName( "Person Profile (Obsolete)" )]
     [Category( "Check-in > Manager" )]
-    [Description( "Displays person and details about recent check-ins." )]
+    [Description( "Obsolete: Use PersonLeft/PersonRight instead" )]
 
     [LinkedPage(
         "Manager Page",
@@ -89,7 +86,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [BooleanField(
         "Allow Label Reprinting",
         Key = AttributeKey.AllowLabelReprinting,
-        Description = " Determines if reprinting labels should be allowed.",
+        Description = "Determines if reprinting labels should be allowed.",
         DefaultBooleanValue = false,
         Category = "Manager Settings",
         Order = 5 )]

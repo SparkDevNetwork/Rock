@@ -37,5 +37,13 @@ namespace Rock.Mobile
         /// The CSS styles specific to this block.
         /// </value>
         public string CssStyles { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the navigation bar should be hidden on this page.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the navigation bar should be hidden on this page; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideNavigationBar { get; set; }
     }
 }

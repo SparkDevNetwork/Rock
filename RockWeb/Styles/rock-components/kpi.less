@@ -1,0 +1,160 @@
+.kpi-container {
+  display: grid;
+  max-width: 100%;
+  overflow: hidden;
+  grid-template-columns: repeat(1, 1fr);
+  grid-auto-rows: 1fr;
+  grid-column-gap: 16px;
+  grid-row-gap: 16px;
+
+  @media (min-width: @screen-sm) {
+    grid-template-columns: repeat(var(--kpi-col-sm,2), 1fr);
+  }
+
+  @media (min-width: @screen-md) {
+    grid-template-columns: repeat(var(--kpi-col-md,3), 1fr);
+  }
+
+  @media (min-width: @screen-lg) {
+    grid-template-columns: repeat(var(--kpi-col-lg,4), 1fr);
+  }
+}
+
+.kpi {
+  display: flex;
+  flex-basis: 100%;
+  flex-grow: 1;
+  align-items: center;
+  margin: 0 8px 16px;
+  background: #fff;
+  border: 1px solid #000;
+  border-color: currentColor;
+  border-radius: 4px;
+
+  .kpi-container & {
+    margin: 0;
+  }
+}
+
+.kpi-title {
+  margin-top: 0;
+  font-weight: @font-weight-semibold;
+}
+
+.kpi-icon {
+  position: relative;
+  display: inline-block;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 60px;
+  max-width: 35%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 32px;
+  vertical-align: top;
+
+  .svg-placeholder {
+    display: block;
+    width: auto;
+    height: 100%;
+    background: currentColor;
+    opacity: .2;
+  }
+
+  .kpi-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.kpi-stat {
+  flex: 1 1 auto;
+  align-self: center;
+  padding: 8px 16px;
+}
+
+.kpi-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-label,
+.kpi-secondary-label {
+  display: block;
+  font-size: 14px;
+  line-height: 1.1;
+  color: @text-muted;
+}
+
+.kpi-secondary-label {
+  font-size: 12px;
+  opacity: .7;
+}
+
+.kpi.kpi-card-light {
+  color: #c0cbd1;
+  border-color: @panel-border !important;
+
+  .kpi-icon {
+    display: flex;
+    flex-grow: 1;
+    width: 96px;
+    min-width: 96px;
+    max-width: 96px;
+    font-size: 54px;
+
+    .svg-placeholder {
+      opacity: 0;
+    }
+  }
+
+  .kpi-stat{
+    text-align: right;
+  }
+
+  .kpi-value {
+    font-size: 32px;
+  }
+
+  .kpi-label {
+    font-size: 16px;
+  }
+
+  .kpi-secondary-label {
+    font-size: 14px;
+  }
+}
+
+.kpi-light {
+  padding: 16px 0;
+  background: transparent;
+  border: 0;
+
+  .kpi-icon {
+    display: flex;
+    flex-grow: 1;
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    font-size: 24px;
+  }
+
+  .kpi-stat {
+    padding-right: 0;
+  }
+
+  .svg-placeholder {
+    width: 2em;
+    height: auto;
+    border-radius: 4px;
+  }
+}

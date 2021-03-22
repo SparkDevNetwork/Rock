@@ -639,66 +639,11 @@ namespace RockWeb.Blocks.Communication
                 var dataContext = this.GetDataContext();
 
                 var service = new CommunicationService( dataContext );
-                var communicationRecipientService = new CommunicationRecipientService( dataContext );
-                var communication = service.Get( CommunicationId.Value );
-                if ( communication != null )
+
+                var newCommunication = service.Copy( CommunicationId.Value, CurrentPersonAliasId );
+
+                if ( newCommunication != null )
                 {
-                    var newCommunication = communication.Clone( false );
-                    newCommunication.CreatedByPersonAlias = null;
-                    newCommunication.CreatedByPersonAliasId = null;
-                    newCommunication.CreatedDateTime = RockDateTime.Now;
-                    newCommunication.ModifiedByPersonAlias = null;
-                    newCommunication.ModifiedByPersonAliasId = null;
-                    newCommunication.ModifiedDateTime = RockDateTime.Now;
-                    newCommunication.Id = 0;
-                    newCommunication.Guid = Guid.Empty;
-                    newCommunication.SenderPersonAliasId = CurrentPersonAliasId;
-                    newCommunication.Status = CommunicationStatus.Draft;
-                    newCommunication.ReviewerPersonAliasId = null;
-                    newCommunication.ReviewedDateTime = null;
-                    newCommunication.ReviewerNote = string.Empty;
-                    newCommunication.SendDateTime = null;
-
-                    // Get the recipients from the original communication,
-                    // but only for recipients that are using the person's primary alias id.
-                    // This will avoid an issue where a copied communication will include the same person multiple times
-                    // if they have been merged since the original communication was created
-                    var primaryAliasRecipients = communicationRecipientService.Queryable()
-                        .Where( a => a.CommunicationId == communication.Id )
-                        .Select( a => new
-                        {
-                            a.PersonAlias.Person,
-                            a.AdditionalMergeValuesJson,
-                            a.PersonAliasId
-                        } ).ToList()
-                        .GroupBy( a => a.Person.PrimaryAliasId )
-                        .Select( s => new
-                        {
-                            PersonAliasId = s.Key,
-                            AdditionalMergeValuesJson = s.Where( a => a.PersonAliasId == s.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault()
-                        } )
-                        .Where( s => s.PersonAliasId.HasValue )
-                        .ToList();
-
-                    foreach ( var primaryAliasRecipient in primaryAliasRecipients )
-                    {
-                        newCommunication.Recipients.Add( new CommunicationRecipient()
-                        {
-                            PersonAliasId = primaryAliasRecipient.PersonAliasId.Value,
-                            Status = CommunicationRecipientStatus.Pending,
-                            StatusNote = string.Empty,
-                            AdditionalMergeValuesJson = primaryAliasRecipient.AdditionalMergeValuesJson
-                        } );
-                    }
-
-                    foreach ( var attachment in communication.Attachments.ToList() )
-                    {
-                        var newAttachment = new CommunicationAttachment();
-                        newAttachment.BinaryFileId = attachment.BinaryFileId;
-                        newAttachment.CommunicationType = attachment.CommunicationType;
-                        newCommunication.Attachments.Add( newAttachment );
-                    }
-
                     service.Add( newCommunication );
                     dataContext.SaveChanges();
 
@@ -2365,7 +2310,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
                         a.Key.CommunicationRecipientId,
-                        Clicked = a.Any( x => x.Operation == "Click"),
+                        Clicked = a.Any( x => x.Operation == "Click" ),
                         Opened = a.Any( x => x.Operation == "Opened" )
                     } )
                     .GroupBy( a => a.InteractionSummaryDateTime )
@@ -2440,11 +2385,11 @@ namespace RockWeb.Blocks.Communication
             int totalOpens = openInteractions.Count();
             int totalClicks = clickInteractions.Count();
 
-            var recipientsWithOpens = openInteractions.GroupBy( a => a.CommunicationRecipientId ).Select(x => x.Key).ToList();
+            var recipientsWithOpens = openInteractions.GroupBy( a => a.CommunicationRecipientId ).Select( x => x.Key ).ToList();
             var recipientsWithClicks = clickInteractions.GroupBy( a => a.CommunicationRecipientId ).Select( x => x.Key ).ToList();
 
             int recipientsWithClicksNoOpensCount = recipientsWithClicks.Except( recipientsWithOpens ).Count();
-            
+
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = recipientsWithClicks.Count();
 

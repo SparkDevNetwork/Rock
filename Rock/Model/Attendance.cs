@@ -183,14 +183,13 @@ namespace Rock.Model
         public bool? Processed { get; set; }
 
         /// <summary>
-        /// Gets or sets the is first time.
+        /// Gets or sets if this first time that this person has ever checked into anything
         /// </summary>
         /// <value>
-        /// The first time the person has attended this group.
+        /// If this attendance is the first time the person has attended anything
         /// </value>
         [DataMember]
         public bool? IsFirstTime { get; set; }
-
 
         /// <summary>
         /// Gets or sets the note.
@@ -442,48 +441,59 @@ namespace Rock.Model
         {
             get
             {
-                // If the attendance does not have an occurrence schedule, then there's nothing to check.
-                if ( Occurrence == null || Occurrence.Schedule == null )
-                {
-                    return false;
-                }
+                // If the Campus is assigned, trust that over the CampusId value.
+                int? campusId = Campus?.Id ?? CampusId;
 
-                // If person has checked-out, they are obviously not still checked in
-                if ( EndDateTime.HasValue )
-                {
-                    return false;
-                }
-
-                // We'll check start time against timezone next, but don't even bother with that, if start date was more than 2 days ago
-                if ( StartDateTime < RockDateTime.Now.AddDays( -2 ) )
-                {
-                    return false;
-                }
-
-                // Get the current time (and adjust for a campus timezone)
-                var currentDateTime = RockDateTime.Now;
-                if ( Campus != null )
-                {
-                    currentDateTime = Campus.CurrentDateTime;
-                }
-                else if ( CampusId.HasValue )
-                {
-                    var campus = CampusCache.Get( CampusId.Value );
-                    if ( campus != null )
-                    {
-                        currentDateTime = campus.CurrentDateTime;
-                    }
-                }
-
-                // Now that we now the correct time, make sure that the attendance is for today and previous to current time
-                if ( StartDateTime < currentDateTime.Date || StartDateTime > currentDateTime )
-                {
-                    return false;
-                }
-
-                // Person is currently checked in, if the schedule for this attendance is still active
-                return Occurrence.Schedule.WasScheduleOrCheckInActive( currentDateTime );
+                return CalculateIsCurrentlyCheckedIn( StartDateTime, EndDateTime, campusId, this.Occurrence?.Schedule );
             }
+        }
+
+        /// <summary>
+        /// Calculates if an attendance would be considered checked-in based on specified parameters
+        /// </summary>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        public static bool CalculateIsCurrentlyCheckedIn( DateTime? startDateTime, DateTime? endDateTime, int? campusId, Schedule schedule )
+        {
+            if ( schedule == null )
+            {
+                return false;
+            }
+
+            // If person has checked-out, they are obviously not still checked in.
+            if ( endDateTime.HasValue )
+            {
+                return false;
+            }
+
+            // We'll check start time against timezone next, but don't even bother if start date was more than 2 days ago.
+            if ( startDateTime < RockDateTime.Now.AddDays( -2 ) )
+            {
+                return false;
+            }
+
+            // Get the current time (and adjust for a campus timezone).
+            var currentDateTime = RockDateTime.Now;
+            if ( campusId.HasValue )
+            {
+                var campus = CampusCache.Get( campusId.Value );
+                if ( campus != null )
+                {
+                    currentDateTime = campus.CurrentDateTime;
+                }
+            }
+
+            // Now that we know the correct time, make sure that the attendance is for today and previous to current time.
+            if ( startDateTime < currentDateTime.Date || startDateTime > currentDateTime )
+            {
+                return false;
+            }
+
+            // Person is currently checked in, if the schedule for this attendance is still active.
+            return schedule.WasScheduleOrCheckInActive( currentDateTime );
         }
 
         #endregion
@@ -580,10 +590,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets or sets the Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [LavaInclude]
         [NotMapped]
@@ -799,7 +809,7 @@ namespace Rock.Model
             {
                 sb.AppendFormat( " on {0} at {1}", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
 
-                var end = EndDateTime ?? Occurrence?.OccurrenceDate;
+                var end = EndDateTime;
                 if ( end.HasValue )
                 {
                     sb.AppendFormat( " until {0} at {1}", end.Value.ToShortDateString(), end.Value.ToShortTimeString() );

@@ -44,12 +44,21 @@ namespace RockWeb.Blocks.Connection
         DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
         Order = 1,
         Key = AttributeKey.DetailPage )]
+
     [ConnectionTypesField(
-        "Connection Types",
-        Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
+        "Include Connection Types",
+        Description = "Optional list of connection types to include in the display to (All will be displayed by default).",
         IsRequired = false,
         Order = 2,
-        Key = AttributeKey.ConnectionTypes )]
+        Key = AttributeKey.IncludedConnectionTypes )]
+
+    [ConnectionTypesField(
+        "Exclude Connection Types",
+        Description = "Optional list of connection types to exclude from the display to (None will be excluded by default).",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.ExcludedConnectionTypes )]
+
     [CodeEditorField(
         "Contents",
         Description = @"The Lava template to use for displaying connection opportunities assigned to current user.",
@@ -59,16 +68,17 @@ namespace RockWeb.Blocks.Connection
         IsRequired = false,
         DefaultValue = @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}",
         Key = AttributeKey.Contents,
-        Order = 3 )]
+        Order = 4 )]
     #endregion Block Attributes
     public partial class MyConnectionOpportunitiesLava : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
         private static class AttributeKey
         {
-            public const string ConnectionTypes = "ConnectionTypes";
+            public const string IncludedConnectionTypes = "ConnectionTypes";
             public const string DetailPage = "DetailPage";
             public const string Contents = "Contents";
+            public const string ExcludedConnectionTypes = "ExcludedConnectionTypes";
         }
         #endregion Attribute Keys
 
@@ -127,7 +137,8 @@ namespace RockWeb.Blocks.Connection
             string themeRoot = ResolveRockUrl( "~~/" );
             contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-            var connectionTypeGuids = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
+            var includedConnectionTypeGuids = GetAttributeValue( AttributeKey.IncludedConnectionTypes ).SplitDelimitedValues().AsGuidList();
+            var excludedConnectionTypeGuids = GetAttributeValue( AttributeKey.ExcludedConnectionTypes ).SplitDelimitedValues().AsGuidList();
 
             DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
 
@@ -137,9 +148,14 @@ namespace RockWeb.Blocks.Connection
                 .Where( r => r.ConnectionState == ConnectionState.Active ||
                                     ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value < midnightToday ) );
 
-            if ( connectionTypeGuids.Any() )
+            if ( includedConnectionTypeGuids.Any() )
             {
-                connectionRequests = connectionRequests.Where( a => connectionTypeGuids.Contains( a.ConnectionOpportunity.ConnectionType.Guid ) );
+                connectionRequests = connectionRequests.Where( a => includedConnectionTypeGuids.Contains( a.ConnectionOpportunity.ConnectionType.Guid ) );
+            }
+
+            if ( excludedConnectionTypeGuids.Any() )
+            {
+                connectionRequests = connectionRequests.Where( a => !excludedConnectionTypeGuids.Contains( a.ConnectionOpportunity.ConnectionType.Guid ) );
             }
 
             connectionRequests = connectionRequests.OrderBy( r => r.PersonAlias.Person.LastName ).ThenBy( r => r.PersonAlias.Person.NickName );

@@ -146,6 +146,8 @@
     <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityCampusFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionAlertsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionAlertTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupDemographicValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />

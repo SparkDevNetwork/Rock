@@ -1210,6 +1210,36 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransactionDetail>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
@@ -2705,6 +2735,18 @@ namespace Rock.Model
             if ( new Service<WebFarmNodeLog>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, WebFarmNodeLog.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WebFarmNodeMetric>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, WebFarmNodeMetric.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WebFarmNodeMetric>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, WebFarmNodeMetric.FriendlyTypeName );
                 return false;
             }  
  

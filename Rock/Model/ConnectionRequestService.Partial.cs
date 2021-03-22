@@ -24,7 +24,6 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Connection Request Service
     /// </summary>
@@ -40,7 +39,30 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
         /// </returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use CanConnect( ConnectionRequestViewModel request, ConnectionOpportunity connectionOpportunity, ConnectionTypeCache connectionType )" )]
         public bool CanConnect( ConnectionRequestViewModel request, ConnectionTypeCache connectionType )
+        {
+            var rockContext = Context as RockContext;
+            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+
+            var connectionOpportunity = connectionOpportunityService.Queryable()
+                .AsNoTracking()
+                .FirstOrDefault( co => co.Id == request.ConnectionOpportunityId );
+
+            return CanConnect( request, connectionOpportunity, connectionType );
+        }
+
+        /// <summary>
+        /// Determines whether this request can be connected.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="connectionOpportunity">The connection opportunity.</param>
+        /// <param name="connectionType">Type of the connection.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanConnect( ConnectionRequestViewModel request, ConnectionOpportunity connectionOpportunity, ConnectionTypeCache connectionType )
         {
             if ( request == null || ( !request.PlacementGroupId.HasValue && connectionType.RequiresPlacementGroupToConnect ) )
             {
@@ -49,7 +71,8 @@ namespace Rock.Model
 
             return
                 request.ConnectionState != ConnectionState.Inactive &&
-                request.ConnectionState != ConnectionState.Connected;
+                request.ConnectionState != ConnectionState.Connected &&
+                connectionOpportunity.ShowConnectButton;
         }
 
         /// <summary>
@@ -216,7 +239,7 @@ namespace Rock.Model
 
                 foreach ( var requestViewModel in statusViewModel.Requests )
                 {
-                    requestViewModel.CanConnect = CanConnect( requestViewModel, connectionType );
+                    requestViewModel.CanConnect = CanConnect( requestViewModel, connectionOpportunity, connectionType );
                 }
             }
 
@@ -240,13 +263,13 @@ namespace Rock.Model
         {
             ValidateArgs( args );
 
-            var connectionOpportunityId = Queryable()
+            var connectionOpportunity = Queryable()
                 .AsNoTracking()
                 .Where( cr => cr.Id == connectionRequestId )
-                .Select( cr => cr.ConnectionOpportunityId )
+                .Select( cr => cr.ConnectionOpportunity )
                 .FirstOrDefault();
 
-            var query = GetConnectionRequestViewModelQuery( currentPersonAliasId, connectionOpportunityId, args );
+            var query = GetConnectionRequestViewModelQuery( currentPersonAliasId, connectionOpportunity.Id, args );
             var viewModel = query.FirstOrDefault( cr => cr.Id == connectionRequestId );
 
             if ( viewModel == null )
@@ -255,7 +278,7 @@ namespace Rock.Model
             }
 
             var connectionType = ConnectionTypeCache.Get( viewModel.ConnectionTypeId );
-            viewModel.CanConnect = CanConnect( viewModel, connectionType );
+            viewModel.CanConnect = CanConnect( viewModel, connectionOpportunity, connectionType );
 
             if ( !statusIconsTemplate.IsNullOrWhiteSpace() )
             {
@@ -418,6 +441,19 @@ namespace Rock.Model
             if ( args.ConnectionStates?.Any() == true )
             {
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
+            }
+
+            // Filter past due: Allow other states to go throgh, but "future follow-up" must be due today or already past due
+            if ( args.IsFutureFollowUpPastDueOnly )
+            {
+                var midnight = RockDateTime.Today.AddDays( 1 );
+
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr =>
+                    cr.ConnectionState != ConnectionState.FutureFollowUp ||
+                    (
+                        cr.FollowupDate.HasValue &&
+                        cr.FollowupDate.Value < midnight
+                    ) );
             }
 
             // Filter last activity
@@ -631,6 +667,11 @@ namespace Rock.Model
         /// Gets or sets the sort property.
         /// </summary>
         public ConnectionRequestViewModelSortProperty? SortProperty { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is future follow up past due only.
+        /// </summary>
+        public bool IsFutureFollowUpPastDueOnly { get; set; }
     }
 
     /// <summary>
@@ -803,11 +844,13 @@ namespace Rock.Model
             {
                 return _statusHighlightColor.IsNullOrWhiteSpace() ? ConnectionStatus.DefaultHighlightColor : _statusHighlightColor;
             }
+
             set
             {
                 _statusHighlightColor = value;
             }
         }
+
         private string _statusHighlightColor = null;
 
         /// <summary>
@@ -966,9 +1009,10 @@ namespace Rock.Model
             {
                 if ( !LastActivityTypeName.IsNullOrWhiteSpace() && LastActivityDate.HasValue )
                 {
-                    return string.Format( "{0} (<span class='small'>{1}</small>)",
-                            LastActivityTypeName,
-                            LastActivityDate.ToRelativeDateString() );
+                    return string.Format(
+                        "{0} (<span class='small'>{1}</small>)",
+                        LastActivityTypeName,
+                        LastActivityDate.ToRelativeDateString() );
                 }
 
                 return string.Empty;
@@ -1035,7 +1079,8 @@ namespace Rock.Model
                     return string.Empty;
                 }
 
-                return string.Format( @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
+                return string.Format(
+                    @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
                     CampusName,
                     CampusCode );
             }

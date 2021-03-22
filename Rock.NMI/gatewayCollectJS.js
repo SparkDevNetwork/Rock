@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
     window.Rock = window.Rock || {};
     Rock.NMI = Rock.NMI || {}
@@ -57,7 +57,8 @@
                     }
                 }
 
-                self.postbackScript = $control.attr('data-postback-script');
+                self.tokenizerPostbackScript = $control.attr('data-tokenizer-postback-script');
+                self.currencyChangePostbackScript = $control.attr('data-currencychange-postback-script');
                 var enabledPaymentTypes = JSON.parse($('.js-enabled-payment-types', $control).val());
 
                 self.$creditCardContainer = $('.js-gateway-creditcard-container', $control);
@@ -291,7 +292,7 @@
 
                 if (enabledPaymentTypes.includes('card')) {
                     self.$paymentButtonCreditCard.off().on('click', function () {
-                        $(this).addClass("active").siblings().removeClass("active");
+                        $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
 
                         // have CollectJS clear all the input fields when the PaymentType (ach vs cc) changes. This will prevent us sending both ACH and CC payment info at the same time
                         // CollectJS determines to use ACH vs CC by seeing which inputs have data in it. There isn't a explicit option to indicate which to use.
@@ -300,6 +301,9 @@
                         self.$selectedPaymentType.val('card');
                         self.$creditCardContainer.show();
                         self.$achContainer.hide();
+                        if (self.currencyChangePostbackScript) {
+                            window.location = self.currencyChangePostbackScript;
+                        }
                     });
                 };
 
@@ -307,7 +311,7 @@
                 if (enabledPaymentTypes.includes('ach')) {
 
                     self.$paymentButtonACH.off().on('click', function () {
-                        $(this).addClass("active").siblings().removeClass("active");
+                        $(this).removeClass('btn-default').addClass('btn-primary active').siblings().addClass('btn-default').removeClass('btn-primary active');
 
                         // have CollectJS clear all the input fields when the PaymentType (ach vs cc) changes. This will prevent us sending both ACH and CC payment info at the same time
                         // CollectJS determines to use ACH vs CC by seeing which inputs have data in it. There isn't a explicit option to indicate which to use.
@@ -315,6 +319,9 @@
                         self.$selectedPaymentType.val('ach');
                         self.$creditCardContainer.hide();
                         self.$achContainer.show();
+                        if (self.currencyChangePostbackScript) {
+                            window.location = self.currencyChangePostbackScript;
+                        }
                     });
                 };
 
@@ -345,15 +352,15 @@
                 }
 
                 if (selectedPaymentTypeVal == 'card' && enabledPaymentTypes.includes('card')) {
-                    self.$paymentButtonACH.removeClass('active');
-                    self.$paymentButtonCreditCard.addClass('active');
+                    self.$paymentButtonACH.removeClass('active btn-primary').addClass('btn-default');
+                    self.$paymentButtonCreditCard.removeClass('btn-default').addClass('btn-primary active');
                     self.$selectedPaymentType.val('card');
                     self.$creditCardContainer.show();
                     self.$achContainer.hide();
                 }
                 else {
-                    self.$paymentButtonCreditCard.removeClass('active');
-                    self.$paymentButtonACH.addClass('active');
+                    self.$paymentButtonCreditCard.removeClass('active btn-primary').addClass('btn-default');
+                    self.$paymentButtonACH.removeClass('btn-default').addClass('btn-primary active')
                     self.$selectedPaymentType.val('ach');
                     self.$creditCardContainer.hide();
                     self.$achContainer.show();
@@ -366,9 +373,9 @@
                 self.$responseToken.val(tokenResponse.token);
                 self.$rawResponseToken.val(JSON.stringify(tokenResponse, null, 2));
 
-                if (self.postbackScript) {
+                if (self.tokenizerPostbackScript) {
                     self.tokenResponseSent(true);
-                    window.location = self.postbackScript;
+                    window.location = self.tokenizerPostbackScript;
                 }
             },
 

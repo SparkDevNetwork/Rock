@@ -103,6 +103,30 @@ namespace Rock.Model
         }
         private ICollection<Step> _steps;
 
+        /// <summary>
+        /// Gets the status color or default color depending on IsCompleteStatus.
+        /// </summary>
+        /// <value>
+        /// The status color or default.
+        /// </value>
+        public virtual string StatusColorOrDefault
+        {
+            get
+            {
+                if ( !StatusColor.IsNullOrWhiteSpace() )
+                {
+                    return StatusColor;
+                }
+
+                if ( IsCompleteStatus )
+                {
+                    return "#16c98d";
+                }
+
+                return "#f3f3f3";
+            }
+        }
+
         #endregion Virtual Properties
 
         #region Entity Configuration

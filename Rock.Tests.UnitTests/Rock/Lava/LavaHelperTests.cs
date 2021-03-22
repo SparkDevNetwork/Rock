@@ -13,31 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using DotLiquid;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Lava
+namespace Rock.Tests.Rock.Lava
 {
-    /// <summary>
-    /// Tests for Lava Template comments.
-    /// </summary>
     [TestClass]
-    public class LavaCommentsFilterTests
+    public class LavaHelperTests
     {
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
+        [TestMethod]
+        public void RemoveLavaCommentsReturnsEmptyStringForNullInput()
         {
-            // Initialize the Lava Engine.
-            Liquid.UseRubyDateFormat = false;
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            var actualResult = LavaHelper.RemoveLavaComments( null );
 
-            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+            Assert.That.AreEqual( string.Empty, actualResult );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentAfterContent_ReturnsContent()
+        public void RemoveLavaCommentsLineCommentAfterContentReturnsContent()
         {
             var input = @"
 Line 1<br>
@@ -53,13 +48,11 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInStringLiteral_IsNotRemoved()
+        public void RemoveLavaCommentsCommentInStringLiteralIsNotRemoved()
         {
             var input = @"
 -- Begin Example --
@@ -85,14 +78,11 @@ or '/- Block Comment 2...
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
-
         [TestMethod]
-        public void LavaHelperRemoveComments_LineCommentContainingQuotedString_IsRemoved()
+        public void RemoveLavaCommentsLineCommentContainingQuotedStringIsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -108,12 +98,10 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
-        public void LavaHelperRemoveComments_BlockCommentContainingQuotedString_IsRemoved()
+        public void RemoveLavaCommentsBlockCommentContainingQuotedStringIsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -133,15 +121,16 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_CommentInRawTag_IsNotRemoved()
+        public void RemoveLavaCommentsCommentInRawTagIsNotRemoved()
         {
             var input = @"
+//- Line Comment: A comment that is confined to a single line.
+/- Block Comment: A comment that can span...
+   ... multiple lines. -/
 Example Start<br>
 Valid Lava Comment Styles are:
 {% raw %}//- Line Comment: A comment that is confined to a single line.
@@ -152,23 +141,24 @@ Example End<br>
 ";
 
             var expectedOutput = @"
+
+
 Example Start<br>
 Valid Lava Comment Styles are:
-//- Line Comment: A comment that is confined to a single line.
+{% raw %}//- Line Comment: A comment that is confined to a single line.
 or
 /- Block Comment: A comment that can span...
-   ... multiple lines. -/
+   ... multiple lines. -/{% endraw %}
 Example End<br>
 ";
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
+
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
+        public void RemoveLavaCommentsBlockCommentSpanningMultipleLinesRemovesNewLinesContainedInComment()
         {
             var input = @"
 Line 1<br>
@@ -187,13 +177,11 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
 
         [TestMethod]
-        public void LavaHelperRemoveComments_BlockCommentInline_RendersCorrectLineContent()
+        public void RemoveLavaComments_BlockCommentInline_RendersCorrectLineContent()
         {
             var input = @"
 Line 1<br>
@@ -209,9 +197,7 @@ Line 3<br>
 
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            Assert.That.AreEqual( expectedOutput, templateUncommented );
         }
     }
 }

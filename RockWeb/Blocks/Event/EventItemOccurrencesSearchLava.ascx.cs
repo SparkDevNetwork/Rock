@@ -38,7 +38,15 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Block does a search for occurrences of events based on the EventCalendarId specified in the URL" )]
 
-    [CodeEditorField( "Results Lava Template", "The lava template for display the results of the search", CodeEditorMode.Lava, CodeEditorTheme.Rock, order: 2, required: false, defaultValue: @"
+    [CodeEditorField(
+        "Results Lava Template",
+        Description = "The lava template for display the results of the search",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        Order = 0,
+        IsRequired = false,
+        Key = AttributeKey.ResultsLavaTemplate,
+        DefaultValue = @"
 {% for occurrence in EventItemOccurrences %}
         
     <div class='row margin-b-lg'>
@@ -53,13 +61,127 @@ namespace RockWeb.Blocks.Event
     </div>
 {% endfor %}
 " )]
-
-    [SlidingDateRangeField( "Default Date Range", "The Default date range selection", false, "Next|10|Week||", enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order: 3 )]
-
-    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", required: false, order: 4 )]
-    [BooleanField( "Use Campus Context", "Set this to true to set the campus filter based on the campus context.", defaultValue: false, order: 5 )]
+    [SlidingDateRangeField(
+        "Default Date Range",
+        Description = "The Default date range selection",
+        IsRequired = false,
+        DefaultValue = "Next|10|Week||",
+        EnabledSlidingDateRangeTypes = "Next,Upcoming,Current",
+        Key = AttributeKey.DefaultDateRange,
+        Order = 1 )]
+    [LinkedPage(
+        "Event Detail Page",
+        Description = "The page to use for showing event details.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.EventDetailPage )]
+    [BooleanField(
+        "Use Campus Context",
+        Description = "Set this to true to set the campus filter based on the campus context.",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Key = AttributeKey.UseCampusContext )]
+    [CustomDropdownListField(
+        "Show Campus Filter",
+        Description = "This setting will control if/when the campus dropdown filter shown.",
+        ListSource = "0^Always,1^Never,2^When No Context",
+        IsRequired = false,
+        DefaultValue = "0",
+        Key = AttributeKey.ShowCampusFilter,
+        Order = 4 )]
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down filter.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 5 )]
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down filter.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 6 )]
+    [EventCalendarField(
+        "Event Calendar",
+        Description = "This  setting would override any setting in the query string if provided.",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.EventCalendar )]
+    [BooleanField(
+        "Show Audience Filter",
+        Description = "When enabled the audience filter will be shown.",
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = AttributeKey.ShowAudienceFilter )]
+    [DefinedValueField(
+        "Filter Audiences",
+        Description = "Determines which audiences should be displayed in the filter.",
+        IsRequired = false,
+        AllowMultiple = true,
+        Key = AttributeKey.FilterAudiences,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE,
+        Order = 9 )]
+    [BooleanField(
+        "Show Date Range Filter",
+        Description = "Determines whether the date range filters are shown.",
+        DefaultBooleanValue = true,
+        Order = 10,
+        Key = AttributeKey.ShowDateRangeFilter )]
     public partial class EventItemOccurrencesSearchLava : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ResultsLavaTemplate = "ResultsLavaTemplate";
+            public const string ShowCampusFilter = "ShowCampusFilter";
+            public const string DefaultDateRange = "DefaultDateRange";
+            public const string EventDetailPage = "EventDetailPage";
+            public const string UseCampusContext = "UseCampusContext";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
+            public const string EventCalendar = "EventCalendar";
+            public const string ShowAudienceFilter = "ShowAudienceFilter";
+            public const string FilterAudiences = "FilterAudiences";
+            public const string ShowDateRangeFilter = "ShowDateRangeFilter";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string EventCalendarId = "EventCalendarId";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the event calendar identifier.
+        /// </summary>
+        /// <value>
+        /// The event calendar identifier.
+        /// </value>
+        public int? EventCalendarId
+        {
+            get { return ViewState[ViewStateKey.EventCalendarId] as int?; }
+            set { ViewState[ViewStateKey.EventCalendarId] = value; }
+        }
+
+        #endregion
+
+        private static class ViewStateKey
+        {
+            public const string EventCalendarId = "EventCalendarId";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -93,16 +215,18 @@ namespace RockWeb.Blocks.Event
                 BindFilter();
 
                 // load and apply the SearchSettings if this user navigates back to this page during the session
-                var searchSettings = this.Session[string.Format( "SearchSettings_Block_{0}_EventCalendarId_", this.BlockId, this.PageParameter( "EventCalendarId" ) )] as SearchSettings;
+                GetEventCalendar();
+                var searchSettings = this.Session[string.Format( "SearchSettings_Block_{0}_EventCalendarId_", this.BlockId, EventCalendarId )] as SearchSettings;
                 if ( searchSettings != null )
                 {
                     cpCampusPicker.SelectedCampusId = searchSettings.CampusId;
                     pDateRange.LowerValue = searchSettings.DateRange.Start;
                     pDateRange.UpperValue = searchSettings.DateRange.End;
+                    cblAudience.SetValues( searchSettings.Audiences );
                 }
                 else
                 {
-                    var defaultDateRangeDelimitedValues = this.GetAttributeValue( "DefaultDateRange" );
+                    var defaultDateRangeDelimitedValues = this.GetAttributeValue( AttributeKey.DefaultDateRange );
                     var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( defaultDateRangeDelimitedValues );
                     pDateRange.LowerValue = dateRange.Start;
                     pDateRange.UpperValue = dateRange.End;
@@ -131,25 +255,96 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindFilter()
         {
-            cpCampusPicker.Campuses = CampusCache.All();
-            cpCampusPicker.Items[0].Text = "All";
+            // show campus filter
+            int? showCampusFilter = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsIntegerOrNull();
+            bool showCampus = IsCampusEnabled( showCampusFilter );
 
-            var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
-
-            if ( !cpCampusPicker.Visible )
+            if ( showCampus )
             {
-                cpCampusPicker.SelectedCampusId = null;
-                return;
+                var selectedCampusTypeIds = GetAttributeValue( AttributeKey.CampusTypes )
+                  .SplitDelimitedValues( true )
+                  .AsGuidList()
+                  .Select( a => DefinedValueCache.Get( a ) )
+                  .Where( a => a != null )
+                  .Select( a => a.Id )
+                  .ToList();
+
+                cpCampusPicker.Campuses = CampusCache.All();
+
+                if ( selectedCampusTypeIds.Any() )
+                {
+                    cpCampusPicker.CampusTypesFilter = selectedCampusTypeIds;
+                }
+
+                var selectedCampusStatusIds = GetAttributeValue( AttributeKey.CampusStatuses )
+                    .SplitDelimitedValues( true )
+                    .AsGuidList()
+                    .Select( a => DefinedValueCache.Get( a ) )
+                    .Where( a => a != null )
+                    .Select( a => a.Id )
+                    .ToList();
+
+                if ( selectedCampusStatusIds.Any() )
+                {
+                    cpCampusPicker.CampusStatusFilter = selectedCampusStatusIds;
+                }
+
+                if ( showCampusFilter.Value == 0 )
+                {
+                    var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
+                    var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                    if ( currentCampus != null )
+                    {
+                        cpCampusPicker.SelectedCampusId = currentCampus.Id;
+                    }
+                }
+                cpCampusPicker.Items[0].Text = "All";
             }
 
-            if ( this.GetAttributeValue( "UseCampusContext" ).AsBoolean() )
+            cpCampusPicker.Visible = divCampus.Visible = showCampus && cpCampusPicker.Items.Count > 2;
+
+            // Date Range Filter
+            pDateRange.Visible = divDateRange.Visible = GetAttributeValue( AttributeKey.ShowDateRangeFilter ).AsBoolean();
+
+            // Setup Audience Filter
+            var selectedCategoryGuids = GetAttributeValue( AttributeKey.FilterAudiences ).SplitDelimitedValues( true ).AsGuidList();
+            var showAudienceFilter = GetAttributeValue( AttributeKey.ShowAudienceFilter ).AsBoolean() && selectedCategoryGuids.Any();
+            cblAudience.Visible = showAudienceFilter;
+            if ( showAudienceFilter )
             {
-                var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-                if ( currentCampus != null )
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+                if ( definedType != null )
                 {
-                    cpCampusPicker.SelectedCampusId = currentCampus.Id;
+                    cblAudience.DataSource = definedType.DefinedValues.Where( v => selectedCategoryGuids.Contains( v.Guid ) );
+                    cblAudience.DataBind();
                 }
             }
+        }
+
+        /// <summary>
+        /// Determine if campus is enabled
+        /// </summary>
+        private bool IsCampusEnabled( int? showCampusFilter )
+        {
+            var showCampus = true;
+            if ( showCampusFilter.HasValue )
+            {
+                if ( showCampusFilter.Value == 1 )
+                {
+                    showCampus = false;
+                }
+                else if ( GetAttributeValue( AttributeKey.UseCampusContext ).AsBoolean() && showCampusFilter.Value == 2 )
+                {
+                    var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
+                    var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                    if ( currentCampus != null )
+                    {
+                        showCampus = false;
+                    }
+                }
+            }
+
+            return showCampus;
         }
 
         /// <summary>
@@ -159,31 +354,70 @@ namespace RockWeb.Blocks.Event
         {
             RockContext rockContext = new RockContext();
 
-            var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive );
+            var qry = new EventItemOccurrenceService( rockContext ).Queryable().Where( e => e.EventItem.IsActive && e.EventItem.IsApproved );
 
-            int? eventCalendarId = this.PageParameter( "EventCalendarId" ).AsIntegerOrNull();
-            if ( eventCalendarId.HasValue )
+            if ( EventCalendarId.HasValue )
             {
-                qry = qry.Where( e => e.EventItem.EventCalendarItems.Any( x => x.EventCalendarId == eventCalendarId ) );
+                qry = qry.Where( e => e.EventItem.EventCalendarItems.Any( x => x.EventCalendarId == EventCalendarId.Value ) );
             }
 
-            // filter by Campus (filter)
-            if ( cpCampusPicker.SelectedCampusId.HasValue )
+            int? showCampusFilter = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsIntegerOrNull();
+            bool showCampus = IsCampusEnabled( showCampusFilter );
+            if ( showCampus )
             {
-                int campusId = cpCampusPicker.SelectedCampusId.Value;
-                
-                // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
-                qry = qry.Where( a => a.CampusId == null || a.CampusId == campusId );
+                if ( cpCampusPicker.Visible && cpCampusPicker.SelectedCampusId.HasValue )
+                {
+                    int campusId = cpCampusPicker.SelectedCampusId.Value;
+
+                    // If an EventItemOccurrence's CampusId is null, then the occurrence is an 'All Campuses' event occurrence, so include those
+                    qry = qry.Where( a => a.CampusId == null || a.CampusId == campusId );
+                }
+                else
+                {
+                    var campusIds = cpCampusPicker
+                        .Items
+                        .Cast<ListItem>()
+                        .Select( i => i.Value )
+                        .AsIntegerList();
+                    qry = qry.Where( a => a.CampusId == null || campusIds.Contains( a.CampusId.Value ) );
+                }
+            }
+            else if ( GetAttributeValue( AttributeKey.UseCampusContext ).AsBoolean() )
+            {
+                var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
+                var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+                if ( currentCampus != null )
+                {
+                    qry = qry.Where( a => a.CampusId == null || a.CampusId == currentCampus.Id );
+                }
+            }
+
+            if ( cblAudience.Visible )
+            {
+                // Filter by Category
+                List<int> audiences = cblAudience.SelectedValuesAsInt;
+                if ( audiences.Any() )
+                {
+                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
+                }
             }
 
             // retrieve occurrences into a List so we can do additional filtering against the Calendar data
             List<EventItemOccurrence> itemOccurrences = qry.ToList();
 
-            // filter by date range
-            var dateRange = new DateRange( pDateRange.LowerValue, pDateRange.UpperValue );
-            if ( dateRange.Start != null && dateRange.End != null )
+            if ( pDateRange.Visible )
             {
-                itemOccurrences.RemoveAll( o => o.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 );
+                // filter by date range
+                var dateRange = new DateRange( pDateRange.LowerValue, pDateRange.UpperValue );
+                if ( dateRange.Start != null && dateRange.End != null )
+                {
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( dateRange.Start.Value, dateRange.End.Value ).Count() == 0 );
+                }
+                else
+                {
+                    // default show all future
+                    itemOccurrences.RemoveAll( o => o.GetStartTimes( RockDateTime.Now, DateTime.Now.AddDays( 365 ) ).Count() == 0 );
+                }
             }
             else
             {
@@ -197,16 +431,16 @@ namespace RockWeb.Blocks.Event
             // make lava merge fields
             var mergeFields = new Dictionary<string, object>();
 
-            mergeFields.Add( "EventDetailPage", LinkedPageRoute( "EventDetailPage" ) );
+            mergeFields.Add( "EventDetailPage", LinkedPageRoute( AttributeKey.EventDetailPage ) );
 
             mergeFields.Add( "EventItemOccurrences", itemOccurrences );
 
-            if ( eventCalendarId.HasValue )
+            if ( EventCalendarId.HasValue )
             {
-                mergeFields.Add( "EventCalendar", new EventCalendarService( rockContext ).Get( eventCalendarId.Value ) );
+                mergeFields.Add( "EventCalendar", new EventCalendarService( rockContext ).Get( EventCalendarId.Value ) );
             }
 
-            lResults.Text = GetAttributeValue( "ResultsLavaTemplate" ).ResolveMergeFields( mergeFields );
+            lResults.Text = GetAttributeValue( AttributeKey.ResultsLavaTemplate ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -222,12 +456,56 @@ namespace RockWeb.Blocks.Event
             // Use this approach: Do a no-cache so the browser won't cache (see this.OnLoad()), and then reload the page with the same search parameters and reload the results
 
             // Use Session since this is a public facing page and there probably isn't a logged in user
-            this.Session[string.Format( "SearchSettings_Block_{0}_EventCalendarId_", this.BlockId, this.PageParameter( "EventCalendarId" ) )] = new SearchSettings
+            this.Session[string.Format( "SearchSettings_Block_{0}_EventCalendarId_", this.BlockId, EventCalendarId )] = new SearchSettings
             {
                 CampusId = cpCampusPicker.SelectedCampusId,
-                DateRange = new DateRange( pDateRange.LowerValue, pDateRange.UpperValue )
+                DateRange = new DateRange( pDateRange.LowerValue, pDateRange.UpperValue ),
+                Audiences = cblAudience.SelectedValuesAsInt
             };
         }
+
+        #region Private Methods
+
+        /// <summary>
+        /// Loads the Event Calendar
+        /// </summary>
+        private EventCalendarCache GetEventCalendar()
+        {
+            // Get the event calendar id (initial page request)
+            if ( !EventCalendarId.HasValue )
+            {
+                // Get event calendar set by attribute value
+                Guid eventCalendarGuid = GetAttributeValue( AttributeKey.EventCalendar ).AsGuid();
+
+                EventCalendarCache _eventCalendarCache = null;
+                if ( !eventCalendarGuid.IsEmpty() )
+                {
+                    _eventCalendarCache = EventCalendarCache.Get( eventCalendarGuid );
+                }
+
+                // If an attribute value was not provided, check for query/route value
+                if ( _eventCalendarCache != null )
+                {
+                    EventCalendarId = _eventCalendarCache.Id;
+                }
+                else
+                {
+                    EventCalendarId = PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
+                }
+            }
+
+            // Get the workflow type
+            if ( EventCalendarId.HasValue )
+            {
+                return EventCalendarCache.Get( EventCalendarId.Value );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion Private Methods
 
         /// <summary>
         /// The Search settings for this block
@@ -249,6 +527,14 @@ namespace RockWeb.Blocks.Event
             /// The date range.
             /// </value>
             public DateRange DateRange { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date range.
+            /// </summary>
+            /// <value>
+            /// The date range.
+            /// </value>
+            public List<int> Audiences { get; set; }
         }
 
         #endregion

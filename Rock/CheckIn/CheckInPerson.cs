@@ -59,7 +59,7 @@ namespace Rock.CheckIn
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was automatically selected by a check-in action.
         /// </summary>
         /// <value>
         ///   <c>true</c> if preselected; otherwise, <c>false</c>.
@@ -94,17 +94,12 @@ namespace Rock.CheckIn
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this is the person's first time checking in.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [first checkin]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Attendance.IsFirstTime"/>
         [DataMember]
-        public bool FirstTime { get; set; }
+        public bool FirstTime { get; set; } 
 
         /// <summary>
-        /// Gets or sets the the unique code for check-in labels
+        /// Gets or sets the unique code for check-in labels
         /// </summary>
         /// <value>
         /// The security code.
@@ -207,7 +202,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets the available options for a person.
         /// </summary>
-        /// <param name="onlyPreSelected">if set to <c>true</c> [only pre selected].</param>
+        /// <param name="onlyPreSelected">if set to <c>true</c> [only automatically/previously selected].</param>
         /// <param name="onlyOneOptionPerSchedule">if set to <c>true</c> [only one option per schedule].</param>
         /// <returns></returns>
         public List<CheckInPersonSummary> GetOptions( bool onlyPreSelected, bool onlyOneOptionPerSchedule )

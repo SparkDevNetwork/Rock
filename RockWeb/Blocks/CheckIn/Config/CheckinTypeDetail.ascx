@@ -132,6 +132,7 @@
                                 <div class="col-md-12">
                                     <Rock:CodeEditor runat="server" ID="ceStartTemplate" Label="Start Template" Help="The lava template to use when rendering the Start button on the Welcome Block" EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="ceFamilySelectTemplate" Label="Family Select Template" Help="The lava template to use when rendering each family button on the Family Select" EditorMode="Lava" />
+                                    <Rock:CodeEditor runat="server" ID="cePersonSelectTemplate" Label="Person Select Template" Help="The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks." EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="ceSuccessTemplate" Label="Success Template" Help="The lava template to use when rendering the Success result on the Success Block" EditorMode="Lava" />
                                 </div>
                             </div>

@@ -150,7 +150,7 @@
                             <asp:Literal ID="lNavHeading" runat="server" />
                         </div>
                         <div class="pull-right">
-                            <asp:Literal ID="lHeadingStatus" runat="server" />
+                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </div>
                         <asp:Panel ID="pnlThreshold" runat="server" CssClass="location-threshold pull-right d-flex mr-2 js-threshold">
                             <span class="small align-self-center mr-1">Threshold: </span>
@@ -170,9 +170,9 @@
                             <li id="liNavItem" runat="server" class="list-group-item cursor-pointer">
                                 <div class="content"><%# Eval("Name") %></div>
                                 <div class="pull-right d-flex align-items-center">
-                                    <asp:Literal ID="lStatus" runat="server" />
                                     <asp:Label ID="lblCurrentCount" runat="server" CssClass="badge" />
-                                    <i class='fa fa-fw fa-chevron-right'></i>
+                                    <Rock:Toggle ID="tglRoom" runat="server" CssClass="ml-3" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
+                                    <i class='fa fa-fw fa-chevron-right ml-3'></i>
                                 </div>
                             </li>
                         </ItemTemplate>

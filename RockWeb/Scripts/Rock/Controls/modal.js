@@ -75,7 +75,10 @@
                     $(this).height(newHeight);
                 }
 
-                $('body').addClass('modal-open').css('padding-right', Rock.controls.util.getScrollbarWidth());
+                $('body').addClass('modal-open');
+                if (document.body.clientHeight > window.innerHeight) {
+                    $('body').css('padding-right', Rock.controls.util.getScrollbarWidth());
+                }
                 $('#modal-popup').modal('layout');
             });
 
@@ -131,7 +134,11 @@
 
         // shows a non-IFrame modal dialog control
         var _showModalControl = function ($modalDialog, managerId, clickBackdropToClose, $hfModalVisible) {
-            $('body').addClass('modal-open').css('padding-right', Rock.controls.util.getScrollbarWidth());
+            $('body').addClass('modal-open');
+            if (document.body.clientHeight > window.innerHeight) {
+                $('body').css('padding-right', Rock.controls.util.getScrollbarWidth());
+            }
+
             $modalDialog.modal({
                 show: true,
                 manager: managerId,

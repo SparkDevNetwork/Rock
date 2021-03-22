@@ -110,6 +110,20 @@ namespace Rock.SystemKey
 
         #endregion Registration Specific
 
+        #region Checkin
+
+        /// <summary>
+        /// Attribute key for GroupTypes that allow checkout
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";
+
+        /// <summary>
+        /// Attribute key for GroupTypes that have presence enabled
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ENABLE_PRESENCE = "core_checkin_EnablePresence";
+
+        #endregion
+
         #region Display
 
         /// <summary>
@@ -121,6 +135,11 @@ namespace Rock.SystemKey
         /// The grouptype attribute key for the checkin familyselect lava template
         /// </summary>
         public const string CHECKIN_FAMILYSELECT_LAVA_TEMPLATE = "core_checkin_FamilyLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key for the checkin PersonSelect lava template.
+        /// </summary>
+        public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationLavaTemplate";
 
         /// <summary>
         /// The grouptype attribute key for the checkin success lava template

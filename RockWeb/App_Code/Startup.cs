@@ -39,12 +39,19 @@ namespace RockWeb
         {
             app.MapSignalR();
 
-            // This is for OIDC Connect
-            Rock.Oidc.Startup.OnStartup( app );
-
-            // Find any plugins that implement IRockOwinStartup
             try
             {
+                // This is for OIDC Connect
+                Rock.Oidc.Startup.OnStartup( app );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
+            try
+            {
+                // Find any plugins that implement IRockOwinStartup
                 var startups = new Dictionary<int, List<IRockOwinStartup>>();
                 foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockOwinStartup ) ).Select( a => a.Value ).ToList() )
                 {

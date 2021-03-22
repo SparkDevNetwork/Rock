@@ -136,19 +136,23 @@
             }
 
             if (options.requesterPersonAliasId) {
-                data.requesterPersonAliasId = options.requesterPersonAliasId
+                data.requesterPersonAliasId = options.requesterPersonAliasId;
             }
 
             if (options.statusIds && options.statusIds.length) {
-                data.delimitedStatusIds = options.statusIds.join('|')
+                data.delimitedStatusIds = options.statusIds.join('|');
             }
 
             if (options.connectionStates && options.connectionStates.length) {
-                data.delimitedConnectionStates = options.connectionStates.join('|')
+                data.delimitedConnectionStates = options.connectionStates.join('|');
+            }
+
+            if (options.pastDueOnly) {
+                data.pastDueOnly = true;
             }
 
             if (options.lastActivityTypeIds && options.lastActivityTypeIds.length) {
-                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|')
+                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|');
             }
 
             $.get({
@@ -182,19 +186,23 @@
             }
 
             if (options.requesterPersonAliasId) {
-                data.requesterPersonAliasId = options.requesterPersonAliasId
+                data.requesterPersonAliasId = options.requesterPersonAliasId;
             }
 
             if (options.statusIds && options.statusIds.length) {
-                data.delimitedStatusIds = options.statusIds.join('|')
+                data.delimitedStatusIds = options.statusIds.join('|');
             }
 
             if (options.connectionStates && options.connectionStates.length) {
-                data.delimitedConnectionStates = options.connectionStates.join('|')
+                data.delimitedConnectionStates = options.connectionStates.join('|');
+            }
+
+            if (options.pastDueOnly) {
+                data.pastDueOnly = true;
             }
 
             if (options.lastActivityTypeIds && options.lastActivityTypeIds.length) {
-                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|')
+                data.delimitedLastActivityTypeIds = options.lastActivityTypeIds.join('|');
             }
 
             $.get({

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -118,6 +119,9 @@ namespace RockWeb.Blocks.Steps
             this.InitializeWorkflowControls();
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Step.FriendlyTypeName );
+
+            // Add lazyload so that person-link-popover javascript works
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
         }
 
         /// <summary>
@@ -369,6 +373,7 @@ namespace RockWeb.Blocks.Steps
             step.StartDateTime = rdpStartDate.SelectedDate;
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
+            step.Note = tbNote.Text;
 
             step.CampusId = cpCampus.SelectedCampusId;
 
@@ -592,6 +597,7 @@ namespace RockWeb.Blocks.Steps
                 rdpEndDate.SelectedDate = step.EndDateTime;
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
                 cpCampus.SelectedCampusId = step.CampusId;
+                tbNote.Text = step.Note;
             }
 
             BuildDynamicControls( true );
@@ -645,34 +651,7 @@ namespace RockWeb.Blocks.Steps
                                                  string.Empty,
                                                  stepType.Name );
 
-            // Create the read-only description text.
-            var descriptionListMain = new DescriptionList();
-
-            descriptionListMain.Add( "Person", step.PersonAlias.Person.FullName );
-
-            var campusCount = CampusCache.All().Count;
-            if ( campusCount > 1 )
-            {
-                descriptionListMain.Add( "Campus", step.Campus == null ? string.Empty : step.Campus.Name );
-            }
-
-            if ( stepType.HasEndDate )
-            {
-                descriptionListMain.Add( "Start Date", step.StartDateTime, "d" );
-                descriptionListMain.Add( "End Date", step.EndDateTime, "d" );
-                descriptionListMain.Add( "Completed Date", step.EndDateTime, "d" );
-            }
-            else
-            {
-                descriptionListMain.Add( "Date", step.StartDateTime, "d" );
-            }
-
-            descriptionListMain.Add( "Status", step.StepStatus == null ? string.Empty : step.StepStatus.Name );
-
-            lStepDescription.Text = descriptionListMain.Html;
-
             BuildDynamicControls( false );
-
             BindWorkflows();
 
             // Set the available actions according to current user permissions.
@@ -680,6 +659,111 @@ namespace RockWeb.Blocks.Steps
 
             btnEdit.Visible = canEdit;
             btnDelete.Visible = canEdit;
+
+            // Person header
+            var person = GetPerson();
+            var connectionStatus = person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty;
+            var campusName = step.Campus != null ? step.Campus.Name : string.Empty;
+            var showCampusText = CampusCache.SingleCampus == null && !campusName.IsNullOrWhiteSpace();
+
+            lPersonName.Text = person.FullName;
+
+            if ( showCampusText && !connectionStatus.IsNullOrWhiteSpace() )
+            {
+                lPersonSubTitle.Text = string.Format(
+                    "{0} - {1}",
+                    connectionStatus,
+                    campusName );
+            }
+            else if ( showCampusText )
+            {
+                lPersonSubTitle.Text = campusName;
+            }
+            else
+            {
+                lPersonSubTitle.Text = connectionStatus;
+            }
+
+            lPersonPhotoHtml.Text = string.Format(
+                "<div class='avatar avatar-xl'><img title='{0} Profile Photo' src='{1}'></div>",
+                person.FullName,
+                person.PhotoUrl );
+
+            // Start date col
+            if ( step.StepType.HasEndDate && step.StartDateTime.HasValue )
+            {
+                lStartHtml.Text = GetDateColHtml( "Start Date", step.StartDateTime.Value );
+            }
+
+            // End date col
+            if ( step.CompletedDateTime.HasValue )
+            {
+                lEndHtml.Text = GetDateColHtml( "Completed Date", step.CompletedDateTime.Value );
+            }
+            else if ( step.EndDateTime.HasValue )
+            {
+                lEndHtml.Text = GetDateColHtml( "End Date", step.EndDateTime.Value );
+            }
+
+            // KPI
+            var startDate = step.StartDateTime;
+            var endDate = step.CompletedDateTime ?? step.EndDateTime;
+            divTimespan.Visible = false;
+
+            if ( startDate.HasValue && endDate.HasValue )
+            {
+                var days = ( endDate.Value - startDate.Value ).Days;
+                var label = days == 1 ? "Day" : "Days";
+
+                if ( days >= 1 )
+                {
+                    lDays.Text = string.Format( "{0:n0}", days );
+                    lDaysLabel.Text = label;
+                    divTimespan.Visible = true;
+                }
+            }
+
+            // Note
+            if ( !step.Note.IsNullOrWhiteSpace() )
+            {
+                lNotesHtml.Text = string.Format(
+                    "<strong>Note</strong><br />{0}</div>",
+                    step.Note.ScrubHtmlAndConvertCrLfToBr() );
+            }
+
+            // Header
+            if ( showCampusText )
+            {
+                hlCampus.Visible = true;
+                hlCampus.Text = campusName;
+                hlCampus.LabelType = LabelType.Campus;
+            }
+            else
+            {
+                hlCampus.Visible = false;
+            }
+
+            if ( step.StepStatus != null )
+            {
+                lStatus.Text = string.Format(
+                    "<span class='label label-default' style='background-color: {0};'>{1}</span>",
+                    step.StepStatus.StatusColorOrDefault,
+                    step.StepStatus.Name );
+            }
+        }
+
+        /// <summary>
+        /// Gets the date col HTML.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        private string GetDateColHtml( string title, DateTime value )
+        {
+            return string.Format(
+                "<div class='col-sm-3 col-lg-2 mt-3'><strong>{0}</strong><br />{1:d}</div>",
+                title,
+                value );
         }
 
         /// <summary>
