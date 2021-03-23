@@ -1298,6 +1298,16 @@ namespace Rock
             return new System.IO.StreamReader( stream );
         }
 
+        /// <summary>
+        /// A string extension method that escape XML.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A string.</returns>
+        public static string EscapeXml( this string str )
+        {
+            return str.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ).Replace( "\"", "&quot;" ).Replace( "'", "&apos;" );
+        }
+
         #endregion String Extensions
     }
 }

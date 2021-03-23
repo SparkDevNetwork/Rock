@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -91,6 +92,26 @@ namespace Rock
         public static string FormatAsCurrency( this int? value )
         {
             return ( (decimal?)value ).FormatAsCurrency();
+        }
+
+        /// <summary>
+        /// Converts the decimal to a money.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static decimal ToMoney( this decimal value )
+        {
+            return Math.Round( value, 2 );
+        }
+
+        /// <summary>
+        /// Formats as money.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string ToMoneyString( this decimal value )
+        {
+            return string.Format( "{0:N}", value );
         }
 
         #endregion

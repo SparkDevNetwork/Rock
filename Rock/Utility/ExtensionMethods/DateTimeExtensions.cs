@@ -356,6 +356,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the DateTime of the last day of the month with the time set to "23:59:59:999". The last moment of the last day of the month.
+        /// </summary>
+        /// <param name="dt">The dt.</param>
+        /// <returns></returns>
+        public static DateTime EndOfMonth( this DateTime dt )
+        {
+            return new DateTime( dt.Year, dt.Month, 1 ).AddMonths( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+        }
+
+        /// <summary>
         /// Returns the date of the start of the week for the specified date/time.
         /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting
         /// </summary>
@@ -385,7 +395,6 @@ namespace Rock
         {
             return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
         }
-
 
         /// <summary>
         /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek" />
@@ -526,6 +535,86 @@ namespace Rock
                 days = days + birthMonth.AddMonths( 1 ).AddDays( -1 ).Day;
             }
             return days + ( days == 1 ? " day" : " days" );
+        }
+
+        /// <summary>
+        ///  Determines whether the datetime is in the future.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the future, false if not.</returns>
+        public static bool IsFuture( this DateTime dateTime )
+        {
+            return dateTime > RockDateTime.Now;
+        }
+
+        /// <summary>
+        ///  Determines whether the datetime is in the past.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the past, false if not.</returns>
+        public static bool IsPast( this DateTime dateTime )
+        {
+            return dateTime < DateTime.Now;
+        }
+
+        /// <summary>
+        ///  Determines whether the datetime is today.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the past, false if not.</returns>
+        public static bool IsToday( this DateTime dateTime )
+        {
+            return dateTime.Date == DateTime.Today;
+        }
+
+        /// <summary>
+        /// Gets the date key.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static int AsDateKey( this DateTime dateTime )
+        {
+            return dateTime.ToString( "yyyyMMdd" ).AsInteger();
+        }
+
+        /// <summary>
+        ///  Gets the DateTime with the time set to "00:00:00:000". The first moment of the day.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime StartOfDay( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day );
+        }
+
+        /// <summary>
+        ///  Gets the DateTime of the last day of the year with the time set to "23:59:59:999". The last moment of the last day of the year.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime EndOfDay( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day ).AddDays( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+        }
+
+        /// <summary>
+        ///  Gets the DateTime of the last day of the year with the time set to "23:59:59:999". The last moment of the last day of the year.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime EndOfYear( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, 1, 1 ).AddYears( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+        }
+
+        /// <summary>
+        /// Gets the DateTime of the first day of the year with the time set to "00:00:00:000". The first moment of the first day of the year.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime StartOfYear( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, 1, 1 );
         }
 
         #endregion DateTime Extensions
