@@ -18,32 +18,24 @@
 namespace Rock.ViewModel.Controls
 {
     /// <summary>
-    /// Address Control View Model
+    /// GatewayControlViewModel
     /// </summary>
-    public sealed class BirthdayPickerViewModel : IViewModel
+    public sealed class GatewayControlViewModel
     {
         /// <summary>
-        /// Gets or sets the year.
+        /// Gets or sets the file URL.
         /// </summary>
         /// <value>
-        /// The year.
+        /// The file URL.
         /// </value>
-        public int Year { get; set; }
+        public string FileUrl { get;set;}
 
         /// <summary>
-        /// Gets or sets the month.
+        /// Gets or sets the settings.
         /// </summary>
         /// <value>
-        /// The month.
+        /// The settings.
         /// </value>
-        public int Month { get; set; }
-
-        /// <summary>
-        /// Gets or sets the day.
-        /// </summary>
-        /// <value>
-        /// The day.
-        /// </value>
-        public int Day { get; set; }
+        public object Settings { get;set;}
     }
 }

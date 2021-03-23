@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Obsidian.Util;
 using Rock.Tasks;
 using Rock.ViewModel;
+using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -864,8 +865,11 @@ mission. We are so grateful for your commitment.</p>
             return new
             {
                 FinancialAccounts = GetAccountViewModels(),
-                GatewayControlFileUrl = FinancialGatewayComponent?.GetObsidianControlFileUrl( FinancialGateway ),
-                GatewayControlSettings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway )
+                GatewayControl = new GatewayControlViewModel
+                {
+                    FileUrl = FinancialGatewayComponent?.GetObsidianControlFileUrl( FinancialGateway ),
+                    Settings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway )
+                }
             };
         }
 

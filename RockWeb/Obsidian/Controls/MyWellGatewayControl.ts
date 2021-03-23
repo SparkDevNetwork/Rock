@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-import { ProcessTransactionArgs } from '../Blocks/Finance/TransactionEntry';
 import { defineComponent, PropType } from 'vue';
+import LoadingIndicator from '../Elements/LoadingIndicator';
 
 type Settings = {
     PublicApiKey: string;
@@ -33,6 +33,9 @@ type Response = {
 
 export default defineComponent({
     name: 'MyWellGatewayControl',
+    components: {
+        LoadingIndicator
+    },
     props: {
         settings: {
             type: Object as PropType<Settings>,
@@ -41,23 +44,19 @@ export default defineComponent({
         submit: {
             type: Boolean as PropType<boolean>,
             required: true
-        },
-        args: {
-            type: Object as PropType<ProcessTransactionArgs>,
-            required: true
         }
     },
     data() {
         return {
             tokenizer: null as Tokenizer | null,
-            token: '' as string
+            token: '' as string,
+            loading: true
         };
     },
     methods: {
         handleResponse(resp: Response) {
             this.token = resp.token;
-            this.args.ReferenceNumber = this.token;
-            this.$emit('done');
+            this.$emit('done', this.token);
         }
     },
     computed: {
@@ -69,6 +68,7 @@ export default defineComponent({
         },
         tokenizerSettings(): unknown {
             return {
+                onLoad: () => { this.loading = false; },
                 apikey: this.publicApiKey,
                 url: this.gatewayUrl,
                 container: this.$refs['container'],
@@ -131,12 +131,30 @@ export default defineComponent({
             }
         }
     },
-    mounted() {
-        this.tokenizer = new window['Tokenizer'](this.tokenizerSettings) as Tokenizer;
+    async mounted() {
+        const globalVarName = 'Tokenizer';
+
+        if (!window[globalVarName]) {
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js'; // TODO - this should come from the gateway
+            document.getElementsByTagName('head')[0].appendChild(script);
+
+            const sleep = () => new Promise((resolve) => setTimeout(resolve, 20));
+
+            while (!window[globalVarName]) {
+                await sleep();
+            }
+        }
+
+        this.tokenizer = new window[globalVarName](this.tokenizerSettings) as Tokenizer;
         this.tokenizer.create();
     },
     template: `
 <div v-if="!token">
-    <div ref="container"></div>
+    <div ref="container" style="min-height: 49px;"></div>
+    <div v-if="loading" class="text-center">
+        <LoadingIndicator />
+    </div>
 </div>`
 });

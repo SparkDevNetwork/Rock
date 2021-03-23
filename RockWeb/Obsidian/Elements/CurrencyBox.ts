@@ -65,22 +65,27 @@ export default defineComponent({
     computed: {
         isRequired(): boolean {
             return this.rules.includes('required');
+        },
+        internalNumberValue(): number | null {
+            return toNumberOrNull(this.internalValue);
         }
     },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', toNumberOrNull(this.internalValue));
+        internalNumberValue() {
+            this.$emit('update:modelValue', this.internalNumberValue);
         },
         modelValue: {
             immediate: true,
             handler() {
-                this.internalValue = asFormattedString(this.modelValue);
+                if (this.modelValue !== this.internalNumberValue) {
+                    this.internalValue = asFormattedString(this.modelValue);
+                }
             }
         }
     },
     template: `
 <Field
-    v-model.lazy="internalValue"
+    v-model="internalValue"
     @change="onChange"
     :name="label"
     :rules="rules"

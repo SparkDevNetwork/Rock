@@ -1,4 +1,4 @@
-System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePicker", "../../Elements/CurrencyBox", "vue", "../../SystemGuid/DefinedType", "../../Elements/DatePicker", "../../Elements/RockButton", "../../Util/Guid", "../../Elements/Alert", "../../Services/Number", "../../Elements/Toggle", "../../Store/Index", "../../Elements/TextBox", "../../Services/String", "../../Util/RockDate"], function (exports_1, context_1) {
+System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePicker", "../../Elements/CurrencyBox", "vue", "../../SystemGuid/DefinedType", "../../Elements/DatePicker", "../../Elements/RockButton", "../../Util/Guid", "../../Elements/Alert", "../../Services/Number", "../../Elements/Toggle", "../../Store/Index", "../../Elements/TextBox", "../../Services/String", "../../Util/RockDate", "../../Controls/GatewayControl"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var CampusPicker_1, DefinedValuePicker_1, CurrencyBox_1, vue_1, DefinedType_1, DatePicker_1, RockButton_1, Guid_1, Alert_1, Number_1, Toggle_1, Index_1, TextBox_1, String_1, RockDate_1;
+    var CampusPicker_1, DefinedValuePicker_1, CurrencyBox_1, vue_1, DefinedType_1, DatePicker_1, RockButton_1, Guid_1, Alert_1, Number_1, Toggle_1, Index_1, TextBox_1, String_1, RockDate_1, GatewayControl_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -84,6 +84,9 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
             },
             function (RockDate_1_1) {
                 RockDate_1 = RockDate_1_1;
+            },
+            function (GatewayControl_1_1) {
+                GatewayControl_1 = GatewayControl_1_1;
             }
         ],
         execute: function () {
@@ -97,7 +100,8 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                     RockButton: RockButton_1.default,
                     Alert: Alert_1.default,
                     Toggle: Toggle_1.default,
-                    TextBox: TextBox_1.default
+                    TextBox: TextBox_1.default,
+                    GatewayControl: GatewayControl_1.default
                 },
                 setup: function () {
                     return {
@@ -107,13 +111,13 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                 },
                 data: function () {
                     return {
+                        loading: false,
                         transactionGuid: Guid_1.newGuid(),
                         criticalError: '',
                         doGatewayControlSubmit: false,
                         pageIndex: 1,
                         page1Error: '',
                         frequencyDefinedTypeGuid: DefinedType_1.FINANCIAL_FREQUENCY,
-                        gatewayControl: null,
                         args: {
                             IsGivingAsPerson: true,
                             Email: '',
@@ -152,9 +156,8 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                     totalAmountFormatted: function () {
                         return "$" + Number_1.asFormattedString(this.totalAmount);
                     },
-                    gatewayControlSettings: function () {
-                        var blockSettings = this.configurationValues || {};
-                        return blockSettings['GatewayControlSettings'] || {};
+                    gatewayControlModel: function () {
+                        return this.configurationValues['GatewayControl'];
                     },
                     currentPerson: function () {
                         return Index_1.default.state.currentPerson;
@@ -199,7 +202,8 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                     onPageTwoSubmit: function () {
                         this.doGatewayControlSubmit = true;
                     },
-                    onGatewayControlDone: function () {
+                    onGatewayControlDone: function (token) {
+                        this.args.ReferenceNumber = token;
                         this.pageIndex = 3;
                     },
                     onPageThreeSubmit: function () {
@@ -208,20 +212,26 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        _a.trys.push([0, 2, , 3]);
+                                        this.loading = true;
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 3, 4, 5]);
                                         return [4 /*yield*/, this.invokeBlockAction('ProcessTransaction', {
                                                 args: this.args,
                                                 transactionGuid: this.transactionGuid
                                             })];
-                                    case 1:
+                                    case 2:
                                         _a.sent();
                                         this.pageIndex = 4;
-                                        return [3 /*break*/, 3];
-                                    case 2:
+                                        return [3 /*break*/, 5];
+                                    case 3:
                                         e_1 = _a.sent();
                                         console.log(e_1);
-                                        return [3 /*break*/, 3];
-                                    case 3: return [2 /*return*/];
+                                        return [3 /*break*/, 5];
+                                    case 4:
+                                        this.loading = false;
+                                        return [7 /*endfinally*/];
+                                    case 5: return [2 /*return*/];
                                 }
                             });
                         });
@@ -240,34 +250,7 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                         }
                     }
                 },
-                created: function () {
-                    return __awaiter(this, void 0, void 0, function () {
-                        var controlPath, controlComponentModule, gatewayControl;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    controlPath = this.configurationValues['GatewayControlFileUrl'];
-                                    if (!controlPath) return [3 /*break*/, 2];
-                                    return [4 /*yield*/, context_1.import(controlPath)];
-                                case 1:
-                                    controlComponentModule = _a.sent();
-                                    gatewayControl = controlComponentModule ?
-                                        (controlComponentModule.default || controlComponentModule) :
-                                        null;
-                                    if (gatewayControl) {
-                                        this.gatewayControl = vue_1.markRaw(gatewayControl);
-                                    }
-                                    _a.label = 2;
-                                case 2:
-                                    if (!this.gatewayControl) {
-                                        this.criticalError = 'Could not find the correct gateway control';
-                                    }
-                                    return [2 /*return*/];
-                            }
-                        });
-                    });
-                },
-                template: "\n<div class=\"transaction-entry-v2\">\n    <Alert v-if=\"criticalError\" danger>\n        {{criticalError}}\n    </Alert>\n    <template v-else-if=\"!gatewayControl\">\n        <h4>Welcome to Rock's On-line Giving Experience</h4>\n        <p>\n            There is currently no gateway configured.\n        </p>\n    </template>\n    <template v-else-if=\"pageIndex === 1\">\n        <h2>Your Generosity Changes Lives (Vue)</h2>\n        <template v-for=\"account in accounts\">\n            <CurrencyBox :label=\"account.PublicName\" v-model=\"args.AccountAmounts[account.Guid]\" />\n        </template>\n        <CampusPicker v-model=\"args.CampusGuid\" :showBlankItem=\"false\" />\n        <DefinedValuePicker :definedTypeGuid=\"frequencyDefinedTypeGuid\" v-model=\"args.FrequencyValueGuid\" label=\"Frequency\" :showBlankItem=\"false\" />\n        <DatePicker label=\"Process Gift On\" v-model=\"args.GiftDate\" />\n        <Alert validation v-if=\"page1Error\">{{page1Error}}</Alert>\n        <RockButton btnType=\"primary\" @click=\"onPageOneSubmit\">Give Now</RockButton>\n    </template>\n    <template v-else-if=\"pageIndex === 2\">\n        <div class=\"amount-summary\">\n            <div class=\"amount-summary-text\">\n                {{accountAndCampusString}}\n            </div>\n            <div class=\"amount-display\">\n                {{totalAmountFormatted}}\n            </div>\n        </div>\n        <div>\n            <div class=\"hosted-payment-control\">\n                <component :is=\"gatewayControl\" :settings=\"gatewayControlSettings\" :submit=\"doGatewayControlSubmit\" :args=\"args\" @done=\"onGatewayControlDone\" />\n            </div>\n            <div class=\"navigation actions\">\n                <RockButton btnType=\"default\" @click=\"goBack\" :disabled=\"doGatewayControlSubmit\">Back</RockButton>\n                <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onPageTwoSubmit\" :disabled=\"doGatewayControlSubmit\">Next</RockButton>\n            </div>\n        </div>\n    </template>\n    <template v-else-if=\"pageIndex === 3\">\n        <Toggle v-model=\"args.IsGivingAsPerson\">\n            <template #on>Individual</template>\n            <template #off>Business</template>\n        </Toggle>\n        <template v-if=\"args.IsGivingAsPerson && currentPerson\">\n            <div class=\"form-control-static\">\n                {{currentPerson.FullName}}\n            </div>\n        </template>\n        <template v-else-if=\"args.IsGivingAsPerson\">\n            <TextBox v-model=\"args.FirstName\" placeholder=\"First Name\" class=\"margin-b-sm\" />\n            <TextBox v-model=\"args.LastName\" placeholder=\"Last Name\" class=\"margin-b-sm\" />\n        </template>\n        <div class=\"navigation actions margin-t-md\">\n            <RockButton @click=\"goBack\">Back</RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onPageThreeSubmit\">Finish</RockButton>\n        </div>\n    </template>\n    <template v-else-if=\"pageIndex === 4\">\n        Last Page\n    </template>\n</div>"
+                template: "\n<div class=\"transaction-entry-v2\">\n    <Alert v-if=\"criticalError\" danger>\n        {{criticalError}}\n    </Alert>\n    <template v-else-if=\"!gatewayControlModel || !gatewayControlModel.FileUrl\">\n        <h4>Welcome to Rock's On-line Giving Experience</h4>\n        <p>\n            There is currently no gateway configured.\n        </p>\n    </template>\n    <template v-else-if=\"pageIndex === 1\">\n        <h2>Your Generosity Changes Lives (Vue)</h2>\n        <template v-for=\"account in accounts\">\n            <CurrencyBox :label=\"account.PublicName\" v-model=\"args.AccountAmounts[account.Guid]\" />\n        </template>\n        <CampusPicker v-model=\"args.CampusGuid\" :showBlankItem=\"false\" />\n        <DefinedValuePicker :definedTypeGuid=\"frequencyDefinedTypeGuid\" v-model=\"args.FrequencyValueGuid\" label=\"Frequency\" :showBlankItem=\"false\" />\n        <DatePicker label=\"Process Gift On\" v-model=\"args.GiftDate\" />\n        <Alert alertType=\"validation\" v-if=\"page1Error\">{{page1Error}}</Alert>\n        <RockButton btnType=\"primary\" @click=\"onPageOneSubmit\">Give Now</RockButton>\n    </template>\n    <template v-else-if=\"pageIndex === 2\">\n        <div class=\"amount-summary\">\n            <div class=\"amount-summary-text\">\n                {{accountAndCampusString}}\n            </div>\n            <div class=\"amount-display\">\n                {{totalAmountFormatted}}\n            </div>\n        </div>\n        <div>\n            <div class=\"hosted-payment-control\">\n                <GatewayControl :gatewayControlModel=\"gatewayControlModel\" :submit=\"doGatewayControlSubmit\" :args=\"args\" @done=\"onGatewayControlDone\" />\n            </div>\n            <div class=\"navigation actions\">\n                <RockButton btnType=\"default\" @click=\"goBack\" :disabled=\"doGatewayControlSubmit\">Back</RockButton>\n                <RockButton btnType=\"primary\" class=\"pull-right\" @click=\"onPageTwoSubmit\" :disabled=\"doGatewayControlSubmit\">Next</RockButton>\n            </div>\n        </div>\n    </template>\n    <template v-else-if=\"pageIndex === 3\">\n        <Toggle v-model=\"args.IsGivingAsPerson\">\n            <template #on>Individual</template>\n            <template #off>Business</template>\n        </Toggle>\n        <template v-if=\"args.IsGivingAsPerson && currentPerson\">\n            <div class=\"form-control-static\">\n                {{currentPerson.FullName}}\n            </div>\n        </template>\n        <template v-else-if=\"args.IsGivingAsPerson\">\n            <TextBox v-model=\"args.FirstName\" placeholder=\"First Name\" class=\"margin-b-sm\" />\n            <TextBox v-model=\"args.LastName\" placeholder=\"Last Name\" class=\"margin-b-sm\" />\n        </template>\n        <div class=\"navigation actions margin-t-md\">\n            <RockButton :isLoading=\"loading\" @click=\"goBack\">Back</RockButton>\n            <RockButton :isLoading=\"loading\" btnType=\"primary\" class=\"pull-right\" @click=\"onPageThreeSubmit\">Finish</RockButton>\n        </div>\n    </template>\n    <template v-else-if=\"pageIndex === 4\">\n        Last Page\n    </template>\n</div>"
             }));
         }
     };

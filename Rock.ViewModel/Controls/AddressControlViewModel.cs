@@ -20,7 +20,7 @@ namespace Rock.ViewModel.Controls
     /// <summary>
     /// Address Control View Model
     /// </summary>
-    public class AddressControlViewModel : IViewModel
+    public sealed class AddressControlViewModel : IViewModel
     {
         /// <summary>
         /// Gets or sets the street1.

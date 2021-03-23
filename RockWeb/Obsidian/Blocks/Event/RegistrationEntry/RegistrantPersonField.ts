@@ -15,8 +15,9 @@
 // </copyright>
 //
 
-import { defineComponent, markRaw, PropType } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import { getDefaultAddressControlModel } from '../../../Controls/AddressControl';
+import ComponentFromUrl from '../../../Controls/ComponentFromUrl';
 import Alert from '../../../Elements/Alert';
 import { getDefaultBirthdayPickerModel } from '../../../Elements/BirthdayPicker';
 import { Guid } from '../../../Util/Guid';
@@ -25,7 +26,8 @@ import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType }
 export default defineComponent({
     name: 'Event.RegistrationEntry.RegistrantPersonField',
     components: {
-        Alert
+        Alert,
+        ComponentFromUrl
     },
     props: {
         field: {
@@ -41,13 +43,39 @@ export default defineComponent({
             required: true
         }
     },
-    data() {
-        return {
-            fieldControlComponent: null as unknown,
-            loading: true
-        };
-    },
     computed: {
+        componentUrl(): string {
+            let componentPath = '';
+
+            switch (this.field.PersonFieldType) {
+                case RegistrationPersonFieldType.FirstName:
+                    componentPath = 'Elements/TextBox';
+                    break;
+                case RegistrationPersonFieldType.LastName:
+                    componentPath = 'Elements/TextBox';
+                    break;
+                case RegistrationPersonFieldType.MiddleName:
+                    componentPath = 'Elements/TextBox';
+                    break;
+                case RegistrationPersonFieldType.Campus:
+                    componentPath = 'Controls/CampusPicker';
+                    break;
+                case RegistrationPersonFieldType.Email:
+                    componentPath = 'Elements/EmailBox';
+                    break;
+                case RegistrationPersonFieldType.Gender:
+                    componentPath = 'Elements/GenderDropDownList';
+                    break;
+                case RegistrationPersonFieldType.Birthdate:
+                    componentPath = 'Elements/BirthdayPicker';
+                    break;
+                case RegistrationPersonFieldType.Address:
+                    componentPath = 'Controls/AddressControl';
+                    break;
+            }
+
+            return componentPath ? `../${componentPath}` : '';
+        },
         fieldControlComponentProps() {
             const props: Record<string, unknown> = {
                 rules: this.field.IsRequired ? 'required' : ''
@@ -107,54 +135,7 @@ export default defineComponent({
                 this.fieldValues[this.field.Guid] = defaultValue;
             }
         },
-        field: {
-            immediate: true,
-            async handler() {
-                this.loading = true;
-                let componentPath = '';
-
-                switch (this.field.PersonFieldType) {
-                    case RegistrationPersonFieldType.FirstName:
-                        componentPath = 'Elements/TextBox';
-                        break;
-                    case RegistrationPersonFieldType.LastName:
-                        componentPath = 'Elements/TextBox';
-                        break;
-                    case RegistrationPersonFieldType.MiddleName:
-                        componentPath = 'Elements/TextBox';
-                        break;
-                    case RegistrationPersonFieldType.Campus:
-                        componentPath = 'Controls/CampusPicker';
-                        break;
-                    case RegistrationPersonFieldType.Email:
-                        componentPath = 'Elements/EmailBox';
-                        break;
-                    case RegistrationPersonFieldType.Gender:
-                        componentPath = 'Elements/GenderDropDownList';
-                        break;
-                    case RegistrationPersonFieldType.Birthdate:
-                        componentPath = 'Elements/BirthdayPicker';
-                        break;
-                    case RegistrationPersonFieldType.Address:
-                        componentPath = 'Controls/AddressControl';
-                        break;
-                }
-
-                const componentModule = componentPath ? (await import(`../../../${componentPath}`)) : null;
-                const component = componentModule ? (componentModule.default || componentModule) : null;
-
-                if (component) {
-                    this.fieldControlComponent = markRaw(component);
-                }
-                else {
-                    this.fieldControlComponent = null;
-                }
-
-                this.loading = false;
-            }
-        }
     },
     template: `
-<component v-if="fieldControlComponent" :is="fieldControlComponent" v-bind="fieldControlComponentProps" v-model="fieldValues[field.Guid]" />
-<Alert v-else-if="!loading" alertType="danger">Could not resolve person field</Alert>`
+<ComponentFromUrl v-if="componentUrl" :url="componentUrl" v-bind="fieldControlComponentProps" v-model="fieldValues[field.Guid]" />`
 });

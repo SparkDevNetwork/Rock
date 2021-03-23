@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
+using Rock.Obsidian.Util;
 using Rock.ViewModel.Blocks;
 using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
@@ -330,6 +331,11 @@ namespace Rock.Obsidian.Blocks.Event
                 // Force the registrar to update their email?
                 var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
+                // Load the gateway control settings
+                var financialGatewayId = registrationTemplate?.FinancialGatewayId ?? 0;
+                var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
+                var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
+
                 return new RegistrationEntryBlockViewModel
                 {
                     RegistrationAttributesStart = beforeAttributes,
@@ -349,7 +355,11 @@ namespace Rock.Obsidian.Blocks.Event
                     RegistrarOption = ( int ) registrationTemplate.RegistrarOption,
                     Cost = registrationTemplate.SetCostOnInstance == true ?
                         ( registrationInstance.Cost ?? registrationTemplate.Cost ) :
-                        registrationTemplate.Cost
+                        registrationTemplate.Cost,
+                    GatewayControl = new GatewayControlViewModel {
+                        FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
+                        Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
+                    }
                 };
             }
         }

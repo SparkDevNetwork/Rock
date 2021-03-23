@@ -59,7 +59,9 @@ System.register(["vue"], function (exports_1, context_1) {
                 ],
                 methods: {
                     handleClick: function (event) {
-                        this.$emit('click', event);
+                        if (!this.isLoading) {
+                            this.$emit('click', event);
+                        }
                     }
                 },
                 computed: {

@@ -66,7 +66,9 @@ export default defineComponent({
     ],
     methods: {
         handleClick: function (event: Event) {
-            this.$emit('click', event);
+            if (!this.isLoading) {
+                this.$emit('click', event);
+            }
         }
     },
     computed: {

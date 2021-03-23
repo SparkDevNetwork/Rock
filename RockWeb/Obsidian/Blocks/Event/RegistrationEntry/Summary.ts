@@ -16,6 +16,7 @@
 //
 
 import { defineComponent, inject } from 'vue';
+import GatewayControl, { GatewayControlModel } from '../../../Controls/GatewayControl';
 import { InvokeBlockActionFunc } from '../../../Controls/RockBlock';
 import RockForm from '../../../Controls/RockForm';
 import Alert from '../../../Elements/Alert';
@@ -51,7 +52,8 @@ export default defineComponent({
         CheckBox,
         EmailBox,
         RockForm,
-        Alert
+        Alert,
+        GatewayControl
     },
     setup() {
         return {
@@ -81,6 +83,11 @@ export default defineComponent({
         };
     },
     computed: {
+        /** The settings for the gateway (MyWell, etc) control */
+        gatewayControlModel(): GatewayControlModel {
+            return this.viewModel.GatewayControl;
+        },
+
         /** The person that is currently authenticated */
         currentPerson(): Person | null {
             return this.$store.state.currentPerson;
@@ -333,73 +340,8 @@ export default defineComponent({
 
         <div class="well">
             <h4>Payment Method</h4>
-            <div class="radio-content">
-                <div class="form-group rock-text-box ">
-                    <label class="control-label">Card Number</label>
-                    <div class="control-wrapper">
-                        <input type="text" maxlength="19" class="js-creditcard-number credit-card form-control" />
-                    </div>
-                </div>
-                <ul class="card-logos list-unstyled">
-                    <li class="card-visa"></li>
-                    <li class="card-mastercard"></li>
-                    <li class="card-amex"></li>
-                    <li class="card-discover"></li>
-                </ul>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <div class="form-group month-year-picker">
-                            <label class="control-label">Expiration Date</label>
-                            <div class="control-wrapper">
-                                <div class="form-control-group">
-                                    <select class="form-control input-width-sm js-monthyear-month">
-                                        <option value="" selected="selected"></option>
-                                        <option value="1">Jan</option>
-                                        <option value="2">Feb</option>
-                                        <option value="3">Mar</option>
-                                        <option value="4">Apr</option>
-                                        <option value="5">May</option>
-                                        <option value="6">Jun</option>
-                                        <option value="7">Jul</option>
-                                        <option value="8">Aug</option>
-                                        <option value="9">Sep</option>
-                                        <option value="10">Oct</option>
-                                        <option value="11">Nov</option>
-                                        <option value="12">Dec</option>
-                                    </select>
-                                    <span class="separator">/</span>
-                                    <select class="form-control input-width-sm js-monthyear-year">
-                                        <option value="" selected="selected"></option>
-                                        <option value="2021">2021</option>
-                                        <option value="2022">2022</option>
-                                        <option value="2023">2023</option>
-                                        <option value="2024">2024</option>
-                                        <option value="2025">2025</option>
-                                        <option value="2026">2026</option>
-                                        <option value="2027">2027</option>
-                                        <option value="2028">2028</option>
-                                        <option value="2029">2029</option>
-                                        <option value="2030">2030</option>
-                                        <option value="2031">2031</option>
-                                        <option value="2032">2032</option>
-                                        <option value="2033">2033</option>
-                                        <option value="2034">2034</option>
-                                        <option value="2035">2035</option>
-                                        <option value="2036">2036</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="form-group rock-text-box">
-                            <label class="control-label">Card Security Code</label>
-                            <div class="control-wrapper">
-                                <input type="text" maxlength="4" class="input-width-xs js-creditcard-cvv form-control" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="hosted-payment-control">
+                <GatewayControl :gatewayControlModel="gatewayControlModel" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
             </div>
         </div>
 

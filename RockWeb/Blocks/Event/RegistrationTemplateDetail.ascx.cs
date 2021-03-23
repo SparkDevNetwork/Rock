@@ -957,22 +957,6 @@ The logged-in person's information will be used to complete the registrar inform
 
             int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
-            // validate gateway
-            if ( gatewayId.HasValue )
-            {
-                var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
-                if ( financialGateway != null )
-                {
-                    var hostedGatewayComponent = financialGateway.GetGatewayComponent() as Rock.Financial.IHostedGatewayComponent;
-                    if ( hostedGatewayComponent != null && !hostedGatewayComponent.GetSupportedHostedGatewayModes( financialGateway ).Contains( Rock.Financial.HostedGatewayMode.Unhosted ) )
-                    {
-                        nbValidationError.Text = "Unsupported Gateway. Registration currently only supports Gateways that have an un-hosted payment interface.";
-                        nbValidationError.Visible = true;
-                        return;
-                    }
-                }
-            }
-
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;

@@ -29,6 +29,7 @@ import { RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockForm
 import { areEqual } from '../../../Util/Guid';
 import RockForm from '../../../Controls/RockForm';
 import FeeField from './FeeField';
+import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../../Elements/ItemsWithPreAndPostHtml';
 
 export default defineComponent({
     name: 'Event.RegistrationEntry.Registrant',
@@ -40,7 +41,8 @@ export default defineComponent({
         Alert,
         RockForm,
         FeeField,
-        DropDownList
+        DropDownList,
+        ItemsWithPreAndPostHtml
     },
     props: {
         currentRegistrant: {
@@ -83,6 +85,13 @@ export default defineComponent({
         },
         currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
             return this.currentForm?.Fields || [];
+        },
+        prePostHtmlItems(): ItemWithPreAndPostHtml[] {
+            return this.currentFormFields.map(f => ({
+                PreHtml: f.PreHtml,
+                PostHtml: f.PostHtml,
+                SlotName: f.Guid
+            }));
         },
         formCountPerRegistrant(): number {
             return this.viewModel.RegistrantForms.length;
@@ -213,11 +222,13 @@ export default defineComponent({
             <DropDownList v-if="familyMemberOptions.length" v-model="currentRegistrant.PersonGuid" :options="familyMemberOptions" label="Family Member to Register" />
         </template>
 
-        <template v-for="field in currentFormFields" :key="field.Guid">
-            <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="currentRegistrant.FieldValues" :isKnownFamilyMember="!!currentRegistrant.PersonGuid" />
-            <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="currentRegistrant.FieldValues" />
-            <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
-        </template>
+        <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
+            <template v-for="field in currentFormFields" :key="field.Guid" v-slot:[field.Guid]>
+                <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="currentRegistrant.FieldValues" :isKnownFamilyMember="!!currentRegistrant.PersonGuid" />
+                <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="currentRegistrant.FieldValues" />
+                <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
+            </template>
+        </ItemsWithPreAndPostHtml>
 
         <div v-if="isLastForm && viewModel.Fees.length" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>

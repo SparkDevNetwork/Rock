@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using Rock.ViewModel.Controls;
 
 namespace Rock.ViewModel.Blocks
 {
@@ -152,6 +153,14 @@ namespace Rock.ViewModel.Blocks
         /// The cost.
         /// </value>
         public decimal Cost { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway control.
+        /// </summary>
+        /// <value>
+        /// The gateway control.
+        /// </value>
+        public GatewayControlViewModel GatewayControl { get; set; }
     }
 
     /// <summary>

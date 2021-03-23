@@ -33,6 +33,7 @@ import BirthdayPicker, { BirthdayPickerModel } from '../../Elements/BirthdayPick
 import NumberUpDown from '../../Elements/NumberUpDown';
 import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
 import Toggle from '../../Elements/Toggle';
+import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../Elements/ItemsWithPreAndPostHtml';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -68,7 +69,8 @@ export default defineComponent({
         BirthdayPicker,
         NumberUpDown,
         AddressControl,
-        Toggle
+        Toggle,
+        ItemsWithPreAndPostHtml
     },
     data() {
         return {
@@ -87,7 +89,11 @@ export default defineComponent({
                 Month: 1,
                 Day: 1,
                 Year: 2020
-            } as BirthdayPickerModel
+            } as BirthdayPickerModel,
+            prePostHtmlItems: [
+                { PreHtml: '<div class="row"><div class="col-sm-6">', PostHtml: '</div>', SlotName: 'item1' },
+                { PreHtml: '<div class="col-sm-6">', PostHtml: '</div></div>', SlotName: 'item2' }
+            ] as ItemWithPreAndPostHtml[]
         };
     },
     methods: {
@@ -255,6 +261,27 @@ export default defineComponent({
             </template>
             <template #result>
                 {{toggle}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                ItemsWithPreAndPostHtml
+            </template>
+            <template #gallery>
+                <TextBox label="Item 1 - Pre Html" v-model="prePostHtmlItems[0].PreHtml" />
+                <TextBox label="Item 1 - Post Html" v-model="prePostHtmlItems[0].PostHtml" />
+                <TextBox label="Item 2 - Pre Html" v-model="prePostHtmlItems[1].PreHtml" />
+                <TextBox label="Item 2 - Post Html" v-model="prePostHtmlItems[1].PostHtml" />
+            </template>
+            <template #result>
+                <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
+                    <template #item1>
+                        <div style="background-color: #fcc; padding: 5px;">This is item 1</div>
+                    </template>
+                    <template #item2>
+                        <div style="background-color: #ccf; padding: 5px;">This is item 2</div>
+                    </template>
+                </ItemsWithPreAndPostHtml>
             </template>
         </GalleryAndResult>
     </template>

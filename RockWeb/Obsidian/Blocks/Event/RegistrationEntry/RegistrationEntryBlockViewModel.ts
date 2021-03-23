@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { GatewayControlModel } from '../../../Controls/GatewayControl';
 import { Guid } from '../../../Util/Guid';
 import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
 
@@ -92,6 +93,7 @@ export interface RegistrationEntryBlockViewModel {
     ForceEmailUpdate: boolean
     RegistrarOption: RegistrarOption
     Cost: number
+    GatewayControl: GatewayControlModel
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel {

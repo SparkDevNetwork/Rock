@@ -66,20 +66,25 @@ System.register(["vee-validate", "../Services/Number", "vue", "./RockLabel", "..
                 computed: {
                     isRequired: function () {
                         return this.rules.includes('required');
+                    },
+                    internalNumberValue: function () {
+                        return Number_1.toNumberOrNull(this.internalValue);
                     }
                 },
                 watch: {
-                    internalValue: function () {
-                        this.$emit('update:modelValue', Number_1.toNumberOrNull(this.internalValue));
+                    internalNumberValue: function () {
+                        this.$emit('update:modelValue', this.internalNumberValue);
                     },
                     modelValue: {
                         immediate: true,
                         handler: function () {
-                            this.internalValue = Number_1.asFormattedString(this.modelValue);
+                            if (this.modelValue !== this.internalNumberValue) {
+                                this.internalValue = Number_1.asFormattedString(this.modelValue);
+                            }
                         }
                     }
                 },
-                template: "\n<Field\n    v-model.lazy=\"internalValue\"\n    @change=\"onChange\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-currency-box\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"input-group\">\n            <span class=\"input-group-addon\">$</span>\n            <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n        </div>\n    </div>\n</Field>"
+                template: "\n<Field\n    v-model=\"internalValue\"\n    @change=\"onChange\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-currency-box\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"input-group\">\n            <span class=\"input-group-addon\">$</span>\n            <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n        </div>\n    </div>\n</Field>"
             }));
         }
     };

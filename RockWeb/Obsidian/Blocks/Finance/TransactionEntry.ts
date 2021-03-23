@@ -17,7 +17,7 @@
 import CampusPicker from '../../Controls/CampusPicker';
 import DefinedValuePicker from '../../Controls/DefinedValuePicker';
 import CurrencyBox from '../../Elements/CurrencyBox';
-import { defineComponent, inject, Component, markRaw } from 'vue';
+import { defineComponent, inject } from 'vue';
 import { FINANCIAL_FREQUENCY } from '../../SystemGuid/DefinedType';
 import DatePicker from '../../Elements/DatePicker';
 import RockButton from '../../Elements/RockButton';
@@ -34,6 +34,7 @@ import FinancialAccount from '../../ViewModels/CodeGenerated/FinancialAccountVie
 import { asCommaAnd } from '../../Services/String';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel';
 import RockDate, { RockDateType } from '../../Util/RockDate';
+import GatewayControl, { GatewayControlModel } from '../../Controls/GatewayControl';
 
 export type ProcessTransactionArgs = {
     IsGivingAsPerson: boolean;
@@ -71,7 +72,8 @@ export default defineComponent({
         RockButton,
         Alert,
         Toggle,
-        TextBox
+        TextBox,
+        GatewayControl
     },
     setup() {
         return {
@@ -81,13 +83,13 @@ export default defineComponent({
     },
     data() {
         return {
+            loading: false,
             transactionGuid: newGuid(),
             criticalError: '',
             doGatewayControlSubmit: false,
             pageIndex: 1,
             page1Error: '',
             frequencyDefinedTypeGuid: FINANCIAL_FREQUENCY,
-            gatewayControl: null as Component | null,
             args: {
                 IsGivingAsPerson: true,
                 Email: '',
@@ -128,9 +130,8 @@ export default defineComponent({
         totalAmountFormatted(): string {
             return `$${asFormattedString(this.totalAmount)}`;
         },
-        gatewayControlSettings(): unknown {
-            const blockSettings = this.configurationValues || {};
-            return blockSettings['GatewayControlSettings'] || {};
+        gatewayControlModel(): GatewayControlModel {
+            return this.configurationValues['GatewayControl'] as GatewayControlModel;
         },
         currentPerson(): Person | null {
             return store.state.currentPerson;
@@ -177,10 +178,13 @@ export default defineComponent({
         onPageTwoSubmit() {
             this.doGatewayControlSubmit = true;
         },
-        onGatewayControlDone() {
+        onGatewayControlDone(token: string) {
+            this.args.ReferenceNumber = token;
             this.pageIndex = 3;
         },
         async onPageThreeSubmit() {
+            this.loading = true;
+
             try {
                 await this.invokeBlockAction('ProcessTransaction', {
                     args: this.args,
@@ -190,6 +194,9 @@ export default defineComponent({
             }
             catch (e) {
                 console.log(e);
+            }
+            finally {
+                this.loading = false;
             }
         }
     },
@@ -207,30 +214,12 @@ export default defineComponent({
             }
         }
     },
-    async created() {
-        const controlPath = this.configurationValues['GatewayControlFileUrl'] as string | null;
-
-        if (controlPath) {
-            const controlComponentModule = await import(controlPath);
-            const gatewayControl = controlComponentModule ?
-                (controlComponentModule.default || controlComponentModule) :
-                null;
-
-            if (gatewayControl) {
-                this.gatewayControl = markRaw(gatewayControl);
-            }
-        }
-
-        if (!this.gatewayControl) {
-            this.criticalError = 'Could not find the correct gateway control';
-        }
-    },
     template: `
 <div class="transaction-entry-v2">
     <Alert v-if="criticalError" danger>
         {{criticalError}}
     </Alert>
-    <template v-else-if="!gatewayControl">
+    <template v-else-if="!gatewayControlModel || !gatewayControlModel.FileUrl">
         <h4>Welcome to Rock's On-line Giving Experience</h4>
         <p>
             There is currently no gateway configured.
@@ -244,7 +233,7 @@ export default defineComponent({
         <CampusPicker v-model="args.CampusGuid" :showBlankItem="false" />
         <DefinedValuePicker :definedTypeGuid="frequencyDefinedTypeGuid" v-model="args.FrequencyValueGuid" label="Frequency" :showBlankItem="false" />
         <DatePicker label="Process Gift On" v-model="args.GiftDate" />
-        <Alert validation v-if="page1Error">{{page1Error}}</Alert>
+        <Alert alertType="validation" v-if="page1Error">{{page1Error}}</Alert>
         <RockButton btnType="primary" @click="onPageOneSubmit">Give Now</RockButton>
     </template>
     <template v-else-if="pageIndex === 2">
@@ -258,7 +247,7 @@ export default defineComponent({
         </div>
         <div>
             <div class="hosted-payment-control">
-                <component :is="gatewayControl" :settings="gatewayControlSettings" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
+                <GatewayControl :gatewayControlModel="gatewayControlModel" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
             </div>
             <div class="navigation actions">
                 <RockButton btnType="default" @click="goBack" :disabled="doGatewayControlSubmit">Back</RockButton>
@@ -281,8 +270,8 @@ export default defineComponent({
             <TextBox v-model="args.LastName" placeholder="Last Name" class="margin-b-sm" />
         </template>
         <div class="navigation actions margin-t-md">
-            <RockButton @click="goBack">Back</RockButton>
-            <RockButton btnType="primary" class="pull-right" @click="onPageThreeSubmit">Finish</RockButton>
+            <RockButton :isLoading="loading" @click="goBack">Back</RockButton>
+            <RockButton :isLoading="loading" btnType="primary" class="pull-right" @click="onPageThreeSubmit">Finish</RockButton>
         </div>
     </template>
     <template v-else-if="pageIndex === 4">
