@@ -95,7 +95,9 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts the decimal to a money.
+        /// Rounds the value to 2 decimal spaces. This is handy if you doing math on Money
+        /// and don't want to worry about fractions of a penny.
+        /// For example: 123456.55345 returns 123456.55.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
@@ -105,7 +107,10 @@ namespace Rock
         }
 
         /// <summary>
-        /// Formats as money.
+        /// Formats the value to include commas and decimal point. But without
+        /// a currency symbol. 
+        /// For example: 123456.55345 returns "123,456.55" (depending on browser language settings).
+        /// Use <seealso cref="FormatAsCurrency(decimal)"/> to include the currency symbol.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
