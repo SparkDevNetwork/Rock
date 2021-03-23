@@ -346,7 +346,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the date of the start of the month for the specified date/time.
+        /// Returns the date of the start of the month for the specified date/time with the time set to "00:00:00:000".
         /// </summary>
         /// <param name="dt">The dt.</param>
         /// <returns></returns>
@@ -356,13 +356,13 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns the DateTime of the last day of the month with the time set to "23:59:59:999". The last moment of the last day of the month.
+        /// Returns the DateTime of the last day of the month with the time set to "00:00:00:000". The last moment of the last day of the month.
         /// </summary>
         /// <param name="dt">The dt.</param>
         /// <returns></returns>
         public static DateTime EndOfMonth( this DateTime dt )
         {
-            return new DateTime( dt.Year, dt.Month, 1 ).AddMonths( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+            return new DateTime( dt.Year, dt.Month, 1 ).AddMonths( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
         }
 
         /// <summary>
@@ -598,13 +598,13 @@ namespace Rock
         }
 
         /// <summary>
-        ///  Gets the DateTime of the last day of the year with the time set to "23:59:59:999". The last moment of the last day of the year.
+        ///  Gets the DateTime of the last day of the year with the time set to "00:00:00:000". The last moment of the last day of the year.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
         public static DateTime EndOfYear( this DateTime dateTime )
         {
-            return new DateTime( dateTime.Year, 1, 1 ).AddYears( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+            return new DateTime( dateTime.Year, 1, 1 ).AddYears( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
         }
 
         /// <summary>
