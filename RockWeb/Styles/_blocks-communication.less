@@ -378,13 +378,18 @@ iframe.email-body {
 
     .sms-image-uploader-container {
       position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 280px;
+      right: -1px;
+      bottom: -1px;
+      width: 220px;
       max-width: 100%;
       padding: 8px;
       margin: 0;
       background: @well-bg;
+      border: 1px solid @panel-border;
+
+      .close {
+        font-size: 18px;
+      }
     }
   }
 
