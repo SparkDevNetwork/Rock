@@ -112,6 +112,10 @@ textarea,
 }
 
 .btn-square {
+  width: @input-height-base;
+  height: @input-height-base;
+  padding: @padding-base-vertical 0;
+
   &.btn-xs {
     width: 25px;
     height: 25px;
@@ -119,9 +123,9 @@ textarea,
   }
 
   &.btn-sm {
-    width: 33px;
-    height: 33px;
-    padding: 5px 8px;
+    width: @input-height-small;
+    height: @input-height-small;
+    padding: @padding-small-vertical @padding-small-horizontal;
   }
 
   i.fa {
