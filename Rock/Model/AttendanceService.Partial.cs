@@ -286,7 +286,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the attendances.
+        /// Returns a queryable collection of <see cref="Rock.Model.Attendance" /> for the given date, location, schedule, and RSVP. No other filtering is done.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <param name="locationId">The location identifier.</param>
