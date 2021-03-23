@@ -784,7 +784,7 @@ namespace RockWeb.Blocks.Communication
                     foreach ( var binaryFileGuid in communicationRecipientResponse.BinaryFileGuids )
                     {
                         // Show the image thumbnail by appending the html to lSMSMessage.Text
-                        string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=100&height=100' class='img-responsive sms-image'></a>";
+                        string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=200' class='img-responsive sms-image'></a>";
 
                         // If there is a text portion or previous image then drop down a line before appending the image element
                         lSMSAttachments.Text += imageElement;
