@@ -104,6 +104,16 @@ namespace Rock.WebFarm
             /// Pong
             /// </summary>
             public const string Pong = "Pong";
+
+            /// <summary>
+            /// Recycle Detect Ping
+            /// </summary>
+            public const string RecyclePing = "RecyclePing";
+
+            /// <summary>
+            /// Recycle Detect Pong
+            /// </summary>
+            public const string RecyclePong = "RecyclePong";
         }
 
         #endregion Helper Classes
@@ -113,7 +123,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// Do debug logging
         /// </summary>
-        private const bool DEBUG = true;
+        private const bool DEBUG = false;
 
         /// <summary>
         /// The bytes per megayte
@@ -174,6 +184,48 @@ namespace Rock.WebFarm
         /// The total ram mb
         /// </summary>
         private static readonly int TotalRamMb = ( int ) ( new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / BytesPerMegayte );
+
+        /// <summary>
+        /// Gets the process identifier.
+        /// </summary>
+        /// <value>
+        /// The process identifier.
+        /// </value>
+        public static int ProcessId
+        {
+            get
+            {
+                if ( !_processId.HasValue )
+                {
+                    using ( var thisProcess = Process.GetCurrentProcess() )
+                    {
+                        _processId = thisProcess.Id;
+                    }
+                }
+
+                return _processId.Value;
+            }
+        }
+
+        /// <summary>
+        /// The process identifier
+        /// </summary>
+        private static int? _processId;
+
+        /// <summary>
+        /// Is this process being recycled?
+        /// </summary>
+        private static bool _isBeingRecycled = false;
+
+        /// <summary>
+        /// Is this process the result of an IIS process recycle?
+        /// </summary>
+        private static bool _isNewProcessFromRecycle = false;
+
+        /// <summary>
+        /// The recycle ping key
+        /// </summary>
+        private static Guid? _recyclePingKey = null;
 
         #endregion State
 
@@ -269,10 +321,11 @@ namespace Rock.WebFarm
                     }
                 }
 
-                // If StoppedDateTime is currently null then write to ClusterNodeLog -"Detected previous abrupt shutdown on load."
+                // If StoppedDateTime is currently null, then either there was an abrupt shutdown, or this process is half of an IIS process recycle
                 if ( !isNewNode && !webFarmNode.StoppedDateTime.HasValue )
                 {
-                    AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, webFarmNode.Id, EventType.Error, "Detected previous abrupt shutdown on load." );
+                    // We will investigate the startup, but we don't want to wait for that to finish as we start
+                    _ = InvestigateAbnormalStartupAsync();
                 }
 
                 // Save the polling internval
@@ -287,7 +340,7 @@ namespace Rock.WebFarm
                 webFarmNode.IsActive = false;
 
                 // Write to ClusterNodeLog -Startup Message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup, $"Process ID: {ProcessId}" );
 
                 rockContext.SaveChanges();
             }
@@ -358,20 +411,29 @@ namespace Rock.WebFarm
             // Stop the polling interval
             _pollingInterval.Stop();
 
-            // Announce to stop EventBus
-            PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
+            // Announce to stop EventBus. If I am being recycled, then my twin is taking over and I am not really shutting down.
+            if ( !_isBeingRecycled )
+            {
+                PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
+            }
 
             using ( var rockContext = new RockContext() )
             {
-                // Update IsActive = false, StoppedDateTime = now
-                // If IsCurrentJobRunning = true set this to false
-                var webFarmNode = GetNode( rockContext, _nodeName );
-                webFarmNode.IsActive = false;
-                webFarmNode.StoppedDateTime = RockDateTime.Now;
-                webFarmNode.IsCurrentJobRunner = false;
+                if ( !_isBeingRecycled )
+                {
+                    // Update IsActive = false, StoppedDateTime = now
+                    // If IsCurrentJobRunning = true set this to false
+                    var webFarmNode = GetNode( rockContext, _nodeName );
+                    webFarmNode.IsActive = false;
+                    webFarmNode.StoppedDateTime = RockDateTime.Now;
+                    webFarmNode.IsCurrentJobRunner = false;
+                }
+
+                // Add a note if recycling
+                var recyclingText = _isBeingRecycled ? "(Recycling) " : string.Empty;
 
                 // Write to ClusterNodeLog shutdown message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Shutdown, shutdownReasonText );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"Process ID: {ProcessId} - {recyclingText}{shutdownReasonText}" );
                 rockContext.SaveChanges();
             }
 
@@ -408,6 +470,69 @@ namespace Rock.WebFarm
         }
 
         /// <summary>
+        /// Called when [received recycle ping].
+        /// </summary>
+        /// <param name="senderNodeName">Name of the sender node.</param>
+        /// <param name="recipientNodeName">Name of the recipient node.</param>
+        /// <param name="recycleKey">The recycle key.</param>
+        internal static void OnReceivedRecyclePing( string senderNodeName, string recipientNodeName, Guid? recycleKey )
+        {
+            if ( senderNodeName != _nodeName || recipientNodeName != _nodeName )
+            {
+                // Only listen for recycle pings from my twin process (from me, to me)
+                return;
+            }
+
+            if ( !recycleKey.HasValue )
+            {
+                // There is no valid recycle key
+                return;
+            }
+
+            if ( _recyclePingKey.HasValue && _recyclePingKey.Value == recycleKey.Value )
+            {
+                // This recycle ping was initated by this process and is not the twin process
+                return;
+            }
+
+            Debug( $"Got a Recycle Ping from my twin process. I must be shutting down soon." );
+            _isBeingRecycled = true;
+
+            // Reply to the twin process (sender of the ping)
+            PublishEvent( EventType.RecyclePong, senderNodeName, recycleKey.Value.ToString() );
+        }
+
+        /// <summary>
+        /// Called when [received recycle pong].
+        /// </summary>
+        /// <param name="senderNodeName">Name of the sender node.</param>
+        /// <param name="recipientNodeName">Name of the recipient node.</param>
+        /// <param name="recycleKey">The recycle key.</param>
+        internal static void OnReceivedRecyclePong( string senderNodeName, string recipientNodeName, Guid? recycleKey )
+        {
+            if ( senderNodeName != _nodeName || recipientNodeName != _nodeName )
+            {
+                // Only listen for recycle pongs from my twin process (from me, to me)
+                return;
+            }
+
+            if ( !recycleKey.HasValue )
+            {
+                // There is no valid recycle key
+                return;
+            }
+
+            if ( !_recyclePingKey.HasValue || _recyclePingKey.Value != recycleKey.Value )
+            {
+                // This recycle ping was not initated by this process, so the pong is not for me
+                return;
+            }
+
+            Debug( $"Got a Recycle Pong from my twin process. I must be taking over for it." );
+            _isNewProcessFromRecycle = true;
+        }
+
+        /// <summary>
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>
@@ -428,6 +553,12 @@ namespace Rock.WebFarm
             if ( !pingPongKey.HasValue )
             {
                 // There is no valid ping key
+                return;
+            }
+
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process answer pings.
                 return;
             }
 
@@ -469,6 +600,12 @@ namespace Rock.WebFarm
                 return;
             }
 
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process handle pongs.
+                return;
+            }
+
             Debug( $"Got a Pong from {senderNodeName}" );
 
             using ( var rockContext = new RockContext() )
@@ -481,6 +618,7 @@ namespace Rock.WebFarm
                     AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Critical, node.Id, EventType.Availability, $"{node.NodeName} was marked inactive but responded to a ping" );
                 }
 
+                node.StoppedDateTime = null;
                 node.LastSeenDateTime = RockDateTime.Now;
                 node.IsActive = true;
                 rockContext.SaveChanges();
@@ -494,6 +632,12 @@ namespace Rock.WebFarm
         {
             if ( !IsEnabled() )
             {
+                return;
+            }
+
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process handle this.
                 return;
             }
 
@@ -542,6 +686,7 @@ namespace Rock.WebFarm
                 thisNode.IsLeader = true;
                 thisNode.IsActive = true;
                 thisNode.LastSeenDateTime = pollingTime;
+                thisNode.StoppedDateTime = null;
 
                 foreach ( var otherNode in otherNodes )
                 {
@@ -628,6 +773,39 @@ namespace Rock.WebFarm
         #endregion Event Handlers
 
         #region Helper Methods
+
+        /// <summary>
+        /// Investigates the abnormal startup. This should be called when the node is starting, but the database indicates the node
+        /// is already active. This could be evidence of an abrupt shutdown when the node did not mark itself inactive. Or this
+        /// could indicate that IIS is doing a process recycle and overlapping the shuting-down and starting-up processes.
+        /// </summary>
+        /// <returns></returns>
+        private async static Task InvestigateAbnormalStartupAsync()
+        {
+            Debug( "My node DB record says I'm already active. Investigating..." );
+
+            // To detect a process recycle, we will ping our twin process (same node name)
+            _recyclePingKey = Guid.NewGuid();
+            PublishEvent( EventType.RecyclePing, _nodeName, _recyclePingKey.Value.ToString() );
+
+            // Get polling wait time
+            var pollingWaitTimeSeconds = GetMaxPollingWaitSeconds();
+
+            // Wait a maximum of 10 seconds for response
+            await Task.Delay( TimeSpan.FromSeconds( pollingWaitTimeSeconds ) ).ContinueWith( t =>
+            {
+                if ( !_isNewProcessFromRecycle )
+                {
+                    Debug( "I didn't hear from a twin process, so there must have been an abrupt shutdown" );
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, _nodeId, EventType.Error, "Detected previous abrupt shutdown on load." );
+                        rockContext.SaveChanges();
+                    }
+                }
+            } );
+        }
 
         /// <summary>
         /// Initializes the performance counters.
