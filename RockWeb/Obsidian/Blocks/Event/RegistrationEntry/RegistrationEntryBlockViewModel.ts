@@ -83,6 +83,7 @@ export interface RegistrationEntryBlockViewModel {
     RegistrationAttributeTitleEnd: string;
     InstructionsHtml: string;
     RegistrantTerm: string;
+    RegistrationTerm: string;
     PluralRegistrantTerm: string;
     PluralFeeTerm: string;
     RegistrantForms: RegistrationEntryBlockFormViewModel[];

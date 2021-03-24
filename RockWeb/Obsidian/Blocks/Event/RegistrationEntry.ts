@@ -29,13 +29,16 @@ import ProgressBar from '../../Elements/ProgressBar';
 import NumberFilter from '../../Services/Number';
 import StringFilter, { isNullOrWhitespace } from '../../Services/String';
 import Alert from '../../Elements/Alert';
+import RegistrationEntrySuccess from './RegistrationEntry/Success';
+import Page from '../../Util/Page';
 
 export enum Step {
     'intro' = 'intro',
     'registrationStartForm' = 'registrationStartForm',
     'perRegistrantForms' = 'perRegistrantForms',
     'registrationEndForm' = 'registrationEndForm',
-    'reviewAndPayment' = 'reviewAndPayment'
+    'reviewAndPayment' = 'reviewAndPayment',
+    'success' = 'success'
 }
 
 export type RegistrantInfo = {
@@ -63,6 +66,8 @@ export type RegistrationEntryState = {
     Registrants: RegistrantInfo[];
     RegistrationFieldValues: Record<Guid, unknown>;
     Registrar: RegistrarInfo;
+    GatewayToken: string;
+    DiscountCode: string;
 };
 
 export function getDefaultRegistrantInfo() {
@@ -100,6 +105,7 @@ export default defineComponent({
         RegistrationEntryRegistrationStart,
         RegistrationEntryRegistrationEnd,
         RegistrationEntrySummary,
+        RegistrationEntrySuccess,
         ProgressBar,
         Alert
     },
@@ -109,7 +115,8 @@ export default defineComponent({
             [Step.registrationStartForm]: Step.registrationStartForm,
             [Step.perRegistrantForms]: Step.perRegistrantForms,
             [Step.registrationEndForm]: Step.registrationEndForm,
-            [Step.reviewAndPayment]: Step.reviewAndPayment
+            [Step.reviewAndPayment]: Step.reviewAndPayment,
+            [Step.success]: Step.success
         };
 
         const viewModel = inject('configurationValues') as RegistrationEntryBlockViewModel;
@@ -135,8 +142,10 @@ export default defineComponent({
                 LastName: '',
                 Email: '',
                 UpdateEmail: true
-            }
-        }) as RegistrationEntryState;
+            },
+            GatewayToken: '',
+            DiscountCode: ''
+        } as RegistrationEntryState);
 
         provide('registrationEntryState', registrationEntryState);
 
@@ -191,6 +200,10 @@ export default defineComponent({
                 return (this.numberOfPages - 1) / this.numberOfPages;
             }
 
+            if (this.currentStep === this.steps.success) {
+                return 1;
+            }
+
             return 0;
         },
         completionPercentInt(): number {
@@ -229,33 +242,49 @@ export default defineComponent({
                 return 'Review Registration';
             }
 
+            if (this.currentStep === this.steps.success) {
+                return 'Congratulations';
+            }
+
             return '';
         }
     },
     methods: {
         onIntroNext() {
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
+            Page.smoothScrollToTop();
         },
         onRegistrationStartPrevious() {
             this.registrationEntryState.CurrentStep = this.steps.intro;
+            Page.smoothScrollToTop();
         },
         onRegistrationStartNext() {
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+            Page.smoothScrollToTop();
         },
         onRegistrantPrevious() {
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
+            Page.smoothScrollToTop();
         },
         onRegistrantNext() {
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
+            Page.smoothScrollToTop();
         },
         onRegistrationEndPrevious() {
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+            Page.smoothScrollToTop();
         },
         onRegistrationEndNext() {
             this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
+            Page.smoothScrollToTop();
         },
         onSummaryPrevious() {
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
+            Page.smoothScrollToTop();
+        },
+        onSummaryNext() {
+            this.registrationEntryState.CurrentStep = this.steps.success;
+            Page.smoothScrollToTop();
         }
     },
     template: `
@@ -269,7 +298,8 @@ export default defineComponent({
     <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
     <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
     <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
-    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @previous="onSummaryPrevious" />
+    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @next="onSummaryNext" @previous="onSummaryPrevious" />
+    <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
     <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
 </div>`
 });

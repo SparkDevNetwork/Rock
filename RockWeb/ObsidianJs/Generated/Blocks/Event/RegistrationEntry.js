@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1, Step;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1, Success_1, Page_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
         return {
@@ -82,6 +82,12 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
+            },
+            function (Success_1_1) {
+                Success_1 = Success_1_1;
+            },
+            function (Page_1_1) {
+                Page_1 = Page_1_1;
             }
         ],
         execute: function () {
@@ -91,6 +97,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                 Step["perRegistrantForms"] = "perRegistrantForms";
                 Step["registrationEndForm"] = "registrationEndForm";
                 Step["reviewAndPayment"] = "reviewAndPayment";
+                Step["success"] = "success";
             })(Step || (Step = {}));
             exports_1("Step", Step);
             exports_1("default", vue_1.defineComponent({
@@ -103,6 +110,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     RegistrationEntryRegistrationStart: RegistrationStart_1.default,
                     RegistrationEntryRegistrationEnd: RegistrationEnd_1.default,
                     RegistrationEntrySummary: Summary_1.default,
+                    RegistrationEntrySuccess: Success_1.default,
                     ProgressBar: ProgressBar_1.default,
                     Alert: Alert_1.default
                 },
@@ -114,6 +122,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         _a[Step.perRegistrantForms] = Step.perRegistrantForms,
                         _a[Step.registrationEndForm] = Step.registrationEndForm,
                         _a[Step.reviewAndPayment] = Step.reviewAndPayment,
+                        _a[Step.success] = Step.success,
                         _a);
                     var viewModel = vue_1.inject('configurationValues');
                     var hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
@@ -136,7 +145,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             LastName: '',
                             Email: '',
                             UpdateEmail: true
-                        }
+                        },
+                        GatewayToken: '',
+                        DiscountCode: ''
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
                     return {
@@ -185,6 +196,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         if (this.currentStep === this.steps.reviewAndPayment) {
                             return (this.numberOfPages - 1) / this.numberOfPages;
                         }
+                        if (this.currentStep === this.steps.success) {
+                            return 1;
+                        }
                         return 0;
                     },
                     completionPercentInt: function () {
@@ -216,36 +230,51 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         if (this.currentStep === this.steps.reviewAndPayment) {
                             return 'Review Registration';
                         }
+                        if (this.currentStep === this.steps.success) {
+                            return 'Congratulations';
+                        }
                         return '';
                     }
                 },
                 methods: {
                     onIntroNext: function () {
                         this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrationStartPrevious: function () {
                         this.registrationEntryState.CurrentStep = this.steps.intro;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrationStartNext: function () {
                         this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrantPrevious: function () {
                         this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrantNext: function () {
                         this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrationEndPrevious: function () {
                         this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onRegistrationEndNext: function () {
                         this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
+                        Page_1.default.smoothScrollToTop();
                     },
                     onSummaryPrevious: function () {
                         this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
+                        Page_1.default.smoothScrollToTop();
+                    },
+                    onSummaryNext: function () {
+                        this.registrationEntryState.CurrentStep = this.steps.success;
+                        Page_1.default.smoothScrollToTop();
                     }
                 },
-                template: "\n<div>\n    <template v-if=\"currentStep !== steps.intro\">\n        <h1>{{stepTitle}}</h1>\n        <ProgressBar :percent=\"completionPercentInt\" />\n    </template>\n\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @previous=\"onSummaryPrevious\" />\n    <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n</div>"
+                template: "\n<div>\n    <template v-if=\"currentStep !== steps.intro\">\n        <h1>{{stepTitle}}</h1>\n        <ProgressBar :percent=\"completionPercentInt\" />\n    </template>\n\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n    <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n    <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n</div>"
             }));
         }
     };

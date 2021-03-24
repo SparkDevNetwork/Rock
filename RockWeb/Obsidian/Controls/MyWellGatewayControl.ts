@@ -16,6 +16,7 @@
 //
 import { defineComponent, PropType } from 'vue';
 import LoadingIndicator from '../Elements/LoadingIndicator';
+import { ValidationField } from './GatewayControl';
 
 type Settings = {
     PublicApiKey: string;
@@ -27,9 +28,21 @@ type Tokenizer = {
     submit: () => void;
 };
 
-type Response = {
+interface Response {
+    status: 'success' | 'error' | 'validation';
+}
+
+interface SuccessResponse extends Response {
     token: string;
-};
+}
+
+interface ErrorResponse extends Response {
+    message: string;
+}
+
+interface ValidationResponse extends Response {
+    invalid: string[];
+}
 
 export default defineComponent({
     name: 'MyWellGatewayControl',
@@ -54,9 +67,64 @@ export default defineComponent({
         };
     },
     methods: {
-        handleResponse(resp: Response) {
-            this.token = resp.token;
-            this.$emit('done', this.token);
+        handleResponse(response: Response | null | undefined) {
+            if (!response?.status || response.status === 'error') {
+                const errorResponse = (response as ErrorResponse | null) || null;
+                this.$emit('error', errorResponse?.message || 'There was an unexpected problem communicating with the gateway.');
+                console.error('MyWell response was errored:', JSON.stringify(response));
+                return;
+            }
+
+            if (response.status === 'validation') {
+                const validationResponse = (response as ValidationResponse | null) || null;
+
+                if (!validationResponse?.invalid?.length) {
+                    this.$emit('error', 'There was a validation issue, but the invalid field was not specified.');
+                    console.error('MyWell response was errored:', JSON.stringify(response));
+                    return;
+                }
+
+                const validationFields: ValidationField[] = [];
+
+                for (const myWellField of validationResponse.invalid) {
+                    switch (myWellField) {
+                        case 'cc':
+                            validationFields.push(ValidationField.CardNumber);
+                            break;
+                        case 'exp':
+                            validationFields.push(ValidationField.Expiry);
+                            break;
+                        default:
+                            console.error('Unknown MyWell validation field', myWellField);
+                            break;
+                    }
+                }
+
+                if (!validationFields.length) {
+                    this.$emit('error', 'There was a validation issue, but the invalid field could not be inferred.');
+                    console.error('MyWell response contained unexpected values:', JSON.stringify(response));
+                    return;
+                }
+
+                this.$emit('validationRaw', validationFields);
+                return;
+            }
+
+            if (response.status === 'success') {
+                const successResponse = (response as SuccessResponse | null) || null;
+
+                if (!successResponse?.token) {
+                    this.$emit('error', 'There was an unexpected problem communicating with the gateway.');
+                    console.error('MyWell response does not have the expected token:', JSON.stringify(response));
+                    return;
+                }
+
+                this.$emit('success', successResponse.token);
+                return;
+            }
+
+            this.$emit('error', 'There was an unexpected problem communicating with the gateway.');
+            console.error('MyWell response has invalid status:', JSON.stringify(response));
         }
     },
     computed: {

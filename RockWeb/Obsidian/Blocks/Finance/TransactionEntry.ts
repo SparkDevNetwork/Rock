@@ -35,6 +35,7 @@ import { asCommaAnd } from '../../Services/String';
 import Campus from '../../ViewModels/CodeGenerated/CampusViewModel';
 import RockDate, { RockDateType } from '../../Util/RockDate';
 import GatewayControl, { GatewayControlModel } from '../../Controls/GatewayControl';
+import RockValidation from '../../Controls/RockValidation';
 
 export type ProcessTransactionArgs = {
     IsGivingAsPerson: boolean;
@@ -73,7 +74,8 @@ export default defineComponent({
         Alert,
         Toggle,
         TextBox,
-        GatewayControl
+        GatewayControl,
+        RockValidation
     },
     setup() {
         return {
@@ -84,6 +86,8 @@ export default defineComponent({
     data() {
         return {
             loading: false,
+            gatewayErrorMessage: '',
+            gatewayValidationFields: {} as Record<string, string>,
             transactionGuid: newGuid(),
             criticalError: '',
             doGatewayControlSubmit: false,
@@ -165,6 +169,7 @@ export default defineComponent({
     methods: {
         goBack() {
             this.pageIndex--;
+            this.doGatewayControlSubmit = false;
         },
         onPageOneSubmit() {
             if (this.totalAmount <= 0) {
@@ -175,12 +180,45 @@ export default defineComponent({
             this.page1Error = '';
             this.pageIndex = 2;
         },
+
+        /** This is the handler for submitting the page with the gateway control on it. This method tells
+         *  the gateway control to tokenize the input. Once tokenization is complete, then gateway success,
+         *  error, or validation handlers will be invoked. */
         onPageTwoSubmit() {
+            this.loading = true;
+            this.gatewayErrorMessage = '';
+            this.gatewayValidationFields = {};
             this.doGatewayControlSubmit = true;
         },
-        onGatewayControlDone(token: string) {
+
+        /**
+         * The gateway indicated success and returned a token
+         * @param token
+         */
+        onGatewayControlSuccess(token: string) {
+            this.loading = false;
             this.args.ReferenceNumber = token;
             this.pageIndex = 3;
+        },
+
+        /**
+         * The gateway indicated an error
+         * @param message
+         */
+        onGatewayControlError(message: string) {
+            this.doGatewayControlSubmit = false;
+            this.loading = false;
+            this.gatewayErrorMessage = message;
+        },
+
+        /**
+         * The gateway wants the user to fix some fields
+         * @param invalidFields
+         */
+        onGatewayControlValidation(invalidFields: Record<string, string>) {
+            this.doGatewayControlSubmit = false;
+            this.loading = false;
+            this.gatewayValidationFields = invalidFields;
         },
         async onPageThreeSubmit() {
             this.loading = true;
@@ -246,12 +284,19 @@ export default defineComponent({
             </div>
         </div>
         <div>
+            <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+            <RockValidation :errors="gatewayValidationFields" />
             <div class="hosted-payment-control">
-                <GatewayControl :gatewayControlModel="gatewayControlModel" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
+                <GatewayControl
+                    :gatewayControlModel="gatewayControlModel"
+                    :submit="doGatewayControlSubmit"
+                    @success="onGatewayControlSuccess"
+                    @error="onGatewayControlError"
+                    @validation="onGatewayControlValidation" />
             </div>
             <div class="navigation actions">
-                <RockButton btnType="default" @click="goBack" :disabled="doGatewayControlSubmit">Back</RockButton>
-                <RockButton btnType="primary" class="pull-right" @click="onPageTwoSubmit" :disabled="doGatewayControlSubmit">Next</RockButton>
+                <RockButton btnType="default" @click="goBack" :isLoading="loading">Back</RockButton>
+                <RockButton btnType="primary" class="pull-right" @click="onPageTwoSubmit" :isLoading="loading">Next</RockButton>
             </div>
         </div>
     </template>

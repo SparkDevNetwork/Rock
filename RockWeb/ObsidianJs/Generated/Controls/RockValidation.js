@@ -24,7 +24,7 @@ System.register(["../Elements/Alert", "vue"], function (exports_1, context_1) {
                     },
                     submitCount: {
                         type: Number,
-                        required: true
+                        default: -1
                     }
                 },
                 data: function () {
@@ -41,6 +41,11 @@ System.register(["../Elements/Alert", "vue"], function (exports_1, context_1) {
                 },
                 methods: {
                     syncErrorsDebounced: function () {
+                        if (this.submitCount === -1) {
+                            // Do not debounce, just sync. This instance is probably not within a traditional form.
+                            this.errorsToShow = this.errors;
+                            return;
+                        }
                         // There are errors that come in at different cycles. We don't want the screen jumping around as the
                         // user fixes errors. But, we do want the validations from the submit cycle to all get through even
                         // though they come at different times. The "debounce" 1000ms code is to try to allow all of those

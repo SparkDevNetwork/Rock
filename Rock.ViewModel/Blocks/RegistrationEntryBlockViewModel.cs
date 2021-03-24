@@ -161,6 +161,14 @@ namespace Rock.ViewModel.Blocks
         /// The gateway control.
         /// </value>
         public GatewayControlViewModel GatewayControl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration term.
+        /// </summary>
+        /// <value>
+        /// The registration term.
+        /// </value>
+        public string RegistrationTerm { get; set; }
     }
 
     /// <summary>

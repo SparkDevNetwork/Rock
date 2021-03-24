@@ -19,6 +19,7 @@ import { defineComponent, inject } from 'vue';
 import GatewayControl, { GatewayControlModel } from '../../../Controls/GatewayControl';
 import { InvokeBlockActionFunc } from '../../../Controls/RockBlock';
 import RockForm from '../../../Controls/RockForm';
+import RockValidation from '../../../Controls/RockValidation';
 import Alert from '../../../Elements/Alert';
 import CheckBox from '../../../Elements/CheckBox';
 import EmailBox from '../../../Elements/EmailBox';
@@ -53,7 +54,8 @@ export default defineComponent({
         EmailBox,
         RockForm,
         Alert,
-        GatewayControl
+        GatewayControl,
+        RockValidation
     },
     setup() {
         return {
@@ -63,8 +65,8 @@ export default defineComponent({
     },
     data() {
         return {
-            /** Is the discount-code-checking AJAX call in-flight? */
-            isDiscountCodeLoading: false,
+            /** Is there an AJAX call in-flight? */
+            loading: false,
 
             /** The bound value to the discount code input */
             discountCodeInput: '',
@@ -79,7 +81,16 @@ export default defineComponent({
             discountAmount: 0,
 
             /** The percent of the total to be discounted because of the discount code entered. */
-            discountPercent: 0
+            discountPercent: 0,
+
+            /** Should the gateway control submit to the gateway to create a token? */
+            doGatewayControlSubmit: false,
+
+            /** Gateway indicated error */
+            gatewayErrorMessage: '',
+
+            /** Gateway indicated validation issues */
+            gatewayValidationFields: {} as Record<string, string>
         };
     },
     computed: {
@@ -173,11 +184,23 @@ export default defineComponent({
         },
     },
     methods: {
+        /** User clicked the "previous" button */
         onPrevious() {
             this.$emit('previous');
         },
+
+        /** User clicked the "finish" button */
+        onNext() {
+            this.loading = true;
+            this.gatewayErrorMessage = '';
+            this.gatewayValidationFields = {};
+            this.doGatewayControlSubmit = true;
+        },
+
+        /** Send a user input discount code to the server so the server can check and send back
+         *  the discount amount. */
         async tryDiscountCode() {
-            this.isDiscountCodeLoading = true;
+            this.loading = true;
 
             try {
                 const result = await this.invokeBlockAction<CheckDiscountCodeResult>('CheckDiscountCode', {
@@ -197,12 +220,15 @@ export default defineComponent({
                         `$${asFormattedString(this.discountAmount, 2)}`;
 
                     this.discountCodeSuccessMessage = `Your ${discountText} discount code for all registrants was successfully applied.`;
+                    this.registrationEntryState.DiscountCode = result.data.DiscountCode;
                 }
             }
             finally {
-                this.isDiscountCodeLoading = false;
+                this.loading = false;
             }
         },
+
+        /** Prefill in the registrar form fields based on the admin's settings */
         prefillRegistrar() {
             // If the information is aleady recorded, do not change it
             if (this.registrar.NickName || this.registrar.LastName || this.registrar.Email) {
@@ -230,7 +256,41 @@ export default defineComponent({
                 this.registrar.Email = firstRegistrantInfo.Email;
                 return;
             }
-        }
+        },
+
+        /**
+         * The gateway indicated success and returned a token
+         * @param token
+         */
+        onGatewayControlSuccess(token: string) {
+            this.loading = false;
+            this.registrationEntryState.GatewayToken = token;
+
+            // TODO
+            // submit the payload to the server
+
+            this.$emit('next');
+        },
+
+        /**
+         * The gateway indicated an error
+         * @param message
+         */
+        onGatewayControlError(message: string) {
+            this.doGatewayControlSubmit = false;
+            this.loading = false;
+            this.gatewayErrorMessage = message;
+        },
+
+        /**
+         * The gateway wants the user to fix some fields
+         * @param invalidFields
+         */
+        onGatewayControlValidation(invalidFields: Record<string, string>) {
+            this.doGatewayControlSubmit = false;
+            this.loading = false;
+            this.gatewayValidationFields = invalidFields;
+        },
     },
     watch: {
         currentPerson: {
@@ -242,7 +302,7 @@ export default defineComponent({
     },
     template: `
 <div class="registrationentry-summary">
-    <RockForm>
+    <RockForm @submit="onNext">
         <div class="well">
             <h4>This Registration Was Completed By</h4>
             <div class="row">
@@ -269,8 +329,8 @@ export default defineComponent({
                 <div class="form-group pull-right">
                     <label class="control-label">Discount Code</label>
                     <div class="input-group">
-                        <input type="text" :disabled="isDiscountCodeLoading || !!discountCodeSuccessMessage" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-                        <RockButton v-if="!discountCodeSuccessMessage" btnSize="sm" :isLoading="isDiscountCodeLoading" class="margin-l-sm" @click="tryDiscountCode">
+                        <input type="text" :disabled="loading || !!discountCodeSuccessMessage" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
+                        <RockButton v-if="!discountCodeSuccessMessage" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
                             Apply
                         </RockButton>
                     </div>
@@ -340,16 +400,23 @@ export default defineComponent({
 
         <div class="well">
             <h4>Payment Method</h4>
+            <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
+            <RockValidation :errors="gatewayValidationFields" />
             <div class="hosted-payment-control">
-                <GatewayControl :gatewayControlModel="gatewayControlModel" :submit="doGatewayControlSubmit" :args="args" @done="onGatewayControlDone" />
+                <GatewayControl
+                    :gatewayControlModel="gatewayControlModel"
+                    :submit="doGatewayControlSubmit"
+                    @success="onGatewayControlSuccess"
+                    @error="onGatewayControlError"
+                    @validation="onGatewayControlValidation" />
             </div>
         </div>
 
         <div class="actions">
-            <RockButton btnType="default" @click="onPrevious">
+            <RockButton btnType="default" @click="onPrevious" :isLoading="loading">
                 Previous
             </RockButton>
-            <RockButton btnType="primary" class="pull-right" type="submit">
+            <RockButton btnType="primary" class="pull-right" type="submit" :isLoading="loading">
                 Finish
             </RockButton>
         </div>

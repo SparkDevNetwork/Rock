@@ -297,6 +297,11 @@ namespace Rock.Obsidian.Blocks.Event
                     "Registration Information" :
                     registrationTemplate.RegistrationAttributeTitleEnd;
 
+                // Get the registration term
+                var registrationTerm = ( registrationTemplate?.RegistrationTerm ).IsNullOrWhiteSpace() ?
+                    "Registration" :
+                    registrationTemplate.RegistrationTerm;
+
                 // Get the registration attributes
                 var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
                 var registrationAttributes = AttributeCache.All()
@@ -346,6 +351,7 @@ namespace Rock.Obsidian.Blocks.Event
                     RegistrantTerm = registrantTerm,
                     PluralRegistrantTerm = pluralRegistrantTerm,
                     PluralFeeTerm = pluralFeeTerm,
+                    RegistrationTerm = registrationTerm,
                     RegistrantForms = formViewModels,
                     Fees = fees,
                     FamilyMembers = familyMembers,

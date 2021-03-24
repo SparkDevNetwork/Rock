@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/EmailBox", "../../../Elements/RockButton", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Controls/RockValidation", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/EmailBox", "../../../Elements/RockButton", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, GatewayControl_1, RockForm_1, Alert_1, CheckBox_1, EmailBox_1, RockButton_1, TextBox_1, Number_1, RegistrationEntry_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, GatewayControl_1, RockForm_1, RockValidation_1, Alert_1, CheckBox_1, EmailBox_1, RockButton_1, TextBox_1, Number_1, RegistrationEntry_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -64,6 +64,9 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             },
             function (RockForm_1_1) {
                 RockForm_1 = RockForm_1_1;
+            },
+            function (RockValidation_1_1) {
+                RockValidation_1 = RockValidation_1_1;
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
@@ -100,7 +103,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     EmailBox: EmailBox_1.default,
                     RockForm: RockForm_1.default,
                     Alert: Alert_1.default,
-                    GatewayControl: GatewayControl_1.default
+                    GatewayControl: GatewayControl_1.default,
+                    RockValidation: RockValidation_1.default
                 },
                 setup: function () {
                     return {
@@ -110,8 +114,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                 },
                 data: function () {
                     return {
-                        /** Is the discount-code-checking AJAX call in-flight? */
-                        isDiscountCodeLoading: false,
+                        /** Is there an AJAX call in-flight? */
+                        loading: false,
                         /** The bound value to the discount code input */
                         discountCodeInput: '',
                         /** A warning message about the discount code that is a result of a failed AJAX call */
@@ -121,7 +125,13 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         /** The dollar amount to be discounted because of the discount code entered. */
                         discountAmount: 0,
                         /** The percent of the total to be discounted because of the discount code entered. */
-                        discountPercent: 0
+                        discountPercent: 0,
+                        /** Should the gateway control submit to the gateway to create a token? */
+                        doGatewayControlSubmit: false,
+                        /** Gateway indicated error */
+                        gatewayErrorMessage: '',
+                        /** Gateway indicated validation issues */
+                        gatewayValidationFields: {}
                     };
                 },
                 computed: {
@@ -201,16 +211,26 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     },
                 },
                 methods: {
+                    /** User clicked the "previous" button */
                     onPrevious: function () {
                         this.$emit('previous');
                     },
+                    /** User clicked the "finish" button */
+                    onNext: function () {
+                        this.loading = true;
+                        this.gatewayErrorMessage = '';
+                        this.gatewayValidationFields = {};
+                        this.doGatewayControlSubmit = true;
+                    },
+                    /** Send a user input discount code to the server so the server can check and send back
+                     *  the discount amount. */
                     tryDiscountCode: function () {
                         return __awaiter(this, void 0, void 0, function () {
                             var result, discountText;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        this.isDiscountCodeLoading = true;
+                                        this.loading = true;
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, , 3, 4]);
@@ -230,16 +250,18 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                                                 Number_1.asFormattedString(this.discountPercent * 100, 0) + "%" :
                                                 "$" + Number_1.asFormattedString(this.discountAmount, 2);
                                             this.discountCodeSuccessMessage = "Your " + discountText + " discount code for all registrants was successfully applied.";
+                                            this.registrationEntryState.DiscountCode = result.data.DiscountCode;
                                         }
                                         return [3 /*break*/, 4];
                                     case 3:
-                                        this.isDiscountCodeLoading = false;
+                                        this.loading = false;
                                         return [7 /*endfinally*/];
                                     case 4: return [2 /*return*/];
                                 }
                             });
                         });
                     },
+                    /** Prefill in the registrar form fields based on the admin's settings */
                     prefillRegistrar: function () {
                         // If the information is aleady recorded, do not change it
                         if (this.registrar.NickName || this.registrar.LastName || this.registrar.Email) {
@@ -264,7 +286,36 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                             this.registrar.Email = firstRegistrantInfo.Email;
                             return;
                         }
-                    }
+                    },
+                    /**
+                     * The gateway indicated success and returned a token
+                     * @param token
+                     */
+                    onGatewayControlSuccess: function (token) {
+                        this.loading = false;
+                        this.registrationEntryState.GatewayToken = token;
+                        // TODO
+                        // submit the payload to the server
+                        this.$emit('next');
+                    },
+                    /**
+                     * The gateway indicated an error
+                     * @param message
+                     */
+                    onGatewayControlError: function (message) {
+                        this.doGatewayControlSubmit = false;
+                        this.loading = false;
+                        this.gatewayErrorMessage = message;
+                    },
+                    /**
+                     * The gateway wants the user to fix some fields
+                     * @param invalidFields
+                     */
+                    onGatewayControlValidation: function (invalidFields) {
+                        this.doGatewayControlSubmit = false;
+                        this.loading = false;
+                        this.gatewayValidationFields = invalidFields;
+                    },
                 },
                 watch: {
                     currentPerson: {
@@ -274,7 +325,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         }
                     }
                 },
-                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm>\n        <div class=\"well\">\n            <h4>This Registration Was Completed By</h4>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <TextBox label=\"First Name\" rules=\"required\" v-model=\"registrar.NickName\" />\n                </div>\n                <div class=\"col-md-6\">\n                    <TextBox label=\"Last Name\" rules=\"required\" v-model=\"registrar.LastName\" />\n                </div>\n            </div>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <EmailBox label=\"Send Confirmation Emails To\" rules=\"required\" v-model=\"registrar.Email\" />\n                    <CheckBox v-if=\"doShowUpdateEmailOption\" label=\"Should Your Account Be Updated To Use This Email Address?\" v-model=\"registrar.UpdateEmail\" />\n                </div>\n            </div>\n        </div>\n\n        <div>\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"isDiscountCodeLoading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"isDiscountCodeLoading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <div class=\"fee-table\">\n                <div class=\"row hidden-xs fee-header\">\n                    <div class=\"col-sm-6\">\n                        <strong>Description</strong>\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <strong>Discounted Amount</strong>\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <strong>Amount</strong>\n                    </div>\n                </div>\n                <div v-for=\"lineItem in lineItems\" :key=\"lineItem.Key\" class=\"row fee-row-cost\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        {{lineItem.Description}}\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        $ {{lineItem.DiscountedAmountFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        $ {{lineItem.AmountFormatted}}\n                    </div>\n                </div>\n                <div class=\"row fee-row-total\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        Total\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        {{discountedTotalFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        {{totalFormatted}}\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"row fee-totals\">\n                <div class=\"col-sm-offset-8 col-sm-4 fee-totals-options\">\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Total Cost</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Amount Due</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"well\">\n            <h4>Payment Method</h4>\n            <div class=\"hosted-payment-control\">\n                <GatewayControl :gatewayControlModel=\"gatewayControlModel\" :submit=\"doGatewayControlSubmit\" :args=\"args\" @done=\"onGatewayControlDone\" />\n            </div>\n        </div>\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\">\n                Finish\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n        <div class=\"well\">\n            <h4>This Registration Was Completed By</h4>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <TextBox label=\"First Name\" rules=\"required\" v-model=\"registrar.NickName\" />\n                </div>\n                <div class=\"col-md-6\">\n                    <TextBox label=\"Last Name\" rules=\"required\" v-model=\"registrar.LastName\" />\n                </div>\n            </div>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <EmailBox label=\"Send Confirmation Emails To\" rules=\"required\" v-model=\"registrar.Email\" />\n                    <CheckBox v-if=\"doShowUpdateEmailOption\" label=\"Should Your Account Be Updated To Use This Email Address?\" v-model=\"registrar.UpdateEmail\" />\n                </div>\n            </div>\n        </div>\n\n        <div>\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"loading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"loading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <div class=\"fee-table\">\n                <div class=\"row hidden-xs fee-header\">\n                    <div class=\"col-sm-6\">\n                        <strong>Description</strong>\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <strong>Discounted Amount</strong>\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <strong>Amount</strong>\n                    </div>\n                </div>\n                <div v-for=\"lineItem in lineItems\" :key=\"lineItem.Key\" class=\"row fee-row-cost\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        {{lineItem.Description}}\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        $ {{lineItem.DiscountedAmountFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        $ {{lineItem.AmountFormatted}}\n                    </div>\n                </div>\n                <div class=\"row fee-row-total\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        Total\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        {{discountedTotalFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        {{totalFormatted}}\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"row fee-totals\">\n                <div class=\"col-sm-offset-8 col-sm-4 fee-totals-options\">\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Total Cost</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Amount Due</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\" :isLoading=\"loading\">\n                Finish\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

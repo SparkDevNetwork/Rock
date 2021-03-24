@@ -1,4 +1,4 @@
-System.register(["vue", "../Elements/LoadingIndicator"], function (exports_1, context_1) {
+System.register(["vue", "../Elements/LoadingIndicator", "./GatewayControl"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["vue", "../Elements/LoadingIndicator"], function (exports_1, co
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, LoadingIndicator_1;
+    var vue_1, LoadingIndicator_1, GatewayControl_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -45,6 +45,9 @@ System.register(["vue", "../Elements/LoadingIndicator"], function (exports_1, co
             },
             function (LoadingIndicator_1_1) {
                 LoadingIndicator_1 = LoadingIndicator_1_1;
+            },
+            function (GatewayControl_1_1) {
+                GatewayControl_1 = GatewayControl_1_1;
             }
         ],
         execute: function () {
@@ -71,9 +74,56 @@ System.register(["vue", "../Elements/LoadingIndicator"], function (exports_1, co
                     };
                 },
                 methods: {
-                    handleResponse: function (resp) {
-                        this.token = resp.token;
-                        this.$emit('done', this.token);
+                    handleResponse: function (response) {
+                        var _a;
+                        if (!(response === null || response === void 0 ? void 0 : response.status) || response.status === 'error') {
+                            var errorResponse = response || null;
+                            this.$emit('error', (errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.message) || 'There was an unexpected problem communicating with the gateway.');
+                            console.error('MyWell response was errored:', JSON.stringify(response));
+                            return;
+                        }
+                        if (response.status === 'validation') {
+                            var validationResponse = response || null;
+                            if (!((_a = validationResponse === null || validationResponse === void 0 ? void 0 : validationResponse.invalid) === null || _a === void 0 ? void 0 : _a.length)) {
+                                this.$emit('error', 'There was a validation issue, but the invalid field was not specified.');
+                                console.error('MyWell response was errored:', JSON.stringify(response));
+                                return;
+                            }
+                            var validationFields = [];
+                            for (var _i = 0, _b = validationResponse.invalid; _i < _b.length; _i++) {
+                                var myWellField = _b[_i];
+                                switch (myWellField) {
+                                    case 'cc':
+                                        validationFields.push(GatewayControl_1.ValidationField.CardNumber);
+                                        break;
+                                    case 'exp':
+                                        validationFields.push(GatewayControl_1.ValidationField.Expiry);
+                                        break;
+                                    default:
+                                        console.error('Unknown MyWell validation field', myWellField);
+                                        break;
+                                }
+                            }
+                            if (!validationFields.length) {
+                                this.$emit('error', 'There was a validation issue, but the invalid field could not be inferred.');
+                                console.error('MyWell response contained unexpected values:', JSON.stringify(response));
+                                return;
+                            }
+                            this.$emit('validationRaw', validationFields);
+                            return;
+                        }
+                        if (response.status === 'success') {
+                            var successResponse = response || null;
+                            if (!(successResponse === null || successResponse === void 0 ? void 0 : successResponse.token)) {
+                                this.$emit('error', 'There was an unexpected problem communicating with the gateway.');
+                                console.error('MyWell response does not have the expected token:', JSON.stringify(response));
+                                return;
+                            }
+                            this.$emit('success', successResponse.token);
+                            return;
+                        }
+                        this.$emit('error', 'There was an unexpected problem communicating with the gateway.');
+                        console.error('MyWell response has invalid status:', JSON.stringify(response));
                     }
                 },
                 computed: {

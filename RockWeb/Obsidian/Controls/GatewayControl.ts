@@ -22,6 +22,12 @@ export interface GatewayControlModel {
     Settings: Record<string, unknown>;
 }
 
+export enum ValidationField {
+    CardNumber,
+    Expiry,
+    SecurityCode
+}
+
 export default defineComponent({
     name: 'GatewayControl',
     components: {
@@ -41,6 +47,38 @@ export default defineComponent({
             return this.gatewayControlModel.Settings;
         }
     },
+    methods: {
+        /**
+         * This method transforms the enum values into human friendly validation messages.
+         * @param validationFields
+         */
+        transformValidation(validationFields: ValidationField[]) {
+            const errors = {} as Record<string, string>;
+            let foundError = false;
+
+            if (validationFields?.includes(ValidationField.CardNumber)) {
+                errors['Card Number'] = 'is not valid.';
+                foundError = true;
+            }
+
+            if (validationFields?.includes(ValidationField.Expiry)) {
+                errors['Expiration Date'] = 'is not valid.';
+                foundError = true;
+            }
+
+            if (validationFields?.includes(ValidationField.SecurityCode)) {
+                errors['Security Code'] = 'is not valid.';
+                foundError = true;
+            }
+
+            if (!foundError) {
+                errors['Payment Info'] = 'is not valid.';
+            }
+
+            this.$emit('validation', errors);
+            return;
+        }
+    },
     template: `
-<ComponentFromUrl :url="url" :settings="settings" />`
+<ComponentFromUrl :url="url" :settings="settings" @validationRaw="transformValidation" />`
 });
