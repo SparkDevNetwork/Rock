@@ -59,6 +59,7 @@ LastAttendedDate^Last Attended Date,
 TimesAttendedInLast12Months^Times Attended in Last 12 Months,
 TimesAttendedInLast16Weeks^Times Attended in Last 16 Weeks",
         Key = AttributeKey.TrackedValues,
+        RepeatDirection = System.Web.UI.WebControls.RepeatDirection.Vertical,
         Order = 3 )]
 
     [IntegerField(
