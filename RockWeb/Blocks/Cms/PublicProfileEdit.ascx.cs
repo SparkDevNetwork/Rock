@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Cms
         Description = "The family attributes that should be displayed / edited.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 12 )]
+        Order = 18 )]
 
     [AttributeField(
         "Person Attributes (adults)",
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Cms
         Description = "The person attributes that should be displayed / edited for adults.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 13 )]
+        Order = 19 )]
 
     [AttributeField(
         "Person Attributes (children)",
@@ -204,14 +204,14 @@ namespace RockWeb.Blocks.Cms
         Description = "The person attributes that should be displayed / edited for children.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 14 )]
+        Order = 20 )]
 
     [BooleanField(
         "Show Campus Selector",
         Key = AttributeKey.ShowCampusSelector,
         Description = "Allows selection of primary campus.",
         DefaultBooleanValue = false,
-        Order = 15 )]
+        Order = 21 )]
 
     [TextField(
         "Campus Selector Label",
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Cms
         Description = "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
         IsRequired = false,
         DefaultValue = "Campus",
-        Order = 16 )]
+        Order = 22 )]
 
     [BooleanField(
         "Require Gender",
@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Cms
         Description = "Controls whether or not the gender field is required.",
         IsRequired = true,
         DefaultBooleanValue = true,
-        Order = 17 )]
+        Order = 23 )]
 
     [CodeEditorField( "View Template",
         Key = AttributeKey.ViewTemplate,
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Cms
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
-        Order = 18 )]
+        Order = 24 )]
 
     #endregion
 

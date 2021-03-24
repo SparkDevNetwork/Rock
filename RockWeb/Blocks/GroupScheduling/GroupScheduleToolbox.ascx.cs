@@ -1809,7 +1809,6 @@ $('#{0}').tooltip();
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
                         //  find if this has max volunteers here
-                        //var maximumCapacitySetting = personGroupLocation?.GroupLocationScheduleConfigs?.Where( c => c.ScheduleId == schedule.Id )?.First().MaximumCapacity;
                         int? maximumCapacitySetting = null;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
