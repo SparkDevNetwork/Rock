@@ -217,10 +217,19 @@ namespace Rock.Lava
 
             parms.AddOrReplace( "RecursionDepth", currentRecursionDepth );
 
-            // Resolve the merge fields in the shortcode template in a separate context, using the set of merge fields that have been modified by the shortcode parameters
-            // and the set of commands specifically enabled for the shortcode.
+            // Resolve the merge fields in the shortcode template in a separate context, using the set of merge fields that have been modified by the shortcode parameters.
+            // Apply the set of enabled commands specified by the shortcode definition, or those enabled for the current context if none are defined by the shortcode.
             // The resulting content is a shortcode template that is ready to be processed to resolve its child elements.
-            var shortcodeTemplateContext = LavaEngine.CurrentEngine.NewRenderContext( internalMergeFields, _shortcode.EnabledLavaCommands );
+            var enabledCommands = _shortcode.EnabledLavaCommands ?? new List<string>();
+
+            enabledCommands = enabledCommands.Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList();
+            
+            if ( !enabledCommands.Any() )
+            {
+                enabledCommands = context.GetEnabledCommands();
+            }
+
+            var shortcodeTemplateContext = LavaEngine.CurrentEngine.NewRenderContext( internalMergeFields, enabledCommands );
 
             var shortcodeTemplateMarkup = LavaEngine.CurrentEngine.RenderTemplate( _blockMarkup.ToString(), shortcodeTemplateContext );
 
