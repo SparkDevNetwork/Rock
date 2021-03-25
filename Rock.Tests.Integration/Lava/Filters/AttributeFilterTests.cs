@@ -44,11 +44,13 @@ namespace Rock.Tests.Integration.Lava
 
             var tedDeckerPerson = new PersonService( rockContext ).Queryable().First( x => x.Guid == tedDeckerGuid );
 
-            var values = LavaEngine.CurrentEngine.NewRenderContext( new LavaDataDictionary { { "Person", tedDeckerPerson } } );
+            var values = new LavaDataDictionary { { "Person", tedDeckerPerson } };
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
 
             TestHelper.AssertTemplateOutput("2001-09-13",
                 "{{ Person | Attribute:'BaptismDate' | Date:'yyyy-MM-dd' }}",
-                values );
+                options );
         }
 
         [TestMethod]
@@ -63,9 +65,9 @@ namespace Rock.Tests.Integration.Lava
 
             var expectedOutput = @"/9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}";
 
-            var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( enabledCommands: new List<string> { "RockEntity" } );
+            var options = new LavaTestRenderOptions { WildcardPlaceholder = "{moreBase64Data}", EnabledCommands = "RockEntity" };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, lavaContext, wildCard: "{moreBase64Data}" );
+            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, options );
         }
 
         #endregion

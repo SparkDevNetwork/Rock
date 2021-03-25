@@ -32,8 +32,8 @@ namespace Rock.Tests.UnitTests.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestHelper.LavaEngine.RegisterSafeType( typeof( PersonRockDynamic ) );
-            TestHelper.LavaEngine.RegisterSafeType( typeof( CampusRockDynamic ) );
+            TestHelper.RegisterSafeType( typeof( PersonRockDynamic ) );
+            TestHelper.RegisterSafeType( typeof( CampusRockDynamic ) );
 
         }
 

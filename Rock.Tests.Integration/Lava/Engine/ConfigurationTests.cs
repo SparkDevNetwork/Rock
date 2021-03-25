@@ -41,13 +41,16 @@ namespace Rock.Tests.Integration.Lava
                 DefaultEnabledCommands = new List<string> { "Execute" }
             };
 
-            LavaEngine.Initialize( LavaEngine.CurrentEngine.EngineType, options );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, options );
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+                var context = testEngine.NewRenderContext();
 
-            var enabledCommands = context.GetEnabledCommands();
+                var enabledCommands = context.GetEnabledCommands();
 
-            Assert.That.Contains( enabledCommands, "Execute" );
+                Assert.That.Contains( enabledCommands, "Execute" );
+            } );
         }
 
         #endregion

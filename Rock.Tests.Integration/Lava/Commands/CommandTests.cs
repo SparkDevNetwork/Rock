@@ -16,6 +16,7 @@
 //
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -54,7 +55,7 @@ namespace Rock.Tests.Integration.Lava
 
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #endregion
@@ -96,11 +97,9 @@ namespace Rock.Tests.Integration.Lava
 TedDecker<br/>
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache,RockEntity" };
 
-            context.SetEnabledCommands( "Cache,RockEntity" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         /// <summary>
@@ -131,11 +130,9 @@ Color 3: red
 Color 4: blue
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
 
-            context.SetEnabledCommands( "Cache" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -181,13 +178,9 @@ Color 4: blue
 [Daniel Peak]: Called Daniel to see if he would be interested in joining our team as the Communications Director.<br>
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "RockEntity" };
 
-            context.SetEnabledCommands( "RockEntity" );
-
-            var output = TestHelper.GetTemplateOutput( input, context );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace:true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         [TestMethod]
@@ -201,16 +194,19 @@ Color 4: blue
 {% endperson %}
             ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var context = engine.NewRenderContext();
 
-            context.SetEnabledCommands( "RockEntity" );
+                context.SetEnabledCommands( "RockEntity" );
 
-            var output = TestHelper.GetTemplateOutput( input, context );
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, context );
 
-            TestHelper.WriteTemplateRenderToDebug( input, output );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
 
-            Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
-            Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
+                Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
+                Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
+            } );
         }
 
         [TestMethod]
@@ -236,16 +232,14 @@ Color 4: blue
 
             input = input.Replace( "`", "\"" );
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache;RockEntity" };
 
-            context.SetEnabledCommands( "Cache;RockEntity",";" );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, options );
 
-            var output = TestHelper.GetTemplateOutput( input, context );
-
-            TestHelper.WriteTemplateRenderToDebug( input, output );
-
-            //Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
-            //Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+            } );
         }
 
         #endregion
@@ -277,11 +271,9 @@ Color 4: blue
 
             var expectedOutput = @"Hello World!";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
 
-            context.SetEnabledCommands( "execute" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         [TestMethod]
@@ -301,11 +293,9 @@ Color 4: blue
 
             var expectedOutput = @"Fruit: Orange";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
 
-            context.SetEnabledCommands( "execute" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         [TestMethod]
@@ -334,11 +324,9 @@ Color 4: blue
 
             var expectedOutput = @"Ted Decker";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "execute" };
 
-            context.SetEnabledCommands( "execute" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         [TestMethod]
@@ -365,13 +353,13 @@ Color 4: blue
 
             var expectedOutput = @"Ted Decker";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var context = new LavaDataDictionary();
 
-            context.SetEnabledCommands( "execute" );
+            context.Add( "Person", TestHelper.GetTestPersonTedDecker() );
 
-            context.SetMergeField( "Person", TestHelper.GetTestPersonTedDecker() );
+            var options = new LavaTestRenderOptions() { EnabledCommands = "execute", MergeFields = context };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
         #endregion
 
@@ -403,11 +391,9 @@ Color 4: blue
             var expectedOutput = @"
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionWrite" };
 
-            context.SetEnabledCommands( "InteractionWrite" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -436,11 +422,9 @@ Color 4: blue
             var expectedOutput = @"
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "InteractionContentChannelItemWrite" };
 
-            context.SetEnabledCommands( "InteractionContentChannelItemWrite" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -464,7 +448,7 @@ Color 4: blue
 </script>
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #endregion
@@ -501,11 +485,9 @@ Color 4: blue
 
             var expectedOutput = @"(.*)Search results not available. Universal search is not enabled for this Rock instance.";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions { EnabledCommands = "Search" };
 
-            context.SetEnabledCommands( "Search" );
-
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion Search
@@ -547,11 +529,9 @@ Color 4: blue
 
             var expectedOutput = @"Alex_Decker;Ted_Decker;";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions { EnabledCommands = "Sql" };
 
-            context.SetEnabledCommands( "Sql" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -576,7 +556,7 @@ Color 4: blue
 </style> 
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #endregion
@@ -590,24 +570,27 @@ Color 4: blue
 {% taglist %}
 ";
 
-            var output = TestHelper.GetTemplateOutput( input );
+            TestHelper.AssertAction( ( engine ) =>
+            { //.AssertTemplateOutput( "readme", input, null, "WebRequest".SplitDelimitedValues(), true );
+                var output = engine.RenderTemplate( input );
 
-            TestHelper.WriteTemplateRenderToDebug( input, output );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
 
-            output = output.Replace( " ", string.Empty );
+                output = output.Replace( " ", string.Empty );
 
-            if ( TestHelper.LavaEngine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.RockLiquid )
-            {
-                Assert.IsTrue( output.Contains( "person-Rock.Lava.RockLiquid.Blocks.RockEntity" ), "Expected Entity Tag not found." );
-                Assert.IsTrue( output.Contains( "cache-Rock.Lava.RockLiquid.Blocks.Cache" ), "Expected Command Block not found." );
-                Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.RockLiquid.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
-            }
-            else
-            {
+                //if ( TestHelper.LavaEngine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.RockLiquid )
+                //{
+                //    Assert.IsTrue( output.Contains( "person-Rock.Lava.RockLiquid.Blocks.RockEntity" ), "Expected Entity Tag not found." );
+                //    Assert.IsTrue( output.Contains( "cache-Rock.Lava.RockLiquid.Blocks.Cache" ), "Expected Command Block not found." );
+                //    Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.RockLiquid.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
+                //}
+                //else
+                //{
                 Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
                 Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );
                 Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
-            }
+                //}
+            } );
         }
 
         #endregion
@@ -637,11 +620,9 @@ Color 4: blue
 {% endwebrequest %}  
 ";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WebRequest" };
 
-            context.SetEnabledCommands( "WebRequest" );
-
-            TestHelper.AssertTemplateOutput( "readme", input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( "readme", input, options );
         }
 
         #endregion
@@ -676,16 +657,11 @@ Color 4: blue
 
             var expectedOutput = @"Activated new workflow with the name 'IT Support'.";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
 
-            context.SetEnabledCommands( "WorkflowActivate" );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
-
-
-
     }
 }

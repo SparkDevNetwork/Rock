@@ -52,7 +52,9 @@ Base64Format: {{ image | Base64Encode }}<br/>
 
             var expectedOutput = @"/9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}";
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, values, wildCard: "{moreBase64Data}" );
+            var options = new LavaTestRenderOptions { MergeFields = values, WildcardPlaceholder = "{moreBase64Data}" };
+
+            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, options );
         }
 
         #endregion

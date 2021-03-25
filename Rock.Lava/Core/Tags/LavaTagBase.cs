@@ -111,7 +111,7 @@ namespace Rock.Lava
             return LavaSecurityHelper.IsAuthorized( context, commandName );
         }
 
-        public virtual void OnStartup()
+        public virtual void OnStartup( ILavaEngine engine )
         {
             //
         }

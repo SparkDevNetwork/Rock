@@ -39,5 +39,10 @@ namespace Rock.Lava
         /// The set of Lava commands that are enabled by default when a new context is created.
         /// </summary>
         public List<string> DefaultEnabledCommands { get; set; }
+
+        /// <summary>
+        /// Gets or sets the strategy for handling exceptions encountered during the rendering process.
+        /// </summary>
+        public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy { get; set; }
     }
 }

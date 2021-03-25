@@ -60,8 +60,8 @@ namespace Rock.Lava
         void OnParsed( List<string> tokens );
 
         /// <summary>
-        /// Executed when the element is first loaded during application startup.
+        /// Executed when the element is first loaded during engine startup.
         /// </summary>
-        void OnStartup();
+        void OnStartup( ILavaEngine engine );
     }
 }

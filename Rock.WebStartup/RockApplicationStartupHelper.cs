@@ -712,7 +712,7 @@ namespace Rock.WebStartup
 
                     try
                     {
-                        instance.OnStartup();
+                        instance.OnStartup( engine );
                     }
                     catch ( Exception ex )
                     {
@@ -746,7 +746,7 @@ namespace Rock.WebStartup
 
                     try
                     {
-                        blockInstance.OnStartup();
+                        blockInstance.OnStartup( engine );
                     }
                     catch ( Exception ex )
                     {

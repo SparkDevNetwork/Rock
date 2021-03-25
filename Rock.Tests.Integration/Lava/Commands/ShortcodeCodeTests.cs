@@ -46,8 +46,6 @@ Font Bold: {{ fontbold }}
             shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
             shortcodeDefinition.Name = "shortcodetest";
 
-            TestHelper.LavaEngine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
-
             var input = @"
 {[ shortcodetest fontname:'Arial' fontsize:'{{ fontsize }}' fontbold:'true' ]}
 {[ endshortcodetest ]}
@@ -61,9 +59,16 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-             var context = new LavaDataDictionary() { { "fontsize", 99 }  };
+            var context = new LavaDataDictionary() { { "fontsize", 99 }  };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, context, ignoreWhiteSpace: true, wildCard: "<?>" );
+            var options = new LavaTestRenderOptions { MergeFields = context, WildcardPlaceholder = "<?>" };
+
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                TestHelper.AssertTemplateOutputWithWildcard( engine.EngineType, expectedOutput, input, options );
+            } );
         }
 
         #region Bootstrap Alert
@@ -101,7 +106,7 @@ Schedule Live: {{ IsLive }}
 ScheduleName:Saturday4:30pm<br>ScheduleLive:true<br>
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -115,7 +120,7 @@ Schedule Active = {{isScheduleActive}}
 ";
             var expectedOutput = @"Schedule Active = true";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context: null, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         #endregion

@@ -49,13 +49,7 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '<inputString>' | AsDateTime }}"
                 .Replace( "<inputString>", inputString );
 
-            var outputString = TestHelper.GetTemplateOutput( template );
-
-            // Parse the result to a date and compare with the expected output.
-            var dateTimeString = DateTime.Parse( outputString ).ToString( "dd/MMM/yyyy hh:mm tt" );
-
-            TestHelper.AssertTemplateOutput( result, dateTimeString );
-            //Assert.That.Equal( result, dateTimeString );
+            TestHelper.AssertTemplateOutputDate( result, template );
         }
 
         /// <summary>

@@ -197,13 +197,16 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '<content>' | ReadTime }}"
                 .Replace( "<content>", documentText );
 
-            var output = TestHelper.GetTemplateOutput( template );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
 
-            Assert.That.False( string.IsNullOrWhiteSpace( output ) );
+                Assert.That.False( string.IsNullOrWhiteSpace( output ) );
 
-            var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
+                var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 
-            Assert.That.AreProximate( 120, readTime.TotalSeconds, 10 );
+                Assert.That.AreProximate( 120, readTime.TotalSeconds, 10 );
+            } );
         }
 
         /// <summary>
@@ -218,13 +221,16 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '<content>' | ReadTime:5,30 }}"
                 .Replace( "<content>", documentText );
 
-            var output = TestHelper.GetTemplateOutput( template );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
 
-            Assert.That.False( string.IsNullOrWhiteSpace( output ) );
+                Assert.That.False( string.IsNullOrWhiteSpace( output ) );
 
-            var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
+                var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 
-            Assert.That.AreProximate( 360, readTime.TotalSeconds, 10 );
+                Assert.That.AreProximate( 360, readTime.TotalSeconds, 10 );
+            } );
         }
 
         /// <summary>
@@ -239,11 +245,13 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '<content>' | ReadTime:500,6 }}"
                 .Replace( "<content>", documentText );
 
-            var output = TestHelper.GetTemplateOutput( template );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
 
-            var readTime = TimeSpan.ParseExact( output, _timeSpanOutputFormats, CultureInfo.CurrentCulture );
-
-            Assert.That.AreProximate( 50, readTime.TotalSeconds, 10 );
+                Assert.That.AreProximate( 50, readTime.TotalSeconds, 10 );
+            } );
         }
 
         /// <summary>

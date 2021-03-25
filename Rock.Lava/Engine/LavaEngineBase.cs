@@ -46,6 +46,11 @@ namespace Rock.Lava
 
             _defaultEnabledCommands = options.DefaultEnabledCommands;
 
+            if ( options.ExceptionHandlingStrategy != null )
+            {
+                this.ExceptionHandlingStrategy = options.ExceptionHandlingStrategy.Value;
+            }
+
             OnSetConfiguration( options );
         }
 
@@ -462,7 +467,11 @@ namespace Rock.Lava
 
                     if ( !isValid )
                     {
-                        throw new LavaException( "Lava Template render operation failed." );
+                        if ( template == null
+                             || this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.Throw )
+                        {
+                            throw new LavaException( "Lava Template render operation failed." );
+                        }
                     }
                 }
 
@@ -544,7 +553,14 @@ namespace Rock.Lava
                 else
                 {
                     // If an error message is returned during the parsing process, create a new template containing the message.
-                    template = OnParseTemplate( ex.Message );
+                    if ( this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+                    {
+                        template = OnParseTemplate( message );
+                    }
+                    else
+                    {
+                        template = null;
+                    }
                 }
 
                 return false;
@@ -582,7 +598,7 @@ namespace Rock.Lava
 
         #region Tags
 
-        private static Dictionary<string, ILavaElementInfo> _lavaElements = new Dictionary<string, ILavaElementInfo>( StringComparer.OrdinalIgnoreCase );
+        private Dictionary<string, ILavaElementInfo> _lavaElements = new Dictionary<string, ILavaElementInfo>( StringComparer.OrdinalIgnoreCase );
 
         /// <summary>
         /// Register a Lava Tag element.

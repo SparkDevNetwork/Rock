@@ -67,7 +67,10 @@ namespace Rock.Lava
 
                 options = options ?? new LavaEngineConfigurationOptions();
 
-                options.FileSystem = new FluidFileSystem( options.FileSystem );
+                if ( options.FileSystem != null )
+                {
+                    options.FileSystem = new FluidFileSystem( options.FileSystem );
+                }
             }
             else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
             {
@@ -75,7 +78,10 @@ namespace Rock.Lava
 
                 options = options ?? new LavaEngineConfigurationOptions();
 
-                options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
+                if ( options.FileSystem != null )
+                {
+                    options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
+                }
             }
             else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
             {
@@ -108,6 +114,16 @@ namespace Rock.Lava
 
                 return _instance;
             }
+            set
+            {
+                /// Set the global instance of the Lava Engine.
+                /// Used for internal test purposes.
+                lock ( _initializationLock )
+                {
+                    _instance = value;
+                }
+            }
+
         }
     }
 }

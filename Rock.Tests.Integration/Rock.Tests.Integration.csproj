@@ -164,7 +164,7 @@
     <Compile Include="Lava\Filters\DateFilterTests.cs" />
     <Compile Include="Lava\Filters\NumericFilterTests.cs" />
     <Compile Include="Lava\FileSystem\LavaFileSystemTests.cs" />
-    <Compile Include="Lava\LavaTestHelper.cs" />
+    <Compile Include="Lava\LavaIntegrationTestHelper.cs" />
     <Compile Include="Lava\LavaIntegrationTestBase.cs" />
     <Compile Include="Lava\FileSystem\MockFileInfo.cs" />
     <Compile Include="Lava\FileSystem\MockFileProvider.cs" />
@@ -230,7 +230,7 @@
     <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
     <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
-    <Compile Include="IntegrationTestHelper.cs" />
+    <Compile Include="IntegrationTestInitializer.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="test.Designer.cs">
       <AutoGen>True</AutoGen>
