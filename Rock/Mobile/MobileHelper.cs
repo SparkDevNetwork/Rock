@@ -168,7 +168,7 @@ namespace Rock.Mobile
                 RockDateTime.Now,
                 RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ),
                 true,
-                false.ToString() );
+                username.StartsWith( "rckipid=" ).ToString() );
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
         }
