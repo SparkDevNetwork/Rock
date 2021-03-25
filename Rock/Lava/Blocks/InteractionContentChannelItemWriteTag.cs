@@ -57,7 +57,7 @@ namespace Rock.Lava.Blocks
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
             // First, ensure that this command is allowed in the context.
-            if ( !LavaHelper.IsAuthorized( context, this.GetType().Name ) )
+            if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
                 base.OnRender( context, result );

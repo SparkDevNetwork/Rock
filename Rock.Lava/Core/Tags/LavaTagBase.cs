@@ -91,6 +91,26 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Determines if this tag is authorized in the specified Lava context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        protected bool IsAuthorized( ILavaRenderContext context )
+        {
+            return IsAuthorized( context, this.SourceElementName );
+        }
+
+        /// <summary>
+        /// Determines if this tag is authorized in the specified Lava context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        protected bool IsAuthorized( ILavaRenderContext context, string commandName )
+        {
+            return LavaSecurityHelper.IsAuthorized( context, commandName );
+        }
+
         public virtual void OnStartup()
         {
             //
