@@ -930,15 +930,17 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEditNote_Click( object sender, EventArgs e )
         {
-            var selectedPersonId = new PersonAliasService( new RockContext() ).GetPersonId( hfSelectedRecipientPersonAliasId.Value.AsInteger() );
             noteEditor.Style.Remove( "display" );
             noteEditor.Visible = true;
             noteEditor.ShowEditMode = true;
 
-            var note = new Note();
-            note.EntityId = selectedPersonId;
-            //note.NoteTypeId = noteEditor.
-            note.CreatedByPersonAlias = this.CurrentPersonAlias;
+            var selectedPersonId = new PersonAliasService( new RockContext() ).GetPersonId( hfSelectedRecipientPersonAliasId.Value.AsInteger() );
+            var note = new Note
+            {
+                EntityId = selectedPersonId,
+                CreatedByPersonAlias = this.CurrentPersonAlias
+            };
+            
             noteEditor.SetNote( note );
         }
 
