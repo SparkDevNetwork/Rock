@@ -658,7 +658,8 @@ namespace RockWeb.Blocks.GroupScheduling
                 return;
             }
 
-            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId.Value );
+            var attendanceService = new AttendanceService( new RockContext() );
+            var attendance = attendanceService.Get( attendanceId.Value );
             if ( attendance == null )
             {
                 return;
@@ -669,14 +670,12 @@ namespace RockWeb.Blocks.GroupScheduling
                 // The scheduler receives email add as a recipient for both Confirmation and Decline
                 if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
                 {
-                    var attendanceService = new AttendanceService( new RockContext() );
                     attendanceService.SendScheduledPersonResponseEmailToScheduler( attendance.Id, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
                 }
 
                 // if attendance is decline (no) also send email to Schedule Cancellation Person
                 if ( attendance.RSVP == RSVP.No )
                 {
-                    var attendanceService = new AttendanceService( new RockContext() );
                     attendanceService.SendScheduledPersonDeclineEmail( attendance.Id, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
                 }
             }

@@ -540,13 +540,15 @@ $('#{0}').tooltip();
                     rockContext.SaveChanges();
                     try
                     {
+                        var schedulingResponseEmailGuid = GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid();
+
                         // The scheduler receives email add as a recipient for both Confirmation and Decline
                         if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() )
                         {
-                            attendanceService.SendScheduledPersonResponseEmailToScheduler( attendanceId.Value, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
+                            attendanceService.SendScheduledPersonResponseEmailToScheduler( attendanceId.Value, schedulingResponseEmailGuid );
                         }
 
-                        attendanceService.SendScheduledPersonDeclineEmail( attendanceId.Value, this.GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuidOrNull() );
+                        attendanceService.SendScheduledPersonDeclineEmail( attendanceId.Value, schedulingResponseEmailGuid );
                     }
                     catch ( SystemException ex )
                     {
@@ -902,7 +904,7 @@ $('#{0}').tooltip();
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
                     !configuredScheduleIds.Contains( a.Id )
-                    || (selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
