@@ -147,7 +147,12 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var requestedByAlias = new PersonAliasService( rockContext ).Get( requestedByAliasGuid.Value );
+            PersonAlias requestedByAlias = null;
+
+            if ( requestedByAliasGuid != null )
+            {
+                requestedByAlias = new PersonAliasService( rockContext ).Get( requestedByAliasGuid.Value );
+            }
 
             foreach( string assessmentTypeGuid in assessmentTypeGuids )
             {
@@ -166,7 +171,7 @@ namespace Rock.Workflow.Action
                 {
                     PersonAliasId = personAlias.Id,
                     AssessmentTypeId = assessmentTypeId.Value,
-                    RequesterPersonAliasId = requestedByAlias.Id,
+                    RequesterPersonAliasId = requestedByAlias?.Id,
                     RequestedDateTime = RockDateTime.Now,
                     RequestedDueDate = dueDate,
                     Status = AssessmentRequestStatus.Pending

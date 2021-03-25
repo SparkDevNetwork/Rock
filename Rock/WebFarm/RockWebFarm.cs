@@ -52,12 +52,22 @@ namespace Rock.WebFarm
             /// <summary>
             /// The default leadership polling interval lower limit seconds
             /// </summary>
-            public const int DefaultLeadershipPollingIntervalLowerLimitSeconds = 50;
+            public const int DefaultLeadershipPollingIntervalLowerLimitSeconds = 3 * 60;
 
             /// <summary>
             /// The default leadership polling interval upper limit seconds
             /// </summary>
-            public const int DefaultLeadershipPollingIntervalUpperLimitSeconds = 70;
+            public const int DefaultLeadershipPollingIntervalUpperLimitSeconds = 5 * 60;
+
+            /// <summary>
+            /// The default minimum polling difference seconds
+            /// </summary>
+            public static int DefaultMinimumPollingDifferenceSeconds = 10;
+
+            /// <summary>
+            /// The default polling maximum wait seconds
+            /// </summary>
+            public static int DefaultPollingMaxWaitSeconds = 10;
         }
 
         /// <summary>
@@ -103,7 +113,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// Do debug logging
         /// </summary>
-        private const bool DEBUG = false;
+        private const bool DEBUG = true;
 
         /// <summary>
         /// The bytes per megayte
@@ -134,6 +144,11 @@ namespace Rock.WebFarm
         /// Was this instance pinged?
         /// </summary>
         private static bool _wasPinged = false;
+
+        /// <summary>
+        /// The leadership ping key
+        /// </summary>
+        private static Guid? _leadershipPingKey = null;
 
         /// <summary>
         /// The polling interval seconds
@@ -221,9 +236,7 @@ namespace Rock.WebFarm
                 _nodeId = webFarmNode.Id;
 
                 // Determine leadership polling interval. If provided in database( ConfiguredLeadershipPollingIntervalSeconds ) use that
-                // otherwise randomly select a number between upper and lower limits( number = seconds * 10 ) -Check to see that no one
-                // else has registered the same number in the database. If so re - choose. Possibly this could be a SQL Function that would
-                // ensure that only unique values were handed out.
+                // otherwise randomly select a number between upper and lower limits
                 const int maxGenerationAttempts = 100;
                 var generationAttempts = 1;
 
@@ -373,7 +386,8 @@ namespace Rock.WebFarm
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>
-        internal static void OnReceivedPing( string senderNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPing( string senderNodeName, Guid? pingPongKey )
         {
             if ( senderNodeName == _nodeName )
             {
@@ -381,11 +395,17 @@ namespace Rock.WebFarm
                 return;
             }
 
+            if ( !pingPongKey.HasValue )
+            {
+                // There is no valid ping key
+                return;
+            }
+
             Debug( $"Got a Ping from {senderNodeName}" );
             _wasPinged = true;
 
             // Reply to the leader (sender of the ping)
-            PublishEvent( EventType.Pong, senderNodeName );
+            PublishEvent( EventType.Pong, senderNodeName, pingPongKey.Value.ToString() );
         }
 
         /// <summary>
@@ -393,7 +413,8 @@ namespace Rock.WebFarm
         /// </summary>
         /// <param name="senderNodeName">Name of the node that ponged.</param>
         /// <param name="recipientNodeName">Name of the recipient node.</param>
-        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName, Guid? pingPongKey )
         {
             if ( senderNodeName == _nodeName )
             {
@@ -404,6 +425,12 @@ namespace Rock.WebFarm
             if ( !recipientNodeName.IsNullOrWhiteSpace() && recipientNodeName != _nodeName )
             {
                 // This message is not for me
+                return;
+            }
+
+            if ( !pingPongKey.HasValue || pingPongKey.Value != _leadershipPingKey )
+            {
+                // This pong key doesn't match the key that I sent out as a ping
                 return;
             }
 
@@ -459,9 +486,10 @@ namespace Rock.WebFarm
 
             Debug( "My time to poll. I was not pinged, so I'm starting leadership duties" );
 
-            // Ping other nodes
+            // Ping other nodes with a unique key for this ping-pong round
             var pollingTime = RockDateTime.Now;
-            PublishEvent( EventType.Ping );
+            _leadershipPingKey = Guid.NewGuid();
+            PublishEvent( EventType.Ping, payload: _leadershipPingKey.Value.ToString() );
 
             // Assert this node's leadership in the database
             using ( var rockContext = new RockContext() )
@@ -477,6 +505,7 @@ namespace Rock.WebFarm
                 }
 
                 thisNode.IsLeader = true;
+                thisNode.IsActive = true;
                 thisNode.LastSeenDateTime = pollingTime;
 
                 foreach ( var otherNode in otherNodes )
@@ -487,9 +516,15 @@ namespace Rock.WebFarm
                 rockContext.SaveChanges();
             }
 
-            // Wait a maximum of 1 second for responses
-            await Task.Delay( TimeSpan.FromSeconds( 1 ) ).ContinueWith( t =>
+            // Get polling wait time
+            var pollingWaitTimeSeconds = GetMaxPollingWaitSeconds();
+
+            // Wait a maximum of 10 seconds for responses
+            await Task.Delay( TimeSpan.FromSeconds( pollingWaitTimeSeconds ) ).ContinueWith( t =>
             {
+                // Clear the ping pong key because responses are now late and no longer accepted
+                _leadershipPingKey = null;
+
                 Debug( "Checking for unresponsive nodes" );
 
                 using ( var rockContext = new RockContext() )
@@ -666,10 +701,10 @@ namespace Rock.WebFarm
         {
             /*
              * Circumventing the code below is considered an integrity violation and harmful to the
-             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm 
-             * feature is designed for the largest churches. Using this feature, as a very large 
-             * church without supporting the Rock Community, costs smaller churches with less 
-             * resources. Please contact Spark to get a key and support the vision of accessibility 
+             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm
+             * feature is designed for the largest churches. Using this feature, as a very large
+             * church without supporting the Rock Community, costs smaller churches with less
+             * resources. Please contact Spark to get a key and support the vision of accessibility
              * for smaller churches.
              *
              * Core Team: See the Web Farm engineering document for more information on keys.
@@ -779,6 +814,30 @@ namespace Rock.WebFarm
         }
 
         /// <summary>
+        /// Gets the minimum difference in seconds between nodes' polling intervals.
+        /// </summary>
+        /// <returns></returns>
+        public static int GetMinimumPollingDifferenceSeconds()
+        {
+            var minDifferenceSeconds =
+                    SystemSettings.GetValue( SystemSetting.WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS ).AsIntegerOrNull() ??
+                    DefaultValue.DefaultMinimumPollingDifferenceSeconds;
+            return minDifferenceSeconds;
+        }
+
+        /// <summary>
+        /// Gets the max time to wait after sending a ping before assuming non-responders are offline.
+        /// </summary>
+        /// <returns></returns>
+        public static int GetMaxPollingWaitSeconds()
+        {
+            var maxWaitSeconds =
+                    SystemSettings.GetValue( SystemSetting.WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS ).AsIntegerOrNull() ??
+                    DefaultValue.DefaultPollingMaxWaitSeconds;
+            return maxWaitSeconds;
+        }
+
+        /// <summary>
         /// Determines whether [is current job runner].
         /// </summary>
         /// <returns>
@@ -817,17 +876,15 @@ namespace Rock.WebFarm
         /// <returns></returns>
         private static decimal GeneratePollingIntervalSeconds( int minSeconds, int maxSeconds )
         {
-            // Calculations are done in deciseconds (ds) since we get a random integer
-            const int dsPerSecond = 10;
+            var minPollingIntervalDifferenceSeconds = GetMinimumPollingDifferenceSeconds();
 
-            // No configured value, so choose randomly
-            var minDs = minSeconds * dsPerSecond;
-            var maxDs = maxSeconds * dsPerSecond;
+            var minSteps = minSeconds / minPollingIntervalDifferenceSeconds;
+            var maxSteps = maxSeconds / minPollingIntervalDifferenceSeconds;
 
             var random = new Random();
-            int randomDs = random.Next( minDs, maxDs );
+            int randomSteps = random.Next( minSteps, maxSteps );
 
-            var randomSeconds = decimal.Divide( randomDs, dsPerSecond );
+            var randomSeconds = randomSteps * minPollingIntervalDifferenceSeconds;
             return randomSeconds;
         }
 

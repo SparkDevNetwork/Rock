@@ -50,7 +50,7 @@ main {
 h3,
 h4,
 legend {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 b,
@@ -208,7 +208,7 @@ textarea,
 
     // Active state, and its :hover to override normal :hover
     &.active > a {
-      font-weight: bold;
+      font-weight: 700;
       color: @gray-dark;
       &,
       &:hover,
@@ -371,7 +371,7 @@ textarea,
       padding-top: 18px;
     }
     &.grid-row-header {
-      font-weight: bold;
+      font-weight: 700;
       border-right: 1px solid @table-border-color;
     }
 
@@ -1415,8 +1415,10 @@ body.navbar-side-open {
 }
 
 // person profile
-@media (min-width: @screen-md-min) {
-  .personprofile {
+.personprofile {
+  margin: -5px -15px 0;
+
+  @media (min-width: @screen-md-min) {
     margin: -35px -35px 0;
   }
 }

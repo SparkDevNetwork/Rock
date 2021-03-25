@@ -118,7 +118,7 @@
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
                 $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle(selectedOptionIsSelectConnector);
             };
-                        
+
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
         $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
     });
@@ -685,12 +685,12 @@
 
 <script id="js-template-column" type="text/template">
     <div class="board-column">
-        <div class="board-heading mt-3 px-3">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="board-heading">
+            <div class="board-heading-details">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
-            <div class="board-heading-pill mt-2 mb-3" style="background: {{HighlightColor}}"></div>
+            <div class="board-heading-pill" style="background: {{HighlightColor}}"></div>
         </div>
         <div class="board-cards js-card-container" data-status-id="{{Id}}">
         </div>
@@ -700,7 +700,7 @@
 </script>
 
 <script id="js-template-column-sentry" type="text/template">
-    <div class="board-card-base board-column-sentry text-muted small p-3">
+    <div class="board-card-base board-column-sentry small">
         <p class="mb-2"><strong>More requests exist</strong></p>
         <p>Please adjust sorting, use filters, or even use the grid mode to interact with them.</p>
     </div>
@@ -709,17 +709,17 @@
 <script id="js-template-card" type="text/template">
     <div class="board-card js-board-card" data-request-id="{{Id}}" data-opportunity-id="{{ConnectionOpportunityId}}">
         <div class="board-card-content js-board-card-content">
-            <div class="d-flex justify-content-between">
+            <div class="board-card-header">
                 {{StatusIconsHtml}}
                 {{CampusHtml}}
             </div>
-            <div class="board-card-main d-flex">
+            <div class="board-card-main">
                 <div class="flex-grow-1 mb-2">
-                    <div class="board-card-photo mb-1" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
+                    <div class="board-card-photo" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
-                    <span class="board-card-assigned d-block text-muted">
+                    <span class="board-card-assigned">
                         {{ConnectorPersonFullname}}
                     </span>
                 </div>
@@ -749,12 +749,12 @@
                     </div>
                 </div>
             </div>
-            <div class="board-card-meta d-flex justify-content-between">
-                <span class="text-muted" title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
+            <div class="board-card-meta">
+                <span title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
                     <i class="fa fa-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}
                 </span>
-                <span class="text-muted" title="{{DaysSinceOpeningLongText}}">
+                <span title="{{DaysSinceOpeningLongText}}">
                     <i class="fa fa-calendar"></i>
                     {{DaysSinceOpeningShortText}}
                 </span>

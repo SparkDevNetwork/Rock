@@ -1645,6 +1645,14 @@ $('#{0}').tooltip();
             cbSignupSchedule.Checked = false;
             cbSignupSchedule.AutoPostBack = true;
             cbSignupSchedule.CheckedChanged += CbSignupSchedule_CheckedChanged;
+            cbSignupSchedule.Enabled = !personScheduleSignup.MaxScheduled;
+
+            if ( personScheduleSignup.MaxScheduled )
+            {
+                cbSignupSchedule.Text += " (filled)";
+                cbSignupSchedule.AddCssClass( "text-muted" );
+            }
+
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
             var locations = availableGroupLocationSchedules
@@ -1800,6 +1808,13 @@ $('#{0}').tooltip();
                 {
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
+                        //  find if this has max volunteers here
+                        int? maximumCapacitySetting = null;
+                        if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
+                        {
+                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault().MaximumCapacity;
+                        }
+
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
                         foreach ( var startDateTime in startDateTimeList )
                         {
@@ -1822,6 +1837,15 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
+                            // If there is a maximum Campacity then find out how many aleady RSVP with "Yes"
+                            var currentScheduled = maximumCapacitySetting != null
+                                ? attendanceService
+                                    .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )
+                                    .Count()
+                                : 0;
+
+                            bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
+
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
                             {
@@ -1835,6 +1859,7 @@ $('#{0}').tooltip();
                                 ScheduleId = schedule.Id,
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
+                                MaxScheduled = maxScheduled
                             } );
                         }
                     }
@@ -1865,6 +1890,8 @@ $('#{0}').tooltip();
             public string LocationName { get; set; }
 
             public int LocationOrder { get; set; }
+
+            public bool MaxScheduled { get; set; }
         }
 
         #endregion Sign-up Tab

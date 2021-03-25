@@ -57,7 +57,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SEARCH_KEYS )]
-        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 1 )]
+        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 1 )]
         public int SearchTypeValueId { get; set; }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
-        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 2 )]
+        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
         public string SearchValue { get; set; }
 
         #endregion

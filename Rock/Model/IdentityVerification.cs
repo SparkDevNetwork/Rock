@@ -27,6 +27,11 @@ namespace Rock.Model
     /// </summary>
     public partial class IdentityVerification : Model<IdentityVerification>
     {
+        /// <summary>
+        /// The default maximum failed match attempt count
+        /// </summary>
+        public const int DefaultMaxFailedMatchAttemptCount = 10;
+
         #region Entity Properties
         /// <summary>
         /// Gets or sets the reference number.

@@ -155,7 +155,7 @@
 
         <Rock:ModalDialog ID="dlgChildContentChannel" runat="server" OnSaveClick="dlgChildContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildContentChannels">
             <Content>
-                <Rock:RockDropDownList ID="ddlChildContentChannel" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildContentChannels" />
+                <Rock:RockDropDownList ID="ddlChildContentChannel" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Content Channel" ValidationGroup="ChildContentChannels" />
             </Content>
         </Rock:ModalDialog>
 

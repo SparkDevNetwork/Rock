@@ -131,6 +131,13 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    [BooleanField( "Enable Person Parameter",
+        Key = AttributeKey.EnablePersonParameter,
+        Description = "When enabled, allows passing a 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.",
+        DefaultBooleanValue = true,
+        IsRequired = false,
+        Order = 13 )]
+
     #endregion Block Attributes
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
@@ -153,6 +160,7 @@ namespace RockWeb.Blocks.Communication
             public const string SimpleCommunicationPage = "SimpleCommunicationPage";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
             public const string DefaultAsBulk = "DefaultAsBulk";
+            public const string EnablePersonParameter = "EnablePersonParameter";
         }
 
         #endregion Attribute Keys
@@ -164,6 +172,7 @@ namespace RockWeb.Blocks.Communication
             public const string CommunicationId = "CommunicationId";
             public const string Edit = "Edit";
             public const string Person = "Person";
+            public const string PersonId = "PersonId";
             public const string TemplateGuid = "TemplateGuid";
         }
 
@@ -340,7 +349,7 @@ function onTaskCompleted( resultData )
                     Dictionary<string, string> qryParams = new Dictionary<string, string>();
                     if ( hfCommunicationId.Value != "0" )
                     {
-                        qryParams.Add( "CommunicationId", hfCommunicationId.Value );
+                        qryParams.Add( PageParameterKey.CommunicationId, hfCommunicationId.Value );
                     }
 
                     this.NavigateToCurrentPageReference( qryParams );
@@ -476,14 +485,17 @@ function onTaskCompleted( resultData )
             if ( communication.ListGroupId == null )
             {
                 IndividualRecipientPersonIds = new CommunicationRecipientService( rockContext ).Queryable().AsNoTracking().Where( r => r.CommunicationId == communication.Id ).Select( a => a.PersonAlias.PersonId ).ToList();
-
-                if ( IndividualRecipientPersonIds.Count > 0 )
-                {
-                    BindIndividualRecipientsGrid();
-                }
             }
 
-            int? personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull();
+
+            int? personId = null;
+            if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
+            {
+                // if either 'Person' or 'PersonId' is specified add that person to the communication
+                personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull()
+                    ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+            }
+
             if ( personId.HasValue && !communication.ListGroupId.HasValue )
             {
                 communication.IsBulkCommunication = false;
@@ -516,11 +528,21 @@ function onTaskCompleted( resultData )
 
             UpdateRecipientListCount();
 
-            // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
-            if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
+            if ( IndividualRecipientPersonIds.Count > 0 )
             {
+                BindIndividualRecipientsGrid();
                 pnlListSelection.Visible = false;
                 pnlIndividualRecipientList.Visible = true;
+            }
+            else
+            {
+
+                // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
+                if ( ddlCommunicationGroupList.Items.Count <= 1 || ( communication.Id != 0 && communication.ListGroupId == null ) )
+                {
+                    pnlListSelection.Visible = false;
+                    pnlIndividualRecipientList.Visible = true;
+                }
             }
 
             // Note: Javascript takes care of making sure the buttons are set up based on this
@@ -645,19 +667,20 @@ function onTaskCompleted( resultData )
         /// <summary>
         /// Loads the communication types that are configured for this block
         /// </summary>
-        private List<CommunicationType> GetAllowedCommunicationTypes()
+        private List<CommunicationType> GetAllowedCommunicationTypes(bool forSelector = false)
         {
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( communicationTypes.Any() )
+            if ( !forSelector && communicationTypes.Contains( "Recipient Preference" ) )
             {
-                // Recipient Preference,Email,SMS
-                if ( communicationTypes.Contains( "Recipient Preference" ) )
-                {
-                    result.Add( CommunicationType.RecipientPreference );
-                }
-
+                result.Add( CommunicationType.RecipientPreference );
+                result.Add( CommunicationType.Email );
+                result.Add( CommunicationType.SMS );
+                result.Add( CommunicationType.PushNotification );
+            }
+            else if ( communicationTypes.Any() )
+            {
                 if ( communicationTypes.Contains( "Email" ) )
                 {
                     result.Add( CommunicationType.Email );
@@ -672,6 +695,11 @@ function onTaskCompleted( resultData )
                 {
                     result.Add( CommunicationType.PushNotification );
                 }
+
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
+                }
             }
             else
             {
@@ -680,6 +708,7 @@ function onTaskCompleted( resultData )
                 result.Add( CommunicationType.SMS );
                 result.Add( CommunicationType.PushNotification );
             }
+
 
             return result;
         }
@@ -1142,7 +1171,7 @@ function onTaskCompleted( resultData )
             }
 
             // See what is allowed by the block settings
-            var allowedCommunicationTypes = GetAllowedCommunicationTypes();
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes(true);
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
@@ -1165,7 +1194,7 @@ function onTaskCompleted( resultData )
             }
 
             // Only add recipient preference if at least two options exists.
-            if ( rblCommunicationMedium.Items.Count > 1 && recipientPreferenceEnabled )
+            if ( recipientPreferenceEnabled )
             {
                 rblCommunicationMedium.Items.Add( new ListItem( "Recipient Preference", CommunicationType.RecipientPreference.ConvertToInt().ToString() ) );
             }
@@ -1173,7 +1202,7 @@ function onTaskCompleted( resultData )
             rblCommunicationMedium.Visible = rblCommunicationMedium.Items.Count > 1;
 
             // make sure that either EMAIL, SMS, or PUSH is enabled
-            if ( !( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) )
+            if ( !( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled || recipientPreferenceEnabled ) )
             {
                 nbNoCommunicationTransport.Text = "There are no active Email, SMS, or Push communication transports configured.";
                 nbNoCommunicationTransport.Visible = true;
@@ -1809,7 +1838,21 @@ function onTaskCompleted( resultData )
                             if ( communicationService != null && testCommunication != null )
                             {
                                 var testCommunicationId = testCommunication.Id;
-                                communicationService.Delete( testCommunication );
+                                var pushMediumEntityTypeGuid = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
+
+                                if ( testCommunication.GetMediums().Any( a => a.EntityType.Guid == pushMediumEntityTypeGuid ) )
+                                {
+                                    // We can't actually delete the test communication since if it is an
+                                    // action type of "Show Details" then they won't be able to view the
+                                    // communication on their device to see how it looks. Instead we switch
+                                    // the communication to be transient so the cleanup job will take care
+                                    // of it later.
+                                    testCommunication.Status = CommunicationStatus.Transient;
+                                }
+                                else
+                                {
+                                    communicationService.Delete( testCommunication );
+                                }
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
 
                                 // Delete any Person History that was created for the Test Communication
@@ -2560,8 +2603,7 @@ function onTaskCompleted( resultData )
                     communication.Status = CommunicationStatus.Approved;
                     communication.ReviewedDateTime = RockDateTime.Now;
                     communication.ReviewerPersonAliasId = CurrentPersonAliasId;
-                    communication.CreatedDateTime = RockDateTime.Now;
-
+                    
                     if ( communication.FutureSendDateTime.HasValue &&
                                    communication.FutureSendDateTime > RockDateTime.Now )
                     {

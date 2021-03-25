@@ -219,7 +219,8 @@ namespace RockWeb.Blocks.GroupScheduling
                     ScheduledPerson = a.PersonAlias.Person,
                     RequestedToAttend = a.RequestedToAttend,
                     ScheduledToAttend = a.ScheduledToAttend,
-                    RSVP = a.RSVP
+                    RSVP = a.RSVP,
+                    DeclineReasonValueId = a.DeclineReasonValueId
                 } ).ToList()
             } ).ToList();
 
@@ -373,12 +374,18 @@ namespace RockWeb.Blocks.GroupScheduling
                                     status = ScheduledAttendanceItemStatus.Confirmed;
                                 }
 
+                                var statusAttributes = " class='status-icon'";
+                                if ( !string.IsNullOrWhiteSpace( scheduledPerson.DeclineReason ) )
+                                {
+                                    statusAttributes = string.Format( " data-original-title='{0}' class='status-icon js-declined-tooltip'", scheduledPerson.DeclineReason);
+                                }
                                 sbScheduledListHtml.AppendLine(
                                     string.Format(
-                                        "<li class='slot person {0}' data-status='{0}'><i class='status-icon'></i><span class='person-name'>{1}</span><span class='person-group-role pull-right'>{2}</span></li>",
+                                        "<li class='slot person {0}' data-status='{0}'><i{3}></i><span class='person-name'>{1}</span><span class='person-group-role pull-right'>{2}</span></li>",
                                         status.ConvertToString( false ).ToLower(),
                                         scheduledPerson.ScheduledPerson,
-                                        scheduledPerson.PersonRoleInGroup ) );
+                                        scheduledPerson.PersonRoleInGroup,
+                                        statusAttributes ) );
                             }
 
                             scheduledCount = attendanceScheduledPersonList.Where( a => a.RSVP != RSVP.No ).Count();
@@ -614,6 +621,26 @@ namespace RockWeb.Blocks.GroupScheduling
             public bool? ScheduledToAttend { get; set; }
 
             public RSVP RSVP { get; set; }
+
+            public int? DeclineReasonValueId { get; set; }
+
+            public string DeclineReason
+            {
+                get
+                {
+                    if( RSVP != RSVP.No )
+                    {
+                        return string.Empty;
+                    }
+
+                    var declinedReason = DefinedValueCache.GetValue( DeclineReasonValueId ).EncodeHtml();
+                    if ( declinedReason.IsNullOrWhiteSpace())
+                    {
+                        declinedReason = "No reason given.";
+                    }
+                    return declinedReason;
+                }
+            }
         }
 
         private class MemberInfo

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
@@ -35,6 +36,29 @@ namespace Rock
         {
             var phoneNumber = phoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
             return phoneNumber == null ? null : phoneNumber.ToSmsNumber();
+        }
+
+        /// <summary>
+        /// Removes all items in itemsToRemove from the ICollection.
+        /// </summary>
+        /// <remarks>
+        /// This method will not throw a null exception if either the ICollection or itemsToRemove is null the method will just return.
+        /// </remarks>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection">The source.</param>
+        /// <param name="itemsToRemove">The remove list.</param>
+        /// <exception cref="ArgumentNullException">source</exception>
+        public static void RemoveAll<T>( this ICollection<T> collection, IEnumerable<T> itemsToRemove )
+        {
+            if ( collection == null || itemsToRemove == null || collection.Count == 0 )
+            {
+                return;
+            }
+
+            foreach ( var item in itemsToRemove )
+            {
+                collection.Remove( item );
+            }
         }
     }
 }

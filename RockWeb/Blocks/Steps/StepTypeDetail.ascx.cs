@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Steps
             /// The kpi lava
             /// </summary>
             public const string KpiLava =
-@"{[kpis]}
+@"{[kpis style:'card' iconbackground:'true' columncount:'4']}
     [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing' color:'blue-700']][[ endkpi ]]
     {% if StepType.HasEndDate %}
         [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete' color:'green-600']][[ endkpi ]]
