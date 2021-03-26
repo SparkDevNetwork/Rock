@@ -23,9 +23,9 @@ namespace Rock.Tests.UnitTests.Lava
     public class MiscellaneousFilterTests : LavaUnitTestBase
     {
         [TestMethod]
+        [Ignore( "Requires a fix for the Fluid library." )]
         public void RunLava_ForStringTarget_ReturnsLavaTemplateOutput()
         {
-
             var inputTemplate = @"
         {% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
         {{ lava | RunLava }}

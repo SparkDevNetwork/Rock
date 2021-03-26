@@ -23,19 +23,6 @@ namespace Rock.Tests.UnitTests.Lava
     [TestClass]
     public class LavaUnitTestBase
     {
-        public LavaUnitTestBase()
-        {
-            LavaEngine.Initialize( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
-        }
-
-        //public static LavaEngineTypeSpecifier EngineType
-        //{
-        //    get
-        //    {
-        //        return LavaUnitTestHelper.EngineType;
-        //    }
-        //}
-
         public static LavaUnitTestHelper TestHelper
         {
             get

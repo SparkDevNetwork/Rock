@@ -1581,18 +1581,22 @@ namespace Rock.Tests.Rock.Lava
 
         #region Lava Test helper methods
 
+        private static ILavaEngine _lavaEngine = null;
+
         private static void AssertTemplateResult( string expected, string template )
         {
-            LavaEngine.Initialize( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
-            var output = LavaEngine.CurrentEngine.RenderTemplate( template );
+            // Tests in this class are only compatible with the DotLiquid engine.
+            // If/when these tests are reworked for the Fluid engine, they should be moved to the Rock.Tests.UnitTests.Lava namespace.
+            if ( _lavaEngine == null )
+            {
+                _lavaEngine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
+            }
+
+            var output = _lavaEngine.RenderTemplate( template );
 
             Assert.That.AreEqual( expected, output );
         }
 
-        //private static void AssertTemplateResult( string expected, string template, Hash localVariables )
-        //{
-        //    Assert.That.AreEqual( expected, Template.Parse( template ).Render( localVariables ) );
-        //}
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

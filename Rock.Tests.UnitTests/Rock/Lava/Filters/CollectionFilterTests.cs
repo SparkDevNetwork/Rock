@@ -69,6 +69,7 @@ namespace Rock.Tests.UnitTests.Lava
         #region Filter: GroupBy
 
         [TestMethod]
+        [Ignore("Requires a fix for the Fluid library.")]
         public void GroupBy_OnStringCollectionWithDuplicates_RemovesDuplicates()
         {
             var personList = TestHelper.GetTestPersonCollectionForDeckerAndMarble();
@@ -354,6 +355,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         /// Shuffle applied to an ordered list returns an unordered list.
         /// </summary>
         [TestMethod]
+        [Ignore( "Requires a fix for the Fluid library." )]
         public void Shuffle_AppliedToOrderedList_ReturnsUnorderedList()
         {
             var mergeValues = new LavaDataDictionary { { "OrderedList", _TestOrderedList } };
