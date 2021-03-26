@@ -99,8 +99,8 @@
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
                                         <div id="divPhoneNumberContainer" runat="server" class="form-group">
-                                            <h4><asp:Label ID="lblHighlightTitle" runat="server" Visible="false"></asp:Label></h4>
-                                            <p><asp:Label ID="lblHighlightText" runat="server" Visible="false"></asp:Label></p>
+                                            <asp:Literal ID="litHighlightTitle" runat="server" Visible="false"></asp:Literal>
+                                            <asp:Literal ID="litHighlightText" runat="server" Visible="false"></asp:Literal>
                                             <label class="control-label"><%# Eval("NumberTypeValue.Value") %> Phone</label>
                                             <div class="controls">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
