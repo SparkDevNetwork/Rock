@@ -78,5 +78,39 @@ namespace Rock.Model
                 .Where( p => p.IsActive == true && p.IsApproved == true && RockDateTime.Today <= p.ExpirationDate )
                 .OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
         }
+
+        /// <summary>
+        /// Adds the prayer interaction to the queue to be processed later.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="currentPerson">The current person logged in and executing the action.</param>
+        /// <param name="summary">The interaction summary text.</param>
+        /// <param name="userAgent">The user agent of the request.</param>
+        /// <param name="ipAddress">The IP address of the request.</param>
+        /// <param name="browserSessionGuid">The browser session unique identifier.</param>
+        public static void EnqueuePrayerInteraction( PrayerRequest prayerRequest, Person currentPerson, string summary, string userAgent, string ipAddress, Guid? browserSessionGuid )
+        {
+            var channelTypeMediumValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS ).Id;
+
+            // Write the Interaction by way of a transaction.
+            var info = new Rock.Transactions.InteractionTransactionInfo
+            {
+                ChannelTypeMediumValueId = channelTypeMediumValueId,
+
+                ComponentEntityId = prayerRequest.Id,
+                ComponentName = prayerRequest.Name,
+
+                InteractionSummary = summary,
+                InteractionOperation = "Prayed",
+                PersonAliasId = currentPerson?.PrimaryAliasId,
+
+                UserAgent = userAgent,
+                IPAddress = ipAddress,
+                BrowserSessionId = browserSessionGuid
+            };
+
+            var interactionTransaction = new Rock.Transactions.InteractionTransaction( info );
+            interactionTransaction.Enqueue();
+        }
     }
 }

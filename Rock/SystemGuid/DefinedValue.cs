@@ -807,6 +807,11 @@ namespace Rock.SystemGuid
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
 
         /// <summary>
+        /// Interaction Channel Type: System Events
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_SYSTEM_EVENTS = "5919214F-9C59-4913-BE4E-0DFB6A05F528";
+
+        /// <summary>
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";

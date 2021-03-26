@@ -365,7 +365,8 @@ namespace Rock.Mobile
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
-                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic
+                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
+                DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically
             };
 
             //
