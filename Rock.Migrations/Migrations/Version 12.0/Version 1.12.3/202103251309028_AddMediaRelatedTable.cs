@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,18 +46,15 @@ namespace Rock.Migrations
                         ForeignId = c.Int(),
                         ForeignGuid = c.Guid(),
                         ForeignKey = c.String(maxLength: 100),
-                        DefinedType_Id = c.Int(),
                     })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.EntityType", t => t.ComponentEntityTypeId)
                 .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
-                .ForeignKey("dbo.DefinedType", t => t.DefinedType_Id)
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .Index(t => t.ComponentEntityTypeId)
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
-                .Index(t => t.Guid, unique: true)
-                .Index(t => t.DefinedType_Id);
+                .Index(t => t.Guid, unique: true);
             
             CreateTable(
                 "dbo.MediaFolder",
@@ -148,7 +145,6 @@ namespace Rock.Migrations
             DropForeignKey("dbo.MediaFolder", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.MediaFolder", "ContentChannelAttributeId", "dbo.Attribute");
             DropForeignKey("dbo.MediaFolder", "ContentChannelId", "dbo.ContentChannel");
-            DropForeignKey("dbo.MediaAccount", "DefinedType_Id", "dbo.DefinedType");
             DropForeignKey("dbo.MediaAccount", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.MediaAccount", "ComponentEntityTypeId", "dbo.EntityType");
             DropIndex("dbo.MediaElement", new[] { "Guid" });
@@ -161,7 +157,6 @@ namespace Rock.Migrations
             DropIndex("dbo.MediaFolder", new[] { "ContentChannelAttributeId" });
             DropIndex("dbo.MediaFolder", new[] { "ContentChannelId" });
             DropIndex("dbo.MediaFolder", new[] { "MediaAccountId" });
-            DropIndex("dbo.MediaAccount", new[] { "DefinedType_Id" });
             DropIndex("dbo.MediaAccount", new[] { "Guid" });
             DropIndex("dbo.MediaAccount", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.MediaAccount", new[] { "CreatedByPersonAliasId" });
