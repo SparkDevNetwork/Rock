@@ -675,9 +675,11 @@ namespace Rock.Tests.Integration.Lava
         /// </summary>
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
-        public void AssertTemplateOutputWithWildcard( LavaEngineTypeSpecifier engineType, string expectedOutput, string inputTemplate, LavaTestRenderOptions options )
+        public void AssertTemplateOutputWithWildcard( LavaEngineTypeSpecifier engineType, string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
         {
             var engine = GetEngineInstance( engineType );
+
+            options = options ?? new LavaTestRenderOptions();
 
             var lavaContext = engine.NewRenderContext( options.MergeFields );
 

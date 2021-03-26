@@ -688,9 +688,9 @@ namespace Rock.Lava.Fluid
 
                         if ( _blocks.TryGetValue( tagName, out ITag customEndBlock ) )
                         {
-                            if ( _context.CurrentBlock.Tag.Term.Name != tagName )
+                            if ( _context?.CurrentBlock?.Tag?.Term?.Name != tagName )
                             {
-                                throw new ParseException( $"Unexpected tag: '{tag.Term.Name}' not matching '{_context.CurrentBlock.Tag.Term.Name}' tag." );
+                                throw new ParseException( $"Unexpected tag: '{tag.Term.Name}' not matching '{_context?.CurrentBlock?.Tag?.Term?.Name}' tag." );
                             }
 
                             var statement = CreateStatementForCustomBlock( _context.CurrentBlock.Tag, customEndBlock, segment, start, end );
