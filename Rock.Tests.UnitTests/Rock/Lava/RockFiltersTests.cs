@@ -1580,12 +1580,23 @@ namespace Rock.Tests.Rock.Lava
         #endregion
 
         #region Lava Test helper methods
+
         private static void AssertTemplateResult( string expected, string template )
         {
-            var output = LavaEngine.CurrentEngine.RenderTemplate( template );
-
-            Assert.That.AreEqual( expected, output );
+            AssertTemplateResult( expected, template, null );
         }
+
+        private static void AssertTemplateResult( string expected, string template, DotLiquid.Hash localVariables )
+        {
+            Assert.That.AreEqual( expected, DotLiquid.Template.Parse( template ).Render( localVariables ) );
+        }
+
+        //private static void AssertTemplateResult( string expected, string template )
+        //{
+        //    var output = LavaEngine.CurrentEngine.RenderTemplate( template );
+
+        //    Assert.That.AreEqual( expected, output );
+        //}
 
         //private static void AssertTemplateResult( string expected, string template, Hash localVariables )
         //{
