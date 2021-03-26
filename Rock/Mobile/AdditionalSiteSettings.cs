@@ -248,5 +248,13 @@ namespace Rock.Mobile
         /// The communication view page identifier.
         /// </value>
         public int? CommunicationViewPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable notifications automatically.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if application should enable notifications automatically; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableNotificationsAutomatically { get; set; } = true;
     }
 }
