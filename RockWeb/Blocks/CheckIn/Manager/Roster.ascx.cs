@@ -590,7 +590,17 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             UpdateStatusFilterTabs( unfilteredAttendees );
 
-            var attendanceListForCurrentStatusFilter = attendanceList.Where( a => RosterAttendee.AttendanceMeetsRosterStatusFilter( a, currentStatusFilter ) ).ToList();
+            List<Attendance> attendanceListForCurrentStatusFilter;
+
+            if ( !HasPresenceEnabled( unfilteredAttendanceCheckinAreas ) && currentStatusFilter == RosterStatusFilter.Present )
+            {
+                // Edge case. If there are attendance records with 'PresentDateTime' null (due to pre v12.3 checkin, or a change in configuration from Enable Presence to Disable Presence), also include CheckedIn if we are filter only for Present.
+                attendanceListForCurrentStatusFilter = attendanceList.Where( a => RosterAttendee.AttendanceMeetsRosterStatusFilter( a, RosterStatusFilter.Present ) || RosterAttendee.AttendanceMeetsRosterStatusFilter( a, RosterStatusFilter.CheckedIn ) ).ToList();
+            }
+            else
+            {
+                attendanceListForCurrentStatusFilter = attendanceList.Where( a => RosterAttendee.AttendanceMeetsRosterStatusFilter( a, currentStatusFilter ) ).ToList();
+            }
 
             var attendeesForCurrentStatusFilter = RosterAttendee.GetFromAttendanceList( attendanceListForCurrentStatusFilter, checkinAreaFilter );
 
@@ -1198,6 +1208,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         /// <summary>
+        /// Returns true of any if the checkin areas support Enable Presence
+        /// </summary>
+        /// <param name="checkinAreas">The checkin areas.</param>
+        /// <returns></returns>
+        private bool HasPresenceEnabled( GroupTypeCache[] checkinAreas )
+        {
+            var checkinConfigurationTypes = checkinAreas.Select( a => a.GetCheckInConfigurationType() );
+            return checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() );
+        }
+
+        /// <summary>
+        /// Returns true of any if the checkin areas support Allow Checkout
+        /// </summary>
+        /// <param name="checkinAreas">The checkin areas.</param>
+        /// <returns></returns>
+        private bool HasCheckoutEnabled( GroupTypeCache[] checkinAreas )
+        {
+            var checkinConfigurationTypes = checkinAreas.Select( a => a.GetCheckInConfigurationType() );
+            return checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() );
+        }
+
+        /// <summary>
         /// Removes the unneeded status filters based on the whether any of the rooms have EnablePresence and/or AllowCheckout
         /// </summary>
         /// <param name="attendees">The attendees.</param>
@@ -1210,8 +1242,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             var checkinConfigurationTypes = checkinAreas.Select( a => a.GetCheckInConfigurationType() );
 
-            var showPresenceControls = checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() );
-            var showAllowCheckoutControls = checkinConfigurationTypes.Any( a => a != null && a.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() );
+            var showPresenceControls = HasPresenceEnabled( checkinAreas );
+            var showAllowCheckoutControls = HasCheckoutEnabled( checkinAreas );
 
             if ( !showAllowCheckoutControls )
             {
