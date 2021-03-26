@@ -94,6 +94,14 @@
     <Compile Include="Migrations\202103172054126_Rollup_03171.Designer.cs">
       <DependentUpon>202103172054126_Rollup_03171.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202103251309028_AddMediaRelatedTable.cs" />
+    <Compile Include="Migrations\202103251309028_AddMediaRelatedTable.Designer.cs">
+      <DependentUpon>202103251309028_AddMediaRelatedTable.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202103252333087_Rollup_0325.cs" />
+    <Compile Include="Migrations\202103252333087_Rollup_0325.Designer.cs">
+      <DependentUpon>202103252333087_Rollup_0325.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.Designer.cs">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
@@ -407,6 +415,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202103172054126_Rollup_03171.resx">
       <DependentUpon>202103172054126_Rollup_03171.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202103251309028_AddMediaRelatedTable.resx">
+      <DependentUpon>202103251309028_AddMediaRelatedTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202103252333087_Rollup_0325.resx">
+      <DependentUpon>202103252333087_Rollup_0325.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.resx">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>

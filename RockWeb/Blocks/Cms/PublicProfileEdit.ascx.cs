@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Cms
 
     public partial class PublicProfileEdit : RockBlock
     {
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DefaultConnectionStatus = "DefaultConnectionStatus";
             public const string DisableNameEdit = "DisableNameEdit";
@@ -1220,12 +1220,12 @@ namespace RockWeb.Blocks.Cms
                 {
                     if ( GetAttributeValue( AttributeKey.HighlightMobilePhone ).AsBoolean() )
                     {
-                        var hightlightTitle = ( Label ) e.Item.FindControl( "lblHighlightTitle" );
-                        hightlightTitle.Text = GetAttributeValue( AttributeKey.MobileHighlightTitle );
+                        var hightlightTitle = ( Literal ) e.Item.FindControl( "litHighlightTitle" );
+                        hightlightTitle.Text = $"<h4>{GetAttributeValue( AttributeKey.MobileHighlightTitle )}</h4>";
                         hightlightTitle.Visible = true;
 
-                        var hightlightText = ( Label ) e.Item.FindControl( "lblHighlightText" );
-                        hightlightText.Text = GetAttributeValue( AttributeKey.MobileHighlightText );
+                        var hightlightText = ( Literal ) e.Item.FindControl( "litHighlightText" );
+                        hightlightText.Text = $"<p>{GetAttributeValue( AttributeKey.MobileHighlightText )}</p>";
                         hightlightText.Visible = true;
 
                         phoneNumberContainer.AddCssClass( "well" );

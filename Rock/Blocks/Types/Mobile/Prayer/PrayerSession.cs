@@ -23,6 +23,7 @@ using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Events
@@ -267,7 +268,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             {
                 var prayerRequestService = new PrayerRequestService( rockContext );
 
-                sessionContext = Security.Encryption.DecryptString( context ).FromJsonOrNull<SessionContext>();
+                sessionContext = Encryption.DecryptString( context ).FromJsonOrNull<SessionContext>();
 
                 //
                 // Update the prayer count on the last prayer request.
@@ -306,7 +307,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             mergeFields.Add( "PrayedButtonText", PrayedButtonText );
             mergeFields.Add( "ShowFollowButton", ShowFollowButton );
             mergeFields.Add( "ShowInappropriateButton", ShowInappropriateButton );
-            mergeFields.Add( "SessionContext", Security.Encryption.EncryptString( sessionContext.ToJson() ) );
+            mergeFields.Add( "SessionContext", Encryption.EncryptString( sessionContext.ToJson() ) );
             mergeFields.Add( "Request", request );
 
             return template.ResolveMergeFields( mergeFields );
@@ -394,7 +395,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         {
             using ( var rockContext = new RockContext() )
             {
-                var context = Security.Encryption.DecryptString( sessionContext ).FromJsonOrNull<SessionContext>() ?? new SessionContext();
+                var context = Encryption.DecryptString( sessionContext ).FromJsonOrNull<SessionContext>() ?? new SessionContext();
                 var request = new PrayerRequestService( rockContext ).Get( context.RequestIds[context.Index] );
 
                 request.FlagCount = ( request.FlagCount ?? 0 ) + 1;
