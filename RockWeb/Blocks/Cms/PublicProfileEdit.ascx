@@ -68,8 +68,8 @@
                                     <%-- This YearPicker is needed for the GradePicker to work --%>
                                     <div style="display: none;">
                                         <Rock:YearPicker ID="ypGraduation" runat="server" Label="Graduation Year" Help="High School Graduation Year." />
-                                        <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" />
                                     </div>
+                                    <Rock:GradePicker ID="ddlGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" />
 
                                 </div>
                                 <div class="col-md-6">
