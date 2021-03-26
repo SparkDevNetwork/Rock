@@ -38,7 +38,7 @@
 
                         <div class="col-md-9">
                             <h3>Personal Information</h3>
-                            <hr />
+                            <hr class="mt-0" />
                             <asp:Panel ID="pnlPersonalTitle" runat="server" CssClass="row">
                                 <div class="col-md-4">
                                     <Rock:DefinedValuePicker ID="dvpTitle" runat="server" CssClass="input-width-md" Label="Title" AutoPostBack="true" />
@@ -89,12 +89,12 @@
 
                             <asp:Panel ID="pnlFamilyAttributes" runat="server">
                                 <h3>Family Information</h3>
-                                <hr />
+                                <hr class="mt-0" />
                                 <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" NumberOfColumns="2" />
                             </asp:Panel>
 
                             <h3>Contact Information</h3>
-                            <hr />
+                            <hr class="mt-0" />
                             <asp:Panel ID="pnlPhoneNumbers" class="form-section" runat="server">
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>
@@ -146,7 +146,7 @@
 
                                     <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" />
 
-                                    <div class="row -mt-form-group">
+                                    <div class="row form-row -mt-form-group">
                                         <div class="col-md-6"><Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" /></div>
                                         <div class="col-md-6"><Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" /></div>
                                     </div>
