@@ -16,9 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Utility.Settings.GivingAnalytics
 {
@@ -37,7 +34,7 @@ namespace Rock.Utility.Settings.GivingAnalytics
         }
 
         /// <summary>
-        /// Gets or sets the giving analytics. 
+        /// Gets or sets the giving analytics.
         /// </summary>
         /// <value>
         /// The giving analytics.
@@ -63,7 +60,19 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// </summary>
         public GivingAnalytics()
         {
-            this.GiverAnalyticsRunDays = new List<DayOfWeek>();
+            // Default to 7 days a week if there is not already a setting
+            this.GiverAnalyticsRunDays = new List<DayOfWeek>
+            {
+                DayOfWeek.Sunday,
+                DayOfWeek.Monday,
+                DayOfWeek.Tuesday,
+                DayOfWeek.Wednesday,
+                DayOfWeek.Thursday,
+                DayOfWeek.Friday,
+                DayOfWeek.Saturday
+            };
+
+            this.GiverBins = new List<GiverBin>();
         }
 
         /// <summary>
@@ -89,6 +98,14 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// A <see cref="System.DateTime"/> representing the date and time of the last time that the giving analytics Job completed successfully
         /// </value>
         public DateTime? GivingAnalyticsLastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the giver bins.
+        /// </summary>
+        /// <value>
+        /// The giver bins.
+        /// </value>
+        public List<GiverBin> GiverBins { get; set; }
     }
 
     /// <summary>
@@ -119,5 +136,18 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// The followup repeat prevention duration.
         /// </value>
         public int? FollowupRepeatPreventionDurationDays { get; set; }
+    }
+
+    /// <summary>
+    /// Information About the Giver Bin
+    /// </summary>
+    public class GiverBin {
+        /// <summary>
+        /// Gets or sets the lower range.
+        /// </summary>
+        /// <value>
+        /// The lower range.
+        /// </value>
+        public decimal? LowerLimit { get; set; }
     }
 }

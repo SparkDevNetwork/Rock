@@ -540,6 +540,8 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
+    <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -622,6 +624,7 @@
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
     <Compile Include="Financial\IFeeCoverageGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
+    <Compile Include="Jobs\GivingAnalytics.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
@@ -707,6 +710,7 @@
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
+    <Compile Include="Tasks\ProcessTransactionAlertActions.cs" />
     <Compile Include="Tasks\ProcessAchievements.cs" />
     <Compile Include="Tasks\AddPersonViewed.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />

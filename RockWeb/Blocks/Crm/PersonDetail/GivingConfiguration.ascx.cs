@@ -215,7 +215,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rStatements_ItemCommand( object sender, RepeaterCommandEventArgs e )
         {
-            if ( e.CommandName == "select" )
+            if ( e.CommandName == "Select" )
             {
                 var statementYear = e.CommandArgument.ToString();
                 Dictionary<string, string> queryParams = new Dictionary<string, string>();
@@ -271,7 +271,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddPledge_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.PledgeDetailPage, "PledgeId", 0 );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( "PledgeId", "0" );
+            queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+            NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
         /// <summary>

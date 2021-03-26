@@ -77,7 +77,7 @@ namespace Rock.Model
         public bool ContinueIfMatched { get; set; }
 
         /// <summary>
-        /// Gets or sets the repeat prevention duration.
+        /// Gets or sets the repeat prevention duration (days).
         /// </summary>
         /// <value>
         /// The repeat prevention duration.
