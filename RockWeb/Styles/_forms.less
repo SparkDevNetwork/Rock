@@ -59,13 +59,23 @@ a.aspNetDisabled {
   line-height: @line-height-base;
 }
 
+.-mt-form-group {
+  -webkit-transform: translateY(-@form-group-margin-bottom);
+  -ms-transform: translateY(-@form-group-margin-bottom);
+  transform: translateY(-@form-group-margin-bottom);
+}
+
 .form-group .checkbox:last-child {
-  // used to adjust checkboxes tolook better with labels above
+  // used to adjust checkboxes to look better with labels above
   margin-bottom: 30px;
 }
 
 .form-group > .form-group {
   margin-top: 12px;
+}
+
+.form-section {
+  margin-bottom: @form-section-margin-bottom;
 }
 
 .form-inline {
@@ -254,37 +264,37 @@ dl:not(.dl-horizontal) {
 .form-control.input-width-xs,
 .input-group.input-width-xs,
 .form-control-group.input-width-xs input {
-  width: 60px;
+  width: @input-width-xs;
 }
 
 .form-control.input-width-sm,
 .input-group.input-width-sm,
 .form-control-group.input-width-sm input {
-  width: 90px;
+  width: @input-width-sm;
 }
 
 .form-control.input-width-md,
 .input-group.input-width-md,
 .form-control-group.input-width-md input {
-  width: 150px;
+  width: @input-width-md;
 }
 
 .form-control.input-width-lg,
 .input-group.input-width-lg,
 .form-control-group.input-width-lg input {
-  width: 210px;
+  width: @input-width-lg;
 }
 
 .form-control.input-width-xl,
 .input-group.input-width-xl,
 .form-control-group.input-width-xl input {
-  width: 270px;
+  width: @input-width-xl;
 }
 
 .form-control.input-width-xxl,
 .input-group.input-width-xxl,
 .form-control-group.input-width-xxl input {
-  width: 530px;
+  width: @input-width-xxl;
 }
 
 .form-control-group {
