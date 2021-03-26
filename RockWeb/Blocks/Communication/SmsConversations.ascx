@@ -93,8 +93,8 @@
                                                 <div class="message outbound" id="divCommunication" runat="server">
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
-                                                    <div class="bubble" id="divCommunicationBody" runat="server">
-                                                        <asp:Literal ID="lSMSMessage" runat="server" /></div>
+                                                    <%-- Keep divCommunicationBody and lSMSMessage on same line for rendering --%>
+                                                    <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
                                                     <div id="divCommicationAttachments" runat="server">
                                                         <asp:Literal ID="lSMSAttachments" runat="server" /></div>
                                                     <div class="message-meta">
@@ -188,7 +188,9 @@
                 <Rock:PersonPicker ID="ppRecipient" runat="server" Label="Recipient" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Please select an SMS recipient." Required="true" OnSelectPerson="ppRecipient_SelectPerson" />
 
                 <%-- multi-line textbox --%>
-                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+                <div class="form-group">
+                    <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+                </div>
 
                 <%-- image uploader --%>
                 <Rock:ImageUploader ID="ImageUploaderModal" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
