@@ -84,7 +84,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [BooleanField( "Create Interactions for Prayers",
         Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         IsRequired = true,
         Key = AttributeKeys.CreateInteractionsForPrayers,
         Order = 6 )]

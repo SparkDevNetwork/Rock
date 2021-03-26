@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Prayer
     [BooleanField( "Public Only", "If selected, all non-public prayer request will be excluded.", false, "", 7 )]
     [BooleanField( "Create Interactions for Prayers",
         Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         IsRequired = true,
         Key = AttributeKey.CreateInteractionsForPrayers,
         Order = 8 )]
