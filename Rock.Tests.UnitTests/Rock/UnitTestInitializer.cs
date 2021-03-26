@@ -45,7 +45,7 @@ namespace Rock.Tests.UnitTests
                 Debug.Print( $"WARNING: The LavaEngineType setting is not specified in the current test configuration. Default value is set to \"{engineType}\"." );
             }
 
-            LavaUnitTestHelper.Initialize( testRockLiquidEngine:false, testDotLiquidEngine:true, testFluidEngine:true );
+            LavaUnitTestHelper.Initialize( testRockLiquidEngine:false, testDotLiquidEngine:true, testFluidEngine:false );
         }
 
         /// <summary>

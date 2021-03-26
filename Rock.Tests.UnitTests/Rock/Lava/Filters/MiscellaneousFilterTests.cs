@@ -25,6 +25,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void RunLava_ForStringTarget_ReturnsLavaTemplateOutput()
         {
+
             var inputTemplate = @"
         {% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
         {{ lava | RunLava }}

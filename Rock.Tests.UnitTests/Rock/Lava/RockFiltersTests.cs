@@ -1583,20 +1583,11 @@ namespace Rock.Tests.Rock.Lava
 
         private static void AssertTemplateResult( string expected, string template )
         {
-            AssertTemplateResult( expected, template, null );
+            LavaEngine.Initialize( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
+            var output = LavaEngine.CurrentEngine.RenderTemplate( template );
+
+            Assert.That.AreEqual( expected, output );
         }
-
-        private static void AssertTemplateResult( string expected, string template, DotLiquid.Hash localVariables )
-        {
-            Assert.That.AreEqual( expected, DotLiquid.Template.Parse( template ).Render( localVariables ) );
-        }
-
-        //private static void AssertTemplateResult( string expected, string template )
-        //{
-        //    var output = LavaEngine.CurrentEngine.RenderTemplate( template );
-
-        //    Assert.That.AreEqual( expected, output );
-        //}
 
         //private static void AssertTemplateResult( string expected, string template, Hash localVariables )
         //{
