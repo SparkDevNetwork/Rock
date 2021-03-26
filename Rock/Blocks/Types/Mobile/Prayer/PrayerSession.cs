@@ -82,6 +82,13 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.Template,
         Order = 5 )]
 
+    [BooleanField( "Create Interactions for Prayers",
+        Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
+        DefaultBooleanValue = false,
+        IsRequired = true,
+        Key = AttributeKeys.CreateInteractionsForPrayers,
+        Order = 6 )]
+
     #endregion
 
     public class PrayerSession : RockMobileBlockType
@@ -122,6 +129,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// The template key.
             /// </summary>
             public const string Template = "Template";
+
+            /// <summary>
+            /// The create interactions for prayers key.
+            /// </summary>
+            public const string CreateInteractionsForPrayers = "CreateInteractionsForPrayers";
         }
 
         /// <summary>
@@ -141,10 +153,10 @@ namespace Rock.Blocks.Types.Mobile.Events
         protected bool ShowFollowButton => GetAttributeValue( AttributeKeys.ShowFollowButton ).AsBoolean();
 
         /// <summary>
-        /// Gets the show inappropriate button visibl state.
+        /// Gets the show inappropriate button visible state.
         /// </summary>
         /// <value>
-        /// The show inappropriate button visibl state.
+        /// The show inappropriate button visible state.
         /// </value>
         protected bool ShowInappropriateButton => GetAttributeValue( AttributeKeys.ShowInappropriateButton ).AsBoolean();
 
@@ -171,6 +183,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// The template.
         /// </value>
         protected string Template => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.Template ) );
+
+        /// <summary>
+        /// Gets a value indicating whether interactions are created for prayers.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if interactions are created for prayers; otherwise, <c>false</c>.
+        /// </value>
+        protected bool CreateInteractionsForPrayers => GetAttributeValue( AttributeKeys.CreateInteractionsForPrayers ).AsBoolean();
 
         #endregion
 
@@ -276,6 +296,11 @@ namespace Rock.Blocks.Types.Mobile.Events
                 var lastRequest = prayerRequestService.Get( sessionContext.RequestIds[sessionContext.Index] );
                 lastRequest.PrayerCount = ( lastRequest.PrayerCount ?? 0 ) + 1;
                 rockContext.SaveChanges();
+
+                if ( CreateInteractionsForPrayers )
+                {
+                    PrayerRequestService.EnqueuePrayerInteraction( lastRequest, RequestContext.CurrentPerson, PageCache.Layout.Site.Name, RequestContext.ClientInformation?.Browser?.String, RequestContext.ClientInformation.IpAddress, null );
+                }
 
                 //
                 // Move to the next prayer request, or else indicate that we have
