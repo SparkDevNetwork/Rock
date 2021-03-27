@@ -84,15 +84,6 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType ComponentEntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the Defined Type that this DefinedValue belongs to.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
-        /// </value>
-        [LavaInclude]
-        public virtual DefinedType DefinedType { get; set; }
-
         #endregion
 
         #region Public Methods
