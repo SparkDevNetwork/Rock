@@ -352,6 +352,21 @@ dl:not(.dl-horizontal) {
   }
 }
 
+.date-parts-picker {
+  display: flex;
+  flex-wrap: wrap;
+
+  .form-control {
+    flex: 1 1 auto;
+    min-width: @input-width-sm;
+    max-width: floor(@input-width-sm * 1.25);
+
+    &:last-of-type {
+      margin-right: 0;
+    }
+  }
+}
+
 .month-year-picker .separator,
 .month-day-picker .separator {
   float: left;

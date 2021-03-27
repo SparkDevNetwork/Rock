@@ -27,18 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Following that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MediaAccount that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FollowingEntity
+    public partial class MediaAccountEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int EntityId { get; set; }
-
-        /// <summary />
-        public int EntityTypeId { get; set; }
+        public int ComponentEntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -46,16 +43,19 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
+        public DateTime? LastRefreshDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
-
-        /// <summary />
-        public string PurposeKey { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -84,19 +84,19 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Following object
+        /// Copies the base properties from a source MediaAccount object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Following source )
+        public void CopyPropertiesFrom( MediaAccount source )
         {
             this.Id = source.Id;
-            this.EntityId = source.EntityId;
-            this.EntityTypeId = source.EntityTypeId;
+            this.ComponentEntityTypeId = source.ComponentEntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsActive = source.IsActive;
+            this.LastRefreshDateTime = source.LastRefreshDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PurposeKey = source.PurposeKey;
+            this.Name = source.Name;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -108,15 +108,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Following that includes all the fields that are available for GETs. Use this for GETs (use FollowingEntity for POST/PUTs)
+    /// Client model for MediaAccount that includes all the fields that are available for GETs. Use this for GETs (use MediaAccountEntity for POST/PUTs)
     /// </summary>
-    public partial class Following : FollowingEntity
+    public partial class MediaAccount : MediaAccountEntity
     {
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public EntityType ComponentEntityType { get; set; }
 
         /// <summary />
-        public PersonAlias PersonAlias { get; set; }
+        public ICollection<MediaFolder> MediaFolders { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

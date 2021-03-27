@@ -27,18 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Following that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MediaElement that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FollowingEntity
+    public partial class MediaElementEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int EntityId { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public string DownloadData { get; set; }
+
+        /// <summary />
+        public decimal? Duration { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -46,16 +49,37 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public string MediaElementData { get; set; }
+
+        /// <summary />
+        public int MediaFolderId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
-        public string PurposeKey { get; set; }
+        public DateTime? SourceCreatedDateTime { get; set; }
+
+        /// <summary />
+        public string SourceData { get; set; }
+
+        /// <summary />
+        public string SourceKey { get; set; }
+
+        /// <summary />
+        public string SourceMetric { get; set; }
+
+        /// <summary />
+        public DateTime? SourceModifiedDateTime { get; set; }
+
+        /// <summary />
+        public string ThumbnailData { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -84,19 +108,27 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Following object
+        /// Copies the base properties from a source MediaElement object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Following source )
+        public void CopyPropertiesFrom( MediaElement source )
         {
             this.Id = source.Id;
-            this.EntityId = source.EntityId;
-            this.EntityTypeId = source.EntityTypeId;
+            this.Description = source.Description;
+            this.DownloadData = source.DownloadData;
+            this.Duration = source.Duration;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.MediaElementData = source.MediaElementData;
+            this.MediaFolderId = source.MediaFolderId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PurposeKey = source.PurposeKey;
+            this.Name = source.Name;
+            this.SourceCreatedDateTime = source.SourceCreatedDateTime;
+            this.SourceData = source.SourceData;
+            this.SourceKey = source.SourceKey;
+            this.SourceMetric = source.SourceMetric;
+            this.SourceModifiedDateTime = source.SourceModifiedDateTime;
+            this.ThumbnailData = source.ThumbnailData;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -108,16 +140,10 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Following that includes all the fields that are available for GETs. Use this for GETs (use FollowingEntity for POST/PUTs)
+    /// Client model for MediaElement that includes all the fields that are available for GETs. Use this for GETs (use MediaElementEntity for POST/PUTs)
     /// </summary>
-    public partial class Following : FollowingEntity
+    public partial class MediaElement : MediaElementEntity
     {
-        /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public PersonAlias PersonAlias { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

@@ -27,18 +27,21 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Following that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for MediaFolder that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class FollowingEntity
+    public partial class MediaFolderEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int EntityId { get; set; }
+        public int? ContentChannelAttributeId { get; set; }
 
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int? ContentChannelId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -46,16 +49,34 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
+        /// <summary />
+        public bool IsContentChannelSyncEnabled { get; set; }
+
+        /// <summary />
+        public bool? IsPublic { get; set; } = true;
+
+        /// <summary />
+        public int MediaAccountId { get; set; }
+
+        /// <summary />
+        public string MetricData { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public int PersonAliasId { get; set; }
+        public string Name { get; set; }
 
         /// <summary />
-        public string PurposeKey { get; set; }
+        public string SourceData { get; set; }
+
+        /// <summary />
+        public string SourceKey { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.ContentChannelItemStatus? Status { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -84,19 +105,26 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Following object
+        /// Copies the base properties from a source MediaFolder object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Following source )
+        public void CopyPropertiesFrom( MediaFolder source )
         {
             this.Id = source.Id;
-            this.EntityId = source.EntityId;
-            this.EntityTypeId = source.EntityTypeId;
+            this.ContentChannelAttributeId = source.ContentChannelAttributeId;
+            this.ContentChannelId = source.ContentChannelId;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsContentChannelSyncEnabled = source.IsContentChannelSyncEnabled;
+            this.IsPublic = source.IsPublic;
+            this.MediaAccountId = source.MediaAccountId;
+            this.MetricData = source.MetricData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.PersonAliasId = source.PersonAliasId;
-            this.PurposeKey = source.PurposeKey;
+            this.Name = source.Name;
+            this.SourceData = source.SourceData;
+            this.SourceKey = source.SourceKey;
+            this.Status = source.Status;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -108,15 +136,18 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Following that includes all the fields that are available for GETs. Use this for GETs (use FollowingEntity for POST/PUTs)
+    /// Client model for MediaFolder that includes all the fields that are available for GETs. Use this for GETs (use MediaFolderEntity for POST/PUTs)
     /// </summary>
-    public partial class Following : FollowingEntity
+    public partial class MediaFolder : MediaFolderEntity
     {
         /// <summary />
-        public EntityType EntityType { get; set; }
+        public ContentChannel ContentChannel { get; set; }
 
         /// <summary />
-        public PersonAlias PersonAlias { get; set; }
+        public Attribute ContentChannelAttribute { get; set; }
+
+        /// <summary />
+        public ICollection<MediaElement> MediaElements { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
