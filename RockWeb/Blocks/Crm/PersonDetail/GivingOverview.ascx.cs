@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Giving Overview" )]
     [Category( "CRM > Person Detail" )]
@@ -166,6 +166,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( qry.Where( a => a.Transaction.TransactionDateTime.Value >= inactiveGiverCutOffDate ).Count() == default( int ) )
                 {
                     pnlInactiveGiver.Visible = true;
+                    pnlGivingStats.AddCssClass( "inactive-giving" );
                     lLastGiver.Text = qry
                         .OrderByDescending( a => a.Transaction.TransactionDateTime.Value )
                         .Select( a => a.Transaction.TransactionDateTime.Value )
@@ -217,7 +218,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var givingBin = Person.GetAttributeValue( givingBinAttribute.Key ).AsInteger();
                 lGivingBin.Text = givingBin.ToString();
             }
-            
+
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             var last12MonthStartDate = RockDateTime.Now.AddMonths( -12 ).StartOfMonth();
@@ -453,7 +454,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion Methods
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected class SummaryRecord
         {
@@ -467,7 +468,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         protected class ContributionSummary
         {
