@@ -68,6 +68,7 @@ export type RegistrationEntryState = {
     Registrar: RegistrarInfo;
     GatewayToken: string;
     DiscountCode: string;
+    NumberToAddToWaitlist: number;
 };
 
 export function getDefaultRegistrantInfo() {
@@ -95,7 +96,7 @@ export function getRegistrantBasicInfo(registrant: RegistrantInfo, registrantFor
     };
 }
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry',
     components: {
         RockButton,
@@ -109,33 +110,35 @@ export default defineComponent({
         ProgressBar,
         Alert
     },
-    setup() {
+    setup()
+    {
         const steps: Record<Step, Step> = {
-            [Step.intro]: Step.intro,
-            [Step.registrationStartForm]: Step.registrationStartForm,
-            [Step.perRegistrantForms]: Step.perRegistrantForms,
-            [Step.registrationEndForm]: Step.registrationEndForm,
-            [Step.reviewAndPayment]: Step.reviewAndPayment,
-            [Step.success]: Step.success
+            [ Step.intro ]: Step.intro,
+            [ Step.registrationStartForm ]: Step.registrationStartForm,
+            [ Step.perRegistrantForms ]: Step.perRegistrantForms,
+            [ Step.registrationEndForm ]: Step.registrationEndForm,
+            [ Step.reviewAndPayment ]: Step.reviewAndPayment,
+            [ Step.success ]: Step.success
         };
 
-        const viewModel = inject('configurationValues') as RegistrationEntryBlockViewModel;
+        const viewModel = inject( 'configurationValues' ) as RegistrationEntryBlockViewModel;
         const hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
         let currentStep = steps.intro;
 
-        if (viewModel.MaxRegistrants === 1 && isNullOrWhitespace(viewModel.InstructionsHtml)) {
+        if ( viewModel.MaxRegistrants === 1 && isNullOrWhitespace( viewModel.InstructionsHtml ) )
+        {
             // There is no need to show the numer of registrants selector or instructions. Start at the second page.
             currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
         }
 
-        const registrationEntryState = reactive({
+        const registrationEntryState = reactive( {
             Steps: steps,
             ViewModel: viewModel,
             FirstStep: currentStep,
             CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: [getDefaultRegistrantInfo()],
+            Registrants: [ getDefaultRegistrantInfo() ],
             RegistrationFieldValues: {},
             Registrar: {
                 NickName: '',
@@ -145,9 +148,9 @@ export default defineComponent({
             },
             GatewayToken: '',
             DiscountCode: ''
-        } as RegistrationEntryState);
+        } as RegistrationEntryState );
 
-        provide('registrationEntryState', registrationEntryState);
+        provide( 'registrationEntryState', registrationEntryState );
 
         return {
             viewModel,
@@ -156,93 +159,116 @@ export default defineComponent({
         };
     },
     computed: {
-        viewModel(): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel
+        {
             return this.registrationEntryState.ViewModel;
         },
-        currentStep(): string {
+        currentStep(): string
+        {
             return this.registrationEntryState.CurrentStep;
         },
-        registrants(): RegistrantInfo[] {
+        registrants(): RegistrantInfo[]
+        {
             return this.registrationEntryState.Registrants;
         },
-        hasPreAttributes(): boolean {
+        hasPreAttributes(): boolean
+        {
             return this.viewModel.RegistrationAttributesStart.length > 0;
         },
-        hasPostAttributes(): boolean {
+        hasPostAttributes(): boolean
+        {
             return this.viewModel.RegistrationAttributesEnd.length > 0;
         },
-        numberOfPages(): number {
+        numberOfPages(): number
+        {
             return 2 + // Intro and summary
-                (this.hasPostAttributes ? 1 : 0) +
-                (this.hasPreAttributes ? 1 : 0) +
-                (this.viewModel.RegistrantForms.length * this.registrants.length);
+                ( this.hasPostAttributes ? 1 : 0 ) +
+                ( this.hasPreAttributes ? 1 : 0 ) +
+                ( this.viewModel.RegistrantForms.length * this.registrants.length );
         },
-        completionPercentDecimal(): number {
-            if (this.currentStep === this.steps.intro) {
+        completionPercentDecimal(): number
+        {
+            if ( this.currentStep === this.steps.intro )
+            {
                 return 0;
             }
 
-            if (this.currentStep === this.steps.registrationStartForm) {
+            if ( this.currentStep === this.steps.registrationStartForm )
+            {
                 return 1 / this.numberOfPages;
             }
 
-            if (this.currentStep === this.steps.perRegistrantForms) {
+            if ( this.currentStep === this.steps.perRegistrantForms )
+            {
                 const firstRegistrantPage = this.viewModel.RegistrationAttributesStart.length === 0 ? 1 : 2;
                 const finishedRegistrantForms = this.registrationEntryState.CurrentRegistrantIndex * this.viewModel.RegistrantForms.length;
-                return (firstRegistrantPage + this.registrationEntryState.CurrentRegistrantFormIndex + finishedRegistrantForms) / this.numberOfPages;
+                return ( firstRegistrantPage + this.registrationEntryState.CurrentRegistrantFormIndex + finishedRegistrantForms ) / this.numberOfPages;
             }
 
-            if (this.currentStep === this.steps.registrationEndForm) {
-                return (this.numberOfPages - 2) / this.numberOfPages;
+            if ( this.currentStep === this.steps.registrationEndForm )
+            {
+                return ( this.numberOfPages - 2 ) / this.numberOfPages;
             }
 
-            if (this.currentStep === this.steps.reviewAndPayment) {
-                return (this.numberOfPages - 1) / this.numberOfPages;
+            if ( this.currentStep === this.steps.reviewAndPayment )
+            {
+                return ( this.numberOfPages - 1 ) / this.numberOfPages;
             }
 
-            if (this.currentStep === this.steps.success) {
+            if ( this.currentStep === this.steps.success )
+            {
                 return 1;
             }
 
             return 0;
         },
-        completionPercentInt(): number {
+        completionPercentInt(): number
+        {
             return this.completionPercentDecimal * 100;
         },
-        uppercaseRegistrantTerm(): string {
-            return StringFilter.toTitleCase(this.viewModel.RegistrantTerm);
+        uppercaseRegistrantTerm(): string
+        {
+            return StringFilter.toTitleCase( this.viewModel.RegistrantTerm );
         },
-        currentRegistrantTitle(): string {
-            const ordinal = NumberFilter.toOrdinal(this.registrationEntryState.CurrentRegistrantIndex + 1);
+        currentRegistrantTitle(): string
+        {
+            const ordinal = NumberFilter.toOrdinal( this.registrationEntryState.CurrentRegistrantIndex + 1 );
             let title = StringFilter.toTitleCase(
                 this.registrants.length <= 1 ?
                     this.uppercaseRegistrantTerm :
-                    ordinal + ' ' + this.uppercaseRegistrantTerm);
+                    ordinal + ' ' + this.uppercaseRegistrantTerm );
 
-            if (this.registrationEntryState.CurrentRegistrantFormIndex > 0) {
+            if ( this.registrationEntryState.CurrentRegistrantFormIndex > 0 )
+            {
                 title += ' (cont)';
             }
 
             return title;
         },
-        stepTitle(): string {
-            if (this.currentStep === this.steps.registrationStartForm) {
+        stepTitle(): string
+        {
+            if ( this.currentStep === this.steps.registrationStartForm )
+            {
                 return this.viewModel.RegistrationAttributeTitleStart;
             }
 
-            if (this.currentStep === this.steps.perRegistrantForms) {
+            if ( this.currentStep === this.steps.perRegistrantForms )
+            {
                 return this.currentRegistrantTitle;
             }
 
-            if (this.currentStep === this.steps.registrationStartForm) {
+            if ( this.currentStep === this.steps.registrationStartForm )
+            {
                 return this.viewModel.RegistrationAttributeTitleEnd;
             }
 
-            if (this.currentStep === this.steps.reviewAndPayment) {
+            if ( this.currentStep === this.steps.reviewAndPayment )
+            {
                 return 'Review Registration';
             }
 
-            if (this.currentStep === this.steps.success) {
+            if ( this.currentStep === this.steps.success )
+            {
                 return 'Congratulations';
             }
 
@@ -250,39 +276,48 @@ export default defineComponent({
         }
     },
     methods: {
-        onIntroNext() {
+        onIntroNext()
+        {
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrationStartPrevious() {
+        onRegistrationStartPrevious()
+        {
             this.registrationEntryState.CurrentStep = this.steps.intro;
             Page.smoothScrollToTop();
         },
-        onRegistrationStartNext() {
+        onRegistrationStartNext()
+        {
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrantPrevious() {
+        onRegistrantPrevious()
+        {
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
             Page.smoothScrollToTop();
         },
-        onRegistrantNext() {
+        onRegistrantNext()
+        {
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
-        onRegistrationEndPrevious() {
+        onRegistrationEndPrevious()
+        {
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrationEndNext() {
+        onRegistrationEndNext()
+        {
             this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
-        onSummaryPrevious() {
+        onSummaryPrevious()
+        {
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onSummaryNext() {
+        onSummaryNext()
+        {
             this.registrationEntryState.CurrentStep = this.steps.success;
             Page.smoothScrollToTop();
         }
@@ -302,4 +337,4 @@ export default defineComponent({
     <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
     <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
 </div>`
-});
+} );

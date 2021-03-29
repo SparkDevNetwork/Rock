@@ -14,20 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/RockButton", "../RegistrationEntry"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDown", "../../../Elements/RockButton", "../../../Services/String", "../RegistrationEntry"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, NumberUpDown_1, RockButton_1, RegistrationEntry_1;
+    var vue_1, Alert_1, NumberUpDown_1, RockButton_1, String_1, RegistrationEntry_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
+            },
             function (NumberUpDown_1_1) {
                 NumberUpDown_1 = NumberUpDown_1_1;
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
+            },
+            function (String_1_1) {
+                String_1 = String_1_1;
             },
             function (RegistrationEntry_1_1) {
                 RegistrationEntry_1 = RegistrationEntry_1_1;
@@ -38,31 +44,91 @@ System.register(["vue", "../../../Elements/NumberUpDown", "../../../Elements/Roc
                 name: 'Event.RegistrationEntry.Intro',
                 components: {
                     NumberUpDown: NumberUpDown_1.default,
-                    RockButton: RockButton_1.default
+                    RockButton: RockButton_1.default,
+                    Alert: Alert_1.default
                 },
-                setup: function () {
+                data: function () {
                     var registrationEntryState = vue_1.inject('registrationEntryState');
                     return {
+                        /** The number of registrants that this registrar is going to input */
                         numberOfRegistrants: registrationEntryState.Registrants.length || 1,
-                        registrationEntryState: registrationEntryState
+                        /** The shared state among all the components that make up this block */
+                        registrationEntryState: registrationEntryState,
+                        /** Should the remaining capacity warning be shown? */
+                        showRemainingCapacity: false
                     };
                 },
                 computed: {
+                    /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
+                    },
+                    /** The number of these registrants that will be placed on a waitlist because of capacity rules */
+                    numberToAddToWaitlist: function () {
+                        if (this.viewModel.SpotsRemaining === null || !this.viewModel.WaitListEnabled) {
+                            // There is no waitlist or no cap on number of attendees
+                            return 0;
+                        }
+                        if (this.viewModel.SpotsRemaining >= this.numberOfRegistrants) {
+                            // There is enough capacity left for all of these registrants
+                            return 0;
+                        }
+                        // Some or all need to go on the waitlist
+                        return this.numberOfRegistrants - this.viewModel.SpotsRemaining;
+                    },
+                    /** The capacity left phrase: Ex: 1 more camper */
+                    remainingCapacityPhrase: function () {
+                        if (this.viewModel.SpotsRemaining === null) {
+                            return '';
+                        }
+                        return String_1.pluralPhrase(this.viewModel.SpotsRemaining, "more " + this.registrantTerm, "more " + this.registrantTermPlural);
+                    },
+                    /** Is this instance full and no one else can register? */
+                    isFull: function () {
+                        return this.viewModel.SpotsRemaining === 0;
+                    },
+                    registrantTerm: function () {
+                        this.viewModel.InstanceName;
+                        return (this.viewModel.RegistrantTerm || 'registrant').toLowerCase();
+                    },
+                    registrantTermPlural: function () {
+                        return (this.viewModel.PluralRegistrantTerm || 'registrants').toLowerCase();
+                    },
+                    registrationTerm: function () {
+                        return (this.viewModel.RegistrationTerm || 'registration').toLowerCase();
+                    },
+                    registrationTermPlural: function () {
+                        return (this.viewModel.PluralRegistrationTerm || 'registrations').toLowerCase();
+                    },
+                    registrationTermTitleCase: function () {
+                        return String_1.toTitleCase(this.registrationTerm);
                     }
                 },
                 methods: {
+                    pluralPhrase: String_1.pluralPhrase,
                     onNext: function () {
                         // Resize the registrant array to match the selected number
                         while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
                             this.registrationEntryState.Registrants.push(RegistrationEntry_1.getDefaultRegistrantInfo());
                         }
+                        this.registrationEntryState.NumberToAddToWaitlist = this.numberToAddToWaitlist;
                         this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
                         this.$emit('next');
                     },
                 },
-                template: "\n<div class=\"registrationentry-intro\">\n    <div class=\"text-left\" v-html=\"viewModel.InstructionsHtml\">\n    </div>\n    <div v-if=\"viewModel.MaxRegistrants > 1\" class=\"registrationentry-intro\">\n        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>\n        <NumberUpDown v-model=\"numberOfRegistrants\" class=\"margin-t-sm\" numberIncrementClasses=\"input-lg\" :max=\"viewModel.MaxRegistrants\" />\n    </div>\n    <div class=\"actions text-right\">\n        <RockButton btnType=\"primary\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
+                watch: {
+                    numberOfRegistrants: function () {
+                        var _this = this;
+                        if (!this.viewModel.WaitListEnabled && this.viewModel.SpotsRemaining !== null && this.viewModel.SpotsRemaining < this.numberOfRegistrants) {
+                            this.showRemainingCapacity = true;
+                            var spotsRemaining_1 = this.viewModel.SpotsRemaining;
+                            // Do this on the next tick to allow the events to finish. Otherwise the component tree doesn't have time
+                            // to respond to this, since the watch was triggered by the numberOfRegistrants change
+                            this.$nextTick(function () { return _this.numberOfRegistrants = spotsRemaining_1; });
+                        }
+                    }
+                },
+                template: "\n<div class=\"registrationentry-intro\">\n    <Alert v-if=\"numberToAddToWaitlist\" class=\"text-left\" alertType=\"warning\">\n        <strong>{{registrationTermTitleCase}} Full</strong>\n        <p>\n            This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.\n            The first {{pluralPhrase(viewModel.SpotsRemaining, registrantTerm, registrantTermPlural)}} you add will be registered for {{viewModel.InstanceName}}.\n            The remaining {{pluralPhrase(numberToAddToWaitlist, registrantTerm, registrantTermPlural)}} will be added to the waitlist. \n        </p>\n    </Alert>\n    <Alert v-if=\"isFull\" class=\"text-left\" alertType=\"warning\">\n        <strong>{{registrationTermTitleCase}} Full</strong>\n        <p>\n            There are not any more {{registrationTermPlural}} available for {{viewModel.InstanceName}}. \n        </p>\n    </Alert>\n    <Alert v-if=\"showRemainingCapacity\" class=\"text-left\" alertType=\"warning\">\n        <strong>{{registrationTermTitleCase}} Full</strong>\n        <p>\n            This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.\n        </p>\n    </Alert>\n    <div class=\"text-left\" v-html=\"viewModel.InstructionsHtml\">\n    </div>\n    <div v-if=\"viewModel.MaxRegistrants > 1\" class=\"registrationentry-intro\">\n        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>\n        <NumberUpDown v-model=\"numberOfRegistrants\" class=\"margin-t-sm\" numberIncrementClasses=\"input-lg\" :max=\"viewModel.MaxRegistrants\" />\n    </div>\n    <div class=\"actions text-right\">\n        <RockButton btnType=\"primary\" @click=\"onNext\">\n            Next\n        </RockButton>\n    </div>\n</div>"
             }));
         }
     };

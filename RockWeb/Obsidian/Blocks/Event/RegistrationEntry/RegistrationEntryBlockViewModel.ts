@@ -19,7 +19,8 @@ import { GatewayControlModel } from '../../../Controls/GatewayControl';
 import { Guid } from '../../../Util/Guid';
 import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
 
-export enum RegistrationPersonFieldType {
+export enum RegistrationPersonFieldType
+{
     FirstName = 0,
     LastName = 1,
     Campus = 2,
@@ -37,14 +38,16 @@ export enum RegistrationPersonFieldType {
     AnniversaryDate = 14
 }
 
-export enum RegistrationFieldSource {
+export enum RegistrationFieldSource
+{
     PersonField = 0,
     PersonAttribute = 1,
     GroupMemberAttribute = 2,
     RegistrantAttribute = 4
 }
 
-export enum FilterExpressionType {
+export enum FilterExpressionType
+{
     Filter = 0,
     GroupAll = 1,
     GroupAny = 2,
@@ -52,7 +55,8 @@ export enum FilterExpressionType {
     GroupAnyFalse = 4
 }
 
-export enum ComparisonType {
+export enum ComparisonType
+{
     EqualTo = 0x1,
     NotEqualTo = 0x2,
     StartsWith = 0x4,
@@ -69,14 +73,16 @@ export enum ComparisonType {
     RegularExpression = 0x2000
 }
 
-export enum RegistrarOption {
+export enum RegistrarOption
+{
     PromptForRegistrar = 0,
     PrefillFirstRegistrant = 1,
     UseFirstRegistrant = 2,
     UseLoggedInPerson = 3
 }
 
-export interface RegistrationEntryBlockViewModel {
+export interface RegistrationEntryBlockViewModel
+{
     DoAskForFamily: boolean;
     MaxRegistrants: number;
     RegistrationAttributeTitleStart: string;
@@ -84,27 +90,33 @@ export interface RegistrationEntryBlockViewModel {
     InstructionsHtml: string;
     RegistrantTerm: string;
     RegistrationTerm: string;
+    PluralRegistrationTerm: string;
     PluralRegistrantTerm: string;
     PluralFeeTerm: string;
     RegistrantForms: RegistrationEntryBlockFormViewModel[];
-    Fees: RegistrationEntryBlockFeeViewModel[]
-    FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[]
-    RegistrationAttributesStart: Attribute[]
-    RegistrationAttributesEnd: Attribute[]
-    ForceEmailUpdate: boolean
-    RegistrarOption: RegistrarOption
-    Cost: number
-    GatewayControl: GatewayControlModel
+    Fees: RegistrationEntryBlockFeeViewModel[];
+    FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
+    RegistrationAttributesStart: Attribute[];
+    RegistrationAttributesEnd: Attribute[];
+    ForceEmailUpdate: boolean;
+    RegistrarOption: RegistrarOption;
+    Cost: number;
+    GatewayControl: GatewayControlModel,
+    SpotsRemaining: number | null,
+    WaitListEnabled: boolean,
+    InstanceName: string
 }
 
-export interface RegistrationEntryBlockFamilyMemberViewModel {
+export interface RegistrationEntryBlockFamilyMemberViewModel
+{
     Guid: Guid;
     FamilyGuid: Guid;
     FullName: string;
     FieldValues: Record<Guid, unknown>;
 }
 
-export interface RegistrationEntryBlockFeeViewModel {
+export interface RegistrationEntryBlockFeeViewModel
+{
     Name: string;
     Guid: Guid;
     AllowMultiple: boolean;
@@ -112,18 +124,21 @@ export interface RegistrationEntryBlockFeeViewModel {
     Items: RegistrationEntryBlockFeeItemViewModel[];
 }
 
-export interface RegistrationEntryBlockFeeItemViewModel {
+export interface RegistrationEntryBlockFeeItemViewModel
+{
     Name: string;
     Guid: Guid;
     Cost: number;
     CountRemaining: number | null;
 }
 
-export interface RegistrationEntryBlockFormViewModel {
+export interface RegistrationEntryBlockFormViewModel
+{
     Fields: RegistrationEntryBlockFormFieldViewModel[];
 }
 
-export interface RegistrationEntryBlockFormFieldViewModel {
+export interface RegistrationEntryBlockFormFieldViewModel
+{
     FieldSource: RegistrationFieldSource;
     PersonFieldType: RegistrationPersonFieldType;
     IsRequired: boolean;
@@ -135,7 +150,8 @@ export interface RegistrationEntryBlockFormFieldViewModel {
     Guid: Guid;
 }
 
-export interface RegistrationEntryBlockFormFieldRuleViewModel {
+export interface RegistrationEntryBlockFormFieldRuleViewModel
+{
     ComparedToRegistrationTemplateFormFieldGuid: Guid;
     ComparisonType: ComparisonType;
     ComparedToValue: string;

@@ -31,7 +31,7 @@ import RockForm from '../../../Controls/RockForm';
 import FeeField from './FeeField';
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../../Elements/ItemsWithPreAndPostHtml';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.Registrant',
     components: {
         RadioButtonList,
@@ -50,14 +50,16 @@ export default defineComponent({
             required: true
         }
     },
-    setup() {
-        const registrationEntryState = inject('registrationEntryState') as RegistrationEntryState;
+    setup()
+    {
+        const registrationEntryState = inject( 'registrationEntryState' ) as RegistrationEntryState;
 
         return {
             registrationEntryState
         };
     },
-    data() {
+    data()
+    {
         return {
             fieldSources: {
                 PersonField: RegistrationFieldSource.PersonField,
@@ -68,108 +70,131 @@ export default defineComponent({
         };
     },
     computed: {
-        showPrevious(): boolean {
+        showPrevious(): boolean
+        {
             return this.registrationEntryState.FirstStep !== this.registrationEntryState.Steps.perRegistrantForms;
         },
-        viewModel(): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel
+        {
             return this.registrationEntryState.ViewModel;
         },
-        currentFormIndex(): number {
+        currentFormIndex(): number
+        {
             return this.registrationEntryState.CurrentRegistrantFormIndex;
         },
-        currentForm(): RegistrationEntryBlockFormViewModel | null {
-            return this.viewModel.RegistrantForms[this.currentFormIndex] || null;
+        currentForm(): RegistrationEntryBlockFormViewModel | null
+        {
+            return this.viewModel.RegistrantForms[ this.currentFormIndex ] || null;
         },
-        isLastForm(): boolean {
-            return (this.currentFormIndex + 1) === this.viewModel.RegistrantForms.length;
+        isLastForm(): boolean
+        {
+            return ( this.currentFormIndex + 1 ) === this.viewModel.RegistrantForms.length;
         },
-        currentFormFields(): RegistrationEntryBlockFormFieldViewModel[] {
+        currentFormFields(): RegistrationEntryBlockFormFieldViewModel[]
+        {
             return this.currentForm?.Fields || [];
         },
-        prePostHtmlItems(): ItemWithPreAndPostHtml[] {
-            return this.currentFormFields.map(f => ({
+        prePostHtmlItems(): ItemWithPreAndPostHtml[]
+        {
+            return this.currentFormFields.map( f => ( {
                 PreHtml: f.PreHtml,
                 PostHtml: f.PostHtml,
                 SlotName: f.Guid
-            }));
+            } ) );
         },
-        formCountPerRegistrant(): number {
+        formCountPerRegistrant(): number
+        {
             return this.viewModel.RegistrantForms.length;
         },
-        currentPerson(): Person | null {
+        currentPerson(): Person | null
+        {
             return this.$store.state.currentPerson;
         },
-        pluralFeeTerm(): string {
-            return StringFilter.toTitleCase(this.viewModel.PluralFeeTerm || 'fees');
+        pluralFeeTerm(): string
+        {
+            return StringFilter.toTitleCase( this.viewModel.PluralFeeTerm || 'fees' );
         },
-        familyOptions(): DropDownListOption[] {
+        familyOptions(): DropDownListOption[]
+        {
             const options = [] as DropDownListOption[];
 
-            if (!this.viewModel.DoAskForFamily) {
+            if ( !this.viewModel.DoAskForFamily )
+            {
                 return options;
             }
 
-            if (this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName) {
-                options.push({
+            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName )
+            {
+                options.push( {
                     key: this.currentPerson.PrimaryFamilyGuid,
                     text: this.currentPerson.FullName,
                     value: this.currentPerson.PrimaryFamilyGuid
-                });
+                } );
             }
 
-            options.push({
+            options.push( {
                 key: 'none',
                 text: 'None of the above',
                 value: ''
-            });
+            } );
 
             return options;
         },
-        familyMemberOptions(): DropDownListOption[] {
+        familyMemberOptions(): DropDownListOption[]
+        {
             const selectedFamily = this.currentRegistrant.FamilyGuid;
 
-            if (!selectedFamily) {
+            if ( !selectedFamily )
+            {
                 return [];
             }
 
             return this.viewModel.FamilyMembers
-                .filter(fm => areEqual(fm.FamilyGuid, selectedFamily))
-                .map(fm => ({
+                .filter( fm => areEqual( fm.FamilyGuid, selectedFamily ) )
+                .map( fm => ( {
                     key: fm.Guid,
                     text: fm.FullName,
                     value: fm.Guid
-                }));
+                } ) );
         },
-        uppercaseRegistrantTerm(): string {
-            return StringFilter.toTitleCase(this.viewModel.RegistrantTerm);
+        uppercaseRegistrantTerm(): string
+        {
+            return StringFilter.toTitleCase( this.viewModel.RegistrantTerm );
         },
-        firstName(): string {
-            return getRegistrantBasicInfo(this.currentRegistrant, this.viewModel.RegistrantForms).FirstName;
+        firstName(): string
+        {
+            return getRegistrantBasicInfo( this.currentRegistrant, this.viewModel.RegistrantForms ).FirstName;
         },
-        familyMember(): RegistrationEntryBlockFamilyMemberViewModel | null {
+        familyMember(): RegistrationEntryBlockFamilyMemberViewModel | null
+        {
             const personGuid = this.currentRegistrant.PersonGuid;
 
-            if (!personGuid) {
+            if ( !personGuid )
+            {
                 return null;
             }
 
-            return this.viewModel.FamilyMembers.find(fm => areEqual(fm.Guid, personGuid)) || null;
+            return this.viewModel.FamilyMembers.find( fm => areEqual( fm.Guid, personGuid ) ) || null;
         }
     },
     methods: {
-        onPrevious() {
-            if (this.currentFormIndex <= 0) {
-                this.$emit('previous');
+        onPrevious()
+        {
+            if ( this.currentFormIndex <= 0 )
+            {
+                this.$emit( 'previous' );
                 return;
             }
 
             this.registrationEntryState.CurrentRegistrantFormIndex--;
         },
-        onNext() {
+        onNext()
+        {
             const lastFormIndex = this.formCountPerRegistrant - 1;
 
-            if (this.currentFormIndex >= lastFormIndex) {
-                this.$emit('next');
+            if ( this.currentFormIndex >= lastFormIndex )
+            {
+                this.$emit( 'next' );
                 return;
             }
 
@@ -177,34 +202,46 @@ export default defineComponent({
         }
     },
     watch: {
-        'currentRegistrant.FamilyGuid'() {
+        'currentRegistrant.FamilyGuid'()
+        {
             // Clear the person guid if the family changes
             this.currentRegistrant.PersonGuid = '';
         },
-        familyMember() {
-            if (!this.familyMember) {
+        familyMember()
+        {
+            if ( !this.familyMember )
+            {
                 // If the family member selection is cleared then clear all form fields
-                for (const form of this.viewModel.RegistrantForms) {
-                    for (const field of form.Fields) {
-                        delete this.currentRegistrant.FieldValues[field.Guid];
+                for ( const form of this.viewModel.RegistrantForms )
+                {
+                    for ( const field of form.Fields )
+                    {
+                        delete this.currentRegistrant.FieldValues[ field.Guid ];
                     }
                 }
             }
-            else {
+            else
+            {
                 // If the family member selection is made then set all form fields where use existing value is enabled
-                for (const form of this.viewModel.RegistrantForms) {
-                    for (const field of form.Fields) {
-                        if (field.Guid in this.familyMember.FieldValues) {
-                            const familyMemberValue = this.familyMember.FieldValues[field.Guid];
+                for ( const form of this.viewModel.RegistrantForms )
+                {
+                    for ( const field of form.Fields )
+                    {
+                        if ( field.Guid in this.familyMember.FieldValues )
+                        {
+                            const familyMemberValue = this.familyMember.FieldValues[ field.Guid ];
 
-                            if (!familyMemberValue) {
-                                delete this.currentRegistrant.FieldValues[field.Guid];
+                            if ( !familyMemberValue )
+                            {
+                                delete this.currentRegistrant.FieldValues[ field.Guid ];
                             }
-                            else if (typeof familyMemberValue === 'object') {
-                                this.currentRegistrant.FieldValues[field.Guid] = { ...familyMemberValue };
+                            else if ( typeof familyMemberValue === 'object' )
+                            {
+                                this.currentRegistrant.FieldValues[ field.Guid ] = { ...familyMemberValue };
                             }
-                            else {
-                                this.currentRegistrant.FieldValues[field.Guid] = familyMemberValue;
+                            else
+                            {
+                                this.currentRegistrant.FieldValues[ field.Guid ] = familyMemberValue;
                             }
                         }
                     }
@@ -250,6 +287,5 @@ export default defineComponent({
             </div>
         </div>
     </RockForm>
-</div>
-`
-});
+</div>`
+} );

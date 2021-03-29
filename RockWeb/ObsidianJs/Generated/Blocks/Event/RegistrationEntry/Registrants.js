@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "./Registrant"], function (exports_1, context_1) {
+System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, Registrant_1;
+    var vue_1, Registrant_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,13 +25,17 @@ System.register(["vue", "./Registrant"], function (exports_1, context_1) {
             },
             function (Registrant_1_1) {
                 Registrant_1 = Registrant_1_1;
+            },
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             }
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry.Registrants',
                 components: {
-                    Registrant: Registrant_1.default
+                    Registrant: Registrant_1.default,
+                    Alert: Alert_1.default
                 },
                 setup: function () {
                     return {
@@ -59,6 +63,20 @@ System.register(["vue", "./Registrant"], function (exports_1, context_1) {
                     }
                 },
                 computed: {
+                    /** Will some of the registrants have to be added to a waitlist */
+                    hasWaitlist: function () {
+                        return this.registrationEntryState.NumberToAddToWaitlist > 0;
+                    },
+                    /** Will this registrant be added to the waitlist? */
+                    isOnWaitlist: function () {
+                        var lastIndex = this.registrationEntryState.Registrants.length - 1;
+                        var registrantsAfterThis = lastIndex - this.registrationEntryState.CurrentRegistrantIndex;
+                        return registrantsAfterThis < this.registrationEntryState.NumberToAddToWaitlist;
+                    },
+                    /** What are the registrants called? */
+                    registrantTerm: function () {
+                        return (this.registrationEntryState.ViewModel.RegistrantTerm || 'registrant').toLowerCase();
+                    },
                     registrants: function () {
                         return this.registrationEntryState.Registrants;
                     },
@@ -66,7 +84,7 @@ System.register(["vue", "./Registrant"], function (exports_1, context_1) {
                         return this.registrationEntryState.CurrentRegistrantIndex;
                     }
                 },
-                template: "\n<div class=\"registrationentry-registrant\">\n    <template v-for=\"(r, i) in registrants\" :key=\"r.Guid\">\n        <Registrant v-show=\"currentRegistrantIndex === i\" :currentRegistrant=\"r\" @next=\"onNext\" @previous=\"onPrevious\" />\n    </template>\n</div>"
+                template: "\n<div class=\"registrationentry-registrant\">\n    <Alert v-if=\"hasWaitlist && !isOnWaitlist\" alertType=\"success\">\n        This {{registrantTerm}} will be fully registered.\n    </Alert>\n    <Alert v-else-if=\"isOnWaitlist\" alertType=\"warning\">\n        This {{registrantTerm}} will be on the waiting list.\n    </Alert>\n    <template v-for=\"(r, i) in registrants\" :key=\"r.Guid\">\n        <Registrant v-show=\"currentRegistrantIndex === i\" :currentRegistrant=\"r\" @next=\"onNext\" @previous=\"onPrevious\" />\n    </template>\n</div>"
             }));
         }
     };

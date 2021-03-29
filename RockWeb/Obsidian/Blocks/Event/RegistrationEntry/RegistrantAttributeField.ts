@@ -22,7 +22,7 @@ import { Guid } from '../../../Util/Guid';
 import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
 import { ComparisonType, FilterExpressionType, RegistrationEntryBlockFormFieldRuleViewModel, RegistrationEntryBlockFormFieldViewModel } from './RegistrationEntryBlockViewModel';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.RegistrantAttributeField',
     components: {
         Alert,
@@ -38,61 +38,71 @@ export default defineComponent({
             required: true
         }
     },
-    data() {
+    data()
+    {
         return {
             fieldControlComponent: null as unknown,
             fieldControlComponentProps: {}
         };
     },
     methods: {
-        isRuleMet(rule: RegistrationEntryBlockFormFieldRuleViewModel) {
-            const value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid] || '';
+        isRuleMet( rule: RegistrationEntryBlockFormFieldRuleViewModel )
+        {
+            const value = this.fieldValues[ rule.ComparedToRegistrationTemplateFormFieldGuid ] || '';
 
-            if (typeof value !== 'string') {
+            if ( typeof value !== 'string' )
+            {
                 return false;
             }
 
             const strVal = value.toLowerCase().trim();
             const comparison = rule.ComparedToValue.toLowerCase().trim();
 
-            if (!strVal) {
+            if ( !strVal )
+            {
                 return false;
             }
 
-            switch (rule.ComparisonType) {
+            switch ( rule.ComparisonType )
+            {
                 case ComparisonType.EqualTo:
                     return strVal === comparison;
                 case ComparisonType.NotEqualTo:
                     return strVal !== comparison;
                 case ComparisonType.Contains:
-                    return strVal.includes(comparison);
+                    return strVal.includes( comparison );
                 case ComparisonType.DoesNotContain:
-                    return !strVal.includes(comparison);
+                    return !strVal.includes( comparison );
             }
 
             return false;
         }
     },
     computed: {
-        isVisible(): boolean {
-            switch (this.field.VisibilityRuleType) {
+        isVisible(): boolean
+        {
+            switch ( this.field.VisibilityRuleType )
+            {
                 case FilterExpressionType.GroupAll:
-                    return this.field.VisibilityRules.every(vr => this.isRuleMet(vr));
+                    return this.field.VisibilityRules.every( vr => this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAllFalse:
-                    return this.field.VisibilityRules.every(vr => !this.isRuleMet(vr));
+                    return this.field.VisibilityRules.every( vr => !this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAny:
-                    return this.field.VisibilityRules.some(vr => this.isRuleMet(vr));
+                    return this.field.VisibilityRules.some( vr => this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAnyFalse:
-                    return this.field.VisibilityRules.some(vr => !this.isRuleMet(vr));
+                    return this.field.VisibilityRules.some( vr => !this.isRuleMet( vr ) );
             }
 
             return true;
         },
-        attribute(): Attribute | null {
+        attribute(): Attribute | null
+        {
             return this.field.Attribute || null;
         },
-        fieldProps(): Record<string, unknown> {
-            if (!this.attribute) {
+        fieldProps(): Record<string, unknown>
+        {
+            if ( !this.attribute )
+            {
                 return {};
             }
 
@@ -109,9 +119,11 @@ export default defineComponent({
     watch: {
         field: {
             immediate: true,
-            handler() {
-                if (!(this.field.Guid in this.fieldValues)) {
-                    this.fieldValues[this.field.Guid] = '';
+            handler()
+            {
+                if ( !( this.field.Guid in this.fieldValues ) )
+                {
+                    this.fieldValues[ this.field.Guid ] = '';
                 }
             }
         }
@@ -121,4 +133,4 @@ export default defineComponent({
     <RockField v-if="attribute" v-bind="fieldProps" v-model="this.fieldValues[this.field.Guid]" />
     <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
 </template>`
-});
+} );

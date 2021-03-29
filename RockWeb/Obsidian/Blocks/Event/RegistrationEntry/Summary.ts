@@ -45,7 +45,7 @@ type LineItem = {
     DiscountedAmountFormatted: string;
 };
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.Summary',
     components: {
         RockButton,
@@ -57,13 +57,15 @@ export default defineComponent({
         GatewayControl,
         RockValidation
     },
-    setup() {
+    setup()
+    {
         return {
-            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc,
-            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
+            invokeBlockAction: inject( 'invokeBlockAction' ) as InvokeBlockActionFunc,
+            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
     },
-    data() {
+    data()
+    {
         return {
             /** Is there an AJAX call in-flight? */
             loading: false,
@@ -95,102 +97,121 @@ export default defineComponent({
     },
     computed: {
         /** The settings for the gateway (MyWell, etc) control */
-        gatewayControlModel(): GatewayControlModel {
+        gatewayControlModel(): GatewayControlModel
+        {
             return this.viewModel.GatewayControl;
         },
 
         /** The person that is currently authenticated */
-        currentPerson(): Person | null {
+        currentPerson(): Person | null
+        {
             return this.$store.state.currentPerson;
         },
 
         /** The person entering the registration information. This object is part of the registration state. */
-        registrar(): RegistrarInfo {
+        registrar(): RegistrarInfo
+        {
             return this.registrationEntryState.Registrar;
         },
 
         /** The first registrant entered into the registration. */
-        firstRegistrant(): RegistrantInfo {
-            return this.registrationEntryState.Registrants[0];
+        firstRegistrant(): RegistrantInfo
+        {
+            return this.registrationEntryState.Registrants[ 0 ];
         },
 
         /** This is the data sent from the C# code behind when the block initialized. */
-        viewModel(): RegistrationEntryBlockViewModel {
+        viewModel(): RegistrationEntryBlockViewModel
+        {
             return this.registrationEntryState.ViewModel;
         },
 
         /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
-        doShowUpdateEmailOption(): boolean {
+        doShowUpdateEmailOption(): boolean
+        {
             return !this.viewModel.ForceEmailUpdate && !!this.currentPerson?.Email;
         },
 
         /** Should the discount column in the fee table be shown? */
-        showDiscountCol(): boolean {
+        showDiscountCol(): boolean
+        {
             return this.discountPercent > 0 || this.discountAmount > 0;
         },
 
         /** The fee line items that will be displayed in the summary */
-        lineItems(): LineItem[] {
+        lineItems(): LineItem[]
+        {
             const total = this.viewModel.Cost;
             let discountTotal = total;
 
-            if (this.discountAmount) {
+            if ( this.discountAmount )
+            {
                 discountTotal = total - this.discountAmount;
             }
-            else if (this.discountPercent) {
-                discountTotal = total - (total * this.discountPercent);
+            else if ( this.discountPercent )
+            {
+                discountTotal = total - ( total * this.discountPercent );
             }
 
-            return this.registrationEntryState.Registrants.map(r => {
-                const info = getRegistrantBasicInfo(r, this.viewModel.RegistrantForms);
+            return this.registrationEntryState.Registrants.map( r =>
+            {
+                const info = getRegistrantBasicInfo( r, this.viewModel.RegistrantForms );
 
                 return {
                     Key: r.Guid,
                     Description: `${info.FirstName} ${info.LastName}`,
-                    AmountFormatted: asFormattedString(total),
-                    DiscountedAmountFormatted: asFormattedString(discountTotal)
+                    AmountFormatted: asFormattedString( total ),
+                    DiscountedAmountFormatted: asFormattedString( discountTotal )
                 };
-            });
+            } );
         },
 
         /** The total amount of the registration before discounts */
-        total(): number {
+        total(): number
+        {
             return this.registrationEntryState.Registrants.length * this.viewModel.Cost;
         },
 
         /** The total amount of the registration after discounts */
-        discountedTotal(): number {
+        discountedTotal(): number
+        {
             const total = this.viewModel.Cost;
             let discountTotal = total;
 
-            if (this.discountAmount) {
+            if ( this.discountAmount )
+            {
                 discountTotal = total - this.discountAmount;
             }
-            else if (this.discountPercent) {
-                discountTotal = total - (total * this.discountPercent);
+            else if ( this.discountPercent )
+            {
+                discountTotal = total - ( total * this.discountPercent );
             }
 
             return this.registrationEntryState.Registrants.length * discountTotal;
         },
 
         /** The total before discounts as a formatted string */
-        totalFormatted(): string {
-            return `$${asFormattedString(this.total)}`;
+        totalFormatted(): string
+        {
+            return `$${asFormattedString( this.total )}`;
         },
 
         /** The total after discounts as a formatted string */
-        discountedTotalFormatted(): string {
-            return `$${asFormattedString(this.discountedTotal)}`;
+        discountedTotalFormatted(): string
+        {
+            return `$${asFormattedString( this.discountedTotal )}`;
         },
     },
     methods: {
         /** User clicked the "previous" button */
-        onPrevious() {
-            this.$emit('previous');
+        onPrevious()
+        {
+            this.$emit( 'previous' );
         },
 
         /** User clicked the "finish" button */
-        onNext() {
+        onNext()
+        {
             this.loading = true;
             this.gatewayErrorMessage = '';
             this.gatewayValidationFields = {};
@@ -199,58 +220,68 @@ export default defineComponent({
 
         /** Send a user input discount code to the server so the server can check and send back
          *  the discount amount. */
-        async tryDiscountCode() {
+        async tryDiscountCode()
+        {
             this.loading = true;
 
-            try {
-                const result = await this.invokeBlockAction<CheckDiscountCodeResult>('CheckDiscountCode', {
+            try
+            {
+                const result = await this.invokeBlockAction<CheckDiscountCodeResult>( 'CheckDiscountCode', {
                     code: this.discountCodeInput
-                });
+                } );
 
-                if (result.isError || !result.data) {
+                if ( result.isError || !result.data )
+                {
                     this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
                 }
-                else {
+                else
+                {
                     this.discountCodeWarningMessage = '';
                     this.discountAmount = result.data.DiscountAmount;
                     this.discountPercent = result.data.DiscountPercentage;
 
                     const discountText = result.data.DiscountPercentage ?
-                        `${asFormattedString(this.discountPercent * 100, 0)}%` :
-                        `$${asFormattedString(this.discountAmount, 2)}`;
+                        `${asFormattedString( this.discountPercent * 100, 0 )}%` :
+                        `$${asFormattedString( this.discountAmount, 2 )}`;
 
                     this.discountCodeSuccessMessage = `Your ${discountText} discount code for all registrants was successfully applied.`;
                     this.registrationEntryState.DiscountCode = result.data.DiscountCode;
                 }
             }
-            finally {
+            finally
+            {
                 this.loading = false;
             }
         },
 
         /** Prefill in the registrar form fields based on the admin's settings */
-        prefillRegistrar() {
+        prefillRegistrar()
+        {
             // If the information is aleady recorded, do not change it
-            if (this.registrar.NickName || this.registrar.LastName || this.registrar.Email) {
+            if ( this.registrar.NickName || this.registrar.LastName || this.registrar.Email )
+            {
                 return;
             }
 
             // If the option is to prompt or use the current person, prefill the current person if available
-            if (this.currentPerson &&
-                (this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar)) {
+            if ( this.currentPerson &&
+                ( this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar ) )
+            {
                 this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
                 this.registrar.LastName = this.currentPerson.LastName || '';
                 this.registrar.Email = this.currentPerson.Email || '';
                 return;
             }
 
-            if (this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar) {
+            if ( this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar )
+            {
                 return;
             }
 
             // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
-            if (this.viewModel.RegistrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant) {
-                const firstRegistrantInfo = getRegistrantBasicInfo(this.firstRegistrant, this.viewModel.RegistrantForms);
+            if ( this.viewModel.RegistrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
+            {
+                const firstRegistrantInfo = getRegistrantBasicInfo( this.firstRegistrant, this.viewModel.RegistrantForms );
                 this.registrar.NickName = firstRegistrantInfo.FirstName;
                 this.registrar.LastName = firstRegistrantInfo.LastName;
                 this.registrar.Email = firstRegistrantInfo.Email;
@@ -262,21 +293,23 @@ export default defineComponent({
          * The gateway indicated success and returned a token
          * @param token
          */
-        onGatewayControlSuccess(token: string) {
+        onGatewayControlSuccess( token: string )
+        {
             this.loading = false;
             this.registrationEntryState.GatewayToken = token;
 
             // TODO
             // submit the payload to the server
 
-            this.$emit('next');
+            this.$emit( 'next' );
         },
 
         /**
          * The gateway indicated an error
          * @param message
          */
-        onGatewayControlError(message: string) {
+        onGatewayControlError( message: string )
+        {
             this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayErrorMessage = message;
@@ -286,7 +319,8 @@ export default defineComponent({
          * The gateway wants the user to fix some fields
          * @param invalidFields
          */
-        onGatewayControlValidation(invalidFields: Record<string, string>) {
+        onGatewayControlValidation( invalidFields: Record<string, string> )
+        {
             this.doGatewayControlSubmit = false;
             this.loading = false;
             this.gatewayValidationFields = invalidFields;
@@ -295,7 +329,8 @@ export default defineComponent({
     watch: {
         currentPerson: {
             immediate: true,
-            handler() {
+            handler()
+            {
                 this.prefillRegistrar();
             }
         }
@@ -422,4 +457,4 @@ export default defineComponent({
         </div>
     </RockForm>
 </div>`
-});
+} );

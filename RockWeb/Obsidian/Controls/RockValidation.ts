@@ -44,39 +44,42 @@ export default defineComponent({
             return Object.keys(this.errorsToShow).length > 0;
         }
     },
-    methods: {
-        syncErrorsDebounced() {
-            if (this.submitCount === -1) {
-                // Do not debounce, just sync. This instance is probably not within a traditional form.
-                this.errorsToShow = this.errors;
-                return;
-            }
-
-            // There are errors that come in at different cycles. We don't want the screen jumping around as the
-            // user fixes errors. But, we do want the validations from the submit cycle to all get through even
-            // though they come at different times. The "debounce" 1000ms code is to try to allow all of those
-            // through, but then prevent changes once the user starts fixing the form.
-            const now = new Date().getTime();
-            const msSinceLastChange = now - this.lastErrorChangeMs;
-            this.lastErrorChangeMs = now;
-            const wasSubmitted = this.lastSubmitCount < this.submitCount;
-
-            if (msSinceLastChange > 1000 || !wasSubmitted) {
-                return;
-            }
-
-            this.errorsToShow = this.errors;
-            this.lastSubmitCount = this.submitCount;
-        }
-    },
     watch: {
         submitCount() {
-            this.syncErrorsDebounced();
+            const wasSubmitted = this.lastSubmitCount < this.submitCount;
+
+            if ( wasSubmitted )
+            {
+                const now = new Date().getTime();
+                this.errorsToShow = { ...this.errors };
+                this.lastErrorChangeMs = now;
+                this.lastSubmitCount = this.submitCount;
+            }
         },
         errors: {
             immediate: true,
-            handler() {
-                this.syncErrorsDebounced();
+            handler()
+            {
+                if ( this.submitCount === -1 )
+                {
+                    // Do not debounce, just sync. This instance is probably not within a traditional form.
+                    this.errorsToShow = { ...this.errors };
+                    return;
+                }
+
+                // There are errors that come in at different cycles. Validation of all the form's fields seems to be async.
+                // Therefore, we want to allow all of the errors from a single submit to be added to the screen.
+                // However, we don't want the screen jumping around as the
+                // user fixes errors. The intent here is to have a 500ms window after a submit occurs for errors to be collected.
+                // After that window elapses, then no more errors can be added to the screen until the user submits again.
+                const now = new Date().getTime();
+                const msSinceLastChange = now - this.lastErrorChangeMs;
+
+                if ( msSinceLastChange < 500 )
+                {
+                    this.errorsToShow = { ...this.errors };
+                    this.lastErrorChangeMs = now;
+                }
             }
         }
     },

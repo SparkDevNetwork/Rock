@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
 import { defineComponent, PropType } from 'vue';
 
+/** The type of the alert box to display. Ex: 'success' will appear green and as if something good happened. */
 export enum AlertType {
     default = 'default',
     success = 'success',
@@ -26,7 +28,8 @@ export enum AlertType {
     validation = 'validation'
 }
 
-export default defineComponent({
+/** Displays a bootstrap style alert box. */
+const Alert = defineComponent( {
     name: 'Alert',
     props: {
         dismissible: {
@@ -42,12 +45,14 @@ export default defineComponent({
         'dismiss'
     ],
     methods: {
-        onDismiss: function () {
-            this.$emit('dismiss');
+        onDismiss: function ()
+        {
+            this.$emit( 'dismiss' );
         }
     },
     computed: {
-        typeClass(): string {
+        typeClass(): string
+        {
             return `alert-${this.alertType}`;
         },
     },
@@ -58,4 +63,6 @@ export default defineComponent({
     </button>
     <slot />
 </div>`
-});
+} );
+
+export default Alert;

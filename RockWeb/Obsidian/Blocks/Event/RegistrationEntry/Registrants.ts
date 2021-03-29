@@ -18,21 +18,26 @@
 import { defineComponent, inject } from 'vue';
 import Registrant from './Registrant';
 import { RegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
+import Alert from '../../../Elements/Alert';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.Registrants',
     components: {
-        Registrant
+        Registrant,
+        Alert
     },
-    setup() {
+    setup()
+    {
         return {
-            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
+            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
     },
     methods: {
-        onPrevious() {
-            if (this.registrationEntryState.CurrentRegistrantIndex <= 0) {
-                this.$emit('previous');
+        onPrevious()
+        {
+            if ( this.registrationEntryState.CurrentRegistrantIndex <= 0 )
+            {
+                this.$emit( 'previous' );
                 return;
             }
 
@@ -40,11 +45,13 @@ export default defineComponent({
             this.registrationEntryState.CurrentRegistrantIndex--;
             this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
         },
-        onNext() {
+        onNext()
+        {
             const lastIndex = this.registrationEntryState.Registrants.length - 1;
 
-            if (this.registrationEntryState.CurrentRegistrantIndex >= lastIndex) {
-                this.$emit('next');
+            if ( this.registrationEntryState.CurrentRegistrantIndex >= lastIndex )
+            {
+                this.$emit( 'next' );
                 return;
             }
 
@@ -53,17 +60,45 @@ export default defineComponent({
         }
     },
     computed: {
-        registrants(): RegistrantInfo[] {
+        /** Will some of the registrants have to be added to a waitlist */
+        hasWaitlist(): boolean
+        {
+            return this.registrationEntryState.NumberToAddToWaitlist > 0;
+        },
+
+        /** Will this registrant be added to the waitlist? */
+        isOnWaitlist(): boolean
+        {
+            const lastIndex = this.registrationEntryState.Registrants.length - 1;
+            const registrantsAfterThis = lastIndex - this.registrationEntryState.CurrentRegistrantIndex;
+            return registrantsAfterThis < this.registrationEntryState.NumberToAddToWaitlist;
+        },
+
+        /** What are the registrants called? */
+        registrantTerm(): string
+        {
+            return ( this.registrationEntryState.ViewModel.RegistrantTerm || 'registrant' ).toLowerCase();
+        },
+
+        registrants(): RegistrantInfo[]
+        {
             return this.registrationEntryState.Registrants;
         },
-        currentRegistrantIndex(): number {
+        currentRegistrantIndex(): number
+        {
             return this.registrationEntryState.CurrentRegistrantIndex;
         }
     },
     template: `
 <div class="registrationentry-registrant">
+    <Alert v-if="hasWaitlist && !isOnWaitlist" alertType="success">
+        This {{registrantTerm}} will be fully registered.
+    </Alert>
+    <Alert v-else-if="isOnWaitlist" alertType="warning">
+        This {{registrantTerm}} will be on the waiting list.
+    </Alert>
     <template v-for="(r, i) in registrants" :key="r.Guid">
         <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" @next="onNext" @previous="onPrevious" />
     </template>
 </div>`
-});
+} );

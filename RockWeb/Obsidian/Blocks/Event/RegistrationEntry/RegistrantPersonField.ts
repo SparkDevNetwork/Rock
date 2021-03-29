@@ -23,7 +23,7 @@ import { getDefaultBirthdayPickerModel } from '../../../Elements/BirthdayPicker'
 import { Guid } from '../../../Util/Guid';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.RegistrantPersonField',
     components: {
         Alert,
@@ -44,10 +44,12 @@ export default defineComponent({
         }
     },
     computed: {
-        componentUrl(): string {
+        componentUrl(): string
+        {
             let componentPath = '';
 
-            switch (this.field.PersonFieldType) {
+            switch ( this.field.PersonFieldType )
+            {
                 case RegistrationPersonFieldType.FirstName:
                     componentPath = 'Elements/TextBox';
                     break;
@@ -76,12 +78,14 @@ export default defineComponent({
 
             return componentPath ? `../${componentPath}` : '';
         },
-        fieldControlComponentProps() {
+        fieldControlComponentProps()
+        {
             const props: Record<string, unknown> = {
                 rules: this.field.IsRequired ? 'required' : ''
             };
 
-            switch (this.field.PersonFieldType) {
+            switch ( this.field.PersonFieldType )
+            {
                 case RegistrationPersonFieldType.FirstName:
                     props.label = 'First Name';
                     props.disabled = this.isKnownFamilyMember;
@@ -115,15 +119,18 @@ export default defineComponent({
         fieldValues: {
             immediate: true,
             deep: true,
-            handler() {
+            handler()
+            {
                 // Set the default value if needed
-                if (this.field.Guid in this.fieldValues) {
+                if ( this.field.Guid in this.fieldValues )
+                {
                     return;
                 }
 
                 let defaultValue: unknown = '';
 
-                switch (this.field.PersonFieldType) {
+                switch ( this.field.PersonFieldType )
+                {
                     case RegistrationPersonFieldType.Birthdate:
                         defaultValue = getDefaultBirthdayPickerModel();
                         break;
@@ -132,10 +139,10 @@ export default defineComponent({
                         break;
                 }
 
-                this.fieldValues[this.field.Guid] = defaultValue;
+                this.fieldValues[ this.field.Guid ] = defaultValue;
             }
         },
     },
     template: `
 <ComponentFromUrl v-if="componentUrl" :url="componentUrl" v-bind="fieldControlComponentProps" v-model="fieldValues[field.Guid]" />`
-});
+} );

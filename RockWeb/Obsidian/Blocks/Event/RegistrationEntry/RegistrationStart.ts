@@ -22,60 +22,70 @@ import RockButton from '../../../Elements/RockButton';
 import AttributeValue from '../../../ViewModels/CodeGenerated/AttributeValueViewModel';
 import { RegistrationEntryState } from '../RegistrationEntry';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.RegistrationStart',
     components: {
         RockButton,
         AttributeValuesContainer,
         RockForm
     },
-    setup() {
+    setup()
+    {
         return {
-            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
+            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
     },
-    data() {
+    data()
+    {
         return {
             attributeValues: [] as AttributeValue[]
         };
     },
     computed: {
-        showPrevious(): boolean {
+        showPrevious(): boolean
+        {
             return this.registrationEntryState.FirstStep === this.registrationEntryState.Steps.intro;
         }
     },
     methods: {
-        onPrevious() {
-            this.$emit('previous');
+        onPrevious()
+        {
+            this.$emit( 'previous' );
         },
-        onNext() {
-            this.$emit('next');
+        onNext()
+        {
+            this.$emit( 'next' );
         }
     },
     watch: {
         viewModel: {
             immediate: true,
-            handler() {
-                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesStart.map(a => {
-                    const currentValue = this.registrationEntryState.RegistrationFieldValues[a.Guid] || '';
+            handler()
+            {
+                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesStart.map( a =>
+                {
+                    const currentValue = this.registrationEntryState.RegistrationFieldValues[ a.Guid ] || '';
 
                     return {
                         Attribute: a,
                         AttributeId: a.Id,
                         Value: currentValue
                     } as AttributeValue;
-                });
+                } );
             }
         },
         attributeValues: {
             immediate: true,
             deep: true,
-            handler() {
-                for (const attributeValue of this.attributeValues) {
+            handler()
+            {
+                for ( const attributeValue of this.attributeValues )
+                {
                     const attribute = attributeValue.Attribute;
 
-                    if (attribute) {
-                        this.registrationEntryState.RegistrationFieldValues[attribute.Guid] = attributeValue.Value;
+                    if ( attribute )
+                    {
+                        this.registrationEntryState.RegistrationFieldValues[ attribute.Guid ] = attributeValue.Value;
                     }
                 }
             }
@@ -100,4 +110,4 @@ export default defineComponent({
         </div>
     </RockForm>
 </div>`
-});
+} );

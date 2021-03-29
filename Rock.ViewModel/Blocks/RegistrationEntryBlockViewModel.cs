@@ -169,6 +169,38 @@ namespace Rock.ViewModel.Blocks
         /// The registration term.
         /// </value>
         public string RegistrationTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the spots remaining.
+        /// </summary>
+        /// <value>
+        /// The spots remaining.
+        /// </value>
+        public int? SpotsRemaining { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [wait list enabled].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [wait list enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public bool WaitListEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the instance.
+        /// </summary>
+        /// <value>
+        /// The name of the instance.
+        /// </value>
+        public string InstanceName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plural registration term.
+        /// </summary>
+        /// <value>
+        /// The plural registration term.
+        /// </value>
+        public string PluralRegistrationTerm { get; set; }
     }
 
     /// <summary>

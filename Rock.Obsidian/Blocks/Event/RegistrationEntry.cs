@@ -173,7 +173,13 @@ namespace Rock.Obsidian.Blocks.Event
                     .FirstOrDefault();
 
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
-                var formModels = registrationTemplate?.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+
+                if ( registrationTemplate == null )
+                {
+                    return new RegistrationEntryBlockViewModel();
+                }
+
+                var formModels = registrationTemplate.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
                 // Get family members
                 var familyMembers = registrationTemplate.ShowCurrentFamilyMembers ?
@@ -199,11 +205,11 @@ namespace Rock.Obsidian.Blocks.Event
 
                 if ( instructions.IsNullOrWhiteSpace() )
                 {
-                    instructions = registrationTemplate?.RegistrationInstructions ?? string.Empty;
+                    instructions = registrationTemplate.RegistrationInstructions ?? string.Empty;
                 }
 
                 // Get the fee term
-                var feeTerm = registrationTemplate?.FeeTerm;
+                var feeTerm = registrationTemplate.FeeTerm;
 
                 if ( feeTerm.IsNullOrWhiteSpace() )
                 {
@@ -214,7 +220,7 @@ namespace Rock.Obsidian.Blocks.Event
                 var pluralFeeTerm = feeTerm.Pluralize();
 
                 // Get the registrant term
-                var registrantTerm = registrationTemplate?.RegistrantTerm;
+                var registrantTerm = registrationTemplate.RegistrantTerm;
 
                 if ( registrantTerm.IsNullOrWhiteSpace() )
                 {
@@ -225,7 +231,7 @@ namespace Rock.Obsidian.Blocks.Event
                 var pluralRegistrantTerm = registrantTerm.Pluralize();
 
                 // Get the fees
-                var feeModels = registrationTemplate?.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+                var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
                 var fees = new List<RegistrationEntryBlockFeeViewModel>();
 
                 foreach ( var feeModel in feeModels )
@@ -289,18 +295,21 @@ namespace Rock.Obsidian.Blocks.Event
                 }
 
                 // Get the registration attributes term
-                var registrationAttributeTitleStart = ( registrationTemplate?.RegistrationAttributeTitleStart ).IsNullOrWhiteSpace() ?
+                var registrationAttributeTitleStart = ( registrationTemplate.RegistrationAttributeTitleStart ).IsNullOrWhiteSpace() ?
                     "Registration Information" :
                     registrationTemplate.RegistrationAttributeTitleStart;
 
-                var registrationAttributeTitleEnd = ( registrationTemplate?.RegistrationAttributeTitleEnd ).IsNullOrWhiteSpace() ?
+                var registrationAttributeTitleEnd = ( registrationTemplate.RegistrationAttributeTitleEnd ).IsNullOrWhiteSpace() ?
                     "Registration Information" :
                     registrationTemplate.RegistrationAttributeTitleEnd;
 
                 // Get the registration term
-                var registrationTerm = ( registrationTemplate?.RegistrationTerm ).IsNullOrWhiteSpace() ?
+                var registrationTerm = ( registrationTemplate.RegistrationTerm ).IsNullOrWhiteSpace() ?
                     "Registration" :
                     registrationTemplate.RegistrationTerm;
+
+                // Get the registration term plural
+                var pluralRegistrationTerm = registrationTerm.Pluralize();
 
                 // Get the registration attributes
                 var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
@@ -308,7 +317,7 @@ namespace Rock.Obsidian.Blocks.Event
                     .Where( a =>
                         a.EntityTypeId == registrationEntityTypeId &&
                         a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( registrationTemplate?.Id.ToStringSafe() ) &&
+                        a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToStringSafe() ) &&
                         a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name );
@@ -329,15 +338,32 @@ namespace Rock.Obsidian.Blocks.Event
                     .ToList();
 
                 // Get the maximum number of registrants
-                var maxRegistrants = ( registrationTemplate?.AllowMultipleRegistrants == true ) ?
+                var maxRegistrants = ( registrationTemplate.AllowMultipleRegistrants == true ) ?
                     ( registrationTemplate.MaxRegistrants ?? 1 ) :
                     1;
+
+                // Get the number of slots available and if the waitlist is available
+                var waitListEnabled = registrationTemplate.WaitListEnabled;
+                var spotsRemaining = registrationInstance.MaxAttendees;
+
+                if ( spotsRemaining.HasValue )
+                {
+                    var otherRegistrantsCount = new RegistrationRegistrantService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( a =>
+                            a.Registration.RegistrationInstanceId == registrationInstanceId &&
+                            !a.Registration.IsTemporary )
+                        .Count();
+
+                    spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
+                }
 
                 // Force the registrar to update their email?
                 var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
                 // Load the gateway control settings
-                var financialGatewayId = registrationTemplate?.FinancialGatewayId ?? 0;
+                var financialGatewayId = registrationTemplate.FinancialGatewayId ?? 0;
                 var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
                 var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
 
@@ -365,7 +391,11 @@ namespace Rock.Obsidian.Blocks.Event
                     GatewayControl = new GatewayControlViewModel {
                         FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
                         Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
-                    }
+                    },
+                    SpotsRemaining = spotsRemaining,
+                    WaitListEnabled = waitListEnabled,
+                    InstanceName = registrationInstance.Name,
+                    PluralRegistrationTerm = pluralRegistrationTerm
                 };
             }
         }

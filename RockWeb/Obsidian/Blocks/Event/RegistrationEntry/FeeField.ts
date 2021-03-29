@@ -25,7 +25,7 @@ import Number from '../../../Services/Number';
 import GuidHelper, { Guid } from '../../../Util/Guid';
 import { RegistrationEntryBlockFeeViewModel, RegistrationEntryBlockFeeItemViewModel } from './RegistrationEntryBlockViewModel';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.FeeField',
     components: {
         NumberUpDown,
@@ -44,18 +44,21 @@ export default defineComponent({
             required: true
         }
     },
-    data() {
+    data()
+    {
         return {
             dropDownValue: '',
             checkboxValue: false
         };
     },
     methods: {
-        getItemLabel(item: RegistrationEntryBlockFeeItemViewModel) {
-            const formattedCost = Number.asFormattedString(item.Cost);
+        getItemLabel( item: RegistrationEntryBlockFeeItemViewModel )
+        {
+            const formattedCost = Number.asFormattedString( item.Cost );
 
-            if (item.CountRemaining) {
-                const formattedRemaining = Number.asFormattedString(item.CountRemaining, 0);
+            if ( item.CountRemaining )
+            {
+                const formattedRemaining = Number.asFormattedString( item.CountRemaining, 0 );
                 return `${item.Name} ($${formattedCost}) (${formattedRemaining} remaining)`;
             }
 
@@ -63,52 +66,64 @@ export default defineComponent({
         }
     },
     computed: {
-        label(): string {
-            if (this.singleItem) {
-                const formattedCost = Number.asFormattedString(this.singleItem.Cost);
+        label(): string
+        {
+            if ( this.singleItem )
+            {
+                const formattedCost = Number.asFormattedString( this.singleItem.Cost );
                 return `${this.fee.Name} ($${formattedCost})`;
             }
 
             return this.fee.Name;
         },
-        singleItem(): RegistrationEntryBlockFeeItemViewModel | null {
-            if (this.fee.Items.length !== 1) {
+        singleItem(): RegistrationEntryBlockFeeItemViewModel | null
+        {
+            if ( this.fee.Items.length !== 1 )
+            {
                 return null;
             }
 
-            return this.fee.Items[0];
+            return this.fee.Items[ 0 ];
         },
-        isHidden(): boolean {
+        isHidden(): boolean
+        {
             return !this.fee.Items.length;
         },
-        isCheckbox(): boolean {
+        isCheckbox(): boolean
+        {
             return !!this.singleItem && !this.fee.AllowMultiple;
         },
-        isNumberUpDown(): boolean {
+        isNumberUpDown(): boolean
+        {
             return !!this.singleItem && this.fee.AllowMultiple;
         },
-        isNumberUpDownGroup(): boolean {
+        isNumberUpDownGroup(): boolean
+        {
             return this.fee.Items.length > 1 && this.fee.AllowMultiple;
         },
-        isDropDown(): boolean {
+        isDropDown(): boolean
+        {
             return this.fee.Items.length > 1 && !this.fee.AllowMultiple;
         },
-        dropDownListOptions(): DropDownListOption[] {
-            return this.fee.Items.map(i => ({
+        dropDownListOptions(): DropDownListOption[]
+        {
+            return this.fee.Items.map( i => ( {
                 key: i.Guid,
-                text: this.getItemLabel(i),
+                text: this.getItemLabel( i ),
                 value: i.Guid
-            }));
+            } ) );
         },
-        numberUpDownGroupOptions(): NumberUpDownGroupOption[] {
-            return this.fee.Items.map(i => ({
+        numberUpDownGroupOptions(): NumberUpDownGroupOption[]
+        {
+            return this.fee.Items.map( i => ( {
                 key: i.Guid,
-                label: this.getItemLabel(i),
+                label: this.getItemLabel( i ),
                 max: i.CountRemaining || 100,
                 min: 0
-            }));
+            } ) );
         },
-        rules(): string {
+        rules(): string
+        {
             return this.fee.IsRequired ? 'required' : '';
         }
     },
@@ -116,50 +131,62 @@ export default defineComponent({
         modelValue: {
             immediate: true,
             deep: true,
-            handler() {
+            handler()
+            {
                 // Set the drop down selecton
-                if (this.isDropDown) {
+                if ( this.isDropDown )
+                {
                     this.dropDownValue = '';
 
-                    for (const item of this.fee.Items) {
-                        if (!this.dropDownValue && this.modelValue[item.Guid]) {
+                    for ( const item of this.fee.Items )
+                    {
+                        if ( !this.dropDownValue && this.modelValue[ item.Guid ] )
+                        {
                             // Pick the first option that has a qty
-                            this.modelValue[item.Guid] = 1;
+                            this.modelValue[ item.Guid ] = 1;
                             this.dropDownValue = item.Guid;
                         }
-                        else if (this.modelValue[item.Guid]) {
+                        else if ( this.modelValue[ item.Guid ] )
+                        {
                             // Any other quantities need to be zeroed since only one can be picked
-                            this.modelValue[item.Guid] = 0;
+                            this.modelValue[ item.Guid ] = 0;
                         }
                     }
                 }
 
                 // Set the checkbox selection
-                if (this.isCheckbox && this.singleItem) {
-                    this.checkboxValue = !!this.modelValue[this.singleItem.Guid];
-                    this.modelValue[this.singleItem.Guid] = this.checkboxValue ? 1 : 0;
+                if ( this.isCheckbox && this.singleItem )
+                {
+                    this.checkboxValue = !!this.modelValue[ this.singleItem.Guid ];
+                    this.modelValue[ this.singleItem.Guid ] = this.checkboxValue ? 1 : 0;
                 }
             }
         },
         fee: {
             immediate: true,
-            handler() {
-                for (const item of this.fee.Items) {
-                    this.modelValue[item.Guid] = this.modelValue[item.Guid] || 0;
+            handler()
+            {
+                for ( const item of this.fee.Items )
+                {
+                    this.modelValue[ item.Guid ] = this.modelValue[ item.Guid ] || 0;
                 }
             }
         },
-        dropDownValue() {
+        dropDownValue()
+        {
             // Drop down implies a quantity of 1. Zero out all items except for the one selected.
-            for (const item of this.fee.Items) {
-                const isSelected = GuidHelper.areEqual(this.dropDownValue, item.Guid);
-                this.modelValue[item.Guid] = isSelected ? 1 : 0;
+            for ( const item of this.fee.Items )
+            {
+                const isSelected = GuidHelper.areEqual( this.dropDownValue, item.Guid );
+                this.modelValue[ item.Guid ] = isSelected ? 1 : 0;
             }
         },
-        checkboxValue() {
-            if (this.singleItem) {
+        checkboxValue()
+        {
+            if ( this.singleItem )
+            {
                 // Drop down implies a quantity of 1.
-                this.modelValue[this.singleItem.Guid] = this.checkboxValue ? 1 : 0;
+                this.modelValue[ this.singleItem.Guid ] = this.checkboxValue ? 1 : 0;
             }
         }
     },
@@ -171,4 +198,4 @@ export default defineComponent({
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
     <Alert v-else alertType="danger">This fee configuration is not supported</Alert>
 </template>`
-});
+} );

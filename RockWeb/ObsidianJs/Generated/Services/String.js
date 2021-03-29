@@ -91,6 +91,19 @@ System.register([], function (exports_1, context_1) {
         });
     }
     exports_1("toTitleCase", toTitleCase);
+    /**
+     * Returns a singular or plural phrase depending on if the number is 1.
+     * (0, Cat, Cats) => 0 Cats
+     * (1, Cat, Cats) => Cat
+     * (2, Cat, Cats) => 2 Cats
+     * @param num
+     * @param singular
+     * @param plural
+     */
+    function pluralPhrase(num, singular, plural) {
+        return num === 1 ? singular : num + " " + plural;
+    }
+    exports_1("pluralPhrase", pluralPhrase);
     return {
         setters: [],
         execute: function () {
@@ -100,7 +113,8 @@ System.register([], function (exports_1, context_1) {
                 isNullOrWhitespace: isNullOrWhitespace,
                 isWhitespace: isWhitespace,
                 isEmpty: isEmpty,
-                toTitleCase: toTitleCase
+                toTitleCase: toTitleCase,
+                pluralPhrase: pluralPhrase
             });
         }
     };

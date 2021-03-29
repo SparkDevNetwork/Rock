@@ -18,15 +18,17 @@
 import { defineComponent, inject } from 'vue';
 import { RegistrationEntryState } from '../RegistrationEntry';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Event.RegistrationEntry.Success',
-    setup() {
+    setup()
+    {
         return {
-            registrationEntryState: inject('registrationEntryState') as RegistrationEntryState
+            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
     },
     computed: {
-        registrationTerm(): string {
+        registrationTerm(): string
+        {
             return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
         }
     },
@@ -35,4 +37,4 @@ export default defineComponent({
     You have successfully completed this {{registrationTerm}}.
     <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>
 </div>`
-});
+} );

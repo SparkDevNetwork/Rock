@@ -18,8 +18,10 @@
  * Is the value an empty string?
  * @param val
  */
-export function isEmpty(val: unknown) {
-    if (typeof val === 'string') {
+export function isEmpty( val: unknown )
+{
+    if ( typeof val === 'string' )
+    {
         return val.length === 0;
     }
 
@@ -30,8 +32,10 @@ export function isEmpty(val: unknown) {
  * Is the value an empty string?
  * @param val
  */
-export function isWhitespace(val: unknown) {
-    if (typeof val === 'string') {
+export function isWhitespace( val: unknown )
+{
+    if ( typeof val === 'string' )
+    {
         return val.trim().length === 0;
     }
 
@@ -42,17 +46,20 @@ export function isWhitespace(val: unknown) {
  * Is the value null, undefined or whitespace?
  * @param val
  */
-export function isNullOrWhitespace(val: unknown) {
-    return isWhitespace(val) || val === undefined || val === null;
+export function isNullOrWhitespace( val: unknown )
+{
+    return isWhitespace( val ) || val === undefined || val === null;
 }
 
 /**
  * Turns "MyCamelCaseString" into "My Camel Case String"
  * @param val
  */
-export function splitCamelCase(val: unknown) {
-    if (typeof val === 'string') {
-        return val.replace(/([a-z])([A-Z])/g, '$1 $2');
+export function splitCamelCase( val: unknown )
+{
+    if ( typeof val === 'string' )
+    {
+        return val.replace( /([a-z])([A-Z])/g, '$1 $2' );
     }
 
     return val;
@@ -63,21 +70,25 @@ export function splitCamelCase(val: unknown) {
  * Ex: ['a', 'b', 'c'] => 'a, b, and c'
  * @param strs
  */
-export function asCommaAnd(strs: string[]) {
-    if (strs.length === 0) {
+export function asCommaAnd( strs: string[] )
+{
+    if ( strs.length === 0 )
+    {
         return '';
     }
 
-    if (strs.length === 1) {
-        return strs[0];
+    if ( strs.length === 1 )
+    {
+        return strs[ 0 ];
     }
 
-    if (strs.length === 2) {
-        return `${strs[0]} and ${strs[1]}`;
+    if ( strs.length === 2 )
+    {
+        return `${strs[ 0 ]} and ${strs[ 1 ]}`;
     }
 
     const last = strs.pop();
-    return `${strs.join(', ')}, and ${last}`;
+    return `${strs.join( ', ' )}, and ${last}`;
 }
 
 /**
@@ -85,14 +96,31 @@ export function asCommaAnd(strs: string[]) {
  * hellO worlD => Hello World
  * @param str
  */
-export function toTitleCase(str: string | null) {
-    if (!str) {
+export function toTitleCase( str: string | null )
+{
+    if ( !str )
+    {
         return '';
     }
 
-    return str.replace(/\w\S*/g, (word) => {
-        return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
-    });
+    return str.replace( /\w\S*/g, ( word ) =>
+    {
+        return word.charAt( 0 ).toUpperCase() + word.substr( 1 ).toLowerCase();
+    } );
+}
+
+/**
+ * Returns a singular or plural phrase depending on if the number is 1.
+ * (0, Cat, Cats) => 0 Cats
+ * (1, Cat, Cats) => Cat
+ * (2, Cat, Cats) => 2 Cats
+ * @param num
+ * @param singular
+ * @param plural
+ */
+export function pluralPhrase( num: number, singular: string, plural: string )
+{
+    return num === 1 ? singular : `${num} ${plural}`;
 }
 
 export default {
@@ -101,5 +129,6 @@ export default {
     isNullOrWhitespace,
     isWhitespace,
     isEmpty,
-    toTitleCase
+    toTitleCase,
+    pluralPhrase
 };
