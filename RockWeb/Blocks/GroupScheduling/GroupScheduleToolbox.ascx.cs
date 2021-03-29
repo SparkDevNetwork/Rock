@@ -351,6 +351,11 @@ $('#{0}').tooltip();
         /// </summary>
         private void ShowSelectedTab()
         {
+            // Make sure the parent panels are visible before adjusting the child objects.
+            pnlMySchedule.Visible = CurrentTab == GroupScheduleToolboxTab.MySchedule;
+            pnlPreferences.Visible = CurrentTab == GroupScheduleToolboxTab.Preferences;
+            pnlSignup.Visible = CurrentTab == GroupScheduleToolboxTab.SignUp;
+
             switch ( CurrentTab )
             {
                 case GroupScheduleToolboxTab.MySchedule:
@@ -369,10 +374,6 @@ $('#{0}').tooltip();
                 default:
                     break;
             }
-
-            pnlMySchedule.Visible = CurrentTab == GroupScheduleToolboxTab.MySchedule;
-            pnlPreferences.Visible = CurrentTab == GroupScheduleToolboxTab.Preferences;
-            pnlSignup.Visible = CurrentTab == GroupScheduleToolboxTab.SignUp;
         }
 
         /// <summary>
