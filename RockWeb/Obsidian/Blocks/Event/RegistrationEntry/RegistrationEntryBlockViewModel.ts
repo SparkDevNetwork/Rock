@@ -122,6 +122,7 @@ export interface RegistrationEntryBlockFeeViewModel
     AllowMultiple: boolean;
     IsRequired: boolean;
     Items: RegistrationEntryBlockFeeItemViewModel[];
+    DiscountApplies: boolean;
 }
 
 export interface RegistrationEntryBlockFeeItemViewModel
@@ -147,6 +148,7 @@ export interface RegistrationEntryBlockFormFieldViewModel
     VisibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
     PreHtml: string;
     PostHtml: string;
+    ShowOnWaitList: boolean;
     Guid: Guid;
 }
 

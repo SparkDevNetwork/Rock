@@ -42,7 +42,13 @@ export default defineComponent({
                 InnerSlotName: `inner-${i.SlotName}`
             } as Record<string, string>));
         },
-        innerTemplate(): string {
+        innerTemplate(): string
+        {
+            if ( !this.items.length )
+            {
+                return '<slot />';
+            }
+
             const templateParts = this.items.map(i => `${i.PreHtml}<slot name="inner-${i.SlotName}" />${i.PostHtml}`);
             return templateParts.join('');
         },

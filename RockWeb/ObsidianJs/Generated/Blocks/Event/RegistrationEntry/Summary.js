@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Controls/RockValidation", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/EmailBox", "../../../Elements/RockButton", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Controls/RockValidation", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/EmailBox", "../../../Elements/JavaScriptAnchor", "../../../Elements/RockButton", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, GatewayControl_1, RockForm_1, RockValidation_1, Alert_1, CheckBox_1, EmailBox_1, RockButton_1, TextBox_1, Number_1, RegistrationEntry_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, GatewayControl_1, RockForm_1, RockValidation_1, Alert_1, CheckBox_1, EmailBox_1, JavaScriptAnchor_1, RockButton_1, TextBox_1, Number_1, RegistrationEntry_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -76,6 +76,9 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             },
             function (EmailBox_1_1) {
                 EmailBox_1 = EmailBox_1_1;
+            },
+            function (JavaScriptAnchor_1_1) {
+                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
@@ -104,7 +107,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     RockForm: RockForm_1.default,
                     Alert: Alert_1.default,
                     GatewayControl: GatewayControl_1.default,
-                    RockValidation: RockValidation_1.default
+                    RockValidation: RockValidation_1.default,
+                    JavaScriptAnchor: JavaScriptAnchor_1.default
                 },
                 setup: function () {
                     return {
@@ -166,40 +170,109 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     },
                     /** The fee line items that will be displayed in the summary */
                     lineItems: function () {
-                        var _this = this;
-                        var total = this.viewModel.Cost;
-                        var discountTotal = total;
-                        if (this.discountAmount) {
-                            discountTotal = total - this.discountAmount;
-                        }
-                        else if (this.discountPercent) {
-                            discountTotal = total - (total * this.discountPercent);
-                        }
-                        return this.registrationEntryState.Registrants.map(function (r) {
-                            var info = RegistrationEntry_1.getRegistrantBasicInfo(r, _this.viewModel.RegistrantForms);
-                            return {
-                                Key: r.Guid,
-                                Description: info.FirstName + " " + info.LastName,
+                        var lineItems = [];
+                        for (var _i = 0, _a = this.registrationEntryState.Registrants; _i < _a.length; _i++) {
+                            var registrant = _a[_i];
+                            var total = this.viewModel.Cost;
+                            var discountedTotal = total;
+                            var discountRemaining = 0;
+                            if (this.discountAmount && total < this.discountAmount) {
+                                discountRemaining = this.discountAmount - total;
+                                discountedTotal = 0;
+                            }
+                            else if (this.discountAmount) {
+                                discountedTotal = total - this.discountAmount;
+                            }
+                            else if (this.discountPercent) {
+                                var discount = this.discountPercent >= 1 ?
+                                    this.total :
+                                    this.discountPercent <= 0 ?
+                                        0 :
+                                        (total * this.discountPercent);
+                                discountedTotal = total - discount;
+                            }
+                            var info = RegistrationEntry_1.getRegistrantBasicInfo(registrant, this.viewModel.RegistrantForms);
+                            var name_1 = registrant.IsOnWaitList ?
+                                info.FirstName + " " + info.LastName + " (Waiting List)" :
+                                info.FirstName + " " + info.LastName;
+                            if (registrant.IsOnWaitList) {
+                                total = 0;
+                                discountedTotal = 0;
+                            }
+                            lineItems.push({
+                                Key: registrant.Guid,
+                                IsFee: false,
+                                Description: name_1,
+                                Amount: total,
                                 AmountFormatted: Number_1.asFormattedString(total),
-                                DiscountedAmountFormatted: Number_1.asFormattedString(discountTotal)
-                            };
-                        });
+                                DiscountedAmount: discountedTotal,
+                                DiscountedAmountFormatted: Number_1.asFormattedString(discountedTotal),
+                                DiscountHelp: ''
+                            });
+                            // Don't show fees if on the waitlist
+                            if (registrant.IsOnWaitList) {
+                                continue;
+                            }
+                            for (var _b = 0, _c = this.viewModel.Fees; _b < _c.length; _b++) {
+                                var fee = _c[_b];
+                                for (var _d = 0, _e = fee.Items; _d < _e.length; _d++) {
+                                    var feeItem = _e[_d];
+                                    var qty = registrant.FeeQuantities[feeItem.Guid];
+                                    if (!qty) {
+                                        continue;
+                                    }
+                                    var itemTotal = qty * feeItem.Cost;
+                                    var itemDiscountedTotal = itemTotal;
+                                    if (fee.DiscountApplies) {
+                                        if (itemTotal < discountRemaining) {
+                                            discountRemaining -= itemTotal;
+                                            itemDiscountedTotal = 0;
+                                        }
+                                        else if (discountRemaining) {
+                                            itemDiscountedTotal -= discountRemaining;
+                                            discountRemaining = 0;
+                                        }
+                                        else if (this.discountPercent) {
+                                            var discount = this.discountPercent >= 1 ?
+                                                itemTotal :
+                                                this.discountPercent <= 0 ?
+                                                    0 :
+                                                    (itemTotal * this.discountPercent);
+                                            itemDiscountedTotal = itemTotal - discount;
+                                        }
+                                    }
+                                    lineItems.push({
+                                        Key: registrant.Guid + "-" + feeItem.Guid,
+                                        IsFee: true,
+                                        Description: fee.Name + "-" + feeItem.Name + " (" + qty + " @ $" + Number_1.asFormattedString(feeItem.Cost) + ")",
+                                        Amount: itemTotal,
+                                        AmountFormatted: Number_1.asFormattedString(itemTotal),
+                                        DiscountedAmount: itemDiscountedTotal,
+                                        DiscountedAmountFormatted: Number_1.asFormattedString(itemDiscountedTotal),
+                                        DiscountHelp: fee.DiscountApplies ? '' : 'This item is not eligible for the discount.'
+                                    });
+                                }
+                            }
+                        }
+                        return lineItems;
                     },
                     /** The total amount of the registration before discounts */
                     total: function () {
-                        return this.registrationEntryState.Registrants.length * this.viewModel.Cost;
+                        var total = 0;
+                        for (var _i = 0, _a = this.lineItems; _i < _a.length; _i++) {
+                            var lineItem = _a[_i];
+                            total += lineItem.Amount;
+                        }
+                        return total;
                     },
                     /** The total amount of the registration after discounts */
                     discountedTotal: function () {
-                        var total = this.viewModel.Cost;
-                        var discountTotal = total;
-                        if (this.discountAmount) {
-                            discountTotal = total - this.discountAmount;
+                        var total = 0;
+                        for (var _i = 0, _a = this.lineItems; _i < _a.length; _i++) {
+                            var lineItem = _a[_i];
+                            total += lineItem.DiscountedAmount;
                         }
-                        else if (this.discountPercent) {
-                            discountTotal = total - (total * this.discountPercent);
-                        }
-                        return this.registrationEntryState.Registrants.length * discountTotal;
+                        return total;
                     },
                     /** The total before discounts as a formatted string */
                     totalFormatted: function () {
@@ -325,7 +398,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         }
                     }
                 },
-                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n        <div class=\"well\">\n            <h4>This Registration Was Completed By</h4>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <TextBox label=\"First Name\" rules=\"required\" v-model=\"registrar.NickName\" />\n                </div>\n                <div class=\"col-md-6\">\n                    <TextBox label=\"Last Name\" rules=\"required\" v-model=\"registrar.LastName\" />\n                </div>\n            </div>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <EmailBox label=\"Send Confirmation Emails To\" rules=\"required\" v-model=\"registrar.Email\" />\n                    <CheckBox v-if=\"doShowUpdateEmailOption\" label=\"Should Your Account Be Updated To Use This Email Address?\" v-model=\"registrar.UpdateEmail\" />\n                </div>\n            </div>\n        </div>\n\n        <div>\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"loading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"loading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <div class=\"fee-table\">\n                <div class=\"row hidden-xs fee-header\">\n                    <div class=\"col-sm-6\">\n                        <strong>Description</strong>\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <strong>Discounted Amount</strong>\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <strong>Amount</strong>\n                    </div>\n                </div>\n                <div v-for=\"lineItem in lineItems\" :key=\"lineItem.Key\" class=\"row fee-row-cost\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        {{lineItem.Description}}\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        $ {{lineItem.DiscountedAmountFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        $ {{lineItem.AmountFormatted}}\n                    </div>\n                </div>\n                <div class=\"row fee-row-total\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        Total\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        {{discountedTotalFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        {{totalFormatted}}\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"row fee-totals\">\n                <div class=\"col-sm-offset-8 col-sm-4 fee-totals-options\">\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Total Cost</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Amount Due</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\" :isLoading=\"loading\">\n                Finish\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n        <div class=\"well\">\n            <h4>This Registration Was Completed By</h4>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <TextBox label=\"First Name\" rules=\"required\" v-model=\"registrar.NickName\" />\n                </div>\n                <div class=\"col-md-6\">\n                    <TextBox label=\"Last Name\" rules=\"required\" v-model=\"registrar.LastName\" />\n                </div>\n            </div>\n            <div class=\"row\">\n                <div class=\"col-md-6\">\n                    <EmailBox label=\"Send Confirmation Emails To\" rules=\"required\" v-model=\"registrar.Email\" />\n                    <CheckBox v-if=\"doShowUpdateEmailOption\" label=\"Should Your Account Be Updated To Use This Email Address?\" v-model=\"registrar.UpdateEmail\" />\n                </div>\n            </div>\n        </div>\n\n        <div>\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"loading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"loading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <div class=\"fee-table\">\n                <div class=\"row hidden-xs fee-header\">\n                    <div class=\"col-sm-6\">\n                        <strong>Description</strong>\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <strong>Discounted Amount</strong>\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <strong>Amount</strong>\n                    </div>\n                </div>\n                <div v-for=\"lineItem in lineItems\" :key=\"lineItem.Key\" class=\"row\" :class=\"lineItem.IsFee ? 'fee-row-fee' : 'fee-row-cost'\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        {{lineItem.Description}}\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <JavaScriptAnchor v-if=\"lineItem.DiscountHelp\" class=\"help\" :title=\"lineItem.DiscountHelp\">\n                            <i class=\"fa fa-info-circle\"></i>\n                        </JavaScriptAnchor>\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        $ {{lineItem.DiscountedAmountFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        $ {{lineItem.AmountFormatted}}\n                    </div>\n                </div>\n                <div class=\"row fee-row-total\">\n                    <div class=\"col-sm-6 fee-caption\">\n                        Total\n                    </div>\n                    <div v-if=\"showDiscountCol\" class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Discounted Amount:</span>\n                        {{discountedTotalFormatted}}\n                    </div>\n                    <div class=\"col-sm-3 fee-value\">\n                        <span class=\"visible-xs-inline\">Amount:</span>\n                        {{totalFormatted}}\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"row fee-totals\">\n                <div class=\"col-sm-offset-8 col-sm-4 fee-totals-options\">\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Total Cost</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                    <div class=\"form-group static-control\">\n                        <label class=\"control-label\">Amount Due</label>\n                        <div class=\"control-wrapper\">\n                            <div class=\"form-control-static\">\n                                {{discountedTotalFormatted}}\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n\n        <div class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div class=\"actions\">\n            <RockButton btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" class=\"pull-right\" type=\"submit\" :isLoading=\"loading\">\n                Finish\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

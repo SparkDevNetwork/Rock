@@ -23,6 +23,7 @@ import RockValidation from '../../../Controls/RockValidation';
 import Alert from '../../../Elements/Alert';
 import CheckBox from '../../../Elements/CheckBox';
 import EmailBox from '../../../Elements/EmailBox';
+import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
 import TextBox from '../../../Elements/TextBox';
 import { asFormattedString } from '../../../Services/Number';
@@ -40,9 +41,13 @@ type CheckDiscountCodeResult = {
 
 type LineItem = {
     Key: Guid;
+    IsFee: boolean;
     Description: string;
+    Amount: number;
     AmountFormatted: string;
+    DiscountedAmount: number;
     DiscountedAmountFormatted: string;
+    DiscountHelp: string;
 };
 
 export default defineComponent( {
@@ -55,7 +60,8 @@ export default defineComponent( {
         RockForm,
         Alert,
         GatewayControl,
-        RockValidation
+        RockValidation,
+        JavaScriptAnchor
     },
     setup()
     {
@@ -141,53 +147,141 @@ export default defineComponent( {
         /** The fee line items that will be displayed in the summary */
         lineItems(): LineItem[]
         {
-            const total = this.viewModel.Cost;
-            let discountTotal = total;
+            const lineItems: LineItem[] = [];
 
-            if ( this.discountAmount )
+            for ( const registrant of this.registrationEntryState.Registrants )
             {
-                discountTotal = total - this.discountAmount;
-            }
-            else if ( this.discountPercent )
-            {
-                discountTotal = total - ( total * this.discountPercent );
-            }
+                let total = this.viewModel.Cost;
+                let discountedTotal = total;
+                let discountRemaining = 0;
 
-            return this.registrationEntryState.Registrants.map( r =>
-            {
-                const info = getRegistrantBasicInfo( r, this.viewModel.RegistrantForms );
+                if ( this.discountAmount && total < this.discountAmount )
+                {
+                    discountRemaining = this.discountAmount - total;
+                    discountedTotal = 0;
+                }
+                else if ( this.discountAmount )
+                {
+                    discountedTotal = total - this.discountAmount;
+                }
+                else if ( this.discountPercent )
+                {
+                    const discount = this.discountPercent >= 1 ?
+                        this.total :
+                        this.discountPercent <= 0 ?
+                            0 :
+                            ( total * this.discountPercent );
 
-                return {
-                    Key: r.Guid,
-                    Description: `${info.FirstName} ${info.LastName}`,
+                    discountedTotal = total - discount;
+                }
+
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                const name = registrant.IsOnWaitList ?
+                    `${info.FirstName} ${info.LastName} (Waiting List)` :
+                    `${info.FirstName} ${info.LastName}`;
+
+                if ( registrant.IsOnWaitList )
+                {
+                    total = 0;
+                    discountedTotal = 0;
+                }
+
+                lineItems.push( {
+                    Key: registrant.Guid,
+                    IsFee: false,
+                    Description: name,
+                    Amount: total,
                     AmountFormatted: asFormattedString( total ),
-                    DiscountedAmountFormatted: asFormattedString( discountTotal )
-                };
-            } );
+                    DiscountedAmount: discountedTotal,
+                    DiscountedAmountFormatted: asFormattedString( discountedTotal ),
+                    DiscountHelp: ''
+                } );
+
+                // Don't show fees if on the waitlist
+                if ( registrant.IsOnWaitList )
+                {
+                    continue;
+                }
+
+                for ( const fee of this.viewModel.Fees )
+                {
+                    for ( const feeItem of fee.Items )
+                    {
+                        const qty = registrant.FeeQuantities[ feeItem.Guid ];
+
+                        if ( !qty )
+                        {
+                            continue;
+                        }
+
+                        const itemTotal = qty * feeItem.Cost;
+                        let itemDiscountedTotal = itemTotal;
+
+                        if ( fee.DiscountApplies )
+                        {
+                            if ( itemTotal < discountRemaining )
+                            {
+                                discountRemaining -= itemTotal;
+                                itemDiscountedTotal = 0;
+                            }
+                            else if ( discountRemaining )
+                            {
+                                itemDiscountedTotal -= discountRemaining;
+                                discountRemaining = 0;
+                            }
+                            else if ( this.discountPercent )
+                            {
+                                const discount = this.discountPercent >= 1 ?
+                                    itemTotal :
+                                    this.discountPercent <= 0 ?
+                                        0 :
+                                        ( itemTotal * this.discountPercent );
+
+                                itemDiscountedTotal = itemTotal - discount;
+                            }
+                        }
+
+                        lineItems.push( {
+                            Key: `${registrant.Guid}-${feeItem.Guid}`,
+                            IsFee: true,
+                            Description: `${fee.Name}-${feeItem.Name} (${qty} @ $${asFormattedString( feeItem.Cost )})`,
+                            Amount: itemTotal,
+                            AmountFormatted: asFormattedString( itemTotal ),
+                            DiscountedAmount: itemDiscountedTotal,
+                            DiscountedAmountFormatted: asFormattedString( itemDiscountedTotal ),
+                            DiscountHelp: fee.DiscountApplies ? '' : 'This item is not eligible for the discount.'
+                        } );
+                    }
+                }
+            }
+
+            return lineItems;
         },
 
         /** The total amount of the registration before discounts */
         total(): number
         {
-            return this.registrationEntryState.Registrants.length * this.viewModel.Cost;
+            let total = 0;
+
+            for ( const lineItem of this.lineItems )
+            {
+                total += lineItem.Amount;
+            }
+
+            return total;
         },
 
         /** The total amount of the registration after discounts */
         discountedTotal(): number
         {
-            const total = this.viewModel.Cost;
-            let discountTotal = total;
+            let total = 0;
 
-            if ( this.discountAmount )
+            for ( const lineItem of this.lineItems )
             {
-                discountTotal = total - this.discountAmount;
-            }
-            else if ( this.discountPercent )
-            {
-                discountTotal = total - ( total * this.discountPercent );
+                total += lineItem.DiscountedAmount;
             }
 
-            return this.registrationEntryState.Registrants.length * discountTotal;
+            return total;
         },
 
         /** The total before discounts as a formatted string */
@@ -383,11 +477,14 @@ export default defineComponent( {
                         <strong>Amount</strong>
                     </div>
                 </div>
-                <div v-for="lineItem in lineItems" :key="lineItem.Key" class="row fee-row-cost">
+                <div v-for="lineItem in lineItems" :key="lineItem.Key" class="row" :class="lineItem.IsFee ? 'fee-row-fee' : 'fee-row-cost'">
                     <div class="col-sm-6 fee-caption">
                         {{lineItem.Description}}
                     </div>
                     <div v-if="showDiscountCol" class="col-sm-3 fee-value">
+                        <JavaScriptAnchor v-if="lineItem.DiscountHelp" class="help" :title="lineItem.DiscountHelp">
+                            <i class="fa fa-info-circle"></i>
+                        </JavaScriptAnchor>
                         <span class="visible-xs-inline">Discounted Amount:</span>
                         $ {{lineItem.DiscountedAmountFormatted}}
                     </div>

@@ -63,15 +63,14 @@ export default defineComponent( {
         /** Will some of the registrants have to be added to a waitlist */
         hasWaitlist(): boolean
         {
-            return this.registrationEntryState.NumberToAddToWaitlist > 0;
+            return this.registrationEntryState.Registrants.some( r => r.IsOnWaitList );
         },
 
         /** Will this registrant be added to the waitlist? */
         isOnWaitlist(): boolean
         {
-            const lastIndex = this.registrationEntryState.Registrants.length - 1;
-            const registrantsAfterThis = lastIndex - this.registrationEntryState.CurrentRegistrantIndex;
-            return registrantsAfterThis < this.registrationEntryState.NumberToAddToWaitlist;
+            const currentRegistrant = this.registrationEntryState.Registrants[ this.registrationEntryState.CurrentRegistrantIndex ];
+            return currentRegistrant.IsOnWaitList;
         },
 
         /** What are the registrants called? */
@@ -98,7 +97,7 @@ export default defineComponent( {
         This {{registrantTerm}} will be on the waiting list.
     </Alert>
     <template v-for="(r, i) in registrants" :key="r.Guid">
-        <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" @next="onNext" @previous="onPrevious" />
+        <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />
     </template>
 </div>`
 } );

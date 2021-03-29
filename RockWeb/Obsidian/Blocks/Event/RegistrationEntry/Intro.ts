@@ -117,11 +117,18 @@ export default defineComponent( {
             // Resize the registrant array to match the selected number
             while ( this.numberOfRegistrants > this.registrationEntryState.Registrants.length )
             {
-                this.registrationEntryState.Registrants.push( getDefaultRegistrantInfo() );
+                const registrant = getDefaultRegistrantInfo();
+                this.registrationEntryState.Registrants.push( registrant );
             }
 
-            this.registrationEntryState.NumberToAddToWaitlist = this.numberToAddToWaitlist;
             this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+            const firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
+
+            for ( let i = firstWaitListIndex; i < this.numberOfRegistrants; i++ )
+            {
+                this.registrationEntryState.Registrants[ i ].IsOnWaitList = true;
+            }
+
             this.$emit( 'next' );
         },
     },

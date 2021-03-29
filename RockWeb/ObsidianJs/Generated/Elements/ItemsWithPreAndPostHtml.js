@@ -38,6 +38,9 @@ System.register(["vue"], function (exports_1, context_1) {
                         return this.items.map(function (i) { return (__assign(__assign({}, i), { InnerSlotName: "inner-" + i.SlotName })); });
                     },
                     innerTemplate: function () {
+                        if (!this.items.length) {
+                            return '<slot />';
+                        }
                         var templateParts = this.items.map(function (i) { return i.PreHtml + "<slot name=\"inner-" + i.SlotName + "\" />" + i.PostHtml; });
                         return templateParts.join('');
                     },

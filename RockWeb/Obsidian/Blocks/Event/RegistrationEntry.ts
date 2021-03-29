@@ -42,10 +42,12 @@ export enum Step {
 }
 
 export type RegistrantInfo = {
-    FamilyGuid: Guid | null;
+    IsOnWaitList: boolean;
+    FamilyGuid: Guid;
     PersonGuid: Guid;
     FieldValues: Record<Guid, unknown>;
     FeeQuantities: Record<Guid, number>;
+    OwnFamilyGuid: Guid;
     Guid: Guid;
 };
 
@@ -68,16 +70,20 @@ export type RegistrationEntryState = {
     Registrar: RegistrarInfo;
     GatewayToken: string;
     DiscountCode: string;
-    NumberToAddToWaitlist: number;
 };
 
-export function getDefaultRegistrantInfo() {
+export function getDefaultRegistrantInfo()
+{
+    const ownFamilyGuid = newGuid();
+
     return {
-        FamilyGuid: null,
+        IsOnWaitList: false,
+        FamilyGuid: ownFamilyGuid,
         FieldValues: {},
         FeeQuantities: {},
         Guid: newGuid(),
-        PersonGuid: ''
+        PersonGuid: '',
+        OwnFamilyGuid: ownFamilyGuid
     } as RegistrantInfo;
 }
 
@@ -257,7 +263,7 @@ export default defineComponent( {
                 return this.currentRegistrantTitle;
             }
 
-            if ( this.currentStep === this.steps.registrationStartForm )
+            if ( this.currentStep === this.steps.registrationEndForm )
             {
                 return this.viewModel.RegistrationAttributeTitleEnd;
             }

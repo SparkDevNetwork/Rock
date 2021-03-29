@@ -26,7 +26,7 @@ import RegistrantPersonField from './RegistrantPersonField';
 import RegistrantAttributeField from './RegistrantAttributeField';
 import Alert from '../../../Elements/Alert';
 import { RegistrationEntryBlockFamilyMemberViewModel, RegistrationEntryBlockFormFieldViewModel, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationFieldSource } from './RegistrationEntryBlockViewModel';
-import { areEqual } from '../../../Util/Guid';
+import { areEqual, Guid } from '../../../Util/Guid';
 import RockForm from '../../../Controls/RockForm';
 import FeeField from './FeeField';
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../../Elements/ItemsWithPreAndPostHtml';
@@ -47,6 +47,10 @@ export default defineComponent( {
     props: {
         currentRegistrant: {
             type: Object as PropType<RegistrantInfo>,
+            required: true
+        },
+        isWaitList: {
+            type: Boolean as PropType<boolean>,
             required: true
         }
     },
@@ -84,27 +88,40 @@ export default defineComponent( {
         },
         currentForm(): RegistrationEntryBlockFormViewModel | null
         {
-            return this.viewModel.RegistrantForms[ this.currentFormIndex ] || null;
+            return this.formsToShow[ this.currentFormIndex ] || null;
         },
         isLastForm(): boolean
         {
-            return ( this.currentFormIndex + 1 ) === this.viewModel.RegistrantForms.length;
+            return ( this.currentFormIndex + 1 ) === this.formsToShow.length;
         },
+
+        /** The filtered list of forms that will be shown */
+        formsToShow(): RegistrationEntryBlockFormViewModel[]
+        {
+            if ( !this.isWaitList )
+            {
+                return this.viewModel.RegistrantForms;
+            }
+
+            return this.viewModel.RegistrantForms.filter( form => form.Fields.some( field => field.ShowOnWaitList ) );
+        },
+
+        /** The filtered fields to show on the current form */
         currentFormFields(): RegistrationEntryBlockFormFieldViewModel[]
         {
-            return this.currentForm?.Fields || [];
+            return ( this.currentForm?.Fields || [] )
+                .filter( f => !this.isWaitList || f.ShowOnWaitList );
         },
+
+        /** The current fields as pre-post items to allow pre-post HTML to be rendered */
         prePostHtmlItems(): ItemWithPreAndPostHtml[]
         {
-            return this.currentFormFields.map( f => ( {
-                PreHtml: f.PreHtml,
-                PostHtml: f.PostHtml,
-                SlotName: f.Guid
-            } ) );
-        },
-        formCountPerRegistrant(): number
-        {
-            return this.viewModel.RegistrantForms.length;
+            return this.currentFormFields
+                .map( f => ( {
+                    PreHtml: f.PreHtml,
+                    PostHtml: f.PostHtml,
+                    SlotName: f.Guid
+                } ) );
         },
         currentPerson(): Person | null
         {
@@ -116,14 +133,34 @@ export default defineComponent( {
         },
         familyOptions(): DropDownListOption[]
         {
-            const options = [] as DropDownListOption[];
+            const options: DropDownListOption[] = [];
+            const usedFamilyGuids: Record<Guid, boolean> = {};
 
             if ( !this.viewModel.DoAskForFamily )
             {
                 return options;
             }
 
-            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName )
+            // Add previous registrants as options
+            for ( let i = 0; i < this.registrationEntryState.CurrentRegistrantIndex; i++ )
+            {
+                const registrant = this.registrationEntryState.Registrants[ i ];
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+
+                if ( !usedFamilyGuids[ registrant.FamilyGuid ] && info?.FirstName && info?.LastName )
+                {
+                    options.push( {
+                        key: registrant.FamilyGuid,
+                        text: `${info.FirstName} ${info.LastName}`,
+                        value: registrant.FamilyGuid
+                    } );
+
+                    usedFamilyGuids[ registrant.FamilyGuid ] = true;
+                }
+            }
+
+            // Add the current person (registrant) if not already added
+            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName && !usedFamilyGuids[ this.currentPerson.PrimaryFamilyGuid ] )
             {
                 options.push( {
                     key: this.currentPerson.PrimaryFamilyGuid,
@@ -133,9 +170,9 @@ export default defineComponent( {
             }
 
             options.push( {
-                key: 'none',
+                key: this.currentRegistrant.OwnFamilyGuid,
                 text: 'None of the above',
-                value: ''
+                value: this.currentRegistrant.OwnFamilyGuid
             } );
 
             return options;
@@ -149,8 +186,14 @@ export default defineComponent( {
                 return [];
             }
 
+            const usedFamilyMemberGuids = this.registrationEntryState.Registrants
+                .filter( r => r.PersonGuid && r.PersonGuid !== this.currentRegistrant.PersonGuid )
+                .map( r => r.PersonGuid );
+
             return this.viewModel.FamilyMembers
-                .filter( fm => areEqual( fm.FamilyGuid, selectedFamily ) )
+                .filter( fm =>
+                    areEqual( fm.FamilyGuid, selectedFamily ) &&
+                    !usedFamilyMemberGuids.includes( fm.Guid ) )
                 .map( fm => ( {
                     key: fm.Guid,
                     text: fm.FullName,
@@ -190,7 +233,7 @@ export default defineComponent( {
         },
         onNext()
         {
-            const lastFormIndex = this.formCountPerRegistrant - 1;
+            const lastFormIndex = this.formsToShow.length - 1;
 
             if ( this.currentFormIndex >= lastFormIndex )
             {
@@ -267,7 +310,7 @@ export default defineComponent( {
             </template>
         </ItemsWithPreAndPostHtml>
 
-        <div v-if="isLastForm && viewModel.Fees.length" class="well registration-additional-options">
+        <div v-if="!isWaitList && isLastForm && viewModel.Fees.length" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>
             <template v-for="fee in viewModel.Fees" :key="fee.Guid">
                 <FeeField :fee="fee" v-model="currentRegistrant.FeeQuantities" />

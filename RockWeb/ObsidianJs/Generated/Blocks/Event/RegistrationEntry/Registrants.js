@@ -65,13 +65,12 @@ System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (ex
                 computed: {
                     /** Will some of the registrants have to be added to a waitlist */
                     hasWaitlist: function () {
-                        return this.registrationEntryState.NumberToAddToWaitlist > 0;
+                        return this.registrationEntryState.Registrants.some(function (r) { return r.IsOnWaitList; });
                     },
                     /** Will this registrant be added to the waitlist? */
                     isOnWaitlist: function () {
-                        var lastIndex = this.registrationEntryState.Registrants.length - 1;
-                        var registrantsAfterThis = lastIndex - this.registrationEntryState.CurrentRegistrantIndex;
-                        return registrantsAfterThis < this.registrationEntryState.NumberToAddToWaitlist;
+                        var currentRegistrant = this.registrationEntryState.Registrants[this.registrationEntryState.CurrentRegistrantIndex];
+                        return currentRegistrant.IsOnWaitList;
                     },
                     /** What are the registrants called? */
                     registrantTerm: function () {
@@ -84,7 +83,7 @@ System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (ex
                         return this.registrationEntryState.CurrentRegistrantIndex;
                     }
                 },
-                template: "\n<div class=\"registrationentry-registrant\">\n    <Alert v-if=\"hasWaitlist && !isOnWaitlist\" alertType=\"success\">\n        This {{registrantTerm}} will be fully registered.\n    </Alert>\n    <Alert v-else-if=\"isOnWaitlist\" alertType=\"warning\">\n        This {{registrantTerm}} will be on the waiting list.\n    </Alert>\n    <template v-for=\"(r, i) in registrants\" :key=\"r.Guid\">\n        <Registrant v-show=\"currentRegistrantIndex === i\" :currentRegistrant=\"r\" @next=\"onNext\" @previous=\"onPrevious\" />\n    </template>\n</div>"
+                template: "\n<div class=\"registrationentry-registrant\">\n    <Alert v-if=\"hasWaitlist && !isOnWaitlist\" alertType=\"success\">\n        This {{registrantTerm}} will be fully registered.\n    </Alert>\n    <Alert v-else-if=\"isOnWaitlist\" alertType=\"warning\">\n        This {{registrantTerm}} will be on the waiting list.\n    </Alert>\n    <template v-for=\"(r, i) in registrants\" :key=\"r.Guid\">\n        <Registrant v-show=\"currentRegistrantIndex === i\" :currentRegistrant=\"r\" :isWaitList=\"isOnWaitlist\" @next=\"onNext\" @previous=\"onPrevious\" />\n    </template>\n</div>"
             }));
         }
     };

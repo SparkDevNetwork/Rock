@@ -285,6 +285,14 @@ namespace Rock.ViewModel.Blocks
         ///   <c>true</c> if this instance is required; otherwise, <c>false</c>.
         /// </value>
         public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [discount applies].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [discount applies]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DiscountApplies { get; set; }
     }
 
     /// <summary>
@@ -415,6 +423,14 @@ namespace Rock.ViewModel.Blocks
         /// The post HTML.
         /// </value>
         public string PostHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show on wait list].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show on wait list]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowOnWaitList { get; set; }
     }
 
     /// <summary>

@@ -92,6 +92,10 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                     currentRegistrant: {
                         type: Object,
                         required: true
+                    },
+                    isWaitList: {
+                        type: Boolean,
+                        required: true
                     }
                 },
                 setup: function () {
@@ -121,24 +125,33 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         return this.registrationEntryState.CurrentRegistrantFormIndex;
                     },
                     currentForm: function () {
-                        return this.viewModel.RegistrantForms[this.currentFormIndex] || null;
+                        return this.formsToShow[this.currentFormIndex] || null;
                     },
                     isLastForm: function () {
-                        return (this.currentFormIndex + 1) === this.viewModel.RegistrantForms.length;
+                        return (this.currentFormIndex + 1) === this.formsToShow.length;
                     },
+                    /** The filtered list of forms that will be shown */
+                    formsToShow: function () {
+                        if (!this.isWaitList) {
+                            return this.viewModel.RegistrantForms;
+                        }
+                        return this.viewModel.RegistrantForms.filter(function (form) { return form.Fields.some(function (field) { return field.ShowOnWaitList; }); });
+                    },
+                    /** The filtered fields to show on the current form */
                     currentFormFields: function () {
+                        var _this = this;
                         var _a;
-                        return ((_a = this.currentForm) === null || _a === void 0 ? void 0 : _a.Fields) || [];
+                        return (((_a = this.currentForm) === null || _a === void 0 ? void 0 : _a.Fields) || [])
+                            .filter(function (f) { return !_this.isWaitList || f.ShowOnWaitList; });
                     },
+                    /** The current fields as pre-post items to allow pre-post HTML to be rendered */
                     prePostHtmlItems: function () {
-                        return this.currentFormFields.map(function (f) { return ({
+                        return this.currentFormFields
+                            .map(function (f) { return ({
                             PreHtml: f.PreHtml,
                             PostHtml: f.PostHtml,
                             SlotName: f.Guid
                         }); });
-                    },
-                    formCountPerRegistrant: function () {
-                        return this.viewModel.RegistrantForms.length;
                     },
                     currentPerson: function () {
                         return this.$store.state.currentPerson;
@@ -149,10 +162,25 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                     familyOptions: function () {
                         var _a;
                         var options = [];
+                        var usedFamilyGuids = {};
                         if (!this.viewModel.DoAskForFamily) {
                             return options;
                         }
-                        if (((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.PrimaryFamilyGuid) && this.currentPerson.FullName) {
+                        // Add previous registrants as options
+                        for (var i = 0; i < this.registrationEntryState.CurrentRegistrantIndex; i++) {
+                            var registrant = this.registrationEntryState.Registrants[i];
+                            var info = RegistrationEntry_1.getRegistrantBasicInfo(registrant, this.viewModel.RegistrantForms);
+                            if (!usedFamilyGuids[registrant.FamilyGuid] && (info === null || info === void 0 ? void 0 : info.FirstName) && (info === null || info === void 0 ? void 0 : info.LastName)) {
+                                options.push({
+                                    key: registrant.FamilyGuid,
+                                    text: info.FirstName + " " + info.LastName,
+                                    value: registrant.FamilyGuid
+                                });
+                                usedFamilyGuids[registrant.FamilyGuid] = true;
+                            }
+                        }
+                        // Add the current person (registrant) if not already added
+                        if (((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.PrimaryFamilyGuid) && this.currentPerson.FullName && !usedFamilyGuids[this.currentPerson.PrimaryFamilyGuid]) {
                             options.push({
                                 key: this.currentPerson.PrimaryFamilyGuid,
                                 text: this.currentPerson.FullName,
@@ -160,19 +188,26 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                             });
                         }
                         options.push({
-                            key: 'none',
+                            key: this.currentRegistrant.OwnFamilyGuid,
                             text: 'None of the above',
-                            value: ''
+                            value: this.currentRegistrant.OwnFamilyGuid
                         });
                         return options;
                     },
                     familyMemberOptions: function () {
+                        var _this = this;
                         var selectedFamily = this.currentRegistrant.FamilyGuid;
                         if (!selectedFamily) {
                             return [];
                         }
+                        var usedFamilyMemberGuids = this.registrationEntryState.Registrants
+                            .filter(function (r) { return r.PersonGuid && r.PersonGuid !== _this.currentRegistrant.PersonGuid; })
+                            .map(function (r) { return r.PersonGuid; });
                         return this.viewModel.FamilyMembers
-                            .filter(function (fm) { return Guid_1.areEqual(fm.FamilyGuid, selectedFamily); })
+                            .filter(function (fm) {
+                            return Guid_1.areEqual(fm.FamilyGuid, selectedFamily) &&
+                                !usedFamilyMemberGuids.includes(fm.Guid);
+                        })
                             .map(function (fm) { return ({
                             key: fm.Guid,
                             text: fm.FullName,
@@ -202,7 +237,7 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         this.registrationEntryState.CurrentRegistrantFormIndex--;
                     },
                     onNext: function () {
-                        var lastFormIndex = this.formCountPerRegistrant - 1;
+                        var lastFormIndex = this.formsToShow.length - 1;
                         if (this.currentFormIndex >= lastFormIndex) {
                             this.$emit('next');
                             return;
@@ -249,7 +284,7 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         }
                     }
                 },
-                template: "\n<div>\n    <RockForm @submit=\"onNext\">\n        <template v-if=\"currentFormIndex === 0\">\n            <div v-if=\"familyOptions.length > 1\" class=\"well js-registration-same-family\">\n                <RadioButtonList :label=\"(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'\" rules='required:{\"allowEmptyString\": true}' v-model=\"currentRegistrant.FamilyGuid\" :options=\"familyOptions\" validationTitle=\"Family\" />\n            </div>\n            <DropDownList v-if=\"familyMemberOptions.length\" v-model=\"currentRegistrant.PersonGuid\" :options=\"familyMemberOptions\" label=\"Family Member to Register\" />\n        </template>\n\n        <ItemsWithPreAndPostHtml :items=\"prePostHtmlItems\">\n            <template v-for=\"field in currentFormFields\" :key=\"field.Guid\" v-slot:[field.Guid]>\n                <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" :isKnownFamilyMember=\"!!currentRegistrant.PersonGuid\" />\n                <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" />\n                <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n            </template>\n        </ItemsWithPreAndPostHtml>\n\n        <div v-if=\"isLastForm && viewModel.Fees.length\" class=\"well registration-additional-options\">\n            <h4>{{pluralFeeTerm}}</h4>\n            <template v-for=\"fee in viewModel.Fees\" :key=\"fee.Guid\">\n                <FeeField :fee=\"fee\" v-model=\"currentRegistrant.FeeQuantities\" />\n            </template>\n        </div>\n\n        <div class=\"actions row\">\n            <div class=\"col-xs-6\">\n                <RockButton v-if=\"showPrevious\" btnType=\"default\" @click=\"onPrevious\">\n                    Previous\n                </RockButton>\n            </div>\n            <div class=\"col-xs-6 text-right\">\n                <RockButton btnType=\"primary\" type=\"submit\">\n                    Next\n                </RockButton>\n            </div>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div>\n    <RockForm @submit=\"onNext\">\n        <template v-if=\"currentFormIndex === 0\">\n            <div v-if=\"familyOptions.length > 1\" class=\"well js-registration-same-family\">\n                <RadioButtonList :label=\"(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'\" rules='required:{\"allowEmptyString\": true}' v-model=\"currentRegistrant.FamilyGuid\" :options=\"familyOptions\" validationTitle=\"Family\" />\n            </div>\n            <DropDownList v-if=\"familyMemberOptions.length\" v-model=\"currentRegistrant.PersonGuid\" :options=\"familyMemberOptions\" label=\"Family Member to Register\" />\n        </template>\n\n        <ItemsWithPreAndPostHtml :items=\"prePostHtmlItems\">\n            <template v-for=\"field in currentFormFields\" :key=\"field.Guid\" v-slot:[field.Guid]>\n                <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" :isKnownFamilyMember=\"!!currentRegistrant.PersonGuid\" />\n                <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" />\n                <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n            </template>\n        </ItemsWithPreAndPostHtml>\n\n        <div v-if=\"!isWaitList && isLastForm && viewModel.Fees.length\" class=\"well registration-additional-options\">\n            <h4>{{pluralFeeTerm}}</h4>\n            <template v-for=\"fee in viewModel.Fees\" :key=\"fee.Guid\">\n                <FeeField :fee=\"fee\" v-model=\"currentRegistrant.FeeQuantities\" />\n            </template>\n        </div>\n\n        <div class=\"actions row\">\n            <div class=\"col-xs-6\">\n                <RockButton v-if=\"showPrevious\" btnType=\"default\" @click=\"onPrevious\">\n                    Previous\n                </RockButton>\n            </div>\n            <div class=\"col-xs-6 text-right\">\n                <RockButton btnType=\"primary\" type=\"submit\">\n                    Next\n                </RockButton>\n            </div>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

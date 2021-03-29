@@ -19,12 +19,15 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
     var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1, Success_1, Page_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
+        var ownFamilyGuid = Guid_1.newGuid();
         return {
-            FamilyGuid: null,
+            IsOnWaitList: false,
+            FamilyGuid: ownFamilyGuid,
             FieldValues: {},
             FeeQuantities: {},
             Guid: Guid_1.newGuid(),
-            PersonGuid: ''
+            PersonGuid: '',
+            OwnFamilyGuid: ownFamilyGuid
         };
     }
     exports_1("getDefaultRegistrantInfo", getDefaultRegistrantInfo);
@@ -224,7 +227,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         if (this.currentStep === this.steps.perRegistrantForms) {
                             return this.currentRegistrantTitle;
                         }
-                        if (this.currentStep === this.steps.registrationStartForm) {
+                        if (this.currentStep === this.steps.registrationEndForm) {
                             return this.viewModel.RegistrationAttributeTitleEnd;
                         }
                         if (this.currentStep === this.steps.reviewAndPayment) {

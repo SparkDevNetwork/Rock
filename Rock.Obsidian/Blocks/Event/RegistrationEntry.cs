@@ -242,6 +242,7 @@ namespace Rock.Obsidian.Blocks.Event
                         Name = feeModel.Name,
                         AllowMultiple = feeModel.AllowMultiple,
                         IsRequired = feeModel.IsRequired,
+                        DiscountApplies = feeModel.DiscountApplies,
                         Items = feeModel.FeeItems.Select( fi => new RegistrationEntryBlockFeeItemViewModel
                         {
                             Cost = fi.Cost,
@@ -276,6 +277,7 @@ namespace Rock.Obsidian.Blocks.Event
                         field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
                         field.PreHtml = fieldModel.PreText;
                         field.PostHtml = fieldModel.PostText;
+                        field.ShowOnWaitList = fieldModel.ShowOnWaitlist;
 
                         field.VisibilityRules = fieldModel.FieldVisibilityRules
                             .RuleList

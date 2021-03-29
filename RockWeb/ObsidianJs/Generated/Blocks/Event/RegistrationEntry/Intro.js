@@ -109,10 +109,14 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                     onNext: function () {
                         // Resize the registrant array to match the selected number
                         while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
-                            this.registrationEntryState.Registrants.push(RegistrationEntry_1.getDefaultRegistrantInfo());
+                            var registrant = RegistrationEntry_1.getDefaultRegistrantInfo();
+                            this.registrationEntryState.Registrants.push(registrant);
                         }
-                        this.registrationEntryState.NumberToAddToWaitlist = this.numberToAddToWaitlist;
                         this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+                        var firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
+                        for (var i = firstWaitListIndex; i < this.numberOfRegistrants; i++) {
+                            this.registrationEntryState.Registrants[i].IsOnWaitList = true;
+                        }
                         this.$emit('next');
                     },
                 },
