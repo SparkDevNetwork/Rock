@@ -49,7 +49,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
+        [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         [IncludeForReporting]
         public string Name { get; set; }
