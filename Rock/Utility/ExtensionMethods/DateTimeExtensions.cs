@@ -627,6 +627,20 @@ namespace Rock
             return new DateTime( dateTime.Year, 1, 1 );
         }
 
+        /// <summary>
+        /// Gets the next weekday.
+        /// https://stackoverflow.com/questions/6346119/datetime-get-next-tuesday
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="day">The day.</param>
+        /// <returns></returns>
+        public static DateTime GetNextWeekday( this DateTime dateTime, DayOfWeek day)
+        {
+            // The (... + 7) % 7 ensures we end up with a value in the range [0, 6]
+            int daysToAdd = ((int) day - (int) dateTime.DayOfWeek + 7) % 7;
+            return dateTime.AddDays(daysToAdd);
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions
