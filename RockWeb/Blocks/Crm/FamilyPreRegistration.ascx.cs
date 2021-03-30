@@ -1912,6 +1912,20 @@ ORDER BY [Text]";
         /// <returns></returns>
         private bool ValidateInfo()
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return false;
+            }
+
             // First, verify that the page controls are valid using built-in validators.
             // If validation fails, exit and allow the controls to display the messages they have generated.
             Page.Validate();
