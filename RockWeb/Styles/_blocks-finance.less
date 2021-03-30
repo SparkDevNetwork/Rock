@@ -68,6 +68,24 @@
   opacity: 1;
 }
 
+// Giving Overview Block Inactive Giver
+.inactive-giving {
+  position: relative;
+  opacity: .85;
+
+  &::before {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -10;
+    content: " ";
+    background: fade(@ui-2, 100%);
+    border-radius: @border-radius-base;
+  }
+}
+
 // 2. Scheduled Transactions
 // -------------------------
 .scheduledtransaction-item {
