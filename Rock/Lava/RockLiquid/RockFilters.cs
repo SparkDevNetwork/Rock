@@ -5306,6 +5306,20 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Filters a collection of items on a specified property and value with an equal comparison Type.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <returns></returns>
+        [Obsolete("Use the override that specifies the comparisonType.")]
+        [RockObsolete("1.13")]
+        public static object Where( object input, string filterKey, object filterValue )
+        {
+            return Where( input, filterKey, filterValue, "equal" );
+        }
+
+        /// <summary>
         /// Filters a collection of items on a specified property and value.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -5313,7 +5327,7 @@ namespace Rock.Lava
         /// <param name="filterValue">The filter value.</param>
         /// <param name="comparisonType">The type of comparison for the filter value, either "equal" (default) or "notequal".</param>
         /// <returns></returns>
-        public static object Where( object input, string filterKey, object filterValue, string comparisonType = "equal" )
+        public static object Where( object input, string filterKey, object filterValue, string comparisonType )
         {
             if ( input == null )
             {
