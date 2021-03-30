@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.Examples
 
                         lClassName.Text = mClass.Name;
                         hlAnchor.NavigateUrl = pageReference.BuildUrl();
-                        lClassDescription.Text = mClass.Comment != null ? "<h5>Description</h5>" + mClass.Comment.Summary : string.Empty;
+                        lClassDescription.Text = mClass.Comment != null ? mClass.Comment.Summary : string.Empty;
                         lClasses.Text = ClassNode( mClass );
 
                         pnlClassDetail.Visible = true;
@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h5>Properties</h5><ul class='list-unstyled list-icon'>" );
+                    sb.AppendLine( "<h5>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
@@ -473,10 +473,10 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         sb.AppendFormat(
-                            "<li data-id='p{0}' {11}>{8}<tt class='cursor-default font-weight-bold {3}' title='{6}'>{1}</tt> {4}{5}{9}{2}{10}</li>{7}",
+                            "<tr data-id='p{0}' {11}><td class='d-block d-sm-table-cell'>{8}<tt class='cursor-default font-weight-bold {3}' title='{6}'>{1}</tt> {4}{5}</td><td class='d-block d-sm-table-cell'>{9}{2}{10}</td></tr>{7}",
                             property.Id, // 0
                             HttpUtility.HtmlEncode( property.Name ), // 1
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " <br/> " + property.Comment.Summary : string.Empty, // 2
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " " + property.Comment.Summary : string.Empty, // 2
                             property.Required ? "required-indicator" : string.Empty, // 3
                             property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning unselectable'></i> " : string.Empty, // 4
                             string.Empty, // 5
@@ -485,11 +485,11 @@ namespace RockWeb.Blocks.Examples
                             property.NotMapped || property.IsVirtual ? "<i class='fa fa-square fa-fw o-20'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 8
                             property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <span class='small text-danger'>" + property.ObsoleteMessage + " </span> " : string.Empty, // 9
                             ( property.IsEnum || property.IsDefinedValue ) && property.KeyValues != null ? GetStringFromKeyValues( property.KeyValues ) : string.Empty, /*10*/
-                            property.IsObsolete ? "class='o-50' title='Obsolete'" : string.Empty
+                            property.IsObsolete ? "class='o-50' title='Obsolete'" : "class=''"
                             );
                     }
 
-                    sb.AppendLine( "</ul>" );
+                    sb.AppendLine( "</div>" );
                 }
 
                 if ( aClass.Methods.Any() )
