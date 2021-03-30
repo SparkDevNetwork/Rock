@@ -55,8 +55,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 10, 0, 0 ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 10, 0, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
@@ -1416,16 +1416,11 @@ namespace Rock.Tests.Rock.Lava
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
             // Next year's Saturday (from right now)
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime firstSaturdayThisMonth = today.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
-            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 48 );
-
-            DateTime expected = nextYearSaturday.AddHours( 10 );
+            DateTime nextYearSaturday = RockDateTime.Now.StartOfMonth().AddYears( 1 ).GetNextWeekday( DayOfWeek.Saturday ).AddHours( 10 );
 
             // Get the end datetime of the 12th event in the "First Saturday of the Month" schedule.
             var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" ).LastOrDefault();
-            Assert.That.AreEqual( expected, output );
+            Assert.That.AreEqual( nextYearSaturday, output );
         }
 
         #endregion
