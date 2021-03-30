@@ -136,7 +136,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.MediaAccount"/> that this MediaFolder belongs to.
         /// </value>
-        [LavaInclude]
+        [Rock.Lava.LavaVisibleAttribute]
         public virtual MediaAccount MediaAccount { get; set; }
 
         /// <summary>

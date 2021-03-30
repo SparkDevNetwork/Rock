@@ -139,7 +139,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.MediaFolder"/> that this Element belongs to.
         /// </value>
-        [LavaInclude]
+        [Rock.Lava.LavaVisibleAttribute]
         public virtual MediaFolder MediaFolder { get; set; }
 
         #endregion

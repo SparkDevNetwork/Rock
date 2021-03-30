@@ -847,7 +847,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", (int)1 } },
                new Dictionary<string, object> { { "Id", (int)2 } }
             };
-            var output = RockFilters.Where( input, "Id", 1 );
+            var output = RockFilters.Where( input, "Id", 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count() == 1 );
         }
 
@@ -862,7 +862,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", (long)1 } },
                new Dictionary<string, object> { { "Id", (long)2 } }
             };
-            var output = RockFilters.Where( input, "Id", ( int ) 1 );
+            var output = RockFilters.Where( input, "Id", ( int ) 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
@@ -878,7 +878,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", "2" } }
             };
 
-            var output = RockFilters.Where( input, "Id", "1" );
+            var output = RockFilters.Where( input, "Id", "1", "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
