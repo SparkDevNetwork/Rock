@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -91,6 +92,31 @@ namespace Rock
         public static string FormatAsCurrency( this int? value )
         {
             return ( (decimal?)value ).FormatAsCurrency();
+        }
+
+        /// <summary>
+        /// Rounds the value to 2 decimal spaces. This is handy if you doing math on Money
+        /// and don't want to worry about fractions of a penny.
+        /// For example: 123456.55345 returns 123456.55.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static decimal ToMoney( this decimal value )
+        {
+            return Math.Round( value, 2 );
+        }
+
+        /// <summary>
+        /// Formats the value to include commas and decimal point. But without
+        /// a currency symbol. 
+        /// For example: 123456.55345 returns "123,456.55" (depending on browser language settings).
+        /// Use <seealso cref="FormatAsCurrency(decimal)"/> to include the currency symbol.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string ToMoneyString( this decimal value )
+        {
+            return string.Format( "{0:N}", value );
         }
 
         #endregion

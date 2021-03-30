@@ -43,6 +43,8 @@ namespace Rock.Lava
 
         #region IFileSystem implementation
 
+        private static LavaToLiquidTemplateConverter _lavaConverter = new LavaToLiquidTemplateConverter();
+
         string IFileSystem.ReadTemplateFile( Context context, string templateName )
         {
             // Trim delimiters from the template name.
@@ -53,13 +55,18 @@ namespace Rock.Lava
             {
                 var lavaContext = new DotLiquidRenderContext( context );
 
-                return _lavaFileSystem.ReadTemplateFile( lavaContext, templateName );
+                // This method is called directly by the Fluid framework.
+                // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the DotLiquid engine.
+                var lavaText = _lavaFileSystem.ReadTemplateFile( lavaContext, templateName );
+
+                var liquidText = _lavaConverter.ConvertToLiquid( lavaText );
+
+                return liquidText;
             }
             catch
             {
                 throw new LavaException( "File Load Failed. The template \"{0}\" could not loaded.", templateName );
             }
-
         }
 
         #endregion

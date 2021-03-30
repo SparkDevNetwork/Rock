@@ -26,19 +26,11 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class LavaIntegrationTestBase
     {
-        public static LavaEngineTypeSpecifier EngineType
+        public static LavaIntegrationTestHelper TestHelper
         {
             get
             {
-                return IntegrationTestHelper.EngineType;
-            }
-        }
-
-        public static LavaTestHelper TestHelper
-        {
-            get
-            {
-                return IntegrationTestHelper.LavaTestHelper;
+                return LavaIntegrationTestHelper.CurrentInstance;
             }
         }
 

@@ -313,26 +313,26 @@ iframe.email-body {
     overflow-y: scroll;
   }
 
+  .note-editor {
+    padding: 8px 12px;
+    border-top: 1px solid @panel-border;
+  }
+
   .footer {
+    position: relative;
     flex-shrink: 0;
     border-top: 1px solid @panel-border;
     -ms-flex-negative: 0;
 
     .form-control {
-      padding: 18px 86px 18px 12px;
+      padding: 18px 162px 18px 12px;
       resize: none;
       border: 0;
     }
 
-    .send-button {
+    .actions {
       position: absolute;
       right: 12px;
-      bottom: 10px;
-    }
-
-    .image-button {
-      position: absolute;
-      right: 84px;
       bottom: 10px;
     }
   }
@@ -378,13 +378,18 @@ iframe.email-body {
 
     .sms-image-uploader-container {
       position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 280px;
+      right: -1px;
+      bottom: -1px;
+      width: 220px;
       max-width: 100%;
       padding: 8px;
       margin: 0;
       background: @well-bg;
+      border: 1px solid @panel-border;
+
+      .close {
+        font-size: 18px;
+      }
     }
   }
 

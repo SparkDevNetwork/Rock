@@ -74,7 +74,7 @@ namespace Rock.Lava.Blocks
     /// {% endworkflowactivate %}
     /// </code>
     /// </example>
-    public class WorkflowActivateBlock : LavaBlockBase
+    public class WorkflowActivateBlock : LavaBlockBase, ILavaSecured
     {
         private string _markup;
 
@@ -348,5 +348,18 @@ namespace Rock.Lava.Blocks
 
             return parms;
         }
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "WorkflowActivate";
+            }
+        }
+
+        #endregion
     }
 }

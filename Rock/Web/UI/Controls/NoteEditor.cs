@@ -610,6 +610,7 @@ namespace Rock.Web.UI.Controls
             var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
 
             _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
+            _hasAttributes = tempNoteForNewAttributes.Attributes.Any();
         }
 
         /// <summary>
@@ -631,6 +632,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            if ( !this.Visible )
+            {
+                return;
+            }
+
             var script =
 $@"Rock.controls.noteEditor.initialize({{
     id: '{this.ClientID}',
@@ -639,8 +645,6 @@ $@"Rock.controls.noteEditor.initialize({{
     isEditing: {this.IsEditing.ToJavaScriptValue()},
 }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "noteEditor-script" + this.ClientID, script, true );
-
-            var noteType = NoteTypeId.HasValue ? NoteTypeCache.Get( NoteTypeId.Value ) : null;
 
             // Add Note Validation Group here since the ClientID is now resolved
             AddNoteValidationGroup();

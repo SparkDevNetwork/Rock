@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Field.Types;
 
 namespace Rock.Attribute
@@ -62,6 +64,26 @@ namespace Rock.Attribute
         {
             get => this.FieldTypeClass == typeof( NoteTypesFieldType ).FullName;
             set => this.FieldTypeClass = value ? typeof( NoteTypesFieldType ).FullName : typeof( NoteTypeFieldType ).FullName;
+        }
+
+        /// <summary>
+        /// Gets or sets the EntityType to limit NoteTypes to
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public Type EntityType
+        {
+            get
+            {
+                string entityTypeName = this.EntityTypeName;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                this.EntityTypeName = value.FullName;
+            }
         }
 
         /// <summary>

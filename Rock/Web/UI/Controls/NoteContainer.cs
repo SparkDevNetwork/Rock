@@ -737,6 +737,7 @@ namespace Rock.Web.UI.Controls
         private void AddNote()
         {
             var note = new Note();
+            note.CreatedByPersonAlias = this.RockBlock()?.CurrentPersonAlias;
 
             _noteEditor.IsEditing = true;
             _noteEditor.SetNote( note );
@@ -937,10 +938,10 @@ namespace Rock.Web.UI.Controls
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyMember control.
+        /// Handles the SaveButtonClick event of the note control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="NoteEventArgs"/> instance containing the event data.</param>
         protected void note_SaveButtonClick( object sender, NoteEventArgs e )
         {
             EnsureChildControls();

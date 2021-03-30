@@ -130,14 +130,14 @@ namespace Rock.Lava
         /// <summary>
         /// Override this method to perform tasks when the block is first loaded at startup.
         /// </summary>
-        public virtual void OnStartup()
+        public virtual void OnStartup( ILavaEngine engine )
         {
             //
         }
 
         protected virtual void AssertMissingDelimitation()
         {
-            throw new Exception( string.Format( "BlockTagNotClosedException: {0}", this.SourceElementName ) );
+            throw new LavaException( string.Format( "BlockTagNotClosedException: {0}", this.SourceElementName ) );
         }
 
         /// <summary>

@@ -152,12 +152,11 @@ namespace Rock.WebStartup
             ShowDebugTimingMessage( "Web Farm (stage 1)" );
 
             RegisterHttpModules();
+            ShowDebugTimingMessage( "Register HTTP Modules" );
 
             // Initialize the Lava engine.
             InitializeLava();
             ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaEngine.CurrentEngine.EngineName})" );
-
-            ShowDebugTimingMessage( "Startup Components" );
 
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
@@ -713,7 +712,7 @@ namespace Rock.WebStartup
 
                     try
                     {
-                        instance.OnStartup();
+                        instance.OnStartup( engine );
                     }
                     catch ( Exception ex )
                     {
@@ -747,7 +746,7 @@ namespace Rock.WebStartup
 
                     try
                     {
-                        blockInstance.OnStartup();
+                        blockInstance.OnStartup( engine );
                     }
                     catch ( Exception ex )
                     {

@@ -29,8 +29,8 @@ namespace Rock.Tests.UnitTests.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
-            TestHelper.LavaEngine.RegisterSafeType( typeof( TestPerson ) );
-            TestHelper.LavaEngine.RegisterSafeType( typeof( TestCampus ) );
+            TestHelper.RegisterSafeType( typeof( TestPerson ) );
+            TestHelper.RegisterSafeType( typeof( TestCampus ) );
         }
 
         #endregion
@@ -57,9 +57,7 @@ Name: Ted Decker
 Email: tdecker@rocksolidchurch.com
 ";
 
-            var output = TestHelper.GetTemplateOutput( template, mergeValues );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -83,9 +81,7 @@ Date of Birth:
 ";
 
             // Date of Birth should be omitted because it is not a named as a Lava property.
-            var output = TestHelper.GetTemplateOutput( template, mergeValues );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -109,9 +105,7 @@ Password:
 ";
 
             // Password value should be omitted even though it is named in the whitelist, because it is marked with the LavaIgnore attribute.
-            var output = TestHelper.GetTemplateOutput( template, mergeValues );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
         }
 
         #endregion
@@ -137,9 +131,7 @@ Name: Ted Decker
 ";
 
             // Name value should be the only available property, because it is the only property marked with LavaInclude.
-            var output = TestHelper.GetTemplateOutput( template, mergeValues );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -163,9 +155,7 @@ Password:
 ";
 
             // Name value should be the only available property, because it is the only property marked with LavaInclude.
-            var output = TestHelper.GetTemplateOutput( template, mergeValues );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
         }
 
         #endregion

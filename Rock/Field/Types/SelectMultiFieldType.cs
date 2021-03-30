@@ -40,6 +40,7 @@ namespace Rock.Field.Types
         private const string VALUES_KEY = "values";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
         private const string REPEAT_COLUMNS = "repeatColumns";
+        private const string REPEAT_DIRECTION = "repeatDirection";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -51,6 +52,7 @@ namespace Rock.Field.Types
             configKeys.Add( VALUES_KEY );
             configKeys.Add( ENHANCED_SELECTION_KEY );
             configKeys.Add( REPEAT_COLUMNS );
+            configKeys.Add( REPEAT_DIRECTION );
             return configKeys;
         }
 
@@ -82,11 +84,19 @@ namespace Rock.Field.Types
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Columns";
-            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space.";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add constraints due to available space.";
             tbRepeatColumns.MinimumValue = "0";
             tbRepeatColumns.AutoPostBack = true;
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
             controls.Add( tbRepeatColumns );
+
+            var ddlRepeatDirection = new RockDropDownList();
+            ddlRepeatDirection.Label = "Repeat Direction";
+            ddlRepeatDirection.Help = "The direction that the list options will be displayed.";
+            ddlRepeatDirection.BindToEnum<RepeatDirection>();
+            ddlRepeatDirection.AutoPostBack = true;
+            ddlRepeatDirection.TextChanged += OnQualifierUpdated;
+            controls.Add( ddlRepeatDirection );
 
             return controls;
         }
@@ -107,19 +117,25 @@ namespace Rock.Field.Types
             configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", description, string.Empty ) );
 
             description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
-            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue("Repeat Columns", description, string.Empty ) );
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
-            if ( controls != null && controls.Count > 2 )
+            description = "The direction that the list options will be displayed.";
+            configurationValues.Add( REPEAT_DIRECTION, new ConfigurationValue( "Repeat Direction", description, string.Empty ) );
+
+            if ( controls != null && controls.Count > 3 )
             {
                 var tbValues = controls[0] as RockTextBox;
                 var cbEnhanced = controls[1] as RockCheckBox;
                 var tbRepeatColumns = controls[2] as NumberBox;
+                var ddlRepeatDirection = controls[3] as RockDropDownList;
 
                 tbRepeatColumns.Visible = !cbEnhanced.Checked;
+                ddlRepeatDirection.Visible = !cbEnhanced.Checked;
 
                 configurationValues[VALUES_KEY].Value = tbValues.Text;
                 configurationValues[ENHANCED_SELECTION_KEY].Value = cbEnhanced.Checked.ToString();
                 configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
+                configurationValues[REPEAT_DIRECTION].Value = ddlRepeatDirection.SelectedValue;
             }
 
             return configurationValues;
@@ -134,16 +150,19 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 2 && configurationValues != null )
+            if ( controls != null && controls.Count > 3 && configurationValues != null )
             {
                 var tbValues = controls[0] as RockTextBox;
                 var cbEnhanced = controls[1] as RockCheckBox;
                 var tbRepeatColumns = controls[2] as NumberBox;
+                var ddlRepeatDirection = controls[3] as RockDropDownList;
 
                 tbValues.Text = configurationValues.ContainsKey( VALUES_KEY ) ? configurationValues[VALUES_KEY].Value : string.Empty;
                 cbEnhanced.Checked = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) ? configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() : cbEnhanced.Checked;
                 tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
                 tbRepeatColumns.Visible = !cbEnhanced.Checked;
+                ddlRepeatDirection.SetValue( configurationValues.GetValueOrNull( REPEAT_DIRECTION ) );
+                ddlRepeatDirection.Visible = !cbEnhanced.Checked;
             }
         }
 
@@ -196,20 +215,29 @@ namespace Rock.Field.Types
                 if ( configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean() )
                 {
                     editControl = new RockListBox { ID = id };
-                    ( (RockListBox)editControl ).DisplayDropAsAbsolute = true;
+                    ( ( RockListBox ) editControl ).DisplayDropAsAbsolute = true;
                 }
                 else
                 {
                     editControl = new RockCheckBoxList { ID = id };
-                    ( (RockCheckBoxList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+                    var rockCheckBoxList = ( RockCheckBoxList ) editControl;
 
                     if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
                     {
-                        ( ( RockCheckBoxList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                        rockCheckBoxList.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                    }
+
+                    if ( configurationValues.ContainsKey( REPEAT_DIRECTION ) )
+                    {
+                        rockCheckBoxList.RepeatDirection = configurationValues[REPEAT_DIRECTION].Value.ConvertToEnumOrNull<RepeatDirection>() ?? RepeatDirection.Horizontal;
+                    }
+                    else
+                    {
+                        rockCheckBoxList.RepeatDirection = RepeatDirection.Horizontal;
                     }
                 }
 
-                foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ))
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -235,7 +263,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                ListControl cbl = (ListControl)control;
+                ListControl cbl = ( ListControl ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -265,7 +293,7 @@ namespace Rock.Field.Types
 
                 if ( control != null && control is ListControl )
                 {
-                    ListControl cbl = (ListControl)control;
+                    ListControl cbl = ( ListControl ) control;
                     foreach ( ListItem li in cbl.Items )
                     {
                         li.Selected = values.Contains( li.Value );

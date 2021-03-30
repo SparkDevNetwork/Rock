@@ -33,7 +33,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     /// Web
     /// </summary>
-    public class WebRequestBlock : LavaBlockBase
+    public class WebRequestBlock : LavaBlockBase, ILavaSecured
     {
         private static readonly Regex Syntax = new Regex( @"(\w+)" );
 
@@ -219,6 +219,18 @@ namespace Rock.Lava.Blocks
             return parms;
         }
 
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "WebRequest";
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Helper class to turn XML in an expando

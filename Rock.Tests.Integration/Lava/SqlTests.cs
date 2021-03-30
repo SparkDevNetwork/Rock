@@ -7,13 +7,13 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class SqlTests
     {
-        private static LavaTestHelper _helper;
+        //private static LavaIntegrationTestHelper _helper;
 
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            _helper = LavaTestHelper.New();
-        }
+        //[ClassInitialize]
+        //public static void ClassInitialize( TestContext testContext )
+        //{
+        //    _helper = LavaIntegrationTestHelper.New();
+        //}
 
         [TestMethod]
         [TestProperty( "Execution Time", "Long" )]

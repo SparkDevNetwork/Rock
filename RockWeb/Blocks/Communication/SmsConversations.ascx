@@ -27,8 +27,8 @@
                 <div class="well mb-0 border-top-0 border-right-0 border-left-0 rounded-0">
                     <div class="row">
                         <div class="col-md-3">
-                        <%-- The list of phone numbers that do not have "Enable Mobile Conversations" enabled --%>
-                        <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
+                            <%-- The list of phone numbers that do not have "Enable Mobile Conversations" enabled --%>
+                            <Rock:Toggle ID="tglShowRead" runat="server" Label="Show Read Messages" OnCheckedChanged="tglShowRead_CheckedChanged" OnText="Yes" OffText="No" Checked="true" ButtonSizeCssClass="btn-sm" />
                         </div>
                     </div>
                 </div>
@@ -40,8 +40,8 @@
                     <div class="conversation-list d-flex flex-column">
                         <div class="header">
                             <div class="clearfix">
-                            <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
-                            <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="fa fa-filter"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnCreateNewMessage" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnCreateNewMessage_Click" ToolTip="New Message"><i class="fa fa-edit"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbPersonFilter" runat="server" CssClass="btn btn-default btn-sm btn-square pull-right" OnClientClick="$('.js-person-filter').slideToggle(); return false;"><i class="fa fa-filter"></i></asp:LinkButton>
                             </div>
                             <div id="divPersonFilter" runat="server" class="js-person-filter" style="display: none;">
                                 <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Recipient" OnSelectPerson="ppPersonFilter_SelectPerson" FormGroupCssClass="mt-2 mb-0" />
@@ -55,7 +55,7 @@
                                         <Rock:RockTemplateField>
                                             <ItemTemplate>
                                                 <Rock:HiddenFieldWithClass ID="hfRecipientPersonAliasId" runat="server" CssClass="js-recipientId" />
-                                                <Rock:HiddenFieldWithClass ID="hfMessageKey" runat="server" CssClass="js-messageKey"  />
+                                                <Rock:HiddenFieldWithClass ID="hfMessageKey" runat="server" CssClass="js-messageKey" />
 
                                                 <div class="layout-row">
                                                     <asp:Label ID="lblName" runat="server" Class="sms-name" />
@@ -93,10 +93,13 @@
                                                 <div class="message outbound" id="divCommunication" runat="server">
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationRecipientId" runat="server" />
                                                     <Rock:HiddenFieldWithClass ID="hfCommunicationMessageKey" runat="server" />
+                                                    <%-- Keep divCommunicationBody and lSMSMessage on same line for rendering --%>
                                                     <div class="bubble" id="divCommunicationBody" runat="server"><asp:Literal ID="lSMSMessage" runat="server" /></div>
-                                                    <div id="divCommicationAttachments" runat="server"><asp:Literal ID="lSMSAttachments" runat="server" /></div>
+                                                    <div id="divCommicationAttachments" runat="server">
+                                                        <asp:Literal ID="lSMSAttachments" runat="server" /></div>
                                                     <div class="message-meta">
-                                                        <span class="sender-name"><asp:Literal ID="lSenderName" runat="server" /></span>
+                                                        <span class="sender-name">
+                                                            <asp:Literal ID="lSenderName" runat="server" /></span>
                                                         <asp:Label ID="lblMessageDateTime" runat="server" CssClass="date" />
                                                     </div>
                                                 </div>
@@ -113,11 +116,18 @@
                                         <Rock:ImageUploader ID="ImageUploaderConversation" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
                                     </div>
                                 </div>
+
+                            </div>
+                            <div class="js-notecontainer">
+                                <Rock:NoteEditor ID="noteEditor" runat="server" CssClass="sms-conversation-note-editor" Visible="false" />
                             </div>
                             <div class="footer">
                                 <Rock:RockTextBox ID="tbNewMessage" runat="server" TextMode="multiline" Rows="1" Placeholder="Type a message" CssClass="js-input-message" Visible="false" autofocus></Rock:RockTextBox>
-                                <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default btn-md image-button btn-square pull-right" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
-                                <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false"></Rock:BootstrapButton>
+                                <div class="actions">
+                                    <asp:LinkButton ID="btnEditNote" runat="server" CssClass="btn btn-default btn-square edit-note-button" OnClick="btnEditNote_Click" ToolTip="Add Note" ><i class="fa fa-edit"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="lbShowImagePicker" runat="server" CssClass="btn btn-default image-button btn-square" OnClientClick="$('.js-send-image').slideToggle(); return false;"><i class="fa fa-camera"></i></asp:LinkButton>
+                                    <Rock:BootstrapButton ID="btnSend" runat="server" CssClass="btn btn-primary send-button js-send-text-button" Text="Send" DataLoadingText="Sending..." OnClick="btnSend_Click" Visible="false" />
+                                </div>
                             </div>
                         </ContentTemplate>
                     </asp:UpdatePanel>
@@ -178,7 +188,9 @@
                 <Rock:PersonPicker ID="ppRecipient" runat="server" Label="Recipient" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Please select an SMS recipient." Required="true" OnSelectPerson="ppRecipient_SelectPerson" />
 
                 <%-- multi-line textbox --%>
-                <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+                <div class="form-group">
+                    <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Placeholder="Type a message" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
+                </div>
 
                 <%-- image uploader --%>
                 <Rock:ImageUploader ID="ImageUploaderModal" runat="server" BinaryFileTypeGuid="<%# new Guid( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT ) %>" Help="Optional image to include in the message." Label="Image" />
@@ -186,7 +198,7 @@
         </Rock:ModalDialog>
 
         <%-- Link to Person --%>
-        <Rock:ModalDialog ID="mdLinkToPerson" runat="server" Title="Link Phone Number to Person" OnSaveClick="mdLinkToPerson_SaveClick" ValidationGroup="vgLinkToPerson" >
+        <Rock:ModalDialog ID="mdLinkToPerson" runat="server" Title="Link Phone Number to Person" OnSaveClick="mdLinkToPerson_SaveClick" ValidationGroup="vgLinkToPerson">
             <Content>
                 <asp:HiddenField ID="hfNamelessPersonId" runat="server" />
 

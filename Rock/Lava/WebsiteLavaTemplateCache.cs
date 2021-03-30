@@ -28,7 +28,7 @@ namespace Rock.Lava
         #region Constructors
 
         /// <summary>
-        /// Use Static Get() method to instantiate a new Global Attributes object
+        /// Use Static Get() method to instantiate a new cache item.
         /// </summary>
         public WebsiteLavaTemplateCache()
         {
@@ -56,7 +56,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static WebsiteLavaTemplateCache Get( string content )
         {
-            return Get( content, content );
+            return Get( content, content, LavaEngine.CurrentEngine );
         }
 
         /// <summary>
@@ -65,15 +65,16 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="content">The content.</param>
+        /// <param name="engine">The content.</param>
         /// <returns></returns>
-        public static WebsiteLavaTemplateCache Get( string key, string content )
+        public static WebsiteLavaTemplateCache Get( string key, string content, ILavaEngine engine )
         {
             WebsiteLavaTemplateCache template;
 
             // If cache items need to be serialized, do not cache the template because it isn't serializable.
             if ( RockCache.IsCacheSerialized )
             {
-                template = Load( content );
+                template = Load( content, engine );
             }
             else
             {
@@ -82,7 +83,7 @@ namespace Rock.Lava
                 template = ItemCache<WebsiteLavaTemplateCache>.GetOrAddExisting( key, () =>
                 {
                     fromCache = false;
-                    return Load( content );
+                    return Load( content, engine );
                 } );
 
                 if ( fromCache )
@@ -121,11 +122,12 @@ namespace Rock.Lava
             return contains;
         }
 
-        private static WebsiteLavaTemplateCache Load( string content )
+        private static WebsiteLavaTemplateCache Load( string content, ILavaEngine engine )
         {
             ILavaTemplate template;
 
-            LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
+            engine.TryParseTemplate( content, out template );
+            //LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
 
             var lavaTemplate = new WebsiteLavaTemplateCache { Template = template };
 
@@ -138,6 +140,7 @@ namespace Rock.Lava
 
         private static long _cacheHits = 0;
         private static long _cacheMisses = 0;
+        private static ILavaEngine _engine = null;
 
         long ILavaTemplateCacheService.CacheHits
         {
@@ -151,6 +154,18 @@ namespace Rock.Lava
             get
             {
                 return _cacheMisses;
+            }
+        }
+
+        ILavaEngine ILavaTemplateCacheService.LavaEngine
+        {
+            get
+            {
+                return _engine;
+            }
+            set
+            {
+                _engine = value;
             }
         }
 
@@ -177,7 +192,7 @@ namespace Rock.Lava
         {
             var key = GetTemplateKey( templateContent );
 
-            var templateCache = Get( key, templateContent );
+            var templateCache = Get( key, templateContent, _engine );
 
             if ( templateCache == null )
             {

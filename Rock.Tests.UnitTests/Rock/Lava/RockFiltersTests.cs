@@ -31,6 +31,7 @@ namespace Rock.Tests.Rock.Lava
         private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
         private static readonly DateTime today = RockDateTime.Today;
+        private static readonly DateTime nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
 
         private static readonly Calendar weeklySaturday430 = new Calendar()
         {
@@ -38,8 +39,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 16, 30, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 17, 30, 0 ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
                         Sequence = 0,
@@ -54,8 +55,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 10, 0, 0 ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 10, 0, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
@@ -846,7 +847,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", (int)1 } },
                new Dictionary<string, object> { { "Id", (int)2 } }
             };
-            var output = RockFilters.Where( input, "Id", 1 );
+            var output = RockFilters.Where( input, "Id", 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count() == 1 );
         }
 
@@ -861,7 +862,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", (long)1 } },
                new Dictionary<string, object> { { "Id", (long)2 } }
             };
-            var output = RockFilters.Where( input, "Id", ( int ) 1 );
+            var output = RockFilters.Where( input, "Id", ( int ) 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
@@ -877,7 +878,7 @@ namespace Rock.Tests.Rock.Lava
                new Dictionary<string, object> { { "Id", "2" } }
             };
 
-            var output = RockFilters.Where( input, "Id", "1" );
+            var output = RockFilters.Where( input, "Id", "1", "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
@@ -1415,16 +1416,11 @@ namespace Rock.Tests.Rock.Lava
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
             // Next year's Saturday (from right now)
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime firstSaturdayThisMonth = today.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
-            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 48 );
-
-            DateTime expected = nextYearSaturday.AddHours( 10 );
+            DateTime nextYearSaturday = RockDateTime.Now.StartOfMonth().AddYears( 1 ).GetNextWeekday( DayOfWeek.Saturday ).AddHours( 10 );
 
             // Get the end datetime of the 12th event in the "First Saturday of the Month" schedule.
             var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" ).LastOrDefault();
-            Assert.That.AreEqual( expected, output );
+            Assert.That.AreEqual( nextYearSaturday, output );
         }
 
         #endregion
@@ -1580,17 +1576,23 @@ namespace Rock.Tests.Rock.Lava
         #endregion
 
         #region Lava Test helper methods
+
+        private static ILavaEngine _lavaEngine = null;
+
         private static void AssertTemplateResult( string expected, string template )
         {
-            var output = LavaEngine.CurrentEngine.RenderTemplate( template );
+            // Tests in this class are only compatible with the DotLiquid engine.
+            // If/when these tests are reworked for the Fluid engine, they should be moved to the Rock.Tests.UnitTests.Lava namespace.
+            if ( _lavaEngine == null )
+            {
+                _lavaEngine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
+            }
+
+            var output = _lavaEngine.RenderTemplate( template );
 
             Assert.That.AreEqual( expected, output );
         }
 
-        //private static void AssertTemplateResult( string expected, string template, Hash localVariables )
-        //{
-        //    Assert.That.AreEqual( expected, Template.Parse( template ).Render( localVariables ) );
-        //}
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

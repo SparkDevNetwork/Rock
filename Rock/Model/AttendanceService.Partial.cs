@@ -286,6 +286,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Attendance" /> for the given date, location, schedule, and RSVP. No other filtering is done.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="rsvp">The RSVP.</param>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, Rock.Model.RSVP rsvp )
+        {
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
+                .Where( a => a.Occurrence.OccurrenceDate == date.Date
+                    && a.Occurrence.LocationId == locationId
+                    && a.Occurrence.ScheduleId == scheduleId
+                    && a.RSVP == rsvp );
+        }
+
+        /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <param name="groupBy">The group by.</param>
@@ -2241,6 +2258,72 @@ namespace Rock.Model
             {
                 // ignore if there is no attendance record
             }
+        }
+
+        /// <summary>
+        /// Sends a response (accept or decline) email to the <see cref="Attendance.ScheduledByPersonAlias">Scheduler Person</see>
+        /// for this <see cref="Attendance"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonResponseEmailToScheduler( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends a decline email to the <see cref="Group.ScheduleCancellationPersonAlias">Scheduling Cancellation Person</see>
+        /// for this attendance's <see cref="AttendanceOccurrence.Group"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonDeclineEmail( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends the send scheduled person response email.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        /// <param name="recipientPerson">The recipient person.</param>
+        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        {
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
+
+            if ( attendance == null )
+            {
+                return;
+            }
+
+            if ( recipientPerson?.IsEmailActive != true )
+            {
+                return;
+            }
+            
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            var group = attendance.Occurrence.Group;
+
+            mergeFields.Add( "Group", group );
+            mergeFields.Add( "ScheduledItem", attendance );
+            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+            mergeFields.Add( "Recipient", recipientPerson );
+
+            var emailMessage = new RockEmailMessage( schedulingResponseEmailGuid.Value );
+            emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+            emailMessage.CreateCommunicationRecord = false;
+            emailMessage.Send();
         }
 
         /// <summary>

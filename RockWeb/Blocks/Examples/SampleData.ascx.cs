@@ -533,17 +533,17 @@ namespace RockWeb.Blocks.Examples
                     _stopwatch.Start();
                     AppendFormat( "00:00.00 started <br/>" );
 
-                // Delete this stuff that might have people attached to it
-                DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    // Delete this stuff that might have people attached to it
+                    DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
 
-                // Now we'll clean up by deleting any previously created data such as
-                // families, addresses, people, photos, attendance data, etc.
-                DeleteExistingGroups( elemGroups, rockContext );
-                DeleteExistingFamilyData( elemFamilies, rockContext );
+                    // Now we'll clean up by deleting any previously created data such as
+                    // families, addresses, people, photos, attendance data, etc.
+                    DeleteExistingGroups( elemGroups, rockContext );
+                    DeleteExistingFamilyData( elemFamilies, rockContext );
 
-                //rockContext.ChangeTracker.DetectChanges();
-                //rockContext.SaveChanges( disablePrePostProcessing: true );
-                LogElapsed( "data deleted" );
+                    //rockContext.ChangeTracker.DetectChanges();
+                    //rockContext.SaveChanges( disablePrePostProcessing: true );
+                    LogElapsed( "data deleted" );
 
                 } );
 
@@ -602,10 +602,24 @@ namespace RockWeb.Blocks.Examples
                     AddPeoplesPreviousNames( elemFamilies, rockContext );
                     rockContext.SaveChanges( disablePrePostProcessing: true );
                     LogElapsed( "previous names added" );
-
-                    // Add Person Meta-phone/Sounds-like stuff
-                    AddMetaphone();
                 } );
+
+                // Add Person Meta-phone/Sounds-like stuff
+                AddMetaphone();
+
+                // since some PostSaveChanges was disabled, call these cleanup tasks
+                using ( var personRockContext = new Rock.Data.RockContext() )
+                {
+                    // these should all be pretty quick, but just in case
+                    personRockContext.Database.CommandTimeout = 180;
+                    PersonService.UpdatePrimaryFamilyAll( personRockContext );
+                    PersonService.UpdateGivingLeaderIdAll( personRockContext );
+                    PersonService.UpdateGivingIdAll( personRockContext );
+                    PersonService.UpdatePersonAgeClassificationAll( rockContext );
+                    PersonService.UpdateBirthDateAll( personRockContext );
+
+                    DbService.ExecuteCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
+                }
 
                 // done.
                 LogElapsed( "done" );

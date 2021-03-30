@@ -3259,6 +3259,20 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGiveNow_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName_AmountEntry.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName_AmountEntry.Visible = true;
+                nbRockFullName_AmountEntry.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName_AmountEntry.Text = "Invalid Form Value";
+                return;
+            }
+
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
             nbProcessTransactionError.Visible = false;
@@ -3386,6 +3400,20 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPersonalInformationNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName_PersonalInformation.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName_PersonalInformation.Visible = true;
+                nbRockFullName_PersonalInformation.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName_PersonalInformation.Text = "Invalid Form Value";
+                return;
+            }
+
             ProcessTransaction();
         }
 

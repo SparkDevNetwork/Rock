@@ -23,19 +23,11 @@ namespace Rock.Tests.UnitTests.Lava
     [TestClass]
     public class LavaUnitTestBase
     {
-        public static LavaEngineTypeSpecifier EngineType
+        public static LavaUnitTestHelper TestHelper
         {
             get
             {
-                return UnitTestHelper.EngineType;
-            }
-        }
-
-        public static LavaTestHelper TestHelper
-        {
-            get
-            {
-                return UnitTestHelper.LavaTestHelper;
+                return LavaUnitTestHelper.CurrentInstance;
             }
         }
     }

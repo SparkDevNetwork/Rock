@@ -58,6 +58,8 @@ namespace Rock.Lava
 
         #region IFileProvider implementation
 
+        private static LavaToLiquidTemplateConverter _lavaConverter = new LavaToLiquidTemplateConverter();
+
         IDirectoryContents IFileProvider.GetDirectoryContents( string subpath )
         {
             // Directory listing is not supported.
@@ -82,9 +84,13 @@ namespace Rock.Lava
                 }
             }
 
-            var text = exists ? _fileSystem.ReadTemplateFile( null, subpath ) : string.Empty;
+            // This method is called directly by the Fluid framework.
+            // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the Fluid engine.
+            var lavaText = exists ? _fileSystem.ReadTemplateFile( null, subpath ) : string.Empty;
 
-            var fileInfo = new LavaFileInfo( subpath, text, exists );
+            var liquidText = _lavaConverter.ConvertToLiquid( lavaText );
+
+            var fileInfo = new LavaFileInfo( subpath, liquidText, exists );
 
             if ( !exists )
             {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using Rock.Tests.Shared;
 using Rock.Lava.Blocks;
+using Rock.Lava;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -18,7 +19,7 @@ namespace Rock.Tests.Integration.Lava
         [Ignore("This test requires specific test data that does not exist in the sample database.")]
         public void EventCalendarItemAllowsEventItemSummary()
         {
-            RockEntityBlock.RegisterEntityCommands();
+            RockEntityBlock.RegisterEntityCommands( LavaEngine.CurrentEngine );
 
             var expectedOutput = @"
 3 [2]: <br>

@@ -487,6 +487,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_TYPE_TEMPLATE_ICON = "831403EB-262E-4BC5-8B5E-F16153493BF5";
 
+        /// <summary>
+        /// The Currency type DefinedType > IconCssClass DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_CURRENCY_TYPE_ICONCSSCLASS = "CB1E9401-E1FD-4DBB-B15F-4E6994602723";
+
+        /// <summary>
+        /// The Transaction Sourcee DefinedType > IconCssClass DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TRANSACTION_SOURCE_ICONCSSCLASS = "9617D1DC-6561-4314-83EB-7F0ACBA2E259";
+
         #endregion
 
         #region Device Type Attributes
@@ -776,5 +786,70 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CONFIGURED_ATTENDANCE_TYPE = "D449AC5B-AC7A-457C-AD0F-D1DB1F73FC19";
         #endregion
+
+        #region Giving Analytics
+
+        /// <summary>
+        /// Preferred Currency - Defined Type
+        /// </summary>
+        public const string PERSON_GIVING_PREFERRED_CURRENCY = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F";
+
+        /// <summary>
+        /// Preferred Source - Defined Type
+        /// </summary>
+        public const string PERSON_GIVING_PREFERRED_SOURCE = "0567B279-1F4D-4573-9AA7-927A7278443E";
+
+        /// <summary>
+        /// Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
+
+        /// <summary>
+        /// Percent of Gifts Scheduled - Number
+        /// </summary>
+        public const string PERSON_GIVING_PERCENT_SCHEDULED = "98373264-0E65-4C79-B75B-4F8477AA647E";
+
+        /// <summary>
+        /// Gift Amount: Median - Currency
+        /// </summary>
+        public const string PERSON_GIVING_AMOUNT_MEDIAN = "327F1CFF-A013-42B5-80A7-5922A40480EC";
+
+        /// <summary>
+        /// Gift Amount: IQR - Currency
+        /// </summary>
+        public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
+
+        /// <summary>
+        /// Gift Frequency Days: Mean -  Number
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_MEAN_DAYS = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA";
+
+        /// <summary>
+        /// Gift Frequency Days: Standard Deviation - Number
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_STD_DEV_DAYS = "1D5E4356-DC66-4067-BEF1-3560E61150BD";
+
+        /// <summary>
+        /// Giving Bin - Number
+        /// </summary>
+        public const string PERSON_GIVING_BIN = "7FBB63CC-F4FC-4F7E-A8C5-44DC3D0F0720";
+
+        /// <summary>
+        /// Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
+        /// </summary>
+        public const string PERSON_GIVING_PERCENTILE = "D03ACAB8-EB0C-4835-A04C-4C357014D935";
+
+        /// <summary>
+        /// Next Expected Gift Date - Date
+        /// </summary>
+        public const string PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE = "65D7CF79-BD80-44B2-9F5F-96D81B9B4990";
+
+        /// <summary>
+        /// Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
+        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occassionally update the classification. 
+        /// </summary>
+        public const string PERSON_GIVING_LAST_CLASSIFICATION_DATE = "7220B230-03CE-4D1E-985B-26AA28BE06F8";
+
+        #endregion Giving Analytics
     }
 }

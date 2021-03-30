@@ -38,7 +38,7 @@ namespace Rock.Lava.Blocks
     /// <summary>
     ///
     /// </summary>
-    public class RockEntityBlock : LavaBlockBase
+    public class RockEntityBlock : LavaBlockBase, ILavaSecured
     {
         /// <summary>
         /// The type name of the target entity.
@@ -493,22 +493,22 @@ namespace Rock.Lava.Blocks
         /// <summary>
         /// Method that will be run at Rock startup
         /// </summary>
-        public override void OnStartup()
+        public override void OnStartup( ILavaEngine engine )
         {
-            RegisterEntityCommands();
+            RegisterEntityCommands( engine );
         }
 
         /// <summary>
         /// Helper method to register the entity commands.
         /// </summary>
-        public static void RegisterEntityCommands()
+        public static void RegisterEntityCommands( ILavaEngine engine )
         {
             var entityTypes = EntityTypeCache.All();
 
             // register a business entity
-            LavaEngine.CurrentEngine.RegisterBlock( "business", ( name ) => { return new RockEntityBlock(); } );
+           engine.RegisterBlock( "business", ( name ) => { return new RockEntityBlock(); } );
 
-            // Register the core models first
+            // Register the core models, replacing existing blocks of the same name if necessary.
             foreach ( var entityType in entityTypes
                 .Where( e =>
                     e.IsEntity &&
@@ -516,10 +516,10 @@ namespace Rock.Lava.Blocks
                     e.FriendlyName != null &&
                     e.FriendlyName != "" ) )
             {
-                RegisterEntityCommand( entityType );
+                RegisterEntityCommand( engine, entityType, useQualifiedNameIfExists:true );
             }
 
-            // Now register plugin models
+            // Register plugin models, using fully-qualified namespace if necessary.
             foreach ( var entityType in entityTypes
                 .Where( e =>
                     e.IsEntity &&
@@ -528,27 +528,25 @@ namespace Rock.Lava.Blocks
                     e.FriendlyName != "" )
                 .OrderBy( e => e.Id ) )
             {
-                RegisterEntityCommand( entityType );
+                RegisterEntityCommand( engine, entityType, useQualifiedNameIfExists:true );
             }
 
         }
 
-        private static void RegisterEntityCommand( EntityTypeCache entityType )
+        private static void RegisterEntityCommand( ILavaEngine engine, EntityTypeCache entityType, bool useQualifiedNameIfExists = false )
         {
             if ( entityType != null )
             {
                 string entityName = entityType.FriendlyName.RemoveSpaces().ToLower();
 
                 // if entity name is already registered, use the full class name with namespace
-
-                var lavaEngine = LavaEngine.CurrentEngine;
-
-                if ( lavaEngine.GetRegisteredElements().ContainsKey( entityName ) )
+                if ( useQualifiedNameIfExists
+                     && engine.GetRegisteredElements().ContainsKey( entityName ) )
                 {
                     entityName = entityType.Name.Replace( '.', '_' );
                 }
 
-                lavaEngine.RegisterBlock( entityName,
+                engine.RegisterBlock( entityName,
                     ( name ) =>
                     {
                         // Return a block having a tag name corresponding to the entity name.
@@ -959,5 +957,18 @@ namespace Rock.Lava.Blocks
         /// An enum to specify and vs or comparisons
         /// </summary>
         enum ExpressionComparisonType { And, Or };
+
+        #region ILavaSecured
+
+        /// <inheritdoc/>
+        public string RequiredPermissionKey
+        {
+            get
+            {
+                return "RockEntity";
+            }
+        }
+
+        #endregion
     }
 }

@@ -39,11 +39,6 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void DotLiquid_FilterRegisteredToDotLiquidFramework_ProducesCorrectResultInLavaLibrary()
         {
-            if ( !this.AssertCurrentEngineIs( LavaEngineTypeSpecifier.RockLiquid) )
-            {
-                return;
-            }
-
             DotLiquid.Template.RegisterFilter( typeof( TestDotLiquidFilter ) );
 
             var rockContext = new RockContext();
@@ -63,7 +58,9 @@ namespace Rock.Tests.Integration.Lava
 
             var expectedOutput = @"BinaryFile";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, values, ignoreWhiteSpace: true );
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.RockLiquid, expectedOutput, inputTemplate, options );
         }
 
         #endregion

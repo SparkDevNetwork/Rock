@@ -26,7 +26,12 @@ namespace Rock.Lava
     public interface ILavaTemplateCacheService
     {
         /// <summary>
-        /// Gets an item from cache or adds the item to the cache if it does not already exist. if it does not exist, executes the supplied itemFactory function to create the item and add it to the cache.
+        /// The LavaEngine instance that is responsible for compiling a template before it is added to the cache.
+        /// </summary>
+        ILavaEngine LavaEngine { get; set; }
+
+        /// <summary>
+        /// Gets a compiled template from cache or adds it to the cache if it does not already exist.
         /// </summary>
         /// <param name="templateContent">The template source text.</param>
         /// <returns></returns>

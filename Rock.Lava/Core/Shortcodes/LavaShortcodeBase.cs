@@ -144,7 +144,7 @@ namespace Rock.Lava
         /// <summary>
         /// Executed at Rock startup to perform one-time initialization tasks for this code element.
         /// </summary>
-        public virtual void OnStartup()
+        public virtual void OnStartup( ILavaEngine engine )
         {
             //
         }

@@ -41,7 +41,7 @@ Slow
 ";
             var expectedOutput = @"Moderate";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context: null, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         /// <summary>
@@ -52,13 +52,6 @@ Slow
         [TestMethod]
         public void Parsing_ConditionalExpressionUsingDoubleAmpersand_EmitsErrorMessage()
         {
-            // This test does not apply to the DotLiquid framework.
-            if ( TestHelper.LavaEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid
-                 || TestHelper.LavaEngine.EngineType == LavaEngineTypeSpecifier.DotLiquid )
-            {
-                return;
-            };
-
             var input = @"
 {% assign speed = 50 %}
 {% if speed > 40 && speed < 60 -%}
@@ -66,7 +59,13 @@ Illegal Boolean Operator!
 {% endif -%}
 ";
 
-            TestHelper.AssertTemplateIsInvalid( input );
+            // This test does not apply to the DotLiquid framework.
+            if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
+            {
+                var engine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions() );
+
+                TestHelper.AssertTemplateIsInvalid( LavaEngineTypeSpecifier.Fluid, input );
+            }
         }
 
         [TestMethod]

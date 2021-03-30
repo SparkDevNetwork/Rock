@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -267,7 +268,7 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        DefaultValue = AttributeString.ConfirmationHeader ,
+        DefaultValue = AttributeString.ConfirmationHeader,
         Category = CategoryKey.TextOptions,
         Order = 7 )]
 
@@ -280,7 +281,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         DefaultValue = AttributeString.ConfirmationFooter,
         Category = CategoryKey.TextOptions,
-        Order = 8)]
+        Order = 8 )]
 
     [TextField( "Success Title",
         Key = AttributeKey.SuccessTitle,
@@ -299,7 +300,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         DefaultValue = AttributeString.SuccessHeader,
         Category = CategoryKey.TextOptions,
-        Order = 10)]
+        Order = 10 )]
 
     [CodeEditorField( "Success Footer",
         Key = AttributeKey.SuccessFooter,
@@ -310,7 +311,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         DefaultValue = @"",
         Category = CategoryKey.TextOptions,
-        Order = 11)]
+        Order = 11 )]
 
     [TextField( "Save Account Title",
         Key = AttributeKey.SaveAccountTitle,
@@ -347,7 +348,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.AllowAccountsInURL,
         Description = "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true",
         DefaultBooleanValue = false,
-        Category =CategoryKey.Advanced,
+        Category = CategoryKey.Advanced,
         Order = 1 )]
 
     [BooleanField( "Only Public Accounts In URL",
@@ -621,48 +622,39 @@ TransactionAccountDetails: [
         }
 
         /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns <see langword="null" />.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["SelectedAccountsJSON"] = SelectedAccounts.ToJson();
+            ViewState["AvailableAccountsJSON"] = AvailableAccounts.ToJson();
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            AvailableAccounts = ( ViewState["AvailableAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            SelectedAccounts = ( ViewState["SelectedAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+        }
+
+        /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
         /// </summary>
-        protected List<AccountItem> AvailableAccounts
-        {
-            get
-            {
-                var accounts = ViewState["AvailableAccounts"] as List<AccountItem>;
-                if ( accounts == null )
-                {
-                    accounts = new List<AccountItem>();
-                }
+        protected List<AccountItem> AvailableAccounts { get; set; }
 
-                return accounts;
-            }
-
-            set
-            {
-                ViewState["AvailableAccounts"] = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the accounts that are currently displayed to the user
         /// </summary>
-        protected List<AccountItem> SelectedAccounts
-        {
-            get
-            {
-                var accounts = ViewState["SelectedAccounts"] as List<AccountItem>;
-                if ( accounts == null )
-                {
-                    accounts = new List<AccountItem>();
-                }
-
-                return accounts;
-            }
-
-            set
-            {
-                ViewState["SelectedAccounts"] = value;
-            }
-        }
+        protected List<AccountItem> SelectedAccounts { get; set; }
 
         /// <summary>
         /// Gets or sets the payment transaction code.
@@ -1116,6 +1108,18 @@ TransactionAccountDetails: [
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPaymentInfoNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                ShowMessage( NotificationBoxType.Validation, "Validation", "Invalid Form Value" );
+                return;
+            }
+
             string errorMessage = string.Empty;
             if ( ProcessPaymentInfo( out errorMessage ) )
             {
@@ -3728,9 +3732,7 @@ TransactionAccountDetails: [
         /// <summary>
         /// Lightweight object for each contribution item
         /// </summary>
-        [Serializable]
-        [DotLiquid.LiquidType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
-        protected class AccountItem : LavaDataObject
+        protected class AccountItem
         {
             public int Id { get; set; }
 
@@ -3752,6 +3754,10 @@ TransactionAccountDetails: [
                 {
                     return Amount > 0 ? Amount.FormatAsCurrency() : string.Empty;
                 }
+            }
+
+            public AccountItem()
+            {
             }
 
             public AccountItem( int id, int order, string name, int? campusId, string publicName )

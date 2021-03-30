@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Lava
 
             var values = new LavaDataDictionary { { "Group", testGroup } };
 
-            var inputTemplate = @"
+            var input = @"
  {% for attribute in Group.AttributeValues %}
     {% if attribute.ValueFormatted > '' %}
         {{ attribute.AttributeName }}: {{ attribute.ValueFormatted }}<br>
@@ -52,7 +52,10 @@ namespace Rock.Tests.Integration.Lava
             var expectedOutput = @"
 Topic: Book of Genesis<br>
 ";
-            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, values, true );
+
+            var options = new LavaTestRenderOptions() { MergeFields = values };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion

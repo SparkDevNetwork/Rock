@@ -46,16 +46,6 @@ Font Size: {{ fontsize }}
 Font Bold: {{ fontbold }}
 ";
 
-            // Create a new test shortcode.
-            var shortcodeDefinition = new DynamicShortcodeDefinition();
-
-            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Block;
-            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
-            shortcodeDefinition.Name = "shortcodetest";
-            shortcodeDefinition.Parameters = new Dictionary<string, string> { { "fontname", "Arial" }, { "fontsize", "0" }, { "fontbold", "true" } };
-
-            TestHelper.LavaEngine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
-
             var input = @"
 {[ shortcodetest fontname:'Arial' fontsize:'{{ fontsize }}' fontbold:'true' ]}
 {[ endshortcodetest ]}
@@ -67,22 +57,33 @@ Font Size: <?>
 Font Bold: true
 ";
 
-            expectedOutput = expectedOutput.Replace( "``", @"""" );
+            // Create a new test shortcode.
+            var shortcodeDefinition = new DynamicShortcodeDefinition();
 
-            //TestHelper.AssertTemplateOutput( expectedOutput, input, null, ignoreWhiteSpace: true );
+            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Block;
+            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
+            shortcodeDefinition.Name = "shortcodetest";
+            shortcodeDefinition.Parameters = new Dictionary<string, string> { { "fontname", "Arial" }, { "fontsize", "0" }, { "fontbold", "true" } };
 
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 100 };
-
-            Parallel.For( 1, 1000, parallelOptions, ( x ) =>
+            TestHelper.AssertAction( ( engine ) =>
             {
-                var context = new LavaDataDictionary()
-                {
-                    { "fontsize", x },
-                };
-                context["fontsize"] = x;
-                TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, context, ignoreWhiteSpace: true, wildCard: "<?>" );
-            } );
+                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
+                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 100 };
+
+                Parallel.For( 1, 1000, parallelOptions, ( x ) =>
+                {
+                    var context = new LavaDataDictionary()
+                    {
+                    { "fontsize", x },
+                    };
+                    context["fontsize"] = x;
+
+                    var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<?>", MergeFields = context };
+
+                    TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+                } );
+            } );
         }
 
         [TestMethod]
@@ -109,8 +110,6 @@ Items:
             shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
             shortcodeDefinition.Name = "shortcodetest";
             shortcodeDefinition.Parameters = new Dictionary<string, string> { { "parameter1", "value1" }, { "parameter2", "value2" } };
-
-            TestHelper.LavaEngine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
             var input = @"
 ***
@@ -147,13 +146,21 @@ Panel 3 - Panel 3 content.
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
-
-            Parallel.For( 0, 1000, parallelOptions, ( x ) =>
+            TestHelper.AssertAction( ( engine ) =>
             {
-                var context = new LavaDataDictionary();
-                context["iteration"] = x;
-                TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, context, ignoreWhiteSpace: true, wildCard: "<?>" );
+                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
+
+                Parallel.For( 0, 1000, parallelOptions, ( x ) =>
+                {
+                    var context = new LavaDataDictionary();
+                    context["iteration"] = x;
+
+                    var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<?>", MergeFields = context };
+
+                    TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+                } );
             } );
 
         }

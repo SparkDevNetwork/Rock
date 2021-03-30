@@ -201,32 +201,16 @@ namespace Rock.Lava
                 }
                 else
                 {
-                    //TODO: 2021-03-19 - DL - This implemention requires a broader fix which will be added in a future commit.
-                    var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaBlock ) )
-                        .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaTag ) ) )
-                        .Select( a => a.Value )
-                        .OrderBy( a => a.Name )
-                        .ToList();
+                    var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaSecured ) );
 
-                    foreach ( var blockType in commandTypes )
+                    foreach ( var kvp in commandTypes )
                     {
-                        var name = blockType.Name;
+                        var component = Activator.CreateInstance( kvp.Value ) as ILavaSecured;
 
-                        if ( name.EndsWith( "Block" ) )
-                        {
-                            name = name.Substring( 0, name.Length - "Block".Length );
-                        }
-                        else if ( name.EndsWith( "Tag" ) )
-                        {
-                            name = name.Substring( 0, name.Length - "Tag".Length );
-                        }
-                        else if ( name.EndsWith( "Shortcode" ) )
-                        {
-                            name = name.Substring( 0, name.Length - "Shortcode".Length );
-                        }
-
-                        lavaCommands.Add( name );
+                        lavaCommands.Add( component.RequiredPermissionKey );
                     }
+
+                    lavaCommands.Sort();
                 }
             }
             catch { }

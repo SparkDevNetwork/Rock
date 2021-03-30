@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -48,13 +49,11 @@ namespace Rock.Tests.Integration.Lava
 ";
             var expectedOutput = @"Admin Admin"; // NOT 'Ted Decker'
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var values = new LavaDataDictionary { { "CurrentPerson", TestHelper.GetTestPersonTedDecker() } };
 
-            context.SetEnabledCommands( "execute" );
+            var options = new LavaTestRenderOptions() { EnabledCommands = "execute", MergeFields = values };
 
-            context.SetMergeField( "CurrentPerson", TestHelper.GetTestPersonTedDecker() );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         /// <summary>
@@ -89,11 +88,11 @@ Loop Value (Level 2): for_loop_3
 Document Value (Level 1): for_loop_3
 Document Value (Level 1): document_2";
 
-            var context = TestHelper.LavaEngine.NewRenderContext();
+            var mergeFields = new LavaDataDictionary() { { "currentBlock", "context" } };
 
-            context.SetMergeField( "currentBlock", "context" );
+            var options = new LavaTestRenderOptions { MergeFields = mergeFields };
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, context, ignoreWhiteSpace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
     }
 }

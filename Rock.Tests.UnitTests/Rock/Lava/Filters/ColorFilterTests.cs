@@ -28,9 +28,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void AdjustHue_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | AdjustHue:'20%' }}" );
-
-            Assert.That.Equal( "#74ed25", result );
+            TestHelper.AssertTemplateOutput( "#74ed25", "{{ '#ee7625' | AdjustHue:'20%' }}" );
         }
 
         /// <summary>
@@ -39,9 +37,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Darken_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Darken:'20%' }}" );
-
-            Assert.That.Equal( "#a0480c", result );
+            TestHelper.AssertTemplateOutput( "#a0480c", "{{ '#ee7625' | Darken:'20%' }}" );
         }
 
         /// <summary>
@@ -50,9 +46,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Desaturate_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Desaturate:'20%' }}" );
-
-            Assert.That.Equal( "#d67a3c", result );
+            TestHelper.AssertTemplateOutput( "#d67a3c", "{{ '#ee7625' | Desaturate:'20%' }}" );
         }
 
         /// <summary>
@@ -61,9 +55,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void FadeIn_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ 'rgba( 238, 118, 37, 0.8 )' | FadeIn:'20%' }}" );
-
-            Assert.That.Equal( "rgba( 238, 118, 37, 1 )", result );
+            TestHelper.AssertTemplateOutput( "rgba( 238, 118, 37, 1 )", "{{ 'rgba( 238, 118, 37, 0.8 )' | FadeIn:'20%' }}" );
         }
 
         /// <summary>
@@ -72,9 +64,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void FadeOut_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | FadeOut:'20%' }}" );
-
-            Assert.That.Equal( "rgba( 238, 118, 37, 0.8 )", result );
+            TestHelper.AssertTemplateOutput( "rgba( 238, 118, 37, 0.8 )", "{{ '#ee7625' | FadeOut:'20%' }}" );
         }
 
         /// <summary>
@@ -83,9 +73,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Grayscale_AppliedToKnownColor_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Grayscale }}" );
-
-            Assert.That.Equal( "#898989", result );
+            TestHelper.AssertTemplateOutput( "#898989", "{{ '#ee7625' | Grayscale }}" );
         }
 
         /// <summary>
@@ -94,9 +82,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Lighten_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Lighten:'20%' }}" );
-
-            Assert.That.Equal( "#f5b183", result );
+            TestHelper.AssertTemplateOutput( "#f5b183", "{{ '#ee7625' | Lighten:'20%' }}" );
         }
 
         /// <summary>
@@ -105,9 +91,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Mix_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Mix:'#4286f4','20%' }}" );
-
-            Assert.That.Equal( "#cc794e", result );
+            TestHelper.AssertTemplateOutput( "#cc794e", "{{ '#ee7625' | Mix:'#4286f4','20%' }}" );
         }
 
         /// <summary>
@@ -116,9 +100,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Saturate_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Saturate:'20%' }}" );
-
-            Assert.That.Equal( "#fe7214", result );
+            TestHelper.AssertTemplateOutput( "#fe7214", "{{ '#ee7625' | Saturate:'20%' }}" );
         }
 
         /// <summary>
@@ -127,9 +109,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Shade_WithPercentageParameter_ReturnsCorrectValue()
         {
-            var result = TestHelper.GetTemplateOutput( "{{ '#ee7625' | Shade:'20%' }}" );
-
-            Assert.That.Equal( "#be5e1e", result );
+            TestHelper.AssertTemplateOutput( "#be5e1e", "{{ '#ee7625' | Shade:'20%' }}" );
         }
 
     }

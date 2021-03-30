@@ -23,27 +23,13 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class LavaFileSystemTests : LavaIntegrationTestBase
     {
-        //#region Constructors
-
-        //[ClassInitialize]
-        //public static void Initialize( TestContext context )
-        //{
-        //    //_helper.LavaEngine.RegisterSafeType( typeof( TestPerson ) );
-        //    //_helper.LavaEngine.RegisterSafeType( typeof( TestCampus ) );
-
-        //}
-
-        //#endregion
-
         /// <summary>
-        /// Referencing a valid property of an input object should return the property value.
+        /// Verify that an include file containing merge fields correctly renders the context values from the parent template.
         /// </summary>
         [TestMethod]
         public void IncludeStatement_ForFileContainingMergeFields_ReturnsMergedOutput()
         {
             var fileSystem = GetMockFileProvider();
-
-            TestHelper.LavaEngine.Initialize( new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
             var input = @"
 Name: Ted Decker
@@ -52,8 +38,6 @@ Name: Ted Decker
 {% include '_contact.lava' %}
 **
 ";
-
-            var mergeValues = new LavaDataDictionary { { "mobilePhone", "(623) 555-3323" }, { "homePhone", "(623) 555-3322" }, { "workPhone", "(623) 555-2444" }, { "email", "ted@rocksolidchurch.com" } };
 
             var expectedOutput = @"
 Name: Ted Decker
@@ -66,158 +50,115 @@ Email: ted@rocksolidchurch.com
 **
 ";
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, mergeValues, ignoreWhiteSpace:true );
+            var mergeValues = new LavaDataDictionary { { "mobilePhone", "(623) 555-3323" }, { "homePhone", "(623) 555-3322" }, { "workPhone", "(623) 555-2444" }, { "email", "ted@rocksolidchurch.com" } };
+
+            var options = new LavaTestRenderOptions { MergeFields = mergeValues };
+
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+
+                //var lavaContext = testEngine.NewRenderContext( mergeValues );
+
+                TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input, options );
+            } );
         }
+
+        /// <summary>
+        /// Verify that an include file containing Lava syntax that is not Liquid-compatible is rendered correctly.
+        /// </summary>
+//        [TestMethod]
+//        public void IncludeStatement_ForFileContainingLavaSpecificSyntax_ReturnsMergedOutput()
+//        {
+//            var fileSystem = GetMockFileProvider();
+
+//            var input = @"
+//{% include '_lavaSyntax.lava' %}
+//";
+
+//            var expectedOutput = @"
+//Moderate
+//";
+
+//            //var mergeValues = new LavaDataDictionary { { "mobilePhone", "(623) 555-3323" }, { "homePhone", "(623) 555-3322" }, { "workPhone", "(623) 555-2444" }, { "email", "ted@rocksolidchurch.com" } };
+
+//            //var options = new LavaTestRenderOptions { MergeFields = mergeValues };
+
+//            TestHelper.AssertAction( ( engine ) =>
+//            {
+//                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+
+//                //var lavaContext = testEngine.NewRenderContext( mergeValues );
+
+//                TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input ); //, options );
+//            } );
+//        }
 
         [TestMethod]
         public void IncludeStatement_ForNonexistentFile_ShouldRenderError()
         {
             var fileSystem = GetMockFileProvider();
 
-            TestHelper.LavaEngine.Initialize( new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
-
             var input = @"
 {% include '_unknown.lava' %}
 ";
 
-            var output = TestHelper.GetTemplateOutput( input );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-            Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+                var output = testEngine.RenderTemplate( input );
+
+                Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+            } );
+
         }
 
         [TestMethod]
         public void IncludeStatement_ShouldRenderError_IfFileSystemIsNotConfigured()
         {
-            TestHelper.LavaEngine.Initialize();// new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
-            //TestHelper.LavaEngine.Initialize( null );
-
             var input = @"
 {% include '_template.lava' %}
 ";
 
-            var output = TestHelper.GetTemplateOutput( input );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
 
-            Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+                var output = testEngine.RenderTemplate( input );
+
+                Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+            } );
         }
 
         private MockFileProvider GetMockFileProvider()
         {
             var fileProvider = new MockFileProvider();
 
-            var fileContent = @"
+            var contactDetailsTemplate = @"
 Mobile: {{ mobilePhone }}
 Home: {{ homePhone }} 
 Work: {{ workPhone }}
 Email: {{ email }}
 ";
 
-            fileProvider.Add( "_contact.lava", fileContent );
+            fileProvider.Add( "_contact.lava", contactDetailsTemplate );
+
+            // This template contains the Lava-specific keyword "elseif" that is not recognized as a Liquid keyword.
+            var lavaSyntaxTemplate = @"
+{% assign speed = 50 %}
+{% if speed > 70 -%}
+Fast
+{% elseif speed > 30 -%}
+Moderate
+{% else -%}
+Slow
+{% endif -%}
+";
+
+            fileProvider.Add( "_lavasyntax.lava", lavaSyntaxTemplate );
 
             return fileProvider;
         }
-
-        /*
-                [TestMethod]
-                public async Task IncludeSatement_ShouldLoadPartial_IfThePartialsFolderExist()
-                {
-                    var expression = new LiteralExpression( new StringValue( "_Partial.liquid" ) );
-                    var sw = new StringWriter();
-
-                    var fileProvider = new MockFileProvider();
-                    fileProvider.Add( "_Partial.liquid", @"{{ 'Partial Content' }}
-        Partials: '{{ Partials }}'
-        color: '{{ color }}'
-        shape: '{{ shape }}'" );
-
-                    var context = new TemplateContext
-                    {
-                        FileProvider = fileProvider
-                    };
-                    var expectedResult = @"Partial Content
-        Partials: ''
-        color: ''
-        shape: ''";
-
-                    await new IncludeStatement( expression ).WriteToAsync( sw, HtmlEncoder.Default, context );
-
-                    Assert.Equal( expectedResult, sw.ToString() );
-                }
-
-                [Fact]
-                public async Task IncludeSatement_WithInlinevariableAssignment_ShouldBeEvaluated()
-                {
-                    var expression = new LiteralExpression( new StringValue( "_Partial.liquid" ) );
-                    var assignStatements = new List<AssignStatement>
-                    {
-                        new AssignStatement("color", new LiteralExpression(new StringValue("blue"))),
-                        new AssignStatement("shape", new LiteralExpression(new StringValue("circle")))
-                    };
-                    var sw = new StringWriter();
-
-                    var fileProvider = new MockFileProvider();
-                    fileProvider.Add( "_Partial.liquid", @"{{ 'Partial Content' }}
-        Partials: '{{ Partials }}'
-        color: '{{ color }}'
-        shape: '{{ shape }}'" );
-
-                    var context = new TemplateContext
-                    {
-                        FileProvider = fileProvider
-                    };
-                    var expectedResult = @"Partial Content
-        Partials: ''
-        color: 'blue'
-        shape: 'circle'";
-
-                    await new IncludeStatement( expression, assignStatements: assignStatements ).WriteToAsync( sw, HtmlEncoder.Default, context );
-
-                    Assert.Equal( expectedResult, sw.ToString() );
-                }
-
-                [TestMethod]
-                public async Task IncludeSatement_WithTagParams_ShouldBeEvaluated()
-                {
-                    var pathExpression = new LiteralExpression( new StringValue( "color" ) );
-                    var withExpression = new LiteralExpression( new StringValue( "blue" ) );
-                    var sw = new StringWriter();
-
-                    var fileProvider = new MockFileProvider();
-                    fileProvider.Add( "color.liquid", @"{{ 'Partial Content' }}
-        Partials: '{{ Partials }}'
-        color: '{{ color }}'
-        shape: '{{ shape }}'" );
-
-                    var context = new TemplateContext
-                    {
-                        FileProvider = fileProvider
-                    };
-                    var expectedResult = @"Partial Content
-        Partials: ''
-        color: 'blue'
-        shape: ''";
-
-                    await new IncludeStatement( pathExpression, with: withExpression ).WriteToAsync( sw, HtmlEncoder.Default, context );
-
-                    Assert.Equal( expectedResult, sw.ToString() );
-                }
-
-                [TestMethod]
-                public async Task IncludeSatement_ShouldLimitRecursion()
-                {
-                    var expression = new LiteralExpression( new StringValue( "_Partial.liquid" ) );
-                    var sw = new StringWriter();
-
-                    var fileProvider = new MockFileProvider();
-                    fileProvider.Add( "_Partial.liquid", @"{{ 'Partial Content' }} {% include '_Partial' %}" );
-
-                    var context = new TemplateContext
-                    {
-                        FileProvider = fileProvider
-                    };
-
-                    await Assert.ThrowsAsync<InvalidOperationException>( () => new IncludeStatement( expression ).WriteToAsync( sw, HtmlEncoder.Default, context ).AsTask() );
-                }
-
-                */
     }
 }

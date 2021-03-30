@@ -57,9 +57,7 @@ Number: 2
 Color: green
 ";
 
-            var output = TestHelper.GetTemplateOutput( template );
-
-            TestHelper.AssertTemplateOutput( expectedOutput, output, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
         }
 
         #endregion

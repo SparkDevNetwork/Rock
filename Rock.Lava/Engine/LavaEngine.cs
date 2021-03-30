@@ -31,11 +31,10 @@ namespace Rock.Lava
         public static string ShortcodeInternalNameSuffix = "_";
 
         private static ILavaEngine _instance = null;
-        private static LavaEngineTypeSpecifier _liquidFramework = LavaEngineTypeSpecifier.DotLiquid;
         private static object _initializationLock = new object();
 
         /// <summary>
-        /// Initialize the Lava Engine with the specified configuration options.
+        /// Initialize the global instance of the Lava Engine with the specified configuration options.
         /// </summary>
         /// <param name="engineType"></param>
         /// <param name="options"></param>
@@ -43,42 +42,61 @@ namespace Rock.Lava
         {
             lock ( _initializationLock )
             {
-                _liquidFramework = engineType ?? LavaEngineTypeSpecifier.DotLiquid;
+                // Release the current instance.
+                _instance = null;
 
-                ILavaEngine engine;
+                var engine = NewEngineInstance( engineType.GetValueOrDefault( LavaEngineTypeSpecifier.RockLiquid ), options );
 
-                if ( _liquidFramework == LavaEngineTypeSpecifier.Fluid )
-                {
-                    engine = new FluidEngine();
-
-                    options = options ?? new LavaEngineConfigurationOptions();
-
-                    options.FileSystem = new FluidFileSystem( options.FileSystem );
-                }
-                else if ( _liquidFramework == LavaEngineTypeSpecifier.DotLiquid )
-                {
-                    engine = new DotLiquidEngine();
-
-                    options = options ?? new LavaEngineConfigurationOptions();
-
-                    options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
-                }
-                else
-                {
-                    // If no engine type specified, default to the RockLiquid engine.
-                    engine = new RockLiquidEngine();
-
-                    options = options ?? new LavaEngineConfigurationOptions();
-                }
-
-                engine.Initialize( options );
-
+                // Assign the current instance.
                 _instance = engine;
             }
         }
 
         /// <summary>
-        /// Returns the current instance of the Lava Engine.
+        /// Create a new Lava Engine instance with the specified configuration options.
+        /// </summary>
+        /// <param name="engineType"></param>
+        /// <param name="options"></param>
+        public static ILavaEngine NewEngineInstance( LavaEngineTypeSpecifier engineType, LavaEngineConfigurationOptions options )
+        {
+            ILavaEngine engine = null;
+
+            if ( engineType == LavaEngineTypeSpecifier.Fluid )
+            {
+                engine = new FluidEngine();
+
+                options = options ?? new LavaEngineConfigurationOptions();
+
+                if ( options.FileSystem != null )
+                {
+                    options.FileSystem = new FluidFileSystem( options.FileSystem );
+                }
+            }
+            else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
+            {
+                engine = new DotLiquidEngine();
+
+                options = options ?? new LavaEngineConfigurationOptions();
+
+                if ( options.FileSystem != null )
+                {
+                    options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
+                }
+            }
+            else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                engine = new RockLiquidEngine();
+
+                options = options ?? new LavaEngineConfigurationOptions();
+            }
+
+            engine.Initialize( options );
+
+            return engine;
+        }
+
+        /// <summary>
+        /// Returns the global instance of the Lava Engine.
         /// </summary>
         public static ILavaEngine CurrentEngine
         {
@@ -88,13 +106,24 @@ namespace Rock.Lava
                 {
                     if ( _instance == null )
                     {
-                        // Initialize a default instance.
-                        Initialize( _liquidFramework, new LavaEngineConfigurationOptions() );
+                        // Make sure that the global engine instance has been intentionally initialized before it is first accessed.
+                        // This provides more certainty for the order of events in the Rock application startup process.
+                        throw new LavaException( "LavaEngine not initialized. The Initialize() method must be called before the engine instance can be accessed." );
                     }
                 }
 
                 return _instance;
             }
+            set
+            {
+                /// Set the global instance of the Lava Engine.
+                /// Used for internal test purposes.
+                lock ( _initializationLock )
+                {
+                    _instance = value;
+                }
+            }
+
         }
     }
 }
