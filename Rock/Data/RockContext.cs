@@ -1286,6 +1286,30 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the media accounts.
+        /// </summary>
+        /// <value>
+        /// The media accounts.
+        /// </value>
+        public DbSet<MediaAccount> MediaAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media elements.
+        /// </summary>
+        /// <value>
+        /// The media elements.
+        /// </value>
+        public DbSet<MediaElement> MediaElements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media folders.
+        /// </summary>
+        /// <value>
+        /// The media folders.
+        /// </value>
+        public DbSet<MediaFolder> MediaFolders { get; set; }
+
+        /// <summary>
         /// Gets or sets the merge templates.
         /// </summary>
         /// <value>
