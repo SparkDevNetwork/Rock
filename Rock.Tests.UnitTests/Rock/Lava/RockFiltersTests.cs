@@ -31,6 +31,7 @@ namespace Rock.Tests.Rock.Lava
         private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
         private static readonly DateTime today = RockDateTime.Today;
+        private static readonly DateTime nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
 
         private static readonly Calendar weeklySaturday430 = new Calendar()
         {
@@ -38,8 +39,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 16, 30, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 17, 30, 0 ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
                         Sequence = 0,
