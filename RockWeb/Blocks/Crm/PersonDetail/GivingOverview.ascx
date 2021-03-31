@@ -18,7 +18,7 @@
                         <div class="row d-flex flex-wrap align-items-end py-1">
                             <div class="col-xs-12 col-sm-8 col-lg-9 giving-by-month">
                                 <h5 class="mt-0">Giving by Month</h5>
-                                <ul class="attendance-chart attendance-chart-gap" style="height: 70px;">
+                                <ul class="trend-chart trend-chart-gap" style="height: 70px;">
                                     <asp:Repeater ID="rptGivingByMonth" runat="server">
                                         <ItemTemplate>
                                             <li title="<%#( ( ( DateTime ) Eval( "key" ) ).ToString( "MMM yyyy" ) ) %>: <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%><%# string.Format("{0:N}", Eval("value")) %>"><span style="<%# GetGivingByMonthPercent ( (decimal)Eval( "value" ) ) %>"></span></li>
@@ -34,7 +34,7 @@
                                         <span class="stat-label"><asp:Literal ID="lPercent" runat="server" /> %</span>
                                     </div>
                                     <div class="flex-fill">
-                                        <ul class="attendance-chart" style="height: 70px;">
+                                        <ul class="trend-chart" style="height: 70px;">
                                             <li><span id="lStage1" runat="server" style="height: 100%"></span></li>
                                             <li><span id="lStage2" runat="server" style="height: 70%"></span></li>
                                             <li><span id="lStage3" runat="server" style="height: 48%"></span></li>
@@ -52,7 +52,6 @@
                         </div>
                         <hr class="mb-4">
                         <asp:Literal ID="lGivingAnalytics" runat="server" />
-                        <small>Metrics are as of the last gift.</small>
                         </div>
                         <hr class="mt-4">
                         <h5>Yearly Summary</h5>
