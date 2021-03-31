@@ -110,6 +110,9 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext jobContext )
         {
+            // Since this class could technically be persisted across jobs, zero out the last run cache
+            _lastRunDateTime = null;
+
             // Create a context object that will help transport state and helper information so as to not rely on the
             // job class itself being a single use instance
             var context = new GivingAnalyticsContext( jobContext );
@@ -1150,14 +1153,14 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                     // number of IQRs since the formula is dividing by zero. Since we don't want alerts for scenarios like an increase of $1, we use
                     // a fallback formula for IQR.
                     // Use 15% of the median amount or $100 if the median amount is somehow $0.
-                    var fallbackAmountIqr = 0.15m * medianGiftAmount;
+                    amountIqr = 0.15m * medianGiftAmount;
 
-                    if ( fallbackAmountIqr == 0 )
+                    if ( amountIqr == 0 )
                     {
-                        fallbackAmountIqr = 100m;
+                        amountIqr = 100m;
                     }
 
-                    numberOfAmountIqrs = amountDeviation / fallbackAmountIqr;
+                    numberOfAmountIqrs = amountDeviation / amountIqr;
                 }
 
                 // Make sure the calculation doesn't exceed "infinity"
@@ -1191,14 +1194,14 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                     // number of std devs since the formula is dividing by zero. Since we don't want alerts for scenarios like being 1 day early, we use
                     // a fallback formula for std dev.
                     // Use 15% of the mean or 3 days if the mean is still 0.
-                    var fallbackFrequencyStdDev = 0.15m * frequencyMean;
+                    frequencyStdDev = 0.15m * frequencyMean;
 
-                    if ( fallbackFrequencyStdDev == 0 )
+                    if ( frequencyStdDev == 0 )
                     {
-                        fallbackFrequencyStdDev = 3m;
+                        frequencyStdDev = 3m;
                     }
 
-                    numberOfFrequencyStdDevs = frequencyDeviation / fallbackFrequencyStdDev;
+                    numberOfFrequencyStdDevs = frequencyDeviation / frequencyStdDev;
                 }
 
                 // Make sure the calculation doesn't exceed "infinity"
