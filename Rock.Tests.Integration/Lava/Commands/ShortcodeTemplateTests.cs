@@ -97,12 +97,6 @@ Panel 3 - Panel 3 content.
         [TestMethod]
         public void ShortcodeBlock_WithEntityCommandEnabledAndEmbeddedEntityCommand_EmitsCorrectHtml()
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
-                return;
-            }
-
             var shortcodeTemplate = @"
 {% for item in items %}
 <Item>
@@ -148,6 +142,12 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
 
             TestHelper.AssertAction( ( engine ) =>
             {
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    TestHelper.DebugWriteRenderResult( engine.EngineType, "(Not Implemented)", "(Not Implemented)" );
+                    return;
+                }
+
                 engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
@@ -158,12 +158,6 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
         [TestMethod]
         public void ShortcodeBlock_WithParameters_CanResolveParameters()
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
-                return;
-            }
-
             var shortcodeTemplate = @"
 Font Name: {{ fontname }}
 Font Size: {{ fontsize }}
@@ -193,6 +187,12 @@ Font Bold: true
 
             TestHelper.AssertAction( ( engine ) =>
             {
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    TestHelper.DebugWriteRenderResult( engine.EngineType, "(Not Implemented)", "(Not Implemented)" );
+                    return;
+                }
+
                 engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
@@ -334,7 +334,7 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
@@ -415,9 +415,9 @@ var chart = new Chart(ctx, {
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -431,7 +431,6 @@ var chart = new Chart(ctx, {
 {[ easypie value:'25' scalelinelength:'0' chartwidth:'50' ]} {[ endeasypie ]}
 ";
 
-            // TODO: The second script tag does not render
             var expectedOutput = @"
 <script src='https://cdnjs.cloudflare.com/ajax/libs/easy-pie-chart/2.1.6/jquery.easypiechart.min.js' type='text/javascript'></script>
 
@@ -512,11 +511,26 @@ $( document ).ready(function() {
 }
 </style>
 
+<div class=``easy-pie-chart id-<<guid>>  js-easy-pie-chart`` data-percent=``25`` data-piesize=``50`` data-scalelinelength=``0`` data-scalecolor=#dfe0e0 data-trackwidth=``6`` data-linecap=``butt`` data-animateduration=``1500`` style=``color:#ee7625``>
+  <div class=``easy-pie-contents id-<<guid>>-contents``>
+      <style>
+      .id-<<guid>>-contents > img {
+          border-radius: 50%;
+          max-width: 26px;
+      }
+      </style>
+      
+<span class=``chart-label small`` ></span>
+
+  </div>
+</div>
 ";
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input );
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -637,9 +651,9 @@ $( document ).ready(function() {
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -760,9 +774,9 @@ $( document ).ready(function() {
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -856,9 +870,9 @@ This is a super simple panel.
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -905,9 +919,9 @@ This is a super simple panel.
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -939,10 +953,9 @@ This is a super simple panel.
 </div>
 ";
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
-
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -1021,9 +1034,9 @@ Another possibility would be to merge a word’s tree with a single large tree o
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
@@ -1060,9 +1073,9 @@ Another possibility would be to merge a word’s tree with a single large tree o
 </div>
 ";
 
-            var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<<guid>>" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "<<guid>>" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion

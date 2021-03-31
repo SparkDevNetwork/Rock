@@ -257,13 +257,24 @@ namespace Rock.Tests.Integration.Lava
     {% endfor %}
 {% endeventscheduledinstance %}
 ";
-            var output = template.ResolveMergeFields( null );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                //if ( engine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.Fluid )
+                //{
+                //    return;
+                //}
 
-            // Verify that the output contains series headings and relevant dates for both schedules.
-            Assert.That.Contains( output, "<b>Series 1</b>" );
-            Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
-            Assert.That.Contains( output, "<b>Series 2</b>" );
-            Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template ); //, new LavaTestRenderOptions {  } );
+                //var output = template.ResolveMergeFields( null );
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "<b>Series 1</b>" );
+                Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+                Assert.That.Contains( output, "<b>Series 2</b>" );
+                Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+            } );
         }
 
         #region Test Data

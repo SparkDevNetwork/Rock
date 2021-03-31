@@ -63,11 +63,11 @@ namespace Rock.Tests.Integration.Lava
 {% endcontentchannelitem %}
 ";
 
-            var expectedOutput = @"/9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}";
+            var expectedOutput = @"Base64Format: /9j/4AAQSkZJRgABAQEAAAAAAAD/*";
 
-            var options = new LavaTestRenderOptions { WildcardPlaceholder = "{moreBase64Data}", EnabledCommands = "RockEntity" };
+            var options = new LavaTestRenderOptions() { Wildcards = new List<string> { "*" }, EnabledCommands = "RockEntity" };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
         }
 
         #endregion

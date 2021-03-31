@@ -67,17 +67,13 @@ namespace Rock.Tests.Integration.Lava
         {
             var input = @"
 {% cache key:'decker-page-list' duration:'3600' %}
-    {% person where:'LastName == ""Decker""' %}
-        {% for person in personItems %}
-            {{ person.FullName }} < br />
-        {% endfor %}
-    {% endperson %}
+This is the cached page list!
 {% endcache %}
 ";
 
-            var expectedOutput = @"\s*The Lava command 'cache' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'cache' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
 
         [TestMethod]
@@ -150,9 +146,9 @@ Color 4: blue
 {% endperson %}
             ";
 
-            var expectedOutput = @"\s*The Lava command 'rockentity' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'rockentity' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -255,9 +251,9 @@ Color 4: blue
 {% endexecute %}
             ";
 
-            var expectedOutput = @"\s*The Lava command 'execute' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'execute' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -374,9 +370,9 @@ Color 4: blue
 {% endinteractionwrite %}
 ";
 
-            var expectedOutput = @"\s*The Lava command 'interactionwrite' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'interactionwrite' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -407,9 +403,9 @@ Color 4: blue
 {% interactioncontentchannelitemwrite contentchannelitemid:'1' operation:'View' summary:'Viewed content channel item #1' personaliasid:'10' %}
 ";
 
-            var expectedOutput = @"\s*The Lava command 'interactioncontentchannelitemwrite' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'interactioncontentchannelitemwrite' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -466,9 +462,9 @@ Color 4: blue
 {% endsearch %}
 ";
 
-            var expectedOutput = @"\s*The Lava command 'search' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'search' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -483,9 +479,9 @@ Color 4: blue
 {% endsearch %}
 ";
 
-            var expectedOutput = @"(.*)Search results not available. Universal search is not enabled for this Rock instance.";
+            var expectedOutput = "Search results not available. Universal search is not enabled for this Rock instance.";
 
-            var options = new LavaTestRenderOptions { EnabledCommands = "Search" };
+            var options = new LavaTestRenderOptions { EnabledCommands = "Search", OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
@@ -507,9 +503,9 @@ Color 4: blue
 {% endsql %}
 ";
 
-            var expectedOutput = @"\s*The Lava command 'sql' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'sql' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -578,18 +574,9 @@ Color 4: blue
 
                 output = output.Replace( " ", string.Empty );
 
-                //if ( TestHelper.LavaEngine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.RockLiquid )
-                //{
-                //    Assert.IsTrue( output.Contains( "person-Rock.Lava.RockLiquid.Blocks.RockEntity" ), "Expected Entity Tag not found." );
-                //    Assert.IsTrue( output.Contains( "cache-Rock.Lava.RockLiquid.Blocks.Cache" ), "Expected Command Block not found." );
-                //    Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.RockLiquid.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
-                //}
-                //else
-                //{
                 Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
                 Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );
                 Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
-                //}
             } );
         }
 
@@ -606,9 +593,9 @@ Color 4: blue
 {% endwebrequest %}  
 ";
 
-            var expectedOutput = @"\s*The Lava command 'webrequest' is not configured for this template\.\s*";
+            var expectedOutput = "The Lava command 'webrequest' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -638,11 +625,11 @@ Color 4: blue
 {% endworkflowactivate %}
 ";
 
-            // TODO: If the security check fails, the content of the block is still returned with the erro message.
+            // TODO: If the security check fails, the content of the block is still returned with the error message.
             // Is this correct behavior, or should the content of the block be hidden?
-            var expectedOutput = @"\s*The Lava command 'workflowactivate' is not configured for this template\.\s*.*";
+            var expectedOutput = "The Lava command 'workflowactivate' is not configured for this template.";
 
-            TestHelper.AssertTemplateOutputRegex( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]

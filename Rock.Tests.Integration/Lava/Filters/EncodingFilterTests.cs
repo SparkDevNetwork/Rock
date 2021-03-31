@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -45,16 +46,16 @@ namespace Rock.Tests.Integration.Lava
 
             var values = new LavaDataDictionary { { "Item", contentChannelItem } };
 
-            var inputTemplate = @"
+            var input = @"
 {% assign image = Item | Attribute:'Image','Object' %}
 Base64Format: {{ image | Base64Encode }}<br/>
 ";
 
             var expectedOutput = @"/9j/4AAQSkZJRgABAQEAAAAAAAD/{moreBase64Data}";
 
-            var options = new LavaTestRenderOptions { MergeFields = values, WildcardPlaceholder = "{moreBase64Data}" };
+            var options = new LavaTestRenderOptions() { MergeFields = values, Wildcards = new List<string> { "{moreBase64Data}" } };
 
-            TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, inputTemplate, options );
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
