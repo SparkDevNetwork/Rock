@@ -102,7 +102,6 @@ namespace Rock.Lava.Blocks
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
                 return;
             }
 
