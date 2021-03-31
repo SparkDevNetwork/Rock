@@ -671,6 +671,23 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the value of an attribute by the attribute's Guid.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( Guid guid )
+        {
+            var attributeCache = AttributeCache.Get( guid );
+
+            if ( attributeCache is null )
+            {
+                return null;
+            }
+
+            return GetAttributeValue( attributeCache.Key );
+        }
+
+        /// <summary>
         /// Gets the type of the attribute value as.
         /// </summary>
         /// <param name="key">The key.</param>

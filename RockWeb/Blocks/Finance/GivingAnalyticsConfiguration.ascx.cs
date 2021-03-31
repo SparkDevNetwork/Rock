@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             financialTransactionAlertType.Name = tbName.Text;
-            financialTransactionAlertType.CampusId = ddlCampus.SelectedValueAsInt();
+            financialTransactionAlertType.CampusId = cpCampus.SelectedCampusId;
             financialTransactionAlertType.AlertType = rblAlertType.SelectedValueAsEnum<AlertType>();
             financialTransactionAlertType.ContinueIfMatched = cbContinueIfMatched.Checked;
             financialTransactionAlertType.RepeatPreventionDuration = nbRepeatPreventionDuration.Text.AsIntegerOrNull();
@@ -347,6 +347,17 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAlerts()
         {
+            if ( CampusCache.All().Count == 1 )
+            {
+                // Hide the campus field if there is only one campus in the system
+                var campusField = gAlerts.ColumnsOfType<RockBoundField>().Where( a => a.HeaderText == "Campus" ).FirstOrDefault();
+
+                if ( campusField != null )
+                {
+                    campusField.Visible = false;
+                }
+            }
+
             gAlerts.DataSource = GetFinancialTransactionAlertTypes().ToList();
             gAlerts.DataBind();
         }
@@ -371,7 +382,7 @@ namespace RockWeb.Blocks.Finance
             BindControl();
             tbName.Text = financialTransactionAlertType.Name;
             hfIdValue.Value = financialTransactionAlertType.Id.ToString();
-            ddlCampus.SetValue( financialTransactionAlertType.CampusId );
+            cpCampus.SetValue( financialTransactionAlertType.CampusId );
             rblAlertType.SetValue( ( int ) financialTransactionAlertType.AlertType );
             cbContinueIfMatched.Checked = financialTransactionAlertType.ContinueIfMatched;
             nbRepeatPreventionDuration.Text = financialTransactionAlertType.RepeatPreventionDuration.ToStringSafe();
@@ -412,10 +423,6 @@ namespace RockWeb.Blocks.Finance
             var connectionTypeService = new ConnectionTypeService( new RockContext() );
             ddlConnectionType.Items.Add( new ListItem() );
             ddlConnectionType.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
-
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
 
             dvpPersonDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 

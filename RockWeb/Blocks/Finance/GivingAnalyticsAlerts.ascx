@@ -9,6 +9,11 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment-alt"></i> Giving Alerts</h1>
+                <div class="pull-right d-flex align-items-center">
+                    <asp:LinkButton ID="lbConfig" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConfig_Click" CausesValidation="false">
+                        <i title="Options" class="fa fa-gear"></i>
+                    </asp:LinkButton>
+                </div>
             </div>
             <div class="panel-body">
 
@@ -30,11 +35,11 @@
                             <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="FinancialTransactionAlertType.Campus" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="FinancialTransactionAlertType.Name" HeaderText="Alert Name" SortExpression="FinancialTransactionAlertType.Name" />
-                            <Rock:RockLiteralField ID="lGiftAmount" HeaderText="Gift Amount" SortExpression="Amount" />
-                            <Rock:RockLiteralField ID="lAmountMedian" HeaderText="Amount +/- Median" />
-                            <Rock:RockLiteralField ID="lDaysMean" HeaderText="Days +/- Mean" />
-                            <Rock:RockLiteralField ID="lAmtMeasures" HeaderText="Amt Measures" />
-                            <Rock:RockLiteralField ID="lFreqMeasures" HeaderText="Freq Measures" />
+                            <Rock:RockLiteralField ID="lGiftAmount" HeaderText="Gift Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockLiteralField ID="lAmountMedian" HeaderText="Amount +/- Median" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockLiteralField ID="lDaysMean" HeaderText="Days +/- Mean" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockLiteralField ID="lAmtMeasures" HeaderText="Amt Measures" ItemStyle-HorizontalAlign="Right" />
+                            <Rock:RockLiteralField ID="lFreqMeasures" HeaderText="Freq Measures" ItemStyle-HorizontalAlign="Right" />
                         </Columns>
                     </Rock:Grid>
 
