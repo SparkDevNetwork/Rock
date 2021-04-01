@@ -415,8 +415,10 @@ namespace Rock.Model
                 var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
+
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
@@ -459,8 +461,9 @@ namespace Rock.Model
             }
             else
             {
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( !BillingLocationId.HasValue && newLocation != null )
                 {
