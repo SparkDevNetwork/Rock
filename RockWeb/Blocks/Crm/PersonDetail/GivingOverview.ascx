@@ -14,8 +14,8 @@
                     <asp:Panel ID="pnlGiving" runat="server">
                         <div id="pnlGivingStats" runat="server">
                         <asp:Literal ID="lLastGiving" runat="server" />
-                        <hr>
-                        <div class="row d-flex flex-wrap align-items-end py-1">
+                        <hr class="m-0">
+                        <div class="row d-flex flex-wrap align-items-end py-3">
                             <div class="col-xs-12 col-sm-8 col-lg-9 giving-by-month">
                                 <h5 class="mt-0">Giving by Month</h5>
                                 <ul class="trend-chart trend-chart-gap" style="height: 70px;">
@@ -27,7 +27,7 @@
                                 </ul>
                             </div>
 
-                            <div class="col-xs-6 col-sm-4 col-lg-3 percentile-giving">
+                            <div class="col-xs-10 col-sm-4 col-lg-3 percentile-giving mx-auto mt-3 m-sm-0">
                                 <div class="d-flex flex-row">
                                     <div class="pr-3">
                                         <span class="stat-value-lg"><asp:Literal ID="lGivingBin" runat="server" /></span>
@@ -50,10 +50,10 @@
                                 </div>
                             </div>
                         </div>
-                        <hr class="mb-4">
+                        <hr class="m-0">
                         <asp:Literal ID="lGivingAnalytics" runat="server" />
                         </div>
-                        <hr class="mt-4">
+                        <hr class="m-0">
                         <h5>Yearly Summary</h5>
                         <div class="row d-flex flex-wrap">
                             <asp:Repeater ID="rptYearSummary" runat="server" OnItemDataBound="rptYearSummary_ItemDataBound">
