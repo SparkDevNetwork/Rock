@@ -340,14 +340,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get *all* of today's transactions.
                 // Not sure why we aren't filtering by PersonIds yet, but
                 // it could be to make performance more consistent in case the PersonQuery is complex.
-                var attendanceQueryList = attendanceQuery.AsNoTracking().ToList();
+                var attendanceQueryList = RosterAttendeeAttendance.Select( attendanceQuery ).ToList();
 
                 // join (in memory) matching person ids and attendances
                 var peopleAttendances = personIds
                         .GroupJoin(
                             attendanceQueryList,
                             pId => pId,
-                            a => a.PersonAlias.PersonId,
+                            a => a.PersonId,
                             ( p, a ) => a )
                         .SelectMany( a => a )
                         .Distinct()

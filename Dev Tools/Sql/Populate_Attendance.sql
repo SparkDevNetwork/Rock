@@ -10,6 +10,9 @@ declare
     -- set this to @populateStartDateTimeLastHour or @populateStartDateTimeLast12Months (or custom), depending on what you need
     @populateStartDateTime datetime = @populateStartDateTimeLast5Years,
     @populateEndDateTime datetime  = DateAdd(hour, 0, GetDate()),
+    
+    @limitToChildren bit = 1, -- set this to true to only add attendance for children
+    
     @populateGroupScheduling int = 0, -- set this to true if the attendance records should be for scheduling attendences
     @maxAttendanceCount int = 5000, 
     @personSampleSize int = 10000, -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
@@ -120,7 +123,7 @@ begin
     -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
 	declare personAliasIdCursor cursor LOCAL FAST_FORWARD for 
         select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
-        not in (select Id from Person where IsDeceased = 1  and RecordStatusValueId != 3) order by newid();
+        not in (select Id from Person where (IsDeceased = 1  and RecordStatusValueId != 3) or (@limitToChildren = 1 and  AgeClassification != 2)) order by newid();
 	open personAliasIdCursor;
 
     IF CURSOR_STATUS('global','scheduleIdCursor')>=-1
