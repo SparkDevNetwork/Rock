@@ -255,10 +255,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lpLocation_SelectLocation( object sender, EventArgs e )
         {
-            Location location = lpLocation.Location;
-            if ( location != null )
+            var locationId = lpLocation.NamedLocation?.Id;
+            if ( locationId != null )
             {
-                CheckinManagerHelper.SetSelectedLocation( this, lpLocation, location.Id, CurrentCampusId );
+                CheckinManagerHelper.SetSelectedLocation( this, lpLocation, locationId, CurrentCampusId );
             }
             else
             {
@@ -325,6 +325,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             CheckinManagerHelper.SetSelectedLocation( this, lpLocation, locationId, CurrentCampusId );
+            if ( this.Response.IsRequestBeingRedirected )
+            {
+                return;
+            }
 
             InitializeSubPageNav( locationId.Value );
 
@@ -569,32 +573,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // Limit to Groups that are configured for the selected location.
             var groupIdsForLocation = new GroupLocationService( rockContext ).Queryable().Where( a => a.LocationId == CurrentLocationId ).Select( a => a.GroupId ).Distinct().ToList();
             attendanceQuery = attendanceQuery.Where( a => groupIdsForLocation.Contains( a.Occurrence.GroupId.Value ) );
+            List<RosterAttendeeAttendance> attendanceList = RosterAttendeeAttendance.Select( attendanceQuery ).ToList();
 
-            var unfilteredAttendanceCheckinAreas = attendanceQuery.Select( a => a.Occurrence.Group.GroupTypeId ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToArray();
+            var unfilteredAttendanceCheckinAreas = attendanceList.Select( a => a.GroupTypeId ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToArray();
 
             RemoveUnneededStatusFilters( unfilteredAttendanceCheckinAreas );
             var currentStatusFilter = GetStatusFilterValueFromControl();
 
-            List<Attendance> attendanceList = attendanceQuery
-                .Include( a => a.AttendanceCode )
-                .Include( a => a.PersonAlias.Person )
-                .Include( a => a.Occurrence.Schedule )
-                .Include( a => a.Occurrence.Group )
-                .Include( a => a.Occurrence.Location )
-                .AsNoTracking()
-                .ToList();
-
             attendanceList = CheckinManagerHelper.FilterByActiveCheckins( currentDateTime, attendanceList );
-            attendanceList = attendanceList.Where( a => a.PersonAlias != null && a.PersonAlias.Person != null ).ToList();
-            var unfilteredAttendees = RosterAttendee.GetFromAttendanceList( attendanceList, checkinAreaFilter );
+            attendanceList = attendanceList.Where( a => a.Person != null ).ToList();
+            UpdateStatusFilterTabs( attendanceList );
 
-            UpdateStatusFilterTabs( unfilteredAttendees );
-
-            List<Attendance> attendanceListForCurrentStatusFilter;
+            List<RosterAttendeeAttendance> attendanceListForCurrentStatusFilter;
 
             if ( !HasPresenceEnabled( unfilteredAttendanceCheckinAreas ) && currentStatusFilter == RosterStatusFilter.Present )
             {
-                // Edge case. If there are attendance records with 'PresentDateTime' null (due to pre v12.3 checkin, or a change in configuration from Enable Presence to Disable Presence), also include CheckedIn if we are filter only for Present.
+                // Edge case. If there are attendance records with 'PresentDateTime' null (due to pre-v12.3 checkin, or a change in configuration from Enable Presence to Disable Presence), also include CheckedIn if we are filter only for Present.
                 attendanceListForCurrentStatusFilter = attendanceList.Where( a => RosterAttendee.AttendanceMeetsRosterStatusFilter( a, RosterStatusFilter.Present ) || RosterAttendee.AttendanceMeetsRosterStatusFilter( a, RosterStatusFilter.CheckedIn ) ).ToList();
             }
             else
@@ -612,12 +606,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// </summary>
         /// <param name="attendanceQuery">The attendance query.</param>
         /// <param name="currentDateTime">The current date time.</param>
-        private void UpdateStatusFilterTabs( IList<RosterAttendee> attendees )
+        private void UpdateStatusFilterTabs( IList<RosterAttendeeAttendance> attendances )
         {
-            var checkedInCount = attendees.Where( x => x.MeetsRosterStatusFilter( RosterStatusFilter.CheckedIn ) ).Count();
-            var presentCount = attendees.Where( x => x.MeetsRosterStatusFilter( RosterStatusFilter.Present ) ).Count();
-            var checkedOutCount = attendees.Where( x => x.MeetsRosterStatusFilter( RosterStatusFilter.CheckedOut ) ).Count();
-            var allCount = attendees.Where( x => x.MeetsRosterStatusFilter( RosterStatusFilter.All ) ).Count();
+            var checkedInCount = attendances.Where( x => RosterAttendee.AttendanceMeetsRosterStatusFilter( x, RosterStatusFilter.CheckedIn ) ).DistinctBy( a => a.PersonId ).Count();
+            var presentCount = attendances.Where( x => RosterAttendee.AttendanceMeetsRosterStatusFilter( x, RosterStatusFilter.Present ) ).DistinctBy( a => a.PersonId ).Count();
+            var checkedOutCount = attendances.Where( x => RosterAttendee.AttendanceMeetsRosterStatusFilter( x, RosterStatusFilter.CheckedOut ) ).DistinctBy( a => a.PersonId ).Count();
+            var allCount = attendances.DistinctBy( a => a.PersonId ).Count();
 
             UpdateStatusFilterTabText( RosterStatusFilter.All, allCount );
             UpdateStatusFilterTabText( RosterStatusFilter.CheckedIn, checkedInCount );

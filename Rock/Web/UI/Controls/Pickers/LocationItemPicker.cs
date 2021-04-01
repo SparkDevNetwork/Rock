@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -41,16 +41,17 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value from location identifier.
         /// </summary>
-        /// <param name="location">The location.</param>
-        public void SetValue( Rock.Model.Location location )
+        /// <param name="locationId">The location identifier.</param>
+        public void SetValueFromLocationId( int? locationId )
         {
-            if ( location != null )
+            if ( locationId != null && locationId > 0 )
             {
-                ItemId = location.Id.ToString();
+                ItemId = locationId.ToString();
+                var location = NamedLocationCache.Get( locationId.Value );
                 List<int> parentLocationIds = new List<int>();
-                var parentLocation = location.ParentLocation;
+                NamedLocationCache parentLocation = location?.ParentLocation;
 
                 while ( parentLocation != null )
                 {
@@ -60,12 +61,12 @@ namespace Rock.Web.UI.Controls
                         break;
                     }
 
-                    parentLocationIds.Insert( 0, parentLocation.Id ); ;
+                    parentLocationIds.Insert( 0, parentLocation.Id );
                     parentLocation = parentLocation.ParentLocation;
                 }
 
                 InitialItemParentIds = parentLocationIds.AsDelimited( "," );
-                ItemName = location.Name;
+                ItemName = location?.Name;
             }
             else
             {
@@ -75,12 +76,63 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="namedLocation">The named location.</param>
+        public void SetValueFromNamedLocation( NamedLocationCache namedLocation )
+        {
+            if ( namedLocation != null )
+            {
+                ItemId = namedLocation.Id.ToString();
+                List<int> parentLocationIds = new List<int>();
+                var parentLocation = namedLocation.ParentLocation;
+
+                while ( parentLocation != null )
+                {
+                    if ( parentLocationIds.Contains( parentLocation.Id ) )
+                    {
+                        // infinite recursion
+                        break;
+                    }
+
+                    parentLocationIds.Insert( 0, parentLocation.Id );
+                    parentLocation = parentLocation.ParentLocation;
+                }
+
+                InitialItemParentIds = parentLocationIds.AsDelimited( "," );
+                ItemName = namedLocation.Name;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        [Obsolete( "Use SetValue(NamedLocationCache)" )]
+        private void SetValue( Rock.Model.Location location )
+        {
+            if ( location != null )
+            {
+                SetValueFromNamedLocation( NamedLocationCache.Get( location ) );
+            }
+            else
+            {
+                SetValueFromNamedLocation( ( NamedLocationCache ) null );
+            }
+        }
+
+        /// <summary>
         /// Sets the values.
         /// </summary>
-        /// <param name="locations">The locations.</param>
-        public void SetValues( IEnumerable<Location> locations )
+        /// <param name="namedLocations">The named locations.</param>
+        public void SetValuesFromNamedLocations( IEnumerable<NamedLocationCache> namedLocations )
         {
-            var theLocations = locations.ToList();
+            var theLocations = namedLocations.ToList();
 
             if ( theLocations.Any() )
             {
@@ -104,7 +156,7 @@ namespace Rock.Web.UI.Controls
                                 break;
                             }
 
-                            parentLocationIds.Insert( 0, parentLocation.Id ); ;
+                            parentLocationIds.Insert( 0, parentLocation.Id );
                             parentLocation = parentLocation.ParentLocation;
                         }
                     }
@@ -122,12 +174,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="locations">The locations.</param>
+        [Obsolete( "Use SetValues (NamedLocationCache)" )]
+        private void SetValues( IEnumerable<Location> locations )
+        {
+            SetValuesFromNamedLocations( locations.Select( a => NamedLocationCache.Get( a ) ).ToList() );
+        }
+
+        /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new LocationService( new RockContext() ).Get( int.Parse( ItemId ) );
-            this.SetValue( item );
+            this.SetValueFromLocationId( ItemId.AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -136,8 +197,8 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var ids = this.SelectedValuesAsInt().ToList();
-            var items = new LocationService( new RockContext() ).Queryable().Where( i => ids.Contains( i.Id ) );
-            this.SetValues( items );
+            var items = ids.Select( a => NamedLocationCache.Get( a ) ).Where(a => a != null).ToList();
+            this.SetValuesFromNamedLocations( items );
         }
 
         /// <summary>

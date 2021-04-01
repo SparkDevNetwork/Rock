@@ -196,12 +196,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             var locationId = CheckinManagerHelper.GetSelectedLocation( this, campus, lpLocation );
-            if (!locationId.HasValue)
+            if ( !locationId.HasValue )
             {
                 ShowWarningMessage( "Please select a Location.", false );
             }
 
-            CheckinManagerHelper.SetSelectedLocation(this, lpLocation, locationId, CurrentCampusId );
+            CheckinManagerHelper.SetSelectedLocation( this, lpLocation, locationId, CurrentCampusId );
+            if ( this.Response.IsRequestBeingRedirected )
+            {
+                return;
+            }
 
             InitializeSubPageNav( locationId.Value );
 

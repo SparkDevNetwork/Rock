@@ -1393,6 +1393,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .ToList();
 
                     int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
+                    var attendeesByPersonId = attendees.GroupBy( a => a.PersonAlias.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
 
                     var people = new List<PersonResult>();
                     foreach ( var personId in attendees
@@ -1401,9 +1402,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct() )
                     {
-                        var matchingAttendees = attendees
-                            .Where( a => a.PersonAlias.PersonId == personId )
-                            .ToList();
+                        var matchingAttendees = attendeesByPersonId.GetValueOrNull( personId ) ?? new List<Attendance>();
 
                         if ( !scheduleId.HasValue || matchingAttendees.Any( a => a.Occurrence.ScheduleId == scheduleId.Value ) )
                         {
