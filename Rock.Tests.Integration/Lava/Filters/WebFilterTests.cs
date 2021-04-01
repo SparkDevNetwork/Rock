@@ -52,6 +52,20 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
+        #region TitleCase
+
+        [DataTestMethod]
+        [DataRow( @"{{ ""men's gathering/get-together"" | TitleCase }}", "Men's Gathering/get-together"  )]
+        [DataRow( @"{{ 'mATTHEw 24:29-41 - KJV' | TitleCase }}", "Matthew 24:29-41 - KJV" )]
+        public void TitleCase_TextWithPunctuation_PreservesPunctuation( string inputTemplate, string expectedOutput )
+        {
+            var output = inputTemplate.ResolveMergeFields( null );
+
+            Assert.That.AreEqual( expectedOutput, output );
+        }
+
+        #endregion
+
         #region Where
 
         [TestMethod]

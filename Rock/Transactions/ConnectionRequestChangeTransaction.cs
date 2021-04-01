@@ -267,7 +267,7 @@ namespace Rock.Transactions
 
             if ( matches && qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
             {
-                matches = qualifierParts[0].AsInteger() == prevState.ConvertToInt();
+                matches = qualifierParts[1].AsInteger() == prevState.ConvertToInt();
             }
 
             if ( matches && qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )

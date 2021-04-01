@@ -142,7 +142,7 @@ namespace Rock.Badge.Component
             {
                 return;
             }
-            
+
             var streakTypeCache = GetStreakTypeCache( badge );
 
             if ( streakTypeCache == null )
@@ -204,7 +204,7 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{Person.Id}?unitCount={unitsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var chartHtml = ['<ul class=\'attendance-chart list-unstyled\'>'];
+            var chartHtml = ['<ul class=\'trend-chart list-unstyled\'>'];
 
             if (data) {{
                 for(var i = data.length - 1; i >= 0; i--) {{
