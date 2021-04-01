@@ -113,8 +113,9 @@ namespace Rock.Web.UI.Controls
         /// Sets the value.
         /// </summary>
         /// <param name="location">The location.</param>
-        [Obsolete( "Use SetValue(NamedLocationCache)" )]
-        private void SetValue( Rock.Model.Location location )
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use SetValue(int) or SetValueFromNamedLocation (NamedLocationCache) instead" )]
+        public void SetValue( Rock.Model.Location location )
         {
             if ( location != null )
             {
@@ -177,8 +178,9 @@ namespace Rock.Web.UI.Controls
         /// Sets the values.
         /// </summary>
         /// <param name="locations">The locations.</param>
-        [Obsolete( "Use SetValues (NamedLocationCache)" )]
-        private void SetValues( IEnumerable<Location> locations )
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use SetValue (int) or SetValueFromNamedLocation(NamedLocationCache) instead" )]
+        public void SetValues( IEnumerable<Location> locations )
         {
             SetValuesFromNamedLocations( locations.Select( a => NamedLocationCache.Get( a ) ).ToList() );
         }
@@ -197,7 +199,7 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var ids = this.SelectedValuesAsInt().ToList();
-            var items = ids.Select( a => NamedLocationCache.Get( a ) ).Where(a => a != null).ToList();
+            var items = ids.Select( a => NamedLocationCache.Get( a ) ).Where( a => a != null ).ToList();
             this.SetValuesFromNamedLocations( items );
         }
 
@@ -236,6 +238,7 @@ namespace Rock.Web.UI.Controls
             {
                 return _includeInactive ?? false;
             }
+
             set
             {
                 _includeInactive = value;
@@ -260,6 +263,7 @@ namespace Rock.Web.UI.Controls
             {
                 return _rootLocationId;
             }
+
             set
             {
                 _rootLocationId = value;
