@@ -606,7 +606,7 @@ namespace Rock.Model
                 GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
 
                 EmailSearchSpecified = query.Email.IsNotNullOrWhiteSpace();
-                PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && query.Email == person.Email;
+                PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && person.Email.Equals( query.Email, StringComparison.CurrentCultureIgnoreCase );
 
                 if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
                 {
