@@ -479,7 +479,7 @@ namespace Rock.Web.UI.Controls
             dayDropDownList.AutoPostBack = needsAutoPostBack;
             yearDropDownList.AutoPostBack = needsAutoPostBack;
 
-            writer.AddAttribute( "class", "form-control-group js-datepartspicker" );
+            writer.AddAttribute( "class", "form-control-group date-parts-picker js-datepartspicker" );
 
             writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
             writer.AddAttribute( "data-requireyear", this.RequireYear.ToTrueFalse().ToLower() );

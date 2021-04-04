@@ -166,6 +166,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
+        /// <summary>
+        /// The person attributes giving analytics
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = "61823196-8EA1-4C2B-A7DF-1654BD085667";
+
         #endregion
 
         #region PowerBI 

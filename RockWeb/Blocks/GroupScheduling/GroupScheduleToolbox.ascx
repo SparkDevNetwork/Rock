@@ -89,7 +89,7 @@
                                                 <asp:Literal ID="lConfirmedOccurrenceTime" runat="server" />
                                             </td>
                                             <td>
-                                                <asp:LinkButton ID="btnCancelConfirmAttending" runat="server" CssClass="btn btn-xs btn-link" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttending_Click" />
+                                                <asp:LinkButton ID="btnCancelConfirmAttending" runat="server" CssClass="btn btn-xs btn-link text-danger" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttending_Click" />
                                             </td>
                                         </tr>
                                     </ItemTemplate>
@@ -169,7 +169,7 @@
                                                 <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
                                             </Columns>
                                         </Rock:Grid>
-                                        
+
                                         <br />
                                     </asp:Panel>
                                 </ItemTemplate>
@@ -187,7 +187,7 @@
                                     Please provide any dates <%= ( CurrentPersonId == null || CurrentPersonId != SelectedPersonId ? "they" : "you") %> will not be able to attend.
                                 </p>
 
-                                <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
+                                <Rock:Grid ID="gBlackoutDates" CssClass="bg-transparent" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
                                     <Columns>
                                         <Rock:RockBoundField DataField="ExclusionId" Visible="false"></Rock:RockBoundField>
                                         <Rock:RockBoundField DataField="PersonAliasId" Visible="false"></Rock:RockBoundField>

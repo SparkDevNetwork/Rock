@@ -35,7 +35,7 @@
                         <div class="col-sm-12">
                             <asp:LinkButton ID="lbAddScheduledTransaction"
                                 runat="server"
-                                CssClass="btn btn-primary btn-xs margin-t-sm margin-b-md pull-right"
+                                CssClass="btn btn-default btn-xs margin-t-sm margin-b-md pull-right"
                                 Text="<i class='fa fa-plus'></i>"
                                 OnClick="lbAddScheduledTransaction_Click" />
                         </div>
@@ -81,7 +81,7 @@
                         <div class="col-sm-12">
                             <asp:LinkButton ID="lbAddPledge"
                                 runat="server"
-                                CssClass="btn btn-primary btn-xs margin-t-sm margin-b-md pull-right"
+                                CssClass="btn btn-default btn-xs margin-t-sm margin-b-md pull-right"
                                 Text="<i class='fa fa-plus'></i>"
                                 OnClick="lbAddPledge_Click" />
                         </div>

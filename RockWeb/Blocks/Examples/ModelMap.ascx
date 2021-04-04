@@ -4,7 +4,21 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfSelectedCategoryGuid" runat="server" />
         <asp:HiddenField ID="hfSelectedEntityId" runat="server" />
-        <style>.list-icon {text-indent:-24px;margin-left:24px;}.list-icon > li > * { text-indent: 0; }</style>
+        <style>
+        @media (max-width: 767px){
+            .table-properties > tbody > tr > td {
+                border: 0;
+            }
+
+            .table-properties > tbody > tr > td:empty {
+                display: none !important;
+            }
+
+            .table-properties > tbody > tr {
+                border-top: 1px solid #dbdbdb;
+            }
+        }
+        </style>
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-object-ungroup"></i> Model Map</h1>
@@ -82,7 +96,7 @@
 
                 <asp:Panel ID="pnlClassDetail" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title text-nowrap rollover-container"><asp:Literal ID="lClassName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm fa-xs rollover-item"><i class="fa fa-link"></i></asp:HyperLink></h1>
+                        <h1 class="panel-title">Model Details</h1>
                     </div>
 
                     <Rock:GridFilter ID="gfSettings" runat="server" OnApplyFilterClick="gfSettings_ApplyFilterClick" OnClearFilterClick="gfSettings_ClearFilterClick">
@@ -115,6 +129,7 @@
                         </div>
 
                         <div>
+                            <h4 class="font-weight-medium rollover-container border-bottom border-gray-400 pb-1 mb-2"><asp:Literal ID="lClassName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm small rollover-item"><i class="fa fa-xs fa-link"></i></asp:HyperLink></h4>
                             <asp:Literal ID="lClassDescription" runat="server" />
                         </div>
 
