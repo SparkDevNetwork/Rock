@@ -2129,12 +2129,15 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( groupType != null && groupType.EnableGroupHistory )
                     {
-                        bool hasGroupHistory = new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id );
+                        bool hasGroupHistory = new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id )
+                            || new GroupMemberHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id );
                         if ( hasGroupHistory )
                         {
                             // If the group has GroupHistory enabled, and has group history snapshots, prompt to archive instead of delete
                             btnDelete.Visible = false;
-                            btnArchive.Visible = true;
+
+                            // Show the archive button if the user is authorized to see it.
+                            btnArchive.Visible = !group.IsSystem && group.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         }
                     }
                 }
