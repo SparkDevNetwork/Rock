@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h5>Properties</h5><table class='table table-properties'>" );
+                    sb.AppendLine( "<h5 class='font-weight-normal'>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
