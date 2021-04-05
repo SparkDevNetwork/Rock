@@ -36,30 +36,41 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
+    /// <summary>
+    /// Shows the details of the given data view.
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.RockBlock" />
+    /// <seealso cref="Rock.Web.UI.IDetailBlock" />
     [DisplayName( "Data View Detail" )]
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
+
+    [BooleanField( "Add Administrate Security to Item Creator",
+        Key = AttributeKey.AddAdministrateSecurityToItemCreator,
+        Description = "If enabled, the person who creates a new item will be granted 'Administrate' security rights to the item.  This was the behavior in previous versions of Rock.  If disabled, the item creator will not be able to edit the Data View, its security settings, or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
+        DefaultBooleanValue = false,
+        Order = 0)]
 
     [LinkedPage(
         "Data View Detail Page",
         Key = AttributeKey.DataViewDetailPage,
         Description = "The page to display a data view.",
         IsRequired = false,
-        Order = 0 )]
+        Order = 1 )]
 
     [LinkedPage(
         "Report Detail Page",
         Key = AttributeKey.ReportDetailPage,
         Description = "The page used to view or create a report.",
         IsRequired = false,
-        Order = 1 )]
+        Order = 2 )]
 
     [LinkedPage(
         "Group Detail Page",
         Key = AttributeKey.GroupDetailPage,
         Description = "The page to display a group (when showing group syncs that use this data view) .",
         IsRequired = false,
-        Order = 2 )]
+        Order = 3 )]
 
     [IntegerField(
         "Database Timeout",
@@ -67,13 +78,15 @@ namespace RockWeb.Blocks.Reporting
         Description = "The number of seconds to wait before reporting a database timeout.",
         IsRequired = false,
         DefaultIntegerValue = 180,
-        Order = 3 )]
+        Order = 4 )]
+
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Attribute Keys
 
         private static class AttributeKey
         {
+            public const string AddAdministrateSecurityToItemCreator = "AddAdministrateSecurityToItemCreator";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeout";
             public const string DataViewDetailPage = "DataViewDetailPage";
             public const string ReportDetailPage = "ReportDetailPage";
@@ -336,9 +349,8 @@ $(document).ready(function() {
                 }
             }
 
-            if ( adding )
+            if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean() )
             {
-                // add EDIT and ADMINISTRATE to the person who added the dataView
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
             }
