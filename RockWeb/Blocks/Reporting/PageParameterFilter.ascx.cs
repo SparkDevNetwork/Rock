@@ -42,6 +42,32 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
 
+    /*
+    ========================================
+    SPECIAL NOTES
+    ========================================
+
+    1. Selection Action
+    -------------------
+    4/5/2020 - JME
+    This block has a setting 'Selection Action' that allows the block to either do:
+    A. Parital Postback (aka Update Block)
+    B. Full Postback (aka Update Page)
+
+    The 'Update Block' is odd in that it will take the values from the filter attributes
+    and re-build the attribute controls. This is helpful if one or more of the filter attributes
+    have dynamic values that are built off of the query string (like a single select that populates
+    off of a SQL query that looks at the querystring via Lava).
+
+    When this partial postback occurs the block will create a virtual querystring from all of the
+    filter attribute values for Lava to use. This is in the GenerateQueryString() method.
+
+    The concept and code came from a Bema PR.
+
+    ========================================
+    */
+
+
     #region Block Attributes
     [BooleanField(
         "Show Block Title",
@@ -456,7 +482,7 @@ namespace RockWeb.Blocks.Reporting
                  .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
-
+  
             mdFilter.Title = "Edit Filter";
             mdFilter.Show();
         }
