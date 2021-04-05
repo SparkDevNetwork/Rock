@@ -1417,7 +1417,11 @@ namespace Rock.Tests.Rock.Lava
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
             // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month. So 12 months from now would be the previous month next year.
-            DateTime nextYearSaturday = RockDateTime.Now.StartOfMonth().AddMonths( -1 ).AddYears( 1 ).GetNextWeekday( DayOfWeek.Saturday ).AddHours( 10 );
+            DateTime nextYearSaturday = RockDateTime.Now
+                .StartOfMonth()
+                .AddYears( 1 )
+                .GetNextWeekday( DayOfWeek.Saturday )
+                .AddHours( 10 );
 
             // Get the end datetime of the 12th event in the "First Saturday of the Month" schedule.
             var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" ).LastOrDefault();
