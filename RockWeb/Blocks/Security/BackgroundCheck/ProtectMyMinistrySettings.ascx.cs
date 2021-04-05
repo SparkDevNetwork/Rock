@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
 
     public partial class ProtectMyMinistrySettings : Rock.Web.UI.RockBlock
     {
-        private const string GET_STARTED_URL = "http://www.rockrms.com/Redirect/PMMSignup";
+        private const string GET_STARTED_URL = "https://www.rockrms.com/Redirect/PMMSignup";
         private const string PROMOTION_IMAGE_URL = "https://rockrms.blob.core.windows.net/resources/pmm-integration/pmm-integration-banner.png";
         private const string TYPENAME_PREFIX = "PMM - ";
 
