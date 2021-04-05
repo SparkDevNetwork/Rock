@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
@@ -218,7 +220,7 @@ namespace RockWeb.Blocks.Store
 
                         // set rating link button
                         lbRate.Visible = true;
-                        lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString() );
+                        lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), null );
                     }
                     else
                     {
@@ -245,7 +247,7 @@ namespace RockWeb.Blocks.Store
 
                     // set rating link button
                     lbRate.Visible = true;
-                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+                    lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
 
                 }
                 else
@@ -256,7 +258,7 @@ namespace RockWeb.Blocks.Store
 
                     // set rating link button
                     lbRate.Visible = true;
-                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+                    lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
 
                 }
             }
@@ -333,6 +335,17 @@ namespace RockWeb.Blocks.Store
             }
         }
 
+        private string GetRockPostbackUrl( string storeKey, string packageId, string installedVersionId)
+        {
+            var baseUrl = ConfigurationManager.AppSettings["RockStoreUrl"].EnsureTrailingForwardslash();
+
+            if ( installedVersionId.IsNullOrWhiteSpace() )
+            {
+                return string.Format( "{0}Store/Rate?OrganizationKey={1}&PackageId={2}", baseUrl, storeKey, packageId );
+            }
+            return string.Format( "{0}Store/Rate?OrganizationKey={1}&PackageId={2}&InstalledVersionId={3}", baseUrl, storeKey, packageId, installedVersionId );
+        }
+
         private void ErrorCheck( string errorResponse )
         {
             if ( errorResponse != string.Empty )
@@ -368,7 +381,7 @@ namespace RockWeb.Blocks.Store
             {
                 url = url.Substring( localPath.Length );
             }
-            return "http://www.rockrms.com/" + url;
+            return "https://www.rockrms.com/" + url;
         }
 
         protected string FormatRating( int ratings )
