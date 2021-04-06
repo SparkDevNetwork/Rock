@@ -69,7 +69,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is reprensented by the GroupMember.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is represented by the GroupMember.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

@@ -794,7 +794,7 @@ namespace Rock.Model
         private ICollection<Group> _groups;
 
         /// <summary>
-        /// Gets or sets the collection of <see cref="Rock.Model.GroupTypes">GroupTypes</see> that inherit from this GroupType.
+        /// Gets or sets the collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that inherit from this GroupType.
         /// </summary>
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
@@ -1141,7 +1141,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a list of GroupType Ids, including our own Id, that identifies the
-        /// inheritence tree.
+        /// inheritance tree.
         /// </summary>
         /// <param name="rockContext">The database context to operate in.</param>
         /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>

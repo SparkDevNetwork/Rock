@@ -156,7 +156,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a list of each person and their GroupRequiremnt status for this group requirement
+        /// Returns a list of each person and their GroupRequirement status for this group requirement
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personQry">The person qry.</param>
