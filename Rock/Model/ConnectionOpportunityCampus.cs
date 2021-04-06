@@ -36,7 +36,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -46,7 +46,7 @@ namespace Rock.Model
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> identifier.
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -56,7 +56,7 @@ namespace Rock.Model
         public int CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the default connector person alias identifier.
+        /// Gets or sets the default connector <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The default connector person alias identifier.
@@ -69,7 +69,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.
@@ -78,7 +78,7 @@ namespace Rock.Model
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/>.
         /// </summary>
         /// <value>
         /// The campus.
@@ -87,7 +87,7 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the default connector person alias.
+        /// Gets or sets the default connector <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The default connector person alias.

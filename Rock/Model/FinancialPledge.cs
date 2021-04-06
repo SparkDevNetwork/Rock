@@ -141,7 +141,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
@@ -150,7 +150,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.

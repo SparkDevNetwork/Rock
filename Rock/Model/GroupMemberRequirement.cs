@@ -46,7 +46,7 @@ namespace Rock.Model
         public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group requirement identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupRequirement"/> identifier.
         /// </summary>
         /// <value>
         /// The group requirement identifier.
@@ -96,7 +96,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group member.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/>.
         /// </summary>
         /// <value>
         /// The group member.
@@ -105,7 +105,7 @@ namespace Rock.Model
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets or sets the group requirement.
+        /// Gets or sets the <see cref="Rock.Model.GroupRequirement"/>.
         /// </summary>
         /// <value>
         /// The group requirement.

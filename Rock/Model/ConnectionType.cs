@@ -100,7 +100,7 @@ namespace Rock.Model
         public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
-        /// Gets or sets the owner person alias identifier.
+        /// Gets or sets the owner <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The owner person alias identifier.
@@ -142,7 +142,7 @@ namespace Rock.Model
         public bool EnableRequestSecurity { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page identifier.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.Page"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request detail page identifier.
@@ -151,7 +151,7 @@ namespace Rock.Model
         public int? ConnectionRequestDetailPageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page route identifier.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.PageRoute"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request detail page route identifier.
@@ -201,7 +201,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the owner person alias.
+        /// Gets or sets the owner <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The owner person alias.
@@ -210,8 +210,8 @@ namespace Rock.Model
         public virtual PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page.
-        /// +</summary>
+        /// Gets or sets the connection request detail <see cref="Rock.Model.Page"/>.
+        /// </summary>
         /// <value>
         /// The connection request detail page.
         /// </value>
@@ -219,7 +219,7 @@ namespace Rock.Model
         public virtual Page ConnectionRequestDetailPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page route.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.PageRoute"/>.
         /// </summary>
         /// <value>
         /// The connection request detail page route.

@@ -305,7 +305,7 @@ namespace Rock.Model
         public int? GraduationYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
+        /// Gets or sets the <see cref="Rock.Model.Group">giving group</see> id.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
         /// <value>
@@ -571,7 +571,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the primary alias.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
         /// </summary>
         /// <value>
         /// The primary alias.
@@ -587,7 +587,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary alias identifier.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
         /// </summary>
         /// <value>
         /// The primary alias identifier.
@@ -966,7 +966,7 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the aliases for this person
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">aliases</see> for this person.
         /// </summary>
         /// <value>
         /// The aliases.
@@ -1080,7 +1080,7 @@ namespace Rock.Model
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary family.
+        /// Gets or sets the <see cref="Rock.Model.Group">primary family</see>.
         /// </summary>
         /// <value>
         /// The primary family.
@@ -1089,7 +1089,7 @@ namespace Rock.Model
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's primary campus.
+        /// Gets or sets the person's <see cref="Rock.Model.Campus">primary campus</see>.
         /// </summary>
         /// <value>
         /// The primary campus.
@@ -1098,7 +1098,7 @@ namespace Rock.Model
         public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's default financial account gift designation.
+        /// Gets or sets the person's default <see cref="Rock.Model.FinancialAccount" /> gift designation.
         /// </summary>
         /// <value>
         /// The financial account.

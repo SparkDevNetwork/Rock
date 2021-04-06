@@ -38,7 +38,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection type identifier.
@@ -47,7 +47,7 @@ namespace Rock.Model
         public int? ConnectionTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -56,7 +56,7 @@ namespace Rock.Model
         public int? ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow type identifier.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> identifier.
         /// </summary>
         /// <value>
         /// The workflow type identifier.
@@ -88,7 +88,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the connection.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
         /// </summary>
         /// <value>
         /// The type of the connection.
@@ -97,7 +97,7 @@ namespace Rock.Model
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.
@@ -106,7 +106,7 @@ namespace Rock.Model
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the workflow.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType">type</see> of the workflow.
         /// </summary>
         /// <value>
         /// The type of the workflow.

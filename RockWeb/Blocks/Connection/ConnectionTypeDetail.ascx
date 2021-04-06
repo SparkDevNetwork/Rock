@@ -71,7 +71,7 @@
                             <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />
                             <Rock:RockCheckBox ID="cbFullActivityList" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFullActivityList" Label="Enable Full Activity List" />
                             <Rock:RockCheckBox ID="cbRequiresPlacementGroup" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="RequiresPlacementGroupToConnect" Label="Requires Placement Group To Connect" />
-                            <Rock:RockCheckBox ID="cbEnableRequestSecurity" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableRequestSecurity" Label="Enable Request Security" />
+                            <Rock:RockCheckBox ID="cbEnableRequestSecurity" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableRequestSecurity" Label="Enable Request Security" Help="If enabled, connection request blocks will have an additional setting allowing security to be applied to individual requests. A special rule is also applied, which automatically allows an assigned connector to view or edit their requests when the connector doesn't have security to the connection opportunity or type." />
                         </div>
                     </div>
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">

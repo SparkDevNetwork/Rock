@@ -68,6 +68,8 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the Device Type <see cref="Rock.Model.DefinedValue"/>
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
+        
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>

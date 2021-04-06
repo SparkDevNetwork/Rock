@@ -31,7 +31,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// A logical representation of a physical html layout (page).  The physical layout controls the zones that 
+    /// A logical representation of a physical HTML layout (page).  The physical layout controls the zones that 
     /// are available for one or more <see cref="Page">Pages</see> to use.  The logical layout is used to configure
     /// which blocks are present in each zone
     /// </summary>

@@ -1057,9 +1057,15 @@ namespace Rock.Model
         {
             get
             {
-                return PersonPhotoId.HasValue ?
-                    string.Format( "/GetImage.ashx?id={0}", PersonPhotoId.Value ) :
-                    "/Assets/Images/person-no-photo-unknown.svg";
+                if ( PersonPhotoId.HasValue )
+                {
+                    return string.Format( "/GetImage.ashx?id={0}", PersonPhotoId.Value );
+                }
+                else
+                {
+                    Person person = new PersonService( new RockContext() ).Get( PersonId );
+                    return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                }
             }
         }
 
@@ -1070,9 +1076,22 @@ namespace Rock.Model
         {
             get
             {
-                return ConnectorPhotoId.HasValue ?
-                    string.Format( "/GetImage.ashx?id={0}", ConnectorPhotoId.Value ) :
-                    "/Assets/Images/person-no-photo-unknown.svg";
+                if ( ConnectorPhotoId.HasValue )
+                {
+                    return string.Format( "/GetImage.ashx?id={0}", ConnectorPhotoId.Value );
+                }
+                else
+                {
+                    if ( ConnectorPersonId.HasValue )
+                    {
+                        Person person = new PersonService( new RockContext() ).Get( ConnectorPersonId.Value );
+                        return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                    }
+                    else
+                    {
+                        return "/Assets/Images/person-no-photo-unknown.svg";
+                    }
+                }
             }
         }
 

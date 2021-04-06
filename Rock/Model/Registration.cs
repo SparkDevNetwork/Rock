@@ -57,7 +57,7 @@ namespace Rock.Model
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -123,7 +123,7 @@ namespace Rock.Model
         public decimal DiscountAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -189,7 +189,7 @@ namespace Rock.Model
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
@@ -198,7 +198,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.
@@ -331,7 +331,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the payments.
+        /// Gets the <see cref="Rock.Model.FinancialTransactionDetail">payments</see>.
         /// </summary>
         /// <value>
         /// The payments.
