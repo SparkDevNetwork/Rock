@@ -296,7 +296,7 @@ namespace RockWeb
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= ( o.Schedule.EffectiveEndDate == null ? o.Schedule.EffectiveStartDate : o.Schedule.EffectiveEndDate ) ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 
