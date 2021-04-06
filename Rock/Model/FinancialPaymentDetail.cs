@@ -125,7 +125,7 @@ namespace Rock.Model
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account id that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> id that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
@@ -270,7 +270,7 @@ namespace Rock.Model
         public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the billing location.
+        /// Gets or sets the billing <see cref="Rock.Model.Location"/>.
         /// </summary>
         /// <value>
         /// The billing location.
@@ -279,7 +279,7 @@ namespace Rock.Model
         public virtual Location BillingLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
