@@ -16,16 +16,36 @@
 //
 import { defineComponent } from 'vue';
 
-// Provides a generic Rock Block structure
-export default defineComponent({
+/** Provides a generic Rock Block structure */
+const PaneledBlockTemplate = defineComponent( {
     name: 'PaneledBlockTemplate',
-    template:
-`<div class="panel panel-block">
+    data()
+    {
+        return {
+            isDrawerOpen: false
+        };
+    },
+    methods: {
+        onDrawerPullClick()
+        {
+            this.isDrawerOpen = !this.isDrawerOpen;
+        }
+    },
+    template: `
+<div class="panel panel-block">
     <div class="panel-heading rollover-container">
         <h1 class="panel-title pull-left">
             <slot name="title" />
         </h1>
         <slot name="titleAside" />
+    </div>
+    <div v-if="$slots.drawer" class="panel-drawer rock-panel-drawer" :class="isDrawerOpen ? 'open' : ''">
+        <div class="drawer-content" v-show="isDrawerOpen">
+            <slot name="drawer" />
+        </div>
+        <div class="drawer-pull" @click="onDrawerPullClick">
+            <i :class="isDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+        </div>
     </div>
     <div class="panel-body">
         <div class="block-content">
@@ -33,4 +53,6 @@ export default defineComponent({
         </div>
     </div>
 </div>`
-});
+} );
+
+export default PaneledBlockTemplate;
