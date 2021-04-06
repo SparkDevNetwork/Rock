@@ -40,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the registration template form identifier.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateForm"/> identifier.
         /// </summary>
         /// <value>
         /// The registration template form identifier.
@@ -67,7 +67,7 @@ namespace Rock.Model
         public RegistrationPersonFieldType PersonFieldType { get; set; }
 
         /// <summary>
-        /// Gets or sets the attribute identifier.
+        /// Gets or sets the <see cref="Rock.Model.Attribute"/> identifier.
         /// </summary>
         /// <value>
         /// The attribute identifier.
@@ -229,7 +229,7 @@ namespace Rock.Model
         public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
 
         /// <summary>
-        /// Gets or sets the registration template form.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateForm"/>.
         /// </summary>
         /// <value>
         /// The registration template form.
@@ -238,7 +238,7 @@ namespace Rock.Model
         public virtual RegistrationTemplateForm RegistrationTemplateForm { get; set; }
 
         /// <summary>
-        /// Gets or sets the attribute.
+        /// Gets or sets the <see cref="Rock.Model.Attribute"/>.
         /// </summary>
         /// <value>
         /// The attribute.

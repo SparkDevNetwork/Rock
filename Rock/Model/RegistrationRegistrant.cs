@@ -39,7 +39,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the registration identifier.
+        /// Gets or sets the <see cref="Rock.Model.Registration"/> identifier.
         /// </summary>
         /// <value>
         /// The registration identifier.
@@ -48,7 +48,7 @@ namespace Rock.Model
         public int RegistrationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -57,7 +57,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/> identifier.
         /// </summary>
         /// <value>
         /// The group member identifier.
@@ -103,7 +103,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the registration instance.
+        /// Gets or sets the <see cref="Rock.Model.Registration"/>.
         /// </summary>
         /// <value>
         /// The registration instance.
@@ -112,7 +112,7 @@ namespace Rock.Model
         public virtual Registration Registration { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
@@ -121,7 +121,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/>.
         /// </summary>
         /// <value>
         /// The group member.
@@ -130,7 +130,7 @@ namespace Rock.Model
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets the person identifier.
+        /// Gets the <see cref="Rock.Model.Person"/> identifier.
         /// </summary>
         /// <value>
         /// The person identifier.
@@ -263,7 +263,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person.
+        /// Gets the <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <value>
         /// The person.
