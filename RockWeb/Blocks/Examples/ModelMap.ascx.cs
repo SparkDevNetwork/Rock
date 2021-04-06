@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Examples
                             );
                     }
 
-                    sb.AppendLine( "</div>" );
+                    sb.AppendLine( "</table>" );
                 }
 
                 if ( aClass.Methods.Any() )
@@ -498,7 +498,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
                     {
-                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                        sb.AppendLine( "<li class='js-model hidden'><small class='text-muted'><i>all inherited</i></small></li>" );
                     }
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
