@@ -26,7 +26,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents WebFarmNodeLog in Rock.
+    /// Represents WebFarmNodeMetric in Rock.
     /// </summary>
     [RockDomain( "WebFarm" )]
     [Table( "WebFarmNodeMetric" )]
@@ -38,7 +38,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the web farm node identifier.
+        /// Gets or sets the <see cref="Rock.Model.WebFarmNode"/> identifier.
         /// </summary>
         /// <value>
         /// The web farm node identifier.
@@ -107,7 +107,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the web farm node.
+        /// Gets or sets the <see cref="Rock.Model.WebFarmNode"/>.
         /// </summary>
         /// <value>
         /// The web farm node.

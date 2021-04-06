@@ -68,25 +68,25 @@
                     <h5 class="mt-0">Key</h5>
                     <table class="table table-condensed">
                         <tr>
-                                <td class="w-0 text-center"><span class="required-indicator"></span></td>
-                                <td>A required field.</td>
-                            </div>
-                            <tr>
-                                <td class="w-0 text-center"><i class='fa fa-database fa-fw'></i></td>
-                                <td>A property on the database.</td>
-                            </tr>
-                            <tr>
-                                <td class="w-0 text-center"><i class='fa fa-square fa-fw o-20'></i></td>
-                                <td>Not mapped to the database.  These fields are computed and are only available in the object.</td>
-                            </tr>
-                            <tr>
-                                <td class="w-0 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></td>
-                                <td>These fields are available where Lava is supported.</td>
-                            </tr>
-                            <tr>
-                                <td class="text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></td>
-                                <td>These methods or fields are obsolete and should not be used.</td>
-                            </tr>
+                            <td class="w-0 text-center"><span class="required-indicator"></span></td>
+                            <td>A required field.</td>
+                        </tr>
+                        <tr>
+                            <td class="w-0 text-center"><i class='fa fa-database fa-fw'></i></td>
+                            <td>A property on the database.</td>
+                        </tr>
+                        <tr>
+                            <td class="w-0 text-center"><i class='fa fa-square fa-fw o-20'></i></td>
+                            <td>Not mapped to the database.  These fields are computed and are only available in the object.</td>
+                        </tr>
+                        <tr>
+                            <td class="w-0 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></td>
+                            <td>These fields are available where Lava is supported.</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></td>
+                            <td>These methods or fields are obsolete and should not be used.</td>
+                        </tr>
                     </table>
                 </asp:Panel>
             </div>
