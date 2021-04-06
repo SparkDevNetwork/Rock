@@ -96,7 +96,7 @@ namespace Rock.Model
         public bool IsMappedLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person alias identifier.  A GroupLocation can optionally be created by selecting one of the group 
+        /// Gets or sets the group member <see cref="Rock.Model.PersonAlias"/> identifier.  A GroupLocation can optionally be created by selecting one of the group 
         /// member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
         /// </summary>
         /// <value>
@@ -148,7 +148,7 @@ namespace Rock.Model
         public virtual DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person alias. A GroupLocation can optionally be created by selecting one of the 
+        /// Gets or sets the group member <see cref="Rock.Model.PersonAlias"/>. A GroupLocation can optionally be created by selecting one of the 
         /// group member's locations. If the GroupLocation is created this way, the member is saved with the group location
         /// </summary>
         /// <value>

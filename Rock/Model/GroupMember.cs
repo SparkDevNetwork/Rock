@@ -176,7 +176,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -186,7 +186,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>
         /// </summary>
         /// <value>
         /// The schedule template identifier.
@@ -195,7 +195,7 @@ namespace Rock.Model
         public int? ScheduleTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule start date.
@@ -266,7 +266,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -275,7 +275,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member requirements.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberRequirement">group member requirements</see>.
         /// </summary>
         /// <value>
         /// The group member requirements.
@@ -284,7 +284,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
 
         /// <summary>
-        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>. 
         /// </summary>
         /// <value>
         /// The schedule template.
@@ -302,7 +302,7 @@ namespace Rock.Model
         private List<HistoryItem> HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member assignments.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment">group member assignments</see>.
         /// </summary>
         /// <value>
         /// The group member assignments.

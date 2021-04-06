@@ -37,7 +37,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -48,7 +48,7 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> identifier.
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -93,7 +93,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.
@@ -102,7 +102,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -111,7 +111,7 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group requirement.
+        /// Gets or sets the <see cref="Rock.Model.GroupRequirementType">type</see> of the group requirement.
         /// </summary>
         /// <value>
         /// The type of the group requirement.
@@ -120,7 +120,7 @@ namespace Rock.Model
         public virtual GroupRequirementType GroupRequirementType { get; set; }
 
         /// <summary>
-        /// The specific Group Role that this requirement is for. NULL means this requirement applies to all roles.
+        /// The specific <see cref="Rock.Model.GroupTypeRole">Group Role</see> that this requirement is for. NULL means this requirement applies to all roles.
         /// </summary>
         /// <value>
         /// The group type role.
