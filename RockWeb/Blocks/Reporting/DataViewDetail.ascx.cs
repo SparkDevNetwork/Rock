@@ -253,6 +253,17 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            cvSecurityError.IsValid = true;
+            var AddAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
+            var dvCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
+
+            if ( !AddAdminToCreator && !dvCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                cvSecurityError.IsValid = false;
+                cvSecurityError.ErrorMessage = string.Format( "You are not authorized to create or edit Data Views for the Category '{0}'.", dvCategory.Name );
+                return;
+            }
+
             DataView dataView = null;
 
             var rockContext = new RockContext();
@@ -294,7 +305,6 @@ $(document).ready(function() {
             }
 
             var adding = dataView.Id.Equals( 0 );
-
             rockContext.WrapTransaction( () =>
             {
                 if ( adding )
@@ -349,7 +359,7 @@ $(document).ready(function() {
                 }
             }
 
-            if ( adding && GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean() )
+            if ( adding && AddAdminToCreator )
             {
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );

@@ -559,6 +559,17 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            cvSecurityError.IsValid = true;
+            var AddAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
+            var rptCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
+
+            if ( !AddAdminToCreator && !rptCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                cvSecurityError.IsValid = false;
+                cvSecurityError.ErrorMessage = string.Format( "You are not authorized to create or edit Reports for the Category '{0}'.", rptCategory.Name );
+                return;
+            }
+
             Report report = null;
 
             var rockContext = new RockContext();
