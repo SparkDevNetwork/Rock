@@ -24,11 +24,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
+
 using DotLiquid;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
@@ -69,6 +73,27 @@ namespace Rock.WebStartup
         #endregion Properties
 
         /// <summary>
+        /// If there are Task.Runs that don't handle their exceptions, this will catch those
+        /// so that we can log it.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="UnobservedTaskExceptionEventArgs"/> instance containing the event data.</param>
+        private static void TaskScheduler_UnobservedTaskException( object sender, UnobservedTaskExceptionEventArgs e )
+        {
+            Exception ex;
+            if ( e.Exception?.InnerExceptions?.Count == 1 )
+            {
+                ex = e.Exception.InnerException;
+            }
+            else
+            {
+                ex = e.Exception;
+            }
+            
+            ExceptionLogService.LogException( ex );
+        }
+
+        /// <summary>
         /// Runs various startup operations that need to run prior to RockWeb startup
         /// </summary>
         internal static void RunApplicationStartup()
@@ -77,6 +102,11 @@ namespace Rock.WebStartup
             ExceptionLogService.AlwaysLogToFile = true;
 
             StartDateTime = RockDateTime.Now;
+
+            // If there are Task.Runs that don't handle their exceptions, this will catch those
+            // so that we can log it. Note that this event won't fire until the Task is disposed.
+            // In most cases, that'll be when GC is collected. So it won't happen immediately.
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             LogStartupMessage( "Application Starting" );
 
