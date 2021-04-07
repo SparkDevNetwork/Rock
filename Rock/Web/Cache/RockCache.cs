@@ -72,9 +72,12 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            foreach ( var cacheManager in _allManagers )
+            lock ( Obj )
             {
-                cacheManager?.Clear();
+                foreach ( var cacheManager in _allManagers )
+                {
+                    cacheManager?.Clear();
+                }
             }
 
             // Clear object cache keys
