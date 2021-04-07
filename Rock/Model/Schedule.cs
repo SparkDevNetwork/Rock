@@ -1042,11 +1042,10 @@ namespace Rock.Model
                 else
                 {
                     // not any type of recurring, might be one-time or from specific dates, etc
-                    var dates = calendarEvent.GetOccurrences( DateTime.MinValue, DateTime.MaxValue ).Where( a =>
-                                a.Period != null &&
-                                a.Period.StartTime != null )
-                            .Select( a => a.Period.StartTime.Value )
-                            .OrderBy( a => a ).ToList();
+                    var dates = InetCalendarHelper.GetOccurrences( calendarEvent, DateTime.MinValue, DateTime.MaxValue )
+                        .Where( a => a.Period != null && a.Period.StartTime != null )
+                        .Select( a => a.Period.StartTime.Value )
+                        .OrderBy( a => a ).ToList();
 
                     if ( dates.Count() > 1 )
                     {
