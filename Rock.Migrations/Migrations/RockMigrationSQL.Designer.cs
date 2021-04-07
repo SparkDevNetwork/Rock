@@ -2317,7 +2317,7 @@ namespace Rock.Migrations.Migrations {
         ///&lt;pre&gt;&lt;code&gt;{[kpis]}
         ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
         ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
-        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Penci [rest of string was truncated]&quot;;.
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;P [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202102162206327_Rollup_0216_KPIUpdate {
             get {
