@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
@@ -455,16 +456,19 @@ namespace Rock.CheckIn
         /// <summary>
         /// Status filter not set to anything yet
         /// </summary>
+        [Description( "Unknown" )]
         Unknown = 0,
 
         /// <summary>
         /// Don't filter
         /// </summary>
+        [Description( "All" )]
         All = 1,
 
         /// <summary>
         /// Only show attendees that are checked-in, but haven't been marked present
         /// </summary>
+        [Description( "Checked-in" )]
         CheckedIn = 2,
 
         /// <summary>
@@ -472,11 +476,13 @@ namespace Rock.CheckIn
         /// Note that if Presence is NOT enabled, the attendance records will automatically marked as Present.
         /// So this would be the default filter mode when Presence is not enabled
         /// </summary>
+        [Description( "Present" )]
         Present = 3,
 
         /// <summary>
         /// Only show attendees that are checked-out.
         /// </summary>
+        [Description( "Checked-out" )]
         CheckedOut = 4
     }
 
