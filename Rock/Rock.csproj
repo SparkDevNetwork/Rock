@@ -658,8 +658,13 @@
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
