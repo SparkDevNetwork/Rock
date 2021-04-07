@@ -218,16 +218,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         /// <summary>
-        /// Sets the checkin person label (Name, PhoneNumber, etc)
+        /// Sets the checkin label (Time, Name, PhoneNumber, etc)
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="rockLiteral">The rock literal.</param>
-        private static void SetCheckinPersonLabel( RockContext rockContext, int? personAliasId, RockLiteral rockLiteral )
+        private static void SetCheckinInfoLabel( RockContext rockContext, DateTime? dateTime, int? personAliasId, RockLiteral rockLiteral )
         {
-            if ( !personAliasId.HasValue )
+            if ( dateTime == null )
             {
                 rockLiteral.Visible = false;
+            }
+
+            rockLiteral.Text = dateTime.Value.ToShortDateTimeString();
+
+            if ( !personAliasId.HasValue )
+            {
                 return;
             }
 
@@ -236,15 +242,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( person == null )
             {
-                rockLiteral.Visible = false;
                 return;
             }
 
-            rockLiteral.Visible = true;
-
             var checkedInByPersonName = person.FullName;
             var checkedInByPersonPhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-            rockLiteral.Text = string.Format( "{0} {1}", checkedInByPersonName, checkedInByPersonPhone );
+            rockLiteral.Text = string.Format( "{0 } by {1} {2}", dateTime.Value.ToShortDateTimeString(), checkedInByPersonName, checkedInByPersonPhone );
         }
 
         /// <summary>
@@ -277,14 +280,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lScheduleName.Text = occurrence.Schedule.Name;
             }
 
-            SetCheckinPersonLabel( rockContext, attendance.CheckedInByPersonAliasId, lCheckinByPerson );
-            lCheckinTime.Text = attendance.StartDateTime.ToString();
+            SetCheckinInfoLabel( rockContext, attendance.StartDateTime, attendance.CheckedInByPersonAliasId, lCheckinTime );
 
             if ( attendance.PresentDateTime.HasValue )
             {
-                lPresentTime.Visible = true;
-                lPresentTime.Text = attendance.PresentDateTime.ToString();
-                SetCheckinPersonLabel( rockContext, attendance.PresentByPersonAliasId, lPresentByPerson );
+                SetCheckinInfoLabel( rockContext, attendance.PresentDateTime, attendance.PresentByPersonAliasId, lPresentTime );
             }
             else
             {
@@ -295,8 +295,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( attendance.EndDateTime.HasValue )
             {
                 lCheckedOutTime.Visible = true;
-                lCheckedOutTime.Text = attendance.EndDateTime.ToString();
-                SetCheckinPersonLabel( rockContext, attendance.CheckedOutByPersonAliasId, lCheckedOutByPerson );
+                SetCheckinInfoLabel( rockContext, attendance.EndDateTime, attendance.CheckedOutByPersonAliasId, lCheckedOutTime );
             }
             else
             {

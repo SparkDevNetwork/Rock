@@ -225,10 +225,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( !this.IsPostBack )
             {
                 bgStatus.Items.Clear();
-                bgStatus.Items.Add( new ListItem( RosterStatusFilter.All.ConvertToString( true ), RosterStatusFilter.All.ConvertToInt().ToString() ) );
-                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedIn.ConvertToString( true ), RosterStatusFilter.CheckedIn.ConvertToInt().ToString() ) );
-                bgStatus.Items.Add( new ListItem( RosterStatusFilter.Present.ConvertToString( true ), RosterStatusFilter.Present.ConvertToInt().ToString() ) );
-                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedOut.ConvertToString( true ), RosterStatusFilter.CheckedOut.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.All.GetDescription(), RosterStatusFilter.All.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedIn.GetDescription(), RosterStatusFilter.CheckedIn.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.Present.GetDescription(), RosterStatusFilter.Present.ConvertToInt().ToString() ) );
+                bgStatus.Items.Add( new ListItem( RosterStatusFilter.CheckedOut.GetDescription(), RosterStatusFilter.CheckedOut.ConvertToInt().ToString() ) );
 
                 BuildRoster();
             }
@@ -631,11 +631,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 if ( listItem.Selected )
                 {
-                    listItem.Text = string.Format( "{0} <span class='badge badge-info'>{1}</span>", rosterStatusFilter.ConvertToString(), count );
+                    listItem.Text = string.Format( "{0} <span class='badge badge-info'>{1}</span>", rosterStatusFilter.GetDescription(), count );
                 }
                 else
                 {
-                    listItem.Text = string.Format( "{0} <span class='badge badge-'>{1}</span>", rosterStatusFilter.ConvertToString(), count );
+                    listItem.Text = string.Format( "{0} <span class='badge badge-'>{1}</span>", rosterStatusFilter.GetDescription(), count );
                 }
             }
         }

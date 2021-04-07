@@ -351,12 +351,52 @@ namespace Rock.CheckIn
         public string GroupName { get; private set; }
 
         /// <summary>
+        /// Gets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; internal set; }
+
+        /// <summary>
         /// Gets the group type path ( Area1 > Area2 > Area51 )
         /// </summary>
         /// <value>
         /// The group type path.
         /// </value>
         public string GroupTypePath { get; private set; }
+
+        /// <summary>
+        /// Gets the parent group identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group identifier.
+        /// </value>
+        public int? ParentGroupId { get; internal set; }
+
+        /// <summary>
+        /// Gets the name of the parent group.
+        /// </summary>
+        /// <value>
+        /// The name of the parent group.
+        /// </value>
+        public string ParentGroupName { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group's group type identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group group's type identifier.
+        /// </value>
+        public int? ParentGroupGroupTypeId { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group's group type path.
+        /// </summary>
+        /// <value>
+        /// The parent group's group type path.
+        /// </value>
+        public string ParentGroupGroupTypePath { get; private set; }
 
         #endregion Properties
 
@@ -537,6 +577,15 @@ namespace Rock.CheckIn
             return $@"<div class='group-name'>{this.GroupName}</div> <div class='small text-muted text-wrap'>{this.GroupTypePath}</div>";
         }
 
+        /// <summary>
+        /// Gets the parent group's name and path HTML. Parent Group's Name with GroupType Path underneath.
+        /// </summary>
+        /// <returns></returns>
+        public string GetParentGroupNameAndPathHtml()
+        {
+            return $@"<div class='group-name'>{this.ParentGroupName}</div> <div class='small text-muted text-wrap'>{this.ParentGroupGroupTypePath}</div>";
+        }
+
         #endregion HTML
 
         #region Private methods
@@ -581,9 +630,20 @@ namespace Rock.CheckIn
 
             this.GroupName = latestAttendance.GroupName;
 
+            // GroupId should have a value, but just in case, we'll do some null safety.
+            this.GroupId = latestAttendance.GroupId ?? 0;
+
             if ( GroupTypeId.HasValue )
             {
                 this.GroupTypePath = checkinAreaPathsLookup.GetValueOrNull( GroupTypeId.Value )?.Path;
+            }
+
+            this.ParentGroupId = latestAttendance.ParentGroupId;
+            this.ParentGroupName = latestAttendance.ParentGroupName;
+            this.ParentGroupGroupTypeId = latestAttendance.ParentGroupGroupTypeId;
+            if ( this.ParentGroupGroupTypeId.HasValue )
+            {
+                this.ParentGroupGroupTypePath = checkinAreaPathsLookup.GetValueOrNull( ParentGroupGroupTypeId.Value )?.Path;
             }
 
             this.IsFirstTime = latestAttendance?.IsFirstTime ?? false;

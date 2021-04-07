@@ -115,6 +115,38 @@ namespace Rock.CheckIn
         public string GroupName { get; internal set; }
 
         /// <summary>
+        /// Gets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group identifier.
+        /// </value>
+        public int? ParentGroupId { get; internal set; }
+
+        /// <summary>
+        /// Gets the name of the parent group.
+        /// </summary>
+        /// <value>
+        /// The name of the parent group.
+        /// </value>
+        public string ParentGroupName { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group's group type identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group group's type identifier.
+        /// </value>
+        public int? ParentGroupGroupTypeId { get; internal set; }
+
+        /// <summary>
         /// Gets the location identifier.
         /// </summary>
         /// <value>
@@ -147,11 +179,17 @@ namespace Rock.CheckIn
                 PresentDateTime = a.PresentDateTime,
                 EndDateTime = a.EndDateTime,
                 AttendanceCode = a.AttendanceCode.Code,
-                GroupTypeId = a.Occurrence.Group.GroupTypeId,
                 PersonId = a.PersonAlias.PersonId,
                 Person = a.PersonAlias.Person,
-                GroupName = a.Occurrence.Group.Name,
                 LocationId = a.Occurrence.LocationId,
+
+                GroupId = a.Occurrence.GroupId,
+                GroupTypeId = a.Occurrence.Group.GroupTypeId,
+                GroupName = a.Occurrence.Group.Name,
+
+                ParentGroupId = a.Occurrence.Group.ParentGroupId,
+                ParentGroupGroupTypeId = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.GroupTypeId : ( int? ) null,
+                ParentGroupName = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.Name : null
             } );
 
             return rosterAttendeeAttendanceQry;
