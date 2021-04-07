@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -146,6 +146,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             // just send them the same page as Add Transaction page since you can add a scheduled transaction there either way
             btnAddTransaction_Click( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptPledges_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var financialPledge = e.Item.DataItem as FinancialPledge;
+            if ( financialPledge != null )
+            {
+                var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
+                if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format(
+                        "{0} {1}",
+                        financialPledge.StartDate.ToShortDateString(),
+                        financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
+                }
+                else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format( "Till {0}", financialPledge.EndDate.ToShortDateString() );
+                }
+                else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+                }
+                else
+                {
+                    lPledgeDate.Text = "No Dates Provided";
+                }
+            }
         }
 
         /// <summary>
