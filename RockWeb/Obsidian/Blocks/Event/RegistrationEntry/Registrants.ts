@@ -17,8 +17,9 @@
 
 import { defineComponent, inject } from 'vue';
 import Registrant from './Registrant';
-import { RegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
+import { RegistrationEntryState } from '../RegistrationEntry';
 import Alert from '../../../Elements/Alert';
+import { RegistrantInfo } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Registrants',

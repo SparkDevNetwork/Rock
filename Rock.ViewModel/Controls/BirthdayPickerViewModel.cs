@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModel.Controls
 {
     /// <summary>
@@ -45,5 +47,33 @@ namespace Rock.ViewModel.Controls
         /// The day.
         /// </value>
         public int Day { get; set; }
+    }
+
+    /// <summary>
+    /// Birthday Picker View Model Extensions
+    /// </summary>
+    public static class BirthdayPickerViewModelExtensions
+    {
+        /// <summary>
+        /// Converts to datetime.
+        /// </summary>
+        /// <param name="viewModel">The view model.</param>
+        /// <returns></returns>
+        public static DateTime? ToDateTime( this BirthdayPickerViewModel viewModel )
+        {
+            if ( viewModel == null )
+            {
+                return null;
+            }
+
+            try
+            {
+                return new DateTime( viewModel.Year, viewModel.Month, viewModel.Day );
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

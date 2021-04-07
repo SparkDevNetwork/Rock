@@ -24,7 +24,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             IsOnWaitList: false,
             FamilyGuid: ownFamilyGuid,
             FieldValues: {},
-            FeeQuantities: {},
+            FeeItemQuantities: {},
             Guid: Guid_1.newGuid(),
             PersonGuid: '',
             OwnFamilyGuid: ownFamilyGuid

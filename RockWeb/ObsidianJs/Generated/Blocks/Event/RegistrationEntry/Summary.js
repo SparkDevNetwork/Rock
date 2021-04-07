@@ -217,7 +217,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                                 var fee = _c[_b];
                                 for (var _d = 0, _e = fee.Items; _d < _e.length; _d++) {
                                     var feeItem = _e[_d];
-                                    var qty = registrant.FeeQuantities[feeItem.Guid];
+                                    var qty = registrant.FeeItemQuantities[feeItem.Guid];
                                     if (!qty) {
                                         continue;
                                     }

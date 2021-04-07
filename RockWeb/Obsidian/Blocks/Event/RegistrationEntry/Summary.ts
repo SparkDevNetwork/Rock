@@ -29,8 +29,8 @@ import TextBox from '../../../Elements/TextBox';
 import { asFormattedString } from '../../../Services/Number';
 import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
-import { getRegistrantBasicInfo, RegistrantInfo, RegistrarInfo, RegistrationEntryState } from '../RegistrationEntry';
-import { RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { getRegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
+import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 type CheckDiscountCodeResult = {
     DiscountCode: string;
@@ -207,7 +207,7 @@ export default defineComponent( {
                 {
                     for ( const feeItem of fee.Items )
                     {
-                        const qty = registrant.FeeQuantities[ feeItem.Guid ];
+                        const qty = registrant.FeeItemQuantities[ feeItem.Guid ];
 
                         if ( !qty )
                         {

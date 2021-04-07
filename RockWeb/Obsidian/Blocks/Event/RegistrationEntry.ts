@@ -20,7 +20,7 @@ import RockButton from '../../Elements/RockButton';
 import { Guid, newGuid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrants from './RegistrationEntry/Registrants';
-import { RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from './RegistrationEntry/RegistrationEntryBlockViewModel';
+import { RegistrantInfo, RegistrarInfo, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from './RegistrationEntry/RegistrationEntryBlockViewModel';
 import RegistrationEntryRegistrationStart from './RegistrationEntry/RegistrationStart';
 import RegistrationEntryRegistrationEnd from './RegistrationEntry/RegistrationEnd';
 import RegistrationEntrySummary from './RegistrationEntry/Summary';
@@ -40,23 +40,6 @@ export enum Step {
     'reviewAndPayment' = 'reviewAndPayment',
     'success' = 'success'
 }
-
-export type RegistrantInfo = {
-    IsOnWaitList: boolean;
-    FamilyGuid: Guid;
-    PersonGuid: Guid;
-    FieldValues: Record<Guid, unknown>;
-    FeeQuantities: Record<Guid, number>;
-    OwnFamilyGuid: Guid;
-    Guid: Guid;
-};
-
-export type RegistrarInfo = {
-    NickName: string;
-    LastName: string;
-    Email: string;
-    UpdateEmail: boolean;
-};
 
 export type RegistrationEntryState = {
     Steps: Record<Step, Step>;
@@ -80,7 +63,7 @@ export function getDefaultRegistrantInfo()
         IsOnWaitList: false,
         FamilyGuid: ownFamilyGuid,
         FieldValues: {},
-        FeeQuantities: {},
+        FeeItemQuantities: {},
         Guid: newGuid(),
         PersonGuid: '',
         OwnFamilyGuid: ownFamilyGuid

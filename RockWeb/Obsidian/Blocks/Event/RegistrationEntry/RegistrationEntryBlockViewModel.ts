@@ -158,3 +158,21 @@ export interface RegistrationEntryBlockFormFieldRuleViewModel
     ComparisonType: ComparisonType;
     ComparedToValue: string;
 }
+
+export type RegistrantInfo = {
+    Id: number;
+    IsOnWaitList: boolean;
+    FamilyGuid: Guid;
+    PersonGuid: Guid;
+    FieldValues: Record<Guid, unknown>;
+    FeeItemQuantities: Record<Guid, number>;
+    OwnFamilyGuid: Guid;
+    Guid: Guid;
+};
+
+export type RegistrarInfo = {
+    NickName: string;
+    LastName: string;
+    Email: string;
+    UpdateEmail: boolean;
+};
