@@ -113,8 +113,8 @@
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.Designer.cs">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Version 12.0\Version 1.12.2\202102162206327_Rollup_0216.cs" />
-    <Compile Include="Migrations\Version 12.0\Version 1.12.2\202102162206327_Rollup_0216.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.3\202102162206327_Rollup_0216.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.3\202102162206327_Rollup_0216.Designer.cs">
       <DependentUpon>202102162206327_Rollup_0216.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203.cs" />
@@ -446,7 +446,7 @@
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102082138560_CleanMigrationHistory.resx">
       <DependentUpon>202102082138560_CleanMigrationHistory.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.2\202102162206327_Rollup_0216.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.3\202102162206327_Rollup_0216.resx">
       <DependentUpon>202102162206327_Rollup_0216.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203.resx">
@@ -700,7 +700,7 @@
     <Content Include="Migrations\Version 12.0\Version 1.12.1\202102032221004_Rollup_0203_KPIStyling.sql">
       <DependentUpon>202102032221004_Rollup_0203.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\Version 12.0\Version 1.12.2\202102162206327_Rollup_0216_KPIUpdate.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.3\202102162206327_Rollup_0216_KPIUpdate.sql">
       <DependentUpon>202102162206327_Rollup_0216.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
