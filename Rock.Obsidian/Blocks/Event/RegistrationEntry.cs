@@ -151,6 +151,8 @@ namespace Rock.Obsidian.Blocks.Event
         {
             public const string RegistrationInstanceId = "RegistrationInstanceId";
             public const string CampusId = "CampusId";
+            public const string Slug = "Slug";
+            public const string GroupId = "GroupId";
         }
 
         #endregion Keys
@@ -165,242 +167,9 @@ namespace Rock.Obsidian.Blocks.Event
         /// </returns>
         public override object GetObsidianConfigurationValues()
         {
-            var currentPerson = GetCurrentPerson();
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
-
             using ( var rockContext = new RockContext() )
             {
-                var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
-                    .AsNoTracking()
-                    .FirstOrDefault();
-
-                var registrationTemplate = registrationInstance?.RegistrationTemplate;
-
-                if ( registrationTemplate == null )
-                {
-                    return new RegistrationEntryBlockViewModel();
-                }
-
-                var formModels = registrationTemplate.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
-
-                // Get family members
-                var familyMembers = registrationTemplate.ShowCurrentFamilyMembers ?
-                    currentPerson.GetFamilyMembers( true, rockContext )
-                        .Select( gm => new
-                        {
-                            FamilyGuid = gm.Group.Guid,
-                            Person = gm.Person
-                        } )
-                        .ToList()
-                        .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
-                        {
-                            Guid = gm.Person.Guid,
-                            FamilyGuid = gm.FamilyGuid,
-                            FullName = gm.Person.FullName,
-                            FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
-                        } )
-                        .ToList() :
-                        new List<RegistrationEntryBlockFamilyMemberViewModel>();
-
-                // Get the instructions
-                var instructions = registrationInstance?.RegistrationInstructions;
-
-                if ( instructions.IsNullOrWhiteSpace() )
-                {
-                    instructions = registrationTemplate.RegistrationInstructions ?? string.Empty;
-                }
-
-                // Get the fee term
-                var feeTerm = registrationTemplate.FeeTerm;
-
-                if ( feeTerm.IsNullOrWhiteSpace() )
-                {
-                    feeTerm = "Fee";
-                }
-
-                feeTerm = feeTerm.ToLower();
-                var pluralFeeTerm = feeTerm.Pluralize();
-
-                // Get the registrant term
-                var registrantTerm = registrationTemplate.RegistrantTerm;
-
-                if ( registrantTerm.IsNullOrWhiteSpace() )
-                {
-                    registrantTerm = "Person";
-                }
-
-                registrantTerm = registrantTerm.ToLower();
-                var pluralRegistrantTerm = registrantTerm.Pluralize();
-
-                // Get the fees
-                var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
-                var fees = new List<RegistrationEntryBlockFeeViewModel>();
-
-                foreach ( var feeModel in feeModels )
-                {
-                    var feeViewModel = new RegistrationEntryBlockFeeViewModel
-                    {
-                        Guid = feeModel.Guid,
-                        Name = feeModel.Name,
-                        AllowMultiple = feeModel.AllowMultiple,
-                        IsRequired = feeModel.IsRequired,
-                        DiscountApplies = feeModel.DiscountApplies,
-                        Items = feeModel.FeeItems.Select( fi => new RegistrationEntryBlockFeeItemViewModel
-                        {
-                            Cost = fi.Cost,
-                            Name = fi.Name,
-                            Guid = fi.Guid,
-                            CountRemaining = fi.GetUsageCountRemaining( registrationInstance, null )
-                        } )
-                    };
-
-                    fees.Add( feeViewModel );
-                }
-
-                // Get forms with fields
-                var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
-
-                foreach ( var formModel in formModels )
-                {
-                    var form = new RegistrationEntryBlockFormViewModel();
-                    var fieldModels = formModel.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order );
-                    var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
-
-                    foreach ( var fieldModel in fieldModels )
-                    {
-                        var field = new RegistrationEntryBlockFormFieldViewModel();
-                        var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
-
-                        field.Guid = fieldModel.Guid;
-                        field.Attribute = attribute?.ToViewModel();
-                        field.FieldSource = ( int ) fieldModel.FieldSource;
-                        field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
-                        field.IsRequired = fieldModel.IsRequired;
-                        field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
-                        field.PreHtml = fieldModel.PreText;
-                        field.PostHtml = fieldModel.PostText;
-                        field.ShowOnWaitList = fieldModel.ShowOnWaitlist;
-
-                        field.VisibilityRules = fieldModel.FieldVisibilityRules
-                            .RuleList
-                            .Where( vr => vr.ComparedToRegistrationTemplateFormFieldGuid.HasValue )
-                            .Select( vr => new RegistrationEntryBlockVisibilityViewModel
-                            {
-                                ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToRegistrationTemplateFormFieldGuid.Value,
-                                ComparedToValue = vr.ComparedToValue,
-                                ComparisonType = ( int ) vr.ComparisonType
-                            } );
-
-                        fields.Add( field );
-                    }
-
-                    form.Fields = fields;
-                    formViewModels.Add( form );
-                }
-
-                // Get the registration attributes term
-                var registrationAttributeTitleStart = ( registrationTemplate.RegistrationAttributeTitleStart ).IsNullOrWhiteSpace() ?
-                    "Registration Information" :
-                    registrationTemplate.RegistrationAttributeTitleStart;
-
-                var registrationAttributeTitleEnd = ( registrationTemplate.RegistrationAttributeTitleEnd ).IsNullOrWhiteSpace() ?
-                    "Registration Information" :
-                    registrationTemplate.RegistrationAttributeTitleEnd;
-
-                // Get the registration term
-                var registrationTerm = ( registrationTemplate.RegistrationTerm ).IsNullOrWhiteSpace() ?
-                    "Registration" :
-                    registrationTemplate.RegistrationTerm;
-
-                // Get the registration term plural
-                var pluralRegistrationTerm = registrationTerm.Pluralize();
-
-                // Get the registration attributes
-                var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
-                var registrationAttributes = AttributeCache.All()
-                    .Where( a =>
-                        a.EntityTypeId == registrationEntityTypeId &&
-                        a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToStringSafe() ) &&
-                        a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name );
-
-                // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
-                var beforeAttributes = registrationAttributes
-                    .Where( a =>
-                        a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) )
-                    .Select( a => a.ToViewModel( currentPerson, false ) )
-                    .ToList();
-
-                // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
-                var afterAttributes = registrationAttributes
-                    .Where( a =>
-                        !a.Categories.Any() ||
-                        a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) )
-                    .Select( a => a.ToViewModel( currentPerson, false ) )
-                    .ToList();
-
-                // Get the maximum number of registrants
-                var maxRegistrants = ( registrationTemplate.AllowMultipleRegistrants == true ) ?
-                    ( registrationTemplate.MaxRegistrants ?? 1 ) :
-                    1;
-
-                // Get the number of slots available and if the waitlist is available
-                var waitListEnabled = registrationTemplate.WaitListEnabled;
-                var spotsRemaining = registrationInstance.MaxAttendees;
-
-                if ( spotsRemaining.HasValue )
-                {
-                    var otherRegistrantsCount = new RegistrationRegistrantService( rockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Where( a =>
-                            a.Registration.RegistrationInstanceId == registrationInstanceId &&
-                            !a.Registration.IsTemporary )
-                        .Count();
-
-                    spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
-                }
-
-                // Force the registrar to update their email?
-                var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
-
-                // Load the gateway control settings
-                var financialGatewayId = registrationTemplate.FinancialGatewayId ?? 0;
-                var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
-                var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
-
-                return new RegistrationEntryBlockViewModel
-                {
-                    RegistrationAttributesStart = beforeAttributes,
-                    RegistrationAttributesEnd = afterAttributes,
-                    RegistrationAttributeTitleStart = registrationAttributeTitleStart,
-                    RegistrationAttributeTitleEnd = registrationAttributeTitleEnd,
-                    InstructionsHtml = instructions,
-                    RegistrantTerm = registrantTerm,
-                    PluralRegistrantTerm = pluralRegistrantTerm,
-                    PluralFeeTerm = pluralFeeTerm,
-                    RegistrationTerm = registrationTerm,
-                    RegistrantForms = formViewModels,
-                    Fees = fees,
-                    FamilyMembers = familyMembers,
-                    MaxRegistrants = maxRegistrants,
-                    DoAskForFamily = registrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask,
-                    ForceEmailUpdate = forceEmailUpdate,
-                    RegistrarOption = ( int ) registrationTemplate.RegistrarOption,
-                    Cost = registrationTemplate.SetCostOnInstance == true ?
-                        ( registrationInstance.Cost ?? registrationTemplate.Cost ) :
-                        registrationTemplate.Cost,
-                    GatewayControl = new GatewayControlViewModel {
-                        FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                        Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
-                    },
-                    SpotsRemaining = spotsRemaining,
-                    WaitListEnabled = waitListEnabled,
-                    InstanceName = registrationInstance.Name,
-                    PluralRegistrationTerm = pluralRegistrationTerm
-                };
+                return GetViewModel( rockContext );
             }
         }
 
@@ -427,7 +196,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                var discount = GetDiscount( rockContext, code );
+                var discount = GetDiscountByCode( rockContext, code );
 
                 if ( discount == null )
                 {
@@ -487,92 +256,95 @@ namespace Rock.Obsidian.Blocks.Event
         [BlockAction]
         public BlockActionResult SubmitRegistration( RegistrationEntryBlockArgs args )
         {
+            var currentPerson = GetCurrentPerson();
+
+            // Basic check on the args to see that they appear valid
+            if ( args == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The args cannot be null" );
+            }
+
+            if ( args.Registrants?.Any() != true )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one registrant is required" );
+            }
+
+            if ( args.Registrar == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "A registrar is required" );
+            }
+
             using ( var rockContext = new RockContext() )
             {
+                // Load the instance and template
                 var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields" ).FirstOrDefault();
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
-                if (registrationTemplate == null)
+                if ( registrationTemplate == null )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration template was not found" );
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration template or instance was not found" );
                 }
 
-                var registrationService = new RegistrationService( rockContext );
-                var registrantService = new RegistrationRegistrantService( rockContext );
+                // Validate that there are enough spots left for this registration
+                var waitListEnabled = registrationTemplate.WaitListEnabled;
+                var spotsRemaining = registrationInstance.MaxAttendees;
 
-                var personService = new PersonService( rockContext );
-                var groupService = new GroupService( rockContext );
-                var documentService = new SignatureDocumentService( rockContext );
+                if ( !waitListEnabled && spotsRemaining < args.Registrants.Count )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "There are not enough spots left for this many registrants" );
+                }
 
-                // variables to keep track of the family that new people should be added to
-                int? singleFamilyId = null;
-                var multipleFamilyGroupIds = new Dictionary<Guid, int>();
+                // Look up and validate the discount by the code
+                var discount = GetDiscountByCode( rockContext, args.DiscountCode );
 
-                var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
-                var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
-                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                var adultRoleId = familyGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                var childRoleId = familyGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
+                if ( !args.DiscountCode.IsNullOrWhiteSpace() && discount == null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The discount code is not valid" );
+                }
 
-                bool newRegistration = false;
-                Registration registration = null;
-                Person registrar = null;
+                // Get or create the registration
                 var registrationChanges = new History.HistoryChangeList();
+                var registrationService = new RegistrationService( rockContext );
+                var registration = args.RegistrationGuid.HasValue ? registrationService.Get( args.RegistrationGuid.Value ) : null;
+                Person registrar = null;
 
-                // TODO
-                /*
-                if ( RegistrationState.RegistrationId.HasValue )
+                if ( registration == null && args.RegistrationGuid.HasValue )
                 {
-                    registration = registrationService.Get( RegistrationState.RegistrationId.Value );
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration was not found" );
                 }
-                */
 
-                if ( registration == null )
+                var isNewRegistration = registration == null;
+
+                if ( isNewRegistration )
                 {
-                    newRegistration = true;
-                    registration = new Registration();
+                    // This is a new registration
+                    registration = new Registration
+                    {
+                        RegistrationInstanceId = registrationInstance.Id,
+                        PersonAliasId = currentPerson?.PrimaryAliasId
+                    };
+
                     registrationService.Add( registration );
                     registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
+                    registrar = currentPerson;
+                }
+                else if ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                {
+                    // This existing registration does not belong to this person
+                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized, "Your existing registration was not found" );
+                }
+                else if ( registration.RegistrationInstanceId != registrationInstance.Id )
+                {
+                    // This existing registration is not for this instance
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "Your existing registration was not found" );
                 }
                 else
                 {
-                    if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
-                    {
-                        registrar = registration.PersonAlias.Person;
-                    }
+                    // This is an existing registration
+                    registrar = registration.PersonAlias.Person;
                 }
 
-                // Look up the discount by the code
-                var discount = GetDiscount( rockContext, args.DiscountCode );
-
-                // TODO
-                // registration.RegistrationInstanceId = RegistrationInstanceState.Id;
-
-                // If the Registration Instance linkage specified a group, load it now
-                // TODO
-                /*
-                Group group = null;
-                if ( GroupId.HasValue )
-                {
-                    group = new GroupService( rockContext ).Get( GroupId.Value );
-                    if ( group != null && ( !registration.GroupId.HasValue || registration.GroupId.Value != group.Id ) )
-                    {
-                        registration.GroupId = group.Id;
-                        History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
-                    }
-                }
-                */
-
-                var newRegistrar = newRegistration ||
-                    registration.FirstName == null || !registration.FirstName.Equals( args.Registrar.NickName, StringComparison.OrdinalIgnoreCase ) ||
-                    registration.LastName == null || !registration.LastName.Equals( args.Registrar.LastName, StringComparison.OrdinalIgnoreCase );
-
+                // Apply the registrar values to the registration record
                 History.EvaluateChange( registrationChanges, "First Name", registration.FirstName, args.Registrar.NickName );
                 registration.FirstName = args.Registrar.NickName;
 
@@ -589,78 +361,49 @@ namespace Rock.Obsidian.Blocks.Event
                 History.EvaluateChange( registrationChanges, "Discount Percentage", registration.DiscountPercentage, discountPercentage );
                 registration.DiscountPercentage = discountPercentage;
 
-                var discountAmount = discount?.DiscountAmount ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, discountAmount );
-                registration.DiscountAmount = discountAmount;
+                var remainingDiscountAmount = discount?.DiscountAmount ?? 0;
+                History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, remainingDiscountAmount );
+                registration.DiscountAmount = remainingDiscountAmount;
 
-                var currentPerson = GetCurrentPerson();
+                // If the registrar person record does not exist, find or create that record
+                var personService = new PersonService( rockContext );
 
-                if ( newRegistrar )
+                if ( registrar == null )
                 {
-                    // Businesses have no first name.  This resolves null reference issues downstream.
-                    if ( currentPerson != null && currentPerson.FirstName == null )
+                    registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+
+                    if ( registrar != null )
                     {
-                        currentPerson.FirstName = string.Empty;
-                    }
-
-                    if ( currentPerson != null && currentPerson.NickName == null )
-                    {
-                        currentPerson.NickName = currentPerson.FirstName;
-                    }
-
-                    // If the 'your name' value equals the currently logged in person, use their person alias id
-                    if ( currentPerson != null &&
-                    ( currentPerson.NickName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
-                        currentPerson.FirstName.Trim().Equals( registration.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ) &&
-                    currentPerson.LastName.Trim().Equals( registration.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
-                    {
-                        registrar = currentPerson;
-                        registration.PersonAliasId = currentPerson.PrimaryAliasId;
-                        var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
-
-                        // If email that logged in user used is different than their stored email address, update their stored value
-                        if ( !string.IsNullOrWhiteSpace( registration.ConfirmationEmail ) &&
-                            !registration.ConfirmationEmail.Trim().Equals( currentPerson.Email.Trim(), StringComparison.OrdinalIgnoreCase ) &&
-                            ( forceEmailUpdate || args.Registrar.UpdateEmail ) )
-                        {
-                            var person = personService.Get( currentPerson.Id );
-
-                            if ( person != null )
-                            {
-                                person.Email = registration.ConfirmationEmail;
-                                rockContext.SaveChanges();
-                            }
-                        }
+                        registration.PersonAliasId = registrar.PrimaryAliasId;
                     }
                     else
                     {
-                        // otherwise look for one and one-only match by name/email
-                        registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
-                        if ( registrar != null )
-                        {
-                            registration.PersonAliasId = registrar.PrimaryAliasId;
-                        }
-                        else
-                        {
-                            registrar = null;
-                            registration.PersonAlias = null;
-                            registration.PersonAliasId = null;
-                        }
+                        registrar = null;
+                        registration.PersonAlias = null;
+                        registration.PersonAliasId = null;
                     }
                 }
 
-                var registrarFamily = registrar.GetFamily( rockContext );
-                var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
-
-                // Set the family guid for any other registrants that were selected to be in the same family
-                multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
-
-                if ( !singleFamilyId.HasValue )
-                {
-                    singleFamilyId = registrarFamily.Id;
-                }
+                // Load some attribute values about family roles and statuses
+                var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+                var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                var adultRoleId = familyGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var childRoleId = familyGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
 
                 // Make sure there's an actual person associated to registration
+                var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+                // variables to keep track of the family that new people should be added to
+                int? singleFamilyId = null;
+                var multipleFamilyGroupIds = new Dictionary<Guid, int>();
+
                 if ( !registration.PersonAliasId.HasValue )
                 {
                     // If a match was not found, create a new person
@@ -685,25 +428,77 @@ namespace Rock.Obsidian.Blocks.Event
                         person.RecordStatusValueId = dvcRecordStatus.Id;
                     }
 
-                    registrar = SavePerson( rockContext, registrationTemplate, person, registrarFamily.Guid, campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-
+                    registrar = SavePerson( rockContext, registrationTemplate, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
                     registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
-
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
                 }
-                else
+
+                // Update the registrar's email if applicable
+                var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+                if ( forceEmailUpdate && registration.PersonAliasId.HasValue )
                 {
-                    if ( newRegistration )
+                    var person = personService.Get( registration.PersonAliasId.Value );
+
+                    if ( person != null )
                     {
-                        History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registration.ToString() );
+                        person.Email = registration.ConfirmationEmail;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                // Determine the campus
+                var registrarFamily = registrar.GetFamily( rockContext );
+                campusId = campusId ?? registrarFamily.CampusId;
+
+                // Set the family guid for any other registrants that were selected to be in the same family
+                multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
+
+                if ( !singleFamilyId.HasValue )
+                {
+                    singleFamilyId = registrarFamily.Id;
+                }
+
+                // If the Registration Instance linkage specified a group, load it now
+                var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+                var registrationSlug = PageParameter( PageParameterKey.Slug );
+
+                if ( !groupId.HasValue && !registrationSlug.IsNullOrWhiteSpace() )
+                {
+                    var dateTime = RockDateTime.Now;
+                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstance != null &&
+                            l.RegistrationInstance.IsActive &&
+                            l.RegistrationInstance.RegistrationTemplate != null &&
+                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                        .FirstOrDefault();
+
+                    if ( linkage != null )
+                    {
+                        groupId = linkage.GroupId;
+                    }
+                }
+
+                Group group = null;
+
+                if ( groupId.HasValue )
+                {
+                    group = new GroupService( rockContext ).Get( groupId.Value );
+
+                    if ( group != null && ( !registration.GroupId.HasValue || registration.GroupId.Value != group.Id ) )
+                    {
+                        registration.GroupId = group.Id;
+                        History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
                     }
                 }
 
                 // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
-                if ( registration.IsTemporary )
-                {
-                    registration.IsTemporary = false;
-                }
+                registration.IsTemporary = false;
 
                 // Set attribute values on the registration
                 registration.LoadAttributes( rockContext );
@@ -725,487 +520,49 @@ namespace Rock.Obsidian.Blocks.Event
                 rockContext.SaveChanges();
                 registration.SaveAttributeValues( rockContext );
 
+                // Save the history
+                Task.Run( () => HistoryService.SaveChanges(
+                    new RockContext(),
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges,
+                    true,
+                    currentPerson?.PrimaryAliasId ) );
+
                 try
                 {
-                    Task.Run( () =>
-                        HistoryService.SaveChanges(
-                            new RockContext(),
-                            typeof( Registration ),
-                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                            registration.Id,
-                            registrationChanges,
-                            true,
-                            currentPerson?.PrimaryAliasId ) );
-
                     // Get each registrant
+                    var index = 0;
+
                     foreach ( var registrantInfo in args.Registrants )
                     {
-                        var registrantChanges = new History.HistoryChangeList();
-                        var personChanges = new History.HistoryChangeList();
-
-                        RegistrationRegistrant registrant = null;
-                        Person person = null;
-
-                        var firstName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
-                        var lastName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
-                        var email = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
-                        var birthday = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
-                        var mobilePhone = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
-
-                        if ( registrantInfo.Id > 0 )
+                        if ( !waitListEnabled && spotsRemaining < 1 )
                         {
-                            registrant = registration.Registrants.FirstOrDefault( r => r.Id == registrantInfo.Id );
-
-                            if ( registrant != null )
-                            {
-                                person = registrant.Person;
-                                if ( person != null && (
-                                    ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
-                                    registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
-                                {
-                                    // Do nothing
-                                }
-                                else
-                                {
-                                    person = null;
-                                    registrant.PersonAlias = null;
-                                    registrant.PersonAliasId = null;
-                                }
-                            }
-                            else if ( registrantInfo.PersonGuid.HasValue )
-                            {
-                                // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
-                                person = personService.Get( registrantInfo.PersonGuid.Value );
-                            }
+                            // TODO - this person cannot be registered
+                        }
+                        else if ( waitListEnabled && spotsRemaining < 1 )
+                        {
+                            // TODO - add to waitlist
                         }
                         else
                         {
-                            if ( registrantInfo.PersonGuid.HasValue && registrationTemplate.ShowCurrentFamilyMembers )
-                            {
-                                person = personService.Get( registrantInfo.PersonGuid.Value );
-                            }
+                            UpsertRegistrant(
+                                rockContext,
+                                registrationTemplate,
+                                registrationInstance,
+                                registration,
+                                registrar,
+                                registrarFamily.Guid,
+                                registrantInfo,
+                                discount,
+                                ref remainingDiscountAmount,
+                                index,
+                                multipleFamilyGroupIds,
+                                ref singleFamilyId );
                         }
 
-                        if ( person == null )
-                        {
-                            // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
-                            var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
-                            person = personService.FindPerson( personQuery, true );
-
-                            // Try to find a matching person based on name within same family as registrar
-                            if ( person == null && registrar != null && registrantInfo.FamilyGuid == registrarFamily.Guid )
-                            {
-                                var familyMembers = registrar.GetFamilyMembers( true, rockContext )
-                                    .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
-                                    .Select( m => m.Person )
-                                    .ToList();
-
-                                if ( familyMembers.Count() == 1 )
-                                {
-                                    person = familyMembers.First();
-                                    if ( !string.IsNullOrWhiteSpace( email ) )
-                                    {
-                                        person.Email = email;
-                                    }
-                                }
-
-                                if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace( email ) )
-                                {
-                                    familyMembers = familyMembers
-                                        .Where( m =>
-                                            m.Email != null &&
-                                            m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
-                                        .ToList();
-                                    if ( familyMembers.Count() == 1 )
-                                    {
-                                        person = familyMembers.First();
-                                    }
-                                }
-                            }
-                        }
-
-                        if ( person == null )
-                        {
-                            // If a match was not found, create a new person
-                            person = new Person();
-                            person.FirstName = firstName;
-                            person.LastName = lastName;
-                            person.IsEmailActive = true;
-                            person.Email = email;
-                            person.EmailPreference = EmailPreference.EmailAllowed;
-                            person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                            if ( dvcConnectionStatus != null )
-                            {
-                                person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                            }
-
-                            if ( dvcRecordStatus != null )
-                            {
-                                person.RecordStatusValueId = dvcRecordStatus.Id;
-                            }
-                        }
-
-                        Location location = null;
-
-                        // Set any of the template's person fields
-                        foreach ( var field in registrationTemplate.Forms
-                            .SelectMany( f => f.Fields
-                                .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
-                        {
-                            // Find the registrant's value
-                            var fieldValue = GetPersonFieldValue( registrationTemplate, field.PersonFieldType, registrantInfo.FieldValues );
-
-                            if ( fieldValue != null )
-                            {
-                                switch ( field.PersonFieldType )
-                                {
-                                    case RegistrationPersonFieldType.Campus:
-                                        campusId = fieldValue.ToString().AsIntegerOrNull();
-                                        break;
-
-                                    case RegistrationPersonFieldType.MiddleName:
-                                        string middleName = fieldValue.ToString().Trim();
-                                        History.EvaluateChange( personChanges, "Middle Name", person.MiddleName, middleName );
-                                        person.MiddleName = middleName;
-                                        break;
-
-                                    case RegistrationPersonFieldType.Address:
-                                        location = fieldValue as Location;
-                                        break;
-
-                                    case RegistrationPersonFieldType.Birthdate:
-                                        var oldBirthMonth = person.BirthMonth;
-                                        var oldBirthDay = person.BirthDay;
-                                        var oldBirthYear = person.BirthYear;
-
-                                        person.SetBirthDate( fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime() );
-
-                                        History.EvaluateChange( personChanges, "Birth Month", oldBirthMonth, person.BirthMonth );
-                                        History.EvaluateChange( personChanges, "Birth Day", oldBirthDay, person.BirthDay );
-                                        History.EvaluateChange( personChanges, "Birth Year", oldBirthYear, person.BirthYear );
-                                        break;
-
-                                    case RegistrationPersonFieldType.Grade:
-                                        var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
-                                        History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
-                                        person.GraduationYear = newGraduationYear;
-                                        break;
-
-                                    case RegistrationPersonFieldType.Gender:
-                                        var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
-                                        History.EvaluateChange( personChanges, "Gender", person.Gender, newGender );
-                                        person.Gender = newGender;
-                                        break;
-
-                                    case RegistrationPersonFieldType.MaritalStatus:
-                                        if ( fieldValue != null )
-                                        {
-                                            int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
-                                            History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                                            person.MaritalStatusValueId = newMaritalStatusId;
-                                        }
-
-                                        break;
-
-                                    case RegistrationPersonFieldType.AnniversaryDate:
-                                        var oldAnniversaryDate = person.AnniversaryDate;
-                                        person.AnniversaryDate = fieldValue.ToString().AsDateTime();
-                                        History.EvaluateChange( personChanges, "Anniversary Date", oldAnniversaryDate, person.AnniversaryDate );
-                                        break;
-
-                                    case RegistrationPersonFieldType.MobilePhone:
-                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
-                                        break;
-
-                                    case RegistrationPersonFieldType.HomePhone:
-                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
-                                        break;
-
-                                    case RegistrationPersonFieldType.WorkPhone:
-                                        SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
-                                        break;
-
-                                    case RegistrationPersonFieldType.ConnectionStatus:
-                                        var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
-                                        History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
-                                        person.ConnectionStatusValueId = newConnectionStatusId;
-                                        break;
-                                }
-                            }
-                        }
-
-                        // Save the person ( and family if needed )
-                        SavePerson( rockContext, registrationTemplate, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-
-                        // Load the person's attributes
-                        person.LoadAttributes();
-
-                        // Set any of the template's person fields
-                        foreach ( var field in registrationTemplate.Forms
-                            .SelectMany( f => f.Fields
-                                .Where( t =>
-                                    t.FieldSource == RegistrationFieldSource.PersonAttribute &&
-                                    t.AttributeId.HasValue ) ) )
-                        {
-                            // Find the registrant's value
-                            var fieldValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid );
-
-                            if ( fieldValue != null )
-                            {
-                                var attribute = AttributeCache.Get( field.AttributeId.Value );
-                                if ( attribute != null )
-                                {
-                                    string originalValue = person.GetAttributeValue( attribute.Key );
-                                    string newValue = fieldValue.ToString();
-                                    person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                                    // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
-                                    if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
-                                        attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
-                                    {
-                                        DateTime aDateTime;
-                                        if ( DateTime.TryParse( newValue, out aDateTime ) )
-                                        {
-                                            newValue = aDateTime.ToString( "o" );
-                                        }
-                                    }
-
-                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                    {
-                                        string formattedOriginalValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                        {
-                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                        }
-
-                                        string formattedNewValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                        {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                        }
-
-                                        Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
-                                        History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                                    }
-                                }
-                            }
-                        }
-
-                        string registrantName = person.FullName + ": ";
-
-                        personChanges.ForEach( c => registrantChanges.Add( c ) );
-
-                        if ( registrant == null )
-                        {
-                            registrant = new RegistrationRegistrant();
-                            registrant.Guid = registrantInfo.Guid;
-                            registrantService.Add( registrant );
-                            registrant.RegistrationId = registration.Id;
-                        }
-
-                        registrant.OnWaitList = registrantInfo.OnWaitList;
-                        registrant.PersonAliasId = person.PrimaryAliasId;
-                        registrant.Cost = registrantInfo.Cost;
-                        registrant.DiscountApplies = registrantInfo.DiscountApplies;
-
-                        var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
-                        var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
-
-                        // Remove fees
-                        // Remove/delete any registrant fees that are no longer in UI with quantity
-                        foreach ( var dbFee in registrant.Fees.ToList() )
-                        {
-                            if ( !registrantInfo.FeeValues.ContainsKey( dbFee.RegistrationTemplateFeeId ) ||
-                                registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId] == null ||
-                                !registrantInfo.FeeValues[dbFee.RegistrationTemplateFeeId]
-                                    .Any( f =>
-                                        f.RegistrationTemplateFeeItemId == dbFee.RegistrationTemplateFeeItemId &&
-                                        f.Quantity > 0 ) )
-                            {
-                                var oldFeeValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
-                                        dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
-
-                                registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
-
-                                registrant.Fees.Remove( dbFee );
-                                registrantFeeService.Delete( dbFee );
-                            }
-                        }
-
-                        // Add or Update fees
-                        foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
-                        {
-                            foreach ( var uiFeeOption in uiFee.Value )
-                            {
-                                var dbFee = registrant.Fees
-                                    .Where( f =>
-                                        f.RegistrationTemplateFeeId == uiFee.Key &&
-                                        f.RegistrationTemplateFeeItemId == uiFeeOption.RegistrationTemplateFeeItemId )
-                                    .FirstOrDefault();
-
-                                if ( dbFee == null )
-                                {
-                                    dbFee = new RegistrationRegistrantFee();
-                                    dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                                    var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
-                                    if ( registrationTemplateFeeItem != null )
-                                    {
-                                        dbFee.Option = registrationTemplateFeeItem.Name;
-                                    }
-
-                                    dbFee.RegistrationTemplateFeeItemId = uiFeeOption.RegistrationTemplateFeeItemId;
-                                    registrant.Fees.Add( dbFee );
-                                }
-
-                                var templateFee = dbFee.RegistrationTemplateFee;
-                                if ( templateFee == null )
-                                {
-                                    templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
-                                }
-
-                                string feeName = templateFee != null ? templateFee.Name : "Fee";
-                                if ( !string.IsNullOrWhiteSpace( uiFeeOption.FeeLabel ) )
-                                {
-                                    feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.FeeLabel );
-                                }
-
-                                if ( dbFee.Id <= 0 )
-                                {
-                                    registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
-                                }
-
-                                History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
-                                dbFee.Quantity = uiFeeOption.Quantity;
-
-                                History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
-                                dbFee.Cost = uiFeeOption.Cost;
-                            }
-                        }
-
-                        rockContext.SaveChanges();
-                        registrantInfo.Id = registrant.Id;
-
-                        // Set any of the template's registrant attributes
-                        registrant.LoadAttributes();
-                        foreach ( var field in RegistrationTemplate.Forms
-                            .SelectMany( f => f.Fields
-                                .Where( t =>
-                                    t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                    t.AttributeId.HasValue ) ) )
-                        {
-                            // Find the registrant's value
-                            var fieldValue = registrantInfo.FieldValues
-                                .Where( f => f.Key == field.Id )
-                                .Select( f => f.Value.FieldValue )
-                                .FirstOrDefault();
-
-                            if ( fieldValue != null )
-                            {
-                                var attribute = AttributeCache.Get( field.AttributeId.Value );
-                                if ( attribute != null )
-                                {
-                                    string originalValue = registrant.GetAttributeValue( attribute.Key );
-                                    string newValue = fieldValue.ToString();
-                                    registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                                    // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
-                                    if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
-                                        attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
-                                    {
-                                        DateTime aDateTime;
-                                        if ( DateTime.TryParse( fieldValue.ToString(), out aDateTime ) )
-                                        {
-                                            newValue = aDateTime.ToString( "o" );
-                                        }
-                                    }
-
-                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                                    {
-                                        string formattedOriginalValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                        {
-                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                        }
-
-                                        string formattedNewValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                        {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                        }
-
-                                        Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
-                                        History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                                    }
-                                }
-                            }
-                        }
-
-                        Task.Run( () =>
-                            HistoryService.SaveChanges(
-                                new RockContext(),
-                                typeof( Registration ),
-                                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                                registration.Id,
-                                registrantChanges,
-                                "Registrant: " + person.FullName,
-                                null,
-                                null,
-                                true,
-                                CurrentPersonAliasId ) );
-
-                        // Clear this registrant's family guid so it's not updated again
-                        registrantInfo.FamilyGuid = Guid.Empty;
-
-                        // Save the signed document
-                        try
-                        {
-                            if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
-                            {
-                                var document = new SignatureDocument();
-                                document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
-                                document.DocumentKey = registrantInfo.SignatureDocumentKey;
-                                document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), person.FullName.RemoveSpecialCharacters() );
-                                document.AppliesToPersonAliasId = person.PrimaryAliasId;
-                                document.AssignedToPersonAliasId = registrar.PrimaryAliasId;
-                                document.SignedByPersonAliasId = registrar.PrimaryAliasId;
-                                document.Status = SignatureDocumentStatus.Signed;
-                                document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
-                                document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
-
-                                if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
-                                {
-                                    // This document has already been saved, probably on a previous save where a credit card processing error occurred.
-                                    // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
-                                    document.Id = registrantInfo.SignatureDocumentId.Value;
-                                    documentService.Add( document );
-                                    rockContext.SaveChanges();
-                                }
-                                else
-                                {
-                                    documentService.Add( document );
-
-                                    // Save the changes to get the document ID
-                                    rockContext.SaveChanges();
-
-                                    // Set the registrant info and then save again
-                                    registrantInfo.SignatureDocumentId = document.Id;
-                                    rockContext.SaveChanges();
-                                }
-
-                                var updateDocumentTxn = new UpdateDigitalSignatureDocument.Message
-                                {
-                                    SignatureDocumentId = document.Id
-                                };
-
-                                updateDocumentTxn.Send();
-                            }
-                        }
-                        catch ( System.Exception ex )
-                        {
-                            ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-                        }
-
-                        registrantInfo.PersonId = person.Id;
+                        index++;
                     }
 
                     rockContext.SaveChanges();
@@ -1214,10 +571,12 @@ namespace Rock.Obsidian.Blocks.Event
                 {
                     using ( var newRockContext = new RockContext() )
                     {
-                        if ( newRegistration )
+                        // Cleanup any new records created since there was an error
+                        if ( isNewRegistration )
                         {
                             var newRegistrationService = new RegistrationService( newRockContext );
                             var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
+
                             if ( savedRegistration != null )
                             {
                                 HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
@@ -1231,7 +590,7 @@ namespace Rock.Obsidian.Blocks.Event
                     throw;
                 }
 
-                return registration;
+                return new BlockActionResult( System.Net.HttpStatusCode.Created, registration.Guid );
             }
         }
 
@@ -1408,7 +767,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// </summary>
         /// <param name="code">The code.</param>
         /// <returns></returns>
-        private RegistrationTemplateDiscount GetDiscount( RockContext rockContext, string code )
+        private RegistrationTemplateDiscount GetDiscountByCode( RockContext rockContext, string code )
         {
             if ( code.IsNullOrWhiteSpace() )
             {
@@ -1598,6 +957,868 @@ namespace Rock.Obsidian.Blocks.Event
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the registrant cost.
+        /// </summary>
+        /// <param name="registrationTemplate">The registration template.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="discount">The discount.</param>
+        /// <returns></returns>
+        private decimal GetBaseRegistrantCost( RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
+        {
+            var cost = registrationTemplate.SetCostOnInstance == true ?
+                        ( registrationInstance.Cost ?? registrationTemplate.Cost ) :
+                        registrationTemplate.Cost;
+
+            return cost;
+        }
+
+        /// <summary>
+        /// Upserts the registrant.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationTemplate">The registration template.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="registrar">The registrar.</param>
+        /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
+        /// <param name="registrantInfo">The registrant information.</param>
+        /// <param name="index">The index.</param>
+        /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
+        /// <param name="singleFamilyId">The single family identifier.</param>
+        private void UpsertRegistrant(
+            RockContext rockContext,
+            RegistrationTemplate registrationTemplate,
+            RegistrationInstance registrationInstance,
+            Registration registration,
+            Person registrar,
+            Guid registrarFamilyGuid,
+            ViewModel.Blocks.RegistrantInfo registrantInfo,
+            RegistrationTemplateDiscount discount,
+            ref decimal remainingDiscountAmount,
+            int index,
+            Dictionary<Guid, int> multipleFamilyGroupIds,
+            ref int? singleFamilyId )
+        {
+            var personService = new PersonService( rockContext );
+            var registrantService = new RegistrationRegistrantService( rockContext );
+
+            var registrantChanges = new History.HistoryChangeList();
+            var personChanges = new History.HistoryChangeList();
+
+            RegistrationRegistrant registrant = null;
+            Person person = null;
+
+            var firstName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+            var lastName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+            var email = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+            var birthday = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+            var mobilePhone = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+
+            registrant = registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
+
+            if ( registrant != null )
+            {
+                person = registrant.Person;
+                if ( person != null && (
+                    ( registrant.Person.FirstName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) || registrant.Person.NickName.Equals( firstName, StringComparison.OrdinalIgnoreCase ) ) &&
+                    registrant.Person.LastName.Equals( lastName, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    // Do nothing
+                }
+                else
+                {
+                    person = null;
+                    registrant.PersonAlias = null;
+                    registrant.PersonAliasId = null;
+                }
+            }
+            else if ( registrantInfo.PersonGuid.HasValue )
+            {
+                // This can happen if the page has reloaded due to an error. The person was saved to the DB and we don't want to add them again.
+                person = personService.Get( registrantInfo.PersonGuid.Value );
+            }
+            else
+            {
+                if ( registrantInfo.PersonGuid.HasValue && registrationTemplate.ShowCurrentFamilyMembers )
+                {
+                    person = personService.Get( registrantInfo.PersonGuid.Value );
+                }
+            }
+
+            if ( person == null )
+            {
+                // Try to find a matching person based on name, email address, mobile phone, and birthday. If these were not provided they are not considered.
+                var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, mobilePhone, gender: null, birthDate: birthday );
+                person = personService.FindPerson( personQuery, true );
+
+                // Try to find a matching person based on name within same family as registrar
+                if ( person == null && registrar != null && registrantInfo.FamilyGuid == registrarFamilyGuid )
+                {
+                    var familyMembers = registrar.GetFamilyMembers( true, rockContext )
+                        .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
+                        .Select( m => m.Person )
+                        .ToList();
+
+                    if ( familyMembers.Count() == 1 )
+                    {
+                        person = familyMembers.First();
+                        if ( !string.IsNullOrWhiteSpace( email ) )
+                        {
+                            person.Email = email;
+                        }
+                    }
+
+                    if ( familyMembers.Count() > 1 && !string.IsNullOrWhiteSpace( email ) )
+                    {
+                        familyMembers = familyMembers
+                            .Where( m =>
+                                m.Email != null &&
+                                m.Email.Equals( email, StringComparison.OrdinalIgnoreCase ) )
+                            .ToList();
+                        if ( familyMembers.Count() == 1 )
+                        {
+                            person = familyMembers.First();
+                        }
+                    }
+                }
+            }
+
+            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var adultRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            var childRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+
+            if ( person == null )
+            {
+                // If a match was not found, create a new person
+                person = new Person();
+                person.FirstName = firstName;
+                person.LastName = lastName;
+                person.IsEmailActive = true;
+                person.Email = email;
+                person.EmailPreference = EmailPreference.EmailAllowed;
+                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+
+                if ( dvcConnectionStatus != null )
+                {
+                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                }
+
+                if ( dvcRecordStatus != null )
+                {
+                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                }
+            }
+
+            Location location = null;
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            // Set any of the template's person fields
+            foreach ( var field in registrationTemplate.Forms
+                .SelectMany( f => f.Fields
+                    .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
+            {
+                // Find the registrant's value
+                var fieldValue = GetPersonFieldValue( registrationTemplate, field.PersonFieldType, registrantInfo.FieldValues );
+
+                if ( fieldValue != null )
+                {
+                    switch ( field.PersonFieldType )
+                    {
+                        case RegistrationPersonFieldType.Campus:
+                            campusId = fieldValue.ToString().AsIntegerOrNull();
+                            break;
+
+                        case RegistrationPersonFieldType.MiddleName:
+                            string middleName = fieldValue.ToString().Trim();
+                            History.EvaluateChange( personChanges, "Middle Name", person.MiddleName, middleName );
+                            person.MiddleName = middleName;
+                            break;
+
+                        case RegistrationPersonFieldType.Address:
+                            location = fieldValue as Location;
+                            break;
+
+                        case RegistrationPersonFieldType.Birthdate:
+                            var oldBirthMonth = person.BirthMonth;
+                            var oldBirthDay = person.BirthDay;
+                            var oldBirthYear = person.BirthYear;
+
+                            person.SetBirthDate( fieldValue.ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime() );
+
+                            History.EvaluateChange( personChanges, "Birth Month", oldBirthMonth, person.BirthMonth );
+                            History.EvaluateChange( personChanges, "Birth Day", oldBirthDay, person.BirthDay );
+                            History.EvaluateChange( personChanges, "Birth Year", oldBirthYear, person.BirthYear );
+                            break;
+
+                        case RegistrationPersonFieldType.Grade:
+                            var newGraduationYear = fieldValue.ToString().AsIntegerOrNull();
+                            History.EvaluateChange( personChanges, "Graduation Year", person.GraduationYear, newGraduationYear );
+                            person.GraduationYear = newGraduationYear;
+                            break;
+
+                        case RegistrationPersonFieldType.Gender:
+                            var newGender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
+                            History.EvaluateChange( personChanges, "Gender", person.Gender, newGender );
+                            person.Gender = newGender;
+                            break;
+
+                        case RegistrationPersonFieldType.MaritalStatus:
+                            if ( fieldValue != null )
+                            {
+                                int? newMaritalStatusId = fieldValue.ToString().AsIntegerOrNull();
+                                History.EvaluateChange( personChanges, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                                person.MaritalStatusValueId = newMaritalStatusId;
+                            }
+
+                            break;
+
+                        case RegistrationPersonFieldType.AnniversaryDate:
+                            var oldAnniversaryDate = person.AnniversaryDate;
+                            person.AnniversaryDate = fieldValue.ToString().AsDateTime();
+                            History.EvaluateChange( personChanges, "Anniversary Date", oldAnniversaryDate, person.AnniversaryDate );
+                            break;
+
+                        case RegistrationPersonFieldType.MobilePhone:
+                            SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid(), personChanges );
+                            break;
+
+                        case RegistrationPersonFieldType.HomePhone:
+                            SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid(), personChanges );
+                            break;
+
+                        case RegistrationPersonFieldType.WorkPhone:
+                            SavePhone( fieldValue, person, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid(), personChanges );
+                            break;
+
+                        case RegistrationPersonFieldType.ConnectionStatus:
+                            var newConnectionStatusId = fieldValue.ToString().AsIntegerOrNull() ?? dvcConnectionStatus.Id;
+                            History.EvaluateChange( personChanges, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                            person.ConnectionStatusValueId = newConnectionStatusId;
+                            break;
+                    }
+                }
+            }
+
+            // Save the person ( and family if needed )
+            SavePerson( rockContext, registrationTemplate, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+
+            // Load the person's attributes
+            person.LoadAttributes();
+
+            // Set any of the template's person fields
+            foreach ( var field in registrationTemplate.Forms
+                .SelectMany( f => f.Fields
+                    .Where( t =>
+                        t.FieldSource == RegistrationFieldSource.PersonAttribute &&
+                        t.AttributeId.HasValue ) ) )
+            {
+                // Find the registrant's value
+                var fieldValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid );
+
+                if ( fieldValue != null )
+                {
+                    var attribute = AttributeCache.Get( field.AttributeId.Value );
+                    if ( attribute != null )
+                    {
+                        string originalValue = person.GetAttributeValue( attribute.Key );
+                        string newValue = fieldValue.ToString();
+                        person.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                        // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                            attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                        {
+                            DateTime aDateTime;
+                            if ( DateTime.TryParse( newValue, out aDateTime ) )
+                            {
+                                newValue = aDateTime.ToString( "o" );
+                            }
+                        }
+
+                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                        {
+                            string formattedOriginalValue = string.Empty;
+                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                            {
+                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
+                            }
+
+                            string formattedNewValue = string.Empty;
+                            if ( !string.IsNullOrWhiteSpace( newValue ) )
+                            {
+                                formattedNewValue = attribute.FieldType.Field.FormatValue( newValue, attribute.QualifierValues, false );
+                            }
+
+                            Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
+                            History.EvaluateChange( personChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+                        }
+                    }
+                }
+            }
+
+            string registrantName = person.FullName + ": ";
+
+            personChanges.ForEach( c => registrantChanges.Add( c ) );
+
+            if ( registrant == null )
+            {
+                registrant = new RegistrationRegistrant();
+                registrant.Guid = registrantInfo.Guid;
+                registrantService.Add( registrant );
+                registrant.RegistrationId = registration.Id;
+            }
+
+            registrant.OnWaitList = registrantInfo.IsOnWaitList;
+            registrant.PersonAliasId = person.PrimaryAliasId;
+            registrant.Cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance );
+
+            if ( discount?.MaxRegistrants.HasValue == true )
+            {
+                registrant.DiscountApplies = index < discount.MaxRegistrants.Value;
+            }
+            else
+            {
+                registrant.DiscountApplies = false;
+            }
+
+            var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+            var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
+
+            // Upsert fees
+            var totalFeeCost = 0m;
+            var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+
+            foreach ( var feeModel in feeModels )
+            {
+                var totalFeeQuantity = 0;
+
+                foreach ( var feeItemModel in feeModel.FeeItems )
+                {
+                    var quantity = registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemModel.Guid ) ?? 0;
+
+                    if ( quantity == 0 )
+                    {
+                        // This fee item is not selected
+                        continue;
+                    }
+
+                    if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
+                    {
+                        // This fee is already fulfilled and multiple are not allowed
+                        break;
+                    }
+
+                    if ( !feeModel.AllowMultiple && quantity > 0 )
+                    {
+                        // This fee item will fulfill this fee since multiple are not allowed. Force qty to be 1.
+                        totalFeeQuantity = 1;
+                        quantity = 1;
+                    }
+
+                    // If there is a limited supply, ensure that more are not ordered than available
+                    var remaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
+
+                    if ( remaining.HasValue && quantity > remaining.Value )
+                    {
+                        quantity = remaining.Value;
+                    }
+
+                    // Update the total for this fee
+                    totalFeeQuantity += quantity;
+
+                    // Calculate the cost with discounts
+                    var thisItemCost = feeItemModel.Cost * quantity;
+
+                    if ( feeModel.DiscountApplies && discount != null )
+                    {
+                        if ( remainingDiscountAmount > thisItemCost )
+                        {
+                            // Discount remaining is more than the cost of this item so deduct it all
+                            remainingDiscountAmount -= thisItemCost;
+                            thisItemCost = 0;
+                        }
+                        else if ( remainingDiscountAmount > 0 )
+                        {
+                            // Discount remaining covers part of this item
+                            thisItemCost -= remainingDiscountAmount;
+                            remainingDiscountAmount = 0;
+                        }
+                        else if ( discount.DiscountPercentage > 0 )
+                        {
+                            thisItemCost -= ( discount.DiscountPercentage * thisItemCost );
+                        }
+                    }
+
+                    totalFeeCost += thisItemCost;
+                }
+
+                // Make sure if the fee is required, that it was applied at one of the items
+                if ( feeModel.IsRequired && totalFeeQuantity < 1 )
+                {
+                    throw new ArgumentException( $"The required '{feeModel.Name}' fee was not selected" );
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+            // Remove fees
+            // Remove/delete any registrant fees that are no longer in UI with quantity
+            foreach ( var dbFee in registrant.Fees.ToList() )
+            {
+                if ( !registrantInfo.FeeItemQuantities.ContainsKey( dbFee.RegistrationTemplateFeeId ) ||
+                    registrantInfo.FeeItemQuantities[dbFee.RegistrationTemplateFeeId] == null ||
+                    !registrantInfo.FeeItemQuantities[dbFee.RegistrationTemplateFeeId]
+                        .Any( f =>
+                            f.RegistrationTemplateFeeItemId == dbFee.RegistrationTemplateFeeItemId &&
+                            f.Quantity > 0 ) )
+                {
+                    var oldFeeValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
+                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
+
+                    registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
+
+                    registrant.Fees.Remove( dbFee );
+                    registrantFeeService.Delete( dbFee );
+                }
+            }
+
+            // Add or Update fees
+            foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
+            {
+                foreach ( var uiFeeOption in uiFee.Value )
+                {
+                    var dbFee = registrant.Fees
+                        .Where( f =>
+                            f.RegistrationTemplateFeeId == uiFee.Key &&
+                            f.RegistrationTemplateFeeItemId == uiFeeOption.RegistrationTemplateFeeItemId )
+                        .FirstOrDefault();
+
+                    if ( dbFee == null )
+                    {
+                        dbFee = new RegistrationRegistrantFee();
+                        dbFee.RegistrationTemplateFeeId = uiFee.Key;
+                        var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
+                        if ( registrationTemplateFeeItem != null )
+                        {
+                            dbFee.Option = registrationTemplateFeeItem.Name;
+                        }
+
+                        dbFee.RegistrationTemplateFeeItemId = uiFeeOption.RegistrationTemplateFeeItemId;
+                        registrant.Fees.Add( dbFee );
+                    }
+
+                    var templateFee = dbFee.RegistrationTemplateFee;
+                    if ( templateFee == null )
+                    {
+                        templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
+                    }
+
+                    string feeName = templateFee != null ? templateFee.Name : "Fee";
+                    if ( !string.IsNullOrWhiteSpace( uiFeeOption.FeeLabel ) )
+                    {
+                        feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.FeeLabel );
+                    }
+
+                    if ( dbFee.Id <= 0 )
+                    {
+                        registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
+                    }
+
+                    History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
+                    dbFee.Quantity = uiFeeOption.Quantity;
+
+                    History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
+                    dbFee.Cost = uiFeeOption.Cost;
+                }
+            }
+
+            rockContext.SaveChanges();
+            registrantInfo.Id = registrant.Id;
+
+            // Set any of the template's registrant attributes
+            registrant.LoadAttributes();
+            foreach ( var field in RegistrationTemplate.Forms
+                .SelectMany( f => f.Fields
+                    .Where( t =>
+                        t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                        t.AttributeId.HasValue ) ) )
+            {
+                // Find the registrant's value
+                var fieldValue = registrantInfo.FieldValues
+                    .Where( f => f.Key == field.Id )
+                    .Select( f => f.Value.FieldValue )
+                    .FirstOrDefault();
+
+                if ( fieldValue != null )
+                {
+                    var attribute = AttributeCache.Get( field.AttributeId.Value );
+                    if ( attribute != null )
+                    {
+                        string originalValue = registrant.GetAttributeValue( attribute.Key );
+                        string newValue = fieldValue.ToString();
+                        registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                        // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
+                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                            attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
+                        {
+                            DateTime aDateTime;
+                            if ( DateTime.TryParse( fieldValue.ToString(), out aDateTime ) )
+                            {
+                                newValue = aDateTime.ToString( "o" );
+                            }
+                        }
+
+                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                        {
+                            string formattedOriginalValue = string.Empty;
+                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                            {
+                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                            }
+
+                            string formattedNewValue = string.Empty;
+                            if ( !string.IsNullOrWhiteSpace( newValue ) )
+                            {
+                                formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                            }
+
+                            Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
+                            History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
+                        }
+                    }
+                }
+            }
+
+            Task.Run( () =>
+                HistoryService.SaveChanges(
+                    new RockContext(),
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrantChanges,
+                    "Registrant: " + person.FullName,
+                    null,
+                    null,
+                    true,
+                    CurrentPersonAliasId ) );
+
+            // Clear this registrant's family guid so it's not updated again
+            registrantInfo.FamilyGuid = Guid.Empty;
+
+            // Save the signed document
+            try
+            {
+                if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
+                {
+                    var document = new SignatureDocument();
+                    document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
+                    document.DocumentKey = registrantInfo.SignatureDocumentKey;
+                    document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), person.FullName.RemoveSpecialCharacters() );
+                    document.AppliesToPersonAliasId = person.PrimaryAliasId;
+                    document.AssignedToPersonAliasId = registrar.PrimaryAliasId;
+                    document.SignedByPersonAliasId = registrar.PrimaryAliasId;
+                    document.Status = SignatureDocumentStatus.Signed;
+                    document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
+                    document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
+
+                    if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
+                    {
+                        // This document has already been saved, probably on a previous save where a credit card processing error occurred.
+                        // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
+                        document.Id = registrantInfo.SignatureDocumentId.Value;
+                        documentService.Add( document );
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        documentService.Add( document );
+
+                        // Save the changes to get the document ID
+                        rockContext.SaveChanges();
+
+                        // Set the registrant info and then save again
+                        registrantInfo.SignatureDocumentId = document.Id;
+                        rockContext.SaveChanges();
+                    }
+
+                    var updateDocumentTxn = new UpdateDigitalSignatureDocument.Message
+                    {
+                        SignatureDocumentId = document.Id
+                    };
+
+                    updateDocumentTxn.Send();
+                }
+            }
+            catch ( System.Exception ex )
+            {
+                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
+            }
+
+            registrantInfo.PersonId = person.Id;
+        }
+
+        /// <summary>
+        /// Gets the view model.
+        /// </summary>
+        /// <returns></returns>
+        private RegistrationEntryBlockViewModel GetViewModel( RockContext rockContext )
+        {
+            var currentPerson = GetCurrentPerson();
+            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
+
+            var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
+            var registrationTemplate = registrationInstance?.RegistrationTemplate;
+
+            if ( registrationTemplate == null )
+            {
+                return null;
+            }
+
+            var formModels = registrationTemplate.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
+
+            // Get family members
+            var familyMembers = registrationTemplate.ShowCurrentFamilyMembers ?
+                currentPerson.GetFamilyMembers( true, rockContext )
+                    .Select( gm => new
+                    {
+                        FamilyGuid = gm.Group.Guid,
+                        Person = gm.Person
+                    } )
+                    .ToList()
+                    .Select( gm => new RegistrationEntryBlockFamilyMemberViewModel
+                    {
+                        Guid = gm.Person.Guid,
+                        FamilyGuid = gm.FamilyGuid,
+                        FullName = gm.Person.FullName,
+                        FieldValues = GetCurrentValueFieldValues( rockContext, gm.Person, formModels )
+                    } )
+                    .ToList() :
+                    new List<RegistrationEntryBlockFamilyMemberViewModel>();
+
+            // Get the instructions
+            var instructions = registrationInstance?.RegistrationInstructions;
+
+            if ( instructions.IsNullOrWhiteSpace() )
+            {
+                instructions = registrationTemplate.RegistrationInstructions ?? string.Empty;
+            }
+
+            // Get the fee term
+            var feeTerm = registrationTemplate.FeeTerm;
+
+            if ( feeTerm.IsNullOrWhiteSpace() )
+            {
+                feeTerm = "Fee";
+            }
+
+            feeTerm = feeTerm.ToLower();
+            var pluralFeeTerm = feeTerm.Pluralize();
+
+            // Get the registrant term
+            var registrantTerm = registrationTemplate.RegistrantTerm;
+
+            if ( registrantTerm.IsNullOrWhiteSpace() )
+            {
+                registrantTerm = "Person";
+            }
+
+            registrantTerm = registrantTerm.ToLower();
+            var pluralRegistrantTerm = registrantTerm.Pluralize();
+
+            // Get the fees
+            var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+            var fees = new List<RegistrationEntryBlockFeeViewModel>();
+
+            foreach ( var feeModel in feeModels )
+            {
+                var feeViewModel = new RegistrationEntryBlockFeeViewModel
+                {
+                    Guid = feeModel.Guid,
+                    Name = feeModel.Name,
+                    AllowMultiple = feeModel.AllowMultiple,
+                    IsRequired = feeModel.IsRequired,
+                    DiscountApplies = feeModel.DiscountApplies,
+                    Items = feeModel.FeeItems.Select( fi => new RegistrationEntryBlockFeeItemViewModel
+                    {
+                        Cost = fi.Cost,
+                        Name = fi.Name,
+                        Guid = fi.Guid,
+                        CountRemaining = fi.GetUsageCountRemaining( registrationInstance, null )
+                    } )
+                };
+
+                fees.Add( feeViewModel );
+            }
+
+            // Get forms with fields
+            var formViewModels = new List<RegistrationEntryBlockFormViewModel>();
+
+            foreach ( var formModel in formModels )
+            {
+                var form = new RegistrationEntryBlockFormViewModel();
+                var fieldModels = formModel.Fields.Where( f => !f.IsInternal ).OrderBy( f => f.Order );
+                var fields = new List<RegistrationEntryBlockFormFieldViewModel>();
+
+                foreach ( var fieldModel in fieldModels )
+                {
+                    var field = new RegistrationEntryBlockFormFieldViewModel();
+                    var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
+
+                    field.Guid = fieldModel.Guid;
+                    field.Attribute = attribute?.ToViewModel();
+                    field.FieldSource = ( int ) fieldModel.FieldSource;
+                    field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
+                    field.IsRequired = fieldModel.IsRequired;
+                    field.VisibilityRuleType = ( int ) fieldModel.FieldVisibilityRules.FilterExpressionType;
+                    field.PreHtml = fieldModel.PreText;
+                    field.PostHtml = fieldModel.PostText;
+                    field.ShowOnWaitList = fieldModel.ShowOnWaitlist;
+
+                    field.VisibilityRules = fieldModel.FieldVisibilityRules
+                        .RuleList
+                        .Where( vr => vr.ComparedToRegistrationTemplateFormFieldGuid.HasValue )
+                        .Select( vr => new RegistrationEntryBlockVisibilityViewModel
+                        {
+                            ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToRegistrationTemplateFormFieldGuid.Value,
+                            ComparedToValue = vr.ComparedToValue,
+                            ComparisonType = ( int ) vr.ComparisonType
+                        } );
+
+                    fields.Add( field );
+                }
+
+                form.Fields = fields;
+                formViewModels.Add( form );
+            }
+
+            // Get the registration attributes term
+            var registrationAttributeTitleStart = ( registrationTemplate.RegistrationAttributeTitleStart ).IsNullOrWhiteSpace() ?
+                "Registration Information" :
+                registrationTemplate.RegistrationAttributeTitleStart;
+
+            var registrationAttributeTitleEnd = ( registrationTemplate.RegistrationAttributeTitleEnd ).IsNullOrWhiteSpace() ?
+                "Registration Information" :
+                registrationTemplate.RegistrationAttributeTitleEnd;
+
+            // Get the registration term
+            var registrationTerm = ( registrationTemplate.RegistrationTerm ).IsNullOrWhiteSpace() ?
+                "Registration" :
+                registrationTemplate.RegistrationTerm;
+
+            // Get the registration term plural
+            var pluralRegistrationTerm = registrationTerm.Pluralize();
+
+            // Get the registration attributes
+            var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
+            var registrationAttributes = AttributeCache.All()
+                .Where( a =>
+                    a.EntityTypeId == registrationEntityTypeId &&
+                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToStringSafe() ) &&
+                    a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name );
+
+            // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
+            var beforeAttributes = registrationAttributes
+                .Where( a =>
+                    a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) )
+                .Select( a => a.ToViewModel( currentPerson, false ) )
+                .ToList();
+
+            // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
+            var afterAttributes = registrationAttributes
+                .Where( a =>
+                    !a.Categories.Any() ||
+                    a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) )
+                .Select( a => a.ToViewModel( currentPerson, false ) )
+                .ToList();
+
+            // Get the maximum number of registrants
+            var maxRegistrants = ( registrationTemplate.AllowMultipleRegistrants == true ) ?
+                ( registrationTemplate.MaxRegistrants ?? 1 ) :
+                1;
+
+            // Get the number of slots available and if the waitlist is available
+            var waitListEnabled = registrationTemplate.WaitListEnabled;
+            var spotsRemaining = registrationInstance.MaxAttendees;
+
+            if ( spotsRemaining.HasValue )
+            {
+                var otherRegistrantsCount = new RegistrationRegistrantService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( a =>
+                        a.Registration.RegistrationInstanceId == registrationInstanceId &&
+                        !a.Registration.IsTemporary )
+                    .Count();
+
+                spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
+            }
+
+            // Force the registrar to update their email?
+            var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+            // Load the gateway control settings
+            var financialGatewayId = registrationTemplate.FinancialGatewayId ?? 0;
+            var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
+            var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
+
+            return new RegistrationEntryBlockViewModel
+            {
+                RegistrationGuid = null,
+                RegistrationAttributesStart = beforeAttributes,
+                RegistrationAttributesEnd = afterAttributes,
+                RegistrationAttributeTitleStart = registrationAttributeTitleStart,
+                RegistrationAttributeTitleEnd = registrationAttributeTitleEnd,
+                InstructionsHtml = instructions,
+                RegistrantTerm = registrantTerm,
+                PluralRegistrantTerm = pluralRegistrantTerm,
+                PluralFeeTerm = pluralFeeTerm,
+                RegistrationTerm = registrationTerm,
+                RegistrantForms = formViewModels,
+                Fees = fees,
+                FamilyMembers = familyMembers,
+                MaxRegistrants = maxRegistrants,
+                DoAskForFamily = registrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Ask,
+                ForceEmailUpdate = forceEmailUpdate,
+                RegistrarOption = ( int ) registrationTemplate.RegistrarOption,
+                Cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance ),
+                GatewayControl = new GatewayControlViewModel
+                {
+                    FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
+                },
+                SpotsRemaining = spotsRemaining,
+                WaitListEnabled = waitListEnabled,
+                InstanceName = registrationInstance.Name,
+                PluralRegistrationTerm = pluralRegistrationTerm
+            };
         }
 
         #endregion Helpers

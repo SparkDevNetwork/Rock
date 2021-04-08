@@ -27,6 +27,14 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
+        /// Gets or sets the registration unique identifier.
+        /// </summary>
+        /// <value>
+        /// The registration unique identifier.
+        /// </value>
+        public Guid? RegistrationGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the instructions HTML.
         /// </summary>
         /// <value>

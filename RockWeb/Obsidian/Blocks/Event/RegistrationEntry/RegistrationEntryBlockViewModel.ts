@@ -160,7 +160,6 @@ export interface RegistrationEntryBlockFormFieldRuleViewModel
 }
 
 export type RegistrantInfo = {
-    Id: number;
     IsOnWaitList: boolean;
     FamilyGuid: Guid;
     PersonGuid: Guid;

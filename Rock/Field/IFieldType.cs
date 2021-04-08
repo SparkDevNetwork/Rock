@@ -66,6 +66,15 @@ namespace Rock.Field
         System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
 
         /// <summary>
+        /// Formats the value based on the type and qualifiers. This overload is used for non-WebForms (System.Web) use cases.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
+
+        /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
         /// <param name="parentControl">The parent control.</param>

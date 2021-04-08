@@ -26,6 +26,14 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockArgs : IViewModel
     {
         /// <summary>
+        /// Gets or sets the registration unique identifier.
+        /// </summary>
+        /// <value>
+        /// The registration unique identifier.
+        /// </value>
+        public Guid? RegistrationGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the registrants.
         /// </summary>
         /// <value>
@@ -72,14 +80,6 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrantInfo
     {
         /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is on wait list.
         /// </summary>
         /// <value>
@@ -118,6 +118,14 @@ namespace Rock.ViewModel.Blocks
         /// The fee item quantities.
         /// </value>
         public Dictionary<Guid, int> FeeItemQuantities { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.
+        /// </value>
+        public Guid Guid { get; set; }
     }
 
     /// <summary>
