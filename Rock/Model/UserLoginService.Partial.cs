@@ -482,10 +482,21 @@ namespace Rock.Model
                 Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                 cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
+                string clientIPAddress;
+                try
+                {
+                    clientIPAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+                }
+                catch
+                {
+                    // if we get an exception getting the IP Address, just ignore it
+                    clientIPAddress = "";
+                }
+
                 relatedDataBuilder.AppendFormat(
                     " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
                     cleanUrl,
-                    Rock.Web.UI.RockPage.GetClientIpAddress() );
+                    clientIPAddress );
             }
 
             var historyChangeList = new History.HistoryChangeList();
