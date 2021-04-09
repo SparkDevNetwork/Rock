@@ -179,13 +179,11 @@ namespace RockWeb.Blocks.GroupScheduling
                     return;
                 }
 
+                UpdateAttendanceDeclineReasonAfterSubmit();
+
                 if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
                 {
                     NavigateToPage( PageParameter( "ReturnUrl" ).AsGuid(), null );
-                }
-                else
-                {
-                    UpdateAttendanceDeclineReasonAfterSubmit();
                 }
             }
         }
