@@ -313,7 +313,7 @@ export default defineComponent( {
         <div v-if="!isWaitList && isLastForm && viewModel.Fees.length" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>
             <template v-for="fee in viewModel.Fees" :key="fee.Guid">
-                <FeeField :fee="fee" v-model="currentRegistrant.FeeQuantities" />
+                <FeeField :fee="fee" v-model="currentRegistrant.FeeItemQuantities" />
             </template>
         </div>
 

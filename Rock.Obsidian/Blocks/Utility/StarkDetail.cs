@@ -24,13 +24,13 @@ using Rock.Model;
 namespace Rock.Obsidian.Blocks.Utility
 {
     /// <summary>
-    /// An example block that uses the Vue Composition API.
+    /// An example block.
     /// </summary>
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
-    [DisplayName( "Stark Detail - Vue Composition API" )]
+    [DisplayName( "Stark Detail" )]
     [Category( "Obsidian > Utility" )]
-    [Description( "An example block that uses the Vue Composition API." )]
+    [Description( "An example block." )]
     [IconCssClass( "fa fa-star" )]
 
     #region Block Attributes
@@ -51,7 +51,7 @@ namespace Rock.Obsidian.Blocks.Utility
 
     #endregion Block Attributes
 
-    public class StarkDetailComposition : ObsidianBlockType
+    public class StarkDetail : ObsidianBlockType
     {
         #region Attribute Keys
 
@@ -72,10 +72,10 @@ namespace Rock.Obsidian.Blocks.Utility
 
         #endregion PageParameterKeys
 
-        #region Base Overloads
+        #region Base Overrides
 
         /// <summary>
-        /// Gets the property values that will be sent to the browser.
+        /// Gets the property values that will be sent to the browser and available to the client side code as it initializes.
         /// </summary>
         /// <returns>
         /// A collection of string/object pairs.
@@ -93,14 +93,14 @@ namespace Rock.Obsidian.Blocks.Utility
         #region Block Actions
 
         /// <summary>
-        /// Gets the message.
+        /// Gets the message. This is a block action, which means that the client side code can "invoke it". The result is then returned to the client side code.
         /// </summary>
         /// <param name="paramFromClient">The parameter from client.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult GetMessage( string paramFromClient )
         {
-            var message = $"This is a value that came from the server via AJAX after the Vue component mounted. The client had sent: {paramFromClient}";
+            var message = $"This is a value that came from the server via AJAX after the Vue component mounted. The client sent: {paramFromClient}";
 
             return new BlockActionResult( HttpStatusCode.OK, new
             {

@@ -69,28 +69,32 @@ System.register(["axios"], function (exports_1, context_1) {
     * @param {any} data This will be the body of the request
     */
     function doApiCall(method, url, params, data) {
+        var _a, _b;
         if (params === void 0) { params = undefined; }
         if (data === void 0) { data = undefined; }
         return __awaiter(this, void 0, void 0, function () {
             var result, e_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
+                        _c.trys.push([0, 2, , 3]);
                         return [4 /*yield*/, doApiCallRaw(method, url, params, data)];
                     case 1:
-                        result = _a.sent();
+                        result = _c.sent();
                         return [2 /*return*/, {
                                 data: result.data,
                                 isError: false,
-                                statusCode: result.status
+                                isSuccess: true,
+                                statusCode: result.status,
+                                errorMessage: null
                             }];
                     case 2:
-                        e_1 = _a.sent();
-                        if (e_1 && e_1.response && e_1.response.data && e_1.response.data.Message) {
+                        e_1 = _c.sent();
+                        if ((_b = (_a = e_1 === null || e_1 === void 0 ? void 0 : e_1.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.Message) {
                             return [2 /*return*/, {
                                     data: null,
                                     isError: true,
+                                    isSuccess: false,
                                     statusCode: e_1.response.status,
                                     errorMessage: e_1.response.data.Message
                                 }];
@@ -98,6 +102,7 @@ System.register(["axios"], function (exports_1, context_1) {
                         return [2 /*return*/, {
                                 data: null,
                                 isError: true,
+                                isSuccess: false,
                                 statusCode: e_1.response.status,
                                 errorMessage: null
                             }];

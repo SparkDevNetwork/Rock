@@ -78,7 +78,7 @@ namespace Rock.Obsidian.Blocks
         }
 
         /// <summary>
-        /// Gets the property values that will be sent to the browser.
+        /// Gets the property values that will be sent to the browser and available to the client side code as it initializes.
         /// </summary>
         /// <returns>
         /// A collection of string/object pairs.

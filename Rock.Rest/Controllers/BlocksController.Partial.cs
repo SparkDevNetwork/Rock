@@ -363,7 +363,13 @@ namespace Rock.Rest.Controllers
             }
             else if ( result is Rock.Blocks.BlockActionResult actionResult )
             {
-                if ( actionResult.Error != null )
+                var isErrorStatusCode = ( ( int ) actionResult.StatusCode / 100 ) == 4;
+
+                if ( isErrorStatusCode && actionResult.Content is string )
+                {
+                    return Content( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ) );
+                }
+                else if ( actionResult.Error != null )
                 {
                     return Content( actionResult.StatusCode, new HttpError( actionResult.Error ) );
                 }

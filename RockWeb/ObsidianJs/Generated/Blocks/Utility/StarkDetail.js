@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/Alert", "../../Elements/RockButton", "../../Templates/PaneledBlockTemplate"], function (exports_1, context_1) {
+System.register(["vue", "../../Controls/RockBlock", "../../Elements/Alert", "../../Elements/RockButton", "../../Templates/PaneledBlockTemplate"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,12 +52,15 @@ System.register(["vue", "../../Elements/Alert", "../../Elements/RockButton", "..
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, Alert_1, RockButton_1, PaneledBlockTemplate_1, StarkDetailOptions;
+    var vue_1, RockBlock_1, Alert_1, RockButton_1, PaneledBlockTemplate_1, StarkDetailOptions;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
+            },
+            function (RockBlock_1_1) {
+                RockBlock_1 = RockBlock_1_1;
             },
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
@@ -70,25 +73,21 @@ System.register(["vue", "../../Elements/Alert", "../../Elements/RockButton", "..
             }
         ],
         execute: function () {
-            /** An example block that uses the Vue Options API */
+            /** An example block */
             StarkDetailOptions = vue_1.defineComponent({
+                /** This is the name that will appear in the browser debug tools. This is mostly for organization and
+                 *  doesn't affect function. */
                 name: 'Utility.StarkDetailOptions',
+                /** This allows for standard block tools, such as invokeBlockAction, to be available to this block */
+                setup: RockBlock_1.standardBlockSetup,
                 /** These are the child components that are used by this block component */
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_1.default,
                     Alert: Alert_1.default,
                     RockButton: RockButton_1.default
                 },
-                /** Even in the Options API, we use the setup method to inject values (logic or values provided by a parent component - in this
-                 *  case the Rock Block wrapper) to allow TypeScript typing to occur. All blocks are wrapped by RockBlock and have access to
-                 *  these tools. */
-                setup: function () {
-                    return {
-                        configurationValues: vue_1.inject('configurationValues'),
-                        invokeBlockAction: vue_1.inject('invokeBlockAction')
-                    };
-                },
-                /** This method returns the zero-state of the component. All reactive data must be declared here. */
+                /** This method returns the zero-state of the component's local state object. All reactive data must
+                 *  be declared here (even if it only might be used at some point). */
                 data: function () {
                     return {
                         configMessage: '',
@@ -97,7 +96,7 @@ System.register(["vue", "../../Elements/Alert", "../../Elements/RockButton", "..
                 },
                 /** These are methods that can be invoked by button clicks or other methods. */
                 methods: {
-                    /** Load the message from a C# block action. */
+                    /** Fetch a message from the C# block action named "GetMessage". */
                     loadBlockActionMessage: function () {
                         return __awaiter(this, void 0, void 0, function () {
                             var response;
@@ -120,15 +119,22 @@ System.register(["vue", "../../Elements/Alert", "../../Elements/RockButton", "..
                         });
                     }
                 },
-                /** This method is a lifecycle hook called when the component is created (before mounting to the DOM) */
+                /** This method is a lifecycle hook called when the component is created (initializing and not yet in
+                 *  the DOM) */
                 created: function () {
+                    // Set the local state "configMessage" to the value sent by C#'s GetObsidianConfigurationValues
                     this.configMessage = this.configurationValues.Message;
                 },
-                /** The template is the markup of the component */
-                template: "\n<PaneledBlockTemplate>\n    <template #title>\n        <i class=\"fa fa-star\"></i>\n        Blank Detail Block\n    </template>\n    <template #titleAside>\n        <div class=\"panel-labels\">\n            <span class=\"label label-info\">Vue Options API</span>\n        </div>\n    </template>\n    <template #drawer>\n        An example block that uses the Vue Options API\n    </template>\n    <template #default>\n        <Alert alertType=\"info\">\n            <h4>Stark Template Block</h4>\n            <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>\n\n            <strong>Changes to the Codebehind (.cs) File</strong>\n            <ul>\n                <li>Update the namespace to match your directory</li>\n                <li>Update the class name</li>\n                <li>Fill in the DisplayName, Category and Description attributes</li>\n            </ul>\n\n            <strong>Changes to the Vue component (.ts/.js) File</strong>\n            <ul>\n                <li>Remove this text... unless you really like it...</li>\n            </ul>\n        </Alert>\n        <div>\n            <h4>Value from Configuration</h4>\n            <p>\n                This value came from the C# file and was provided to the JavaScript before the Vue component was even mounted:\n            </p>\n            <pre>{{ configMessage }}</pre>\n            <h4>Value from Block Action</h4>\n            <p>\n                This value will come from the C# file using a \"Block Action\". Block Actions allow the Vue Component to communicate with the\n                C# code behind (much like a Web Forms Postback):\n            </p>\n            <RockButton btnType=\"primary\" btnSize=\"sm\" @click=\"loadBlockActionMessage\">Invoke Block Action</RockButton>\n            <pre>{{ blockActionMessage }}</pre>\n        </div>\n    </template>\n</PaneledBlockTemplate>"
+                /** This method is another lifecycle hook called when the component is mounted (put in the DOM) */
+                mounted: function () {
+                    // Do something when the component's elements are now in the DOM
+                },
+                /** The template is the markup of the component. Any custom components used within this template,
+                 *  like <Alert> and <PaneledBlockTemplate> must be included in the "components" option above. */
+                template: "\n<PaneledBlockTemplate>\n    <template #title>\n        <i class=\"fa fa-star\"></i>\n        Blank Detail Block\n    </template>\n    <template #titleAside>\n        <div class=\"panel-labels\">\n            <span class=\"label label-info\">Vue</span>\n        </div>\n    </template>\n    <template #drawer>\n        An example block that uses Vue\n    </template>\n    <template #default>\n        <Alert alertType=\"info\">\n            <h4>Stark Template Block</h4>\n            <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>\n\n            <strong>Changes to the Codebehind (.cs) File</strong>\n            <ul>\n                <li>Update the namespace to match your directory</li>\n                <li>Update the class name</li>\n                <li>Fill in the DisplayName, Category and Description attributes</li>\n            </ul>\n\n            <strong>Changes to the Vue component (.ts/.js) File</strong>\n            <ul>\n                <li>Remove this text... unless you really like it...</li>\n            </ul>\n        </Alert>\n        <div>\n            <h4>Value from Configuration</h4>\n            <p>\n                This value came from the C# file and was provided to the JavaScript before the Vue component was even mounted:\n            </p>\n            <pre>{{ configMessage }}</pre>\n            <h4>Value from Block Action</h4>\n            <p>\n                This value will come from the C# file using a \"Block Action\". Block Actions allow the Vue Component to communicate with the\n                C# code behind (much like a Web Forms Postback):\n            </p>\n            <RockButton btnType=\"primary\" btnSize=\"sm\" @click=\"loadBlockActionMessage\">Invoke Block Action</RockButton>\n            <pre>{{ blockActionMessage }}</pre>\n        </div>\n    </template>\n</PaneledBlockTemplate>"
             });
             exports_1("default", StarkDetailOptions);
         }
     };
 });
-//# sourceMappingURL=StarkDetailOptions.js.map
+//# sourceMappingURL=StarkDetail.js.map

@@ -15,15 +15,20 @@
 // </copyright>
 //
 
-import { defineComponent, inject, ref } from 'vue';
-import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import { defineComponent } from 'vue';
+import { standardBlockSetup } from '../../Controls/RockBlock';
 import Alert from '../../Elements/Alert';
 import RockButton from '../../Elements/RockButton';
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
 
-/** An example block that uses the Vue Composition API */
+/** An example block */
 const StarkDetailOptions = defineComponent( {
-    name: 'Utility.StarkDetailComposition',
+    /** This is the name that will appear in the browser debug tools. This is mostly for organization and
+     *  doesn't affect function. */
+    name: 'Utility.StarkDetailOptions',
+
+    /** This allows for standard block tools, such as invokeBlockAction, to be available to this block */
+    setup: standardBlockSetup,
 
     /** These are the child components that are used by this block component */
     components: {
@@ -32,49 +37,53 @@ const StarkDetailOptions = defineComponent( {
         RockButton
     },
 
-    /** The setup method is the heart of the composition API. */
-    setup()
+    /** This method returns the zero-state of the component's local state object. All reactive data must
+     *  be declared here (even if it only might be used at some point). */
+    data()
     {
-        // Inject values (logic or values provided by a parent component - in this case the Rock Block wrapper) to allow
-        // TypeScript typing to occur. All blocks are wrapped by RockBlock and have access to these tools.
-        const configurationValues = inject( 'configurationValues' ) as { Message: string; };
-        const invokeBlockAction = inject( 'invokeBlockAction' ) as InvokeBlockActionFunc;
+        return {
+            configMessage: '',
+            blockActionMessage: ''
+        };
+    },
 
-        // Reactive data are declared as "ref" variables
-        const configMessage = ref( '' );
-        const blockActionMessage = ref( '' );
+    /** These are methods that can be invoked by button clicks or other methods. */
+    methods: {
 
-        // Methods can be declared as typical javascript functions
-        /** Load the message from a C# block action. */
-        const loadBlockActionMessage = async () =>
+        /** Fetch a message from the C# block action named "GetMessage". */
+        async loadBlockActionMessage()
         {
-            const response = await invokeBlockAction<{ Message: string; }>( 'GetMessage', {
+            const response = await this.invokeBlockAction<{ Message: string; }>( 'GetMessage', {
                 paramFromClient: 'This is a value sent to the server from the client.'
             } );
 
             if ( response.data )
             {
-                blockActionMessage.value = response.data.Message;
+                this.blockActionMessage = response.data.Message;
             }
             else
             {
-                blockActionMessage.value = response.errorMessage || 'An error occurred';
+                this.blockActionMessage = response.errorMessage || 'An error occurred';
             }
-        };
-
-        // Options API "created" logic can be executed directly in the setup method
-        // Note how "ref" variables have a value property and are not directly assigned.
-        configMessage.value = configurationValues.Message;
-
-        // Return values to make them available to the template
-        return {
-            configMessage,
-            blockActionMessage,
-            loadBlockActionMessage
-        };
+        }
     },
 
-    /** The template is the markup of the component */
+    /** This method is a lifecycle hook called when the component is created (initializing and not yet in
+     *  the DOM) */
+    created()
+    {
+        // Set the local state "configMessage" to the value sent by C#'s GetObsidianConfigurationValues
+        this.configMessage = this.configurationValues.Message;
+    },
+
+    /** This method is another lifecycle hook called when the component is mounted (put in the DOM) */
+    mounted()
+    {
+        // Do something when the component's elements are now in the DOM
+    },
+
+    /** The template is the markup of the component. Any custom components used within this template,
+     *  like <Alert> and <PaneledBlockTemplate> must be included in the "components" option above. */
     template: `
 <PaneledBlockTemplate>
     <template #title>
@@ -83,11 +92,11 @@ const StarkDetailOptions = defineComponent( {
     </template>
     <template #titleAside>
         <div class="panel-labels">
-            <span class="label label-info">Vue Composition API</span>
+            <span class="label label-info">Vue</span>
         </div>
     </template>
     <template #drawer>
-        An example block that uses the Vue Composition API
+        An example block that uses Vue
     </template>
     <template #default>
         <Alert alertType="info">

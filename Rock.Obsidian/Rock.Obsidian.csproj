@@ -60,8 +60,7 @@
     <Compile Include="Blocks\Example\PersonSecondary.cs" />
     <Compile Include="Blocks\Example\PersonDetail.cs" />
     <Compile Include="Blocks\Example\ControlGallery.cs" />
-    <Compile Include="Blocks\Utility\StarkDetailComposition.cs" />
-    <Compile Include="Blocks\Utility\StarkDetailOptions.cs" />
+    <Compile Include="Blocks\Utility\StarkDetail.cs" />
     <Compile Include="Controllers\CommonEntities\CachedModelController.cs" />
     <Compile Include="Controllers\CommonEntities\CampusesController.cs" />
     <Compile Include="Controllers\CommonEntities\DefinedTypesController.cs" />

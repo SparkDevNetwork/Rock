@@ -85,7 +85,12 @@ export default defineComponent( {
         /** Is this instance full and no one else can register? */
         isFull(): boolean
         {
-            return this.viewModel.SpotsRemaining === 0;
+            if ( this.viewModel.SpotsRemaining === null )
+            {
+                return false;
+            }
+
+            return this.viewModel.SpotsRemaining < 1;
         },
 
         registrantTerm(): string
@@ -148,7 +153,13 @@ export default defineComponent( {
     },
     template: `
 <div class="registrationentry-intro">
-    <Alert v-if="numberToAddToWaitlist" class="text-left" alertType="warning">
+    <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
+        <strong>{{registrationTermTitleCase}} Full</strong>
+        <p>
+            This {{registrationTerm}} has reached its capacity. Complete the registration below to be added to the waitlist.
+        </p>
+    </Alert>
+    <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
@@ -156,7 +167,7 @@ export default defineComponent( {
             The remaining {{pluralPhrase(numberToAddToWaitlist, registrantTerm, registrantTermPlural)}} will be added to the waitlist. 
         </p>
     </Alert>
-    <Alert v-if="isFull" class="text-left" alertType="warning">
+    <Alert v-else-if="isFull" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.InstanceName}}. 

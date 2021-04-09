@@ -49,6 +49,13 @@ System.register(["../Util/Http", "vue", "../Store/Index", "../Elements/Alert"], 
     };
     var Http_1, vue_1, Index_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
+    function standardBlockSetup() {
+        return {
+            configurationValues: vue_1.inject('configurationValues'),
+            invokeBlockAction: vue_1.inject('invokeBlockAction')
+        };
+    }
+    exports_1("standardBlockSetup", standardBlockSetup);
     return {
         setters: [
             function (Http_1_1) {
@@ -173,8 +180,15 @@ System.register(["../Util/Http", "vue", "../Store/Index", "../Elements/Alert"], 
                     }
                 },
                 errorCaptured: function (err) {
+                    var defaultMessage = 'An unknown error was caught from the block.';
                     if (err instanceof Error) {
-                        this.error = err.message;
+                        this.error = err.message || defaultMessage;
+                    }
+                    else if (err) {
+                        this.error = JSON.stringify(err) || defaultMessage;
+                    }
+                    else {
+                        this.error = defaultMessage;
                     }
                 },
                 mounted: function () {
@@ -195,7 +209,7 @@ System.register(["../Util/Http", "vue", "../Store/Index", "../Elements/Alert"], 
                         });
                     }
                 },
-                template: "<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" alertType=\"danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" alertType=\"danger\" :dismissible=\"true\" @dismiss=\"clearError\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
+                template: "\n<div class=\"obsidian-block\">\n    <Alert v-if=\"!blockComponent\" alertType=\"danger\">\n        <strong>Not Found</strong>\n        Could not find block component: \"{{this.config.blockFileUrl}}\"\n    </Alert>\n    <Alert v-if=\"error\" alertType=\"danger\" :dismissible=\"true\" @dismiss=\"clearError\">\n        <strong>Uncaught Error</strong>\n        {{error}}\n    </Alert>\n    <component :is=\"blockComponent\" />\n</div>"
             }));
         }
     };

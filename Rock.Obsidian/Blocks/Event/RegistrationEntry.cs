@@ -130,7 +130,8 @@ namespace Rock.Obsidian.Blocks.Event
         /// <summary>
         /// Attribute Key
         /// </summary>
-        private static class AttributeKey {
+        private static class AttributeKey
+        {
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
             public const string Source = "Source";
@@ -239,7 +240,8 @@ namespace Rock.Obsidian.Blocks.Event
                     }
                 }
 
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, new {
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                {
                     DiscountCode = discount.Code,
                     UsagesRemaining = usagesRemaining,
                     discount.DiscountAmount,
@@ -537,30 +539,22 @@ namespace Rock.Obsidian.Blocks.Event
 
                     foreach ( var registrantInfo in args.Registrants )
                     {
-                        if ( !waitListEnabled && spotsRemaining < 1 )
-                        {
-                            // TODO - this person cannot be registered
-                        }
-                        else if ( waitListEnabled && spotsRemaining < 1 )
-                        {
-                            // TODO - add to waitlist
-                        }
-                        else
-                        {
-                            UpsertRegistrant(
-                                rockContext,
-                                registrationTemplate,
-                                registrationInstance,
-                                registration,
-                                registrar,
-                                registrarFamily.Guid,
-                                registrantInfo,
-                                discount,
-                                ref remainingDiscountAmount,
-                                index,
-                                multipleFamilyGroupIds,
-                                ref singleFamilyId );
-                        }
+                        var forceWaitlist = spotsRemaining < 1;
+
+                        UpsertRegistrant(
+                            rockContext,
+                            registrationTemplate,
+                            registrationInstance,
+                            registration,
+                            registrar,
+                            registrarFamily.Guid,
+                            registrantInfo,
+                            discount,
+                            ref remainingDiscountAmount,
+                            index,
+                            multipleFamilyGroupIds,
+                            ref singleFamilyId,
+                            forceWaitlist );
 
                         index++;
                     }
@@ -985,9 +979,12 @@ namespace Rock.Obsidian.Blocks.Event
         /// <param name="registrar">The registrar.</param>
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
         /// <param name="registrantInfo">The registrant information.</param>
+        /// <param name="discount">The discount.</param>
+        /// <param name="remainingDiscountAmount">The remaining discount amount.</param>
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
+        /// <param name="isWaitlist">if set to <c>true</c> [is waitlist].</param>
         private void UpsertRegistrant(
             RockContext rockContext,
             RegistrationTemplate registrationTemplate,
@@ -1000,8 +997,12 @@ namespace Rock.Obsidian.Blocks.Event
             ref decimal remainingDiscountAmount,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
-            ref int? singleFamilyId )
+            ref int? singleFamilyId,
+            bool isWaitlist )
         {
+            // Force waitlist if specified by param, but allow waitlist if requested
+            isWaitlist |= ( registrationTemplate.WaitListEnabled && registrantInfo.IsOnWaitList );
+
             var personService = new PersonService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
 
@@ -1268,7 +1269,7 @@ namespace Rock.Obsidian.Blocks.Event
                 }
             }
 
-            string registrantName = person.FullName + ": ";
+            var registrantName = person.FullName + ": ";
 
             personChanges.ForEach( c => registrantChanges.Add( c ) );
 
@@ -1280,7 +1281,7 @@ namespace Rock.Obsidian.Blocks.Event
                 registrant.RegistrationId = registration.Id;
             }
 
-            registrant.OnWaitList = registrantInfo.IsOnWaitList;
+            registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
             registrant.Cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance );
 
@@ -1296,6 +1297,22 @@ namespace Rock.Obsidian.Blocks.Event
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
             var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
 
+            // Delete any existing fees that were removed
+            foreach ( var dbFee in registrant.Fees.ToList() )
+            {
+                var feeItemGuid = dbFee.RegistrationTemplateFeeItem.Guid;
+                var quantity = isWaitlist ? 0 : ( registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemGuid ) ?? 0 );
+
+                if ( quantity < 1 )
+                {
+                    var oldFeeValue = $"'{dbFee.RegistrationTemplateFee.Name}' Fee (Quantity:{dbFee.Quantity:N0}, Cost:{dbFee.Cost:C2}, Option:{dbFee.Option}";
+                    registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
+
+                    registrant.Fees.Remove( dbFee );
+                    registrantFeeService.Delete( dbFee );
+                }
+            }
+
             // Upsert fees
             var totalFeeCost = 0m;
             var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
@@ -1303,39 +1320,63 @@ namespace Rock.Obsidian.Blocks.Event
             foreach ( var feeModel in feeModels )
             {
                 var totalFeeQuantity = 0;
+                var feeItemModels = feeModel.FeeItems.ToList();
 
-                foreach ( var feeItemModel in feeModel.FeeItems )
+                for ( var i = 0; i < feeItemModels.Count; i++ )
                 {
-                    var quantity = registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemModel.Guid ) ?? 0;
+                    var feeItemModel = feeItemModels[i];
+                    var isLastFeeItemModel = i == ( feeItemModels.Count - 1 );
 
-                    if ( quantity == 0 )
-                    {
-                        // This fee item is not selected
-                        continue;
-                    }
+                    var quantity = isWaitlist ? 0 : ( registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemModel.Guid ) ?? 0 );
+                    var registrantFee = registrant.Fees
+                            .FirstOrDefault( f =>
+                                f.RegistrationTemplateFeeId == feeModel.Id &&
+                                f.RegistrationTemplateFeeItemId == feeItemModel.Id );
 
-                    if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
+                    // If this fee is required and this is the last item, then make sure at least 1 is selected
+                    if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 )
                     {
-                        // This fee is already fulfilled and multiple are not allowed
-                        break;
-                    }
-
-                    if ( !feeModel.AllowMultiple && quantity > 0 )
-                    {
-                        // This fee item will fulfill this fee since multiple are not allowed. Force qty to be 1.
-                        totalFeeQuantity = 1;
                         quantity = 1;
                     }
 
                     // If there is a limited supply, ensure that more are not ordered than available
-                    var remaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
+                    var countRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
 
-                    if ( remaining.HasValue && quantity > remaining.Value )
+                    // Don't allow quantity to be more than supply
+                    if ( countRemaining.HasValue && countRemaining < quantity )
                     {
-                        quantity = remaining.Value;
+                        quantity = countRemaining.Value;
                     }
 
-                    // Update the total for this fee
+                    // Don't allow selecting more than 1 if not allowed
+                    if ( !feeModel.AllowMultiple && quantity > 1 )
+                    {
+                        quantity = 1;
+                    }
+
+                    // Don't allow selecting any if other items of this fee are already selected
+                    if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
+                    {
+                        quantity = 0;
+                    }
+
+                    // Check if the item is selected (either actually selected or not allowed to be selected)
+                    if ( quantity < 1 )
+                    {
+                        // The item is not selected, so remove it if it already exists
+                        if ( registrantFee != null )
+                        {
+                            var oldFeeValue = $"'{registrantFee.RegistrationTemplateFee.Name}' Fee (Quantity:{registrantFee.Quantity:N0}, Cost:{registrantFee.Cost:C2}, Option:{registrantFee.Option}";
+                            registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
+
+                            registrant.Fees.Remove( registrantFee );
+                            registrantFeeService.Delete( registrantFee );
+                        }
+
+                        continue;
+                    }
+
+                    // Update the total quantity for this fee
                     totalFeeQuantity += quantity;
 
                     // Calculate the cost with discounts
@@ -1362,154 +1403,83 @@ namespace Rock.Obsidian.Blocks.Event
                     }
 
                     totalFeeCost += thisItemCost;
-                }
+                    var feeName = $"{feeModel.Name} ({feeItemModel.Name})";
 
-                // Make sure if the fee is required, that it was applied at one of the items
-                if ( feeModel.IsRequired && totalFeeQuantity < 1 )
-                {
-                    throw new ArgumentException( $"The required '{feeModel.Name}' fee was not selected" );
-                }
-            }
-
-
-
-
-
-
-
-
-
-
-
-
-            // Remove fees
-            // Remove/delete any registrant fees that are no longer in UI with quantity
-            foreach ( var dbFee in registrant.Fees.ToList() )
-            {
-                if ( !registrantInfo.FeeItemQuantities.ContainsKey( dbFee.RegistrationTemplateFeeId ) ||
-                    registrantInfo.FeeItemQuantities[dbFee.RegistrationTemplateFeeId] == null ||
-                    !registrantInfo.FeeItemQuantities[dbFee.RegistrationTemplateFeeId]
-                        .Any( f =>
-                            f.RegistrationTemplateFeeItemId == dbFee.RegistrationTemplateFeeItemId &&
-                            f.Quantity > 0 ) )
-                {
-                    var oldFeeValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
-                            dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
-
-                    registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
-
-                    registrant.Fees.Remove( dbFee );
-                    registrantFeeService.Delete( dbFee );
-                }
-            }
-
-            // Add or Update fees
-            foreach ( var uiFee in registrantInfo.FeeValues.Where( f => f.Value != null ) )
-            {
-                foreach ( var uiFeeOption in uiFee.Value )
-                {
-                    var dbFee = registrant.Fees
-                        .Where( f =>
-                            f.RegistrationTemplateFeeId == uiFee.Key &&
-                            f.RegistrationTemplateFeeItemId == uiFeeOption.RegistrationTemplateFeeItemId )
-                        .FirstOrDefault();
-
-                    if ( dbFee == null )
+                    // Create the fee record if needed
+                    if ( registrantFee == null )
                     {
-                        dbFee = new RegistrationRegistrantFee();
-                        dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                        var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
-                        if ( registrationTemplateFeeItem != null )
+                        registrantFee = new RegistrationRegistrantFee
                         {
-                            dbFee.Option = registrationTemplateFeeItem.Name;
-                        }
+                            RegistrationTemplateFeeId = feeModel.Id,
+                            RegistrationTemplateFeeItemId = feeItemModel.Id,
+                            Option = feeItemModel.Name
+                        };
 
-                        dbFee.RegistrationTemplateFeeItemId = uiFeeOption.RegistrationTemplateFeeItemId;
-                        registrant.Fees.Add( dbFee );
-                    }
-
-                    var templateFee = dbFee.RegistrationTemplateFee;
-                    if ( templateFee == null )
-                    {
-                        templateFee = RegistrationTemplate.Fees.Where( f => f.Id == uiFee.Key ).FirstOrDefault();
-                    }
-
-                    string feeName = templateFee != null ? templateFee.Name : "Fee";
-                    if ( !string.IsNullOrWhiteSpace( uiFeeOption.FeeLabel ) )
-                    {
-                        feeName = string.Format( "{0} ({1})", feeName, uiFeeOption.FeeLabel );
-                    }
-
-                    if ( dbFee.Id <= 0 )
-                    {
+                        registrant.Fees.Add( registrantFee );
                         registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
                     }
 
-                    History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
-                    dbFee.Quantity = uiFeeOption.Quantity;
+                    // Update the cost and quantity of the fee record
+                    History.EvaluateChange( registrantChanges, feeName + " Quantity", registrantFee.Quantity, quantity );
+                    registrantFee.Quantity = quantity;
 
-                    History.EvaluateChange( registrantChanges, feeName + " Cost", dbFee.Cost, uiFeeOption.Cost );
-                    dbFee.Cost = uiFeeOption.Cost;
+                    History.EvaluateChange( registrantChanges, feeName + " Cost", registrantFee.Cost, thisItemCost );
+                    registrantFee.Cost = thisItemCost;
                 }
             }
 
             rockContext.SaveChanges();
-            registrantInfo.Id = registrant.Id;
+            registrantInfo.Guid = registrant.Guid;
 
             // Set any of the template's registrant attributes
             registrant.LoadAttributes();
-            foreach ( var field in RegistrationTemplate.Forms
-                .SelectMany( f => f.Fields
-                    .Where( t =>
-                        t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                        t.AttributeId.HasValue ) ) )
+            var attributeFields = registrationTemplate.Forms.SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue ) ).ToList();
+
+            foreach ( var field in attributeFields )
             {
-                // Find the registrant's value
-                var fieldValue = registrantInfo.FieldValues
-                    .Where( f => f.Key == field.Id )
-                    .Select( f => f.Value.FieldValue )
-                    .FirstOrDefault();
+                var attribute = AttributeCache.Get( field.AttributeId.Value );
 
-                if ( fieldValue != null )
+                if ( attribute is null )
                 {
-                    var attribute = AttributeCache.Get( field.AttributeId.Value );
-                    if ( attribute != null )
+                    continue;
+                }
+
+                var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid );
+                var originalValue = registrant.GetAttributeValue( attribute.Key );
+                var newValueAsString = newValue.ToStringSafe();
+                registrant.SetAttributeValue( attribute.Key, newValueAsString );
+
+                // DateTime values must be stored in ISO8601
+                var isDateAttribute =
+                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
+                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() );
+
+                if ( isDateAttribute && DateTime.TryParse( newValueAsString, out var asDateTime ) )
+                {
+                    newValueAsString = asDateTime.ToISO8601DateString();
+                }
+
+                if ( ( originalValue ?? string.Empty ).Trim() != ( newValueAsString ?? string.Empty ).Trim() )
+                {
+                    var formattedOriginalValue = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
                     {
-                        string originalValue = registrant.GetAttributeValue( attribute.Key );
-                        string newValue = fieldValue.ToString();
-                        registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
-
-                        // DateTime values must be stored in ISO8601 format as http://www.rockrms.com/Rock/Developer/BookContent/16/16#datetimeformatting
-                        if ( attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
-                            attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() ) )
-                        {
-                            DateTime aDateTime;
-                            if ( DateTime.TryParse( fieldValue.ToString(), out aDateTime ) )
-                            {
-                                newValue = aDateTime.ToString( "o" );
-                            }
-                        }
-
-                        if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
-                        {
-                            string formattedOriginalValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                            {
-                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                            }
-
-                            string formattedNewValue = string.Empty;
-                            if ( !string.IsNullOrWhiteSpace( newValue ) )
-                            {
-                                formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                            }
-
-                            Helper.SaveAttributeValue( registrant, attribute, newValue, rockContext );
-                            History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
-                        }
+                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
                     }
+
+                    string formattedNewValue = string.Empty;
+                    if ( !string.IsNullOrWhiteSpace( newValueAsString ) )
+                    {
+                        formattedNewValue = attribute.FieldType.Field.FormatValue( newValueAsString, attribute.QualifierValues, false );
+                    }
+
+                    Helper.SaveAttributeValue( registrant, attribute, newValueAsString, rockContext );
+                    History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                 }
             }
+
+            var currentPerson = GetCurrentPerson();
+            var currentPersonAliasId = currentPerson?.PrimaryAliasId;
 
             Task.Run( () =>
                 HistoryService.SaveChanges(
@@ -1522,61 +1492,11 @@ namespace Rock.Obsidian.Blocks.Event
                     null,
                     null,
                     true,
-                    CurrentPersonAliasId ) );
+                    currentPersonAliasId ) );
 
             // Clear this registrant's family guid so it's not updated again
             registrantInfo.FamilyGuid = Guid.Empty;
-
-            // Save the signed document
-            try
-            {
-                if ( RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue && !string.IsNullOrWhiteSpace( registrantInfo.SignatureDocumentKey ) )
-                {
-                    var document = new SignatureDocument();
-                    document.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
-                    document.DocumentKey = registrantInfo.SignatureDocumentKey;
-                    document.Name = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), person.FullName.RemoveSpecialCharacters() );
-                    document.AppliesToPersonAliasId = person.PrimaryAliasId;
-                    document.AssignedToPersonAliasId = registrar.PrimaryAliasId;
-                    document.SignedByPersonAliasId = registrar.PrimaryAliasId;
-                    document.Status = SignatureDocumentStatus.Signed;
-                    document.LastInviteDate = registrantInfo.SignatureDocumentLastSent;
-                    document.LastStatusDate = registrantInfo.SignatureDocumentLastSent;
-
-                    if ( registrantInfo.SignatureDocumentId.IsNotNullOrZero() )
-                    {
-                        // This document has already been saved, probably on a previous save where a credit card processing error occurred.
-                        // So set the Id to RegistrantInfo.SignatureDocumentId and save again in case any of the data changed.
-                        document.Id = registrantInfo.SignatureDocumentId.Value;
-                        documentService.Add( document );
-                        rockContext.SaveChanges();
-                    }
-                    else
-                    {
-                        documentService.Add( document );
-
-                        // Save the changes to get the document ID
-                        rockContext.SaveChanges();
-
-                        // Set the registrant info and then save again
-                        registrantInfo.SignatureDocumentId = document.Id;
-                        rockContext.SaveChanges();
-                    }
-
-                    var updateDocumentTxn = new UpdateDigitalSignatureDocument.Message
-                    {
-                        SignatureDocumentId = document.Id
-                    };
-
-                    updateDocumentTxn.Send();
-                }
-            }
-            catch ( System.Exception ex )
-            {
-                ExceptionLogService.LogException( ex, Context, this.RockPage.PageId, this.RockPage.Site.Id, CurrentPersonAlias );
-            }
-
-            registrantInfo.PersonId = person.Id;
+            registrantInfo.PersonGuid = person.Guid;
         }
 
         /// <summary>
@@ -1734,15 +1654,7 @@ namespace Rock.Obsidian.Blocks.Event
             var pluralRegistrationTerm = registrationTerm.Pluralize();
 
             // Get the registration attributes
-            var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
-            var registrationAttributes = AttributeCache.All()
-                .Where( a =>
-                    a.EntityTypeId == registrationEntityTypeId &&
-                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( registrationTemplate.Id.ToStringSafe() ) &&
-                    a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name );
+            var registrationAttributes = GetRegistrationAttributes( registrationInstanceId );
 
             // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
             var beforeAttributes = registrationAttributes
@@ -1773,12 +1685,16 @@ namespace Rock.Obsidian.Blocks.Event
                 var otherRegistrantsCount = new RegistrationRegistrantService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( a =>
+                    .Count( a =>
                         a.Registration.RegistrationInstanceId == registrationInstanceId &&
-                        !a.Registration.IsTemporary )
-                    .Count();
+                        !a.Registration.IsTemporary );
 
                 spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
+            }
+
+            if ( spotsRemaining < 0 )
+            {
+                spotsRemaining = 0;
             }
 
             // Force the registrar to update their email?
@@ -1819,6 +1735,30 @@ namespace Rock.Obsidian.Blocks.Event
                 InstanceName = registrationInstance.Name,
                 PluralRegistrationTerm = pluralRegistrationTerm
             };
+        }
+
+        /// <summary>
+        /// Gets the registration attributes.
+        /// </summary>
+        /// <param name="registrationTemplateId">The registration template identifier.</param>
+        /// <returns></returns>
+        private List<AttributeCache> GetRegistrationAttributes( int registrationTemplateId )
+        {
+            var currentPerson = GetCurrentPerson();
+            var registrationEntityTypeId = EntityTypeCache.Get<Registration>().Id;
+
+            var registrationAttributes = AttributeCache.All()
+                .Where( a =>
+                    a.IsActive &&
+                    a.EntityTypeId == registrationEntityTypeId &&
+                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( registrationTemplateId.ToStringSafe() ) &&
+                    a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            return registrationAttributes;
         }
 
         #endregion Helpers

@@ -30,6 +30,7 @@ import { asFormattedString } from '../../../Services/Number';
 import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getRegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
+import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
 import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 type CheckDiscountCodeResult = {
@@ -98,7 +99,10 @@ export default defineComponent( {
             gatewayErrorMessage: '',
 
             /** Gateway indicated validation issues */
-            gatewayValidationFields: {} as Record<string, string>
+            gatewayValidationFields: {} as Record<string, string>,
+
+            /** An error message received from a bad submission */
+            submitErrorMessage: ''
         };
     },
     computed: {
@@ -387,15 +391,16 @@ export default defineComponent( {
          * The gateway indicated success and returned a token
          * @param token
          */
-        onGatewayControlSuccess( token: string )
+        async onGatewayControlSuccess( token: string )
         {
-            this.loading = false;
             this.registrationEntryState.GatewayToken = token;
+            const success = await this.submit();
+            this.loading = false;
 
-            // TODO
-            // submit the payload to the server
-
-            this.$emit( 'next' );
+            if ( success )
+            {
+                this.$emit( 'next' );
+            }
         },
 
         /**
@@ -419,6 +424,27 @@ export default defineComponent( {
             this.loading = false;
             this.gatewayValidationFields = invalidFields;
         },
+
+        /** Submit the registration to the server */
+        async submit(): Promise<boolean>
+        {
+            const result = await this.invokeBlockAction( 'SubmitRegistration', {
+                args: {
+                    GatewayToken: this.registrationEntryState.GatewayToken,
+                    DiscountCode: this.registrationEntryState.DiscountCode,
+                    FieldValues: this.registrationEntryState.RegistrationFieldValues,
+                    Registrar: this.registrationEntryState.Registrar,
+                    Registrants: this.registrationEntryState.Registrants,
+                } as RegistrationEntryBlockArgs
+            } );
+
+            if ( result.isError )
+            {
+                this.submitErrorMessage = result.errorMessage || 'Unknown error';
+            }
+
+            return result.isSuccess;
+        }
     },
     watch: {
         currentPerson: {
@@ -432,6 +458,7 @@ export default defineComponent( {
     template: `
 <div class="registrationentry-summary">
     <RockForm @submit="onNext">
+
         <div class="well">
             <h4>This Registration Was Completed By</h4>
             <div class="row">
@@ -543,6 +570,8 @@ export default defineComponent( {
                     @validation="onGatewayControlValidation" />
             </div>
         </div>
+
+        <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
 
         <div class="actions">
             <RockButton btnType="default" @click="onPrevious" :isLoading="loading">
