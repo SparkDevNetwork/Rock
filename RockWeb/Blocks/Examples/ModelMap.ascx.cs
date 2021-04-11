@@ -450,7 +450,7 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h5>Properties</h5><table class='table table-properties'>" );
+                    sb.AppendLine( "<h5 class='font-weight-normal'>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.Examples
                             );
                     }
 
-                    sb.AppendLine( "</div>" );
+                    sb.AppendLine( "</table>" );
                 }
 
                 if ( aClass.Methods.Any() )
@@ -498,7 +498,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
                     {
-                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                        sb.AppendLine( "<li class='js-model hidden'><small class='text-muted'><i>all inherited</i></small></li>" );
                     }
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
