@@ -48,7 +48,7 @@
       },
       pagination: {
         el: '.swiper-pagination',
-        clickable: true,
+        dynamicBullets: true
       },
       navigation: {
         nextEl: '.swiper-next',
@@ -56,21 +56,13 @@
       },
       breakpoints: {
         1024: {
-          slidesPerView: 2.3,
+          slidesPerView: 2.3
         },
         768: {
-          speed: 100,
-          slidesPerView: 2.3,
-          pagination: {
-            dynamicBullets: true,
-          },
+          slidesPerView: 2.3
         },
         667: {
-          speed: 100,
-          slidesPerView: 1.15,
-          pagination: {
-            dynamicBullets: true,
-          },
+          slidesPerView: 1.15
         }
       }
       {% if initialslide and initialslide != empty %},
