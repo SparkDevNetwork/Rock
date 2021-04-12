@@ -27,14 +27,21 @@ export default defineComponent( {
         };
     },
     computed: {
+        /** The term to refer to a registrant */
         registrationTerm(): string
         {
             return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
+        },
+
+        /** The success lava markup */
+        messageHtml (): string
+        {
+            return this.registrationEntryState.SuccessViewModel?.MessageHtml || `You have successfully completed this ${this.registrationTerm}`;
         }
     },
     template: `
 <div>
-    You have successfully completed this {{registrationTerm}}.
+    <div v-html="messageHtml"></div>
     <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>
 </div>`
 } );

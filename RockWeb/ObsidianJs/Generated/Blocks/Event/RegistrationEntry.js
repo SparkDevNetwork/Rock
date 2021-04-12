@@ -150,7 +150,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             UpdateEmail: true
                         },
                         GatewayToken: '',
-                        DiscountCode: ''
+                        DiscountCode: '',
+                        SuccessViewModel: null
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
                     return {
@@ -220,7 +221,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         }
                         return title;
                     },
-                    stepTitle: function () {
+                    stepTitleHtml: function () {
+                        var _a;
                         if (this.currentStep === this.steps.registrationStartForm) {
                             return this.viewModel.RegistrationAttributeTitleStart;
                         }
@@ -234,7 +236,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             return 'Review Registration';
                         }
                         if (this.currentStep === this.steps.success) {
-                            return 'Congratulations';
+                            return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.TitleHtml) || 'Congratulations';
                         }
                         return '';
                     }
@@ -277,7 +279,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         Page_1.default.smoothScrollToTop();
                     }
                 },
-                template: "\n<div>\n    <template v-if=\"currentStep !== steps.intro\">\n        <h1>{{stepTitle}}</h1>\n        <ProgressBar :percent=\"completionPercentInt\" />\n    </template>\n\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n    <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n    <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n</div>"
+                template: "\n<div>\n    <template v-if=\"currentStep !== steps.intro\">\n        <h1 v-html=\"stepTitleHtml\"></h1>\n        <ProgressBar :percent=\"completionPercentInt\" />\n    </template>\n\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n    <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n    <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n</div>"
             }));
         }
     };

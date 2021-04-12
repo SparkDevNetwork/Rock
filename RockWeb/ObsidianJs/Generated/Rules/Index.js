@@ -57,11 +57,38 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             }));
             vee_validate_1.defineRule('notequal', (function (value, _a) {
                 var compare = _a[0];
-                return value !== compare;
+                if (value !== compare) {
+                    return true;
+                }
+                return "must equal " + compare;
             }));
-            vee_validate_1.defineRule('greaterthan', (function (value, _a) {
+            vee_validate_1.defineRule('gt', (function (value, _a) {
                 var compare = _a[0];
-                return value > compare;
+                if (value > compare) {
+                    return true;
+                }
+                return "must be greater than " + compare;
+            }));
+            vee_validate_1.defineRule('gte', (function (value, _a) {
+                var compare = _a[0];
+                if (value >= compare) {
+                    return true;
+                }
+                return "must not be less than " + compare;
+            }));
+            vee_validate_1.defineRule('lt', (function (value, _a) {
+                var compare = _a[0];
+                if (value < compare) {
+                    return true;
+                }
+                return "must be less than " + compare;
+            }));
+            vee_validate_1.defineRule('lte', (function (value, _a) {
+                var compare = _a[0];
+                if (value <= compare) {
+                    return true;
+                }
+                return "must not be more than " + compare;
             }));
             vee_validate_1.defineRule('datekey', (function (value) {
                 var asString = value;

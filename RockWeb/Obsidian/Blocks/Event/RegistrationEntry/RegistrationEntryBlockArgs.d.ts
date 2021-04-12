@@ -25,4 +25,5 @@ export interface RegistrationEntryBlockArgs
     Registrar: RegistrarInfo;
     GatewayToken: string;
     DiscountCode: string;
+    AmountToPayNow: number;
 }

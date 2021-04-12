@@ -33,11 +33,17 @@ System.register(["vue"], function (exports_1, context_1) {
                     };
                 },
                 computed: {
+                    /** The term to refer to a registrant */
                     registrationTerm: function () {
                         return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
+                    },
+                    /** The success lava markup */
+                    messageHtml: function () {
+                        var _a;
+                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.MessageHtml) || "You have successfully completed this " + this.registrationTerm;
                     }
                 },
-                template: "\n<div>\n    You have successfully completed this {{registrationTerm}}.\n    <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>\n</div>"
+                template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n    <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>\n</div>"
             }));
         }
     };

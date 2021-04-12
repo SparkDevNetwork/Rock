@@ -72,6 +72,14 @@ namespace Rock.ViewModel.Blocks
         /// The discount code.
         /// </value>
         public string DiscountCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount to pay now.
+        /// </summary>
+        /// <value>
+        /// The amount to pay now.
+        /// </value>
+        public decimal AmountToPayNow { get; set; }
     }
 
     /// <summary>

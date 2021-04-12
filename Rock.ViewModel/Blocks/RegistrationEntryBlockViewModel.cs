@@ -209,6 +209,22 @@ namespace Rock.ViewModel.Blocks
         /// The plural registration term.
         /// </value>
         public string PluralRegistrationTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount due today.
+        /// </summary>
+        /// <value>
+        /// The amount due today.
+        /// </value>
+        public decimal? AmountDueToday { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initial amount to pay.
+        /// </summary>
+        /// <value>
+        /// The initial amount to pay.
+        /// </value>
+        public decimal? InitialAmountToPay { get; set; }
     }
 
     /// <summary>

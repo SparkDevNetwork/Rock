@@ -19,76 +19,132 @@ import { isEmail } from '../Services/Email';
 import { isNullOrWhitespace } from '../Services/String';
 import { defineRule } from 'vee-validate';
 
-export type ValidationRuleFunction = (value: unknown) => boolean | string | Promise<boolean | string>;
+export type ValidationRuleFunction = ( value: unknown ) => boolean | string | Promise<boolean | string>;
 
-export function ruleStringToArray(rulesString: string) {
-    return rulesString.split('|');
+export function ruleStringToArray ( rulesString: string )
+{
+    return rulesString.split( '|' );
 }
 
-export function ruleArrayToString(rulesArray: string[]) {
-    return rulesArray.join('|');
+export function ruleArrayToString ( rulesArray: string[] )
+{
+    return rulesArray.join( '|' );
 }
 
-defineRule('required', ((value, [optionsJson]) => {
-    const options = optionsJson ? JSON.parse(optionsJson) : {};
+defineRule( 'required', ( ( value, [ optionsJson ] ) =>
+{
+    const options = optionsJson ? JSON.parse( optionsJson ) : {};
 
-    if (typeof value === 'string') {
-        const allowEmptyString = !!(options.allowEmptyString);
+    if ( typeof value === 'string' )
+    {
+        const allowEmptyString = !!( options.allowEmptyString );
 
-        if (!allowEmptyString && isNullOrWhitespace(value)) {
+        if ( !allowEmptyString && isNullOrWhitespace( value ) )
+        {
             return 'is required';
         }
 
         return true;
     }
 
-    if (typeof value === 'number' && value === 0) {
+    if ( typeof value === 'number' && value === 0 )
+    {
         return 'is required';
     }
 
-    if (!value) {
+    if ( !value )
+    {
         return 'is required';
     }
 
     return true;
-}) as ValidationRuleFunction);
+} ) as ValidationRuleFunction );
 
-defineRule('email', (value => {
+defineRule( 'email', ( value =>
+{
     // Field is empty, should pass
-    if (isNullOrWhitespace(value)) {
+    if ( isNullOrWhitespace( value ) )
+    {
         return true;
     }
 
     // Check if email
-    if (!isEmail(value)) {
+    if ( !isEmail( value ) )
+    {
         return 'must be a valid email';
     }
 
     return true;
-}) as ValidationRuleFunction);
+} ) as ValidationRuleFunction );
 
-defineRule('notequal', ((value, [compare]) => {
-    return value !== compare;
-}) as ValidationRuleFunction);
+defineRule( 'notequal', ( ( value, [ compare ] ) =>
+{
+    if ( value !== compare )
+    {
+        return true;
+    }
 
-defineRule('greaterthan', ((value, [compare]) => {
-    return value > compare;
-}) as ValidationRuleFunction);
+    return `must equal ${compare}`;
+} ) as ValidationRuleFunction );
 
-defineRule('datekey', (value => {
+defineRule( 'gt', ( ( value, [ compare ] ) =>
+{
+    if ( value > compare )
+    {
+        return true;
+    }
+
+    return `must be greater than ${compare}`;
+} ) as ValidationRuleFunction );
+
+defineRule( 'gte', ( ( value, [ compare ] ) =>
+{
+    if ( value >= compare )
+    {
+        return true;
+    }
+
+    return `must not be less than ${compare}`;
+} ) as ValidationRuleFunction );
+
+defineRule( 'lt', ( ( value, [ compare ] ) =>
+{
+    if ( value < compare )
+    {
+        return true;
+    }
+
+    return `must be less than ${compare}`;
+} ) as ValidationRuleFunction );
+
+defineRule( 'lte', ( ( value, [ compare ] ) =>
+{
+    if ( value <= compare )
+    {
+        return true;
+    }
+
+    return `must not be more than ${compare}`;
+} ) as ValidationRuleFunction );
+
+defineRule( 'datekey', ( value =>
+{
     const asString = value as string;
 
-    if (!DateKey.getYear(asString)) {
+    if ( !DateKey.getYear( asString ) )
+    {
         return 'must have a year';
     }
 
-    if (!DateKey.getMonth(asString)) {
+    if ( !DateKey.getMonth( asString ) )
+    {
         return 'must have a month';
     }
 
-    if (!DateKey.getDay(asString)) {
+    if ( !DateKey.getDay( asString ) )
+    {
         return 'must have a day';
     }
 
     return true;
-}) as ValidationRuleFunction);
+} ) as ValidationRuleFunction );

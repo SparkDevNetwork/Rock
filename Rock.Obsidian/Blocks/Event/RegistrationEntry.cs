@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Obsidian.Util;
 using Rock.ViewModel.Blocks;
@@ -266,6 +267,11 @@ namespace Rock.Obsidian.Blocks.Event
                 return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The args cannot be null" );
             }
 
+            if ( args.AmountToPayNow < 0 )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The amount to pay now cannot be less than zero" );
+            }
+
             if ( args.Registrants?.Any() != true )
             {
                 return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one registrant is required" );
@@ -279,7 +285,8 @@ namespace Rock.Obsidian.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 // Load the instance and template
-                var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields" ).FirstOrDefault();
+                var includes = "RegistrationTemplate.Forms.Fields, RegistrationTemplate.FinancialGateway, Account";
+                var registrationInstance = GetRegistrationInstanceQuery( rockContext, includes ).FirstOrDefault();
                 var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
                 if ( registrationTemplate == null )
@@ -584,7 +591,17 @@ namespace Rock.Obsidian.Blocks.Event
                     throw;
                 }
 
-                return new BlockActionResult( System.Net.HttpStatusCode.Created, registration.Guid );
+                if ( args.AmountToPayNow > registration.TotalCost )
+                {
+                    args.AmountToPayNow = registration.TotalCost;
+                }
+
+                var transactionGuid = args.AmountToPayNow > 0 ?
+                    ProcessPayment( rockContext, registrationTemplate, registrationInstance, registration, args, registrar, out var errorMessage ) :
+                    null;
+
+                var successViewModel = GetSuccessViewModel( registration.Id );
+                return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
         }
 
@@ -1654,7 +1671,7 @@ namespace Rock.Obsidian.Blocks.Event
             var pluralRegistrationTerm = registrationTerm.Pluralize();
 
             // Get the registration attributes
-            var registrationAttributes = GetRegistrationAttributes( registrationInstanceId );
+            var registrationAttributes = GetRegistrationAttributes( registrationTemplate.Id );
 
             // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
             var beforeAttributes = registrationAttributes
@@ -1705,6 +1722,15 @@ namespace Rock.Obsidian.Blocks.Event
             var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
             var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
 
+            // Get the amount due today and the initial amount to recommend paying
+            var amountDueToday = registrationTemplate.SetCostOnInstance == true ?
+                registrationInstance.MinimumInitialPayment :
+                registrationTemplate.MinimumInitialPayment;
+
+            var initialAmountToPay = registrationTemplate.SetCostOnInstance == true ?
+                registrationInstance.DefaultPayment :
+                registrationTemplate.DefaultPayment;
+
             return new RegistrationEntryBlockViewModel
             {
                 RegistrationGuid = null,
@@ -1733,7 +1759,9 @@ namespace Rock.Obsidian.Blocks.Event
                 SpotsRemaining = spotsRemaining,
                 WaitListEnabled = waitListEnabled,
                 InstanceName = registrationInstance.Name,
-                PluralRegistrationTerm = pluralRegistrationTerm
+                PluralRegistrationTerm = pluralRegistrationTerm,
+                AmountDueToday = amountDueToday,
+                InitialAmountToPay = initialAmountToPay
             };
         }
 
@@ -1751,7 +1779,7 @@ namespace Rock.Obsidian.Blocks.Event
                 .Where( a =>
                     a.IsActive &&
                     a.EntityTypeId == registrationEntityTypeId &&
-                    a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn.Equals( nameof( RegistrationInstance.RegistrationTemplateId ), StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( registrationTemplateId.ToStringSafe() ) &&
                     a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
                 .OrderBy( a => a.Order )
@@ -1759,6 +1787,262 @@ namespace Rock.Obsidian.Blocks.Event
                 .ToList();
 
             return registrationAttributes;
+        }
+
+        /// <summary>
+        /// Processes the payment.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private Guid? ProcessPayment(
+            RockContext rockContext,
+            RegistrationTemplate registrationTemplate,
+            RegistrationInstance registrationInstance,
+            Registration registration,
+            RegistrationEntryBlockArgs args,
+            Person registrar,
+            out string errorMessage )
+        {
+            var gateway = registrationTemplate?.FinancialGateway?.GetGatewayComponent();
+
+            if ( gateway == null )
+            {
+                errorMessage = "There was a problem creating the payment gateway information";
+                return null;
+            }
+
+            if ( !registrationInstance.AccountId.HasValue || registrationInstance.Account == null )
+            {
+                errorMessage = "There was a problem with the account configuration for this " + registrationTemplate.RegistrationTerm.ToLower();
+                return null;
+            }
+
+            var paymentInfo = new ReferencePaymentInfo
+            {
+                Amount = args.AmountToPayNow,
+                Email = args.Registrar.Email,
+                FirstName = args.Registrar.NickName,
+                LastName = args.Registrar.LastName,
+                ReferenceNumber = args.GatewayToken,
+                Comment1 = string.Format( "{0} ({1})", registrationInstance.Name, registrationInstance.Account.GlCode )
+            };
+
+            var transaction = gateway.Charge( registrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
+            return SaveTransaction( gateway, registrationTemplate, registrationInstance, registration, transaction, paymentInfo, rockContext, args.AmountToPayNow );
+        }
+
+        /// <summary>
+        /// Saves the transaction.
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private Guid? SaveTransaction(
+            GatewayComponent gateway,
+            RegistrationTemplate registrationTemplate,
+            RegistrationInstance registrationInstance,
+            Registration registration,
+            FinancialTransaction transaction,
+            PaymentInfo paymentInfo,
+            RockContext rockContext,
+            decimal amount )
+        {
+            if ( transaction is null )
+            {
+                return null;
+            }
+
+            var currentPerson = GetCurrentPerson();
+
+            transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+            transaction.TransactionDateTime = RockDateTime.Now;
+            transaction.FinancialGatewayId = registrationTemplate.FinancialGatewayId;
+
+            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
+            transaction.TransactionTypeValueId = txnType.Id;
+
+            if ( transaction.FinancialPaymentDetail == null )
+            {
+                transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            }
+
+            DefinedValueCache currencyType = null;
+            DefinedValueCache creditCardType = null;
+
+            if ( paymentInfo != null )
+            {
+                transaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, gateway, rockContext );
+                currencyType = paymentInfo.CurrencyTypeValue;
+                creditCardType = paymentInfo.CreditCardTypeValue;
+            }
+
+            Guid sourceGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
+            {
+                var source = DefinedValueCache.Get( sourceGuid );
+                if ( source != null )
+                {
+                    transaction.SourceTypeValueId = source.Id;
+                }
+            }
+
+            transaction.Summary = registration.GetSummary( registrationInstance );
+
+            var transactionDetail = new FinancialTransactionDetail();
+            transactionDetail.Amount = amount;
+            transactionDetail.AccountId = registrationInstance.AccountId.Value;
+            transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+            transactionDetail.EntityId = registration.Id;
+            transaction.TransactionDetails.Add( transactionDetail );
+
+            var batchChanges = new History.HistoryChangeList();
+
+            rockContext.WrapTransaction( () =>
+            {
+                var batchService = new FinancialBatchService( rockContext );
+
+                    // determine batch prefix
+                    string batchPrefix = string.Empty;
+                if ( !string.IsNullOrWhiteSpace( registrationTemplate.BatchNamePrefix ) )
+                {
+                    batchPrefix = registrationTemplate.BatchNamePrefix;
+                }
+                else
+                {
+                    batchPrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
+                }
+
+                    // Get the batch
+                    var batch = batchService.Get(
+                    batchPrefix,
+                    currencyType,
+                    creditCardType,
+                    transaction.TransactionDateTime.Value,
+                    registrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+
+                if ( batch.Id == 0 )
+                {
+                    batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+                    History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
+                    History.EvaluateChange( batchChanges, "Status", null, batch.Status );
+                    History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
+                    History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+                }
+
+                var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                    // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                    if ( batch.Id == 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                transaction.BatchId = batch.Id;
+
+                    // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                    financialTransactionService.Add( transaction );
+                rockContext.SaveChanges();
+
+                batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
+                rockContext.SaveChanges();
+            } );
+
+            if ( transaction.BatchId.HasValue )
+            {
+                Task.Run( () =>
+                    HistoryService.SaveChanges(
+                        new RockContext(),
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                        transaction.BatchId.Value,
+                        batchChanges,
+                        true,
+                        currentPerson?.PrimaryAliasId ) );
+            }
+
+            var registrationChanges = new History.HistoryChangeList();
+            registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Payment" ).SetNewValue( string.Format( "{0} payment", transaction.TotalAmount.FormatAsCurrency() ) );
+            Task.Run( () =>
+                HistoryService.SaveChanges(
+                    new RockContext(),
+                    typeof( Registration ),
+                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                    registration.Id,
+                    registrationChanges,
+                    true,
+                    currentPerson?.PrimaryAliasId ) );
+
+            return transaction.Guid;
+        }
+
+        /// <summary>
+        /// Gets the success view model.
+        /// </summary>
+        /// <param name="registrationId">The registration identifier.</param>
+        /// <returns></returns>
+        private RegistrationEntryBlockSuccessViewModel GetSuccessViewModel( int registrationId )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            // Create a view model with default values in case anything goes wrong
+            var viewModel = new RegistrationEntryBlockSuccessViewModel
+            {
+                TitleHtml = "Congratulations",
+                MessageHtml = "You have successfully completed this registration."
+            };
+
+            try
+            {
+                var rockContext = new RockContext();
+                var registration = new RegistrationService( rockContext )
+                    .Queryable( "RegistrationInstance.RegistrationTemplate" )
+                    .FirstOrDefault( r => r.Id == registrationId );
+
+                if ( registration != null &&
+                    registration.RegistrationInstance != null &&
+                    registration.RegistrationInstance.RegistrationTemplate != null )
+                {
+                    var template = registration.RegistrationInstance.RegistrationTemplate;
+
+                    var mergeFields = new Dictionary<string, object>
+                    {
+                        { "CurrentPerson", currentPerson },
+                        { "RegistrationInstance", registration.RegistrationInstance },
+                        { "Registration", registration }
+                    };
+
+                    if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessTitle ) )
+                    {
+                        viewModel.TitleHtml = template.SuccessTitle.ResolveMergeFields( mergeFields );
+                    }
+                    else
+                    {
+                        viewModel.TitleHtml = "Congratulations";
+                    }
+
+                    if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessText ) )
+                    {
+                        viewModel.MessageHtml = template.SuccessText.ResolveMergeFields( mergeFields );
+                    }
+                    else
+                    {
+                        viewModel.MessageHtml = "You have successfully completed this " + template.RegistrationTerm.ToLower();
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Log the exception, but continue since we need to display the confirmation page. The person has been registered and this
+                // error just means the success lava went wrong somehow.
+                ExceptionLogService.LogException( ex );
+            }
+
+            return viewModel;
         }
 
         #endregion Helpers

@@ -104,7 +104,9 @@ export interface RegistrationEntryBlockViewModel
     GatewayControl: GatewayControlModel,
     SpotsRemaining: number | null,
     WaitListEnabled: boolean,
-    InstanceName: string
+    InstanceName: string,
+    AmountDueToday: number | null,
+    InitialAmountToPay: number | null
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel
@@ -174,4 +176,9 @@ export type RegistrarInfo = {
     LastName: string;
     Email: string;
     UpdateEmail: boolean;
+};
+
+export type RegistrationEntryBlockSuccessViewModel = {
+    TitleHtml: string;
+    MessageHtml: string;
 };

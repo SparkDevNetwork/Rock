@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockViewModel.cs" />
     <Compile Include="CodeGenerated\AchievementAttemptViewModel.cs" />

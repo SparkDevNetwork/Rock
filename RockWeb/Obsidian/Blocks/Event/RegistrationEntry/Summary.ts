@@ -26,12 +26,13 @@ import EmailBox from '../../../Elements/EmailBox';
 import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
 import TextBox from '../../../Elements/TextBox';
+import { ruleArrayToString } from '../../../Rules/Index';
 import { asFormattedString } from '../../../Services/Number';
 import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getRegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
-import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 type CheckDiscountCodeResult = {
     DiscountCode: string;
@@ -102,7 +103,10 @@ export default defineComponent( {
             gatewayValidationFields: {} as Record<string, string>,
 
             /** An error message received from a bad submission */
-            submitErrorMessage: ''
+            submitErrorMessage: '',
+
+            /** The amount that will be paid today */
+            amountToPayToday: 0
         };
     },
     computed: {
@@ -299,6 +303,40 @@ export default defineComponent( {
         {
             return `$${asFormattedString( this.discountedTotal )}`;
         },
+
+        showAmountDueToday (): boolean
+        {
+            return this.viewModel.AmountDueToday !== null;
+        },
+
+        /** The amount due today */
+        amountDueToday (): number
+        {
+            return this.viewModel.AmountDueToday || 0;
+        },
+
+        /** The amount due today formatted as currency */
+        amountDueTodayFormatted (): string
+        {
+            return `$${asFormattedString( this.amountDueToday )}`;
+        },
+
+        /** The vee-validate rules for the amount to pay today */
+        amountToPayTodayRules (): string
+        {
+            var rules: string[] = ['required'];
+            let min = this.viewModel.AmountDueToday || 0;
+            const max = this.discountAmount;
+
+            if ( min > max )
+            {
+                min = max;
+            }
+
+            rules.push( `gte:${min}` );
+            rules.push( `lte:${max}` );
+            return ruleArrayToString( rules );
+        }
     },
     methods: {
         /** User clicked the "previous" button */
@@ -428,22 +466,38 @@ export default defineComponent( {
         /** Submit the registration to the server */
         async submit(): Promise<boolean>
         {
-            const result = await this.invokeBlockAction( 'SubmitRegistration', {
+            const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>( 'SubmitRegistration', {
                 args: {
                     GatewayToken: this.registrationEntryState.GatewayToken,
                     DiscountCode: this.registrationEntryState.DiscountCode,
                     FieldValues: this.registrationEntryState.RegistrationFieldValues,
                     Registrar: this.registrationEntryState.Registrar,
                     Registrants: this.registrationEntryState.Registrants,
+                    AmountToPayNow: this.amountToPayToday
                 } as RegistrationEntryBlockArgs
             } );
 
-            if ( result.isError )
+            if ( result.isError || !result.data )
             {
                 this.submitErrorMessage = result.errorMessage || 'Unknown error';
             }
+            else
+            {
+                this.registrationEntryState.SuccessViewModel = result.data;
+            }
 
             return result.isSuccess;
+        }
+    },
+    created ()
+    {
+        if ( this.viewModel.InitialAmountToPay !== null )
+        {
+            this.amountToPayToday = this.viewModel.InitialAmountToPay;
+        }
+        else
+        {
+            this.amountToPayToday = this.discountAmount;
         }
     },
     watch: {
@@ -553,6 +607,25 @@ export default defineComponent( {
                             </div>
                         </div>
                     </div>
+                    <template v-if="showAmountDueToday">
+                        <div class="form-group static-control">
+                            <label class="control-label">Minimum Due Today</label>
+                            <div class="control-wrapper">
+                                <div class="form-control-static">
+                                    {{amountDueTodayFormatted}}
+                                </div>
+                            </div>
+                        </div>
+                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="amountToPayToday" />
+                        <div v-if="amountRemaining" class="form-group static-control">
+                            <label class="control-label">Minimum Due Today</label>
+                            <div class="control-wrapper">
+                                <div class="form-control-static">
+                                    {{amountRemainingFormatted}}
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
