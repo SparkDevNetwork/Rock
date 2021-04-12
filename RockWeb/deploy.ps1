@@ -77,6 +77,12 @@ If (Test-Path "$rootfolder\temp\_css-overrides.less"){
 	Copy-Item "$rootfolder\temp\_css-overrides.less" "$webroot\Themes\Rock\Styles" -force
 }
 
+# move core Rock css overrides file back from temp
+If (Test-Path "$rootfolder\temp\_css-overrides.less"){
+	Write-Host "Moving _css-overrides.less from temp dir"
+	Copy-Item "$rootfolder\temp\RockManager\_css-overrides.less" "$webroot\Themes\RockManager\Styles" -force
+}
+
 # remove the app offline flag
 If (Test-Path "$webroot\app_offline.htm"){
 	Write-Host "Removing app offline template"
