@@ -121,7 +121,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the channels.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannel">channels</see>.
         /// </summary>
         /// <value>
         /// The channels.

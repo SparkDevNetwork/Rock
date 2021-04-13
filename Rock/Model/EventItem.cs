@@ -102,28 +102,28 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets a flag indicating if the prayer request has been approved.
+        /// Gets or sets a flag indicating if the event has been approved.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this prayer request has been approved; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this event has been approved; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsApproved { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who approved this prayer request.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who approved this event.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who approved this prayer request.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who approved this event.
         /// </value>
         [DataMember]
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the date this prayer request was approved.
+        /// Gets or sets the date this event was approved.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the date that this prayer request was approved.
+        /// A <see cref="System.DateTime"/> representing the date that this event was approved.
         /// </value>
         [DataMember]
         public DateTime? ApprovedOnDateTime { get; set; }
@@ -187,7 +187,7 @@ namespace Rock.Model
         private ICollection<EventItemAudience> _calendarItemAudiences;
 
         /// <summary>
-        /// Gets or sets the approved by person alias.
+        /// Gets or sets the approved by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The approved by person alias.

@@ -75,7 +75,7 @@ namespace Rock.Model
         public string UrlReferrer { get; set; }
 
         /// <summary>
-        /// Gets or sets the list that email is being sent to.
+        /// Gets or sets the <see cref="Rock.Model.Group">list</see> that email is being sent to.
         /// </summary>
         /// <value>
         /// The list group identifier.
@@ -102,7 +102,7 @@ namespace Rock.Model
         public SegmentCriteria SegmentCriteria { get; set; }
 
         /// <summary>
-        /// Gets or sets the Communication Template that was used to compose this communication
+        /// Gets or sets the <see cref="Rock.Model.CommunicationTemplate"/> that was used to compose this communication
         /// </summary>
         /// <value>
         /// The communication template identifier.
@@ -114,7 +114,7 @@ namespace Rock.Model
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the sender person alias identifier.
+        /// Gets or sets the sender <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The sender person alias identifier.
@@ -187,7 +187,7 @@ namespace Rock.Model
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json formatted string containing the Medium specific data.
+        /// Gets or sets a JSON formatted string containing the Medium specific data.
         /// </summary>
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
@@ -198,7 +198,7 @@ namespace Rock.Model
         public string MediumDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json string containing any additional merge fields for the Communication.
+        /// Gets or sets a JSON string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
@@ -350,10 +350,10 @@ namespace Rock.Model
         #region Push Notification Properties
 
         /// <summary>
-        /// Gets or sets from number.
+        /// Gets or sets the push notification title.
         /// </summary>
         /// <value>
-        /// From number.
+        /// Push notification title.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
@@ -369,17 +369,17 @@ namespace Rock.Model
         public string PushMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets from number.
+        /// Gets or sets push sound.
         /// </summary>
         /// <value>
-        /// From number.
+        /// Push sound.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets the push image file identifier.
+        /// Gets or sets the push <see cref="Rock.Model.BinaryFile">image file</see> identifier.
         /// </summary>
         /// <value>
         /// The push image file identifier.
@@ -430,7 +430,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the list group.
+        /// Gets or sets the list <see cref="Rock.Model.Group" />.
         /// </summary>
         /// <value>
         /// The list group.
@@ -439,7 +439,7 @@ namespace Rock.Model
         public virtual Group ListGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the sender person alias.
+        /// Gets or sets the sender <see cref="Rock.Model.PersonAlias" />.
         /// </summary>
         /// <value>
         /// The sender person alias.
@@ -448,7 +448,7 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewer person alias.
+        /// Gets or sets the reviewer <see cref="Rock.Model.PersonAlias" />.
         /// </summary>
         /// <value>
         /// The reviewer person alias.
@@ -479,7 +479,7 @@ namespace Rock.Model
         private ICollection<CommunicationRecipient> _recipients;
 
         /// <summary>
-        /// Gets or sets the attachments.
+        /// Gets or sets the <see cref="Rock.Model.CommunicationAttachment">attachments</see>.
         /// NOTE: In most cases, you should use GetAttachments( CommunicationType ) instead.
         /// </summary>
         /// <value>
@@ -565,7 +565,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// /// Gets or sets the Communication Template that was used to compose this communication
+        /// Gets or sets the <see cref="Rock.Model.CommunicationTemplate"/> that was used to compose this communication
         /// </summary>
         /// <value>
         /// The communication template.
@@ -574,7 +574,7 @@ namespace Rock.Model
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the send source date.
+        /// Gets or sets the <see cref="Rock.Model.AnalyticsSourceDate">send source date</see>.
         /// </summary>
         /// <value>
         /// The send source date.
@@ -650,7 +650,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the attachment binary file ids.
+        /// Gets the attachment <see cref="Rock.Model.BinaryFile" /> ids.
         /// Specify CommunicationType.Email to get the attachments for Email and CommunicationType.SMS to get the Attachment(s) for SMS
         /// </summary>
         /// <param name="communicationType">Type of the communication.</param>

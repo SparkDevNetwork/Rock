@@ -42,6 +42,32 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
 
+    /*
+    ========================================
+    SPECIAL NOTES
+    ========================================
+
+    1. Selection Action
+    -------------------
+    4/5/2020 - JME
+    This block has a setting 'Selection Action' that allows the block to either do:
+    A. Parital Postback (aka Update Block)
+    B. Full Postback (aka Update Page)
+
+    The 'Update Block' is odd in that it will take the values from the filter attributes
+    and re-build the attribute controls. This is helpful if one or more of the filter attributes
+    have dynamic values that are built off of the query string (like a single select that populates
+    off of a SQL query that looks at the querystring via Lava).
+
+    When this partial postback occurs the block will create a virtual querystring from all of the
+    filter attribute values for Lava to use. This is in the GenerateQueryString() method.
+
+    The concept and code came from a Bema PR.
+
+    ========================================
+    */
+
+
     #region Block Attributes
     [BooleanField(
         "Show Block Title",
@@ -116,11 +142,19 @@ namespace RockWeb.Blocks.Reporting
 
     [CustomDropdownListField( "Selection Action",
         Description = "Specifies what should happen when a value is changed. Nothing, update page, or update block.",
-        ListSource = "nothing^Nothing,block^Update Block,page^Update Page",
+        ListSource = "nothing^,block^Update Block,page^Update Page",
         DefaultValue = "nothing",
         Category = "CustomSetting",
         Key = AttributeKey.DoesSelectionCausePostback,
         Order = 9 )]
+
+    [BooleanField(
+        "Hide Filter Actions",
+        Key = AttributeKey.HideFilterActions,
+        Description = "Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Order = 10 )]
     #endregion
 
     public partial class PageParameterFilter : RockBlockCustomSettings, IDynamicAttributesBlock
@@ -147,6 +181,7 @@ namespace RockWeb.Blocks.Reporting
             public const string FilterButtonSize = "FilterButtonSize";
             public const string RedirectPage = "RedirectPage";
             public const string DoesSelectionCausePostback = "DoesSelectionCausePostback";
+            public const string HideFilterActions = "HideFilterActions";
         }
 
         #endregion Attribute Keys
@@ -334,6 +369,10 @@ namespace RockWeb.Blocks.Reporting
             }
 
             base.OnLoad( e );
+
+            var hideFilterButtons = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
+            btnFilter.Visible = !hideFilterButtons;
+            btnResetFilters.Visible = !hideFilterButtons;
         }
 
         protected override object SaveViewState()
@@ -357,6 +396,7 @@ namespace RockWeb.Blocks.Reporting
             rtbBlockTitleIconCssClass.Text = GetAttributeValue( AttributeKey.BlockTitleIconCssClass );
             nbFiltersPerRow.Text = GetAttributeValue( AttributeKey.FiltersPerRow );
             cbShowResetFiltersButton.Checked = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
+            cbHideFilterActions.Checked = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
             var ppFieldType = new PageReferenceFieldType();
@@ -381,6 +421,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.BlockTitleIconCssClass, rtbBlockTitleIconCssClass.Text );
             SetAttributeValue( AttributeKey.FiltersPerRow, nbFiltersPerRow.Text );
             SetAttributeValue( AttributeKey.ShowResetFiltersButton, cbShowResetFiltersButton.Checked.ToString() );
+            SetAttributeValue( AttributeKey.HideFilterActions, cbHideFilterActions.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
             var ppFieldType = new PageReferenceFieldType();
@@ -456,7 +497,7 @@ namespace RockWeb.Blocks.Reporting
                  .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
-
+  
             mdFilter.Title = "Edit Filter";
             mdFilter.Show();
         }

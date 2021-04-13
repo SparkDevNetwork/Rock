@@ -60,10 +60,20 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
+        private IHubContext _hubContext = null;
+
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
         /// </summary>
-        private IHubContext _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
+        private IHubContext GetHubContext()
+        {
+            if ( _hubContext == null )
+            {
+                _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
+            }
+
+            return _hubContext;
+        }
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -325,7 +335,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
                     {
-                        _hubContext.Clients.All.showLog( );
+                        GetHubContext().Clients.All.showLog( );
                     }
 
                     ProcessXml( saveFile );
@@ -345,7 +355,11 @@ namespace RockWeb.Blocks.Examples
             }
             catch ( Exception ex )
             {
-                _hubContext.Clients.All.showLog();
+                if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+                {
+                    GetHubContext().Clients.All.showLog();
+                }
+
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
@@ -660,9 +674,12 @@ namespace RockWeb.Blocks.Examples
         /// <param name="args"></param>
         private void AppendFormat( string format, params Object[] args)
         {
-            var x = string.Format( format, args );
-            _sb.Append( x );
-            _hubContext.Clients.All.receiveNotification( "sampleDataImport", x );
+            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+            {
+                var x = string.Format( format, args );
+                _sb.Append( x );
+                GetHubContext().Clients.All.receiveNotification( "sampleDataImport", x );
+            }
         }
 
         /// <summary>

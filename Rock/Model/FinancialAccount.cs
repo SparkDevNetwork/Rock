@@ -241,7 +241,7 @@ namespace Rock.Model
         public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus that this FinancialAccount is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </summary>
         /// <value>
         /// the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
@@ -271,7 +271,7 @@ namespace Rock.Model
         /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
         /// </summary>
         /// <value>
-        /// A collection containing all FinancialAccoutns that are sub accounts/child accounts of this account.
+        /// A collection containing all FinancialAccounts that are sub accounts/child accounts of this account.
         /// </value>
         [DataMember]
         public virtual ICollection<FinancialAccount> ChildAccounts

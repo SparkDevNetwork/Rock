@@ -443,7 +443,7 @@ namespace Rock.Lava
         {
             return input == null
                 ? input
-                : input.Titleize();
+                : input.ApplyCase( LetterCasing.Title );
         }
 
         /// <summary>

@@ -49,7 +49,7 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets the group type identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> identifier.
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -58,7 +58,7 @@ namespace Rock.Model
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -87,7 +87,7 @@ namespace Rock.Model
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the trigger.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberWorkflowTriggerType">type</see> of the trigger.
         /// </summary>
         /// <value>
         /// The type of the trigger.
@@ -130,7 +130,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -139,7 +139,7 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.

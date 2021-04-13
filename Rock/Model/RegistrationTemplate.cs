@@ -594,7 +594,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/>.
         /// </summary>
         /// <value>
         /// The category.
@@ -603,7 +603,7 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -612,7 +612,7 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial gateway.
+        /// Gets or sets the <see cref="Rock.Model.FinancialGateway"/>.
         /// </summary>
         /// <value>
         /// The financial gateway.
@@ -621,7 +621,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow type to launch at end of registration.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> to launch at end of registration.
         /// </summary>
         /// <value>
         /// The Workflow Type.
@@ -630,7 +630,7 @@ namespace Rock.Model
         public virtual WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the required signature document.
+        /// Gets or sets the type of the required <see cref="Rock.Model.SignatureDocumentTemplate">signature document</see>.
         /// </summary>
         /// <value>
         /// The type of the required signature document.
@@ -639,7 +639,7 @@ namespace Rock.Model
         public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the discounts.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateDiscount">discounts</see>.
         /// </summary>
         /// <value>
         /// The discounts.
@@ -654,7 +654,7 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateDiscount> _discounts;
 
         /// <summary>
-        /// Gets or sets the placements.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplatePlacement">placements</see>.
         /// </summary>
         /// <value>
         /// The placements.
@@ -669,7 +669,7 @@ namespace Rock.Model
         private ICollection<RegistrationTemplatePlacement> _placements;
 
         /// <summary>
-        /// Gets or sets the fees.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateFee">fees</see>.
         /// </summary>
         /// <value>
         /// The fees.
@@ -684,7 +684,7 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateFee> _fees;
 
         /// <summary>
-        /// Gets or sets the collection of the current page's child pages.
+        /// Gets or sets the collection of the current template's child <see cref="Rock.Model.RegistrationInstance">instances</see>.
         /// </summary>
         /// <value>
         /// Collection of child pages

@@ -541,9 +541,12 @@
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
     <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
     <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
+    <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -614,6 +617,8 @@
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
+    <Compile Include="Financial\IRedirectionGateway.cs" />
+    <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
@@ -647,6 +652,7 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -736,8 +742,13 @@
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
@@ -862,6 +873,7 @@
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />

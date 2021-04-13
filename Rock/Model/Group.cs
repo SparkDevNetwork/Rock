@@ -96,7 +96,7 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule identifier.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -227,7 +227,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -265,7 +265,7 @@ namespace Rock.Model
         public AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias identifier.
@@ -274,7 +274,7 @@ namespace Rock.Model
         public int? ScheduleCancellationPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias identifier.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The group administrator person alias identifier.
@@ -289,7 +289,7 @@ namespace Rock.Model
         /// The inactive reason value identifier.
         /// </value>
         [DataMember]
-        [DefinedValue]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_INACTIVE_REASONS )]
         public int? InactiveReasonValueId { get; set; }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace Rock.Model
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -396,7 +396,7 @@ namespace Rock.Model
         public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -405,7 +405,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The group administrator person alias.
@@ -451,7 +451,7 @@ namespace Rock.Model
         public virtual ICollection<GroupRequirement> GroupRequirements { get; set; } = new Collection<GroupRequirement>();
 
         /// <summary>
-        /// Gets or sets the group member workflow triggers.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberWorkflowTrigger">Group Member Workflow Triggers</see>.
         /// </summary>
         /// <value>
         /// The group member workflow triggers.
@@ -460,7 +460,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; } = new Collection<GroupMemberWorkflowTrigger>();
 
         /// <summary>
-        /// Gets or sets the group syncs.
+        /// Gets or sets the <see cref="Rock.Model.GroupSync">group syncs</see>.
         /// </summary>
         /// <value>
         /// The group syncs.
@@ -469,7 +469,7 @@ namespace Rock.Model
         public virtual ICollection<GroupSync> GroupSyncs { get; set; } = new Collection<GroupSync>();
 
         /// <summary>
-        /// Gets or sets the linkages.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceGroupMap">linkages</see>.
         /// </summary>
         /// <value>
         /// The linkages.
@@ -576,7 +576,7 @@ namespace Rock.Model
         public virtual DefinedValue StatusValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias.

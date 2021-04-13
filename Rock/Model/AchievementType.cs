@@ -59,7 +59,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the source entity type. The source supplies the data framework from which achievements are computed.
-        /// The original achievement sources were <see cref="Streak"/>s.
+        /// The original achievement sources were <see cref="Streak">Streaks</see>.
         /// </summary>
         [DataMember]
         public int? SourceEntityTypeId { get; set; }
@@ -148,7 +148,7 @@ namespace Rock.Model
         public bool AllowOverAchievement { get; set; }
 
         /// <summary>
-        /// Gets or sets the category identifier.
+        /// Gets or sets the <see cref="Model.Category"/> identifier.
         /// </summary>
         /// <value>
         /// The category identifier.
@@ -197,7 +197,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="EntityType"/> of the component.
+        /// Gets or sets the <see cref="EntityType"/> of the achievement.
         /// </summary>
         [DataMember]
         public virtual EntityType AchievementEntityType { get; set; }

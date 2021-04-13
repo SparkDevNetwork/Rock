@@ -34,13 +34,14 @@
     <Ignore>javascript</Ignore>
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
+    <Ignore>onblur</Ignore>
     <Ignore>postback</Ignore>
     <Ignore>Queryable</Ignore>
     <Ignore>readonly</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
     <Ignore>workflows</Ignore>
-    <Ignore>onblur</Ignore>
+    <Ignore>cancelled</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
@@ -49,15 +50,15 @@
   <IgnoredWordsFile></IgnoredWordsFile>
   <ExclusionExpressions>
     <Expression Match="alert alert-.*" />
+    <Expression Match="btn btn-.*" />
+    <Expression Match="btn-.*" />
     <Expression Match="col-.*-\d*" />
     <Expression Match="fa fa-.*" />
     <Expression Match="input-width-.*" />
-    <Expression Match="Pre-Html" Options="IgnoreCase" />
-    <Expression Match="table table-.*" />
-    <Expression Match="btn btn-.*" />
-    <Expression Match="btn-.*" />
     <Expression Match="js-.*" />
-    <Expression Match="runat=server" />
     <Expression Match="panel panel-.*" />
+    <Expression Match="Pre-Html" Options="IgnoreCase" />
+    <Expression Match="runat=server" />
+    <Expression Match="table table-.*" />
   </ExclusionExpressions>
 </SpellCheckerConfiguration>

@@ -17,7 +17,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
@@ -53,6 +52,20 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
+        #region TitleCase
+
+        [DataTestMethod]
+        [DataRow( @"{{ ""men's gathering/get-together"" | TitleCase }}", "Men's Gathering/get-together"  )]
+        [DataRow( @"{{ 'mATTHEw 24:29-41 - KJV' | TitleCase }}", "Matthew 24:29-41 - KJV" )]
+        public void TitleCase_TextWithPunctuation_PreservesPunctuation( string inputTemplate, string expectedOutput )
+        {
+            var output = inputTemplate.ResolveMergeFields( null );
+
+            Assert.That.AreEqual( expectedOutput, output );
+        }
+
+        #endregion
+
         #region Where
 
         [TestMethod]
@@ -73,10 +86,11 @@ namespace Rock.Tests.Integration.Lava
 {% endfor %}
 ";
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
+            var expectedOutput = @"
+1<br>
+";
 
-            Assert.That.Contains( output, "1<br>" );
-            Assert.That.DoesNotContain( output, "2<br>" );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         [TestMethod]
@@ -96,11 +110,11 @@ namespace Rock.Tests.Integration.Lava
     {{ match.Id }}<br>
 {% endfor %}
 ";
+            var expectedOutput = @"
+1<br>
+";
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
-
-            Assert.That.Contains( output, "1<br>" );
-            Assert.That.DoesNotContain( output, "2<br>" );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         [TestMethod]
@@ -114,9 +128,8 @@ namespace Rock.Tests.Integration.Lava
 Employer: Rock Solid Church <br>
 Position: Outreach Pastor <br>
 ";
-            var output = templateInput.ResolveMergeFields( mergeFields );
 
-            Assert.That.AreEqualIgnoreWhitespace( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         [TestMethod]
@@ -126,10 +139,11 @@ Position: Outreach Pastor <br>
 
             var templateInput = GetWhereFilterTestTemplatePersonAttributes( "'AttributeName','Employer','equal'" );
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
+            var expectedOutput = @"
+Employer: Rock Solid Church <br>
+";
 
-            Assert.That.Contains( output, "Employer:" );
-            Assert.That.DoesNotContain( output, "Position:" );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         [TestMethod]
@@ -139,10 +153,11 @@ Position: Outreach Pastor <br>
 
             var templateInput = GetWhereFilterTestTemplatePersonAttributes( "'AttributeName','Employer','notequal'" );
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
+            var excludedOutput = @"
+Employer:
+";
 
-            Assert.That.DoesNotContain( output, "Employer:" );
-            Assert.That.Contains( output, "Position:" );
+            TestHelper.AssertTemplateOutput( excludedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields, OutputMatchType = LavaTestOutputMatchTypeSpecifier.DoesNotContain } );
         }
 
         [TestMethod]
@@ -152,10 +167,11 @@ Position: Outreach Pastor <br>
 
             var templateInput = GetWhereFilterTestTemplatePersonAttributes( "'AttributeName','Employer'" );
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
+            var expectedOutput = @"
+Employer:RockSolidChurch<br>
+";
 
-            Assert.That.Contains( output, "Employer:" );
-            Assert.That.DoesNotContain( output, "Position:" );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         [TestMethod]
@@ -170,10 +186,11 @@ Position: Outreach Pastor <br>
 {% endfor %}
 ";
 
-            var output = templateInput.ResolveMergeFields( mergeFields );
+            var expectedOutput = @"
+Home: (623)555-3322 <br>
+";
 
-            Assert.That.Contains( output, "Home:" );
-            Assert.That.DoesNotContain( output, "Work:" );
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
 
         private string GetWhereFilterTestTemplatePersonAttributes( string whereParameters )

@@ -453,7 +453,7 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h5>Properties</h5><table class='table table-properties'>" );
+                    sb.AppendLine( "<h5 class='font-weight-normal'>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
@@ -492,7 +492,7 @@ namespace RockWeb.Blocks.Examples
                             );
                     }
 
-                    sb.AppendLine( "</div>" );
+                    sb.AppendLine( "</table>" );
                 }
 
                 if ( aClass.Methods.Any() )
@@ -501,7 +501,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
                     {
-                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                        sb.AppendLine( "<li class='js-model hidden'><small class='text-muted'><i>all inherited</i></small></li>" );
                     }
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
@@ -642,19 +642,25 @@ namespace RockWeb.Blocks.Examples
         private string MakeSummaryHtml( string innerXml )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*)""(?: />|>(.*)</see>)" );
-            if ( match.Success )
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+            while ( match.Success )
             {
+                var updatedValue = match.Value;
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+
                 var entityType = EntityTypeCache.Get( match.Groups[1].Value );
                 if ( entityType != null )
                 {
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
                 }
                 else
                 {
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
                 }
+
+                innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
+                match = match.NextMatch();
             }
             return innerXml;
         }

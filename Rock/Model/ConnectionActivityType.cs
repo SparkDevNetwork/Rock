@@ -47,7 +47,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection type identifier.
@@ -74,7 +74,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the connection.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
         /// </summary>
         /// <value>
         /// The type of the connection.

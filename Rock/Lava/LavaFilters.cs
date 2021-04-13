@@ -5274,9 +5274,55 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="filterKey">The filter key.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filterKey )
+        {
+            return WhereInternal( input, filterKey );
+        }
+
+        /// <summary>
+        /// Filters a collection of items on a specified property and value.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
         /// <param name="filterValue">The filter value.</param>
         /// <returns></returns>
         public static object Where( object input, string filterKey, object filterValue )
+        {
+            return Where( input, filterKey, filterValue, "equal" );
+        }
+
+        /// <summary>
+        /// Filters a collection of items on a specified property and value.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filter">The filter expression or filter property name.</param>
+        /// <param name="filterValue">The filter value, if the filter parameter specifies a property name.</param>
+        /// <param name="comparisonType">The type of comparison for the filter value, either "equal" (default) or "notequal".</param>
+        /// <returns></returns>
+        public static object Where( object input, string filter, object filterValue = null, string comparisonType = null )
+        {
+            comparisonType = ( comparisonType.ToLower() != "equal" || comparisonType.ToLower() != "notequal" ) ? "equal" : comparisonType.ToLower();
+
+            if ( filter != null && filterValue != null )
+            {
+                return WhereInternal( input, filter, filterValue, comparisonType );
+            }
+            else
+            {
+                return WhereInternal( input, filter );
+            }
+        }
+
+        /// <summary>
+        /// Filters a collection of items on a specified property and value.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filterKey">The filter key.</param>
+        /// <param name="filterValue">The filter value.</param>
+        /// <param name="comparisonType">The type of comparison for the filter value, either "equal" (default) or "notequal".</param>
+        /// <returns></returns>
+        private static object WhereInternal( object input, string filterKey, object filterValue, string comparisonType )
         {
             if ( input == null )
             {
@@ -5287,27 +5333,54 @@ namespace Rock.Lava
             {
                 var result = new List<object>();
 
-                var lavaEngine = LavaEngine.CurrentEngine;
+                var engine = LavaEngine.CurrentEngine;
 
-                foreach ( var value in ( ( IEnumerable ) input ) )
+                foreach ( var value in ( (IEnumerable)input ) )
                 {
-                    if ( value is ILavaDataDictionary )
-                    {
-                        var liquidObject = value as ILavaDataDictionary;
-                        //var condition = DotLiquid.Condition.Operators["=="];
+                    ILavaDataDictionary lavaObject = null;
 
-                        if ( liquidObject.ContainsKey( filterKey )
-                             && lavaEngine.AreEqualValue( liquidObject.GetValue( filterKey ), filterValue ) )
+                    if ( value is ILavaDataDictionarySource lavaSource )
+                    {
+                        lavaObject = lavaSource.GetLavaDataDictionary();
+                    }
+                    else if ( value is ILavaDataDictionary )
+                    {
+                        lavaObject = value as ILavaDataDictionary;
+                    }
+
+                    if ( lavaObject != null )
+                    {
+                        if ( lavaObject.ContainsKey( filterKey )
+                                && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                     || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
                         {
-                            result.Add( liquidObject );
+                            result.Add( lavaObject );
                         }
                     }
                     else if ( value is IDictionary<string, object> )
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey ) && ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue )
+                        if ( dictionaryObject.ContainsKey( filterKey )
+                                 && ( (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue && comparisonType == "equal"
+                                        || ( (dynamic)dictionaryObject[filterKey] != (dynamic)filterValue && comparisonType == "notequal" ) ) )
                         {
                             result.Add( dictionaryObject );
+                        }
+                    }
+                    else if ( value is object )
+                    {
+                        var propertyValue = value.GetPropertyValue( filterKey );
+
+                        // Allow for null checking as an empty string. Could be differing opinions on this...?!
+                        if ( propertyValue.IsNull() )
+                        {
+                            propertyValue = string.Empty;
+                        }
+
+                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
+                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                        {
+                            result.Add( value );
                         }
                     }
                 }
@@ -5316,6 +5389,59 @@ namespace Rock.Lava
             }
 
             return input;
+        }
+
+        /// <summary>
+        /// Filters a collection of items by applying the specified Linq predicate.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns></returns>
+        private static object WhereInternal( object input, string filter )
+        {
+            if ( input is IEnumerable )
+            {
+                IEnumerable enumerableInput;
+
+                if ( input is List<object> objectList )
+                {
+                    var itemType = objectList.FirstOrDefault().GetType();
+
+                    enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                }
+                else
+                {
+                    enumerableInput = (IEnumerable)input;
+                }
+
+                return enumerableInput.Where( filter );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Convert a generic list of objects to a list of the specified target type.
+        /// </summary>
+        /// <param name="items">The list of items to convert.</param>
+        /// <param name="convertedItemType">The type to which the items will be converted.</param>
+        /// <returns></returns>
+        private static object ConvertListItemsToType( List<object> items, Type convertedItemType )
+        {
+            var enumerableType = typeof( System.Linq.Enumerable );
+
+            var castMethod = enumerableType.GetMethod( nameof( System.Linq.Enumerable.Cast ) )
+                .MakeGenericMethod( convertedItemType );
+            var toListMethod = enumerableType.GetMethod( nameof( System.Linq.Enumerable.ToList ) )
+                .MakeGenericMethod( convertedItemType );
+
+            IEnumerable<object> itemsToConvert;
+
+            itemsToConvert = items.Select( item => Convert.ChangeType( item, convertedItemType ) );
+
+            var convertedItems = castMethod.Invoke( null, new[] { itemsToConvert } );
+
+            return toListMethod.Invoke( null, new[] { convertedItems } );
         }
 
         /// <summary>

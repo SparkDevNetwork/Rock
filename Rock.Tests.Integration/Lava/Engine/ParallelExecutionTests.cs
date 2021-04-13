@@ -34,12 +34,6 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void ParallelExecution_ShortcodeWithParameters_ResolvesParameterCorrectly()
         {
-            if ( AssertCurrentEngineIs( LavaEngineTypeSpecifier.RockLiquid ) )
-            {
-                return;
-            }
-
-            Debug.Write( TestHelper, "warning" );
             var shortcodeTemplate = @"
 Font Name: {{ fontname }}
 Font Size: {{ fontsize }}
@@ -67,6 +61,12 @@ Font Bold: true
 
             TestHelper.AssertAction( ( engine ) =>
             {
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    TestHelper.DebugWriteRenderResult( engine.EngineType, "(Ignored)", "(Ignored)" );
+                    return;
+                }
+
                 engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 100 };
@@ -79,9 +79,9 @@ Font Bold: true
                     };
                     context["fontsize"] = x;
 
-                    var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<?>", MergeFields = context };
+                    var options = new LavaTestRenderOptions() { MergeFields = context, Wildcards = new List<string> { "<?>" } };
 
-                    TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+                    TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );
                 } );
             } );
         }
@@ -89,11 +89,6 @@ Font Bold: true
         [TestMethod]
         public void ParallelExecution_ShortcodeWithChildItems_EmitsCorrectHtml()
         {
-            if ( AssertCurrentEngineIs( LavaEngineTypeSpecifier.RockLiquid ) )
-            {
-                return;
-            }
-
             var shortcodeTemplate = @"
 Parameter 1: {{ parameter1 }}
 Parameter 2: {{ parameter2 }}
@@ -148,6 +143,12 @@ Panel 3 - Panel 3 content.
 
             TestHelper.AssertAction( ( engine ) =>
             {
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    TestHelper.DebugWriteRenderResult( engine.EngineType, "(Ignored)", "(Ignored)" );
+                    return;
+                }
+
                 engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
@@ -157,9 +158,9 @@ Panel 3 - Panel 3 content.
                     var context = new LavaDataDictionary();
                     context["iteration"] = x;
 
-                    var options = new LavaTestRenderOptions() { WildcardPlaceholder = "<?>", MergeFields = context };
+                    var options = new LavaTestRenderOptions() { MergeFields = context, Wildcards = new List<string> { "<?>" } };
 
-                    TestHelper.AssertTemplateOutputWithWildcard( expectedOutput, input, options );
+                    TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );
                 } );
             } );
 

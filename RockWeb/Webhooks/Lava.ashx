@@ -111,7 +111,7 @@ public class Lava : IHttpHandler
         var dt = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.WEBHOOK_TO_LAVA.AsGuid() );
         if ( dt != null )
         {
-            foreach ( DefinedValueCache api in dt.DefinedValues.OrderBy( h => h.Order ) )
+            foreach ( DefinedValueCache api in dt.DefinedValues.Where( dv => dv.IsActive).OrderBy( dv => dv.Order ) )
             {
                 string apiUrl = api.Value;
                 string apiMethod = api.GetAttributeValue( "Method" );

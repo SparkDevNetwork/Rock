@@ -28,11 +28,6 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void Shortcode_WithMergeFieldAsParameter_CorrectlyResolvesParameters()
         {
-            if ( AssertCurrentEngineIs( LavaEngineTypeSpecifier.RockLiquid ) )
-            {
-                return;
-            }
-
             var shortcodeTemplate = @"
 Font Name: {{ fontname }}
 Font Size: {{ fontsize }}
@@ -61,13 +56,13 @@ Font Bold: true
 
             var context = new LavaDataDictionary() { { "fontsize", 99 }  };
 
-            var options = new LavaTestRenderOptions { MergeFields = context, WildcardPlaceholder = "<?>" };
+            var options = new LavaTestRenderOptions { MergeFields = context };
 
             TestHelper.AssertAction( ( engine ) =>
             {
                 engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutputWithWildcard( engine.EngineType, expectedOutput, input, options );
+                TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );
             } );
         }
 

@@ -18,6 +18,7 @@
                 <div class="panel-body">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                    <asp:CustomValidator ID="cvSecurityError" runat="server" Display="None"></asp:CustomValidator>
 
                     <fieldset>
                         <div class="row">

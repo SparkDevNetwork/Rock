@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// and the values selected for check-in
     /// </summary>
     [DataContract]
-    public class CheckInStatus 
+    public class CheckInStatus
     {
         /// <summary>
         /// Gets or sets a value indicating whether the search value was entered by a user (vs. scanned)
@@ -56,8 +56,20 @@ namespace Rock.CheckIn
         /// <value>
         /// The type of the search.
         /// </value>
+        public DefinedValueCache SearchType
+        {
+            get
+            {
+                return searchTypeId.HasValue ? DefinedValueCache.Get( searchTypeId.Value ) : null;
+            }
+            set
+            {
+                searchTypeId = value?.Id;
+            }
+        }
+
         [DataMember]
-        public DefinedValueCache SearchType { get; set; }
+        private int? searchTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user

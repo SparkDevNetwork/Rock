@@ -40,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the registration template fee identifier.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateFee"/> identifier.
         /// </summary>
         /// <value>
         /// The registration template fee identifier.
@@ -101,7 +101,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the registration template fee.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateFee"/>.
         /// </summary>
         /// <value>
         /// The registration template fee.

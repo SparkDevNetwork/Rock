@@ -232,7 +232,7 @@ namespace Rock.Model
         public virtual ICollection<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
 
         /// <summary>
-        /// Gets or sets the child items.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItemAssociation">child items</see>.
         /// </summary>
         /// <value>
         /// The child items.
@@ -260,7 +260,7 @@ namespace Rock.Model
         private ICollection<ContentChannelItemAssociation> _parentItems;
 
         /// <summary>
-        /// Gets or sets the content channel items.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceChannelItem">event item occurrence channel items</see>.
         /// </summary>
         /// <value>
         /// The content channel items.

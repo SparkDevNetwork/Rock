@@ -79,7 +79,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification.
+        /// Gets or sets the <see cref="Rock.Model.Notification"/>.
         /// </summary>
         /// <value>
         /// The notification.

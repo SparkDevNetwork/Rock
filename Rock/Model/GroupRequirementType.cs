@@ -93,7 +93,7 @@ namespace Rock.Model
         public string SqlExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the data view identifier.
+        /// Gets or sets the <see cref="Rock.Model.DataView"/> identifier.
         /// </summary>
         /// <value>
         /// The data view identifier.
@@ -111,7 +111,7 @@ namespace Rock.Model
         public string WarningSqlExpression { get; set; }
 
         /// <summary>
-        /// Gets or sets the warning data view identifier.
+        /// Gets or sets the warning <see cref="Rock.Model.DataView"/> identifier.
         /// </summary>
         /// <value>
         /// The warning data view identifier.
@@ -163,7 +163,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the data view.
+        /// Gets or sets the <see cref="Rock.Model.DataView"/>.
         /// </summary>
         /// <value>
         /// The data view.
@@ -172,7 +172,7 @@ namespace Rock.Model
         public virtual DataView DataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the warning data view.
+        /// Gets or sets the warning <see cref="Rock.Model.DataView"/>.
         /// </summary>
         /// <value>
         /// The warning data view.

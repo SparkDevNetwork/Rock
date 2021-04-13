@@ -227,14 +227,10 @@ namespace Rock.Model
             var rockContext = Context as RockContext;
             var attemptService = new AchievementAttemptService( rockContext );
 
-            var attempts = attemptService.Queryable()
-                .AsNoTracking()
-                .Where( aa =>
-                    aa.AchievementTypeId == achievementTypeCache.Id &&
-                    aa.AchieverEntityId == achieverEntityId )
-                .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
-                .ToList();
-
+            var attemptsQuery = attemptService.Queryable().AsNoTracking();
+                
+            var attempts = attemptService.GetOrderedAchieverAttempts( attemptsQuery, achievementTypeCache, achieverEntityId );
+            
             var progressStatement = new ProgressStatement( achievementTypeCache );
 
             // If there are no attempts, no other information can be derived

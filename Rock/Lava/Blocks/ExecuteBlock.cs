@@ -75,17 +75,14 @@ namespace Rock.Lava.Blocks
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( LavaBlockBase.NotAuthorizedMessage, this.SourceElementName ) );
-                base.OnRender( context, result );
                 return;
             }
-
-            string userScript = @"return ""Watson, can you hear me?"";"; // initial script here was just for testing
 
             using ( TextWriter temp = new StringWriter() )
             {
                 base.OnRender( context, temp );
 
-                userScript = temp.ToString();
+                var userScript = temp.ToString();
 
                 if ( _runtimeType == RuntimeType.SCRIPT )
                 {
@@ -137,12 +134,6 @@ namespace Rock.Lava.Blocks
 
             }
         }
-
-        //public override void OnParse( List<string> tokens, out List<object> nodes )
-        //{
-        //    // No action required.
-        //    nodes = null;
-        //}
 
         /// <summary>
         /// Cleans the input.

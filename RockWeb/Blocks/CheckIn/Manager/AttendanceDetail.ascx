@@ -18,31 +18,16 @@
 
             <hr />
 
-            <asp:Panel ID="pnlCheckinTimeDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckinTime" runat="server" Label="Check-in" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckinByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlCheckinTimeDetails" runat="server">
+                <Rock:RockLiteral ID="lCheckinTime" runat="server" Label="Check-in" />
             </asp:Panel>
 
-            <asp:Panel ID="pnlPresentDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lPresentTime" runat="server" Label="Present" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lPresentByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlPresentDetails" runat="server">
+                <Rock:RockLiteral ID="lPresentTime" runat="server" Label="Present" />
             </asp:Panel>
 
-            <asp:Panel ID="pnlCheckedOutDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckedOutTime" runat="server" Label="Checked-out" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckedOutByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlCheckedOutDetails" runat="server">
+                <Rock:RockLiteral ID="lCheckedOutTime" runat="server" Label="Checked-out" />
             </asp:Panel>
 
             <div class="actions">

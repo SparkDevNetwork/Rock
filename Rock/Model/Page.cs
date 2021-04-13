@@ -319,7 +319,7 @@ namespace Rock.Model
         public string KeyWords { get; set; }
 
         /// <summary>
-        /// Gets or sets html content to add to the page header area of the page when rendered.
+        /// Gets or sets HTML content to add to the page header area of the page when rendered.
         /// </summary>
         /// <value>
         /// The content of the header.
@@ -465,7 +465,7 @@ namespace Rock.Model
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon binary file.
+        /// Gets or sets the icon <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <value>
         /// The icon binary file.
