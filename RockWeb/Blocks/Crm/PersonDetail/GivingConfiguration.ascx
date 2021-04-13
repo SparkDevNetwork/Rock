@@ -24,6 +24,11 @@
                                     </td>
                                     <td class="align-middle text-right"><%# Eval("TotalAmount") %></td>
                                     <td class="w-1 align-middle">
+                                        <asp:LinkButton runat="server" OnCommand="rptScheduledTransaction_Edit" CommandArgument='<%# Eval("Guid") %>' CssClass="btn btn-sm btn-square btn-link text-muted">
+                                        <i class="fa fa-pencil"></i>
+                                        </asp:LinkButton>
+                                    </td>
+                                    <td class="w-1 align-middle">
                                         <asp:LinkButton runat="server" OnCommand="rptScheduledTransaction_Delete" CommandArgument='<%# Eval("Guid") %>' CssClass="btn btn-sm btn-square btn-link text-muted">
                                         <i class="fa fa-times"></i>
                                         </asp:LinkButton>
@@ -69,6 +74,11 @@
                                         <span><%# Eval("Account.Name") %></span>
                                     </td>
                                     <td class="align-middle text-right"><%# ((decimal)Eval("TotalAmount")).FormatAsCurrency() %></td>
+                                    <td class="w-1 align-middle">
+                                        <asp:LinkButton runat="server" OnCommand="rptPledges_Edit" CommandArgument='<%# Eval("Guid") %>' CssClass="btn btn-sm btn-square btn-link text-muted">
+                                        <i class="fa fa-pencil"></i>
+                                        </asp:LinkButton>
+                                    </td>
                                     <td class="w-1 align-middle">
                                         <asp:LinkButton runat="server" OnCommand="rptPledges_Delete" CommandArgument='<%# Eval("Guid") %>' CssClass="btn btn-sm btn-square btn-link text-muted">
                                         <i class="fa fa-times"></i>

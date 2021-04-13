@@ -83,7 +83,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Description = "The contribution statement detail page.",
         Order = 6,
         Key = AttributeKey.ContributionStatementDetailPage )]
-
+    [LinkedPage(
+        "Scheduled Transaction Detail Page",
+        Key = AttributeKey.ScheduledTransactionDetailPage,
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
+        Order = 7 )]
     public partial class GivingConfiguration : Rock.Web.UI.PersonBlock
     {
         #region Attribute Keys
@@ -97,6 +102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string ContributionStatementDetailPage = "ContributionStatementDetailPage";
             public const string MaxYearsToDisplay = "MaxYearsToDisplay";
             public const string PledgeDetailPage = "PledgeDetailPage";
+            public const string ScheduledTransactionDetailPage = "ScheduledTransactionDetailPage";
         }
 
         #endregion Attribute Keys
@@ -336,6 +342,47 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ShowDetail();
+        }
+
+        /// <summary>
+        /// Event when the user clicks to edit the scheduled transaction
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rptScheduledTransaction_Edit( object sender, CommandEventArgs e )
+        {
+            var scheduledTransactionGuid = e.CommandArgument.ToStringSafe().AsGuid();
+            var rockContext = new RockContext();
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
+
+            if ( financialScheduledTransaction != null )
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.AddOrReplace( "ScheduledTransactionId", financialScheduledTransaction.Id.ToString() );
+                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                NavigateToLinkedPage( AttributeKey.ScheduledTransactionDetailPage, queryParams );
+            }
+        }
+
+        /// <summary>
+        /// Event when the user clicks to edit the pledge
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rptPledges_Edit( object sender, CommandEventArgs e )
+        {
+            var pledgeGuid = e.CommandArgument.ToStringSafe().AsGuid();
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
+            var pledge = pledgeService.Get( pledgeGuid );
+            if ( pledge != null )
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.AddOrReplace( "PledgeId", pledge.Id.ToString() );
+                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
+            }
         }
 
         /// <summary>
