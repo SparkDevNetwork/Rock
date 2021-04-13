@@ -117,44 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="_201311251734059_CreateDatabase" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201311251734059_createdatabase.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-16</value>
-  </data>
-  <data name="_201707311527250_FirstNameGender" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_firstnamegender.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_201707311527250_NickName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_nickname.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_201707311527250_LastName" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>createdatabase\201707311527250_lastname.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="_202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_202011102025121_Rollup_1110_kpisortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Version 12.0\Version 1.12.0\202011102025121_Rollup_1110_kpisortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_202012022334116_spCrm_PersonDuplicateFinder_spCrm_PersonDuplicateFinder" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.0\202012022334116_spcrm_personduplicatefinder_spcrm_personduplicatefinder.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_202101292141445_Rollup_01291_spCrm_FamilyAnalyticsAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202101292141445_rollup_01291_spcrm_familyanalyticsattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_202101292141445_Rollup_01291_spCrm_FamilyAnalyticsGiving" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202101292141445_rollup_01291_spcrm_familyanalyticsgiving.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
-  <data name="_202012151955324_Rollup_1215_parallaxupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202012151955324_rollup_1215_parallaxupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_202102032221004_Rollup_0203_KPIStyling" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.1\202102032221004_rollup_0203_kpistyling.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_202102162206327_Rollup_0216_KPIUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.3\202102162206327_rollup_0216_kpiupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
-  </data>
-  <data name="_202104131841162_Rollup_0413_kpiupdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>version 12.0\version 1.12.4\202104131841162_rollup_0413_kpiupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  <data name="DefaultSchema" xml:space="preserve">
+    <value>dbo</value>
   </data>
 </root>

@@ -61,6 +61,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
+      <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.3\202104012255129_AddMediaRelatedTable2.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.3\202104012255129_AddMediaRelatedTable2.Designer.cs">
       <DependentUpon>202104012255129_AddMediaRelatedTable2.cs</DependentUpon>
@@ -407,6 +411,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
+      <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.3\202104012255129_AddMediaRelatedTable2.resx">
       <DependentUpon>202104012255129_AddMediaRelatedTable2.cs</DependentUpon>
     </EmbeddedResource>
@@ -702,6 +709,9 @@
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.3\202102162206327_Rollup_0216_KPIUpdate.sql">
       <DependentUpon>202102162206327_Rollup_0216.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413_kpiupdate.sql">
+      <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\CreateDatabase\201311251734059_CreateDatabase.sql">
       <DependentUpon>201311251734059_CreateDatabase.cs</DependentUpon>

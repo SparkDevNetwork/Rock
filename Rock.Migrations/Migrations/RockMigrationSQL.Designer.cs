@@ -313,5 +313,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202102162206327_Rollup_0216_KPIUpdate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{%- if columncount != &apos;&apos;&apos;&apos; -%}
+        ///{%- assign columncountlg = columncount | AsInteger | AtLeast:1 -%}
+        ///{%- if columncountmd == &apos;&apos;&apos;&apos; -%}{%- assign columncountmd = columncountlg | Minus:1 | AtLeast:1 -%}{%- endif -%}
+        ///{%- if columncountsm == &apos;&apos;&apos;&apos; -%}{%- assign columncountsm = columncountmd | Minus:1 | AtLeast:1 -%}{%- endif -%}
+        ///{%- endif -%}
+        ///{%- assign showtitleseparator = showtitleseparator | AsBoolean -%}
+        ///
+        ///{%- if title != &apos;&apos;&apos;&apos; -%}&lt;h3 id=&quot;{{ title | ToCssClass }}&quot; class=&quot;kpi-t [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104131841162_Rollup_0413_kpiupdate {
+            get {
+                return ResourceManager.GetString("_202104131841162_Rollup_0413_kpiupdate", resourceCulture);
+            }
+        }
     }
 }
