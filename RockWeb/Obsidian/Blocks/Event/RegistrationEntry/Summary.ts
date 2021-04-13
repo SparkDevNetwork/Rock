@@ -22,6 +22,7 @@ import RockForm from '../../../Controls/RockForm';
 import RockValidation from '../../../Controls/RockValidation';
 import Alert from '../../../Elements/Alert';
 import CheckBox from '../../../Elements/CheckBox';
+import CurrencyBox from '../../../Elements/CurrencyBox';
 import EmailBox from '../../../Elements/EmailBox';
 import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
@@ -63,7 +64,8 @@ export default defineComponent( {
         Alert,
         GatewayControl,
         RockValidation,
-        JavaScriptAnchor
+        JavaScriptAnchor,
+        CurrencyBox
     },
     setup()
     {
@@ -304,6 +306,7 @@ export default defineComponent( {
             return `$${asFormattedString( this.discountedTotal )}`;
         },
 
+        /** Is there a user selectable amount to pay today (as opposed to paying in full) */
         showAmountDueToday (): boolean
         {
             return this.viewModel.AmountDueToday !== null;
@@ -326,7 +329,7 @@ export default defineComponent( {
         {
             var rules: string[] = ['required'];
             let min = this.viewModel.AmountDueToday || 0;
-            const max = this.discountAmount;
+            const max = this.discountedTotal;
 
             if ( min > max )
             {
@@ -336,6 +339,18 @@ export default defineComponent( {
             rules.push( `gte:${min}` );
             rules.push( `lte:${max}` );
             return ruleArrayToString( rules );
+        },
+
+        /** After the initial payment, how much will remain of the total? */
+        amountRemaining (): number
+        {
+            return this.discountedTotal - this.amountToPayToday;
+        },
+
+        /** After the initial payment, how much will remain of the total? Formatted as currency. */
+        amountRemainingFormatted (): string
+        {
+            return `$${asFormattedString( this.amountRemaining )}`;
         }
     },
     methods: {
@@ -599,14 +614,6 @@ export default defineComponent( {
                             </div>
                         </div>
                     </div>
-                    <div class="form-group static-control">
-                        <label class="control-label">Amount Due</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{discountedTotalFormatted}}
-                            </div>
-                        </div>
-                    </div>
                     <template v-if="showAmountDueToday">
                         <div class="form-group static-control">
                             <label class="control-label">Minimum Due Today</label>
@@ -616,9 +623,9 @@ export default defineComponent( {
                                 </div>
                             </div>
                         </div>
-                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="amountToPayToday" />
-                        <div v-if="amountRemaining" class="form-group static-control">
-                            <label class="control-label">Minimum Due Today</label>
+                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="amountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
+                        <div class="form-group static-control">
+                            <label class="control-label">Amount Remaining</label>
                             <div class="control-wrapper">
                                 <div class="form-control-static">
                                     {{amountRemainingFormatted}}
@@ -626,6 +633,14 @@ export default defineComponent( {
                             </div>
                         </div>
                     </template>
+                    <div v-else class="form-group static-control">
+                        <label class="control-label">Amount Due</label>
+                        <div class="control-wrapper">
+                            <div class="form-control-static">
+                                {{discountedTotalFormatted}}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

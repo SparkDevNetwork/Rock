@@ -74,12 +74,14 @@ export default defineComponent( {
         /** The capacity left phrase: Ex: 1 more camper */
         remainingCapacityPhrase(): string
         {
-            if ( this.viewModel.SpotsRemaining === null )
+            const spots = this.viewModel.SpotsRemaining;
+
+            if ( spots === null )
             {
                 return '';
             }
 
-            return pluralPhrase( this.viewModel.SpotsRemaining, `more ${this.registrantTerm}`, `more ${this.registrantTermPlural}` );
+            return pluralPhrase( spots, `${spots} more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}` );
         },
 
         /** Is this instance full and no one else can register? */

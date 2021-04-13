@@ -78,10 +78,11 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                     },
                     /** The capacity left phrase: Ex: 1 more camper */
                     remainingCapacityPhrase: function () {
-                        if (this.viewModel.SpotsRemaining === null) {
+                        var spots = this.viewModel.SpotsRemaining;
+                        if (spots === null) {
                             return '';
                         }
-                        return String_1.pluralPhrase(this.viewModel.SpotsRemaining, "more " + this.registrantTerm, "more " + this.registrantTermPlural);
+                        return String_1.pluralPhrase(spots, spots + " more " + this.registrantTerm, spots + " more " + this.registrantTermPlural);
                     },
                     /** Is this instance full and no one else can register? */
                     isFull: function () {

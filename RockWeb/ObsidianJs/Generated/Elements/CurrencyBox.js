@@ -1,52 +1,48 @@
-System.register(["vee-validate", "../Services/Number", "vue", "./RockLabel", "../Util/Guid"], function (exports_1, context_1) {
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+System.register(["../Services/Number", "vue", "../Util/Guid", "./RockFormField"], function (exports_1, context_1) {
     "use strict";
-    var vee_validate_1, Number_1, vue_1, RockLabel_1, Guid_1;
+    var Number_1, vue_1, Guid_1, RockFormField_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
-            function (vee_validate_1_1) {
-                vee_validate_1 = vee_validate_1_1;
-            },
             function (Number_1_1) {
                 Number_1 = Number_1_1;
             },
             function (vue_1_1) {
                 vue_1 = vue_1_1;
             },
-            function (RockLabel_1_1) {
-                RockLabel_1 = RockLabel_1_1;
-            },
             function (Guid_1_1) {
                 Guid_1 = Guid_1_1;
+            },
+            function (RockFormField_1_1) {
+                RockFormField_1 = RockFormField_1_1;
             }
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
                 name: 'CurrencyBox',
                 components: {
-                    RockLabel: RockLabel_1.default,
-                    Field: vee_validate_1.Field
+                    RockFormField: RockFormField_1.default
                 },
                 props: {
                     modelValue: {
                         type: Number,
                         default: null
-                    },
-                    label: {
-                        type: String,
-                        required: true
-                    },
-                    help: {
-                        type: String,
-                        default: ''
-                    },
-                    rules: {
-                        type: String,
-                        default: ''
-                    },
-                    disabled: {
-                        type: Boolean,
-                        default: false
                     }
                 },
                 emits: [
@@ -64,9 +60,6 @@ System.register(["vee-validate", "../Services/Number", "vue", "./RockLabel", "..
                     }
                 },
                 computed: {
-                    isRequired: function () {
-                        return this.rules.includes('required');
-                    },
                     internalNumberValue: function () {
                         return Number_1.toNumberOrNull(this.internalValue);
                     }
@@ -84,7 +77,7 @@ System.register(["vee-validate", "../Services/Number", "vue", "./RockLabel", "..
                         }
                     }
                 },
-                template: "\n<Field\n    v-model=\"internalValue\"\n    @change=\"onChange\"\n    :name=\"label\"\n    :rules=\"rules\"\n    #default=\"{field, errors}\">\n    <div class=\"form-group rock-currency-box\" :class=\"{required: isRequired, 'has-error': Object.keys(errors).length}\">\n        <RockLabel :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <div class=\"input-group\">\n            <span class=\"input-group-addon\">$</span>\n            <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n        </div>\n    </div>\n</Field>"
+                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    @change=\"onChange\"\n    formGroupClasses=\"rock-currency-box\"\n    name=\"currencybox\">\n    <template #default=\"{uniqueId, field, errors, disabled, inputGroupClasses}\">\n        <div class=\"control-wrapper\">\n            <div class=\"input-group\" :class=\"inputGroupClasses\">\n                <span class=\"input-group-addon\">$</span>\n                <input :id=\"uniqueId\" type=\"text\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n            </div>\n        </div>\n    </template>\n</RockFormField>"
             }));
         }
     };

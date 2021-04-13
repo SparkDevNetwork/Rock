@@ -62,6 +62,10 @@ export default defineComponent({
             type: String as PropType<string>,
             default: ''
         },
+        inputGroupClasses: {
+            type: String as PropType<string>,
+            default: ''
+        },
         validationTitle: {
             type: String as PropType<string>,
             default: ''
@@ -112,7 +116,7 @@ export default defineComponent({
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
-        <slot v-bind="{uniqueId, field, errors, disabled}" />
+        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses}" />
     </div>
     <slot name="post" />
 </Field>`

@@ -370,9 +370,9 @@ namespace Rock.Obsidian.Blocks.Event
                 History.EvaluateChange( registrationChanges, "Discount Percentage", registration.DiscountPercentage, discountPercentage );
                 registration.DiscountPercentage = discountPercentage;
 
-                var remainingDiscountAmount = discount?.DiscountAmount ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, remainingDiscountAmount );
-                registration.DiscountAmount = remainingDiscountAmount;
+                var discountAmount = discount?.DiscountAmount ?? 0;
+                History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, discountAmount );
+                registration.DiscountAmount = discountAmount;
 
                 // If the registrar person record does not exist, find or create that record
                 var personService = new PersonService( rockContext );
@@ -557,7 +557,6 @@ namespace Rock.Obsidian.Blocks.Event
                             registrarFamily.Guid,
                             registrantInfo,
                             discount,
-                            ref remainingDiscountAmount,
                             index,
                             multipleFamilyGroupIds,
                             ref singleFamilyId,
@@ -997,7 +996,6 @@ namespace Rock.Obsidian.Blocks.Event
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
         /// <param name="registrantInfo">The registrant information.</param>
         /// <param name="discount">The discount.</param>
-        /// <param name="remainingDiscountAmount">The remaining discount amount.</param>
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
@@ -1011,7 +1009,6 @@ namespace Rock.Obsidian.Blocks.Event
             Guid registrarFamilyGuid,
             ViewModel.Blocks.RegistrantInfo registrantInfo,
             RegistrationTemplateDiscount discount,
-            ref decimal remainingDiscountAmount,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -1300,7 +1297,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance );
+            registrant.Cost = isWaitlist ? 0 : GetBaseRegistrantCost( registrationTemplate, registrationInstance );
 
             if ( discount?.MaxRegistrants.HasValue == true )
             {
@@ -1308,7 +1305,7 @@ namespace Rock.Obsidian.Blocks.Event
             }
             else
             {
-                registrant.DiscountApplies = false;
+                registrant.DiscountApplies = discount != null;
             }
 
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
@@ -1330,118 +1327,96 @@ namespace Rock.Obsidian.Blocks.Event
                 }
             }
 
-            // Upsert fees
-            var totalFeeCost = 0m;
-            var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
-
-            foreach ( var feeModel in feeModels )
+            // Upsert fees if not on the waiting list
+            if ( !isWaitlist )
             {
-                var totalFeeQuantity = 0;
-                var feeItemModels = feeModel.FeeItems.ToList();
+                var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
 
-                for ( var i = 0; i < feeItemModels.Count; i++ )
+                foreach ( var feeModel in feeModels )
                 {
-                    var feeItemModel = feeItemModels[i];
-                    var isLastFeeItemModel = i == ( feeItemModels.Count - 1 );
+                    var totalFeeQuantity = 0;
+                    var feeItemModels = feeModel.FeeItems.ToList();
 
-                    var quantity = isWaitlist ? 0 : ( registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemModel.Guid ) ?? 0 );
-                    var registrantFee = registrant.Fees
-                            .FirstOrDefault( f =>
-                                f.RegistrationTemplateFeeId == feeModel.Id &&
-                                f.RegistrationTemplateFeeItemId == feeItemModel.Id );
-
-                    // If this fee is required and this is the last item, then make sure at least 1 is selected
-                    if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 )
+                    for ( var i = 0; i < feeItemModels.Count; i++ )
                     {
-                        quantity = 1;
-                    }
+                        var feeItemModel = feeItemModels[i];
+                        var isLastFeeItemModel = i == ( feeItemModels.Count - 1 );
 
-                    // If there is a limited supply, ensure that more are not ordered than available
-                    var countRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
+                        var quantity = registrantInfo.FeeItemQuantities.GetValueOrNull( feeItemModel.Guid ) ?? 0;
+                        var registrantFee = registrant.Fees
+                                .FirstOrDefault( f =>
+                                    f.RegistrationTemplateFeeId == feeModel.Id &&
+                                    f.RegistrationTemplateFeeItemId == feeItemModel.Id );
 
-                    // Don't allow quantity to be more than supply
-                    if ( countRemaining.HasValue && countRemaining < quantity )
-                    {
-                        quantity = countRemaining.Value;
-                    }
-
-                    // Don't allow selecting more than 1 if not allowed
-                    if ( !feeModel.AllowMultiple && quantity > 1 )
-                    {
-                        quantity = 1;
-                    }
-
-                    // Don't allow selecting any if other items of this fee are already selected
-                    if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
-                    {
-                        quantity = 0;
-                    }
-
-                    // Check if the item is selected (either actually selected or not allowed to be selected)
-                    if ( quantity < 1 )
-                    {
-                        // The item is not selected, so remove it if it already exists
-                        if ( registrantFee != null )
+                        // If this fee is required and this is the last item, then make sure at least 1 is selected
+                        if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 )
                         {
-                            var oldFeeValue = $"'{registrantFee.RegistrationTemplateFee.Name}' Fee (Quantity:{registrantFee.Quantity:N0}, Cost:{registrantFee.Cost:C2}, Option:{registrantFee.Option}";
-                            registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
-
-                            registrant.Fees.Remove( registrantFee );
-                            registrantFeeService.Delete( registrantFee );
+                            quantity = 1;
                         }
 
-                        continue;
-                    }
+                        // If there is a limited supply, ensure that more are not ordered than available
+                        var countRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
 
-                    // Update the total quantity for this fee
-                    totalFeeQuantity += quantity;
-
-                    // Calculate the cost with discounts
-                    var thisItemCost = feeItemModel.Cost * quantity;
-
-                    if ( feeModel.DiscountApplies && discount != null )
-                    {
-                        if ( remainingDiscountAmount > thisItemCost )
+                        // Don't allow quantity to be more than supply
+                        if ( countRemaining.HasValue && countRemaining < quantity )
                         {
-                            // Discount remaining is more than the cost of this item so deduct it all
-                            remainingDiscountAmount -= thisItemCost;
-                            thisItemCost = 0;
+                            quantity = countRemaining.Value;
                         }
-                        else if ( remainingDiscountAmount > 0 )
+
+                        // Don't allow selecting more than 1 if not allowed
+                        if ( !feeModel.AllowMultiple && quantity > 1 )
                         {
-                            // Discount remaining covers part of this item
-                            thisItemCost -= remainingDiscountAmount;
-                            remainingDiscountAmount = 0;
+                            quantity = 1;
                         }
-                        else if ( discount.DiscountPercentage > 0 )
+
+                        // Don't allow selecting any if other items of this fee are already selected
+                        if ( !feeModel.AllowMultiple && totalFeeQuantity > 0 )
                         {
-                            thisItemCost -= ( discount.DiscountPercentage * thisItemCost );
+                            quantity = 0;
                         }
-                    }
 
-                    totalFeeCost += thisItemCost;
-                    var feeName = $"{feeModel.Name} ({feeItemModel.Name})";
-
-                    // Create the fee record if needed
-                    if ( registrantFee == null )
-                    {
-                        registrantFee = new RegistrationRegistrantFee
+                        // Check if the item is selected (either actually selected or not allowed to be selected)
+                        if ( quantity < 1 )
                         {
-                            RegistrationTemplateFeeId = feeModel.Id,
-                            RegistrationTemplateFeeItemId = feeItemModel.Id,
-                            Option = feeItemModel.Name
-                        };
+                            // The item is not selected, so remove it if it already exists
+                            if ( registrantFee != null )
+                            {
+                                var oldFeeValue = $"'{registrantFee.RegistrationTemplateFee.Name}' Fee (Quantity:{registrantFee.Quantity:N0}, Cost:{registrantFee.Cost:C2}, Option:{registrantFee.Option}";
+                                registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( oldFeeValue );
 
-                        registrant.Fees.Add( registrantFee );
-                        registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
+                                registrant.Fees.Remove( registrantFee );
+                                registrantFeeService.Delete( registrantFee );
+                            }
+
+                            continue;
+                        }
+
+                        // Update the total quantity for this fee
+                        totalFeeQuantity += quantity;
+
+                        var feeName = $"{feeModel.Name} ({feeItemModel.Name})";
+
+                        // Create the fee record if needed
+                        if ( registrantFee == null )
+                        {
+                            registrantFee = new RegistrationRegistrantFee
+                            {
+                                RegistrationTemplateFeeId = feeModel.Id,
+                                RegistrationTemplateFeeItemId = feeItemModel.Id,
+                                Option = feeItemModel.Name
+                            };
+
+                            registrant.Fees.Add( registrantFee );
+                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
+                        }
+
+                        // Update the cost and quantity of the fee record
+                        History.EvaluateChange( registrantChanges, feeName + " Quantity", registrantFee.Quantity, quantity );
+                        registrantFee.Quantity = quantity;
+
+                        History.EvaluateChange( registrantChanges, feeName + " Cost", registrantFee.Cost, feeItemModel.Cost );
+                        registrantFee.Cost = feeItemModel.Cost;
                     }
-
-                    // Update the cost and quantity of the fee record
-                    History.EvaluateChange( registrantChanges, feeName + " Quantity", registrantFee.Quantity, quantity );
-                    registrantFee.Quantity = quantity;
-
-                    History.EvaluateChange( registrantChanges, feeName + " Cost", registrantFee.Cost, thisItemCost );
-                    registrantFee.Cost = thisItemCost;
                 }
             }
 
@@ -1906,8 +1881,8 @@ namespace Rock.Obsidian.Blocks.Event
             {
                 var batchService = new FinancialBatchService( rockContext );
 
-                    // determine batch prefix
-                    string batchPrefix = string.Empty;
+                // determine batch prefix
+                string batchPrefix = string.Empty;
                 if ( !string.IsNullOrWhiteSpace( registrationTemplate.BatchNamePrefix ) )
                 {
                     batchPrefix = registrationTemplate.BatchNamePrefix;
@@ -1917,13 +1892,13 @@ namespace Rock.Obsidian.Blocks.Event
                     batchPrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
                 }
 
-                    // Get the batch
-                    var batch = batchService.Get(
-                    batchPrefix,
-                    currencyType,
-                    creditCardType,
-                    transaction.TransactionDateTime.Value,
-                    registrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+                // Get the batch
+                var batch = batchService.Get(
+                batchPrefix,
+                currencyType,
+                creditCardType,
+                transaction.TransactionDateTime.Value,
+                registrationTemplate.FinancialGateway.GetBatchTimeOffset() );
 
                 if ( batch.Id == 0 )
                 {
@@ -1936,16 +1911,16 @@ namespace Rock.Obsidian.Blocks.Event
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
-                    // If this is a new Batch, SaveChanges so that we can get the Batch.Id
-                    if ( batch.Id == 0 )
+                // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                if ( batch.Id == 0 )
                 {
                     rockContext.SaveChanges();
                 }
 
                 transaction.BatchId = batch.Id;
 
-                    // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
-                    financialTransactionService.Add( transaction );
+                // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                financialTransactionService.Add( transaction );
                 rockContext.SaveChanges();
 
                 batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, batchChanges );
