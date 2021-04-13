@@ -45,5 +45,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for prayer events.
         /// </summary>
         public const string PRAYER_EVENTS = "3D49FB99-94D1-4F63-B1A2-30D4FEDE11E9";
+
+        /// <summary>
+        /// Interaction Channel GUID for media events.
+        /// </summary>
+        public const string MEDIA_EVENTS = "D5B9BDAF-6E52-40D5-8E74-4E23973DF159";
     }
 }

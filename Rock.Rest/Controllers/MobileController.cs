@@ -209,7 +209,7 @@ namespace Rock.Rest.Controllers
                 //
                 string GetComponentCacheKey( MobileInteraction mi )
                 {
-                    return $"{mi.AppId}:{mi.PageGuid}:{mi.ChannelId}:{mi.ComponentId}:{mi.ComponentName}";
+                    return $"{mi.AppId}:{mi.PageGuid}:{mi.ChannelGuid}:{mi.ChannelId}:{mi.ComponentId}:{mi.ComponentName}";
                 }
 
                 //
@@ -252,23 +252,46 @@ namespace Rock.Rest.Controllers
 
                         interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
                     }
-                    else if ( mobileInteraction.ChannelId.HasValue )
+                    else if ( mobileInteraction.ChannelId.HasValue || mobileInteraction.ChannelGuid.HasValue )
                     {
-                        var interactionChannelId = mobileInteraction.ChannelId;
+                        int? interactionChannelId = null;
 
-                        if ( mobileInteraction.ComponentId.HasValue )
+                        if ( mobileInteraction.ChannelId.HasValue )
                         {
-                            interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), mobileInteraction.ComponentId.Value );
+                            interactionChannelId = mobileInteraction.ChannelId.Value;
                         }
-                        else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
+                        else if ( mobileInteraction.ChannelGuid.HasValue )
                         {
-                            //
-                            // Get an existing or create a new component.
-                            //
-                            var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
-                            rockContext.SaveChanges();
+                            interactionChannelId = InteractionChannelCache.Get( mobileInteraction.ChannelGuid.Value )?.Id;
+                        }
 
-                            interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponent.Id );
+                        if ( interactionChannelId.HasValue )
+                        {
+                            if ( mobileInteraction.ComponentId.HasValue )
+                            {
+                                // Use the provided component identifier.
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), mobileInteraction.ComponentId.Value );
+                            }
+                            else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
+                            {
+                                int interactionComponentId;
+
+                                // Get or create a new component with the details we have.
+                                if ( mobileInteraction.ComponentEntityId.HasValue )
+                                {
+                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName );
+                                }
+                                else
+                                {
+                                    var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
+
+                                    rockContext.SaveChanges();
+
+                                    interactionComponentId = interactionComponent.Id;
+                                }
+
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
+                            }
                         }
                     }
                 }
@@ -323,6 +346,12 @@ namespace Rock.Rest.Controllers
 
                             interaction.Guid = mobileInteraction.Guid;
                             interaction.PersonalDeviceId = personalDeviceId;
+                            interaction.RelatedEntityTypeId = mobileInteraction.RelatedEntityTypeId;
+                            interaction.RelatedEntityId = mobileInteraction.RelatedEntityId;
+                            interaction.ChannelCustom1 = mobileInteraction.ChannelCustom1;
+                            interaction.ChannelCustom2 = mobileInteraction.ChannelCustom2;
+                            interaction.ChannelCustomIndexed1 = mobileInteraction.ChannelCustomIndexed1;
+
                             interactionService.Add( interaction );
                             rockContext.SaveChanges();
                         }
