@@ -31,7 +31,7 @@ import { ruleArrayToString } from '../../../Rules/Index';
 import { asFormattedString } from '../../../Services/Number';
 import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
-import { getRegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
+import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
 import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
@@ -154,6 +154,12 @@ export default defineComponent( {
             return this.discountPercent > 0 || this.discountAmount > 0;
         },
 
+        /** Info about the registrants made available by .FirstName instead of by field guid */
+        registrantInfos (): RegistrantBasicInfo[]
+        {
+            return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.RegistrantForms ) );
+        },
+
         /** The fee line items that will be displayed in the summary */
         lineItems(): LineItem[]
         {
@@ -185,7 +191,7 @@ export default defineComponent( {
                     discountedTotal = total - discount;
                 }
 
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                const info = this.registrantInfos.find( r => r.Guid === registrant.Guid )!;
                 const name = registrant.IsOnWaitList ?
                     `${info.FirstName} ${info.LastName} (Waiting List)` :
                     `${info.FirstName} ${info.LastName}`;
@@ -351,6 +357,18 @@ export default defineComponent( {
         amountRemainingFormatted (): string
         {
             return `$${asFormattedString( this.amountRemaining )}`;
+        },
+
+        /** The registrant term - plural if there are more than 1 */
+        registrantTerm (): string
+        {
+            return this.registrantInfos.length === 1 ? this.viewModel.RegistrantTerm : this.viewModel.PluralRegistrantTerm;
+        },
+
+        /** The name of this registration instance */
+        instanceName (): string
+        {
+            return this.viewModel.InstanceName;
         }
     },
     methods: {
@@ -361,12 +379,27 @@ export default defineComponent( {
         },
 
         /** User clicked the "finish" button */
-        onNext()
+        async onNext()
         {
             this.loading = true;
-            this.gatewayErrorMessage = '';
-            this.gatewayValidationFields = {};
-            this.doGatewayControlSubmit = true;
+
+            // If there is a cost, then the gateway will need to be used to pay
+            if ( this.total )
+            {
+                this.gatewayErrorMessage = '';
+                this.gatewayValidationFields = {};
+                this.doGatewayControlSubmit = true;
+            }
+            else
+            {
+                const success = await this.submit();
+                this.loading = false;
+
+                if ( success )
+                {
+                    this.$emit( 'next' );
+                }
+            }
         },
 
         /** Send a user input discount code to the server so the server can check and send back
@@ -546,7 +579,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div>
+        <div v-if="total">
             <h4>Payment Summary</h4>
             <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
             <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
@@ -645,7 +678,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div class="well">
+        <div v-if="total" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />
@@ -657,6 +690,15 @@ export default defineComponent( {
                     @error="onGatewayControlError"
                     @validation="onGatewayControlValidation" />
             </div>
+        </div>
+
+        <div v-if="!total" class="margin-b-md">
+            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
+            <ul>
+                <li v-for="r in registrantInfos" :key="r.Guid">
+                    <strong>{{r.FirstName}} {{r.LastName}}</strong>
+                </li>
+            </ul>
         </div>
 
         <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>

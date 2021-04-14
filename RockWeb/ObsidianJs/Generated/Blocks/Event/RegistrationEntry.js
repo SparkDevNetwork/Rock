@@ -40,7 +40,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
         return {
             FirstName: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[firstNameGuid]) || ''),
             LastName: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[lastNameGuid]) || ''),
-            Email: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[emailGuid]) || '')
+            Email: ((registrant === null || registrant === void 0 ? void 0 : registrant.FieldValues[emailGuid]) || ''),
+            Guid: registrant === null || registrant === void 0 ? void 0 : registrant.Guid
         };
     }
     exports_1("getRegistrantBasicInfo", getRegistrantBasicInfo);
@@ -119,6 +120,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                 },
                 setup: function () {
                     var _a;
+                    var _b;
                     var steps = (_a = {},
                         _a[Step.intro] = Step.intro,
                         _a[Step.registrationStartForm] = Step.registrationStartForm,
@@ -127,8 +129,12 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         _a[Step.reviewAndPayment] = Step.reviewAndPayment,
                         _a[Step.success] = Step.success,
                         _a);
+                    var notFound = vue_1.ref(false);
                     var viewModel = vue_1.inject('configurationValues');
-                    var hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
+                    if (!(viewModel === null || viewModel === void 0 ? void 0 : viewModel.RegistrationAttributesStart)) {
+                        notFound.value = true;
+                    }
+                    var hasPreAttributes = ((_b = viewModel.RegistrationAttributesStart) === null || _b === void 0 ? void 0 : _b.length) > 0;
                     var currentStep = steps.intro;
                     if (viewModel.MaxRegistrants === 1 && String_1.isNullOrWhitespace(viewModel.InstructionsHtml)) {
                         // There is no need to show the numer of registrants selector or instructions. Start at the second page.
@@ -157,7 +163,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     return {
                         viewModel: viewModel,
                         steps: steps,
-                        registrationEntryState: registrationEntryState
+                        registrationEntryState: registrationEntryState,
+                        notFound: notFound
                     };
                 },
                 computed: {
@@ -279,7 +286,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         Page_1.default.smoothScrollToTop();
                     }
                 },
-                template: "\n<div>\n    <template v-if=\"currentStep !== steps.intro\">\n        <h1 v-html=\"stepTitleHtml\"></h1>\n        <ProgressBar :percent=\"completionPercentInt\" />\n    </template>\n\n    <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n    <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n    <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n    <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n    <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n    <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n    <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n</div>"
+                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <template v-else>\n        <template v-if=\"currentStep !== steps.intro\">\n            <h1 v-html=\"stepTitleHtml\"></h1>\n            <ProgressBar :percent=\"completionPercentInt\" />\n        </template>\n\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
             }));
         }
     };

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { defineComponent, inject, provide, reactive } from 'vue';
+import { defineComponent, inject, provide, reactive, ref } from 'vue';
 import RockButton from '../../Elements/RockButton';
 import { Guid, newGuid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
@@ -41,6 +41,13 @@ export enum Step
     'reviewAndPayment' = 'reviewAndPayment',
     'success' = 'success'
 }
+
+export type RegistrantBasicInfo = {
+    FirstName: string;
+    LastName: string;
+    Email: string;
+    Guid: Guid;
+};
 
 export type RegistrationEntryState = {
     Steps: Record<Step, Step>;
@@ -72,8 +79,7 @@ export function getDefaultRegistrantInfo ()
     } as RegistrantInfo;
 }
 
-export function getRegistrantBasicInfo ( registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[] ):
-    { FirstName: string, LastName: string, Email: string }
+export function getRegistrantBasicInfo ( registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[] ): RegistrantBasicInfo
 {
     const fields = registrantForms?.flatMap( f => f.Fields ) || [];
 
@@ -84,7 +90,8 @@ export function getRegistrantBasicInfo ( registrant: RegistrantInfo, registrantF
     return {
         FirstName: ( registrant?.FieldValues[ firstNameGuid ] || '' ) as string,
         LastName: ( registrant?.FieldValues[ lastNameGuid ] || '' ) as string,
-        Email: ( registrant?.FieldValues[ emailGuid ] || '' ) as string
+        Email: ( registrant?.FieldValues[ emailGuid ] || '' ) as string,
+        Guid: registrant?.Guid
     };
 }
 
@@ -113,8 +120,15 @@ export default defineComponent( {
             [ Step.success ]: Step.success
         };
 
+        const notFound = ref( false );
         const viewModel = inject( 'configurationValues' ) as RegistrationEntryBlockViewModel;
-        const hasPreAttributes = viewModel.RegistrationAttributesStart.length > 0;
+
+        if ( !viewModel?.RegistrationAttributesStart )
+        {
+            notFound.value = true;
+        }
+
+        const hasPreAttributes = viewModel.RegistrationAttributesStart?.length > 0;
         let currentStep = steps.intro;
 
         if ( viewModel.MaxRegistrants === 1 && isNullOrWhitespace( viewModel.InstructionsHtml ) )
@@ -148,7 +162,8 @@ export default defineComponent( {
         return {
             viewModel,
             steps,
-            registrationEntryState
+            registrationEntryState,
+            notFound
         };
     },
     computed: {
@@ -317,17 +332,23 @@ export default defineComponent( {
     },
     template: `
 <div>
-    <template v-if="currentStep !== steps.intro">
-        <h1 v-html="stepTitleHtml"></h1>
-        <ProgressBar :percent="completionPercentInt" />
-    </template>
+    <Alert v-if="notFound" alertType="warning">
+        <strong>Sorry</strong>
+        <p>The selected registration could not be found or is no longer active.</p>
+    </Alert>
+    <template v-else>
+        <template v-if="currentStep !== steps.intro">
+            <h1 v-html="stepTitleHtml"></h1>
+            <ProgressBar :percent="completionPercentInt" />
+        </template>
 
-    <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
-    <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
-    <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
-    <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
-    <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @next="onSummaryNext" @previous="onSummaryPrevious" />
-    <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
-    <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
+        <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
+        <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
+        <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />
+        <RegistrationEntryRegistrationEnd v-else-if="currentStep === steps.registrationEndForm" @next="onRegistrationEndNext" @previous="onRegistrationEndPrevious" />
+        <RegistrationEntrySummary v-else-if="currentStep === steps.reviewAndPayment" @next="onSummaryNext" @previous="onSummaryPrevious" />
+        <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
+        <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
+    </template>
 </div>`
 } );

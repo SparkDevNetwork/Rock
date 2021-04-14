@@ -151,6 +151,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// </summary>
         private static class PageParameterKey
         {
+            public const string RegistrationId = "RegistrationId";
             public const string RegistrationInstanceId = "RegistrationInstanceId";
             public const string CampusId = "CampusId";
             public const string Slug = "Slug";
@@ -187,66 +188,24 @@ namespace Rock.Obsidian.Blocks.Event
         [BlockAction]
         public BlockActionResult CheckDiscountCode( string code )
         {
-            // Return a common "not found" result if any condition means the code is not valid
-            Func<BlockActionResult> getNotFoundResult = () => new BlockActionResult( System.Net.HttpStatusCode.NotFound );
-            var today = RockDateTime.Today;
-
-            if ( code.IsNullOrWhiteSpace() )
-            {
-                return getNotFoundResult();
-            }
-
             using ( var rockContext = new RockContext() )
             {
-                var discount = GetDiscountByCode( rockContext, code );
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, code );
 
                 if ( discount == null )
                 {
                     // The code is not found
-                    return getNotFoundResult();
-                }
-
-                if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
-                {
-                    // Before the discount starts
-                    return getNotFoundResult();
-                }
-
-                if ( discount.EndDate.HasValue && today > discount.EndDate.Value )
-                {
-                    // Discount has expired
-                    return getNotFoundResult();
-                }
-
-                int? usagesRemaining = null;
-
-                if ( discount.MaxUsage.HasValue )
-                {
-                    var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
-
-                    // Check the number of people that have already used this code
-                    var usageCount = new RegistrationService( rockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Count( r =>
-                            r.RegistrationInstanceId == registrationInstanceId &&
-                            r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
-
-                    usagesRemaining = discount.MaxUsage.Value - usageCount;
-
-                    if ( usagesRemaining <= 0 )
-                    {
-                        // Discount has been used up
-                        return getNotFoundResult();
-                    }
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
                 }
 
                 return new BlockActionResult( System.Net.HttpStatusCode.OK, new
                 {
-                    DiscountCode = discount.Code,
-                    UsagesRemaining = usagesRemaining,
-                    discount.DiscountAmount,
-                    discount.DiscountPercentage
+                    DiscountCode = discount.RegistrationTemplateDiscount.Code,
+                    UsagesRemaining = discount.UsagesRemaining,
+                    DiscountAmount = discount.RegistrationTemplateDiscount.DiscountAmount,
+                    DiscountPercentage = discount.RegistrationTemplateDiscount.DiscountPercentage
                 } );
             }
         }
@@ -304,7 +263,8 @@ namespace Rock.Obsidian.Blocks.Event
                 }
 
                 // Look up and validate the discount by the code
-                var discount = GetDiscountByCode( rockContext, args.DiscountCode );
+                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstance.Id, args.DiscountCode );
 
                 if ( !args.DiscountCode.IsNullOrWhiteSpace() && discount == null )
                 {
@@ -366,11 +326,11 @@ namespace Rock.Obsidian.Blocks.Event
                 History.EvaluateChange( registrationChanges, "Discount Code", registration.DiscountCode, args.DiscountCode );
                 registration.DiscountCode = args.DiscountCode;
 
-                var discountPercentage = discount?.DiscountPercentage ?? 0;
+                var discountPercentage = discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
                 History.EvaluateChange( registrationChanges, "Discount Percentage", registration.DiscountPercentage, discountPercentage );
                 registration.DiscountPercentage = discountPercentage;
 
-                var discountAmount = discount?.DiscountAmount ?? 0;
+                var discountAmount = discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
                 History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, discountAmount );
                 registration.DiscountAmount = discountAmount;
 
@@ -640,7 +600,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns></returns>
         private IQueryable<RegistrationInstance> GetRegistrationInstanceQuery( RockContext rockContext, string includes )
         {
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
+            var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var now = RockDateTime.Now;
 
             var query = new RegistrationInstanceService( rockContext )
@@ -703,7 +663,7 @@ namespace Rock.Obsidian.Blocks.Event
                 case RegistrationFieldSource.PersonField:
                     return GetPersonCurrentFieldValue( rockContext, person, field );
                 case RegistrationFieldSource.PersonAttribute:
-                    return GetPersonCurrentAttributeValue( rockContext, person, field );
+                    return GetEntityCurrentAttributeValue( rockContext, person, field );
             }
 
             return null;
@@ -753,13 +713,13 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the current person attribute value.
+        /// Gets the entity's attribute value.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="person">The person.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetPersonCurrentAttributeValue( RockContext rockContext, Person person, RegistrationTemplateFormField field )
+        private object GetEntityCurrentAttributeValue( RockContext rockContext, IHasAttributes entity, RegistrationTemplateFormField field )
         {
             var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
 
@@ -768,30 +728,8 @@ namespace Rock.Obsidian.Blocks.Event
                 return null;
             }
 
-            person.LoadAttributes( rockContext );
-            return person.GetAttributeValue( attribute.Key );
-        }
-
-        /// <summary>
-        /// Gets the discount.
-        /// </summary>
-        /// <param name="code">The code.</param>
-        /// <returns></returns>
-        private RegistrationTemplateDiscount GetDiscountByCode( RockContext rockContext, string code )
-        {
-            if ( code.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            var registrationInstanceQuery = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate" )
-                    .AsNoTracking();
-
-            var discount = registrationInstanceQuery
-                .SelectMany( ri => ri.RegistrationTemplate.Discounts )
-                .FirstOrDefault( d => d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) );
-
-            return discount;
+            entity.LoadAttributes( rockContext );
+            return entity.GetAttributeValue( attribute.Key );
         }
 
         /// <summary>
@@ -1008,7 +946,7 @@ namespace Rock.Obsidian.Blocks.Event
             Person registrar,
             Guid registrarFamilyGuid,
             ViewModel.Blocks.RegistrantInfo registrantInfo,
-            RegistrationTemplateDiscount discount,
+            RegistrationTemplateDiscountWithUsage discount,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
@@ -1299,13 +1237,16 @@ namespace Rock.Obsidian.Blocks.Event
             registrant.PersonAliasId = person.PrimaryAliasId;
             registrant.Cost = isWaitlist ? 0 : GetBaseRegistrantCost( registrationTemplate, registrationInstance );
 
-            if ( discount?.MaxRegistrants.HasValue == true )
+            // Check if discount applies
+            var maxRegistrants = discount?.RegistrationTemplateDiscount.MaxRegistrants;
+            var isWithinMaxRegistrants = !maxRegistrants.HasValue || index < maxRegistrants.Value;
+            var usesRemaining = discount?.UsagesRemaining ?? int.MaxValue;
+            var isWithinUsageCap = usesRemaining >= 1;
+            registrant.DiscountApplies = isWithinMaxRegistrants && isWithinUsageCap;
+
+            if ( registrant.DiscountApplies && discount?.UsagesRemaining != null )
             {
-                registrant.DiscountApplies = index < discount.MaxRegistrants.Value;
-            }
-            else
-            {
-                registrant.DiscountApplies = discount != null;
+                discount.UsagesRemaining--;
             }
 
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
@@ -1498,7 +1439,6 @@ namespace Rock.Obsidian.Blocks.Event
         private RegistrationEntryBlockViewModel GetViewModel( RockContext rockContext )
         {
             var currentPerson = GetCurrentPerson();
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
 
             var registrationInstance = GetRegistrationInstanceQuery( rockContext, "RegistrationTemplate.Forms.Fields, RegistrationTemplate.Fees.FeeItems" )
                     .AsNoTracking()
@@ -1664,8 +1604,8 @@ namespace Rock.Obsidian.Blocks.Event
                 .ToList();
 
             // Get the maximum number of registrants
-            var maxRegistrants = ( registrationTemplate.AllowMultipleRegistrants == true ) ?
-                ( registrationTemplate.MaxRegistrants ?? 1 ) :
+            var maxRegistrants = registrationTemplate.AllowMultipleRegistrants ?
+                ( registrationTemplate.MaxRegistrants ?? int.MaxValue ) :
                 1;
 
             // Get the number of slots available and if the waitlist is available
@@ -1678,7 +1618,7 @@ namespace Rock.Obsidian.Blocks.Event
                     .Queryable()
                     .AsNoTracking()
                     .Count( a =>
-                        a.Registration.RegistrationInstanceId == registrationInstanceId &&
+                        a.Registration.RegistrationInstanceId == registrationInstance.Id &&
                         !a.Registration.IsTemporary );
 
                 spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
@@ -1706,9 +1646,9 @@ namespace Rock.Obsidian.Blocks.Event
                 registrationInstance.DefaultPayment :
                 registrationTemplate.DefaultPayment;
 
-            return new RegistrationEntryBlockViewModel
+            var viewModel = new RegistrationEntryBlockViewModel
             {
-                RegistrationGuid = null,
+                RegistrationEntryBlockArgs = null,
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,
@@ -1738,6 +1678,11 @@ namespace Rock.Obsidian.Blocks.Event
                 AmountDueToday = amountDueToday,
                 InitialAmountToPay = initialAmountToPay
             };
+
+            // If the registration is existing, then add the args that describe it to the view model
+            viewModel.RegistrationEntryBlockArgs = GetRegistrationEntryBlockArgs();
+
+            return viewModel;
         }
 
         /// <summary>
@@ -2018,6 +1963,117 @@ namespace Rock.Obsidian.Blocks.Event
             }
 
             return viewModel;
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private int GetRegistrationInstanceId( RockContext rockContext )
+        {
+            // The page param is the least costly since there is no database call, so try that first
+            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+            if ( registrationInstanceId.HasValue )
+            {
+                return registrationInstanceId.Value;
+            }
+
+            // Try a url slug
+            var slug = PageParameter( PageParameterKey.Slug );
+
+            if ( !slug.IsNullOrWhiteSpace() )
+            {
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l =>
+                        l.UrlSlug == slug &&
+                        l.RegistrationInstanceId.HasValue )
+                    .Select( l => new
+                    {
+                        RegistrationInstanceId = l.RegistrationInstanceId.Value
+                    } )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    return linkage.RegistrationInstanceId;
+                }
+            }
+
+            // Try the registration id
+            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+
+            if ( registrationId.HasValue )
+            {
+                var registration = new RegistrationService( rockContext )
+                    .Queryable()
+                    .Where( r => r.Id == registrationId.Value )
+                    .Select( r => new
+                    {
+                        r.RegistrationInstanceId
+                    } )
+                    .FirstOrDefault();
+
+                if ( registration != null )
+                {
+                    return registration.RegistrationInstanceId;
+                }
+            }
+
+            // The instance id is unknown
+            return default;
+        }
+
+        /// <summary>
+        /// Gets the registration entry block arguments if this is an existing registration.
+        /// </summary>
+        /// <returns></returns>
+        private RegistrationEntryBlockArgs GetRegistrationEntryBlockArgs( RockContext rockContext )
+        {
+            var currentPerson = GetCurrentPerson();
+            var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+            if ( registrationId is null || currentPerson is null )
+            {
+                return null;
+            }
+
+            var authorizedAliasIds = currentPerson.Aliases?.Select( a => a.Id ).ToList();
+
+            if ( authorizedAliasIds?.Any() != true )
+            {
+                return null;
+            }
+
+            // Query for a registration that matches the ID and is owned or was created by the current person
+            var registrationService = new RegistrationService( rockContext );
+            var registration = registrationService
+                .Queryable()
+                .AsNoTracking()
+                .FirstOrDefault( r =>
+                    r.Id == registrationId.Value && (
+                        ( r.PersonAliasId.HasValue && authorizedAliasIds.Contains( r.PersonAliasId.Value ) ) ||
+                        ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
+                    ) && (
+                        !registrationInstanceId.HasValue || r.RegistrationInstanceId == registrationInstanceId.Value
+                    ) );
+
+            if ( registration is null )
+            {
+                return null;
+            }
+
+            var args = new RegistrationEntryBlockArgs {
+                AmountToPayNow = 0,
+                DiscountCode = registration.DiscountCode,
+                FieldValues = new Dictionary<Guid, object>()
+            };
+
+            return args;
         }
 
         #endregion Helpers
