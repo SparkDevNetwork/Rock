@@ -124,7 +124,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckoutDefault => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
+        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [enable presence].
@@ -132,7 +132,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [enable presence]; otherwise, <c>false</c>.
         /// </value>
-        public bool EnablePresence => GetSetting( "core_checkin_EnablePresence" ).AsBoolean( false );
+        public bool EnablePresence => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [use same options].
@@ -277,6 +277,14 @@ namespace Rock.CheckIn
         /// The family select lava template.
         /// </value>
         public string FamilySelectLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the person select additional information template.
+        /// </summary>
+        /// <value>
+        /// The person select additional information template.
+        /// </value>
+        public string PersonSelectAdditionalInfoLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
 
         /// <summary>
         /// Gets the success lava template.

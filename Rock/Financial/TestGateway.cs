@@ -165,7 +165,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForBillingAddress( FinancialGateway financialGateway )
         {
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -189,6 +189,26 @@ namespace Rock.Financial
             return null;
         }
 
+        /// <summary>
+        /// Authorizes the specified payment information.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Authorize( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
+            {
+                var transaction = new FinancialTransaction();
+                transaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+                return transaction;
+            }
+
+            return null;
+        }
         /// <summary>
         /// Credits the specified transaction.
         /// </summary>

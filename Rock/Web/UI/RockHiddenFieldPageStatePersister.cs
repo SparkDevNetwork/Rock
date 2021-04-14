@@ -33,7 +33,7 @@ namespace Rock.Web.UI
     {
         // This  custom viewstate controller serves two purposes
         // 1. Compresses the contents of the ViewState when sending to the client
-        // 2. Allows you to view the controls in the viewstate 
+        // 2. Allows you to view the controls in the viewstate
         //    reference: http://www.4guysfromrolla.com/articles/091510-1.aspx
 
 

@@ -118,6 +118,8 @@ namespace Rock.Model
             {
                 CommunicationType = CommunicationType.Email,
                 Status = CommunicationStatus.Approved,
+                ReviewedDateTime = RockDateTime.Now,
+                ReviewerPersonAliasId = senderPersonAliasId,
                 SenderPersonAliasId = senderPersonAliasId
             };
 
@@ -171,18 +173,20 @@ namespace Rock.Model
             }
 
             // add communication for reply
-            var communication = new Rock.Model.Communication();
-            communication.Name = communicationName;
-            communication.CommunicationType = CommunicationType.SMS;
-
-            // NOTE: if this communication was created from a mobile device, fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
-            communication.SenderPersonAliasId = fromPerson?.PrimaryAliasId;
-
-            communication.IsBulkCommunication = false;
-            communication.Status = CommunicationStatus.Approved;
-            communication.SMSMessage = message;
-            communication.SMSFromDefinedValueId = fromPhone.Id;
-
+            var communication = new Rock.Model.Communication
+            {
+                Name = communicationName,
+                CommunicationType = CommunicationType.SMS,
+                Status = CommunicationStatus.Approved,
+                ReviewedDateTime = RockDateTime.Now,
+                // NOTE: if this communication was created from a mobile device, fromPerson should never be null since a Nameless Person record should have been created if a regular person record wasn't found
+                ReviewerPersonAliasId = fromPerson?.PrimaryAliasId,
+                SenderPersonAliasId = fromPerson?.PrimaryAliasId,
+                IsBulkCommunication = false,
+                SMSMessage = message,
+                SMSFromDefinedValueId = fromPhone.Id
+            };
+            
             if ( toPersonAliasId != null )
             {
                 var recipient = new Rock.Model.CommunicationRecipient();
@@ -241,7 +245,11 @@ namespace Rock.Model
             {
                 // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago) or are Scheduled to be sent at some point
                 queuedQry = queuedQry.Where( c =>
-                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Use the reviewed date to get the communications to send
+                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
+                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
+                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Get all future communications.
                     || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow ) );
             }
             else
@@ -249,18 +257,99 @@ namespace Rock.Model
                 // Also limit to communications that have either been created within a reasonable timeframe (typically no older than 3 days ago)
                 // or are Scheduled to be sent (also within that reasonable timeframe. In other words, if it was scheduled to be sent, but stil hasn't been sent 3 days after it was scheduled, don't include it)
                 queuedQry = queuedQry.Where( c =>
-                    ( !c.FutureSendDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Use the reviewed date to get the communications to send
+                    ( !c.FutureSendDateTime.HasValue && c.ReviewedDateTime.HasValue && c.ReviewedDateTime.Value >= beginWindow && c.ReviewedDateTime.Value <= endWindow )
+                    // Use the created date to get the communications to send this is for communications that are created by legacy plugins that have switched to using reviewed date.
+                    || ( !c.FutureSendDateTime.HasValue && !c.ReviewedDateTime.HasValue && c.CreatedDateTime.HasValue && c.CreatedDateTime.Value >= beginWindow && c.CreatedDateTime.Value <= endWindow )
+                    // Get all future communication that are need to be sent.
                     || ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= beginWindow && c.FutureSendDateTime.Value <= currentDateTime ) );
             }
 
             // just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a ListGroupId or has PendingRecipients
-            var listGroupQuery = Queryable().Where( c => c.ListGroupId.HasValue ).Select(c => new { c.Id });
+            var listGroupQuery = Queryable().Where( c => c.ListGroupId.HasValue ).Select( c => new { c.Id } );
             var communicationListQry = qryPendingRecipients.Union( listGroupQuery );
-                        
+
             var returnQry = Queryable()
-                .Where( c => queuedQry.Any(c2 => c2.Id == c.Id) )
+                .Where( c => queuedQry.Any( c2 => c2.Id == c.Id ) )
                 .Where( c => communicationListQry.Any( c2 => c2.Id == c.Id ) );
             return returnQry;
+        }
+
+        /// <summary>
+        /// Copies the specified communication identifier.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <returns></returns>
+        public Communication Copy( int communicationId, int? currentPersonAliasId )
+        {
+            var dataContext = ( RockContext ) Context;
+
+            var service = new CommunicationService( dataContext );
+            var communicationRecipientService = new CommunicationRecipientService( dataContext );
+            var communication = service.Get( communicationId );
+            if ( communication != null )
+            {
+                var newCommunication = communication.Clone( false );
+                newCommunication.CreatedByPersonAlias = null;
+                newCommunication.CreatedByPersonAliasId = null;
+                newCommunication.CreatedDateTime = RockDateTime.Now;
+                newCommunication.ModifiedByPersonAlias = null;
+                newCommunication.ModifiedByPersonAliasId = null;
+                newCommunication.ModifiedDateTime = RockDateTime.Now;
+                newCommunication.Id = 0;
+                newCommunication.Guid = Guid.Empty;
+                newCommunication.SenderPersonAliasId = currentPersonAliasId;
+                newCommunication.Status = CommunicationStatus.Draft;
+                newCommunication.ReviewerPersonAliasId = null;
+                newCommunication.ReviewedDateTime = null;
+                newCommunication.ReviewerNote = string.Empty;
+                newCommunication.SendDateTime = null;
+
+                // Get the recipients from the original communication,
+                // but only for recipients that are using the person's primary alias id.
+                // This will avoid an issue where a copied communication will include the same person multiple times
+                // if they have been merged since the original communication was created
+                var primaryAliasRecipients = communicationRecipientService.Queryable()
+                    .Where( a => a.CommunicationId == communication.Id )
+                    .Select( a => new
+                    {
+                        a.PersonAlias.Person,
+                        a.AdditionalMergeValuesJson,
+                        a.PersonAliasId
+                    } ).ToList()
+                    .GroupBy( a => a.Person.PrimaryAliasId )
+                    .Select( s => new
+                    {
+                        PersonAliasId = s.Key,
+                        AdditionalMergeValuesJson = s.Where( a => a.PersonAliasId == s.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault()
+                    } )
+                    .Where( s => s.PersonAliasId.HasValue )
+                    .ToList();
+
+                foreach ( var primaryAliasRecipient in primaryAliasRecipients )
+                {
+                    newCommunication.Recipients.Add( new CommunicationRecipient()
+                    {
+                        PersonAliasId = primaryAliasRecipient.PersonAliasId.Value,
+                        Status = CommunicationRecipientStatus.Pending,
+                        StatusNote = string.Empty,
+                        AdditionalMergeValuesJson = primaryAliasRecipient.AdditionalMergeValuesJson
+                    } );
+                }
+
+                foreach ( var attachment in communication.Attachments.ToList() )
+                {
+                    var newAttachment = new CommunicationAttachment();
+                    newAttachment.BinaryFileId = attachment.BinaryFileId;
+                    newAttachment.CommunicationType = attachment.CommunicationType;
+                    newCommunication.Attachments.Add( newAttachment );
+                }
+
+                return newCommunication;
+            }
+
+            return null;
         }
     }
 

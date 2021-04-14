@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Web;
 
 using Goheer.EXIF;
@@ -76,6 +78,32 @@ namespace Rock.Utility
                 return uploadedFile.InputStream;
             }
         }
+
+        /// <summary>
+        /// Gets the type of the file extension from content. If you need to go the other way use System.Web.MimeMapping.GetMimeMapping(String)
+        /// </summary>
+        /// <returns></returns>
+        public static string GetFileExtensionFromContentType(string contentType)
+        {
+            // Add to this list as needed.
+            var mapping = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+            {
+                { "bmp", "image/bmp" },
+                { "gif", "image/gif" },
+                { "jpeg", "image/jpeg" },
+                { "jpg", "image/jpeg" },
+                { "jpe", "image/jpeg" },
+                { "png", "image/png" },
+                { "sgi", "image/sgi" },
+                { "svg", "image/svg+xml" },
+                { "svgz", "image/svg+xml" },
+                { "tiff", "image/tiff" },
+                { "tif", "image/tiff" }
+            };
+
+            return mapping.FirstOrDefault( x => x.Value.Contains( contentType ) ).Key ?? string.Empty;
+        }
+
 
         /// <summary>
         /// Returns the ImageFormat for the given ContentType string.

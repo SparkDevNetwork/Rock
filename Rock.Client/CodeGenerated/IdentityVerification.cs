@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? FailedMatchAttemptCount { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -90,6 +93,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( IdentityVerification source )
         {
             this.Id = source.Id;
+            this.FailedMatchAttemptCount = source.FailedMatchAttemptCount;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IdentityVerificationCodeId = source.IdentityVerificationCodeId;

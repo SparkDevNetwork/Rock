@@ -37,6 +37,13 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
+                            </div>
+                        </div>
+
+                        <%-- General Settings --%>
                         <Rock:PanelWidget ID="wpGeneral" runat="server" Title="General Settings">
                             <div class="row">
                                 <div class="col-md-6">
@@ -45,24 +52,7 @@
                                         <asp:ListItem Text="Individual" Value="0" />
                                         <asp:ListItem Text="Family" Value="1" />
                                     </Rock:RockDropDownList>
-                                    <div class="well">
-                                        <Rock:RockControlWrapper ID="rcwSecurityCode" runat="server" Label="Label Security Code Length" 
-                                            Help="The number of alpha-numeric, alpha, and/or numeric characters to use when generating a unique security code for labels. Note: Alpha-Numeric characters will be printed first, followed by Alpha characters, then by numeric characters.">
-                                            <div class="row">
-                                                <div class="col-sm-4 col-xs-12">
-                                                    <Rock:NumberBox ID="nbCodeAlphaNumericLength" runat="server" Label="Alpha-Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
-                                                </div>
-                                                <div class="col-sm-4 col-xs-6">
-                                                    <Rock:NumberBox ID="nbCodeAlphaLength" runat="server" Label="Alpha" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
-                                                </div>
-                                                <div class="col-sm-4 col-xs-6">
-                                                    <Rock:NumberBox ID="nbCodeNumericLength" runat="server" Label="Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
-                                                </div>
-                                            </div>
-                                            <Rock:RockCheckBox ID="cbCodeRandom" runat="server" Text="Random Numeric Values"
-                                                Help="Should the numbers be randomized (vs. generated in order)." />
-                                        </Rock:RockControlWrapper>
-                                    </div>
+
                                     <div class="row">
                                         <div class="col-md-6">
                                             <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
@@ -87,12 +77,9 @@
                                         <asp:ListItem Text="People Only" Value="0" />
                                         <asp:ListItem Text="People and Their Area/Group/Location" Value="1" />
                                     </Rock:RockDropDownList>
-                                    <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Text="Yes"
-                                        Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
                                     <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
-                                    <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes"
-                                        Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
+
                                     <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes" 
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes" 
@@ -100,6 +87,40 @@
                                 </div>
                             </div>
 
+                        </Rock:PanelWidget>
+
+                        <%-- Barcode Settings --%>
+                        <Rock:PanelWidget ID="wpBarcode" runat="server" Title="Barcode Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="well">
+                                        <Rock:RockControlWrapper
+                                            ID="rcwSecurityCode"
+                                            runat="server"
+                                            Label="Label Security Code Length" 
+                                            Help="The number of alpha-numeric, alpha, and/or numeric characters to use when generating a unique security code for labels.
+                                            Note: Alpha-Numeric characters will be printed first, followed by Alpha characters, then by numeric characters.">
+
+                                            <div class="row">
+                                                <div class="col-sm-4 col-xs-12">
+                                                    <Rock:NumberBox ID="nbCodeAlphaNumericLength" runat="server" Label="Alpha-Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
+                                                </div>
+                                                <div class="col-sm-4 col-xs-6">
+                                                    <Rock:NumberBox ID="nbCodeAlphaLength" runat="server" Label="Alpha" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
+                                                </div>
+                                                <div class="col-sm-4 col-xs-6">
+                                                    <Rock:NumberBox ID="nbCodeNumericLength" runat="server" Label="Numeric" MinimumValue="0" MaximumValue="10" NumberType="Integer" />
+                                                </div>
+                                            </div>
+                                            <Rock:RockCheckBox ID="cbCodeRandom" runat="server" Text="Random Numeric Values" Help="Should the numbers be randomized (vs. generated in order)." />
+
+                                        </Rock:RockControlWrapper>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Text="Yes" Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
+                                </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <%-- Search Settings --%>
@@ -130,8 +151,10 @@
                         <Rock:PanelWidget ID="wpDisplaySettings" runat="server" Title="Display Settings">
                             <div class="row">
                                 <div class="col-md-12">
+                                    <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes" Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
                                     <Rock:CodeEditor runat="server" ID="ceStartTemplate" Label="Start Template" Help="The lava template to use when rendering the Start button on the Welcome Block" EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="ceFamilySelectTemplate" Label="Family Select Template" Help="The lava template to use when rendering each family button on the Family Select" EditorMode="Lava" />
+                                    <Rock:CodeEditor runat="server" ID="cePersonSelectTemplate" Label="Person Select Template" Help="The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks." EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="ceSuccessTemplate" Label="Success Template" Help="The lava template to use when rendering the Success result on the Success Block" EditorMode="Lava" />
                                 </div>
                             </div>
@@ -172,7 +195,6 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer" 
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
-                                    <Rock:RockTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" Help="The Font Awesome icon class to use when displaying check-in of this check-in type." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 

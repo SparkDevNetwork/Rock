@@ -12024,7 +12024,7 @@ BEGIN
         WHERE #personLastNames.number = ROUND(rand() * @lastNameCount, 0)
 
         -- add first member of family
-        SET @email = @firstName + '.' + @lastName + '@nowhere.com';
+        SET @email = @firstName + '.' + @lastName + '@nowhere.test';
         SET @adultBirthYear = datepart(year, sysdatetime()) - 19 - ROUND(rand(CHECKSUM(newid())) * 70, 0);
         SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
         SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
@@ -12170,7 +12170,7 @@ BEGIN
         WHERE #personFirstNames.number >= ROUND(rand() * @firstNameCount, 0)
             AND gender = @genderInt
 
-        SET @email = @firstName + '.' + @lastName + '@nowhere.com';
+        SET @email = @firstName + '.' + @lastName + '@nowhere.test';
         SET @month = CONVERT(NVARCHAR(100), ROUND(rand() * 11, 0) + 1);
         SET @day = CONVERT(NVARCHAR(100), ROUND(rand() * 26, 0) + 1);
         SET @spousePersonGuid = NEWID();
@@ -12332,7 +12332,7 @@ BEGIN
             ,@personId
             ,@adultRole
             ,newid()
-            ,0
+            ,1
 			,SYSDATETIME()
             )
 
@@ -12351,7 +12351,7 @@ BEGIN
             ,@spousePersonId
             ,@adultRole
             ,newid()
-            ,0
+            ,1
 			,SYSDATETIME()
             )
 
@@ -12448,7 +12448,7 @@ BEGIN
 				,@kidPersonId
 				,@childRole
 				,newid()
-				,0
+				,1
 				,SYSDATETIME()
 				)
 
@@ -12522,28 +12522,25 @@ BEGIN
 	-- fix up any birthdates that got set to a future date
 	UPDATE Person set BirthYear = DATEPART(year, SysDateTime()) - 1 where BirthDate > SysDateTime();
 
+    -- Set [BirthDate] value for any that haven't been set or are incorrect
     UPDATE Person
-                    SET [BirthDate] = (
-		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
-				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-			                    ELSE NULL
-			                    END
-		                    )
-                    FROM Person
-                    where [BirthDate] != (
-		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
-				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-			                    ELSE NULL
-			                    END
-		                    )
+    SET [BirthDate] = (
+		    CASE 
+			    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+				    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			    ELSE NULL
+			    END
+		    )
+    FROM Person
+    WHERE [BirthYear] IS NOT NULL AND (
+		    [BirthDate] IS NULL OR [BirthDate] != (
+			    CASE 
+				    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+					    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+				    ELSE NULL
+				    END
+			    )
+		    )
 
 
         UPDATE Person

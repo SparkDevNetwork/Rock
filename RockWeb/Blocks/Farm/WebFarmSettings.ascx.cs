@@ -273,6 +273,14 @@ namespace RockWeb.Blocks.Farm
                 SystemSetting.WEBFARM_LEADERSHIP_POLLING_INTERVAL_UPPER_LIMIT_SECONDS,
                 ( nbPollingMax.IntegerValue ?? RockWebFarm.DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds ).ToString() );
 
+            SystemSettings.SetValue(
+                SystemSetting.WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS,
+                ( nbPollingWait.IntegerValue ?? RockWebFarm.DefaultValue.DefaultPollingMaxWaitSeconds ).ToString() );
+
+            SystemSettings.SetValue(
+                SystemSetting.WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS,
+                ( nbPollingDifference.IntegerValue ?? RockWebFarm.DefaultValue.DefaultMinimumPollingDifferenceSeconds ).ToString() );
+
             IsEditMode = false;
             RenderState();
         }
@@ -326,6 +334,8 @@ namespace RockWeb.Blocks.Farm
             {
                 ShowViewMode();
             }
+
+            nbInMemoryBus.Visible = Rock.Bus.RockMessageBus.IsInMemoryTransport;
         }
 
         /// <summary>
@@ -346,6 +356,8 @@ namespace RockWeb.Blocks.Farm
             tbWebFarmKey.Text = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY );
             nbPollingMin.IntegerValue = RockWebFarm.GetLowerPollingLimitSeconds();
             nbPollingMax.IntegerValue = RockWebFarm.GetUpperPollingLimitSeconds();
+            nbPollingWait.IntegerValue = RockWebFarm.GetMaxPollingWaitSeconds();
+            nbPollingDifference.IntegerValue = RockWebFarm.GetMinimumPollingDifferenceSeconds();
         }
 
         /// <summary>
@@ -368,6 +380,8 @@ namespace RockWeb.Blocks.Farm
             // Load values from system settings
             var minPolling = RockWebFarm.GetLowerPollingLimitSeconds();
             var maxPolling = RockWebFarm.GetUpperPollingLimitSeconds();
+            var minDifference = RockWebFarm.GetMinimumPollingDifferenceSeconds();
+            var pollingWait = RockWebFarm.GetMaxPollingWaitSeconds();
 
             var maskedKey = SystemSettings.GetValue( SystemSetting.WEBFARM_KEY ).Masked();
 
@@ -381,6 +395,8 @@ namespace RockWeb.Blocks.Farm
             descriptionList.Add( "Key", string.Format( "{0}", maskedKey ) );
             descriptionList.Add( "Min Polling Limit", string.Format( "{0} seconds", minPolling ) );
             descriptionList.Add( "Max Polling Limit", string.Format( "{0} seconds", maxPolling ) );
+            descriptionList.Add( "Min Polling Difference", string.Format( "{0} seconds", minDifference ) );
+            descriptionList.Add( "Max Polling Wait", string.Format( "{0} seconds", pollingWait ) );
 
             var unresponsiveMinutes = 10;
             var unresponsiveDateTime = RockDateTime.Now.AddMinutes( 0 - unresponsiveMinutes );
@@ -388,7 +404,6 @@ namespace RockWeb.Blocks.Farm
             // Bind the grid data view models
             using ( var rockContext = new RockContext() )
             {
-                rockContext.SqlLogging( true );
                 var webFarmNodeService = new WebFarmNodeService( rockContext );
                 var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 

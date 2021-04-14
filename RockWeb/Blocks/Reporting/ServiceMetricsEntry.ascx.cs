@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Reporting
         private static DateTime? GetFirstScheduledDate( DateTime? weekend, Schedule schedule )
         {
             var date = schedule.GetNextStartDateTime( weekend.Value );
-            if ( date.Value.Date > weekend.Value )
+            if ( date != null && date.Value.Date > weekend.Value )
             {
                 date = schedule.GetNextStartDateTime( weekend.Value.AddDays( -7 ) );
             }
@@ -393,6 +393,11 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bddl_SelectionChanged( object sender, EventArgs e )
         {
+            if ( sender == bddlWeekend )
+            {
+                _selectedWeekend = bddlWeekend.SelectedValue.AsDateTime();
+                LoadServicesDropDown();
+            }
             BindMetrics();
         }
 
@@ -510,7 +515,12 @@ namespace RockWeb.Blocks.Reporting
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
             bddlWeekend.SetValue( _selectedWeekend.HasValue ? _selectedWeekend.Value.ToString( "o" ) : null );
+            LoadServicesDropDown();
+        }
 
+        private void LoadServicesDropDown()
+        {
+            bddlService.Items.Clear();
             // Load service times
             foreach ( var service in GetServices() )
             {
@@ -519,12 +529,35 @@ namespace RockWeb.Blocks.Reporting
                 if ( _selectedWeekend != null && GetAttributeValue( AttributeKey.MetricDateDeterminedBy ).AsInteger() == 1 )
                 {
                     var date = GetFirstScheduledDate( _selectedWeekend, service );
-                    listItemText = string.Format( "{0} ({1})", service.Name, date.ToShortDateString() );
+                    if ( date == null )
+                    {
+                        listItemText = string.Empty;
+                    }
+                    else
+                    {
+                        listItemText = string.Format( "{0} ({1})", service.Name, date.ToShortDateString() );
+                    }
                 }
 
-                bddlService.Items.Add( new ListItem( listItemText, service.Id.ToString() ) );
+                if ( listItemText.IsNotNullOrWhiteSpace() )
+                {
+                    bddlService.Items.Add( new ListItem( listItemText, service.Id.ToString() ) );
+                }
             }
             bddlService.SetValue( _selectedServiceId );
+
+            var showServicesDropdown = bddlService.Items.Count != 0;
+
+            bddlService.Visible = showServicesDropdown;
+            pnlMetricEdit.Visible = showServicesDropdown;
+
+            pnlNoServices.Visible = !showServicesDropdown;
+            nbWarning.Visible = !showServicesDropdown;
+            if ( !showServicesDropdown )
+            {
+                nbWarning.Text = "No services exist for the selected campus and date. Change the date or campus to find the desired service.";
+            }
+
         }
 
         /// <summary>

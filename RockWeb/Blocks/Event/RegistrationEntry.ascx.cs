@@ -35,6 +35,7 @@ using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -2372,20 +2373,23 @@ namespace RockWeb.Blocks.Event
                 string themeRoot = ResolveRockUrlIncludeRoot( "~~/" );
 
                 // Send/Resend a confirmation
-                var confirmation = new Rock.Transactions.SendRegistrationConfirmationTransaction();
-                confirmation.RegistrationId = registration.Id;
-                confirmation.AppRoot = appRoot;
-                confirmation.ThemeRoot = themeRoot;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( confirmation );
+                var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message()
+                {
+                    RegistrationId = registration.Id,
+                    AppRoot = appRoot,
+                    ThemeRoot = themeRoot
+                };
+
+                processSendRegistrationConfirmationMsg.Send();
 
                 if ( isNewRegistration )
                 {
                     // Send notice of a new registration
-                    var notification = new Rock.Transactions.SendRegistrationNotificationTransaction();
-                    notification.RegistrationId = registration.Id;
-                    notification.AppRoot = appRoot;
-                    notification.ThemeRoot = themeRoot;
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( notification );
+                    var notificationMsg = new ProcesSendRegistrationNotification.Message();
+                    notificationMsg.RegistrationId = registration.Id;
+                    notificationMsg.AppRoot = appRoot;
+                    notificationMsg.ThemeRoot = themeRoot;
+                    notificationMsg.Send();
                 }
 
                 var registrationService = new RegistrationService( new RockContext() );
@@ -2428,13 +2432,15 @@ namespace RockWeb.Blocks.Event
 
                                 if ( DigitalSignatureComponent != null )
                                 {
-                                    var sendDocumentTxn = new Rock.Transactions.SendDigitalSignatureRequestTransaction();
-                                    sendDocumentTxn.SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value;
-                                    sendDocumentTxn.AppliesToPersonAliasId = registrant.PersonAlias.Id;
-                                    sendDocumentTxn.AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0;
-                                    sendDocumentTxn.DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrant.PersonAlias.Person.FullName.RemoveSpecialCharacters() );
-                                    sendDocumentTxn.Email = email;
-                                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendDocumentTxn );
+                                    var sendDocumentTxnMsg = new ProcessSendDigitalSignatureRequest.Message()
+                                    {
+                                        SignatureDocumentTemplateId = RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value,
+                                        AppliesToPersonAliasId = registrant.PersonAlias.Id,
+                                        AssignedToPersonAliasId = assignedTo.PrimaryAliasId ?? 0,
+                                        DocumentName = string.Format( "{0}_{1}", RegistrationInstanceState.Name.RemoveSpecialCharacters(), registrant.PersonAlias.Person.FullName.RemoveSpecialCharacters() ),
+                                        Email = email
+                                    };
+                                    sendDocumentTxnMsg.Send();
                                 }
                             }
                         }
@@ -3135,8 +3141,12 @@ namespace RockWeb.Blocks.Event
                                 rockContext.SaveChanges();
                             }
 
-                            var updateDocumentTxn = new Rock.Transactions.UpdateDigitalSignatureDocumentTransaction( document.Id );
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updateDocumentTxn );
+                            var updateDocumentTxn = new UpdateDigitalSignatureDocument.Message
+                            {
+                                SignatureDocumentId = document.Id
+                            };
+
+                            updateDocumentTxn.Send();
                         }
                     }
                     catch ( System.Exception ex )
@@ -3188,7 +3198,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
-            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            if ( !person.PrimaryCampusId.HasValue && campusId.HasValue )
             {
                 person.PrimaryCampusId = campusId;
                 rockContext.SaveChanges();
@@ -4493,6 +4503,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void RegisterClientScript()
         {
+            // If there isn't a RegistrationTemplate to load then skip this
+            if ( RegistrationTemplate == null )
+            {
+                return;
+            }
+
             RockPage.AddScriptLink( "~/Scripts/jquery.creditCardTypeDetector.js" );
 
             var controlFamilyGuid = Guid.Empty;
@@ -4620,6 +4636,7 @@ namespace RockWeb.Blocks.Event
             , rblFamilyOptions.ClientID              // {12}
             , pnlFamilyMembers.ClientID              // {13}
             , controlFamilyGuid                      // {14}
+            // NULL check not needed here because it is checked at the start of this method.
             , RegistrationTemplate.ShowCurrentFamilyMembers.ToString().ToLower() // {15}
 );
 
@@ -5003,6 +5020,10 @@ namespace RockWeb.Blocks.Event
                         if ( feeValues != null )
                         {
                             registrant.FeeValues.AddOrReplace( fee.Id, feeValues );
+                        }
+                        else
+                        {
+                            registrant.FeeValues.Remove( fee.Id );
                         }
                     }
                 }
@@ -5741,6 +5762,8 @@ namespace RockWeb.Blocks.Event
 
                     RegistrationState.TotalCost = 0.0m;
                     RegistrationState.DiscountedCost = 0.0m;
+                    RegistrationState.PaymentAmount = 0.0m;
+                    nbAmountPaid.Text = string.Empty;
                     pnlCostAndFees.Visible = false;
                     pnlPaymentInfo.Visible = false;
                 }
@@ -5963,10 +5986,10 @@ namespace RockWeb.Blocks.Event
                     }
 
                     string discountTypeAndAmountString = discount.DiscountPercentage > 0.0m ? discount.DiscountPercentage.FormatAsPercent() : discount.DiscountAmount.FormatAsCurrency();
-                    
+
                     nbDiscountCode.Visible = true;
                     nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code,  discountTypeAndAmountString, discountRegistrantNumberString );
+                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code, discountTypeAndAmountString, discountRegistrantNumberString );
                     return true;
                 }
             }

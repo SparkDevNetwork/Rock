@@ -559,7 +559,15 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "avatar avatar-lg" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.Write( Person.GetPersonPhotoImageTag( CreatedByPersonId, CreatedByPhotoId, null, CreatedByGender, null, 50, 50 ) );
+                var getPersonPhotoImageTagArgs = new GetPersonPhotoImageTagArgs()
+                {
+                    PhotoId = CreatedByPhotoId,
+                    Gender = CreatedByGender,
+                    MaxHeight = 50,
+                    MaxWidth = 50
+                };
+
+                writer.Write( Rock.Model.Person.GetPersonPhotoImageTag( this.CreatedByPersonId, getPersonPhotoImageTagArgs ) );
 
                 writer.RenderEndTag(); // avatar div
                 writer.RenderEndTag(); // meta-figure div

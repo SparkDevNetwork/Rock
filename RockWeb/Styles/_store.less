@@ -141,10 +141,6 @@
   font-weight: 700;
 }
 
-.store-categories li {
-  margin-right: 6px;
-}
-
 // 5. Purchased Package
 // -------------------------
 .purchasedpackage {
@@ -162,5 +158,24 @@
     a {
       width: 100%;
     }
+  }
+}
+
+.store-category-list {
+  > li {
+    margin: 0 16px 6px 0;
+
+    @media (max-width: @screen-md-max) {
+      margin-right: 8px;
+
+      a {
+        padding: 5px 8px;
+        font-size: 14px;
+      }
+    }
+  }
+
+  > li + li {
+    margin-left: 0 !important;
   }
 }

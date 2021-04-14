@@ -79,3 +79,11 @@ UPDATE [AttributeValue] SET [Value] = 'False' WHERE [AttributeId] = @MailAttribu
 DECLARE @SMTPEntityTypeGuid varchar(50) = ( SELECT LOWER(CAST([Guid] as varchar(50))) FROM [EntityType] WHERE [Id] = @SMTPEntityTypeId )
 SET @MailAttributeId = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [EntityTypeId] = @MailEntityTypeId AND [Key] = 'TransportContainer' )
 UPDATE [AttributeValue] SET [Value] = @SMTPEntityTypeGuid WHERE [AttributeId] = @MailAttributeId
+
+-- Add localhost domain to internal site so routes work
+IF NOT EXISTS (SELECT [Id] FROM [SiteDomain] WHERE SiteId = 1 AND Domain = 'localhost' )
+BEGIN
+	DECLARE @domainOrder INT = (SELECT Max([Order]) + 1 FROM [SiteDomain] WHERE SiteId = 1)
+	INSERT INTO [dbo].[SiteDomain](IsSystem, SiteId, Domain, [Guid], [Order])
+	VALUES(0, 1, 'localhost', NEWID(), @domainOrder)
+END

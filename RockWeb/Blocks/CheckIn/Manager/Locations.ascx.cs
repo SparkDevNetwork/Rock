@@ -35,12 +35,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Manager
 {
     /// <summary>
-    /// Obsolete. Use Roster, LiveMetrics, and RoomSettings Blocks instead
     /// </summary>
     [DisplayName( "Locations (Obsolete)" )]
     [RockObsolete( "1.12" )]
     [Category( "Check-in > Manager" )]
-    [Description( "Block used to view current check-in counts and locations." )]
+    [Description( "Obsolete. Use Roster, LiveMetrics, and RoomSettings Blocks instead" )]
 
     [CustomRadioListField( "Navigation Mode", "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation hierarchy that is most appropriate for your organization.", "T^Group Type,L^Location,", true, "T", "", 0, "Mode" )]
     [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", false, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
@@ -916,6 +915,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             navGroup.ChildLocationIds = childLocationIds;
                             navGroup.ChildGroupIds = childGroupIds;
                             NavData.Groups.Add( navGroup );
+
 
                             if ( !group.ParentGroupId.HasValue || groupIds.Contains( group.ParentGroupId.Value ) )
                             {

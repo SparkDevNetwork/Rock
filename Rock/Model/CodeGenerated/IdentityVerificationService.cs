@@ -19,7 +19,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
@@ -67,6 +67,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this IdentityVerification object to a new IdentityVerification object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static IdentityVerification CloneWithoutIdentity( this IdentityVerification source )
+        {
+            var target = new IdentityVerification();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another IdentityVerification object to this IdentityVerification object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -74,6 +97,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this IdentityVerification target, IdentityVerification source )
         {
             target.Id = source.Id;
+            target.FailedMatchAttemptCount = source.FailedMatchAttemptCount;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IdentityVerificationCodeId = source.IdentityVerificationCodeId;

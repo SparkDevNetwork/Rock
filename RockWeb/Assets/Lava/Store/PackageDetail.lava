@@ -19,10 +19,10 @@
       <strong>Cost</strong>
       <br />
       <div clas="well">
-        {% if Package.IsFree != false %}
-        ${{ Package.Cost }}
-        {% else %}
-        Free
+        {% if Package.IsFree == true %}
+          Free
+        {% elseif Package.Price != null %}
+          ${{ Package.Cost }}
         {% endif %}
       </div>
     </p>

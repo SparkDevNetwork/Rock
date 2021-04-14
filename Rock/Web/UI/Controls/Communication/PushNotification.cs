@@ -184,8 +184,8 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 ID = $"{nameof( iupPushImage )}_{ID}",
                 Label = "Image",
-                Help = "We recommend an image size of 1038x520."
-
+                Help = "We recommend an image size of 1038x520.",
+                Visible = false // Images aren't used during push yet, so don't show.
             };
 
             rcwMessage.Controls.Add( iupPushImage );

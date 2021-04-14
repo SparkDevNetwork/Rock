@@ -16,8 +16,6 @@
 //
 using System.Collections.Generic;
 
-using Newtonsoft.Json;
-
 using RestSharp;
 
 
@@ -32,7 +30,7 @@ namespace Rock.Store
         /// Initializes a new instance of the <see cref="PackageService"/> class.
         /// </summary>
         public PackageService() : base()
-        {}
+        { }
 
         /// <summary>
         /// Gets all packages.
@@ -51,39 +49,53 @@ namespace Rock.Store
         /// <param name="categoryId">The category identifier.</param>
         /// <param name="errorResponse">The error response.</param>
         /// <returns></returns>
-        public IEnumerable<Package> GetAllPackages(int? categoryId, out string errorResponse)
+        public IEnumerable<Package> GetAllPackages( int? categoryId, out string errorResponse )
         {
             errorResponse = string.Empty;
-            
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
+            var encodedOrganizationKey = StoreService.GetEncodedOrganizationKey();
+
+            var resourcePath = string.Empty;
+            Dictionary<string, List<string>> queryParameters = null;
 
             if ( categoryId.HasValue )
             {
-                request.Resource = string.Format( "Api/Packages/GetSummariesByCategory/{0}", categoryId.Value.ToString() );
+                resourcePath = $"Api/Packages/GetSummariesByCategory/{categoryId.Value}/{encodedOrganizationKey}";
             }
             else
             {
-                request.Resource = "Api/Promos";
-                request.AddParameter( "$expand", "PrimaryCategory,SecondaryCategory,PackageTypeValue,Vendor,PackageIconBinaryFile", ParameterType.QueryString );
+                resourcePath = "Api/Promos";
+                queryParameters = new Dictionary<string, List<string>>
+                {
+                    { "$expand", new List<string> { "PrimaryCategory,SecondaryCategory,PackageTypeValue,Vendor,PackageIconBinaryFile" } }
+                };
             }
 
             // deserialize to list of packages
-            var response = client.Execute<List<Package>>( request );
+            var response = ExecuteRestGetRequest<List<Package>>( resourcePath, queryParameters );
+            var packageList = new List<Package>();
 
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            if ( response.ResponseStatus == ResponseStatus.Completed && response.Data != null )
             {
-                return response.Data;
+                packageList = response.Data;
+
+                // If the key is null null out the price so it can't be installed.
+                if ( encodedOrganizationKey.IsNullOrWhiteSpace() )
+                {
+                    foreach ( var package in packageList )
+                    {
+                        if ( !package.IsFree )
+                        {
+                            package.Price = null;
+                        }
+                    }
+                }
             }
             else
             {
                 errorResponse = response.ErrorMessage;
-                return new List<Package>();
             }
-            
+
+            return packageList;
         }
 
         /// <summary>
@@ -107,29 +119,29 @@ namespace Rock.Store
         public Package GetPackage( int packageId, out string errorResponse )
         {
             errorResponse = string.Empty;
-            
-            string storeKey = StoreService.GetOrganizationKey();
-            
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
-            request.Resource = string.Format( "api/Packages/GetPackageDetails/{0}/{1}", packageId.ToString(), storeKey );
 
-            //request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
+            var storeKey = StoreService.GetOrganizationKey();
+            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}/true", null );
 
-            var response = client.Execute<Package>( request );
+            var package = new Package();
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {
-                return response.Data;
+                package = response.Data;
+                // If the key is null null out the price so it can't be installed.
+                if ( storeKey.IsNullOrWhiteSpace() )
+                {
+                    if ( !package.IsFree )
+                    {
+                        package.Price = null;
+                    }
+                }
             }
             else
             {
                 errorResponse = response.ErrorMessage;
-                return new Package();
             }
+            return package;
         }
 
         /// <summary>
@@ -137,7 +149,7 @@ namespace Rock.Store
         /// </summary>
         /// <returns>a <see cref="Package"/> of the package.</returns>
         /// 
-        public List<Package> GetPurchasedPackages(  )
+        public List<Package> GetPurchasedPackages()
         {
             string error = null;
             return GetPurchasedPackages( out error );
@@ -148,42 +160,26 @@ namespace Rock.Store
         /// </summary>
         /// <param name="errorResponse">The error response.</param>
         /// <returns></returns>
-        public List<Package> GetPurchasedPackages(out string errorResponse )
+        public List<Package> GetPurchasedPackages( out string errorResponse )
         {
             errorResponse = string.Empty;
 
-            string storeKey = StoreService.GetOrganizationKey(); ;
+            string storeKey = StoreService.GetOrganizationKey();
             if ( string.IsNullOrEmpty( storeKey ) )
             {
                 errorResponse = "The 'Store Key' is not configured yet. Please check the Account and ensure it is configured for your organization.";
                 return new List<Package>();
             }
 
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
-            request.Resource = string.Format( "api/Packages/GetPurchasedPackages/{0}", storeKey );
+            var response = ExecuteRestGetRequest<List<Package>>( $"api/Packages/GetPurchasedPackages/{storeKey}/true" );
 
-            var response = client.Execute( request );
-
-            try
+            if ( response.ResponseStatus == ResponseStatus.Completed )
             {
-                if ( response.ResponseStatus == ResponseStatus.Completed )
-                {
-                    List<Package> packages = JsonConvert.DeserializeObject<List<Package>>( response.Content );
-                    return packages;
-                }
-                else
-                {
-                    errorResponse = response.ErrorMessage;
-                    return new List<Package>();
-                }
+                return response.Data;
             }
-            catch ( JsonReaderException )
+            else
             {
-                errorResponse = "Something went wrong while retrieving the purchased packages. It's possible your 'Store Key' is bad (could not be decrypted) and needs to be revoked.";
+                errorResponse = response.ErrorMessage;
                 return new List<Package>();
             }
         }

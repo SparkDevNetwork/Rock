@@ -229,6 +229,8 @@ namespace RockWeb.Blocks.Administration
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
 
+            Rock.Logging.RockLogger.Log.ReloadConfiguration();
+
             nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
             nbLoggingMessage.Title = string.Empty;
             nbLoggingMessage.Text = "Setting saved successfully.";

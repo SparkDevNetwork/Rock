@@ -1296,15 +1296,7 @@ namespace RockWeb.Blocks.Groups
                 group.LoadAttributes( rockContext );
 
                 // Clone the group
-                var newGroup = group.Clone( false );
-                newGroup.CreatedByPersonAlias = null;
-                newGroup.CreatedByPersonAliasId = null;
-                newGroup.CreatedDateTime = RockDateTime.Now;
-                newGroup.ModifiedByPersonAlias = null;
-                newGroup.ModifiedByPersonAliasId = null;
-                newGroup.ModifiedDateTime = RockDateTime.Now;
-                newGroup.Id = 0;
-                newGroup.Guid = Guid.NewGuid();
+                var newGroup = group.CloneWithoutIdentity();
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
@@ -1364,16 +1356,8 @@ namespace RockWeb.Blocks.Groups
 
                     foreach ( var auth in auths )
                     {
-                        var newAuth = auth.Clone( false );
-                        newAuth.Id = 0;
-                        newAuth.Guid = Guid.NewGuid();
+                        var newAuth = auth.CloneWithoutIdentity();
                         newAuth.GroupId = newGroup.Id;
-                        newAuth.CreatedByPersonAlias = null;
-                        newAuth.CreatedByPersonAliasId = null;
-                        newAuth.CreatedDateTime = RockDateTime.Now;
-                        newAuth.ModifiedByPersonAlias = null;
-                        newAuth.ModifiedByPersonAliasId = null;
-                        newAuth.ModifiedDateTime = RockDateTime.Now;
                         authService.Add( newAuth );
                     }
 

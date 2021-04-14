@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using Rock.Data;
@@ -25,6 +26,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Writes any entity chnages that are configured to be tracked
     /// </summary>
+    [Obsolete( "Use ProcessWorkflowTrigger Task instead." )]
+    [RockObsolete( "1.13" )]
     public class WorkflowTriggerTransaction : ITransaction
     {
         /// <summary>

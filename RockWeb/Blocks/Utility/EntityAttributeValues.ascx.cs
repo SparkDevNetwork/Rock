@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Utility
             if ( entity != null )
             {
                 phEditAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( entity, phEditAttributes, true, BlockValidationGroup );
+                Rock.Attribute.Helper.AddEditControls( entity, phEditAttributes, setValues, BlockValidationGroup );
             }
         }
 

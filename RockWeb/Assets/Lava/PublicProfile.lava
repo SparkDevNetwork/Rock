@@ -213,7 +213,7 @@
     {% if ShowFamilyMembers %}
 
         <div class="family-member-profiles">
-        	<h3 class="mb-0">{{ Family.Name }} {{ Family.GroupTypeId | FromCache:'GroupType' | Property:'GroupTerm' }}</h3>
+        	<h3 class="mb-0">{{ Family.Name }}</h3>
         	<hr class="mt-3 mb-5" />
         	{% for familyMember in FamilyMembers %}
         	    <div class="row {{ Family.GroupTypeId | FromCache:'GroupType' | Property:'GroupMemberTerm' | ToCssClass }} mb-3">
@@ -245,11 +245,7 @@
         	                                {{ familyMember.Person.Gender }}
         	                            </li>
         	                        {% endif %}
-        	                    </ul>
-        	                </div>
-        	                <div class="col-md-4 mb-4">
-        	                    {% capture contactInfo %}
-        	                        {% if familyMember.Person.MaritalStatusValueId %}
+                                    {% if familyMember.Person.MaritalStatusValueId %}
         	                            <ul class="person-demographics list-unstyled">
         	                                <li>
         	                                    {% assign maritalStatusValue = familyMember.Person.MaritalStatusValueId | FromCache:'DefinedValue' %}
@@ -263,8 +259,12 @@
         	                                </li>
         	                            </ul>
         	                        {% endif %}
+        	                    </ul>
+        	                </div>
+        	                <div class="col-md-4 mb-4">
+        	                    {% capture contactInfo %}
 
-        	                        {% if ShowPhoneNumbers %}
+                                    {% if ShowPhoneNumbers %}
         	                            {%- assign phoneCount = familyMember.Person.PhoneNumbers | Size -%}
         	                            {% if phoneCount > 0 %}
         	                                <ul class="phone-list list-unstyled">

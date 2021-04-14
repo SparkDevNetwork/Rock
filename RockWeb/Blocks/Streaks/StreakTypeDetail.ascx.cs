@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Streaks
             descriptionList.Add( "Frequency", streakType.OccurrenceFrequency.ConvertToString() );
             descriptionList.Add( "Start Date", streakType.StartDate.ToShortDateString() );
             descriptionList.Add( "Requires Enrollment", streakType.RequiresEnrollment.ToYesNo() );
-            descriptionList.Add( "Attendance Enabled", streakType.EnableAttendance.ToYesNo() );
+            descriptionList.Add( "Sync Linked Activity", streakType.EnableAttendance.ToYesNo() );
 
             if ( streakType.StructureType.HasValue )
             {

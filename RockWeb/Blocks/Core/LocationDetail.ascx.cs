@@ -481,14 +481,7 @@ namespace RockWeb.Blocks.Core
                     hlInactive.Visible = false;
                 }
 
-                if ( string.IsNullOrWhiteSpace( location.Name ) )
-                {
-                    lReadOnlyTitle.Text = location.ToString().FormatAsHtmlTitle();
-                }
-                else
-                {
-                    lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
-                }
+                lReadOnlyTitle.Text = location.ToString( true ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -549,14 +542,7 @@ namespace RockWeb.Blocks.Core
 
             hfLocationId.SetValue( location.Id );
 
-            if ( string.IsNullOrWhiteSpace( location.Name ) )
-            {
-                lReadOnlyTitle.Text = location.ToString().FormatAsHtmlTitle();
-            }
-            else
-            {
-                lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
-            }
+            lReadOnlyTitle.Text = location.ToString( true ).FormatAsHtmlTitle();
 
             hlInactive.Visible = !location.IsActive;
             if ( location.LocationTypeValue != null )

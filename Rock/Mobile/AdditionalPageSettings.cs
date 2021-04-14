@@ -37,5 +37,27 @@ namespace Rock.Mobile
         /// The CSS styles specific to this block.
         /// </value>
         public string CssStyles { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the navigation bar should be hidden on this page.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the navigation bar should be hidden on this page; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideNavigationBar { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the page full-screen.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the page should be shown full-screen; otherwise, <c>false</c>.
+        /// </value>
+        /// <remarks>
+        /// Full-screen in this context means effectively switching to the Blank shell.
+        /// This prevents the user from switching to any other pages but will also unload
+        /// their navigation stack. If the user also specifies <see cref="HideNavigationBar"/>
+        /// then they will get a true full-screen experience like a splash screen.
+        /// </remarks>
+        public bool ShowFullScreen { get; set; }
     }
 }

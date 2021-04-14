@@ -69,24 +69,10 @@
 @input-focus-transition:      ~"border-color 100ms ease-in-out, outline 100ms ease-in-out";
 
 
-// Custom Select
-@custom-select-padding-y:           @padding-base-vertical;
-@custom-select-padding-x:           @padding-base-horizontal;
-@custom-select-font-family:         @font-family-base;
-@custom-select-font-size:           @font-size-base;
-@custom-select-height:              @line-height-base;
-@custom-select-indicator-padding:   1rem; // Extra padding to account for the presence of the background-image based indicator
-@custom-select-font-weight:         400;
-@custom-select-line-height:         @line-height-base;
-@custom-select-color:               @input-color;
-@custom-select-disabled-color:      @input-color;
-@custom-select-bg:                  @input-bg;
-@custom-select-disabled-bg:         @input-bg-disabled;
-@custom-select-bg-size:             8px 10px; // In pixels because image dimensions
-@custom-select-indicator-color:     #000;
-@custom-select-indicator:           %(~'url("data:image/svg+xml,%s%s%s")', "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='", "%23000", "' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
-@custom-select-background:          ~"@{custom-select-indicator} no-repeat right @{custom-select-padding-x} center/@{custom-select-bg-size}"; // Used so we can have multiple background elements (e.g., arrow and feedback icon)
-
+@dark-form-select-indicator-color:       #ffffff;
+@dark-form-select-indicator-color-esc:   %('%A', @dark-form-select-indicator-color);
+@dark-form-select-indicator-code:        %(~"data:image/svg+xml,%s%s%s", "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='", "@{dark-form-select-indicator-color-esc}", "' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+@dark-form-select-indicator:           ~'url("@{dark-form-select-indicator-code}")';
 
 // Modal
 @modal-body-bg: #ffffff; // The background color of the modal #color

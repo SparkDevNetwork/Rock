@@ -33,6 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -60,7 +61,7 @@ namespace RockWeb.Blocks.Communication
         Order = 1 )]
     [BooleanField("Enable Person Parameter",
         Key = AttributeKey.EnablePersonParameter,
-        Description = "When enabled, allows passing a 'person' querystring parameter with a person Id to the block to create a communication for that person.",
+        Description = "When enabled, allows passing a 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Order = 2 )]
@@ -185,6 +186,15 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Attribute Keys
+
+        private static class PageParameterKey
+        {
+            public const string CommunicationId = "CommunicationId";
+            public const string Edit = "Edit";
+            public const string Person = "Person";
+            public const string PersonId = "PersonId";
+            public const string TemplateGuid = "TemplateGuid";
+        }
 
         #region Fields
 
@@ -348,7 +358,7 @@ namespace RockWeb.Blocks.Communication
             btnTest.Visible = _fullMode;
             btnSave.Visible = _fullMode;
 
-            _editingApproved = PageParameter( "Edit" ).AsBoolean() && IsUserAuthorized( "Approve" );
+            _editingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
         }
 
@@ -375,7 +385,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communication == null )
                 {
                     // If not, check page parameter for existing communication
-                    int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
+                    int? communicationId = PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
                         communication = new CommunicationService( new RockContext() ).Get( communicationId.Value );
@@ -656,22 +666,14 @@ namespace RockWeb.Blocks.Communication
                     using ( var rockContext = new RockContext() )
                     {
                         // Using a new context (so that changes in the UpdateCommunication() are not persisted )
-                        var testCommunication = communication.Clone( false );
-                        testCommunication.Id = 0;
-                        testCommunication.Guid = Guid.NewGuid();
+                        var testCommunication = communication.CloneWithoutIdentity();
                         testCommunication.CreatedByPersonAliasId = this.CurrentPersonAliasId;
                         testCommunication.CreatedByPersonAlias = new PersonAliasService( rockContext ).Queryable().Where( a => a.Id == this.CurrentPersonAliasId.Value ).Include( a => a.Person ).FirstOrDefault();
-
                         testCommunication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                        testCommunication.ForeignGuid = null;
-                        testCommunication.ForeignId = null;
-                        testCommunication.ForeignKey = null;
-
                         testCommunication.FutureSendDateTime = null;
                         testCommunication.Status = CommunicationStatus.Approved;
                         testCommunication.ReviewedDateTime = RockDateTime.Now;
                         testCommunication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
                         testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
 
                         foreach ( var attachment in communication.Attachments )
@@ -724,7 +726,20 @@ namespace RockWeb.Blocks.Communication
                         }
                         nbTestResult.Visible = true;
 
-                        communicationService.Delete( testCommunication );
+                        var pushMediumEntityTypeGuid = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
+                        if ( testCommunication.GetMediums().Any( a => a.EntityType.Guid == pushMediumEntityTypeGuid ) )
+                        {
+                            // We can't actually delete the test communication since if it is an
+                            // action type of "Show Details" then they won't be able to view the
+                            // communication on their device to see how it looks. Instead we switch
+                            // the communication to be transient so the cleanup job will take care
+                            // of it later.
+                            testCommunication.Status = CommunicationStatus.Transient;
+                        }
+                        else
+                        {
+                            communicationService.Delete( testCommunication );
+                        }
                         rockContext.SaveChanges();
                     }
                 }
@@ -766,7 +781,7 @@ namespace RockWeb.Blocks.Communication
                         pageRef.PageId = CurrentPageReference.PageId;
                         pageRef.RouteId = CurrentPageReference.RouteId;
                         pageRef.Parameters = new Dictionary<string, string>();
-                        pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                        pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                         Response.Redirect( pageRef.BuildUrl() );
                         Context.ApplicationInstance.CompleteRequest();
                     }
@@ -788,8 +803,7 @@ namespace RockWeb.Blocks.Communication
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = RockDateTime.Now;
                             communication.ReviewerPersonAliasId = CurrentPersonAliasId;
-                            communication.CreatedDateTime = RockDateTime.Now;
-
+                            
                             if ( communication.FutureSendDateTime.HasValue &&
                                 communication.FutureSendDateTime > RockDateTime.Now )
                             {
@@ -807,9 +821,11 @@ namespace RockWeb.Blocks.Communication
                         // send approval email if needed (now that we have a communication id)
                         if ( communication.Status == CommunicationStatus.PendingApproval )
                         {
-                            var approvalTransaction = new Rock.Transactions.SendCommunicationApprovalEmail();
-                            approvalTransaction.CommunicationId = communication.Id;
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( approvalTransaction );
+                            var approvalTransactionMsg = new ProcessSendCommunicationApprovalEmail.Message()
+                            {
+                                CommunicationId = communication.Id
+                            };
+                            approvalTransactionMsg.Send();
                         }
 
                         if ( communication.Status == CommunicationStatus.Approved &&
@@ -817,10 +833,11 @@ namespace RockWeb.Blocks.Communication
                         {
                             if ( GetAttributeValue( AttributeKey.SendWhenApproved ).AsBoolean() )
                             {
-                                var transaction = new Rock.Transactions.SendCommunicationTransaction();
-                                transaction.CommunicationId = communication.Id;
-                                transaction.PersonAlias = CurrentPersonAlias;
-                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                                var transactionMsg = new ProcessSendCommunication.Message()
+                                {
+                                    CommunicationId = communication.Id
+                                };
+                                transactionMsg.Send();
                             }
                         }
 
@@ -873,7 +890,7 @@ namespace RockWeb.Blocks.Communication
                     pageRef.PageId = CurrentPageReference.PageId;
                     pageRef.RouteId = CurrentPageReference.RouteId;
                     pageRef.Parameters = new Dictionary<string, string>();
-                    pageRef.Parameters.Add( "CommunicationId", communication.Id.ToString() );
+                    pageRef.Parameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
                     Response.Redirect( pageRef.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
                 }
@@ -926,18 +943,23 @@ namespace RockWeb.Blocks.Communication
                 communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
 
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
-
-                int? personId = GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() ? PageParameter( "Person" ).AsIntegerOrNull() : null;
-                if ( personId.HasValue )
+                if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
                 {
-                    communication.IsBulkCommunication = false;
-                    var context = new RockContext();
-                    var person = new PersonService( context ).Get( personId.Value );
-                    if ( person != null )
+                    // if either 'Person' or 'PersonId' is specified add that person to the communication
+                    var personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull()
+                        ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+                    if ( personId.HasValue )
                     {
-                        var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
-                            .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
-                        Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        communication.IsBulkCommunication = false;
+                        var context = new RockContext();
+                        var person = new PersonService( context ).Get( personId.Value );
+                        if ( person != null )
+                        {
+                            var HasPersonalDevice = new PersonalDeviceService( context ).Queryable()
+                                .Where( pd => pd.PersonAliasId.HasValue && pd.PersonAliasId == person.PrimaryAliasId && pd.NotificationsEnabled ).Any();
+                            Recipients.Add( new Recipient( person, person.PhoneNumbers.Any( p => p.IsMessagingEnabled ), HasPersonalDevice, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
+                        }
                     }
                 }
             }
@@ -958,7 +980,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If a template guid was passed in, it overrides any default template.
-            string templateGuid = PageParameter( "TemplateGuid" );
+            string templateGuid = PageParameter( PageParameterKey.TemplateGuid );
             if ( !string.IsNullOrEmpty( templateGuid ) )
             {
                 var guid = new Guid( templateGuid );
@@ -1574,7 +1596,7 @@ namespace RockWeb.Blocks.Communication
 
             nbResult.Text = message;
 
-            CurrentPageReference.Parameters.AddOrReplace( "CommunicationId", communication.Id.ToString() );
+            CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, communication.Id.ToString() );
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
             // only show the Link if there is a CommunicationDetail block type on this page

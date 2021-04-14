@@ -28,6 +28,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -91,6 +92,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 2 )]
         public int AttributeId { get; set; }
 
         /// <summary>
@@ -103,6 +105,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 1 )]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -477,8 +480,12 @@ namespace Rock.Model
             {
                 if ( !newBinaryFileGuid.HasValue || !newBinaryFileGuid.Value.Equals( oldBinaryFileGuid.Value ) )
                 {
-                    var transaction = new Rock.Transactions.DeleteAttributeBinaryFile( oldBinaryFileGuid.Value );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                    var deleteBinaryFileAttributeMsg = new DeleteBinaryFileAttribute.Message()
+                    {
+                        BinaryFileGuid = oldBinaryFileGuid.Value
+                    };
+
+                    deleteBinaryFileAttributeMsg.Send();
                 }
             }
 
@@ -775,24 +782,23 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         private AttributeValue GetRootMatrixAttributeValue()
-            {
+        {
             var rockContext = new RockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
-            var attributeService = new AttributeService(rockContext);
+            var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
-                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId )
-            ).Select( am => am.Guid.ToString() );
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId ) )
+                .Select( am => am.Guid.ToString() );
 
             var matrixFieldType = FieldTypeCache.Get( SystemGuid.FieldType.MATRIX );
             var attributeIdQuery = attributeService.Queryable().AsNoTracking().Where( a =>
-                a.FieldTypeId == matrixFieldType.Id
-            ).Select( a => a.Id );
+                a.FieldTypeId == matrixFieldType.Id )
+                .Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value )
-            );
+                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value ) );
 
             return attributeValue;
         }

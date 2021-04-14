@@ -120,7 +120,7 @@
             };
 
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
-        syncTransferConnectorControls();
+        $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
     });
 
     const toggleFilterDrawer = function () {
@@ -140,7 +140,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
 
-            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow d-flex flex-wrap flex-sm-nowrap justify-content-between">
+            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow">
                 <ContentTemplate>
 
                         <h2 class="panel-title">
@@ -154,13 +154,12 @@
                         </div>
                         <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
 
-
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-                    <div class="panel-collapsable">
-                        <div class="panel-toolbar d-flex flex-wrap flex-sm-nowrap justify-content-between">
-                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server">
+                    <div class="panel-collapsible">
+                        <div class="panel-toolbar">
+                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server" class="toolbar-group">
                                 <ContentTemplate>
                                     <div class="d-inline-block btn-group-mega js-btn-group-mega">
                                         <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -210,7 +209,7 @@
                                     </asp:LinkButton>
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-                            <div class="d-block">
+                            <div class="toolbar-group">
                                 <div class="btn-group">
                                     <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-user"></i>
@@ -240,7 +239,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="d-block">
+                            <div class="toolbar-group">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-sort"></i>
@@ -289,7 +288,7 @@
                         </div>
 
                         <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
-                            <div class="container-fluid padding-t-md padding-b-md">
+                            <div class="container-fluid py-3">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
@@ -347,15 +346,13 @@
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional">
+            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional" Class="drag-scroll-zone-container">
                 <ContentTemplate>
-                    <div class="drag-scroll-zone-container position-relative">
-                        <div class="panel-body p-0 overflow-scroll board-column-container dragscroll js-dragscroll">
-                            <div class="d-flex flex-row w-100 h-100 js-column-container"></div>
+                        <div class="panel-body p-0 overflow-scroll dragscroll js-dragscroll">
+                            <div class="board-column-container js-column-container"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-left drag-scroll-zone drag-scroll-zone-left"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-right drag-scroll-zone drag-scroll-zone-right"></div>
                         </div>
-                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -383,7 +380,7 @@
                             <asp:Literal ID="lRequestModalViewModeHeading" runat="server" />
                             <div class="row">
                                 <div class="col-sm-2">
-                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo mx-auto mb-3"></div>
+                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo"></div>
                                 </div>
                                 <div class="col-sm-10">
                                     <asp:Literal runat="server" ID="lRequestModalViewModeStatusIcons" />
@@ -443,7 +440,7 @@
 
                                     </div>
 
-                                    <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlRequestModalViewModeBadges">
+                                    <asp:Panel runat="server" CssClass="badge-bar mb-2" ID="pnlRequestModalViewModeBadges">
                                         <Rock:BadgeListControl ID="blRequestModalViewModeBadges" runat="server" />
                                     </asp:Panel>
                                 </div>
@@ -451,7 +448,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <asp:Literal ID="lRequestModalViewModeMainDescription" runat="server" />
+                                    <asp:Literal ID="lRequestModalViewModeComments" runat="server" />
                                 </div>
                             </div>
                             <asp:Literal ID="lRequestModalViewModeBadgeBar" runat="server" />
@@ -462,7 +459,7 @@
                                 <div id="divRequestModalViewModeWorkflows" runat="server" class="col-md-6">
                                     <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                                     <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                                    <div class="margin-b-lg">
+                                    <div class="mb-4">
                                         <asp:Repeater ID="rptRequestWorkflows" runat="server" OnItemCommand="rptRequestWorkflows_ItemCommand">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
@@ -566,7 +563,7 @@
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeSelectConnector" runat="server" CssClass="js-transfer-connector" Text="Select Connector" GroupName="TransferOpportunityConnector" />
-                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="margin-l-lg" runat="server" Style="display: none" />
+                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="ml-4" runat="server" Style="display: none" />
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeNoConnector" runat="server" CssClass="js-transfer-connector" Text="No Connector" GroupName="TransferOpportunityConnector" />
@@ -575,6 +572,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeStatus" runat="server" Label="Status" />
+                                        <Rock:CampusPicker ID="cpTransferCampus" runat="server" Label="Campus" AutoPostBack="true" OnSelectedIndexChanged="cpTransferCampus_SelectedIndexChanged" />
                                     </div>
                                 </div>
                                 <Rock:RockTextBox ID="tbRequestModalViewModeTransferModeNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" />
@@ -684,12 +682,12 @@
 
 <script id="js-template-column" type="text/template">
     <div class="board-column">
-        <div class="board-heading mt-3 px-3">
+        <div class="board-heading">
             <div class="d-flex justify-content-between align-items-center">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
-            <div class="board-heading-pill mt-2 mb-3" style="background: {{HighlightColor}}"></div>
+            <div class="board-heading-pill" style="background: {{HighlightColor}}"></div>
         </div>
         <div class="board-cards js-card-container" data-status-id="{{Id}}">
         </div>
@@ -708,13 +706,13 @@
 <script id="js-template-card" type="text/template">
     <div class="board-card js-board-card" data-request-id="{{Id}}" data-opportunity-id="{{ConnectionOpportunityId}}">
         <div class="board-card-content js-board-card-content">
-            <div class="d-flex justify-content-between">
+            <div class="board-card-header">
                 {{StatusIconsHtml}}
                 {{CampusHtml}}
             </div>
-            <div class="board-card-main d-flex">
+            <div class="board-card-body">
                 <div class="flex-grow-1 mb-2">
-                    <div class="board-card-photo mb-1" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
+                    <div class="board-card-photo" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
@@ -748,7 +746,7 @@
                     </div>
                 </div>
             </div>
-            <div class="board-card-meta d-flex justify-content-between">
+            <div class="board-card-meta">
                 <span class="text-muted" title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
                     <i class="fa fa-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}

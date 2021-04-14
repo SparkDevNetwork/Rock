@@ -46,8 +46,6 @@ install:
 
     git clone -q --depth=1 https://github.com/NewSpring/rock-cache-sync.git c:\projects\rock-cache-sync
 
-    git clone -q --depth=1 https://github.com/NewSpring/rock-attended-checkin.git c:\projects\rock-attended-checkin
-
     git clone -q --depth=1 https://github.com/NewSpring/apollos-onesignal.git c:\projects\apollos-onesignal
 
 
@@ -64,9 +62,9 @@ before_build:
 
     nuget restore Rock.sln
 
-    $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\Facades"
+    $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Facades"
 
-    $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2"
+    $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2"
 
     Get-ChildItem $src | Copy-Item -Destination $dst -Force
 

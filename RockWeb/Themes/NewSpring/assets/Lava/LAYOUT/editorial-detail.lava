@@ -66,7 +66,21 @@
         {% assign itemsManuallyOrdered = parentItem.ChildItemsOrderedManually %}
         {% assign parentImage = parentItem.ImageLandscape %}
         {% capture parentPermalink %}{[ getPermalink cciid:'{{ parentItem.Id }}' ]}{% endcapture %}
-        {% assign totalChildren = parentItem.Children | Size %}
+
+        {% if showfuturecontent == 'true' %}
+            {% assign totalChildren = parentItem.Children | Size %}
+        {% else %}
+            {% assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:ss' %}
+            {% capture publishedItems -%}[
+                {%- for child in parentItem.Children -%}
+                    {%- if child.PublishDateTime <= now -%}
+                    {{ child | ToJSON | Append:',' }}
+                    {%- endif -%}
+                {%- endfor -%}
+            ]{%- endcapture %}
+            {% assign publishedItemsObject = publishedItems | FromJSON %}
+            {% assign totalChildren = publishedItemsObject | Size %}
+        {% endif %}
 
         {% comment %}
             Write parent interaction

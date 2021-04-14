@@ -247,17 +247,17 @@ namespace RockWeb.Blocks.Bus
             {
                 if ( statLog.MessagesConsumedLastMinute.HasValue )
                 {
-                    descriptionList.Add( "Messages Per Minute", statLog.MessagesConsumedLastMinute );
+                    descriptionList.Add( "Messages Last Minute", statLog.MessagesConsumedLastMinute );
                 }
 
                 if ( statLog.MessagesConsumedLastHour.HasValue )
                 {
-                    descriptionList.Add( "Messages Per Minute", statLog.MessagesConsumedLastHour );
+                    descriptionList.Add( "Messages Last Hour", statLog.MessagesConsumedLastHour );
                 }
 
                 if ( statLog.MessagesConsumedLastDay.HasValue )
                 {
-                    descriptionList.Add( "Messages Per Minute", statLog.MessagesConsumedLastDay );
+                    descriptionList.Add( "Messages Last Day", statLog.MessagesConsumedLastDay );
                 }
             }
 

@@ -133,7 +133,7 @@
 
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-mobile-phone" CssClass="js-sms-template" runat="server">
+                <Rock:PanelWidget ID="pnlSMSTemplate" Title="SMS" TitleIconCssClass="fa fa-comments" CssClass="js-sms-template" runat="server">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DefinedValuePicker ID="dvpSMSFrom" runat="server" Label="From" Help="The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers)." />
