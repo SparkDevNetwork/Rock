@@ -27,13 +27,13 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
-        /// Gets or sets the registration entry block arguments. If the registration is existing, then these are the args sent
+        /// Gets or sets the registration entry block session. If the registration is existing, then these are the args sent
         /// to create it.
         /// </summary>
         /// <value>
         /// The registration entry block arguments.
         /// </value>
-        public RegistrationEntryBlockArgs RegistrationEntryBlockArgs { get; set; }
+        public RegistrationEntryBlockSession Session { get; set; }
 
         /// <summary>
         /// Gets or sets the instructions HTML.

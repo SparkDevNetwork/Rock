@@ -120,7 +120,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                 },
                 setup: function () {
                     var _a;
-                    var _b;
+                    var _b, _c, _d, _e, _f;
                     var steps = (_a = {},
                         _a[Step.intro] = Step.intro,
                         _a[Step.registrationStartForm] = Step.registrationStartForm,
@@ -136,7 +136,11 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     }
                     var hasPreAttributes = ((_b = viewModel.RegistrationAttributesStart) === null || _b === void 0 ? void 0 : _b.length) > 0;
                     var currentStep = steps.intro;
-                    if (viewModel.MaxRegistrants === 1 && String_1.isNullOrWhitespace(viewModel.InstructionsHtml)) {
+                    if (viewModel.Session) {
+                        // This is an existing registration, start at the summary
+                        currentStep = steps.reviewAndPayment;
+                    }
+                    else if (viewModel.MaxRegistrants === 1 && String_1.isNullOrWhitespace(viewModel.InstructionsHtml)) {
                         // There is no need to show the numer of registrants selector or instructions. Start at the second page.
                         currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
                     }
@@ -147,16 +151,16 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         CurrentStep: currentStep,
                         CurrentRegistrantFormIndex: 0,
                         CurrentRegistrantIndex: 0,
-                        Registrants: [getDefaultRegistrantInfo()],
-                        RegistrationFieldValues: {},
-                        Registrar: {
+                        Registrants: ((_c = viewModel.Session) === null || _c === void 0 ? void 0 : _c.Registrants) || [getDefaultRegistrantInfo()],
+                        RegistrationFieldValues: ((_d = viewModel.Session) === null || _d === void 0 ? void 0 : _d.FieldValues) || {},
+                        Registrar: ((_e = viewModel.Session) === null || _e === void 0 ? void 0 : _e.Registrar) || {
                             NickName: '',
                             LastName: '',
                             Email: '',
                             UpdateEmail: true
                         },
                         GatewayToken: '',
-                        DiscountCode: '',
+                        DiscountCode: ((_f = viewModel.Session) === null || _f === void 0 ? void 0 : _f.DiscountCode) || '',
                         SuccessViewModel: null
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);

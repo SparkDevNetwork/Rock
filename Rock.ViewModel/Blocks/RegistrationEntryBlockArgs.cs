@@ -21,9 +21,71 @@ using System.Collections.Generic;
 namespace Rock.ViewModel.Blocks
 {
     /// <summary>
+    /// RegistrationEntryBlockArgs Interface
+    /// </summary>
+    public interface IRegistrationEntryBlockArgs : IViewModel
+    {
+        /// <summary>
+        /// Gets or sets the registration unique identifier.
+        /// </summary>
+        /// <value>
+        /// The registration unique identifier.
+        /// </value>
+        Guid? RegistrationGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrants.
+        /// </summary>
+        /// <value>
+        /// The registrants.
+        /// </value>
+        List<RegistrantInfo> Registrants { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field values.
+        /// </summary>
+        /// <value>
+        /// The field values.
+        /// </value>
+        Dictionary<Guid, object> FieldValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrar.
+        /// </summary>
+        /// <value>
+        /// The registrar.
+        /// </value>
+        RegistrarInfo Registrar { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway token.
+        /// </summary>
+        /// <value>
+        /// The gateway token.
+        /// </value>
+        string GatewayToken { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discount code.
+        /// </summary>
+        /// <value>
+        /// The discount code.
+        /// </value>
+        string DiscountCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount to pay now.
+        /// </summary>
+        /// <value>
+        /// The amount to pay now.
+        /// </value>
+        decimal AmountToPayNow { get; set; }
+    }
+
+    /// <summary>
     /// RegistrationEntryBlockArgs
     /// </summary>
-    public sealed class RegistrationEntryBlockArgs : IViewModel
+    public sealed class RegistrationEntryBlockArgs : IRegistrationEntryBlockArgs
     {
         /// <summary>
         /// Gets or sets the registration unique identifier.

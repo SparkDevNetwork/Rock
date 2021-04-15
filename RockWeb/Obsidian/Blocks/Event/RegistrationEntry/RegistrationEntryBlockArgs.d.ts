@@ -27,3 +27,10 @@ export interface RegistrationEntryBlockArgs
     DiscountCode: string;
     AmountToPayNow: number;
 }
+
+export interface RegistrationEntryBlockSession extends RegistrationEntryBlockArgs
+{
+    DiscountAmount: number;
+    DiscountPercentage: number;
+    PreviouslyPaid: number;
+}

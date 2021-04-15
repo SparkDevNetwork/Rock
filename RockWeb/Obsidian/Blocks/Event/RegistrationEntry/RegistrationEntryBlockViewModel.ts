@@ -18,7 +18,7 @@
 import { GatewayControlModel } from '../../../Controls/GatewayControl';
 import { Guid } from '../../../Util/Guid';
 import Attribute from '../../../ViewModels/CodeGenerated/AttributeViewModel';
-import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
+import { RegistrationEntryBlockArgs, RegistrationEntryBlockSession } from './RegistrationEntryBlockArgs';
 
 export enum RegistrationPersonFieldType
 {
@@ -108,7 +108,7 @@ export interface RegistrationEntryBlockViewModel
     InstanceName: string,
     AmountDueToday: number | null,
     InitialAmountToPay: number | null,
-    RegistrationEntryBlockArgs: RegistrationEntryBlockArgs | null
+    Session: RegistrationEntryBlockSession | null
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

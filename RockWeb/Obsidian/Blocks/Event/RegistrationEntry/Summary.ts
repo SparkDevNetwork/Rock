@@ -108,48 +108,51 @@ export default defineComponent( {
             submitErrorMessage: '',
 
             /** The amount that will be paid today */
-            amountToPayToday: 0
+            amountToPayToday: 0,
+
+            /** The amount already paid in the past (of an existing registration) */
+            previouslyPaid: 0
         };
     },
     computed: {
         /** The settings for the gateway (MyWell, etc) control */
-        gatewayControlModel(): GatewayControlModel
+        gatewayControlModel (): GatewayControlModel
         {
             return this.viewModel.GatewayControl;
         },
 
         /** The person that is currently authenticated */
-        currentPerson(): Person | null
+        currentPerson (): Person | null
         {
             return this.$store.state.currentPerson;
         },
 
         /** The person entering the registration information. This object is part of the registration state. */
-        registrar(): RegistrarInfo
+        registrar (): RegistrarInfo
         {
             return this.registrationEntryState.Registrar;
         },
 
         /** The first registrant entered into the registration. */
-        firstRegistrant(): RegistrantInfo
+        firstRegistrant (): RegistrantInfo
         {
             return this.registrationEntryState.Registrants[ 0 ];
         },
 
         /** This is the data sent from the C# code behind when the block initialized. */
-        viewModel(): RegistrationEntryBlockViewModel
+        viewModel (): RegistrationEntryBlockViewModel
         {
             return this.registrationEntryState.ViewModel;
         },
 
         /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
-        doShowUpdateEmailOption(): boolean
+        doShowUpdateEmailOption (): boolean
         {
             return !this.viewModel.ForceEmailUpdate && !!this.currentPerson?.Email;
         },
 
         /** Should the discount column in the fee table be shown? */
-        showDiscountCol(): boolean
+        showDiscountCol (): boolean
         {
             return this.discountPercent > 0 || this.discountAmount > 0;
         },
@@ -161,7 +164,7 @@ export default defineComponent( {
         },
 
         /** The fee line items that will be displayed in the summary */
-        lineItems(): LineItem[]
+        lineItems (): LineItem[]
         {
             const lineItems: LineItem[] = [];
 
@@ -275,7 +278,7 @@ export default defineComponent( {
         },
 
         /** The total amount of the registration before discounts */
-        total(): number
+        total (): number
         {
             let total = 0;
 
@@ -288,7 +291,7 @@ export default defineComponent( {
         },
 
         /** The total amount of the registration after discounts */
-        discountedTotal(): number
+        discountedTotal (): number
         {
             let total = 0;
 
@@ -301,13 +304,13 @@ export default defineComponent( {
         },
 
         /** The total before discounts as a formatted string */
-        totalFormatted(): string
+        totalFormatted (): string
         {
             return `$${asFormattedString( this.total )}`;
         },
 
         /** The total after discounts as a formatted string */
-        discountedTotalFormatted(): string
+        discountedTotalFormatted (): string
         {
             return `$${asFormattedString( this.discountedTotal )}`;
         },
@@ -333,7 +336,7 @@ export default defineComponent( {
         /** The vee-validate rules for the amount to pay today */
         amountToPayTodayRules (): string
         {
-            var rules: string[] = ['required'];
+            var rules: string[] = [ 'required' ];
             let min = this.viewModel.AmountDueToday || 0;
             const max = this.discountedTotal;
 
@@ -369,6 +372,11 @@ export default defineComponent( {
         instanceName (): string
         {
             return this.viewModel.InstanceName;
+        },
+
+        previouslyPaidFormatted (): string
+        {
+            return `$${asFormattedString( this.previouslyPaid )}`;
         }
     },
     methods: {
@@ -539,7 +547,15 @@ export default defineComponent( {
     },
     created ()
     {
-        if ( this.viewModel.InitialAmountToPay !== null )
+        if ( this.viewModel.Session )
+        {
+            this.amountToPayToday = this.viewModel.Session.AmountToPayNow;
+            this.discountCodeInput = this.viewModel.Session.DiscountCode;
+            this.discountAmount = this.viewModel.Session.DiscountAmount;
+            this.discountPercent = this.viewModel.Session.DiscountPercentage;
+            this.previouslyPaid = this.viewModel.Session.PreviouslyPaid;
+        }
+        else if ( this.viewModel.InitialAmountToPay !== null )
         {
             this.amountToPayToday = this.viewModel.InitialAmountToPay;
         }
@@ -647,6 +663,14 @@ export default defineComponent( {
                             </div>
                         </div>
                     </div>
+                    <div class="form-group static-control">
+                        <label class="control-label">Previously Paid</label>
+                        <div class="control-wrapper">
+                            <div class="form-control-static">
+                                {{previouslyPaidFormatted}}
+                            </div>
+                        </div>
+                    </div>
                     <template v-if="showAmountDueToday">
                         <div class="form-group static-control">
                             <label class="control-label">Minimum Due Today</label>
@@ -678,7 +702,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="total" class="well">
+        <div v-if="total && amountToPayToday" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />

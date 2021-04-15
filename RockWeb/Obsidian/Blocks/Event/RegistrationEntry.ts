@@ -131,7 +131,12 @@ export default defineComponent( {
         const hasPreAttributes = viewModel.RegistrationAttributesStart?.length > 0;
         let currentStep = steps.intro;
 
-        if ( viewModel.MaxRegistrants === 1 && isNullOrWhitespace( viewModel.InstructionsHtml ) )
+        if ( viewModel.Session )
+        {
+            // This is an existing registration, start at the summary
+            currentStep = steps.reviewAndPayment;
+        }
+        else if ( viewModel.MaxRegistrants === 1 && isNullOrWhitespace( viewModel.InstructionsHtml ) )
         {
             // There is no need to show the numer of registrants selector or instructions. Start at the second page.
             currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
@@ -144,16 +149,16 @@ export default defineComponent( {
             CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: [ getDefaultRegistrantInfo() ],
-            RegistrationFieldValues: {},
-            Registrar: {
+            Registrants: viewModel.Session?.Registrants || [ getDefaultRegistrantInfo() ],
+            RegistrationFieldValues: viewModel.Session?.FieldValues || {},
+            Registrar: viewModel.Session?.Registrar || {
                 NickName: '',
                 LastName: '',
                 Email: '',
                 UpdateEmail: true
             },
             GatewayToken: '',
-            DiscountCode: '',
+            DiscountCode: viewModel.Session?.DiscountCode || '',
             SuccessViewModel: null
         } as RegistrationEntryState );
 

@@ -470,19 +470,13 @@ namespace Rock.Obsidian.Blocks.Event
                 registration.IsTemporary = false;
 
                 // Set attribute values on the registration
+                var registrationAttributes = GetRegistrationAttributes( registrationTemplate.Id );
                 registration.LoadAttributes( rockContext );
 
-                foreach ( var value in args.FieldValues )
+                foreach ( var attribute in registrationAttributes )
                 {
-                    var attributeGuid = value.Key;
-                    var attribute = AttributeCache.Get( attributeGuid );
-
-                    if ( attribute == null )
-                    {
-                        continue;
-                    }
-
-                    registration.SetAttributeValue( attribute.Key, value.Value.ToStringSafe() );
+                    var value = args.FieldValues.GetValueOrNull( attribute.Guid );
+                    registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
                 }
 
                 // Save the registration ( so we can get an id )
@@ -623,9 +617,14 @@ namespace Rock.Obsidian.Blocks.Event
         /// <param name="person">The person.</param>
         /// <param name="forms">The forms.</param>
         /// <returns></returns>
-        private IDictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, IEnumerable<RegistrationTemplateForm> forms )
+        private Dictionary<Guid, object> GetCurrentValueFieldValues( RockContext rockContext, Person person, IEnumerable<RegistrationTemplateForm> forms )
         {
             var fieldValues = new Dictionary<Guid, object>();
+
+            if ( person is null )
+            {
+                return fieldValues;
+            }
 
             foreach ( var form in forms )
             {
@@ -1170,7 +1169,7 @@ namespace Rock.Obsidian.Blocks.Event
             // Load the person's attributes
             person.LoadAttributes();
 
-            // Set any of the template's person fields
+            // Set any of the template's person attribute fields
             foreach ( var field in registrationTemplate.Forms
                 .SelectMany( f => f.Fields
                     .Where( t =>
@@ -1271,12 +1270,15 @@ namespace Rock.Obsidian.Blocks.Event
             // Upsert fees if not on the waiting list
             if ( !isWaitlist )
             {
-                var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+                var feeModels = registrationTemplate.Fees?
+                    .Where( f => f.IsActive )
+                    .OrderBy( f => f.Order )
+                    .ToList() ?? new List<RegistrationTemplateFee>();
 
                 foreach ( var feeModel in feeModels )
                 {
                     var totalFeeQuantity = 0;
-                    var feeItemModels = feeModel.FeeItems.ToList();
+                    var feeItemModels = feeModel.FeeItems.Where( f => f.IsActive ).ToList();
 
                     for ( var i = 0; i < feeItemModels.Count; i++ )
                     {
@@ -1366,9 +1368,11 @@ namespace Rock.Obsidian.Blocks.Event
 
             // Set any of the template's registrant attributes
             registrant.LoadAttributes();
-            var attributeFields = registrationTemplate.Forms.SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue ) ).ToList();
+            var registrantAttributeFields = registrationTemplate.Forms
+                .SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
+                .ToList();
 
-            foreach ( var field in attributeFields )
+            foreach ( var field in registrantAttributeFields )
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
 
@@ -1503,7 +1507,7 @@ namespace Rock.Obsidian.Blocks.Event
             var pluralRegistrantTerm = registrantTerm.Pluralize();
 
             // Get the fees
-            var feeModels = registrationTemplate.Fees?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
+            var feeModels = registrationTemplate.Fees?.Where( f => f.IsActive ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
             var fees = new List<RegistrationEntryBlockFeeViewModel>();
 
             foreach ( var feeModel in feeModels )
@@ -1515,7 +1519,7 @@ namespace Rock.Obsidian.Blocks.Event
                     AllowMultiple = feeModel.AllowMultiple,
                     IsRequired = feeModel.IsRequired,
                     DiscountApplies = feeModel.DiscountApplies,
-                    Items = feeModel.FeeItems.Select( fi => new RegistrationEntryBlockFeeItemViewModel
+                    Items = feeModel.FeeItems.Where( f => f.IsActive ).Select( fi => new RegistrationEntryBlockFeeItemViewModel
                     {
                         Cost = fi.Cost,
                         Name = fi.Name,
@@ -1648,7 +1652,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
-                RegistrationEntryBlockArgs = null,
+                Session = null,
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,
@@ -1680,7 +1684,7 @@ namespace Rock.Obsidian.Blocks.Event
             };
 
             // If the registration is existing, then add the args that describe it to the view model
-            viewModel.RegistrationEntryBlockArgs = GetRegistrationEntryBlockArgs();
+            viewModel.Session = GetRegistrationEntryBlockSession( rockContext, registrationTemplate, registrationInstance );
 
             return viewModel;
         }
@@ -2031,11 +2035,10 @@ namespace Rock.Obsidian.Blocks.Event
         /// Gets the registration entry block arguments if this is an existing registration.
         /// </summary>
         /// <returns></returns>
-        private RegistrationEntryBlockArgs GetRegistrationEntryBlockArgs( RockContext rockContext )
+        private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
         {
             var currentPerson = GetCurrentPerson();
             var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
-            var registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
 
             if ( registrationId is null || currentPerson is null )
             {
@@ -2052,28 +2055,107 @@ namespace Rock.Obsidian.Blocks.Event
             // Query for a registration that matches the ID and is owned or was created by the current person
             var registrationService = new RegistrationService( rockContext );
             var registration = registrationService
-                .Queryable()
+                .Queryable( "Registrants.PersonAlias.Person, Registrants.Fees" )
+                .Include( r => r.Registrants )
                 .AsNoTracking()
                 .FirstOrDefault( r =>
                     r.Id == registrationId.Value && (
                         ( r.PersonAliasId.HasValue && authorizedAliasIds.Contains( r.PersonAliasId.Value ) ) ||
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
-                    ) && (
-                        !registrationInstanceId.HasValue || r.RegistrationInstanceId == registrationInstanceId.Value
-                    ) );
+                    ) &&
+                    r.RegistrationInstanceId == registrationInstance.Id );
 
             if ( registration is null )
             {
                 return null;
             }
 
-            var args = new RegistrationEntryBlockArgs {
-                AmountToPayNow = 0,
+            var alreadyPaid = registrationService.GetTotalPayments( registration.Id );
+            var balanceDue = registration.DiscountedCost - alreadyPaid;
+
+            if ( balanceDue < 0 )
+            {
+                balanceDue = 0;
+            }
+
+            // Create the base args data
+            var session = new RegistrationEntryBlockSession
+            {
+                AmountToPayNow = balanceDue,
                 DiscountCode = registration.DiscountCode,
-                FieldValues = new Dictionary<Guid, object>()
+                DiscountAmount = registration.DiscountAmount,
+                DiscountPercentage = registration.DiscountPercentage,
+                FieldValues = new Dictionary<Guid, object>(),
+                GatewayToken = string.Empty,
+                Registrants = new List<ViewModel.Blocks.RegistrantInfo>(),
+                Registrar = new RegistrarInfo(),
+                RegistrationGuid = registration.Guid,
+                PreviouslyPaid = alreadyPaid
             };
 
-            return args;
+            // Add attributes about the registration itself
+            var registrationAttributes = GetRegistrationAttributes( registrationTemplate.Id );
+            registration.LoadAttributes( rockContext );
+
+            foreach ( var attribute in registrationAttributes )
+            {
+                var value = registration.GetAttributeValue( attribute.Key );
+                session.FieldValues[attribute.Guid] = value;
+            }
+
+            // Add information about the registrants
+            foreach ( var registrant in registration.Registrants )
+            {
+                var person = registrant.PersonAlias?.Person;
+                person.LoadAttributes( rockContext );
+                registrant.LoadAttributes( rockContext );
+
+                var registrantInfo = new ViewModel.Blocks.RegistrantInfo
+                {
+                    FamilyGuid = person?.GetFamily( rockContext )?.Guid,
+                    Guid = registrant.Guid,
+                    PersonGuid = person?.Guid,
+                    FieldValues = GetCurrentValueFieldValues( rockContext, person, registrationTemplate.Forms ),
+                    FeeItemQuantities = new Dictionary<Guid, int>(),
+                    IsOnWaitList = registrant.OnWaitList
+                };
+
+                // Person fields and person attribute fields are already loaded via GetCurrentValueFieldValues, but we still need
+                // to get registrant attributes
+                foreach ( var form in registrationTemplate.Forms )
+                {
+                    var fields = form.Fields
+                        .Where( f =>
+                            !f.IsInternal &&
+                            f.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                            f.AttributeId.HasValue )
+                        .ToList();
+
+                    foreach ( var field in fields )
+                    {
+                        var attribute = AttributeCache.Get( field.AttributeId.Value );
+                        var value = registration.GetAttributeValue( attribute.Key );
+                        registrantInfo.FieldValues[attribute.Guid] = value;
+                    }
+                }
+
+                // Add the fees
+                foreach ( var fee in registrationTemplate.Fees.Where( f => f.IsActive ) )
+                {
+                    var registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeId == fee.Id );
+
+                    foreach ( var feeItem in fee.FeeItems.Where( f => f.IsActive ) )
+                    {
+                        registrantFee = registrant.Fees.FirstOrDefault( f => f.RegistrationTemplateFeeItemId == feeItem.Id ) ?? registrantFee;
+                        var quantity = registrantFee?.Quantity ?? 0;
+                        registrantInfo.FeeItemQuantities[feeItem.Guid] = quantity;
+                    }
+                }
+
+                session.Registrants.Add( registrantInfo );
+            }
+
+            return session;
         }
 
         #endregion Helpers
