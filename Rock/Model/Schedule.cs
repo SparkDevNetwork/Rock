@@ -1636,7 +1636,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="trimmedContent">Content of the trimmed.</param>
         /// <returns></returns>
-        internal static Event CreateCalendarEvent( string trimmedContent )
+        public static Event CreateCalendarEvent( string trimmedContent )
         {
             StringReader stringReader = new StringReader( trimmedContent );
             var calendarList = Calendar.LoadFromStream( stringReader );

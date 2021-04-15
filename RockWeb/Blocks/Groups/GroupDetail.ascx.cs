@@ -999,7 +999,7 @@ namespace RockWeb.Blocks.Groups
             if ( scheduleType == ScheduleType.Custom )
             {
                 iCalendarContent = sbSchedule.iCalendarContent;
-                var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                var calEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
                 if ( calEvent == null || calEvent.DtStart == null )
                 {
                     scheduleType = ScheduleType.None;

@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Event
 
                     // Set Calendar.
                     string iCalendarContent = sbSchedule.iCalendarContent ?? string.Empty;
-                    var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                    var calEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
                     if ( calEvent != null && calEvent.DtStart != null )
                     {
                         if ( eventItemOccurrence.Schedule == null )
