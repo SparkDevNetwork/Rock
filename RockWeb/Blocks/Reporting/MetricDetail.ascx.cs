@@ -347,10 +347,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( metric.SourceValueTypeId == sourceTypeDataView )
             {
                 metric.DataViewId = dvpDataView.SelectedValueAsId();
+                metric.AutoPartitionOnPrimaryCampus = cbAutoPartionPrimaryCampus.Checked;
             }
             else
             {
                 metric.DataViewId = null;
+                metric.AutoPartitionOnPrimaryCampus = false;
             }
 
             var scheduleSelectionType = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>();
@@ -984,6 +986,10 @@ The Lava can include Lava merge fields:";
 
             BindMetricPartitionsGrid();
 
+            //  and populate it's value, otherwise this prop is not available and should be set to false.
+            ShowHideAutoPartitionPrimaryCampus();
+            cbAutoPartionPrimaryCampus.Checked = cbAutoPartionPrimaryCampus.Visible && metric.AutoPartitionOnPrimaryCampus;
+
             metric.LoadAttributes();
             avcEditAttributeValues.AddEditControls( metric, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
@@ -1196,6 +1202,18 @@ The Lava can include Lava merge fields:";
             }
         }
 
+        /// <summary>
+        /// If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox
+        /// </summary>
+        private void ShowHideAutoPartitionPrimaryCampus()
+        {
+            // If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox and populate it's value, otherwise this prop is not available and should be set to false.
+            cbAutoPartionPrimaryCampus.Visible = dvpDataView.Visible == true
+                && dvpDataView.SelectedValueAsId() != null
+                && MetricPartitionsState.Count == 1
+                && MetricPartitionsState[0].EntityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.CAMPUS );
+        }
+
         #endregion
 
         #region Series Partitions
@@ -1284,6 +1302,7 @@ The Lava can include Lava merge fields:";
             MetricPartitionsState.RemoveEntity( rowGuid );
 
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -1395,8 +1414,8 @@ The Lava can include Lava merge fields:";
             }
 
             MetricPartitionsState.Add( metricPartition );
-
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
             mdMetricPartitionDetail.Hide();
         }
 
