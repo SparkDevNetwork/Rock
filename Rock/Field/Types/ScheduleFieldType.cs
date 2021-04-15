@@ -22,6 +22,7 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -48,14 +49,7 @@ namespace Rock.Field.Types
 
             if ( scheduleGuid.HasValue )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var schedule = new ScheduleService( rockContext ).GetNoTracking( scheduleGuid.Value );
-                    if ( schedule != null )
-                    {
-                        return schedule.Name;
-                    }
-                }
+                return NamedScheduleCache.Get( scheduleGuid.Value )?.Name;
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -93,10 +87,7 @@ namespace Rock.Field.Types
                 Guid? itemGuid = null;
                 if ( itemId.HasValue && itemId > 0 )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        itemGuid = new ScheduleService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == itemId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
-                    }
+                    itemGuid = NamedScheduleCache.Get( itemId.Value )?.Guid;
                 }
 
                 return itemGuid?.ToString() ?? string.Empty;
@@ -116,19 +107,17 @@ namespace Rock.Field.Types
             var picker = control as SchedulePicker;
             if ( picker != null )
             {
-                Schedule item = null;
                 Guid? itemGuid = value.AsGuidOrNull();
                 if ( itemGuid.HasValue )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        item = new ScheduleService( rockContext ).Get( itemGuid.Value );
-                        picker.SetValue( item );
-                    }
+
+                    var itemId = NamedScheduleCache.GetId( itemGuid.Value );
+                    picker.SetValue( itemId );
+
                 }
                 else
                 {
-                    picker.SetValue( null );
+                    picker.SetValue( ( int? ) null );
                 }
             }
         }
@@ -173,7 +162,7 @@ namespace Rock.Field.Types
         {
             Guid guid = GetEditValue( control, configurationValues ).AsGuid();
             var item = new ScheduleService( new RockContext() ).Get( guid );
-            return item != null ? item.Id : (int?)null;
+            return item != null ? item.Id : ( int? ) null;
         }
 
         /// <summary>
