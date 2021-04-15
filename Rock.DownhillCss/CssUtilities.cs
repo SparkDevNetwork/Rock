@@ -590,7 +590,7 @@ NavigationPage {
 }
 
 ^label {
-    font-size: ?shell-font-scale( ?font-size-default );
+    font-size: ?font-size-default;
     color: ?color-text;
 }
 
@@ -610,7 +610,7 @@ icon {
 .h1 {
     color: ?color-heading;
     font-style: bold;
-    font-size: ?shell-font-scale( 34 );
+    font-size: 34;
     margin-bottom: 0;
     line-height: 1;
 }
@@ -618,28 +618,28 @@ icon {
 .h2 {
     color: ?color-heading;
     font-style: bold;
-    font-size: ?shell-font-scale( 28 );
+    font-size: 28;
     line-height: 1;
 }
 
 .h3 {
     color: ?color-heading;
     font-style: bold;
-    font-size: ?shell-font-scale( 22 );
+    font-size: 22;
     line-height: 1.05;
 }
 
 .h4 {
     color: ?color-heading;
     font-style: bold;
-    font-size: ?shell-font-scale( 16 );
+    font-size: 16;
     line-height: 1.1;
 }
 
 .h5, .h6 {
     color: ?color-heading;
     font-style: bold;
-    font-size: ?shell-font-scale( 13 );
+    font-size: 13;
     line-height: 1.25;
 }
 
@@ -652,7 +652,7 @@ icon {
     background-color: #183055;
     color: #e6ecf1;
     padding: 16;
-    font-size: ?shell-font-scale( 12 );
+    font-size: 12;
 }
 
 /* Text Weights */
@@ -679,73 +679,73 @@ icon {
 
 /* Text Named Sizes */
 .text {
-    font-size: ?shell-font-scale( ?font-size-default );
+    font-size: ?font-size-default;
     color: ?color-text;
 }
 
 .text-xs {
-    font-size: ?shell-font-scale( 12 );
+    font-size: micro;
 }
 
 .text-sm {
-    font-size: ?shell-font-scale( 14 );
+    font-size: small;
 }
 
 .text-md {
-    font-size: ?shell-font-scale( 16 );
+    font-size: medium;
 }
 
 .text-lg {
-    font-size: ?shell-font-scale( 22 );
+    font-size: large;
 }
 
 .text-title {
-    font-size: ?shell-font-scale( 28 );
+    font-size: title;
     color: ?color-text;
 }
 
 .text-subtitle {
-    font-size: ?shell-font-scale( 22 );
+    font-size: subtitle;
 }
 
 .text-caption {
-    font-size: ?shell-font-scale( 12 );
+    font-size: caption;
 }
 
 .text-body {
-    font-size: ?shell-font-scale( 16 );
+    font-size: body;
 }
 
 .title {
     font-style: bold;
-    font-size: ?shell-font-scale( ?font-size-default );
+    font-size: ?font-size-default;
     line-height: 1;
 }
 
 /* Body Styles */
 .paragraph {
-    font-size: ?shell-font-scale( ?font-size-default );
+    font-size: ?font-size-default;
     color: ?color-text;
     line-height: 1.15;
     margin-bottom: 24;
 }
 
 .paragraph-sm {
-    font-size: ?shell-font-scale( 14 );
+    font-size: small;
     color: ?color-text;
     line-height: 1.25;
     margin-bottom: 12;
 }
 
 .paragraph-xs {
-    font-size: ?shell-font-scale( 12 );
+    font-size: micro;
     color: ?color-text;
     line-height: 1.25;
     margin-bottom: 8;
 }
 
 .paragraph-lg {
-    font-size: ?shell-font-scale( 22 );
+    font-size: large;
     color: ?color-text;
     line-height: 1;
     margin-bottom: 16;
