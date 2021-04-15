@@ -42,12 +42,44 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given metric." )]
 
-    [BooleanField( "Show Chart", DefaultValue = "true" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes: "Last,Previous,Current,DateRange" )]
-    [BooleanField( "Combine Chart Series" )]
+    #region BlockAttributes
+
+    [BooleanField( "Show Chart",
+        Key = AttributeKey.ShowChart,
+        IsRequired = true,
+        DefaultValue = "true",
+        Order = 0 )]
+
+    [DefinedValueField( "Chart Style",
+        Key = AttributeKey.ChartStyle,
+        IsRequired = true,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Order = 1 )]
+
+    [SlidingDateRangeField( "Chart Date Range",
+        Key = AttributeKey.SlidingDateRange,
+        DefaultValue = "-1||||",
+        EnabledSlidingDateRangeTypes = "Last,Previous,Current,DateRange",
+        Order = 2)]
+
+    [BooleanField( "Combine Chart Series",
+        Key = AttributeKey.CombineChartSeries,
+        Order = 3 )]
+
+    #endregion BlockAttributes
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
+        #region AttributeKey
+        private static class AttributeKey
+        {
+            public const string ShowChart = "ShowChart";
+            public const string ChartStyle = "ChartStyle";
+            public const string SlidingDateRange = "SlidingDateRange";
+            public const string CombineChartSeries = "CombineChartSeries";
+        }
+
+        #endregion AttributeKey
         #region Properties
 
         private List<MetricPartition> MetricPartitionsState { get; set; }
