@@ -740,7 +740,7 @@ namespace Rock.Web.UI.Controls
                         var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
                         var nbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
-                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, nbAccountAmountMulti.Text.AsDecimalOrNull() ) );
+                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, nbAccountAmountMulti.Value ) );
                     }
                 }
                 else
@@ -794,7 +794,7 @@ namespace Rock.Web.UI.Controls
 
                     var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
                     _ddlAccountSingle.SetValue( displayedAccountId );
-                    _nbAmountAccountSingle.Text = selectedAccountAmount.Amount?.ToString( "N2" );
+                    _nbAmountAccountSingle.Text = selectedAccountAmount.Amount.FormatAsCurrency();
                     _nbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;
                 }
             }

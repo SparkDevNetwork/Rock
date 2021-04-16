@@ -19,23 +19,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
-using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
-using Rock.Security;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
 {
@@ -215,7 +207,7 @@ namespace RockWeb.Blocks.Event
                     registrant = registrantService.Get( RegistrantState.Id );
                 }
 
-                var previousRegistrantPersonIds = registrantService.Queryable().Where(a => a.RegistrationId == RegistrantState.RegistrationId)
+                var previousRegistrantPersonIds = registrantService.Queryable().Where( a => a.RegistrationId == RegistrantState.RegistrationId )
                                 .Where( r => r.PersonAlias != null )
                                 .Select( r => r.PersonAlias.PersonId )
                                 .ToList();
@@ -258,8 +250,8 @@ namespace RockWeb.Blocks.Event
                 // set their status (wait list / registrant)
                 registrant.OnWaitList = !tglWaitList.Checked;
 
-                History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Text.AsDecimal() );
-                registrant.Cost = cbCost.Text.AsDecimal();
+                History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Value );
+                registrant.Cost = cbCost.Value == null ? 0 : cbCost.Value.Value;
 
                 History.EvaluateChange( registrantChanges, "Discount Applies", registrant.DiscountApplies, cbDiscountApplies.Checked );
                 registrant.DiscountApplies = cbDiscountApplies.Checked;
@@ -282,7 +274,7 @@ namespace RockWeb.Blocks.Event
                         var feeOldValue = string.Format( "'{0}' Fee (Quantity:{1:N0}, Cost:{2:C2}, Option:{3}",
                           dbFee.RegistrationTemplateFee.Name, dbFee.Quantity, dbFee.Cost, dbFee.Option );
 
-                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee").SetOldValue( feeOldValue );
+                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Fee" ).SetOldValue( feeOldValue );
                         registrant.Fees.Remove( dbFee );
                         registrantFeeService.Delete( dbFee );
                     }
@@ -327,7 +319,7 @@ namespace RockWeb.Blocks.Event
 
                         if ( dbFee.Id <= 0 )
                         {
-                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee").SetNewValue( feeName );
+                            registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Fee" ).SetNewValue( feeName );
                         }
 
                         History.EvaluateChange( registrantChanges, feeName + " Quantity", dbFee.Quantity, uiFeeOption.Quantity );
@@ -507,7 +499,7 @@ namespace RockWeb.Blocks.Event
                                 reloadedRegistrant.GroupMemberId = groupMember.Id;
                             }
                         }
-                        if (reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace())
+                        if ( reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace() )
                         {
                             reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
                         }
@@ -647,10 +639,10 @@ namespace RockWeb.Blocks.Event
                 {
                     registrant = new RegistrationRegistrantService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Include(a => a.Registration.RegistrationInstance.RegistrationTemplate.Forms)
+                        .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Forms )
                         .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Fees )
                         .Include( a => a.PersonAlias.Person )
-                        .Include(a => a.Fees)
+                        .Include( a => a.Fees )
                         .Where( r => r.Id == registrantId.Value )
                         .FirstOrDefault();
 
@@ -771,7 +763,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( RegistrantState != null )
                 {
-                    cbCost.Text = RegistrantState.Cost.ToString( "N2" );
+                    cbCost.Value = RegistrantState.Cost;
                     cbDiscountApplies.Checked = RegistrantState.DiscountApplies;
                 }
             }
@@ -838,7 +830,7 @@ namespace RockWeb.Blocks.Event
 
                             var attribute = AttributeCache.Get( field.AttributeId.Value );
 
-                            if ( ( setValues && value == null ) || (value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
+                            if ( ( setValues && value == null ) || ( value.IsNullOrWhiteSpace() && field.IsRequired == true ) )
                             {
                                 // If the value was not set already, or if it is required and currently empty then use the default
                                 // Intentionally leaving the possibility of saving an empty string as the value for non-required fields.
@@ -934,7 +926,7 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Parses the controls.
         /// </summary>
-        private void ParseControls ()
+        private void ParseControls()
         {
             if ( RegistrantState != null && this.RegistrationTemplate != null )
             {

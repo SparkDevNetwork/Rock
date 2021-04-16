@@ -87,6 +87,7 @@ namespace RockWeb.Blocks.Finance
         private static class ViewStateKey
         {
             public const string TransactionDetailsState = "TransactionDetailsState";
+            public const string ForeignCurrencyDefinedValueId = "ForeignCurrencyDefinedValueId";
         }
 
         #endregion ViewStateKeys
@@ -104,6 +105,8 @@ namespace RockWeb.Blocks.Finance
         #region Properties
 
         private List<FinancialScheduledTransactionDetail> TransactionDetailsState { get; set; }
+
+        private int? ForeignCurrencyDefinedValueId { get; set; }
 
         private Dictionary<int, string> _financialAccountNameLookup = null;
 
@@ -146,6 +149,8 @@ namespace RockWeb.Blocks.Finance
             {
                 TransactionDetailsState = JsonConvert.DeserializeObject<List<FinancialScheduledTransactionDetail>>( json );
             }
+
+            ForeignCurrencyDefinedValueId = (int?) ViewState[ViewStateKey.ForeignCurrencyDefinedValueId];
         }
 
         /// <summary>
@@ -164,6 +169,7 @@ namespace RockWeb.Blocks.Finance
             };
 
             ViewState[ViewStateKey.TransactionDetailsState] = JsonConvert.SerializeObject( TransactionDetailsState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.ForeignCurrencyDefinedValueId] = ForeignCurrencyDefinedValueId;
 
             return base.SaveViewState();
         }
@@ -418,7 +424,7 @@ namespace RockWeb.Blocks.Finance
                 amountMinusFeeCoverageAmount = financialTransactionDetail.Amount;
             }
 
-            lAccountsViewAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency();
+            lAccountsViewAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency( ForeignCurrencyDefinedValueId );
         }
 
         /// <summary>
@@ -446,7 +452,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             var lAccountsEditAccountName = e.Row.FindControl( "lAccountsEditAccountName" ) as Literal;
-            lAccountsEditAccountName.Text = FinancialAccountNameLookup.GetValueOrNull ( financialTransactionDetail.AccountId );
+            lAccountsEditAccountName.Text = FinancialAccountNameLookup.GetValueOrNull( financialTransactionDetail.AccountId );
 
             var lAccountsEditAmountMinusFeeCoverageAmount = e.Row.FindControl( "lAccountsEditAmountMinusFeeCoverageAmount" ) as Literal;
             decimal amountMinusFeeCoverageAmount;
@@ -459,7 +465,7 @@ namespace RockWeb.Blocks.Finance
                 amountMinusFeeCoverageAmount = financialTransactionDetail.Amount;
             }
 
-            lAccountsEditAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency();
+            lAccountsEditAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency( ForeignCurrencyDefinedValueId );
 
             // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
             if ( financialTransactionDetail.EntityTypeId.HasValue || financialTransactionDetail.AccountId == TotalRowAccountId )
@@ -555,8 +561,8 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 financialTransactionDetail.AccountId = apAccount.SelectedValue.AsInteger();
-                var feeCoverageAmount = tbAccountFeeCoverageAmount.Text.AsDecimalOrNull();
-                financialTransactionDetail.Amount = tbAccountAmountMinusFeeCoverageAmount.Text.AsDecimal() + ( feeCoverageAmount ?? 0.00M );
+                var feeCoverageAmount = tbAccountFeeCoverageAmount.Value;
+                financialTransactionDetail.Amount = ( tbAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M ) + ( feeCoverageAmount ?? 0.00M );
                 financialTransactionDetail.FeeCoverageAmount = feeCoverageAmount;
                 financialTransactionDetail.Summary = tbAccountSummary.Text;
 
@@ -604,7 +610,7 @@ namespace RockWeb.Blocks.Finance
                 if ( financialScheduledTransaction.TotalAmount != totalAmount )
                 {
                     nbError.Title = "Incorrect Amount";
-                    nbError.Text = string.Format( "<p>When updating account allocations, the total amount needs to remain the same as the original amount ({0}).</p>", financialScheduledTransaction.TotalAmount.FormatAsCurrency() );
+                    nbError.Text = string.Format( "<p>When updating account allocations, the total amount needs to remain the same as the original amount ({0}).</p>", financialScheduledTransaction.TotalAmount.FormatAsCurrency( financialScheduledTransaction.ForeignCurrencyCodeValueId ) );
                     nbError.Visible = true;
                     return;
                 }
@@ -719,6 +725,8 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
+            ForeignCurrencyDefinedValueId = financialScheduledTransaction.ForeignCurrencyCodeValueId;
+
             hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
             hlStatus.LabelType = financialScheduledTransaction.IsActive ? LabelType.Success : LabelType.Danger;
 
@@ -732,7 +740,7 @@ namespace RockWeb.Blocks.Finance
             var detailsLeft = new DescriptionList().Add( "Person", person );
 
             var detailsRight = new DescriptionList()
-                .Add( "Amount", ( financialScheduledTransaction.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M ).FormatAsCurrency() )
+                .Add( "Amount", ( financialScheduledTransaction.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M ).FormatAsCurrency( ForeignCurrencyDefinedValueId ) )
                 .Add( "Frequency", financialScheduledTransaction.TransactionFrequencyValue != null ? financialScheduledTransaction.TransactionFrequencyValue.Value : string.Empty )
                 .Add( "Start Date", financialScheduledTransaction.StartDate.ToShortDateString() )
                 .Add( "End Date", financialScheduledTransaction.EndDate.HasValue ? financialScheduledTransaction.EndDate.Value.ToShortDateString() : string.Empty )
@@ -864,8 +872,8 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 apAccount.SetValue( null );
-                tbAccountAmountMinusFeeCoverageAmount.Text = string.Empty;
-                tbAccountFeeCoverageAmount.Text = string.Empty;
+                tbAccountAmountMinusFeeCoverageAmount.Value = null;
+                tbAccountFeeCoverageAmount.Value = null;
                 tbAccountSummary.Text = string.Empty;
 
                 txnDetail = new FinancialScheduledTransactionDetail();
@@ -958,7 +966,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="tbAccountAmount">The tb account amount.</param>
         /// <param name="transactionDetail">The transaction detail.</param>
-        private static void SetAccountAmountMinusFeeCoverageTextboxText( CurrencyBox tbAccountAmountMinusFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
+        private void SetAccountAmountMinusFeeCoverageTextboxText( CurrencyBox tbAccountAmountMinusFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
         {
             /* 2021-01-28 MDP
 
@@ -975,13 +983,15 @@ namespace RockWeb.Blocks.Finance
 
             var feeCoverageAmount = transactionDetail.FeeCoverageAmount;
             var accountAmount = transactionDetail.Amount;
+            tbAccountAmountMinusFeeCoverageAmount.CurrencyCodeDefinedValueId = ForeignCurrencyDefinedValueId ?? 0;
+
             if ( feeCoverageAmount.HasValue )
             {
-                tbAccountAmountMinusFeeCoverageAmount.Text = ( accountAmount - feeCoverageAmount.Value ).ToString( "N2" );
+                tbAccountAmountMinusFeeCoverageAmount.Value = ( accountAmount - feeCoverageAmount.Value );
             }
             else
             {
-                tbAccountAmountMinusFeeCoverageAmount.Text = accountAmount.ToString( "N2" );
+                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount;
             }
         }
 
@@ -990,25 +1000,11 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="tbAccountFeeCoverageAmount">The tb account fee coverage amount.</param>
         /// <param name="transactionDetail">The transaction detail.</param>
-        private static void SetAccountFeeCoverageAmountTextboxText( CurrencyBox tbAccountFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
+        private void SetAccountFeeCoverageAmountTextboxText( CurrencyBox tbAccountFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
         {
-            tbAccountFeeCoverageAmount.Text = GetFeeAsText( transactionDetail.FeeCoverageAmount );
+            tbAccountFeeCoverageAmount.CurrencyCodeDefinedValueId = ForeignCurrencyDefinedValueId ?? 0;
+            tbAccountFeeCoverageAmount.Value = transactionDetail.FeeCoverageAmount;
             tbAccountFeeCoverageAmount.Visible = transactionDetail.FeeCoverageAmount.HasValue;
-        }
-
-        /// <summary>
-        /// Take a fee and return empty string if null or the formatted currency amount
-        /// </summary>
-        /// <param name="fee"></param>
-        /// <returns></returns>
-        private static string GetFeeAsText( decimal? fee )
-        {
-            if ( fee.HasValue )
-            {
-                return fee.Value.ToString( "N2" );
-            }
-
-            return string.Empty;
         }
     }
 }

@@ -4174,7 +4174,7 @@ BEGIN
                             [Guid])
                         VALUES(
                             1,@AttributeId,@DefinedValueId,
-                            '{value.Replace( "'", "''")}',
+                            N'{value.Replace( "'", "''")}',
                             NEWID())
                     END
                 END

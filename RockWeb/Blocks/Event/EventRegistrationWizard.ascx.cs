@@ -567,9 +567,9 @@ namespace RockWeb.Blocks.Event
             // Set Cost variables if Cost is to be determined on the instance.
             if ( registrationTemplate.SetCostOnInstance == true )
             {
-                registrationInstance.Cost = cbCost.Text.AsDecimalOrNull();
-                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
-                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                registrationInstance.Cost = cbCost.Value;
+                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Value;
+                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Value;
             }
 
             // Save changes to database.

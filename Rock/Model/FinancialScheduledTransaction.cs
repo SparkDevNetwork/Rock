@@ -218,6 +218,15 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? LastRemindedDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
+        public int? ForeignCurrencyCodeValueId { get; set; }
         #endregion
 
         #region Virtual Properties

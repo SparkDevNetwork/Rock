@@ -147,6 +147,15 @@ namespace Rock.Model
         [DataMember]
         public bool IsDefault { get; set; }
 
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
+        public int? PreferredForeignCurrencyCodeValueId { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -279,6 +288,8 @@ namespace Rock.Model
                     }
                 }
             }
+
+            reference.AmountCurrencyCodeValueId = this.PreferredForeignCurrencyCodeValueId;
 
             return reference;
         }

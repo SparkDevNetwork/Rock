@@ -231,5 +231,10 @@ namespace Rock.SystemKey
         /// Settings for Giving Analytics
         /// </summary>
         public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
+
+        /// <summary>
+        /// The organization currency code
+        /// </summary>
+        public const string ORGANIZATION_CURRENCY_CODE = "OrganizationStandardCurrencyCode";
     }
 }

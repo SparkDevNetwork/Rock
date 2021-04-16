@@ -161,6 +161,7 @@ namespace Rock.Model
             refundTransaction.FinancialGatewayId = transaction.FinancialGatewayId;
             refundTransaction.TransactionTypeValueId = transaction.TransactionTypeValueId;
             refundTransaction.SourceTypeValueId = transaction.SourceTypeValueId;
+
             if ( transaction.FinancialPaymentDetail != null )
             {
                 refundTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
@@ -174,28 +175,35 @@ namespace Rock.Model
             }
 
             decimal remainingBalance = amount.Value;
-            foreach ( var account in transaction.TransactionDetails.Where( a => a.Amount > 0 ) )
+            /*
+             * If the refund is for a currency other then the Organization's currency it is up to the
+             * gateway to return the correct transaction details.
+             */
+            if ( refundTransaction.TransactionDetails?.Any() != true )
             {
-                var transactionDetail = new FinancialTransactionDetail();
-                transactionDetail.AccountId = account.AccountId;
-                transactionDetail.EntityId = account.EntityId;
-                transactionDetail.EntityTypeId = account.EntityTypeId;
-                refundTransaction.TransactionDetails.Add( transactionDetail );
+                foreach ( var account in transaction.TransactionDetails.Where( a => a.Amount > 0 ) )
+                {
+                    var transactionDetail = new FinancialTransactionDetail();
+                    transactionDetail.AccountId = account.AccountId;
+                    transactionDetail.EntityId = account.EntityId;
+                    transactionDetail.EntityTypeId = account.EntityTypeId;
+                    refundTransaction.TransactionDetails.Add( transactionDetail );
 
-                if ( remainingBalance >= account.Amount )
-                {
-                    transactionDetail.Amount = 0 - account.Amount;
-                    remainingBalance -= account.Amount;
-                }
-                else
-                {
-                    transactionDetail.Amount = 0 - remainingBalance;
-                    remainingBalance = 0.0m;
-                }
+                    if ( remainingBalance >= account.Amount )
+                    {
+                        transactionDetail.Amount = 0 - account.Amount;
+                        remainingBalance -= account.Amount;
+                    }
+                    else
+                    {
+                        transactionDetail.Amount = 0 - remainingBalance;
+                        remainingBalance = 0.0m;
+                    }
 
-                if ( remainingBalance <= 0.0m )
-                {
-                    break;
+                    if ( remainingBalance <= 0.0m )
+                    {
+                        break;
+                    }
                 }
             }
 
