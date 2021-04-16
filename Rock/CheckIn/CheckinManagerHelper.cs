@@ -180,6 +180,7 @@ namespace Rock.CheckIn
 
             if ( locationId > 0 )
             {
+                // double check the locationId in the URL is valid for the Campus (just in case it was altered or is no longer valid for the campus)
                 var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
                 if ( locationCampusId != campus.Id )
                 {
@@ -195,6 +196,16 @@ namespace Rock.CheckIn
             {
                 // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
+                
+                if ( locationId > 0 )
+                {
+                    // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
+                    var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
+                    if ( locationCampusId != campus.Id )
+                    {
+                        locationId = 0;
+                    }
+                }
 
                 if ( locationId <= 0 )
                 {
