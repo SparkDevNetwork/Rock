@@ -42,8 +42,6 @@ using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
-using Ical.Net;
-using Ical.Net.DataTypes;
 using ImageResizer;
 using Newtonsoft.Json;
 using Rock;
@@ -56,7 +54,6 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using UAParser;
-using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Lava
 {
