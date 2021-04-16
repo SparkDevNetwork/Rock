@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -23,6 +22,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
 using Ical.Net;
@@ -77,12 +77,14 @@ namespace Rock.Model
             {
                 return _iCalendarContent ?? string.Empty;
             }
+
             set
             {
                 _getICalEvent = null;
                 _iCalendarContent = value;
             }
         }
+
         private string _iCalendarContent;
 
         /// <summary>
@@ -599,7 +601,7 @@ namespace Rock.Model
                 }
             }
 
-            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date || EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
+            return (EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
         }
 
         /// <summary>
@@ -883,7 +885,6 @@ namespace Rock.Model
             return result;
         }
 
-
         /// <summary>
         /// Gets the first start date time.
         /// </summary>
@@ -992,7 +993,6 @@ namespace Rock.Model
                 if ( calendarEvent.RecurrenceRules.Any() )
                 {
                     // some type of recurring schedule
-
                     var rrule = calendarEvent.RecurrenceRules[0];
                     switch ( rrule.Frequency )
                     {
@@ -1074,7 +1074,6 @@ namespace Rock.Model
 
                         default:
                             // some other type of recurring type (probably specific dates).  Just return the Name of the schedule
-
                             break;
                     }
                 }
@@ -1094,7 +1093,6 @@ namespace Rock.Model
                         }
                         else
                         {
-
                             var listHtml = "<ul class='list-unstyled'>" + Environment.NewLine;
                             foreach ( var date in dates )
                             {
@@ -1249,15 +1247,15 @@ namespace Rock.Model
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
-
-            // invalid condition, end before the start
+            
             if ( checkOutEndDateCompare < 0 )
             {
+                // invalid condition, end before the start
                 return false;
             }
-            // the start and end are on the same day, so we can do simple time checking
             else if ( checkOutEndDateCompare == 0 )
             {
+                // the start and end are on the same day, so we can do simple time checking
                 // Is the current time earlier the event's allowed check-in window?
                 if ( time.TimeOfDay.TotalSeconds < checkInStart.Value.TimeOfDay.TotalSeconds )
                 {
@@ -1272,10 +1270,11 @@ namespace Rock.Model
                     return false;
                 }
             }
-            // Does the end time spill over to a different day...
-            // if so, we have to look for crossover conditions
             else if ( checkOutEndDateCompare > 0 )
             {
+                // Does the end time spill over to a different day...
+                // if so, we have to look for crossover conditions
+
                 // The current time is before the start time and later than the end time:
                 // ex: 11PM-2AM window, and it's 10PM -- not in the window
                 // ex: 11PM-2AM window, and it's 3AM -- not in the window
@@ -1337,22 +1336,22 @@ namespace Rock.Model
         /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
         /// </summary>
         public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> {
-            {1, "First"},
-            {2, "Second"},
-            {3, "Third"},
-            {4, "Fourth"},
-            {-1, "Last"}
+            { 1, "First" },
+            { 2, "Second" },
+            { 3, "Third" },
+            { 4, "Fourth" },
+            { -1, "Last" }
         };
 
         /// <summary>
         /// The abbreviated "nth" names for DayName of Month (1st, 2nd, 3rd, 4th, last)
         /// </summary>
         private static readonly Dictionary<int, string> NthNamesAbbreviated = new Dictionary<int, string> {
-            {1, "1st"},
-            {2, "2nd"},
-            {3, "3rd"},
-            {4, "4th"},
-            {-1, "last"}
+            { 1, "1st" },
+            { 2, "2nd" },
+            { 3, "3rd" },
+            { 4, "4th" },
+            { -1, "last" }
         };
 
         #endregion
@@ -1616,12 +1615,16 @@ namespace Rock.Model
     /// </remarks>
     public static class InetCalendarHelper
     {
-        private static ConcurrentDictionary<string, Occurrence[]> _iCalOccurrences = new ConcurrentDictionary<string, Occurrence[]>();
+        // using MemoryCache instead RockCacheManager, since Occurrences isn't serializable.
+        private static MemoryCache _iCalOccurrencesCache = new MemoryCache( "Rock.InetCalendarHelper._iCalOccurrences" );
+
+        // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
+        private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
         /// <summary>
         /// Gets the calendar event.
         /// </summary>
-        /// <param name="iCalendarContent">Content of the iCalendar.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
         [RockObsolete( "12.4" )]
         [Obsolete( "Use CreateCalendarEvent instead" )]
@@ -1634,11 +1637,11 @@ namespace Rock.Model
         /// <summary>
         /// Creates the calendar event.
         /// </summary>
-        /// <param name="trimmedContent">Content of the trimmed.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
-        public static Event CreateCalendarEvent( string trimmedContent )
+        public static Event CreateCalendarEvent( string iCalendarContent )
         {
-            StringReader stringReader = new StringReader( trimmedContent );
+            StringReader stringReader = new StringReader( iCalendarContent );
             var calendarList = Calendar.LoadFromStream( stringReader );
             Event calendarEvent = null;
 
@@ -1657,69 +1660,80 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the occurrences.
+        /// Gets the occurrences for the specified iCal
         /// </summary>
-        /// <param name="iCalData">The i cal data.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( string iCalData, DateTime startDateTime )
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime )
         {
-            return GetOccurrences( iCalData, startDateTime, null );
+            return GetOccurrences( iCalendarContent, startDateTime, null );
         }
 
         /// <summary>
         /// Gets the occurrences.
         /// </summary>
-        /// <param name="iCalData">The i cal data.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( string iCalData, DateTime startDateTime, DateTime? endDateTime )
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime )
         {
-            return GetOccurrences( iCalData, startDateTime, endDateTime, null );
+            return GetOccurrences( iCalendarContent, startDateTime, endDateTime, null );
         }
 
         /// <summary>
         /// Gets the occurrences.
         /// </summary>
-        /// <param name="iCalData">The i cal data.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <param name="startDateTime">The start date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( string iCalData, DateTime startDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
         {
-            string occurrenceLookup = Rock.Security.Encryption.GetSHA1Hash( $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__{scheduleStartDateTimeOverride?.ToShortDateTimeString()}__{iCalData.Trim()}" );
+            string occurrenceLookupKey = $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__{scheduleStartDateTimeOverride?.ToShortDateTimeString()}__{iCalendarContent.Trim()}".XxHash();
 
-            Occurrence[] occurrenceList;
-            var gotResult = _iCalOccurrences.TryGetValue( occurrenceLookup, out occurrenceList );
+            Occurrence[] occurrenceList = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
 
-            if ( !gotResult || occurrenceList == null )
+            if ( occurrenceList == null )
             {
-                var iCalEvent = CreateCalendarEvent( iCalData );
-                if ( iCalEvent == null )
-                {
-                    return new List<Occurrence>();
-                }
-
-                if ( scheduleStartDateTimeOverride.HasValue )
-                {
-                    iCalEvent.DtStart = new CalDateTime( scheduleStartDateTimeOverride.Value );
-                }
-
-                if ( endDateTime.HasValue )
-                {
-                    occurrenceList = iCalEvent.GetOccurrences( startDateTime, endDateTime.Value ).ToArray();
-                }
-                else
-                {
-                    occurrenceList = iCalEvent.GetOccurrences( startDateTime ).ToArray();
-                }
-
-                _iCalOccurrences.TryAdd( occurrenceLookup, occurrenceList );
+                occurrenceList = LoadOccurrences( iCalendarContent, startDateTime, endDateTime, scheduleStartDateTimeOverride );
+                _iCalOccurrencesCache.AddOrGetExisting( occurrenceLookupKey, occurrenceList, cacheItemPolicy10Minutes );
             }
 
             return occurrenceList;
+        }
+
+        /// <summary>
+        /// Loads the occurrences.
+        /// </summary>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
+        /// <returns></returns>
+        private static Occurrence[] LoadOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
+            var iCalEvent = CreateCalendarEvent( iCalendarContent );
+            if ( iCalEvent == null )
+            {
+                return new Occurrence[0];
+            }
+
+            if ( scheduleStartDateTimeOverride.HasValue )
+            {
+                iCalEvent.DtStart = new CalDateTime( scheduleStartDateTimeOverride.Value );
+            }
+
+            if ( endDateTime.HasValue )
+            {
+                return iCalEvent.GetOccurrences( startDateTime, endDateTime.Value ).ToArray();
+            }
+            else
+            {
+                return iCalEvent.GetOccurrences( startDateTime ).ToArray();
+            }
         }
     }
 
