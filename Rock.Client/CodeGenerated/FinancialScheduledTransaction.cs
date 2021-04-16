@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -134,6 +137,7 @@ namespace Rock.Client
             this.EndDate = source.EndDate;
             this.FinancialGatewayId = source.FinancialGatewayId;
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            this.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GatewayScheduleId = source.GatewayScheduleId;
