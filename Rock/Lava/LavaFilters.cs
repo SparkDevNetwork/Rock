@@ -5270,29 +5270,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Wheres the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="filterKey">The filter key.</param>
-        /// <returns></returns>
-        public static object Where( object input, string filterKey )
-        {
-            return WhereInternal( input, filterKey );
-        }
-
-        /// <summary>
-        /// Filters a collection of items on a specified property and value.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="filterKey">The filter key.</param>
-        /// <param name="filterValue">The filter value.</param>
-        /// <returns></returns>
-        public static object Where( object input, string filterKey, object filterValue )
-        {
-            return Where( input, filterKey, filterValue, "equal" );
-        }
-
-        /// <summary>
         /// Filters a collection of items on a specified property and value.
         /// </summary>
         /// <param name="input">The input.</param>
@@ -5302,7 +5279,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Where( object input, string filter, object filterValue = null, string comparisonType = null )
         {
-            comparisonType = ( comparisonType.ToLower() != "equal" || comparisonType.ToLower() != "notequal" ) ? "equal" : comparisonType.ToLower();
+            comparisonType = comparisonType.IsNullOrWhiteSpace() ? "equal" : comparisonType.ToLower();
+            comparisonType = ( comparisonType != "equal" || comparisonType != "notequal" ) ? "equal" : comparisonType;
 
             if ( filter != null && filterValue != null )
             {
