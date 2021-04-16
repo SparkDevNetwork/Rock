@@ -429,6 +429,9 @@
     <EmbeddedResource Include="Migrations\202104161249583_AddForeignCurrencySupport.resx">
       <DependentUpon>202104161249583_AddForeignCurrencySupport.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.resx">
+      <DependentUpon>202104161716420_Definedtype_EnableSecurityOnValues.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
     </EmbeddedResource>
