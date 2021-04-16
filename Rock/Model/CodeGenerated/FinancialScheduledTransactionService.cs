@@ -122,6 +122,7 @@ namespace Rock.Model
             target.EndDate = source.EndDate;
             target.FinancialGatewayId = source.FinancialGatewayId;
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            target.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;

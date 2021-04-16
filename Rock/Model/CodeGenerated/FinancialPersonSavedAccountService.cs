@@ -123,6 +123,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
+            target.PreferredForeignCurrencyCodeValueId = source.PreferredForeignCurrencyCodeValueId;
             target.ReferenceNumber = source.ReferenceNumber;
             target.TransactionCode = source.TransactionCode;
             target.CreatedDateTime = source.CreatedDateTime;
