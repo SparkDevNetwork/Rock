@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             AddColumn("dbo.DefinedType", "EnableSecurityOnValues", c => c.Boolean(nullable: false));
+            Sql( $"UPDATE [DefinedType] SET [EnableSecurityOnValues] = 1 WHERE [Guid] = '{Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM}'" );
         }
         
         /// <summary>
