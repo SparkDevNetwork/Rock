@@ -86,6 +86,15 @@ namespace RockWeb.Blocks.Core
 
                 AddAttributeColumns();
 
+                if ( _definedType.EnableSecurityOnValues )
+                {
+                    var securityField = new SecurityField();
+                    securityField.ButtonCssClass = "btn btn-security btn-xs";
+                    securityField.ToolTip = "Secure Defined Value";
+                    securityField.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DEFINED_VALUE ).Value;
+                    gDefinedValues.Columns.Add( securityField );
+                }
+
                 var deleteField = new DeleteField();
                 gDefinedValues.Columns.Add( deleteField );
                 deleteField.Click += gDefinedValues_Delete;
