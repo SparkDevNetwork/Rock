@@ -49,107 +49,97 @@ namespace RockWeb.Blocks.Finance
     [ContextAware]
     [SecurityAction( "FilterByPerson", "The roles and/or users that can filter transactions by person." )]
 
-    [LinkedPage(
-        name: "Detail Page",
-        required: false,
-        order: 0,
-        key: AttributeKey.DetailPage )]
+    [LinkedPage( "Detail Page",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.DetailPage )]
 
-    [TextField(
-        name: "Title",
-        description: "Title to display above the grid. Leave blank to hide.",
-        required: false,
-        order: 1,
-        key: AttributeKey.Title )]
+    [TextField( "Title",
+        Description = "Title to display above the grid. Leave blank to hide.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.Title )]
 
-    [BooleanField(
-        name: "Show Only Active Accounts on Filter",
-        description: "If account filter is displayed, only list active accounts",
-        defaultValue: false,
-        category: "",
-        order: 2,
-        key: AttributeKey.ActiveAccountsOnlyFilter )]
+    [BooleanField( "Show Only Active Accounts on Filter",
+        Description = "If account filter is displayed, only list active accounts",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = AttributeKey.ActiveAccountsOnlyFilter )]
 
-    [BooleanField(
-        name: "Show Options",
-        description: "Show an Options button in the title panel for showing images or summary.",
-        defaultValue: false,
-        order: 3,
-        key: AttributeKey.ShowOptions )]
+    [BooleanField( "Show Options",
+        Description = "Show an Options button in the title panel for showing images or summary.",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Key = AttributeKey.ShowOptions )]
 
-    [IntegerField(
-        name: "Image Height",
-        description: "If the Show Images option is selected, the image height",
-        required: false,
-        defaultValue: 200,
-        order: 4,
-        key: AttributeKey.ImageHeight )]
+    [IntegerField( "Image Height",
+        Description = "If the Show Images option is selected, the image height",
+        IsRequired = false,
+        DefaultIntegerValue = 200,
+        Order = 4,
+        Key = AttributeKey.ImageHeight )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
-        name: "Transaction Types",
-        description: "Optional list of transaction types to limit the list to (if none are selected all types will be included).",
-        required: false,
-        allowMultiple: true,
-        defaultValue: "",
-        category: "",
-        order: 5,
-        key: AttributeKey.TransactionTypes )]
+    [DefinedValueField( "Transaction Types",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE,
+        Description = "Optional list of transaction types to limit the list to (if none are selected all types will be included).",
+        IsRequired = false,
+        AllowMultiple = true,
+        DefaultValue = "",
+        Order = 5,
+        Key = AttributeKey.TransactionTypes )]
 
-    [CustomDropdownListField(
-        name: "Default Transaction View",
-        description: "Select whether you want to initially see Transactions or Transaction Details",
-        listSource: "Transactions,Transaction Details",
-        required: false,
-        defaultValue: "Transactions",
-        category: "",
-        order: 6,
-        key: AttributeKey.DefaultTransactionView )]
+    [CustomDropdownListField( "Default Transaction View",
+        Description = "Select whether you want to initially see Transactions or Transaction Details",
+        ListSource = "Transactions,Transaction Details",
+        IsRequired = false,
+        DefaultValue = "Transactions",
+        Order = 6,
+        Key = AttributeKey.DefaultTransactionView )]
 
-    [LinkedPage(
-        name: "Batch Page",
-        required: false,
-        order: 7,
-        key: AttributeKey.BatchPage )]
+    [LinkedPage( "Batch Page",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.BatchPage )]
 
-    [BooleanField(
-        name: "Show Foreign Key",
-        description: "Should the transaction foreign key column be displayed?",
-        defaultValue: false,
-        order: 8,
-        key: AttributeKey.ShowForeignKey )]
+    [BooleanField( "Show Foreign Key",
+        Description = "Should the transaction foreign key column be displayed?",
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = AttributeKey.ShowForeignKey )]
 
-    [BooleanField(
-        name: "Show Account Summary",
-        description: "Should the account summary be displayed at the bottom of the list?",
-        defaultValue: false,
-        order: 9,
-        key: AttributeKey.ShowAccountSummary )]
+    [BooleanField( "Show Account Summary",
+        Description = "Should the account summary be displayed at the bottom of the list?",
+        DefaultBooleanValue = false,
+        Order = 9,
+        Key = AttributeKey.ShowAccountSummary )]
 
-    [AccountsField(
-        name: "Accounts",
-        description: "Limit the results to transactions that match the selected accounts.",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 10,
-        key: AttributeKey.Accounts )]
+    [AccountsField( "Accounts",
+        Description = "Limit the results to transactions that match the selected accounts.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 10,
+        Key = AttributeKey.Accounts )]
 
-    [BooleanField(
-        name: "Show Future Transactions",
-        description: "Should future transactions (transactions scheduled to be charged) be shown in this list?",
-        defaultValue: false,
-        order: 10,
-        key: AttributeKey.ShowFutureTransactions )]
+    [BooleanField( "Show Future Transactions",
+        Description = "Should future transactions (transactions scheduled to be charged) be shown in this list?",
+        DefaultBooleanValue = false,
+        Order = 10,
+        Key = AttributeKey.ShowFutureTransactions )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
-        name: "Source Types",
-        description: "Optional list of financial source types to limit the list to (if none are selected all types will be included).",
-        required: false,
-        allowMultiple: true,
-        defaultValue: "",
-        category: "",
-        order: 11,
-        key: AttributeKey.SourceTypes )]
+    [DefinedValueField( "Source Types",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        Description = "Optional list of financial source types to limit the list to (if none are selected all types will be included).",
+        IsRequired = false,
+        AllowMultiple = true,
+        DefaultValue = "",
+        Order = 11,
+        Key = AttributeKey.SourceTypes )]
+
+    [BooleanField( "Enable Foreign Currency",
+        Description = "Shows the transaction's currency code field if enabled.",
+        DefaultBooleanValue = false,
+        Order = 12,
+        Key = AttributeKey.EnableForeignCurrency )]
 
     public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock, IPostBackEventHandler, ICustomGridColumns
     {
@@ -224,6 +214,11 @@ namespace RockWeb.Blocks.Finance
             /// The source types
             /// </summary>
             public const string SourceTypes = "SourceTypes";
+
+            /// <summary>
+            /// The enable foreign currency
+            /// </summary>
+            public const string EnableForeignCurrency = "EnableForeignCurrency";
         }
 
         #endregion Keys
@@ -465,7 +460,7 @@ namespace RockWeb.Blocks.Finance
             }}
         }}
     }});
-", _ddlMove.ClientID, gTransactions.ClientID, Page.ClientScript.GetPostBackEventReference( this, "MoveTransactions" ), hfMoveToBatchId.ClientID);
+", _ddlMove.ClientID, gTransactions.ClientID, Page.ClientScript.GetPostBackEventReference( this, "MoveTransactions" ), hfMoveToBatchId.ClientID );
                 ScriptManager.RegisterStartupScript( _ddlMove, _ddlMove.GetType(), "moveTransaction", script, true );
             }
 
@@ -552,6 +547,12 @@ namespace RockWeb.Blocks.Finance
             if ( batchIdColumn != null )
             {
                 batchIdColumn.Visible = _batch == null;
+            }
+
+            var foreignCurrencySymbolColumn = gTransactions.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lForeignCurrencySymbol" ).FirstOrDefault();
+            if ( foreignCurrencySymbolColumn != null )
+            {
+                foreignCurrencySymbolColumn.Visible = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean();
             }
         }
 
@@ -842,9 +843,20 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     var lAccounts = e.Row.FindControl( "lAccounts" ) as Literal;
-                    if ( lAccounts != null)
+                    if ( lAccounts != null )
                     {
                         lAccounts.Text = this.GetAccounts( txn, isExporting );
+                    }
+
+                    var lForeignCurrencySymbol = e.Row.FindControl( "lForeignCurrencySymbol" ) as Literal;
+                    if ( lForeignCurrencySymbol != null && txn.ForeignCurrencyCodeValueId != null )
+                    {
+                        var currencyCode = DefinedValueCache.Get( txn.ForeignCurrencyCodeValueId.Value );
+                        if ( currencyCode != null )
+                        {
+                            var currencySymbol = currencyCode.GetAttributeValue( "Symbol" );
+                            lForeignCurrencySymbol.Text = currencyCode.Value + " " + currencySymbol;
+                        }
                     }
                 }
             }
@@ -1148,7 +1160,7 @@ namespace RockWeb.Blocks.Finance
                                 }
 
                                 var accountChanges = new History.HistoryChangeList();
-                                accountChanges.AddChange(History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
+                                accountChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
 
 
                                 HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
@@ -1312,7 +1324,7 @@ namespace RockWeb.Blocks.Finance
 
             // Remove summary column
             var summaryCol = gTransactions.Columns.OfType<RockBoundField>().FirstOrDefault( c => c.DataField == "Summary" );
-            if (summaryCol != null )
+            if ( summaryCol != null )
             {
                 gTransactions.Columns.Remove( summaryCol );
             }
@@ -1340,7 +1352,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = (IRockControl)control;
+                            var rockControl = ( IRockControl ) control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -1562,7 +1574,8 @@ namespace RockWeb.Blocks.Finance
                     {
                         CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
                         CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
-                    }
+                    },
+                    ForeignCurrencyCodeValueId = a.Transaction.ForeignCurrencyCodeValueId
                 } );
             }
             else
@@ -1626,14 +1639,15 @@ namespace RockWeb.Blocks.Finance
                         FutureProcessingDateTime = a.FutureProcessingDateTime,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
                         SourceTypeValueId = a.SourceTypeValueId,
-                        TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
+                        TotalAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
                         TransactionCode = a.TransactionCode,
                         ForeignKey = a.ForeignKey,
                         Status = a.Status,
                         SettledDate = a.SettledDate,
                         SettledGroupId = a.SettledGroupId,
                         Summary = a.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Summary,
-                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId }
+                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId },
+                        ForeignCurrencyCodeValueId = a.ForeignCurrencyCodeValueId
                     } );
             }
 
@@ -2180,6 +2194,7 @@ namespace RockWeb.Blocks.Finance
             /// The transaction details.
             /// </value>
             public IEnumerable<DetailInfo> TransactionDetails { get; set; }
+            public int? ForeignCurrencyCodeValueId { get; set; }
         }
 
         private class DetailInfo : RockDynamic

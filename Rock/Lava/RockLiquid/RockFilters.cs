@@ -42,11 +42,10 @@ using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
-
+using Ical.Net;
+using Ical.Net.DataTypes;
 using ImageResizer;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -56,8 +55,8 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
 using UAParser;
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Lava
 {
@@ -1982,7 +1981,7 @@ namespace Rock.Lava
             }
         }
         /// <summary>
-        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// Formats the specified input as currency using the Currency Code information from Global Attributes
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -1993,18 +1992,21 @@ namespace Rock.Lava
                 return null;
             }
 
-            if ( input is string )
-            {
-                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-                return string.Format( "{0}{1}", currencySymbol, input );
-            }
-            else
+            var inputAsDecimal = input.ToString().AsDecimalOrNull();
+            if(inputAsDecimal != null )
             {
                 // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
-                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
                 return inputAsDecimal.FormatAsCurrency();
             }
+
+            // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+            var currencyInfo = new RockCurrencyCodeInfo();
+            if ( currencyInfo.SymbolLocation.Equals( "left", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return string.Format( "{0}{1}", currencyInfo.Symbol, input );
+            }
+
+            return string.Format( "{1}{0}", currencyInfo.Symbol, input );
         }
 
         /// <summary>

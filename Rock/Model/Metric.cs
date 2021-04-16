@@ -197,6 +197,15 @@ namespace Rock.Model
         [DataMember]
         public bool EnableAnalytics { get; set; }
 
+        /// <summary>
+        /// If set to true this feature will auto partition the individuals in the data view based on their primary campus.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic partition on primary campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoPartitionOnPrimaryCampus { get; set; }
+
         #endregion
 
         #region Virtual Properties

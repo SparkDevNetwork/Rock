@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -28,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -136,6 +136,22 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Properties
 
+        protected int ForeignCurrencyCodeDefinedValueId { get; set; }
+
+        private RockCurrencyCodeInfo _currencyInfo = null;
+
+        protected RockCurrencyCodeInfo CurrencyCodeInfo
+        {
+            get
+            {
+                if ( _currencyInfo == null || _currencyInfo.CurrencyCodeDefinedValueId != ForeignCurrencyCodeDefinedValueId )
+                {
+                    _currencyInfo = new RockCurrencyCodeInfo( ForeignCurrencyCodeDefinedValueId );
+                }
+                return _currencyInfo;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the gateway.
         /// </summary>
@@ -240,7 +256,7 @@ achieve our mission.  We are so grateful for your commitment.
             ViewState["ScheduledTransactionId"] = ScheduledTransactionId;
             ViewState["TransactionCode"] = TransactionCode;
             ViewState["ScheduleId"] = ScheduleId;
-
+            ViewState["ForeignCurrencyCodeDefinedValueId"] = ForeignCurrencyCodeDefinedValueId;
             return base.SaveViewState();
         }
 
@@ -255,6 +271,7 @@ achieve our mission.  We are so grateful for your commitment.
             ScheduledTransactionId = ViewState["ScheduledTransactionId"] as int?;
             TransactionCode = ViewState["TransactionCode"] as string ?? string.Empty;
             ScheduleId = ViewState["ScheduleId"] as string ?? string.Empty;
+            ForeignCurrencyCodeDefinedValueId = ( int ) ViewState["ForeignCurrencyCodeDefinedValueId"];
         }
 
         /// <summary>
@@ -267,6 +284,8 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( !Page.IsPostBack )
             {
+                dvpForeignCurrencyCode.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE.AsGuid() ).Id;
+
                 lPanelTitle.Text = GetAttributeValue( "PanelTitle" );
                 lContributionInfoTitle.Text = GetAttributeValue( "ContributionInfoTitle" );
                 lPaymentInfoTitle.Text = GetAttributeValue( "PaymentInfoTitle" );
@@ -278,12 +297,17 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     Gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
 
+                    ForeignCurrencyCodeDefinedValueId = scheduledTransaction.ForeignCurrencyCodeValueId ?? 0;
+
                     GetAccounts( scheduledTransaction );
                     SetFrequency( scheduledTransaction );
                     SetSavedAccounts( scheduledTransaction );
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
                     tbSummary.Text = scheduledTransaction.Summary;
+
+                    dvpForeignCurrencyCode.SelectedDefinedValueId = scheduledTransaction.ForeignCurrencyCodeValueId;
+                    dvpForeignCurrencyCode.Visible = !new RockCurrencyCodeInfo( scheduledTransaction.ForeignCurrencyCodeValueId ).IsOrganizationCurrency;
 
                     hfCurrentPage.Value = "1";
                     RockPage page = Page as RockPage;
@@ -361,19 +385,19 @@ achieve our mission.  We are so grateful for your commitment.
             foreach ( RepeaterItem item in rptAccountList.Items )
             {
                 var hfAccountId = item.FindControl( "hfAccountId" ) as HiddenField;
-                var txtAccountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                var txtAccountAmount = item.FindControl( "txtAccountAmount" ) as CurrencyBox;
                 if ( hfAccountId != null && txtAccountAmount != null )
                 {
                     var selectedAccount = SelectedAccounts.FirstOrDefault( a => a.Id == hfAccountId.ValueAsInt() );
                     if ( selectedAccount != null )
                     {
-                        selectedAccount.Amount = txtAccountAmount.Text.AsDecimal();
+                        selectedAccount.Amount = txtAccountAmount.Value ?? 0.0m;
                     }
                 }
             }
 
             // Update the total amount
-            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).FormatAsCurrency( ForeignCurrencyCodeDefinedValueId );
 
             liNone.RemoveCssClass( "active" );
             liCreditCard.RemoveCssClass( "active" );
@@ -1029,7 +1053,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( paymentInfo != null )
             {
                 tdName.Description = paymentInfo.FullName;
-                tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+                tdTotal.Description = paymentInfo.Amount.FormatAsCurrency( ForeignCurrencyCodeDefinedValueId );
 
                 if ( paymentInfo.CurrencyTypeValue != null )
                 {
@@ -1121,6 +1145,8 @@ achieve our mission.  We are so grateful for your commitment.
                 // ProcessPaymentInfo ensures that dtpStartDate.SelectedDate has a value and is after today
                 scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
                 scheduledTransaction.NextPaymentDate = Gateway.CalculateNextPaymentDate( scheduledTransaction, null );
+
+                scheduledTransaction.ForeignCurrencyCodeValueId = dvpForeignCurrencyCode.SelectedDefinedValueId;
 
                 PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                 if ( paymentInfo == null )
@@ -1483,7 +1509,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <returns></returns>
         public string FormatValueAsCurrency( decimal value )
         {
-            return value.FormatAsCurrency();
+            return value.FormatAsCurrency( ForeignCurrencyCodeDefinedValueId );
         }
 
         /// <summary>
@@ -1500,6 +1526,8 @@ achieve our mission.  We are so grateful for your commitment.
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
             var totalAmt = Number(0);
+            var symbol = $('#hfCurrencySymbol').val();
+            var decimalPlaces = $('#hfCurrencyDecimals').val();
 
             $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
@@ -1510,7 +1538,7 @@ achieve our mission.  We are so grateful for your commitment.
                     else {{
                         $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
-                        $(this).val(num.toFixed(2));
+                        $(this).val(num.toFixed(decimalPlaces));
                         totalAmt = totalAmt + num;
                     }}
                 }}
@@ -1518,7 +1546,7 @@ achieve our mission.  We are so grateful for your commitment.
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('{4}' + totalAmt.toFixed(2));
+            $('.total-amount').html(symbol + totalAmt.toFixed(decimalPlaces));
             return false;
         }});
 
@@ -1591,12 +1619,12 @@ achieve our mission.  We are so grateful for your commitment.
 ";
             string script = string.Format(
                 scriptFormat,
-                divCCPaymentInfo.ClientID, // {0}
+                divCCPaymentInfo.ClientID,  // {0}
                 divACHPaymentInfo.ClientID, // {1}
-                hfPaymentTab.ClientID, // {2}
-                oneTimeFrequencyId, // {3}
-                GlobalAttributesCache.Value( "CurrencySymbol" ) // {4}
+                hfPaymentTab.ClientID,      // {2}
+                oneTimeFrequencyId         // {3}
                 );
+
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
@@ -1653,14 +1681,6 @@ achieve our mission.  We are so grateful for your commitment.
 
             public string PublicName { get; set; }
 
-            public string AmountFormatted
-            {
-                get
-                {
-                    return Amount > 0 ? Amount.ToString( "F2" ) : string.Empty;
-                }
-            }
-
             public AccountItem( int id, int order, string name, int? campusId, string publicName )
             {
                 Id = id;
@@ -1708,5 +1728,12 @@ achieve our mission.  We are so grateful for your commitment.
         }
 
         #endregion
+
+        protected void dvpForeignCurrencyCode_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ForeignCurrencyCodeDefinedValueId = dvpForeignCurrencyCode.SelectedDefinedValueId ?? 0;
+            BindAccounts();
+            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).FormatAsCurrency( ForeignCurrencyCodeDefinedValueId );
+        }
     }
 }

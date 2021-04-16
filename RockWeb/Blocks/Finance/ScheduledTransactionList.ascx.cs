@@ -15,24 +15,23 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
-using System.Collections.Generic;
-using Rock.Security;
 
-namespace RockWeb.Blocks.Finance 
+namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions.
@@ -41,15 +40,70 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions." )]
 
-    [LinkedPage( "View Page", "", false )]
-    [LinkedPage( "Add Page", "", false )]
-    [AccountsField( "Accounts", "Limit the results to scheduled transactions that match the selected accounts.", false, "", "", 2 )]
+    [LinkedPage( "View Page",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.ViewPage )]
 
-    [IntegerField( "Person Token Expire Minutes", "When adding a new scheduled transaction from a person detail page, the number of minutes the person token for the transaction is valid after it is issued.", true, 60, "", 3 )]
-    [IntegerField( "Person Token Usage Limit", "When adding a new scheduled transaction from a person detail page, the maximum number of times the person token for the transaction can be used.", false, 1, "", 4 )]
+    [LinkedPage( "Add Page",
+        DefaultValue = "",
+        IsRequired = false,
+        Key = AttributeKey.AddPage )]
+
+    [AccountsField( "Accounts",
+        Description = "Limit the results to scheduled transactions that match the selected accounts.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.Accounts )]
+
+    [IntegerField( "Person Token Expire Minutes",
+        Description = "When adding a new scheduled transaction from a person detail page, the number of minutes the person token for the transaction is valid after it is issued.",
+        IsRequired = true,
+        DefaultIntegerValue = 60,
+        Order = 3,
+        Key = AttributeKey.PersonTokenExpireMinutes )]
+
+    [IntegerField( "Person Token Usage Limit",
+        Description = "When adding a new scheduled transaction from a person detail page, the maximum number of times the person token for the transaction can be used.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 4,
+        Key = AttributeKey.PersonTokenUsageLimit )]
+
     [ContextAware]
     public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The view page
+            /// </summary>
+            public const string ViewPage = "ViewPage";
+            /// <summary>
+            /// The add page
+            /// </summary>
+            public const string AddPage = "AddPage";
+            /// <summary>
+            /// The accounts
+            /// </summary>
+            public const string Accounts = "Accounts";
+            /// <summary>
+            /// The person token expire minutes
+            /// </summary>
+            public const string PersonTokenExpireMinutes = "PersonTokenExpireMinutes";
+            /// <summary>
+            /// The person token usage limit
+            /// </summary>
+            public const string PersonTokenUsageLimit = "PersonTokenUsageLimit";
+        }
+
+        #endregion Keys
+
         private bool _isExporting = false;
 
         #region Properties
@@ -80,19 +134,37 @@ namespace RockWeb.Blocks.Finance
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
             gList.DataKeyNames = new string[] { "Id" };
-            gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
+            gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.AddPage ) );
             gList.Actions.AddClick += gList_Add;
 
             gList.IsDeleteEnabled = canEdit;
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "ViewPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.ViewPage ) ) )
             {
                 gList.RowSelected += gList_Edit;
             }
 
             gList.GridRebind += gList_GridRebind;
-
+            gList.RowDataBound += gList_RowDataBound;
             TargetPerson = ContextEntity<Person>();
+        }
+
+        private void gList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var txn = e.Row.DataItem as FinancialScheduledTransaction;
+
+                if ( txn != null )
+                {
+                    var lTotalAmount = e.Row.FindControl( "lTotalAmount" ) as Literal;
+
+                    if ( lTotalAmount != null )
+                    {
+                        lTotalAmount.Text = txn.TotalAmount.FormatAsCurrency( txn.ForeignCurrencyCodeValueId );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -194,7 +266,7 @@ namespace RockWeb.Blocks.Finance
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "ScheduledTransactionId", e.RowKeyId.ToString() );
-            NavigateToLinkedPage( "ViewPage", parms );
+            NavigateToLinkedPage( AttributeKey.ViewPage, parms );
         }
 
         /// <summary>
@@ -205,18 +277,18 @@ namespace RockWeb.Blocks.Finance
         protected void gList_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( "AddPage" ) );
+            var addScheduledTransactionPage = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.AddPage ) );
             if ( addScheduledTransactionPage != null )
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
                 if ( this.TargetPerson != null )
                 {
-                    var impersonationToken = this.TargetPerson.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
+                    var impersonationToken = this.TargetPerson.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
                     parms.Add( "Person", impersonationToken );
                 }
             }
-            
-            NavigateToLinkedPage( "AddPage", parms );
+
+            NavigateToLinkedPage( AttributeKey.AddPage, parms );
         }
 
         /// <summary>
@@ -240,10 +312,10 @@ namespace RockWeb.Blocks.Finance
         {
             nreAmount.DelimitedValues = gfSettings.GetUserPreference( "Amount" );
 
-            dvpFrequency.DefinedTypeId =DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).Id;
+            dvpFrequency.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).Id;
             dvpFrequency.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             string freqPreference = gfSettings.GetUserPreference( "Frequency" );
-            if ( !string.IsNullOrWhiteSpace( freqPreference ))
+            if ( !string.IsNullOrWhiteSpace( freqPreference ) )
             {
                 dvpFrequency.SetValue( freqPreference );
             }
@@ -255,7 +327,7 @@ namespace RockWeb.Blocks.Finance
                 .Queryable().AsNoTracking()
                 .Where( a => a.IsActive );
 
-            ddlAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) );
+            ddlAccount.Visible = string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.Accounts ) );
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( FinancialAccount account in accounts.OrderBy( a => a.Order ) )
             {
@@ -300,7 +372,7 @@ namespace RockWeb.Blocks.Finance
                     .AsNoTracking();
 
                 // Valid Accounts
-                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                 if ( accountGuids.Any() )
                 {
                     qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
@@ -371,11 +443,11 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( sortProperty.Direction == SortDirection.Ascending )
                         {
-                            qry = qry.OrderBy( t => t.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.00M );
+                            qry = qry.OrderBy( t => t.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.00M );
                         }
                         else
                         {
-                            qry = qry.OrderByDescending( t => t.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M );
+                            qry = qry.OrderByDescending( t => t.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M );
                         }
                     }
                     else
@@ -411,7 +483,7 @@ namespace RockWeb.Blocks.Finance
             var txn = dataItem as FinancialScheduledTransaction;
             if ( txn != null )
             {
-                var accountGuids = GetAttributeValue( "Accounts" ).SplitDelimitedValues().AsGuidList();
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
                 var summary = txn.ScheduledTransactionDetails
                     .Select( d => new
                     {
@@ -424,7 +496,7 @@ namespace RockWeb.Blocks.Finance
                     .ThenBy( d => d.Order )
                     .Select( d => string.Format( "{0}: {1}",
                         !d.IsOther ? d.Name : "Other",
-                        d.Amount.FormatAsCurrency() ) )
+                        d.Amount.FormatAsCurrency( txn.ForeignCurrencyCodeValueId ) ) )
                     .ToList();
 
                 if ( summary.Any() )

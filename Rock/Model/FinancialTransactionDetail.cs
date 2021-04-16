@@ -123,6 +123,20 @@ namespace Rock.Model
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         [DecimalPrecision(18, 2)]
         public decimal? FeeCoverageAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign currency amount.
+        /// </summary>
+        /// <value>
+        /// The foreign currency amount.
+        /// </value>
+        /// /// <remarks>
+        /// This value will be in the currency specified by the Financial Transaction's Foreign Currency Code which defaults to USD.
+        /// </remarks>
+        [DataMember]
+        [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision( 18, 2 )]
+        public decimal? ForeignCurrencyAmount { get; set; }
         #endregion
 
         #region Virtual Properties

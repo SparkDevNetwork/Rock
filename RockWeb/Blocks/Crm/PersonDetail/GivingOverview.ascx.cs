@@ -541,8 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private string FormatAsCurrency( decimal value )
         {
-            var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-            return string.Format( "{0}{1:N0}", currencySymbol, value );
+            return value.FormatAsCurrencyWithDecimalPlaces(0);
         }
 
         #endregion Methods
