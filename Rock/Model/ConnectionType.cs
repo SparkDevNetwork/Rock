@@ -31,7 +31,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection type
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionType" )]
     [DataContract]
     public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable

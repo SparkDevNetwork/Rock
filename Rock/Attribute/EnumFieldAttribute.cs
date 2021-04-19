@@ -60,7 +60,7 @@ namespace Rock.Attribute
 
         /// <summary>
         /// Gets or sets the type of the enum source.
-        /// FieldConfigurationValues["values"] is populated the a comma seperated string of the enum values
+        /// FieldConfigurationValues["values"] is populated the a comma separated string of the enum values
         /// </summary>
         /// <value>
         /// The type of the enum source.
@@ -85,6 +85,41 @@ namespace Rock.Attribute
 
                 var listSource = string.Join( ",", list );
                 FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the default enumeration value of the attribute.
+        /// This is the value that will be used if a specific value has
+        /// not yet been created. To have a default enumeration value of null,
+        /// use <see cref="FieldAttribute.DefaultValue">DefaultValue</see>
+        /// instead and set that to null.
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public int DefaultEnumValue
+        {
+            get
+            {
+                // Named Arguments have to have a public get/set and can't
+                // be nullable types. So, we have to implement this, even
+                // though Rock won't use this get.
+                return base.DefaultValue.AsIntegerOrNull() ?? int.MinValue;
+            }
+
+            set
+            {
+                // Named arguments can't be nullable types, so use
+                // int.MinValue as a magic number to indicate null.
+                if ( value == int.MinValue )
+                {
+                    base.DefaultValue = null;
+                }
+                else
+                {
+                    base.DefaultValue = value.ToString();
+                }
             }
         }
     }

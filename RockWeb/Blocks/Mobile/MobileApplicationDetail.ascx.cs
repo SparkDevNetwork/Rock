@@ -442,9 +442,11 @@ namespace RockWeb.Blocks.Mobile
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
             ddlEditLockPhoneOrientation.SetValue( ( int ) additionalSettings.LockedPhoneOrientation );
             ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
-            
+
+            cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
+            ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
 
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
@@ -776,11 +778,13 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
+            additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
             additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
+            additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
 
             //
             // Save the image.

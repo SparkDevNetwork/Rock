@@ -166,5 +166,10 @@ namespace Rock.SystemGuid
         /// A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer.
         /// </summary>
         public const string POST_INSTALL_DATA_MIGRATIONS = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3";
+
+        /// <summary>
+        /// The Job to execute giving analytics logic
+        /// </summary>
+        public const string GIVING_ANALYTICS = "B6DE0544-8C91-444E-B911-453D4CE71515";
     }
 }

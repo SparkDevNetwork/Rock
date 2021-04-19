@@ -32,7 +32,7 @@ namespace Rock.Net
     /// <summary>
     /// Provides an abstraction from user-code and the incoming request. The user code (such as
     /// a block, page or API callback) does not need to interact directly with any low-level
-    /// request objects. This allos for easier testing as well as adding new request types.
+    /// request objects. This allows for easier testing as well as adding new request types.
     /// </summary>
     public class RockRequestContext
     {

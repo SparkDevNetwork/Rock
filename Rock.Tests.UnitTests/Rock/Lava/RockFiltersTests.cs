@@ -55,8 +55,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day, 10, 0, 0 ),
+                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 10, 0, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
@@ -787,12 +787,16 @@ a comment --> sit amet</p>";
         {
             InitWebContentFolder();
 
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            using ( var request = new HttpSimulator( "/", webContentFolder ) )
             {
-                dynamic output = RockFilters.Client( "Global", "browser" );
-                Assert.That.AreEqual( "Chrome", output.UserAgent.Family as string );
-                Assert.That.AreEqual( "68", output.UserAgent.Major as string );
-                Assert.That.AreEqual( "Windows", output.OS.Family as string );
+                request.SetHeader( "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36" );
+                using ( request.SimulateRequest() )
+                {
+                    dynamic output = RockFilters.Client( "Global", "browser" );
+                    Assert.That.AreEqual( "Chrome", output.UserAgent.Family as string );
+                    Assert.That.AreEqual( "88", output.UserAgent.Major as string );
+                    Assert.That.AreEqual( "Windows", output.OS.Family as string );
+                }
             }
         }
 

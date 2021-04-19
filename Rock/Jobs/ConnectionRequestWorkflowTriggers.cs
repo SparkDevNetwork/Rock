@@ -36,13 +36,6 @@ namespace Rock.Jobs
     [DisplayName( "Connection Request Workflow Triggers" )]
     [Description( "This job triggers connection request workflows." )]
 
-    [IntegerField(
-        "Number of Days to Look Back",
-        Description = "This is the number of days that the workflow should look back to find connection requests with past future follow-up dates.",
-        IsRequired = true,
-        DefaultIntegerValue = 1,
-        Order = 0,
-        Key = AttributeKeys.NumberOfDaysToLookBack )]
     [DisallowConcurrentExecution]
     public class ConnectionRequestWorkflowTriggers : IJob
     {
@@ -74,7 +67,6 @@ namespace Rock.Jobs
         /// </summary>
         public ConnectionRequestWorkflowTriggers()
         {
-
         }
 
         #endregion Constructor
@@ -91,6 +83,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             _httpContext = HttpContext.Current;
+
             // Get all the workflows from cache
             var cachedWorkflows = ConnectionWorkflowService.GetCachedTriggers();
 
@@ -98,11 +91,10 @@ namespace Rock.Jobs
             if ( cachedWorkflows != null && cachedWorkflows.Any() )
             {
                 futureFollowupDateWorkflows = cachedWorkflows
-                   .Where( w =>
-                       w.TriggerType == ConnectionWorkflowTriggerType.FutureFollowupDateReached
-                       )
+                   .Where( w => w.TriggerType == ConnectionWorkflowTriggerType.FutureFollowupDateReached )
                    .ToList();
             }
+
             var futureFollowupWorkflowResult = TriggerFutureFollowupWorkFlow( context, futureFollowupDateWorkflows );
 
             context.UpdateLastStatusMessage( $@"Future follow-up Workflow Triggered: {futureFollowupWorkflowResult}" );
@@ -126,89 +118,67 @@ namespace Rock.Jobs
                 int triggerWorkflow = 0;
                 int recordsWithError = 0;
 
-                if ( futureFollowupDateWorkflows.Any() )
+                var rockContext = new RockContext();
+
+                DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
+
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var eligibleConnectionRequests = connectionRequestService
+                            .Queryable( "ConnectionRequestWorkflows" )
+                            .AsNoTracking()
+                            .Where( c => c.ConnectionState == ConnectionState.FutureFollowUp &&
+                                        c.FollowupDate.HasValue &&
+                                        c.FollowupDate < midnightToday )
+                            .ToList();
+
+                foreach ( var connectionRequest in eligibleConnectionRequests )
                 {
-                    var rockContext = new RockContext();
-                   
-                    var connectionOpportunityIds = futureFollowupDateWorkflows
-                                        .Where( a => a.ConnectionOpportunityId.HasValue )
-                                        .Select( a => a.ConnectionOpportunityId.Value )
-                                        .ToList();
-
-                    var connectionTypeIds = futureFollowupDateWorkflows
-                        .Where( a => a.ConnectionTypeId.HasValue )
-                        .Select( a => a.ConnectionTypeId.Value )
-                        .ToList();
-
-                    var allConnectionOpportunities = new List<ConnectionOpportunity>();
-                    if ( connectionOpportunityIds.Any() || connectionTypeIds.Any() )
+                    try
                     {
-                        var relatedConnectionOpportunities = new ConnectionOpportunityService( rockContext )
-                                    .Queryable()
-                                    .AsNoTracking()
-                                    .Where( o => connectionOpportunityIds.Contains( o.Id ) || connectionTypeIds.Contains( o.ConnectionTypeId ) )
-                                    .ToList();
-                        allConnectionOpportunities.AddRange( relatedConnectionOpportunities );
-                    }
-
-
-                    if ( allConnectionOpportunities.Any() )
-                    {
-                        connectionOpportunityIds = allConnectionOpportunities.Select( a => a.Id ).ToList();
-                        var numberOfDaysToLookBack = dataMap.GetString( AttributeKeys.NumberOfDaysToLookBack ).AsInteger();
-                        DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
-                        DateTime startDate = RockDateTime.Today.AddDays( - numberOfDaysToLookBack );
-                       
-                        var connectionRequestService = new ConnectionRequestService( rockContext );
-                        var eligibleConnectionRequests = connectionRequestService
-                                    .Queryable( "ConnectionRequestWorkflows" )
-                                    .AsNoTracking()
-                                    .Where( c => connectionOpportunityIds.Contains( c.ConnectionOpportunityId ) &&
-                                                c.ConnectionState == ConnectionState.FutureFollowUp &&
-                                                c.FollowupDate.HasValue &&
-                                                c.FollowupDate >= startDate &&
-                                                c.FollowupDate < midnightToday
-                                                )
-                                    .ToList();
-
-                        foreach ( var connectionRequest in eligibleConnectionRequests )
+                        using ( var updateRockContext = new RockContext() )
                         {
-                            try
+                            // increase the timeout just in case.
+                            updateRockContext.Database.CommandTimeout = 180;
+                            updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
+                            var connectionOpportunity = connectionRequest.ConnectionOpportunity;
+                            if ( connectionOpportunity != null )
                             {
-                                using ( var updateRockContext = new RockContext() )
+                                var opportunityWorkflows = futureFollowupDateWorkflows
+                                                        .Where( w =>
+                                                        ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == connectionOpportunity.Id ) ||
+                                                        ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == connectionOpportunity.ConnectionTypeId ) );
+
+                                foreach ( var connectionWorkflow in opportunityWorkflows )
                                 {
-                                    // increase the timeout just in case.
-                                    updateRockContext.Database.CommandTimeout = 180;
-                                    updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                                    var connectionOpportunity = allConnectionOpportunities.SingleOrDefault( a => a.Id == connectionRequest.ConnectionOpportunityId );
-                                    if ( connectionOpportunity != null )
-                                    {
-                                        var opportunityWorkflows = futureFollowupDateWorkflows
-                                                                .Where( w =>
-                                                                ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == connectionOpportunity.Id ) ||
-                                                                ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == connectionOpportunity.ConnectionTypeId ) );
-
-                                        foreach ( var connectionWorkflow in opportunityWorkflows
-                                                                            .Where( a => !connectionRequest.ConnectionRequestWorkflows.Any( b => b.ConnectionWorkflowId == a.Id ) ) )
-                                        {
-                                            LaunchWorkflow( updateRockContext, connectionRequest, connectionWorkflow, ConnectionWorkflowTriggerType.FutureFollowupDateReached.ConvertToString() );
-                                            triggerWorkflow += 1;
-                                        }
-
-                                        updateRockContext.ConnectionRequests.Attach( connectionRequest );
-                                        connectionRequest.ConnectionState = ConnectionState.Active;
-                                        updateRockContext.SaveChanges();
-                                        recordsUpdated += 1;
-                                    }
+                                    LaunchWorkflow( updateRockContext, connectionRequest, connectionWorkflow, ConnectionWorkflowTriggerType.FutureFollowupDateReached.ConvertToString() );
+                                    triggerWorkflow += 1;
                                 }
-                            }
-                            catch ( Exception ex )
-                            {
-                                // Log exception and keep on trucking.
-                                ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future followup workFlow:{connectionRequest.Id}.", ex ), _httpContext );
-                                recordsWithError += 1;
+
+                                updateRockContext.ConnectionRequests.Attach( connectionRequest );
+                                connectionRequest.ConnectionState = ConnectionState.Active;
+
+                                var guid = Rock.SystemGuid.ConnectionActivityType.FUTURE_FOLLOWUP_COMPLETE.AsGuid();
+                                var futureFollowupCompleteActivityId = new ConnectionActivityTypeService( rockContext )
+                                    .Queryable()
+                                    .Where( t => t.Guid == guid )
+                                    .Select( t => t.Id )
+                                    .FirstOrDefault();
+
+                                ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
+                                connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
+                                connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                                connectionRequestActivity.ConnectionActivityTypeId = futureFollowupCompleteActivityId;
+                                new ConnectionRequestActivityService( updateRockContext ).Add( connectionRequestActivity );
+                                updateRockContext.SaveChanges();
+                                recordsUpdated += 1;
                             }
                         }
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Log exception and keep on trucking.
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future followup workFlow:{connectionRequest.Id}.", ex ), _httpContext );
+                        recordsWithError += 1;
                     }
                 }
 

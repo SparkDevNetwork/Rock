@@ -100,6 +100,7 @@
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="CodeGenerated\CommunicationResponse.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponseAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
@@ -153,6 +154,8 @@
     <Compile Include="CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlert.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertType.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetailExport.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionExport.cs" />
@@ -245,6 +248,7 @@
     <Compile Include="CodeGenerated\RegistrationInstance.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrant.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrantFee.cs" />
+    <Compile Include="CodeGenerated\RegistrationSession.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFee.cs" />
@@ -287,6 +291,9 @@
     <Compile Include="CodeGenerated\TaggedItem.cs" />
     <Compile Include="CodeGenerated\UserLogin.cs" />
     <Compile Include="CodeGenerated\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="CodeGenerated\WebFarmNode.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeLog.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeMetric.cs" />
     <Compile Include="CodeGenerated\Workflow.cs" />
     <Compile Include="CodeGenerated\WorkflowAction.cs" />
     <Compile Include="CodeGenerated\WorkflowActionForm.cs" />

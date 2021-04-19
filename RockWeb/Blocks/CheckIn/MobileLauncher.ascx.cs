@@ -377,6 +377,8 @@ namespace RockWeb.Blocks.CheckIn
                 .Where( a => a != null );
 
             var configuredTheme = this.GetAttributeValue( AttributeKey.CheckinTheme );
+            var hasPhoneIdentificationPage = GetAttributeValue( AttributeKey.PhoneIdentificationPage ).IsNotNullOrWhiteSpace();
+            var hasLoginPage = GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace();
 
             SetSelectedTheme( configuredTheme );
 
@@ -388,6 +390,12 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
+            if ( !hasLoginPage && !hasPhoneIdentificationPage )
+            {
+                lMessage.Text = "A Login Page or Phone Identification Page must be specified.";
+                return;
+            }
+
             // Identification (Login or COOKIE_UNSECURED_PERSON_IDENTIFIER)
             Person mobilePerson = GetMobilePerson();
 
@@ -395,11 +403,10 @@ namespace RockWeb.Blocks.CheckIn
             {
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
-                bbtnPhoneLookup.Visible = true;
-                if ( GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace() )
-                {
-                    bbtnLogin.Visible = true;
-                }
+                
+                bbtnPhoneLookup.Visible = hasPhoneIdentificationPage;
+                bbtnLogin.Visible = hasLoginPage;
+
                 return;
             }
 

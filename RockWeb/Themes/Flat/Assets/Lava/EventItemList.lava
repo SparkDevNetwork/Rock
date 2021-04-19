@@ -10,9 +10,9 @@
     <h4>{{ eventName }}
       <small>
       {% if eventOccurrenceSummary.Date != eventOccurrenceSummary.EndDate %}
-        {{ eventOccurrenceSummary.Date | Date: 'MMM d' }} - {{ eventOccurrenceSummary.EndDate | Date: 'MMM d' }}
+        {{ eventOccurrenceSummary.Date | Date:'MMM d' }} - {{ eventOccurrenceSummary.EndDate | Date:'MMM d' }}
       {% else %}
-        {{ eventOccurrenceSummary.DateTime | Date: 'ddd, MMM d / h:mmtt' }}
+        {{ eventOccurrenceSummary.DateTime | Date:'ddd, MMM d / h:mmtt' }}
       {% endif %}
       </small>
     </h4>

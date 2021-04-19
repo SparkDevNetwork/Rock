@@ -310,6 +310,16 @@ namespace Rock.Model
                     .OrderBy( a => a.Name )
                     .ToList();
 
+                // clean up entitytypes that don't have an Assembly, but somehow have IsEntity or IsSecured set
+                foreach ( var entityTypesWithoutAssembliesButIsEntity in entityTypeInDatabaseList.Where( e => string.IsNullOrEmpty( e.AssemblyName ) && ( e.IsEntity || e.IsSecured ) ) )
+                {
+                    if ( entityTypesWithoutAssembliesButIsEntity.AssemblyName.IsNullOrWhiteSpace() )
+                    {
+                        entityTypesWithoutAssembliesButIsEntity.IsEntity = false;
+                        entityTypesWithoutAssembliesButIsEntity.IsSecured = false;
+                    }
+                }
+
                 foreach ( var oldEntityType in reflectedEntityTypesThatNoLongerExist )
                 {
 
@@ -329,7 +339,7 @@ namespace Rock.Model
                           so, if this happens, we'll ignore any error it returns in those cases too
                          */
                     }
-                    
+
                     if ( foundType == null )
                     {
                         // it was manually registered but we can't create a Type from it

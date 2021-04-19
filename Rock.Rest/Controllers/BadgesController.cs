@@ -223,22 +223,23 @@ namespace Rock.Rest.Controllers
             int channelMediumValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             InteractionChannelService interactionChannelService = new InteractionChannelService( ( Rock.Data.RockContext ) Service.Context );
-            var interactionChannel = interactionChannelService.Queryable()
+            var interactionChannelId = interactionChannelService.Queryable()
                                                 .Where( a => a.ChannelTypeMediumValueId == channelMediumValueId && a.ChannelEntityId == siteId )
+                                                .Select( a => ( int? ) a.Id )
                                                 .FirstOrDefault();
 
-            if ( interactionChannel == null )
+            if ( interactionChannelId == null )
             {
                 return -1;
             }
-            Interaction mostRecentPageView = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
-                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.InteractionChannelId == interactionChannel.Id )
-                                                .OrderByDescending( p => p.InteractionDateTime )
-                                                .FirstOrDefault();
 
-            if ( mostRecentPageView != null )
+            var mostRecentPageViewInteractionDateTime = new InteractionService( ( Rock.Data.RockContext ) Service.Context ).Queryable()
+                                                .Where( a => a.PersonAlias.PersonId == personId && a.InteractionComponent.InteractionChannelId == interactionChannelId )
+                                                .Max( p => ( DateTime? ) p.InteractionDateTime );
+
+            if ( mostRecentPageViewInteractionDateTime.HasValue )
             {
-                TimeSpan duration = RockDateTime.Now - mostRecentPageView.InteractionDateTime;
+                TimeSpan duration = RockDateTime.Now - mostRecentPageViewInteractionDateTime.Value;
                 return duration.Days;
             }
 

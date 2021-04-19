@@ -226,6 +226,14 @@ namespace Rock.Mobile
         public string NavigationBarActionXaml { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the lava to use for homepage routing logic.
+        /// </summary>
+        /// <value>
+        /// The lava to use for homepage routing logic.
+        /// </value>
+        public string HomepageRoutingLogic { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the campus filter data view identifier.
         /// </summary>
         /// <value>
@@ -240,5 +248,13 @@ namespace Rock.Mobile
         /// The communication view page identifier.
         /// </value>
         public int? CommunicationViewPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable notifications automatically.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if application should enable notifications automatically; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableNotificationsAutomatically { get; set; } = true;
     }
 }

@@ -134,6 +134,8 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 1 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 1 )]
         public bool IsDeceased
         {
             get
@@ -166,6 +168,8 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2)]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -201,6 +205,8 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
         public string LastName { get; set; }
 
         /// <summary>
