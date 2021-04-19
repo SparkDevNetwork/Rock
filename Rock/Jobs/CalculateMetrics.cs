@@ -121,7 +121,7 @@ namespace Rock.Jobs
                                         if ( metricPartitions.Count > 1
                                             || ( metricPartitions[0].EntityTypeId.HasValue && parseCampusPartition == false ) )
                                         {
-                                            throw new NotImplementedException( "Partitioned Metrics using DataViews is only supported for Person data views using a single partiton of type 'Campus' with 'Auto Partition on Primary Campus' checked. Any other dataview partion configuration is not supported." );
+                                            throw new NotImplementedException( "Partitioned Metrics using DataViews is only supported for Person data views using a single partition of type 'Campus' with 'Auto Partition on Primary Campus' checked. Any other dataview partition configuration is not supported." );
                                         }
                                         
                                         Stopwatch stopwatch = Stopwatch.StartNew();
