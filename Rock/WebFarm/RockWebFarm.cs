@@ -433,7 +433,7 @@ namespace Rock.WebFarm
                 var recyclingText = _isBeingRecycled ? "(Recycling) " : string.Empty;
 
                 // Write to ClusterNodeLog shutdown message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"Process ID: {ProcessId} - {recyclingText}{shutdownReasonText}" );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"{recyclingText}{shutdownReasonText}" );
                 rockContext.SaveChanges();
             }
 
@@ -888,7 +888,7 @@ namespace Rock.WebFarm
                 Severity = severity,
                 WriterWebFarmNodeId = _nodeId,
                 WebFarmNodeId = subjectNodeId,
-                Message = text,
+                Message = $"(Process ID: {ProcessId}) {text}",
                 EventType = eventType
             } );
 
