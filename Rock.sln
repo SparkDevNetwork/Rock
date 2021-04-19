@@ -87,6 +87,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com_rocksolidchurchdemo.Pag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.ViewModel", "Rock.ViewModel\Rock.ViewModel.csproj", "{05BAAF85-9C53-4CCD-A535-036427B0DF72}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PushPay", "Rock.PushPay\Rock.PushPay.csproj", "{1584F73A-9554-462A-9083-948971286686}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -209,6 +211,10 @@ Global
 		{05BAAF85-9C53-4CCD-A535-036427B0DF72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05BAAF85-9C53-4CCD-A535-036427B0DF72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05BAAF85-9C53-4CCD-A535-036427B0DF72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1584F73A-9554-462A-9083-948971286686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1584F73A-9554-462A-9083-948971286686}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1584F73A-9554-462A-9083-948971286686}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1584F73A-9554-462A-9083-948971286686}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
