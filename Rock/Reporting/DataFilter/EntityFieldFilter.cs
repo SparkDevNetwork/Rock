@@ -50,7 +50,7 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ddlEntityField.SelectedValue;
 
-            writer.AddAttribute( "class", "row" );
+            writer.AddAttribute( "class", "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             bool entityFieldPickerIsHidden = filterMode == FilterMode.SimpleFilter;

@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -57,6 +58,12 @@ namespace Rock.Model
             if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", ContentChannel.FriendlyTypeName, MediaFolder.FriendlyTypeName );
                 return false;
             }
             return true;
@@ -140,6 +147,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this ContentChannel object to a new ContentChannel object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static ContentChannel CloneWithoutIdentity( this ContentChannel source )
+        {
+            var target = new ContentChannel();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>

@@ -567,9 +567,9 @@ namespace RockWeb.Blocks.Event
             // Set Cost variables if Cost is to be determined on the instance.
             if ( registrationTemplate.SetCostOnInstance == true )
             {
-                registrationInstance.Cost = cbCost.Text.AsDecimalOrNull();
-                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
-                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                registrationInstance.Cost = cbCost.Value;
+                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Value;
+                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Value;
             }
 
             // Save changes to database.
@@ -731,7 +731,7 @@ namespace RockWeb.Blocks.Event
 
                     // Set Calendar.
                     string iCalendarContent = sbSchedule.iCalendarContent ?? string.Empty;
-                    var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                    var calEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
                     if ( calEvent != null && calEvent.DtStart != null )
                     {
                         if ( eventItemOccurrence.Schedule == null )

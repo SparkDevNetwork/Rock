@@ -428,13 +428,6 @@ namespace RockWeb.Blocks.Core
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
             hlInactive.Visible = schedule.IsActive == false;
 
-            string occurrenceText = string.Empty;
-            var occurrences = schedule.GetICalOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-            if ( occurrences.Any() )
-            {
-                occurrenceText = GetOccurrenceText( occurrences[0] );
-            }
-
             if ( schedule.CategoryId.HasValue )
             {
                 var today = RockDateTime.Today;

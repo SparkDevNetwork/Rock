@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -34,7 +35,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets or sets the event item occurrence identifier.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" /> identifier.
         /// </summary>
         /// <value>
         /// The event item occurrence identifier.
@@ -43,7 +44,7 @@ namespace Rock.Model
         public int? EventItemOccurrenceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration instance identifier.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationInstance" /> identifier.
         /// </summary>
         /// <value>
         /// The registration instance identifier.
@@ -52,7 +53,7 @@ namespace Rock.Model
         public int? RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group" /> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -85,16 +86,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the event item occurrence.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" />.
         /// </summary>
         /// <value>
         /// The event item occurrence.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group" />.
         /// </summary>
         /// <value>
         /// The group.
@@ -103,7 +104,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration instance.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationInstance" />.
         /// </summary>
         /// <value>
         /// The registration instance.

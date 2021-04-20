@@ -99,7 +99,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the web farm node.
+        /// Gets or sets the <see cref="Rock.Model.WebFarmNode"/>.
         /// </summary>
         /// <value>
         /// The web farm node.
@@ -108,7 +108,7 @@ namespace Rock.Model
         public virtual WebFarmNode WebFarmNode { get; set; }
 
         /// <summary>
-        /// Gets or sets the writer web farm node.
+        /// Gets or sets the writer <see cref="Rock.Model.WebFarmNode"/>.
         /// </summary>
         /// <value>
         /// The writer web farm node.

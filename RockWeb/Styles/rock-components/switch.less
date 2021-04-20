@@ -4,8 +4,19 @@
   opacity: 0;
 }
 
+@media (max-width: @screen-sm-max) {
+  .hide-label-sm .control-label {
+    display: none;
+  }
+}
+
 .custom-switch {
+  @custom-switch-height: (@custom-switch-indicator-size + (@custom-switch-indicator-padding *2));
   padding-left: (@custom-switch-width + @custom-control-gutter);
+
+  .custom-switch-centered & {
+    padding-top: ((@input-height-base - @custom-switch-height)  / 2) + 1 !important;
+  }
 
   .custom-control-label {
     position: relative;
@@ -22,7 +33,7 @@
       left: -(@custom-switch-width + @custom-control-gutter);
       display: block;
       width: @custom-switch-width;
-      height: (@custom-switch-indicator-size + (@custom-switch-indicator-padding *2));
+      height: @custom-switch-height;
       pointer-events: all;
       content: "";
       background-color: #fff;

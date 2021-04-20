@@ -760,7 +760,7 @@ namespace RockWeb.Blocks.CheckIn
             var personId = hfSelectedPersonId.ValueAsInt();
             var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
-            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request );
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request, ( ReprintLabelOptions ) null );
 
             pnlReprintResults.Visible = true;
             pnlReprintSelectedPersonLabels.Visible = false;

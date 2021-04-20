@@ -448,12 +448,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     <Button StyleClass=""btn,btn-link"" Text=""Cancel"" ##CANCEL## />
 </StackLayout>";
 
+            var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
             var parameters = new Dictionary<string, string>();
             string fieldsContent;
 
             using ( var rockContext = new RockContext() )
             {
-                var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null )
@@ -477,7 +477,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( GroupDetailPage.HasValue )
             {
-                content = content.Replace( "##CANCEL##", $"Command=\"{{Binding ReplacePage}}\" CommandParameter=\"{GroupDetailPage}\"" );
+                content = content.Replace( "##CANCEL##", $"Command=\"{{Binding ReplacePage}}\" CommandParameter=\"{GroupDetailPage}?{GroupView.PageParameterKeys.GroupGuid}={groupGuid}\"" );
             }
             else
             {
@@ -488,6 +488,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Details"" />
 <Rock:Divider />" );
+            }
+            else
+            {
+                content = content.Replace( "##HEADER##", string.Empty );
             }
 
             return content.Replace( "##FIELDS##", fieldsContent )
@@ -593,9 +597,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns>The response to send back to the client.</returns>
         private CallbackResponse SaveGroup( Dictionary<string, object> parameters )
         {
+            var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
+
             using ( var rockContext = new RockContext() )
             {
-                var groupGuid = RequestContext.GetPageParameter( PageParameterKeys.GroupGuid ).AsGuid();
                 var group = new GroupService( rockContext ).Get( groupGuid );
 
                 if ( group == null || !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
@@ -661,7 +666,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return new CallbackResponse
                 {
                     Command = "ReplacePage",
-                    CommandParameter = $"{GroupDetailPage}?GroupGuid={RequestContext.GetPageParameter( PageParameterKeys.GroupGuid )}"
+                    CommandParameter = $"{GroupDetailPage}?GroupGuid={groupGuid}"
                 };
             }
             else

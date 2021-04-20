@@ -142,7 +142,7 @@ namespace Rock.Badge.Component
             {
                 return;
             }
-            
+
             var streakTypeCache = GetStreakTypeCache( badge );
 
             if ( streakTypeCache == null )
@@ -159,9 +159,9 @@ namespace Rock.Badge.Component
 
             var animateClass = doAnimateBars ? " animate" : string.Empty;
 
-            var tooltip = $"{Person.NickName.ToPossessive().EncodeHtml()} attendance for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
+            var tooltip = $"{Person.NickName.ToPossessive()} engagement in the streak '{streakTypeCache.Name}' for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
 
-            var chartHtml = $"<div class='badge badge-attendance{animateClass} badge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip}'></div>";
+            var chartHtml = $"<div class='badge badge-attendance{animateClass} badge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml()}'></div>";
             var linkedPageGuid = GetAttributeValue( badge, AttributeKey.StreakDetailPage ).AsGuidOrNull();
             var linkedPageId = linkedPageGuid.HasValue ? PageCache.GetId( linkedPageGuid.Value ) : null;
 
@@ -204,7 +204,7 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/StreakTypes/RecentEngagement/{streakTypeCache.Id}/{Person.Id}?unitCount={unitsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var chartHtml = ['<ul class=\'attendance-chart list-unstyled\'>'];
+            var chartHtml = ['<ul class=\'trend-chart list-unstyled\'>'];
 
             if (data) {{
                 for(var i = data.length - 1; i >= 0; i--) {{

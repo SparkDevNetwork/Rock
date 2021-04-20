@@ -18,11 +18,13 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
+#pragma warning disable IDE1006 // Naming Styles
     public partial class spCrm_PersonDuplicateFinder : Rock.Migrations.RockMigration
+#pragma warning restore IDE1006 // Naming Styles
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -37,7 +39,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            Sql( MigrationSQL._201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder );
+            //Sql( MigrationSQL._201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder );
         }
     }
 }

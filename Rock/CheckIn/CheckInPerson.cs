@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -28,7 +29,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : Lava.ILiquidizable, IHasAttributesWrapper
+    public class CheckInPerson : ILavaDataDictionary, Lava.ILiquidizable, IHasAttributesWrapper
     {
         /// <summary>
         /// Gets or sets the person.
@@ -59,7 +60,7 @@ namespace Rock.CheckIn
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was automatically selected by a check-in action.
         /// </summary>
         /// <value>
         ///   <c>true</c> if preselected; otherwise, <c>false</c>.
@@ -94,14 +95,9 @@ namespace Rock.CheckIn
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this is the person's first time checking in.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [first checkin]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="Attendance.IsFirstTime"/>
         [DataMember]
-        public bool FirstTime { get; set; }
+        public bool FirstTime { get; set; } 
 
         /// <summary>
         /// Gets or sets the unique code for check-in labels
@@ -207,7 +203,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets the available options for a person.
         /// </summary>
-        /// <param name="onlyPreSelected">if set to <c>true</c> [only pre selected].</param>
+        /// <param name="onlyPreSelected">if set to <c>true</c> [only automatically/previously selected].</param>
         /// <param name="onlyOneOptionPerSchedule">if set to <c>true</c> [only one option per schedule].</param>
         /// <returns></returns>
         public List<CheckInPersonSummary> GetOptions( bool onlyPreSelected, bool onlyOneOptionPerSchedule )
@@ -319,22 +315,12 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public object ToLiquid()
-        {
-            return this;
-        }
-
-        /// <summary>
         /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
         /// </value>
-        [Rock.Data.LavaIgnore]
+        [LavaHidden]
         public List<string> AvailableKeys
         {
             get
@@ -356,7 +342,7 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Rock.Data.LavaIgnore]
+        [LavaHidden]
         public object this[object key]
         {
             get
@@ -375,11 +361,24 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
         /// Determines whether the specified key contains key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public bool ContainsKey( string key )
         {
             var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes", "SelectedOptions" };
             if ( additionalKeys.Contains( key.ToStringSafe() ) )
@@ -399,11 +398,59 @@ namespace Rock.CheckIn
         {
             get { return Person; }
         }
+
+        #region ILiquidizable
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes", "SelectedOptions" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Person.ContainsKey( key.ToStringSafe() );
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        #endregion
+
     }
 
     /// <summary>
     /// Helper class for summarizing the selected check-in
     /// </summary>
+    [LavaType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
     [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
     public class CheckInPersonSummary
     {
@@ -525,6 +572,7 @@ namespace Rock.CheckIn
                 }
             }
         }
+
 
     }
 }

@@ -338,7 +338,7 @@ usernameTextbox.blur(function () {{
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
-                url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
+                url: Rock.settings.get('baseUrl') + 'api/userlogins/available?username=' + encodeURIComponent($(this).val()),
                 success: function (getData, status, xhr) {{
 
                     if (getData) {{
@@ -574,6 +574,20 @@ usernameTextbox.blur(function () {{
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             int personId = Request.Form["DuplicatePerson"].AsInteger();
             if ( personId > 0 )
             {
@@ -691,6 +705,20 @@ usernameTextbox.blur(function () {{
         /// <param name="direction">The direction.</param>
         private void DisplayDuplicates( Direction direction )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             bool displayed = false;
 
             if ( Convert.ToBoolean( GetAttributeValue( AttributeKey.Duplicates ) ) )

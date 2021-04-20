@@ -227,14 +227,10 @@ namespace Rock.Model
             var rockContext = Context as RockContext;
             var attemptService = new AchievementAttemptService( rockContext );
 
-            var attempts = attemptService.Queryable()
-                .AsNoTracking()
-                .Where( aa =>
-                    aa.AchievementTypeId == achievementTypeCache.Id &&
-                    aa.AchieverEntityId == achieverEntityId )
-                .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
-                .ToList();
-
+            var attemptsQuery = attemptService.Queryable().AsNoTracking();
+                
+            var attempts = attemptService.GetOrderedAchieverAttempts( attemptsQuery, achievementTypeCache, achieverEntityId );
+            
             var progressStatement = new ProgressStatement( achievementTypeCache );
 
             // If there are no attempts, no other information can be derived
@@ -320,7 +316,7 @@ namespace Rock.Model
     /// <summary>
     /// Statement of Progress for an Achievement Type
     /// </summary>
-    public class ProgressStatement: ILiquidizable
+    public class ProgressStatement: ILiquidizable, ILavaDataDictionary
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressStatement" /> class.
@@ -340,7 +336,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type identifier.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public int AchievementTypeId { get; }
 
         /// <summary>
@@ -353,7 +349,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the name of the streak type achievement type.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public string AchievementTypeName { get; }
 
         /// <summary>
@@ -366,7 +362,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the streak type achievement type description.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public string AchievementTypeDescription { get; }
 
         /// <summary>
@@ -379,25 +375,25 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the success count.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public int SuccessCount { get; set; }
 
         /// <summary>
         /// Gets or sets the attempt count.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public int AttemptCount { get; set; }
 
         /// <summary>
         /// Gets or sets the best attempt.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public AchievementAttempt BestAttempt { get; set; }
 
         /// <summary>
         /// Gets or sets the most recent attempt.
         /// </summary>
-        [LavaInclude]
+        [LavaVisible]
         public AchievementAttempt MostRecentAttempt { get; set; }
 
         /// <summary>
@@ -406,7 +402,7 @@ namespace Rock.Model
         /// <value>
         /// The attributes.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public Dictionary<string, string> Attributes { get; set; }
 
         /// <summary>
@@ -415,8 +411,21 @@ namespace Rock.Model
         /// <value>
         /// The unmet prerequisites.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public List<ProgressStatement> UnmetPrerequisites { get; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
 
         #region ILiquidizable
 
@@ -435,7 +444,7 @@ namespace Rock.Model
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual List<string> AvailableKeys
         {
             get
@@ -462,7 +471,37 @@ namespace Rock.Model
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public virtual bool ContainsKey( string key )
+        {
+            string propertyKey = key.ToStringSafe();
+            var propInfo = GetType().GetProperty( propertyKey );
+            if ( propInfo != null && LiquidizableProperty( propInfo ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
         public virtual object this[object key]
         {
             get

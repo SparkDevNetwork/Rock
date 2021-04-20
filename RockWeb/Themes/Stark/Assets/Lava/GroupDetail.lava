@@ -15,20 +15,17 @@
 		{% endcase %}
 	{% endfor %}
 
+    {% for groupLocation in Group.GroupLocations %}
+        {% if groupLocation.Location.GeoPoint != '' %}
 
-	{% for groupLocation in Group.GroupLocations %}
-		{% if groupLocation.Location.GeoPoint != '' %}
+        <div class="packagesummary-image"
+            style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}') no-repeat center;
+                    width: 100%;
+                    height: 200px;">
+        </div>
 
-		<div class="packagesummary-image"
-			 style="background: url('https://maps.googleapis.com/maps/api/staticmap?size=1400x400&zoom=13&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}') no-repeat center;
-					width: 100%;
-					height: 200px;">
-		</div>
-
-		{% endif %}
-	{% endfor %}
-
-
+        {% endif %}
+    {% endfor %}
 
 	<h1>{{ Group.Name }}</h1>
 
@@ -78,9 +75,9 @@
 	</div>
 	{% endif %}
 
-	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+	{% if LinkedPages.RosterPage and LinkedPages.AttendancePage and Group.GroupType.TakesAttendance == 'True' %}
 		<ul class="nav nav-tabs margin-v-lg">
-			{% if LinkedPages.RosterPage != '' %}
+			{% if LinkedPages.RosterPage %}
 				{% if LinkedPages.RosterPage == CurrentPage.Path %}
 					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
 				{% else %}
@@ -88,7 +85,7 @@
 				{% endif %}
 			{% endif %}
 
-			{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+			{% if LinkedPages.AttendancePage and Group.GroupType.TakesAttendance == 'True' %}
 				{% if LinkedPages.AttendancePage == CurrentPage.Path %}
 					<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
 				{% else %}
@@ -306,7 +303,7 @@
 					<i class="fa fa-plus"></i> Add Member
 				</a>
 			{% endif %}
-			{% if LinkedPages.CommunicationPage != '' %}
+			{% if LinkedPages.CommunicationPage %}
 				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 					<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
 						<i class="fa fa-envelope-o"></i> Email Roster

@@ -587,7 +587,9 @@ namespace Rock.Web.UI.Controls
 
             _ceEditor = new CodeEditor();
             _ceEditor.ID = this.ID + "_codeEditor";
+            _ceEditor.CssClass = "html-editor-code-editor";
             _ceEditor.EditorMode = CodeEditorMode.Lava;
+            _ceEditor.EditorHeight = this.Height.Value.ToString();
             if ( !string.IsNullOrEmpty(this.CallbackOnChangeScript) )
             {
                 _ceEditor.OnChangeScript = this.CallbackOnChangeScript;
@@ -646,17 +648,7 @@ namespace Rock.Web.UI.Controls
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
-
-            //TODO: Look for a valid asset manager and disable the control if one is not found
-
-
-
-            var globalAttributesCache = GlobalAttributesCache.Get();
-
-            string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
-            string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
-            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
-
+            
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
             if ( this.UserSpecificRoot )
@@ -692,11 +684,6 @@ function pageLoad() {{
 
 $(document).ready( function() {{
 
-    // workaround for https://github.com/summernote/summernote/issues/2017 and/or https://github.com/summernote/summernote/issues/1984
-    if(!!document.createRange) {{
-      document.getSelection().removeAllRanges();
-    }}
-
     var summerNoteEditor_{this.ClientID} = $('#{this.ClientID}').summernote({{
         height: '{this.Height}', //set editable area's height
         toolbar: Rock.htmlEditor.toolbar_RockCustomConfig{this.Toolbar.ConvertToString()},
@@ -721,6 +708,9 @@ $(document).ready( function() {{
           ]
         }},
         callbacks: {{
+            onInit: function() {{
+                $(this).parent().removeClass('loading').css('min-height', '');
+            }},
            {callbacksOption}
         }},
 
@@ -738,10 +728,7 @@ $(document).ready( function() {{
         rockFileBrowserOptions: {{
             enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
             documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}',
-            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
-            imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
-            fileTypeBlackList: '{fileTypeBlackList}',
-            fileTypeWhiteList: '{fileTypeWhiteList}'
+            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}'
         }},
 
         rockAssetManagerOptions: {{
@@ -773,7 +760,7 @@ $(document).ready( function() {{
             // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( (RockPage)this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.js", true ) );
                 var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/RockHtmlEditorPlugins" );
                 ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-plugins", bundleUrl );
             }
@@ -781,7 +768,13 @@ $(document).ready( function() {{
             // set this textbox hidden until we can run the js to attach summernote to it
             this.Style[HtmlTextWriterStyle.Display] = "none";
 
+            writer.AddAttribute( "class", "html-editor-container loading" );
+            writer.AddStyleAttribute("min-height", this.Height.ToString());
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             base.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
     }
 }

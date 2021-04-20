@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -679,20 +678,16 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == CareTeamOpportunityPrayerPartnerId );
-
             var result = service.CanConnect(
                 new ConnectionRequestViewModel
                 {
                     PlacementGroupId = null,
                     ConnectionState = ConnectionState.Active
                 },
-                connectionOpportunity,
-                ConnectionTypeCache.Get( TypeCareTeamId ) );
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( false, result );
         }
@@ -707,11 +702,6 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == CareTeamOpportunityPrayerPartnerId );
 
             var result = service.CanConnect(
                 new ConnectionRequestViewModel
@@ -719,7 +709,10 @@ namespace Rock.Tests.Integration.RockTests.Model
                     PlacementGroupId = 1,
                     ConnectionState = ConnectionState.Active
                 },
-                connectionOpportunity,
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
                 ConnectionTypeCache.Get( TypeCareTeamId ) );
 
             Assert.That.AreEqual( true, result );
@@ -734,11 +727,6 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == YouthProgramOpportunityGroupLeaderId );
 
             var result = service.CanConnect(
                 new ConnectionRequestViewModel
@@ -746,7 +734,10 @@ namespace Rock.Tests.Integration.RockTests.Model
                     PlacementGroupId = null,
                     ConnectionState = ConnectionState.Active
                 },
-                connectionOpportunity,
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                },
                 ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( true, result );
@@ -761,11 +752,6 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var rockContext = new RockContext();
             var service = new ConnectionRequestService( rockContext );
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == YouthProgramOpportunityGroupLeaderId );
 
             var result = service.CanConnect(
                 new ConnectionRequestViewModel
@@ -773,8 +759,10 @@ namespace Rock.Tests.Integration.RockTests.Model
                     PlacementGroupId = null,
                     ConnectionState = ConnectionState.Inactive
                 },
-                connectionOpportunity,
-                ConnectionTypeCache.Get( TypeYouthProgramId ) );
+                new ConnectionOpportunity
+                {
+                    ShowConnectButton = true
+                }, ConnectionTypeCache.Get( TypeYouthProgramId ) );
 
             Assert.That.AreEqual( false, result );
         }

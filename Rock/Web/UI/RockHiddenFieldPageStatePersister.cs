@@ -113,10 +113,7 @@ namespace Rock.Web.UI
             byte[] bytes = Convert.FromBase64String( viewState );
 
             // decrypt viewstate
-            if ( Page.Request.Form["__CVIEWSTATEENC"] == "1" )
-            {
-                bytes = MachineKey.Unprotect( bytes );
-            }
+            bytes = MachineKey.Unprotect( bytes );
 
             // uncompress viewstate
             if ( Page.Request.Form["__CVIEWSTATESIZE"] != "0" )
@@ -190,16 +187,8 @@ namespace Rock.Web.UI
                 ScriptManager.RegisterHiddenField( Page, "__CVIEWSTATESIZE", "0" );
             }
 
-            // encrypt unless we are told not to.
-            if ( Page.ViewStateEncryptionMode != ViewStateEncryptionMode.Never )
-            {
-                bytes = MachineKey.Protect( bytes );
-                ScriptManager.RegisterHiddenField( Page, "__CVIEWSTATEENC", "1" );
-            }
-            else
-            {
-                ScriptManager.RegisterHiddenField( Page, "__CVIEWSTATEENC", "0" );
-            }
+            // encrypt viewstate
+            bytes = MachineKey.Protect( bytes );
 
             ScriptManager.RegisterHiddenField( Page, "__CVIEWSTATE", Convert.ToBase64String( bytes ) );
 

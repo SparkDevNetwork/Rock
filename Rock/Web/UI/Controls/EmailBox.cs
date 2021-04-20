@@ -16,13 +16,13 @@
 //
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Communication;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.CurrencyBox"/> control with an associated label.
+    /// A <see cref="T:Rock.Web.UI.Controls.RockTextBox" /> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:EmailBox runat=server></{0}:EmailBox>" )]
     public class EmailBox : RockTextBox
@@ -109,35 +109,9 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            if ( this.AllowMultiple )
-            {
-                // using approach from https://channel9.msdn.com/Forums/TechOff/250895-Regular-Expression-for-multiple-email-validation-using-the-RegularExpressionValidator-control
-                // "...the built-in RegEx for emails, plus a clause allowing for an optional comma "([,])*". I also wrapped the whole thing on "(...)*" to allow for multiple occurrences"
-                // then added a \s so that spaces are allowed between email addresses
-                if ( this.AllowLava )
-                {
-                    _regexValidator.ValidationExpression = @"({{\s*[\w\.]+\s*}})|(((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*)";
-                }
-                else
-                {
-                  
-                    _regexValidator.ValidationExpression = @"((\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)*([\s,])*)*";
-                }
-            }
-            else
-            {
-                if ( this.AllowLava )
-                {
-                    _regexValidator.ValidationExpression = @"({{\s*[\w\.]+\s*}})|(\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*)";
-                }
-                else
-                {
-                    // from https://msdn.microsoft.com/en-us/library/aa711310(v=vs.71).aspx and https://stackoverflow.com/a/1710535/1755417
-                    _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
-                }
-            }
-
             _regexValidator.ErrorMessage = "Email address is not valid";
+
+            _regexValidator.ValidationExpression = EmailAddressFieldValidator.GetRegularExpression( this.AllowMultiple, this.AllowLava );
 
             Controls.Add( _regexValidator );
         }
@@ -179,7 +153,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
-            this.Attributes["type"] = "email";
+            if ( this.AllowLava )
+            {
+                // Avoid input type='email' because it disallows valid Lava input.
+                this.Attributes["type"] = "text";
+            }
+            else
+            {
+                this.Attributes["type"] = "email";
+            }
 
             base.RenderBaseControl( writer );
         }

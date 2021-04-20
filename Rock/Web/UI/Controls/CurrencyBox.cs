@@ -16,7 +16,7 @@
 //
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -27,6 +27,43 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CurrencyBox runat=server></{0}:CurrencyBox>" )]
     public class CurrencyBox : NumberBoxBase
     {
+        private readonly RockCurrencyCodeInfo _organizationCurrencyCodeInfo;
+        
+        private int _currencyDecimalPlaces;
+
+        /// <summary>
+        /// Gets or sets the currency code defined value identifier.
+        /// </summary>
+        /// <value>
+        /// The currency code defined value identifier.
+        /// </value>
+        public int CurrencyCodeDefinedValueId
+        {
+            get => ( int ) ( ViewState["CurrencyCodeDefinedValueId"] ?? 0 );
+
+            set
+            {
+                ViewState["CurrencyCodeDefinedValueId"] = value;
+                UpdateCurrencyCode( value );
+            }
+        }
+
+        private void UpdateCurrencyCode( int currencyCodeDefinedValueId )
+        {
+            if ( currencyCodeDefinedValueId == 0 || currencyCodeDefinedValueId == _organizationCurrencyCodeInfo.CurrencyCodeDefinedValueId )
+            {
+                PrependText = _organizationCurrencyCodeInfo.Symbol;
+                _currencyDecimalPlaces = _organizationCurrencyCodeInfo.DecimalPlaces;
+                return;
+            }
+
+            var currencyCodeInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
+            PrependText = currencyCodeInfo.Symbol;
+            Help += $"{currencyCodeInfo.Description} ({currencyCodeInfo.CurrencyCode})";
+
+            _currencyDecimalPlaces = currencyCodeInfo.DecimalPlaces;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CurrencyBox" /> class.
         /// </summary>
@@ -34,6 +71,16 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.NumberType = ValidationDataType.Currency;
+
+            var organizationCurrencyCodeGuid = GlobalAttributesCache.Get().GetValue( SystemKey.SystemSetting.ORGANIZATION_CURRENCY_CODE ).AsGuidOrNull();
+            if ( organizationCurrencyCodeGuid != null )
+            {
+                var organizationCurrencyCode = DefinedValueCache.Get( organizationCurrencyCodeGuid.Value );
+                if ( organizationCurrencyCode != null )
+                {
+                    _organizationCurrencyCodeInfo = new RockCurrencyCodeInfo( organizationCurrencyCode.Id );
+                }
+            }
         }
 
         /// <summary>
@@ -43,12 +90,19 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
+        }
 
-            var globalAttributes = GlobalAttributesCache.Get();
-            if ( globalAttributes != null )
+        protected override void OnLoad( System.EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( CurrencyCodeDefinedValueId > 0 )
             {
-                string symbol = globalAttributes.GetValue( "CurrencySymbol" );
-                this.PrependText = string.IsNullOrWhiteSpace( symbol ) ? "$" : symbol;
+                UpdateCurrencyCode( CurrencyCodeDefinedValueId );
+            }
+            else
+            {
+                CurrencyCodeDefinedValueId = _organizationCurrencyCodeInfo.CurrencyCodeDefinedValueId;
             }
         }
 
@@ -58,8 +112,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
-            this.Attributes["step"] = "0.01";
-
+            if ( _currencyDecimalPlaces == 0 )
+            {
+                this.NumberType = ValidationDataType.Integer;
+                this.Attributes.Remove( "step" );
+            }
+            else
+            {
+                var step = $"0.{ new string( '0', _currencyDecimalPlaces - 1 ) }1";
+                this.Attributes["step"] = step;
+            }
+            
             /* 2020-11-20 MDP
                inputmode tells the browser what type of input to expect. If we 
                see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
@@ -81,12 +144,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Text.AsDecimalOrNull().FormatAsCurrency().AsDecimalOrNull();
+                return this.Text.AsDecimalOrNull();
             }
 
             set
             {
-                this.Text = value?.ToString("F2");
+                this.Text = value?.ToString( $"F{_currencyDecimalPlaces}" );
             }
         }
     }

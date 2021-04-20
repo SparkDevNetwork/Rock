@@ -34,9 +34,11 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.Cache;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.UI;
 using Newtonsoft.Json;
+
 namespace RockWeb.Blocks.Examples
 {
     [DisplayName( "Model Map" )]
@@ -45,7 +47,6 @@ namespace RockWeb.Blocks.Examples
     [KeyValueListField( "Category Icons", "The Icon Class to use for each category.", false, "", "Category", "Icon Css Class" )]
     public partial class ModelMap : RockBlock
     {
-
         #region Properties
 
         protected List<MCategory> EntityCategories { get; set; }
@@ -107,15 +108,20 @@ namespace RockWeb.Blocks.Examples
                 {
                     entityTypeId = PageParameter( "EntityType" ).AsIntegerOrNull();
 
-                    if ( entityTypeId == null )
+                    EntityTypeCache entityType = null;
+                    if ( entityTypeId.HasValue )
                     {
-                        var entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
+                        entityType = EntityTypeCache.Get( entityTypeId.Value );
+                    }
+                    else
+                    {
+                        entityType = EntityTypeCache.Get( PageParameter( "EntityType" ).AsGuid() );
+                    }
 
-                        if ( entityType != null )
-                        {
-                            entityTypeId = entityType.Id;
-                            categoryGuid = EntityCategories.Where( c => c.RockEntityIds.Contains( entityType.Id ) ).Select( c => c.Guid ).FirstOrDefault();
-                        }
+                    if ( entityType != null )
+                    {
+                        entityTypeId = entityType.Id;
+                        categoryGuid = EntityCategories.Where( c => c.RockEntityIds.Contains( entityType.Id ) ).Select( c => c.Guid ).FirstOrDefault();
                     }
                 }
 
@@ -254,9 +260,10 @@ namespace RockWeb.Blocks.Examples
                     if ( entityCategory == null )
                     {
                         entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
-                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : string.Empty;
+                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-th-large";
                         entityCategories.Add( entityCategory );
                     }
+
                     entityCategory.RockEntityIds.Add( entity.Id );
                 }
             }
@@ -290,7 +297,7 @@ namespace RockWeb.Blocks.Examples
                 var category = EntityCategories.Where( c => c.Guid.Equals( categoryGuid ) ).FirstOrDefault();
                 if ( category != null )
                 {
-                    lCategoryName.Text = category.Name + " Models";
+                    lCategoryName.Text = category.Name.SplitCase() + " Models";
                     pnlModels.Visible = true;
 
                     entityTypeList = category
@@ -334,27 +341,57 @@ namespace RockWeb.Blocks.Examples
                         mClass.Name = type.Name;
                         mClass.Comment = GetComments( type, xmlComments );
 
-                        PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | ( BindingFlags.Instance ) )
-                            .Where( m => ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
+                        PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                            .Where( m => m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property )
                             .ToArray();
                         foreach ( PropertyInfo p in properties.OrderBy( i => i.Name ).ToArray() )
                         {
-                            mClass.Properties.Add( new MProperty
+#pragma warning disable CS0618 // LavaIncludeAttribute is obsolete
+                            var property = new MProperty
                             {
                                 Name = p.Name,
                                 IsInherited = p.DeclaringType != type,
                                 IsVirtual = p.GetGetMethod() != null && p.GetGetMethod().IsVirtual && !p.GetGetMethod().IsFinal,
-                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
+                                IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
                                 IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
                                 NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                                 Required = p.IsDefined( typeof( RequiredAttribute ) ),
                                 Id = p.MetadataToken,
-                                Comment = GetComments( p, xmlComments )
-                            } );
+                                Comment = GetComments( p, xmlComments ),
+                                IsEnum = p.PropertyType.IsEnum,
+                                IsDefinedValue = p.Name.EndsWith( "ValueId" ) && p.IsDefined( typeof( DefinedValueAttribute ) )
+                            };
+#pragma warning restore CS0618 // LavaIncludeAttribute is obsolete
+
+                            if ( property.IsEnum )
+                            {
+                                property.KeyValues = new Dictionary<string, string>();
+                                var values = p.PropertyType.GetEnumValues();
+                                foreach ( var value in values )
+                                {
+                                    property.KeyValues.AddOrReplace( ( ( int ) value ).ToString(), value.ToString() );
+                                }
+                            }
+                            else if ( property.IsDefinedValue )
+                            {
+                                var definedValueAttribute = p.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
+                                if ( definedValueAttribute != null && definedValueAttribute.DefinedTypeGuid.HasValue )
+                                {
+                                    property.KeyValues = new Dictionary<string, string>();
+                                    var definedTypeGuid = definedValueAttribute.DefinedTypeGuid.Value;
+                                    var definedValues = DefinedTypeCache.Get( definedTypeGuid ).DefinedValues;
+                                    foreach ( var definedValue in definedValues )
+                                    {
+                                        property.KeyValues.AddOrReplace( string.Format( "{0} = {1}", definedValue.Id, definedValue.Value ), definedValue.Description );
+                                    }
+                                }
+                            }
+
+                            mClass.Properties.Add( property );
                         }
 
-                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | ( BindingFlags.Instance ) )
+                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | BindingFlags.Instance )
                             .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
                             .ToArray();
                         foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
@@ -416,7 +453,7 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( aClass.Properties.Any() )
                 {
-                    sb.AppendLine( "<h4>Properties</h4><ul class='list-unstyled'>" );
+                    sb.AppendLine( "<h5 class='font-weight-normal'>Properties</h5><table class='table table-properties'>" );
                     foreach ( var property in aClass.Properties.OrderBy( p => p.Name ) )
                     {
                         bool? isRequired = gfSettings.GetUserPreference( "IsRequired" ).AsBooleanOrNull();
@@ -438,43 +475,46 @@ namespace RockWeb.Blocks.Examples
                             continue;
                         }
 
-                        sb.AppendFormat( "<li data-id='p{0}' class='{6}'><strong>{9}<tt>{1}</tt></strong>{3}{4}{5}{10}{2}{7}</li>{8}",
+                        sb.AppendFormat(
+                            "<tr data-id='p{0}' {11}><td class='d-block d-sm-table-cell'>{8}<tt class='cursor-default font-weight-bold {3}' title='{6}'>{1}</tt> {4}{5}</td><td class='d-block d-sm-table-cell'>{9}{2}{10}</td></tr>{7}",
                             property.Id, // 0
                             HttpUtility.HtmlEncode( property.Name ), // 1
-                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " - " + property.Comment.Summary : string.Empty, // 2
-                            property.Required ? " <strong class='text-danger'>*</strong> " : string.Empty, // 3
-                            property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning'></i> " : string.Empty, // 4
+                            ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " " + property.Comment.Summary : string.Empty, // 2
+                            property.Required ? "required-indicator" : string.Empty, // 3
+                            property.IsLavaInclude ? " <i class='fa fa-bolt fa-fw text-warning unselectable'></i> " : string.Empty, // 4
                             string.Empty, // 5
-                            property.IsInherited ? " js-model hidden " : " ", // 6
-                            property.IsInherited ? " (inherited)" : string.Empty, // 7
-                            Environment.NewLine, // 8
-                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square-o fa-fw'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 9
-                            property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + property.ObsoleteMessage + " </i> " : string.Empty // 10
+                            property.IsInherited ? "inherited" : string.Empty, // 6
+                            Environment.NewLine, // 7
+                            property.NotMapped || property.IsVirtual ? "<i class='fa fa-square fa-fw o-20'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 8
+                            property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <span class='small text-danger'>" + property.ObsoleteMessage + " </span> " : string.Empty, // 9
+                            ( property.IsEnum || property.IsDefinedValue ) && property.KeyValues != null ? GetStringFromKeyValues( property.KeyValues ) : string.Empty, /*10*/
+                            property.IsObsolete ? "class='o-50' title='Obsolete'" : "class=''"
                             );
                     }
-                    sb.AppendLine( "</ul>" );
+
+                    sb.AppendLine( "</table>" );
                 }
 
                 if ( aClass.Methods.Any() )
                 {
-                    sb.AppendLine( "<h4>Methods</h4><ul>" );
+                    sb.AppendLine( "<h4 class='js-model hidden '=>Methods</h4><ul>" );
 
                     if ( aClass.Methods.Where( m => m.IsInherited == false ).Count() == 0 )
                     {
-                        sb.AppendLine( "<small class='text-muted'><i>all inherited</i></small>" );
+                        sb.AppendLine( "<li class='js-model hidden'><small class='text-muted'><i>all inherited</i></small></li>" );
                     }
 
                     foreach ( var method in aClass.Methods.OrderBy( m => m.Name ) )
                     {
-                        sb.AppendFormat( "<li data-id='m{0}' class='{3}'><strong><tt>{1}</tt></strong> {2}{4} {6}</li>{5}",
+                        sb.AppendFormat(
+                            "<li data-id='m{0}' class='{3}'><tt class='font-weight-bold'>{1}</tt> {2}{4} {6}</li>{5}",
                             method.Id,
                             HttpUtility.HtmlEncode( method.Signature ),
-                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + method.Comment.Summary : "",
-                            method.IsInherited ? " js-model hidden " : " ",
-                            method.IsInherited ? " (inherited)" : "",
+                            ( method.Comment != null && !string.IsNullOrWhiteSpace( method.Comment.Summary ) ) ? " - " + method.Comment.Summary : string.Empty,
+                            "js-model hidden ",
+                            method.IsInherited ? " (inherited)" : string.Empty,
                             Environment.NewLine, // 5
-                            method.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty // 6
-                            );
+                            method.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <i>" + method.ObsoleteMessage + " </i> " : string.Empty  /*6*/ );
                     }
 
                     sb.AppendLine( "</ul>" );
@@ -511,7 +551,7 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Gets the comments from the data in the assembly's XML file for the 
+        /// Gets the comments from the data in the assembly's XML file for the
         /// given member object.
         /// </summary>
         /// <param name="p">The MemberInfo instance.</param>
@@ -555,14 +595,15 @@ namespace RockWeb.Blocks.Examples
                     xmlComment.Returns = name.Element( "returns" ).ValueSafe();
                 }
             }
-            catch { }
-            return xmlComment;
+            catch
+            {
+            }
 
+            return xmlComment;
         }
 
-
         /// <summary>
-        /// Gets the comments from the data in the assembly's XML file for the 
+        /// Gets the comments from the data in the assembly's XML file for the
         /// given member object.
         /// </summary>
         /// <param name="p">The MemberInfo instance.</param>
@@ -583,22 +624,44 @@ namespace RockWeb.Blocks.Examples
                 {
                     message = msg.Value.ToStringSafe();
                 }
-
             }
-            catch { }
-            return message;
+            catch
+            {
+            }
 
+            return message;
         }
+
         /// <summary>
-        /// Makes the summary HTML; converting any type/class cref (ex. <see cref="T:Rock.Model.Campus" />) 
+        /// Makes the summary HTML; converting any type/class cref (ex. <see cref="T:Rock.Model.Campus" />)
         /// references to HTML links (ex <a href="#Campus">Campus</a>)
         /// </summary>
         /// <param name="innerXml">The inner XML.</param>
         /// <returns></returns>
+        ///
         private string MakeSummaryHtml( string innerXml )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+            while ( match.Success )
+            {
+                var updatedValue = match.Value;
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+
+                var entityType = EntityTypeCache.Get( match.Groups[1].Value );
+                if ( entityType != null )
+                {
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
+                }
+                else
+                {
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                }
+
+                innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
+                match = match.NextMatch();
+            }
             return innerXml;
         }
 
@@ -610,6 +673,7 @@ namespace RockWeb.Blocks.Examples
                 Guid categoryGuid = ( Guid ) obj;
                 return selectedCategoryGuid.HasValue && selectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
             }
+
             return string.Empty;
         }
 
@@ -621,7 +685,33 @@ namespace RockWeb.Blocks.Examples
                 int entityId = ( int ) obj;
                 return selectedEntityId.HasValue && selectedEntityId.Value == entityId ? "active" : string.Empty;
             }
+
             return string.Empty;
+        }
+
+        private string GetStringFromKeyValues( Dictionary<string, string> keyValues )
+        {
+            var value = string.Empty;
+
+            foreach ( var keyValue in keyValues )
+            {
+                value += "<tr><td class='w-1 text-nowrap'>";
+
+
+                value += keyValue.Key;
+                value += "</td>";
+                if ( keyValue.Value.IsNotNullOrWhiteSpace() )
+                {
+                    value += "<td>" + keyValue.Value + "</td>";
+                }
+                else
+                {
+                    value += "<td></td>";
+                }
+                value += "</tr>";
+            }
+
+            return string.Format( "<br/><span class='js-show-values btn btn-default btn-xs mt-2 mb-3'><span>Show Values</span> <i class='fa fa-chevron-down'></i></span><div class='js-value-table' style='display:none'><table class='table table-condensed w-75 mb-3'>{0}</table></div>", value );
         }
 
         #endregion
@@ -633,18 +723,26 @@ namespace RockWeb.Blocks.Examples
     public class MCategory
     {
         public Guid Guid { get; set; }
+
         public string Name { get; set; }
+
         public string IconCssClass { get; set; }
+
         public List<int> RockEntityIds { get; set; }
     }
 
-    class MClass
+    public class MClass
     {
         public MCategory Category { get; set; }
+
         public string Name { get; set; }
+
         public XmlComment Comment { get; set; }
+
         public Guid Guid { get; set; }
+
         public List<MProperty> Properties { get; set; }
+
         public List<MMethod> Methods { get; set; }
 
         public MClass()
@@ -654,37 +752,62 @@ namespace RockWeb.Blocks.Examples
         }
     }
 
-    class MProperty
+    public class MProperty
     {
         public string Name { get; set; }
+
         public int Id { get; set; }
+
         public bool IsInherited { get; set; }
+
         public bool IsVirtual { get; set; }
+
         public bool IsLavaInclude { get; set; }
+
         public bool IsObsolete { get; set; }
+
         public string ObsoleteMessage { get; set; }
+
         public bool NotMapped { get; set; }
+
         public bool Required { get; set; }
+
+        public bool IsEnum { get; set; }
+
+        public bool IsDefinedValue { get; set; }
+
+        public Dictionary<string, string> KeyValues { get; set; }
+
         public XmlComment Comment { get; set; }
     }
 
-    class MMethod
+    public class MMethod
     {
         public string Name { get; set; }
+
         public int Id { get; set; }
+
         public bool IsInherited { get; set; }
+
         public bool IsObsolete { get; set; }
+
         public string ObsoleteMessage { get; set; }
+
         public string Signature { get; set; }
+
         public XmlComment Comment { get; set; }
     }
 
-    class XmlComment
+    public class XmlComment
     {
         public string Summary { get; set; }
+
         public string Value { get; set; }
+
         public string Remarks { get; set; }
+
         public string[] Params { get; set; }
+
         public string Returns { get; set; }
     }
 
@@ -730,6 +853,7 @@ namespace RockWeb.Blocks.Examples
                     return false;
                 }
             }
+
             return false;
         }
 
@@ -758,10 +882,10 @@ namespace RockWeb.Blocks.Examples
             {
                 parent = parent.GetGenericTypeDefinition();
             }
+
             return parent;
         }
     }
 
     #endregion
-
 }

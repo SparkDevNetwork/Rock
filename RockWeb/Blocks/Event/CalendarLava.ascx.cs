@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Ical.Net.DataTypes;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Event
 {
@@ -708,10 +709,10 @@ namespace RockWeb.Blocks.Event
         #region Helper Classes
 
         /// <summary>
-        /// A class to store event item occurrence data for liquid
+        /// Stores event item occurrence data for use in Lava templates.
         /// </summary>
         [DotLiquid.LiquidType( "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Campus", "Location", "LocationDescription", "Description", "Summary", "OccurrenceNote", "DetailPage" )]
-        public class EventOccurrenceSummary
+        public class EventOccurrenceSummary : LavaDataObject
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
 

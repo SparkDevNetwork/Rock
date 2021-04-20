@@ -25,8 +25,10 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -47,6 +49,14 @@ namespace RockWeb.Blocks.Communication
         Key = AttributeKey.SeriesColors,
         Order = 0 )]
 
+    [IntegerField(
+        "Database Timeout",
+        Key = AttributeKey.DatabaseTimeoutSeconds,
+        Description = "The number of seconds to wait before reporting a database timeout.",
+        IsRequired = false,
+        DefaultIntegerValue = 180,
+        Order = 1 )]
+
     #endregion Block Attributes
     public partial class EmailAnalytics : RockBlock
     {
@@ -58,6 +68,7 @@ namespace RockWeb.Blocks.Communication
         private static class AttributeKey
         {
             public const string SeriesColors = "SeriesColors";
+            public const string DatabaseTimeoutSeconds = "DatabaseTimeoutSeconds";
         }
 
         #endregion Attribute Keys
@@ -108,6 +119,15 @@ namespace RockWeb.Blocks.Communication
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
+            int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
+            {
+                sm.AsyncPostBackTimeout = databaseTimeout + 5;
+                Server.ScriptTimeout = databaseTimeout + 5;
+            }
         }
 
         /// <summary>
@@ -199,17 +219,17 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDateRange_Click( object sender, EventArgs e )
         {
-            if ( sender == btnDateRangeThreeMonths )
+            if ( sender == btnDateRangeOneMonth )
+            {
+                hfSelectedMonthsDateRange.Value = "1";
+            }
+            else if ( sender == btnDateRangeThreeMonths )
             {
                 hfSelectedMonthsDateRange.Value = "3";
             }
             else if ( sender == btnDateRangeSixMonths )
             {
                 hfSelectedMonthsDateRange.Value = "6";
-            }
-            else if ( sender == btnDateRangeYear )
-            {
-                hfSelectedMonthsDateRange.Value = "12";
             }
             else
             {
@@ -230,9 +250,47 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         public void ShowCharts()
         {
+            pnlCharts.Visible = false;
+            try
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.CommandTimeout = this.GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+                    if ( PopulateCharts( rockContext ) )
+                    {
+                        pnlCharts.Visible = true;
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                this.LogException( ex );
+                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
+
+                if ( sqlTimeoutException != null )
+                {
+                    nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbWarningMessage.Text = "This chart could not be completed in a timely manner. You can try again or adjust the filter or timeout setting of this block.";
+                }
+                else
+                {
+                    nbWarningMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbWarningMessage.Text = "There was a problem getting the data for the chart.";
+                    nbWarningMessage.Details = ex.Message;
+                }
+
+                nbWarningMessage.Visible = true;
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Populates the chart data
+        /// </summary>
+        private bool PopulateCharts( RockContext rockContext )
+        {
             SetDateRangeUI();
 
-            var rockContext = new RockContext();
             hfCommunicationId.Value = this.PageParameter( "CommunicationId" );
             hfCommunicationListGroupId.Value = this.PageParameter( "CommunicationListId" );
 
@@ -252,8 +310,10 @@ namespace RockWeb.Blocks.Communication
                 else
                 {
                     // Invalid Communication specified
-                    nbCommunicationorCommunicationListFound.Visible = true;
-                    nbCommunicationorCommunicationListFound.Text = "Invalid communication specified";
+                    nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbWarningMessage.Visible = true;
+                    nbWarningMessage.Text = "Invalid communication specified";
+                    return false;
                 }
             }
             else if ( communicationListGroupId.HasValue )
@@ -267,8 +327,10 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    nbCommunicationorCommunicationListFound.Visible = true;
-                    nbCommunicationorCommunicationListFound.Text = "Invalid communication list group specified";
+                    nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
+                    nbWarningMessage.Visible = true;
+                    nbWarningMessage.Text = "Invalid communication list group specified";
+                    return false;
                 }
             }
             else
@@ -276,15 +338,17 @@ namespace RockWeb.Blocks.Communication
                 // no specific communication or list specific, so just show overall stats,
                 // but limit to a date range so that we don't impact performance or show years worth of data
                 pnlSelectedMonthsDateRange.Visible = true;
-                maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 12;
+                maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 1;
                 lTitle.Text = "Email Analytics";
             }
 
             var interactionChannelCommunicationId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
             if ( !interactionChannelCommunicationId.HasValue )
             {
-                nbConfigurationError.Text = "Rock.SystemGuid.InteractionChannel.COMMUNICATION not found in database";
-                return;
+                nbWarningMessage.NotificationBoxType = NotificationBoxType.Warning;
+                nbWarningMessage.Text = "Rock.SystemGuid.InteractionChannel.COMMUNICATION not found in database";
+                nbWarningMessage.Visible = true;
+                return false;
             }
 
             var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.EntityId.HasValue ).Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelCommunicationId.Value );
@@ -374,7 +438,7 @@ namespace RockWeb.Blocks.Communication
             nbOpenClicksLineChartMessage.Visible = !lineChartHasData;
             nbOpenClicksLineChartMessage.Text = "No communications activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
-           hfLineChartDataLabelsJSON.Value = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
+            hfLineChartDataLabelsJSON.Value = "[" + interactionsSummary.Select( a => "new Date('" + a.SummaryDateTime.ToString( "o" ) + "')" ).ToList().AsDelimited( ",\n" ) + "]";
 
             List<int> cumulativeClicksList = new List<int>();
             List<int> clickCountsList = interactionsSummary.Select( a => a.ClickCounts ).ToList();
@@ -568,6 +632,8 @@ namespace RockWeb.Blocks.Communication
             {
                 pnlMostPopularLinks.Visible = false;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -575,12 +641,16 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetDateRangeUI()
         {
+            btnDateRangeOneMonth.CssClass = "btn btn-xs btn-outline-primary";
             btnDateRangeThreeMonths.CssClass = "btn btn-xs btn-outline-primary";
             btnDateRangeSixMonths.CssClass = "btn btn-xs btn-outline-primary";
-            btnDateRangeYear.CssClass = "btn btn-xs btn-outline-primary";
-            int maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 12;
+            int maxMonthsBack = hfSelectedMonthsDateRange.Value.AsIntegerOrNull() ?? 1;
 
-            if ( maxMonthsBack == 3 )
+            if ( maxMonthsBack == 1 )
+            {
+                btnDateRangeOneMonth.CssClass = "btn btn-xs btn-primary";
+            }
+            else if ( maxMonthsBack == 3 )
             {
                 btnDateRangeThreeMonths.CssClass = "btn btn-xs btn-primary";
             }
@@ -588,9 +658,11 @@ namespace RockWeb.Blocks.Communication
             {
                 btnDateRangeSixMonths.CssClass = "btn btn-xs btn-primary";
             }
-            else if ( maxMonthsBack == 12 )
+            else
             {
-                btnDateRangeYear.CssClass = "btn btn-xs btn-primary";
+                // if not 1, 3 or 6, default to 1 month
+                btnDateRangeOneMonth.CssClass = "btn btn-xs btn-primary";
+                hfSelectedMonthsDateRange.Value = "1";
             }
         }
 
@@ -711,6 +783,5 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion
-
     }
 }

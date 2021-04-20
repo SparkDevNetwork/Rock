@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.ViewModel;
 
@@ -29,6 +30,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
@@ -130,7 +132,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The value formatted.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual string ValueFormatted
         {
@@ -151,7 +153,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name of the attribute.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeName
         {
             get
@@ -167,7 +169,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name of the attribute abbreviated.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeAbbreviatedName
         {
             get
@@ -192,7 +194,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute key.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeKey
         {
             get
@@ -208,7 +210,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute category ids.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual List<int> AttributeCategoryIds
         {
             get
@@ -228,7 +230,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool AttributeIsGridColumn
         {
             get

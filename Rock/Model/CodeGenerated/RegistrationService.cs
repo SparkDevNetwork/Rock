@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -53,6 +54,12 @@ namespace Rock.Model
         public bool CanDelete( Registration item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.RegistrationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Registration.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
@@ -127,6 +134,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this Registration object to a new Registration object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static Registration CloneWithoutIdentity( this Registration source )
+        {
+            var target = new Registration();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>

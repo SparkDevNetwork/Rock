@@ -125,7 +125,7 @@ namespace Rock.Model
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account id that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> id that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
@@ -270,7 +270,7 @@ namespace Rock.Model
         public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the billing location.
+        /// Gets or sets the billing <see cref="Rock.Model.Location"/>.
         /// </summary>
         /// <value>
         /// The billing location.
@@ -279,7 +279,7 @@ namespace Rock.Model
         public virtual Location BillingLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
@@ -415,8 +415,10 @@ namespace Rock.Model
                 var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
+
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
@@ -459,8 +461,9 @@ namespace Rock.Model
             }
             else
             {
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( !BillingLocationId.HasValue && newLocation != null )
                 {

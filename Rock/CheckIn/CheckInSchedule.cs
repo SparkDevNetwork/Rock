@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,7 +28,7 @@ namespace Rock.CheckIn
     /// A schedule options for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInSchedule : Lava.ILiquidizable
+    public class CheckInSchedule : ILavaDataDictionary, Lava.ILiquidizable
     {
         /// <summary>
         /// Gets or sets the schedule.
@@ -134,22 +135,12 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public object ToLiquid()
-        {
-            return this;
-        }
-
-        /// <summary>
         /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
         /// </value>
-        [Rock.Data.LavaIgnore]
+        [LavaHidden]
         public List<string> AvailableKeys
         {
             get
@@ -171,7 +162,20 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Rock.Data.LavaIgnore]
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
         public object this[object key]
         {
             get
@@ -190,7 +194,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public bool ContainsKey( string key )
         {
             var additionalProperties = new List<string> { "StartTime", "LastCheckIn" };
             if ( additionalProperties.Contains( key.ToStringSafe() ) )
@@ -202,5 +206,53 @@ namespace Rock.CheckIn
                 return Schedule.ContainsKey( key );
             }
         }
+
+        #region ILiquidizable
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalProperties = new List<string> { "StartTime", "LastCheckIn" };
+            var propertyKey = key.ToStringSafe();
+            if ( additionalProperties.Contains( propertyKey ) )
+            {
+                return true;
+            }
+            else
+            {
+                return Schedule.ContainsKey( propertyKey );
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
+        public object GetValue( object key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        #endregion
+
     }
 }

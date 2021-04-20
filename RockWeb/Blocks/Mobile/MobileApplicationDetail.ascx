@@ -276,19 +276,25 @@
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+                    <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
+                        <Rock:RockCheckBox ID="cbEnableNotificationsAutomatically" runat="server" Label="Enable Notifications Automatically" Help="When turned on the mobile application will automatically request push notifications permission from the user at launch." />
 
-                    <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
+                        <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 
-                    <div class="row">
-                        <%--<div class="col-md-4">
-                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
-                        </div>--%>
+                        <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
 
-                        <div class="col-md-4">
-                            <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
+                        <Rock:CodeEditor ID="ceEditHomepageRoutingLogic" runat="server" Label="Homepage Routing Logic" Help="The Lava to be executed at application start to determine which page to open initially. Should output blank or a page Guid." EditorMode="Lava" Required="false" />
+
+                        <div class="row">
+                            <%--<div class="col-md-4">
+                                <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                            </div>--%>
+
+                            <div class="col-md-4">
+                                <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
+                            </div>
                         </div>
-                    </div>
+                    </Rock:PanelWidget>
 
                     <div class="actions margin-t-md">
                         <asp:LinkButton ID="lbEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbEditSave_Click" AccessKey="s" ToolTip="Alt+s" />

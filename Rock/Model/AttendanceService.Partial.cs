@@ -286,6 +286,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Attendance" /> for the given date, location, schedule, and RSVP. No other filtering is done.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="rsvp">The RSVP.</param>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, Rock.Model.RSVP rsvp )
+        {
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
+                .Where( a => a.Occurrence.OccurrenceDate == date.Date
+                    && a.Occurrence.LocationId == locationId
+                    && a.Occurrence.ScheduleId == scheduleId
+                    && a.RSVP == rsvp );
+        }
+
+        /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <param name="groupBy">The group by.</param>
@@ -329,7 +346,7 @@ namespace Rock.Model
 
             if ( endDate.HasValue )
             {
-                endDate = endDate.Value.Date.AddDays(1);
+                endDate = endDate.Value.Date.AddDays( 1 );
                 qryAttendance = qryAttendance.Where( a => a.Occurrence.SundayDate < endDate.Value );
             }
 
@@ -845,11 +862,30 @@ namespace Rock.Model
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
 
             var sendConfirmationIndividuals = sendConfirmationAttendancesQueryList
-                .GroupBy( a => new
+                .GroupBy( a =>
                 {
-                    a.PersonAlias.Person,
-                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
-                    a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                    {
+                        CommunicationType communicationPreference;
+                        var groupMember = a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            communicationPreference = groupMember.CommunicationPreference;
+                        }
+                        else
+                        {
+                            // person isn't a member of the group, so just use their Person.CommunicationPreference
+                            communicationPreference = a.PersonAlias?.Person?.CommunicationPreference ?? CommunicationType.Email;
+                        }
+
+                        var groupBy = new
+                        {
+                            a.PersonAlias.Person,
+                            CommunicationPreference = communicationPreference,
+                            a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId
+                        };
+
+                        return groupBy;
+                    }
                 } )
                 .Select( s => new SendSystemCommunicationIndividual
                 {
@@ -890,11 +926,30 @@ namespace Rock.Model
 
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
             var sendReminderIndividuals = sendReminderAttendancesQueryList
-                .GroupBy( a => new
+                .GroupBy( a =>
                 {
-                    a.PersonAlias.Person,
-                    a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault().CommunicationPreference,
-                    a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                    {
+                        CommunicationType communicationPreference;
+                        var groupMember = a.Occurrence.Group.Members.Where( gm => gm.PersonId == a.PersonAlias.PersonId ).FirstOrDefault();
+                        if ( groupMember != null )
+                        {
+                            communicationPreference = groupMember.CommunicationPreference;
+                        }
+                        else
+                        {
+                            // person isn't a member of the group, so just use their Person.CommunicationPreference
+                            communicationPreference = a.PersonAlias?.Person?.CommunicationPreference ?? CommunicationType.Email;
+                        }
+
+                        var groupBy = new
+                        {
+                            a.PersonAlias.Person,
+                            CommunicationPreference = communicationPreference,
+                            a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId
+                        };
+
+                        return groupBy;
+                    }
                 } )
                 .Select( s => new SendSystemCommunicationIndividual
                 {
@@ -1605,6 +1660,7 @@ namespace Rock.Model
             {
                 AttendanceId = ap.Attendance.Id,
                 ap.Attendance.RSVP,
+                ap.Attendance.DeclineReasonValueId,
                 ap.Attendance.ScheduledToAttend,
                 PersonId = ap.Person.Id,
                 NickName = ap.Person.NickName,
@@ -1748,6 +1804,7 @@ namespace Rock.Model
                     ConfirmationStatus = status.ConvertToString( false ).ToLower(),
                     MatchesPreference = matchesPreferenceAsDataAttribute,
                     PersonId = a.PersonId,
+                    DeclinedReason = DefinedValueCache.GetValue( a.DeclineReasonValueId ).EncodeHtml(),
 
                     GroupMemberId = attendanceOccurrenceGroupMemberInfo?.MemberId,
                     GroupRole = attendanceOccurrenceGroupMemberInfo?.GroupRole,
@@ -1971,12 +2028,13 @@ namespace Rock.Model
 
             var endOfOccurrenceDay = attendanceOccurrence.OccurrenceDate.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
             var groupMemberAssignmentsList = groupMemberAssignmentsQuery
-                .Select( a => new {
+                .Select( a => new
+                {
                     GroupMemberId = a.GroupMember.Id,
                     a.GroupMember.PersonId,
                     a.LocationId,
                     a.ScheduleId
-                })
+                } )
                 .GroupJoin( rockContext.Attendances, gma => gma.PersonId, a => a.PersonAlias.PersonId,
                     ( gma, a ) => new GroupMemberAssignmentInfo
                     {
@@ -2200,6 +2258,72 @@ namespace Rock.Model
             {
                 // ignore if there is no attendance record
             }
+        }
+
+        /// <summary>
+        /// Sends a response (accept or decline) email to the <see cref="Attendance.ScheduledByPersonAlias">Scheduler Person</see>
+        /// for this <see cref="Attendance"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonResponseEmailToScheduler( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends a decline email to the <see cref="Group.ScheduleCancellationPersonAlias">Scheduling Cancellation Person</see>
+        /// for this attendance's <see cref="AttendanceOccurrence.Group"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonDeclineEmail( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends the send scheduled person response email.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        /// <param name="recipientPerson">The recipient person.</param>
+        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        {
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
+
+            if ( attendance == null )
+            {
+                return;
+            }
+
+            if ( recipientPerson?.IsEmailActive != true )
+            {
+                return;
+            }
+            
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            var group = attendance.Occurrence.Group;
+
+            mergeFields.Add( "Group", group );
+            mergeFields.Add( "ScheduledItem", attendance );
+            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+            mergeFields.Add( "Recipient", recipientPerson );
+
+            var emailMessage = new RockEmailMessage( schedulingResponseEmailGuid.Value );
+            emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+            emailMessage.CreateCommunicationRecord = false;
+            emailMessage.Send();
         }
 
         /// <summary>
@@ -2585,6 +2709,14 @@ namespace Rock.Model
         ///   <c>true</c> if this Person has blackout conflict; otherwise, <c>false</c>.
         /// </value>
         public override bool HasBlackoutConflict => this.BlackoutDates?.Contains( this.OccurrenceDate ) == true;
+
+        /// <summary>
+        /// Gets or sets the declined reason.
+        /// </summary>
+        /// <value>
+        /// The declined reason.
+        /// </value>
+        public string DeclinedReason { get; set; }
     }
 
     /// <summary>

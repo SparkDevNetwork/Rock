@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -58,7 +59,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<TemplateDiscountReport> GetRegistrationInstanceDiscountCodeReport( int registrationInstanceId )
         {
-            string currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+            var currencySymbol = RockCurrencyCodeInfo.GetCurrencySymbol();
 
             string query = $@"
                 WITH

@@ -31,9 +31,9 @@
         </div>
         <div class="row">
           {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
-            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d' }}
+            {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date:'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date:'MMM d' }}
           {% else %}
-            {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+            {{ eventItemOccurrence.Date | Date:'MMM d' }}
           {% endif %}
         </div>
       </div>

@@ -999,7 +999,7 @@ namespace RockWeb.Blocks.Groups
             if ( scheduleType == ScheduleType.Custom )
             {
                 iCalendarContent = sbSchedule.iCalendarContent;
-                var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                var calEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
                 if ( calEvent == null || calEvent.DtStart == null )
                 {
                     scheduleType = ScheduleType.None;
@@ -1296,15 +1296,7 @@ namespace RockWeb.Blocks.Groups
                 group.LoadAttributes( rockContext );
 
                 // Clone the group
-                var newGroup = group.Clone( false );
-                newGroup.CreatedByPersonAlias = null;
-                newGroup.CreatedByPersonAliasId = null;
-                newGroup.CreatedDateTime = RockDateTime.Now;
-                newGroup.ModifiedByPersonAlias = null;
-                newGroup.ModifiedByPersonAliasId = null;
-                newGroup.ModifiedDateTime = RockDateTime.Now;
-                newGroup.Id = 0;
-                newGroup.Guid = Guid.NewGuid();
+                var newGroup = group.CloneWithoutIdentity();
                 newGroup.IsSystem = false;
                 newGroup.Name = group.Name + " - Copy";
 
@@ -1364,16 +1356,8 @@ namespace RockWeb.Blocks.Groups
 
                     foreach ( var auth in auths )
                     {
-                        var newAuth = auth.Clone( false );
-                        newAuth.Id = 0;
-                        newAuth.Guid = Guid.NewGuid();
+                        var newAuth = auth.CloneWithoutIdentity();
                         newAuth.GroupId = newGroup.Id;
-                        newAuth.CreatedByPersonAlias = null;
-                        newAuth.CreatedByPersonAliasId = null;
-                        newAuth.CreatedDateTime = RockDateTime.Now;
-                        newAuth.ModifiedByPersonAlias = null;
-                        newAuth.ModifiedByPersonAliasId = null;
-                        newAuth.ModifiedDateTime = RockDateTime.Now;
                         authService.Add( newAuth );
                     }
 
@@ -2129,12 +2113,15 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( groupType != null && groupType.EnableGroupHistory )
                     {
-                        bool hasGroupHistory = new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id );
+                        bool hasGroupHistory = new GroupHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id )
+                            || new GroupMemberHistoricalService( rockContext ).Queryable().Any( a => a.GroupId == group.Id );
                         if ( hasGroupHistory )
                         {
                             // If the group has GroupHistory enabled, and has group history snapshots, prompt to archive instead of delete
                             btnDelete.Visible = false;
-                            btnArchive.Visible = true;
+
+                            // Show the archive button if the user is authorized to see it.
+                            btnArchive.Visible = !group.IsSystem && group.IsAuthorized( Authorization.EDIT, CurrentPerson );
                         }
                     }
                 }

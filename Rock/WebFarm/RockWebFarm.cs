@@ -52,12 +52,22 @@ namespace Rock.WebFarm
             /// <summary>
             /// The default leadership polling interval lower limit seconds
             /// </summary>
-            public const int DefaultLeadershipPollingIntervalLowerLimitSeconds = 50;
+            public const int DefaultLeadershipPollingIntervalLowerLimitSeconds = 3 * 60;
 
             /// <summary>
             /// The default leadership polling interval upper limit seconds
             /// </summary>
-            public const int DefaultLeadershipPollingIntervalUpperLimitSeconds = 70;
+            public const int DefaultLeadershipPollingIntervalUpperLimitSeconds = 5 * 60;
+
+            /// <summary>
+            /// The default minimum polling difference seconds
+            /// </summary>
+            public static int DefaultMinimumPollingDifferenceSeconds = 10;
+
+            /// <summary>
+            /// The default polling maximum wait seconds
+            /// </summary>
+            public static int DefaultPollingMaxWaitSeconds = 10;
         }
 
         /// <summary>
@@ -94,6 +104,16 @@ namespace Rock.WebFarm
             /// Pong
             /// </summary>
             public const string Pong = "Pong";
+
+            /// <summary>
+            /// Recycle Detect Ping
+            /// </summary>
+            public const string RecyclePing = "RecyclePing";
+
+            /// <summary>
+            /// Recycle Detect Pong
+            /// </summary>
+            public const string RecyclePong = "RecyclePong";
         }
 
         #endregion Helper Classes
@@ -136,6 +156,11 @@ namespace Rock.WebFarm
         private static bool _wasPinged = false;
 
         /// <summary>
+        /// The leadership ping key
+        /// </summary>
+        private static Guid? _leadershipPingKey = null;
+
+        /// <summary>
         /// The polling interval seconds
         /// </summary>
         private static decimal _pollingIntervalSeconds = DefaultValue.DefaultLeadershipPollingIntervalUpperLimitSeconds;
@@ -148,17 +173,59 @@ namespace Rock.WebFarm
         /// <summary>
         /// The cpu counter
         /// </summary>
-        private static readonly PerformanceCounter _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+        private static PerformanceCounter _cpuCounter = null;
 
         /// <summary>
         /// The ram counter
         /// </summary>
-        private static readonly PerformanceCounter _ramCounter = new PerformanceCounter( "Memory", "Available MBytes" );
+        private static PerformanceCounter _ramCounter = null;
 
         /// <summary>
         /// The total ram mb
         /// </summary>
         private static readonly int TotalRamMb = ( int ) ( new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / BytesPerMegayte );
+
+        /// <summary>
+        /// Gets the process identifier.
+        /// </summary>
+        /// <value>
+        /// The process identifier.
+        /// </value>
+        public static int ProcessId
+        {
+            get
+            {
+                if ( !_processId.HasValue )
+                {
+                    using ( var thisProcess = Process.GetCurrentProcess() )
+                    {
+                        _processId = thisProcess.Id;
+                    }
+                }
+
+                return _processId.Value;
+            }
+        }
+
+        /// <summary>
+        /// The process identifier
+        /// </summary>
+        private static int? _processId;
+
+        /// <summary>
+        /// Is this process being recycled?
+        /// </summary>
+        private static bool _isBeingRecycled = false;
+
+        /// <summary>
+        /// Is this process the result of an IIS process recycle?
+        /// </summary>
+        private static bool _isNewProcessFromRecycle = false;
+
+        /// <summary>
+        /// The recycle ping key
+        /// </summary>
+        private static Guid? _recyclePingKey = null;
 
         #endregion State
 
@@ -178,10 +245,6 @@ namespace Rock.WebFarm
 
             Debug( "Start Stage 1" );
 
-            // Start the performance counters
-            _cpuCounter.NextValue();
-            _ramCounter.NextValue();
-
             using ( var rockContext = new RockContext() )
             {
                 // Check that the WebFarmEnable = true.If yes, continue
@@ -197,6 +260,9 @@ namespace Rock.WebFarm
                 }
 
                 _isWebFarmEnabledAndUnlocked = true;
+
+                // Initialize the performance counters that will be used when logging metrics
+                InitializePerformanceCounters();
 
                 // Load upper and lower polling interval settings
                 var lowerLimitSeconds = GetLowerPollingLimitSeconds();
@@ -222,9 +288,7 @@ namespace Rock.WebFarm
                 _nodeId = webFarmNode.Id;
 
                 // Determine leadership polling interval. If provided in database( ConfiguredLeadershipPollingIntervalSeconds ) use that
-                // otherwise randomly select a number between upper and lower limits( number = seconds * 10 ) -Check to see that no one
-                // else has registered the same number in the database. If so re - choose. Possibly this could be a SQL Function that would
-                // ensure that only unique values were handed out.
+                // otherwise randomly select a number between upper and lower limits
                 const int maxGenerationAttempts = 100;
                 var generationAttempts = 1;
 
@@ -257,10 +321,11 @@ namespace Rock.WebFarm
                     }
                 }
 
-                // If StoppedDateTime is currently null then write to ClusterNodeLog -"Detected previous abrupt shutdown on load."
+                // If StoppedDateTime is currently null, then either there was an abrupt shutdown, or this process is half of an IIS process recycle
                 if ( !isNewNode && !webFarmNode.StoppedDateTime.HasValue )
                 {
-                    AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, webFarmNode.Id, EventType.Error, "Detected previous abrupt shutdown on load." );
+                    // We will investigate the startup, but we don't want to wait for that to finish as we start
+                    _ = InvestigateAbnormalStartupAsync();
                 }
 
                 // Save the polling internval
@@ -275,7 +340,7 @@ namespace Rock.WebFarm
                 webFarmNode.IsActive = false;
 
                 // Write to ClusterNodeLog -Startup Message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Startup, $"Process ID: {ProcessId}" );
 
                 rockContext.SaveChanges();
             }
@@ -346,20 +411,29 @@ namespace Rock.WebFarm
             // Stop the polling interval
             _pollingInterval.Stop();
 
-            // Announce to stop EventBus
-            PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
+            // Announce to stop EventBus. If I am being recycled, then my twin is taking over and I am not really shutting down.
+            if ( !_isBeingRecycled )
+            {
+                PublishEvent( EventType.Shutdown, payload: shutdownReasonText );
+            }
 
             using ( var rockContext = new RockContext() )
             {
-                // Update IsActive = false, StoppedDateTime = now
-                // If IsCurrentJobRunning = true set this to false
-                var webFarmNode = GetNode( rockContext, _nodeName );
-                webFarmNode.IsActive = false;
-                webFarmNode.StoppedDateTime = RockDateTime.Now;
-                webFarmNode.IsCurrentJobRunner = false;
+                if ( !_isBeingRecycled )
+                {
+                    // Update IsActive = false, StoppedDateTime = now
+                    // If IsCurrentJobRunning = true set this to false
+                    var webFarmNode = GetNode( rockContext, _nodeName );
+                    webFarmNode.IsActive = false;
+                    webFarmNode.StoppedDateTime = RockDateTime.Now;
+                    webFarmNode.IsCurrentJobRunner = false;
+                }
+
+                // Add a note if recycling
+                var recyclingText = _isBeingRecycled ? "(Recycling) " : string.Empty;
 
                 // Write to ClusterNodeLog shutdown message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, webFarmNode.Id, EventType.Shutdown, shutdownReasonText );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"{recyclingText}{shutdownReasonText}" );
                 rockContext.SaveChanges();
             }
 
@@ -376,6 +450,11 @@ namespace Rock.WebFarm
         /// <param name="currentPerson">The current person.</param>
         public static void OnRestartRequested( Person currentPerson )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             var personName = currentPerson == null ?
                 "Unknown" :
                 $"{currentPerson.FullName} (Person Id: {currentPerson.Id})";
@@ -391,14 +470,95 @@ namespace Rock.WebFarm
         }
 
         /// <summary>
+        /// Called when [received recycle ping].
+        /// </summary>
+        /// <param name="senderNodeName">Name of the sender node.</param>
+        /// <param name="recipientNodeName">Name of the recipient node.</param>
+        /// <param name="recycleKey">The recycle key.</param>
+        internal static void OnReceivedRecyclePing( string senderNodeName, string recipientNodeName, Guid? recycleKey )
+        {
+            if ( senderNodeName != _nodeName || recipientNodeName != _nodeName )
+            {
+                // Only listen for recycle pings from my twin process (from me, to me)
+                return;
+            }
+
+            if ( !recycleKey.HasValue )
+            {
+                // There is no valid recycle key
+                return;
+            }
+
+            if ( _recyclePingKey.HasValue && _recyclePingKey.Value == recycleKey.Value )
+            {
+                // This recycle ping was initated by this process and is not the twin process
+                return;
+            }
+
+            Debug( $"Got a Recycle Ping from my twin process. I must be shutting down soon." );
+            _isBeingRecycled = true;
+
+            // Reply to the twin process (sender of the ping)
+            PublishEvent( EventType.RecyclePong, senderNodeName, recycleKey.Value.ToString() );
+        }
+
+        /// <summary>
+        /// Called when [received recycle pong].
+        /// </summary>
+        /// <param name="senderNodeName">Name of the sender node.</param>
+        /// <param name="recipientNodeName">Name of the recipient node.</param>
+        /// <param name="recycleKey">The recycle key.</param>
+        internal static void OnReceivedRecyclePong( string senderNodeName, string recipientNodeName, Guid? recycleKey )
+        {
+            if ( senderNodeName != _nodeName || recipientNodeName != _nodeName )
+            {
+                // Only listen for recycle pongs from my twin process (from me, to me)
+                return;
+            }
+
+            if ( !recycleKey.HasValue )
+            {
+                // There is no valid recycle key
+                return;
+            }
+
+            if ( !_recyclePingKey.HasValue || _recyclePingKey.Value != recycleKey.Value )
+            {
+                // This recycle ping was not initated by this process, so the pong is not for me
+                return;
+            }
+
+            Debug( $"Got a Recycle Pong from my twin process. I must be taking over for it." );
+            _isNewProcessFromRecycle = true;
+        }
+
+        /// <summary>
         /// Called when [ping].
         /// </summary>
         /// <param name="senderNodeName">Name of the node that pinged.</param>
-        internal static void OnReceivedPing( string senderNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPing( string senderNodeName, Guid? pingPongKey )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
+                return;
+            }
+
+            if ( !pingPongKey.HasValue )
+            {
+                // There is no valid ping key
+                return;
+            }
+
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process answer pings.
                 return;
             }
 
@@ -406,7 +566,7 @@ namespace Rock.WebFarm
             _wasPinged = true;
 
             // Reply to the leader (sender of the ping)
-            PublishEvent( EventType.Pong, senderNodeName );
+            PublishEvent( EventType.Pong, senderNodeName, pingPongKey.Value.ToString() );
         }
 
         /// <summary>
@@ -414,8 +574,14 @@ namespace Rock.WebFarm
         /// </summary>
         /// <param name="senderNodeName">Name of the node that ponged.</param>
         /// <param name="recipientNodeName">Name of the recipient node.</param>
-        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName )
+        /// <param name="pingPongKey">The ping pong key.</param>
+        internal static void OnReceivedPong( string senderNodeName, string recipientNodeName, Guid? pingPongKey )
         {
+            if ( !_isWebFarmEnabledAndUnlocked )
+            {
+                return;
+            }
+
             if ( senderNodeName == _nodeName )
             {
                 // Don't talk to myself
@@ -425,6 +591,18 @@ namespace Rock.WebFarm
             if ( !recipientNodeName.IsNullOrWhiteSpace() && recipientNodeName != _nodeName )
             {
                 // This message is not for me
+                return;
+            }
+
+            if ( !pingPongKey.HasValue || pingPongKey.Value != _leadershipPingKey )
+            {
+                // This pong key doesn't match the key that I sent out as a ping
+                return;
+            }
+
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process handle pongs.
                 return;
             }
 
@@ -440,6 +618,7 @@ namespace Rock.WebFarm
                     AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Critical, node.Id, EventType.Availability, $"{node.NodeName} was marked inactive but responded to a ping" );
                 }
 
+                node.StoppedDateTime = null;
                 node.LastSeenDateTime = RockDateTime.Now;
                 node.IsActive = true;
                 rockContext.SaveChanges();
@@ -453,6 +632,12 @@ namespace Rock.WebFarm
         {
             if ( !IsEnabled() )
             {
+                return;
+            }
+
+            if ( _isBeingRecycled )
+            {
+                // I am being recycled, so let the twin process handle this.
                 return;
             }
 
@@ -480,9 +665,10 @@ namespace Rock.WebFarm
 
             Debug( "My time to poll. I was not pinged, so I'm starting leadership duties" );
 
-            // Ping other nodes
+            // Ping other nodes with a unique key for this ping-pong round
             var pollingTime = RockDateTime.Now;
-            PublishEvent( EventType.Ping );
+            _leadershipPingKey = Guid.NewGuid();
+            PublishEvent( EventType.Ping, payload: _leadershipPingKey.Value.ToString() );
 
             // Assert this node's leadership in the database
             using ( var rockContext = new RockContext() )
@@ -498,7 +684,9 @@ namespace Rock.WebFarm
                 }
 
                 thisNode.IsLeader = true;
+                thisNode.IsActive = true;
                 thisNode.LastSeenDateTime = pollingTime;
+                thisNode.StoppedDateTime = null;
 
                 foreach ( var otherNode in otherNodes )
                 {
@@ -508,9 +696,15 @@ namespace Rock.WebFarm
                 rockContext.SaveChanges();
             }
 
-            // Wait a maximum of 1 second for responses
-            await Task.Delay( TimeSpan.FromSeconds( 1 ) ).ContinueWith( t =>
+            // Get polling wait time
+            var pollingWaitTimeSeconds = GetMaxPollingWaitSeconds();
+
+            // Wait a maximum of 10 seconds for responses
+            await Task.Delay( TimeSpan.FromSeconds( pollingWaitTimeSeconds ) ).ContinueWith( t =>
             {
+                // Clear the ping pong key because responses are now late and no longer accepted
+                _leadershipPingKey = null;
+
                 Debug( "Checking for unresponsive nodes" );
 
                 using ( var rockContext = new RockContext() )
@@ -581,33 +775,100 @@ namespace Rock.WebFarm
         #region Helper Methods
 
         /// <summary>
+        /// Investigates the abnormal startup. This should be called when the node is starting, but the database indicates the node
+        /// is already active. This could be evidence of an abrupt shutdown when the node did not mark itself inactive. Or this
+        /// could indicate that IIS is doing a process recycle and overlapping the shuting-down and starting-up processes.
+        /// </summary>
+        /// <returns></returns>
+        private async static Task InvestigateAbnormalStartupAsync()
+        {
+            Debug( "My node DB record says I'm already active. Investigating..." );
+
+            // To detect a process recycle, we will ping our twin process (same node name)
+            _recyclePingKey = Guid.NewGuid();
+            PublishEvent( EventType.RecyclePing, _nodeName, _recyclePingKey.Value.ToString() );
+
+            // Get polling wait time
+            var pollingWaitTimeSeconds = GetMaxPollingWaitSeconds();
+
+            // Wait a maximum of 10 seconds for response
+            await Task.Delay( TimeSpan.FromSeconds( pollingWaitTimeSeconds ) ).ContinueWith( t =>
+            {
+                if ( !_isNewProcessFromRecycle )
+                {
+                    Debug( "I didn't hear from a twin process, so there must have been an abrupt shutdown" );
+
+                    using ( var rockContext = new RockContext() )
+                    {
+                        AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, _nodeId, EventType.Error, "Detected previous abrupt shutdown on load." );
+                        rockContext.SaveChanges();
+                    }
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Initializes the performance counters.
+        /// </summary>
+        private static void InitializePerformanceCounters()
+        {
+            try
+            {
+                _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
+                _ramCounter = new PerformanceCounter( "Memory", "Available MBytes" );
+
+                // Start the performance counters
+                _cpuCounter.NextValue();
+                _ramCounter.NextValue();
+            }
+            catch
+            {
+                // This may fail if the process doesn't have appropriate access to the stats needed
+                _cpuCounter = null;
+                _ramCounter = null;
+            }
+        }
+
+        /// <summary>
         /// Adds the metrics.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         private static void AddMetrics( RockContext rockContext )
         {
-            var cpuPercent = Convert.ToDecimal( _cpuCounter.NextValue() );
-            var ramAvailable = Convert.ToDecimal( _ramCounter.NextValue() );
-            var ramUsage = TotalRamMb - ramAvailable;
-
             var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 
-            webFarmNodeMetricService.AddRange( new[] {
-                new WebFarmNodeMetric
-                {
-                    WebFarmNodeId = _nodeId,
-                    MetricType = WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent,
-                    MetricValue = cpuPercent
-                },
-                new WebFarmNodeMetric
-                {
-                    WebFarmNodeId = _nodeId,
-                    MetricType = WebFarmNodeMetric.TypeOfMetric.MemoryUsageMegabytes,
-                    MetricValue = ramUsage
-                }
-            } );
+            if ( _cpuCounter != null )
+            {
+                var cpuPercent = Convert.ToDecimal( _cpuCounter.NextValue() );
 
-            Debug( $"Added metrics: CPU {cpuPercent:N0}% RAM {ramUsage:N0}MB" );
+                webFarmNodeMetricService.Add(
+                    new WebFarmNodeMetric
+                    {
+                        WebFarmNodeId = _nodeId,
+                        MetricType = WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent,
+                        MetricValue = cpuPercent
+                    }
+                );
+
+                Debug( $"Added metric: CPU {cpuPercent:N0}%" );
+            }
+
+            if ( _ramCounter != null )
+            {
+                var ramAvailable = Convert.ToDecimal( _ramCounter.NextValue() );
+                var ramUsage = TotalRamMb - ramAvailable;
+
+                webFarmNodeMetricService.Add(
+                    new WebFarmNodeMetric
+                    {
+                        WebFarmNodeId = _nodeId,
+                        MetricType = WebFarmNodeMetric.TypeOfMetric.MemoryUsageMegabytes,
+                        MetricValue = ramUsage
+                    }
+                );
+
+                Debug( $"Added metric: RAM {ramUsage:N0}MB" );
+            }
         }
 
         /// <summary>
@@ -627,7 +888,7 @@ namespace Rock.WebFarm
                 Severity = severity,
                 WriterWebFarmNodeId = _nodeId,
                 WebFarmNodeId = subjectNodeId,
-                Message = text,
+                Message = $"(Process ID: {ProcessId}) {text}",
                 EventType = eventType
             } );
 
@@ -653,10 +914,10 @@ namespace Rock.WebFarm
         {
             /*
              * Circumventing the code below is considered an integrity violation and harmful to the
-             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm 
-             * feature is designed for the largest churches. Using this feature, as a very large 
-             * church without supporting the Rock Community, costs smaller churches with less 
-             * resources. Please contact Spark to get a key and support the vision of accessibility 
+             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm
+             * feature is designed for the largest churches. Using this feature, as a very large
+             * church without supporting the Rock Community, costs smaller churches with less
+             * resources. Please contact Spark to get a key and support the vision of accessibility
              * for smaller churches.
              *
              * Core Team: See the Web Farm engineering document for more information on keys.
@@ -766,6 +1027,30 @@ namespace Rock.WebFarm
         }
 
         /// <summary>
+        /// Gets the minimum difference in seconds between nodes' polling intervals.
+        /// </summary>
+        /// <returns></returns>
+        public static int GetMinimumPollingDifferenceSeconds()
+        {
+            var minDifferenceSeconds =
+                    SystemSettings.GetValue( SystemSetting.WEBFARM_LEADERSHIP_MIN_POLLING_DIFFERENCE_SECONDS ).AsIntegerOrNull() ??
+                    DefaultValue.DefaultMinimumPollingDifferenceSeconds;
+            return minDifferenceSeconds;
+        }
+
+        /// <summary>
+        /// Gets the max time to wait after sending a ping before assuming non-responders are offline.
+        /// </summary>
+        /// <returns></returns>
+        public static int GetMaxPollingWaitSeconds()
+        {
+            var maxWaitSeconds =
+                    SystemSettings.GetValue( SystemSetting.WEBFARM_LEADERSHIP_MAX_WAIT_SECONDS ).AsIntegerOrNull() ??
+                    DefaultValue.DefaultPollingMaxWaitSeconds;
+            return maxWaitSeconds;
+        }
+
+        /// <summary>
         /// Determines whether [is current job runner].
         /// </summary>
         /// <returns>
@@ -804,17 +1089,15 @@ namespace Rock.WebFarm
         /// <returns></returns>
         private static decimal GeneratePollingIntervalSeconds( int minSeconds, int maxSeconds )
         {
-            // Calculations are done in deciseconds (ds) since we get a random integer
-            const int dsPerSecond = 10;
+            var minPollingIntervalDifferenceSeconds = GetMinimumPollingDifferenceSeconds();
 
-            // No configured value, so choose randomly
-            var minDs = minSeconds * dsPerSecond;
-            var maxDs = maxSeconds * dsPerSecond;
+            var minSteps = minSeconds / minPollingIntervalDifferenceSeconds;
+            var maxSteps = maxSeconds / minPollingIntervalDifferenceSeconds;
 
             var random = new Random();
-            int randomDs = random.Next( minDs, maxDs );
+            int randomSteps = random.Next( minSteps, maxSteps );
 
-            var randomSeconds = decimal.Divide( randomDs, dsPerSecond );
+            var randomSeconds = randomSteps * minPollingIntervalDifferenceSeconds;
             return randomSeconds;
         }
 

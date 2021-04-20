@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -137,6 +138,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this Metric object to a new Metric object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static Metric CloneWithoutIdentity( this Metric source )
+        {
+            var target = new Metric();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another Metric object to this Metric object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -145,6 +169,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdminPersonAliasId = source.AdminPersonAliasId;
+            target.AutoPartitionOnPrimaryCampus = source.AutoPartitionOnPrimaryCampus;
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
             target.EnableAnalytics = source.EnableAnalytics;

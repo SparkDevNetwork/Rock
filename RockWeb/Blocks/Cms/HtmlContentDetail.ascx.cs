@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -626,7 +627,8 @@ namespace RockWeb.Blocks.Cms
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
+
+                if ( LavaHelper.IsLavaDataObject( contextEntity ) )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                     if ( type != null )
@@ -895,15 +897,29 @@ namespace RockWeb.Blocks.Cms
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            if ( this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false )
+            var isSecondary = this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false;
+            if ( !isSecondary )
             {
-                if ( lHtmlContent.Visible != visible )
-                {
-                    lHtmlContent.Visible = visible;
+                return;
+            }
 
-                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed
-                    upnlHtmlContentView.Update();
+            // If this is a Secondary Block, and SetVisible was called, render a hidden field to
+            // keep track of the visible state. We need to do this because
+            // this block doesn't use view state for the HtmlContent content.
+            // So the hidden field helps us keep track.
+            hfSecondaryBlockState.Visible = true;
+            var lastState = hfSecondaryBlockState.Value.AsBooleanOrNull() ?? true;
+            if ( lastState != visible )
+            {
+                hfSecondaryBlockState.Value = visible.ToString();
+                lHtmlContent.Visible = visible;
+                if ( visible )
+                {
+                    // if toggling back to visible, we'll have to do the ShowView
+                    ShowView();
                 }
+
+                upnlHtmlContentView.Update();
             }
         }
 

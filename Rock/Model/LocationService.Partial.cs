@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Field.Types;
+using Rock.Address;
 
 namespace Rock.Model
 {
@@ -88,6 +89,60 @@ namespace Rock.Model
         /// </returns>
         public Location Get( string street1, string street2, string city, string state, string locality, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
+            GetLocationArgs getLocationArgs = new GetLocationArgs
+            {
+                Group = group,
+                VerifyLocation = verifyLocation,
+                CreateNewLocation = createNewLocation,
+            };
+
+            return Get( street1, street2, city, state, locality, postalCode, country, getLocationArgs );
+        }
+
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: The location search IS NOT constrained by the provided <seealso cref="GetLocationArgs.Group"></seealso>. Providing the group will cause this method to search that groups locations first, giving a faster result.
+        /// </summary>
+        /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="string" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="string" /> representing the State/Province to search by.</param>
+        /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
+        /// <param name="getLocationArgs">The <seealso cref="GetLocationArgs"/></param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
+        /// </returns>
+        /// <exception cref="System.Exception"></exception>
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country, GetLocationArgs getLocationArgs )
+        {
+            string locality = null;
+            return Get( street1, street2, city, state, locality, postalCode, country, getLocationArgs );
+        }
+
+        /// <summary>
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: The location search IS NOT constrained by the provided <seealso cref="GetLocationArgs.Group"></seealso>. Providing the group will cause this method to search that groups locations first, giving a faster result.
+        /// </summary>
+        /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="string" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="string" /> representing the State/Province to search by.</param>
+        /// <param name="locality">A <see cref="string" /> representing the Locality/County to search by</param>
+        /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
+        /// <param name="getLocationArgs">The <seealso cref="GetLocationArgs"/></param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
+        /// </returns>
+        /// <exception cref="System.Exception"></exception>
+        public Location Get( string street1, string street2, string city, string state, string locality, string postalCode, string country, GetLocationArgs getLocationArgs )
+        {
+            Group group = getLocationArgs?.Group;
+            bool verifyLocation = getLocationArgs?.VerifyLocation ?? true;
+            bool createNewLocation = getLocationArgs?.CreateNewLocation ?? true;
+            var validateLocation = getLocationArgs?.ValidateLocation ?? true;
+
             // Remove leading and trailing whitespace.
             street1 = street1.ToStringSafe().Trim();
             street2 = street2.ToStringSafe().Trim();
@@ -156,14 +211,17 @@ namespace Rock.Model
 
             if ( createNewLocation )
             {
-                // Verify that the new location has all of the required fields.
-                string validationError;
-
-                var isValid = ValidateAddressRequirements( newLocation, out validationError );
-
-                if ( !isValid )
+                if ( validateLocation )
                 {
-                    throw new Exception( validationError );
+                    // Verify that the new location has all of the required fields.
+                    string validationError;
+
+                    var isValid = ValidateAddressRequirements( newLocation, out validationError );
+
+                    if ( !isValid )
+                    {
+                        throw new Exception( validationError );
+                    }
                 }
 
                 // Create a new context/service so that save does not affect calling method's context
@@ -561,7 +619,7 @@ namespace Rock.Model
         {
             Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
             string resultMsg = string.Empty;
-            var coordinate =  smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
+            var coordinate = smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
             // Log the results of the service
             if ( !string.IsNullOrWhiteSpace( resultMsg ) )
             {
@@ -674,39 +732,7 @@ namespace Rock.Model
                 return null;
             }
 
-            var location = this.Get( locationId.Value );
-            int? campusId = location.CampusId;
-            if ( campusId.HasValue )
-            {
-                return campusId;
-            }
-
-            // If location is not a campus, check the location's parent locations to see if any of them are a campus
-            var campusLocations = new Dictionary<int, int>();
-            CampusCache.All()
-                .Where( c => c.LocationId.HasValue )
-                .Select( c => new
-                {
-                    CampusId = c.Id,
-                    LocationId = c.LocationId.Value
-                } )
-                .ToList()
-                .ForEach( c => campusLocations.Add( c.CampusId, c.LocationId ) );
-
-            foreach ( var parentLocationId in this.GetAllAncestorIds( locationId.Value ) )
-            {
-                campusId = campusLocations
-                    .Where( c => c.Value == parentLocationId )
-                    .Select( c => c.Key )
-                    .FirstOrDefault();
-
-                if ( campusId != 0 )
-                {
-                    return campusId;
-                }
-            }
-
-            return null;
+            return NamedLocationCache.Get( locationId.Value ).GetCampusIdForLocation();
         }
 
         /// <summary>
@@ -761,20 +787,20 @@ namespace Rock.Model
                 // if NULL is specified for deviceIds, don't restrict by device Id.
                 deviceClause = string.Empty;
             }
-            else 
+            else
             {
                 if ( !deviceIds.Any() )
                 {
                     // if no device id are specified just return an empty list
                     return new List<Location>();
                 }
-                else if (deviceIds.Count() == 1)
+                else if ( deviceIds.Count() == 1 )
                 {
                     deviceClause = $"WHERE D.[DeviceId] = {deviceIds.First()}";
                 }
                 else
                 {
-                    deviceClause = $"WHERE D.[DeviceId] IN ({deviceIds.ToList().AsDelimited(",")})";
+                    deviceClause = $"WHERE D.[DeviceId] IN ({deviceIds.ToList().AsDelimited( "," )})";
                 }
             }
 
@@ -815,5 +841,46 @@ namespace Rock.Model
             var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).Queryable().Where( gl => gl.Schedules.Any( s => s.Id == scheduleId ) && gl.GroupId == groupId );
             return this.Queryable().Where( l => groupLocationQuery.Any( gl => gl.LocationId == l.Id ) );
         }
+    }
+
+    /// <summary>
+    /// Options for <seealso cref="LocationService.Get(string, string, string, string, string, string, string, GetLocationArgs)"/>
+    /// </summary>
+    public sealed class GetLocationArgs
+    {
+        /// <summary>
+        /// The group (usually a Family) that should be searched first. This is NOT a search constraint.
+        /// </summary>
+        /// <value>
+        /// The group.
+        /// </value>
+        public Group Group { get; internal set; }
+
+        /// <summary>
+        /// Use a <see cref="VerificationComponent.Verify(Location, out string)"> Verification Service</see> to verify and standardize the address.
+        /// Default is <c>true</c>.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [verify location]; otherwise, <c>false</c>.
+        /// </value>
+        public bool VerifyLocation { get; internal set; } = true;
+
+        /// <summary>
+        /// Create a new location if a matching location record cannot be found
+        /// Default is <c>true</c>..
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [create new location]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CreateNewLocation { get; internal set; } = true;
+
+        /// <summary>
+        /// Validate the required address fields have a value.
+        /// Default is <c>true</c>.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [validate location]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ValidateLocation { get; internal set; } = true;
     }
 }

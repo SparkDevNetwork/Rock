@@ -94,6 +94,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public static string AspNetVersion
+        {
+            get
+            {
+                return _serviceInstance.AspNetVersion;
+            }
+        }
+
+        /// <summary>
         /// Gets information about the database configuration for the current Rock instance.
         /// </summary>
         public static RockInstanceDatabaseConfiguration Database
@@ -115,6 +129,17 @@ namespace Rock.Utility.Settings
             get
             {
                 return _serviceInstance.IsClustered;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public static string LavaEngineName
+        {
+            get
+            {
+                return _serviceInstance.LavaEngineName;
             }
         }
     }

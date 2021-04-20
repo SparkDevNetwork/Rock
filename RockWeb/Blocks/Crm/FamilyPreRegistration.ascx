@@ -41,6 +41,10 @@
 
                         <h4>First Adult</h4>
                         <div class="row">
+                            <%-- Special input with rock-fullname class --%>
+                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                            <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
+
                             <div class="<%= GetColumnStyle(3) %>">
                                 <Rock:DataTextBox ID="tbFirstName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                             </div>

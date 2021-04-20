@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -127,6 +128,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this FinancialTransactionDetail object to a new FinancialTransactionDetail object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static FinancialTransactionDetail CloneWithoutIdentity( this FinancialTransactionDetail source )
+        {
+            var target = new FinancialTransactionDetail();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another FinancialTransactionDetail object to this FinancialTransactionDetail object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -140,6 +164,7 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.FeeAmount = source.FeeAmount;
             target.FeeCoverageAmount = source.FeeCoverageAmount;
+            target.ForeignCurrencyAmount = source.ForeignCurrencyAmount;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Summary = source.Summary;

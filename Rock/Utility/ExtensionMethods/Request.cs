@@ -41,13 +41,18 @@ namespace Rock
 
             // If no proxy just return the request URL
             var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+
             if ( !isRequestForwaredFromProxy )
             {
                 return request.Url;
             }
 
             // Assemble a URI from the proxied headers
-            return new Uri( $"{request.Headers["X-Forwarded-Proto"].ToString()}://{request.Headers["X-Forwarded-Host"].ToString()}" );
+            return new UriBuilder( request.Url )
+            {
+                Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
+                Host = request.Headers["X-Forwarded-Host"].ToString()
+            }.Uri;
         }
         
     }

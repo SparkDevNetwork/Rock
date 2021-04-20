@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for mobile answer to prayer block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_ANSWER_TO_PRAYER = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7";
+
+        /// <summary>
         /// The block template for the event template on the mobile calendar event list.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
@@ -57,6 +62,11 @@ namespace Rock.SystemGuid
         /// The block template for the mobile group view.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
+        /// <summary>
+        /// The block template for mobile my prayer requests.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";
 
         /// <summary>
         /// The block template for the mobile prayer session block.
@@ -805,6 +815,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Content Channel
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
+
+        /// <summary>
+        /// Interaction Channel Type: System Events
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_SYSTEM_EVENTS = "5919214F-9C59-4913-BE4E-0DFB6A05F528";
 
         /// <summary>
         /// The PBX CDR medium value

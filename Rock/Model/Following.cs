@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -59,6 +60,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int PersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the purpose key.
+        /// </summary>
+        /// <value>
+        /// The purpose key.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string PurposeKey { get; set; }
 
         #endregion
 

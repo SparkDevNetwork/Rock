@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -179,6 +180,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this RegistrationTemplate object to a new RegistrationTemplate object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static RegistrationTemplate CloneWithoutIdentity( this RegistrationTemplate source )
+        {
+            var target = new RegistrationTemplate();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another RegistrationTemplate object to this RegistrationTemplate object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -210,6 +234,7 @@ namespace Rock.Model
             target.GroupMemberStatus = source.GroupMemberStatus;
             target.GroupTypeId = source.GroupTypeId;
             target.IsActive = source.IsActive;
+            target.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             target.LoginRequired = source.LoginRequired;
             target.MaxRegistrants = source.MaxRegistrants;
             target.MinimumInitialPayment = source.MinimumInitialPayment;

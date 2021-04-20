@@ -288,8 +288,9 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net46\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.9.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.9\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
@@ -541,6 +542,14 @@
     <Compile Include="Blocks\IObsidianBlockType.cs" />
     <Compile Include="Blocks\IRockClientBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Communication\EmailAddressFieldValidator.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
+    <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
+    <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
+    <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedComponent.cs" />
     <Compile Include="Communication\VideoEmbed\VimeoVideoEmbed.cs" />
@@ -603,23 +612,68 @@
     <Compile Include="Communication\IAsyncTransport.cs" />
     <Compile Include="Communication\IAsyncMediumComponent.cs" />
     <Compile Include="Communication\IRockMobilePush.cs" />
+    <Compile Include="Communication\ISmsPipelineWebhook.cs" />
     <Compile Include="Communication\PushData.cs" />
     <Compile Include="Communication\CreateMessageResult.cs" />
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
+    <Compile Include="Data\LavaIgnoreAttribute.cs" />
+    <Compile Include="Data\LavaIncludeAttribute.cs" />
+    <Compile Include="Financial\IRedirectionGateway.cs" />
+    <Compile Include="Financial\TestRedirectionGateway.cs" />
+    <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
+    <Compile Include="Jobs\GroupAttendanceReporting.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\InteractionWrite.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\IRockLavaBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Javascript.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\JsonProperty.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockEntity.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\RockLavaBlockBase.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Search.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Sql.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Stylesheet.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\TagList.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\WebRequest.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\WorkflowActivate.cs" />
+    <Compile Include="Lava\RockLiquid\LavaFileSystem.cs" />
+    <Compile Include="Lava\RockLiquid\RockFilters.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeBlock.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\DynamicShortcodeInline.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\IRockShortcode.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBase.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
     <Compile Include="Tasks\DeleteBinaryFileAttribute.cs" />
+    <Compile Include="Tasks\DeleteEntityTypeIndex.cs" />
     <Compile Include="Tasks\LaunchEntityChangeWorkflows.cs" />
     <Compile Include="Tasks\LaunchGroupMemberPlacedElsewhereWorkflow.cs" />
     <Compile Include="Tasks\LaunchGroupScheduleCancellationWorkflow.cs" />
+    <Compile Include="Tasks\LaunchMemberAttendedGroupWorkflow.cs" />
     <Compile Include="Tasks\LaunchStepChangeWorkflows.cs" />
+    <Compile Include="Tasks\LaunchWorkflows.cs" />
     <Compile Include="Tasks\ProcessConnectionRequestActivityChange.cs" />
+    <Compile Include="Tasks\ProcessConnectionRequestChange.cs" />
     <Compile Include="Tasks\ProcesSendRegistrationNotification.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeBulkIndex.cs" />
+    <Compile Include="Tasks\ProcessEntityTypeIndex.cs" />
     <Compile Include="Tasks\ProcessRunJobNow.cs" />
     <Compile Include="Tasks\ProcessRebuildStreakType.cs" />
     <Compile Include="Tasks\ProcessSendCommunication.cs" />
@@ -627,7 +681,10 @@
     <Compile Include="Tasks\ProcessSendDigitalSignatureRequest.cs" />
     <Compile Include="Tasks\ProcessSendPaymentReceiptEmails.cs" />
     <Compile Include="Tasks\ProcessSendRegistrationConfirmation.cs" />
+    <Compile Include="Tasks\ProcessStreakTypeExclusionChange.cs" />
+    <Compile Include="Tasks\ProcessWorkflowTrigger.cs" />
     <Compile Include="Tasks\RegisterRestControllers.cs" />
+    <Compile Include="Tasks\UpdateAchievementAttempt.cs" />
     <Compile Include="Tasks\UpdateDataViewStatistics.cs" />
     <Compile Include="Tasks\UpdateDigitalSignatureDocument.cs" />
     <Compile Include="Tasks\UpdateFacebookFriendGroupMembers.cs" />
@@ -638,6 +695,7 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -647,12 +705,16 @@
     <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
+    <Compile Include="Field\Types\AttendanceFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\CheckinConfigurationTypeFieldType.cs" />
     <Compile Include="Field\Types\LocationListFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
+    <Compile Include="Financial\IFeeCoverageGatewayComponent.cs" />
+    <Compile Include="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
+    <Compile Include="Jobs\GivingAnalytics.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
@@ -671,21 +733,36 @@
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
-    <Compile Include="Lava\Blocks\EventScheduledInstance.cs" />
-    <Compile Include="Lava\Blocks\InteractionWrite.cs" />
-    <Compile Include="Lava\Blocks\InteractionContentChannelItemWrite.cs" />
-    <Compile Include="Lava\Blocks\IRockLavaBlock.cs" />
-    <Compile Include="Lava\Blocks\CalendarEvents.cs" />
+    <Compile Include="Lava\Blocks\EventScheduledInstanceBlock.cs" />
+    <Compile Include="Lava\Blocks\InteractionWriteBlock.cs" />
+    <Compile Include="Lava\Blocks\InteractionContentChannelItemWriteTag.cs" />
+    <Compile Include="Lava\Blocks\CalendarEventsBlock.cs" />
+    <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaElementAttributes.cs" />
-    <Compile Include="Lava\LavaFileSystem.cs" />
+    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
+    <Compile Include="Lava\LavaFilters.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
+    <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
+    <Compile Include="Model\CommunicationResponseAttachment.cs" />
+    <Compile Include="Model\FinancialTransactionAlert.cs" />
+    <Compile Include="Model\FinancialTransactionAlertType.cs" />
+    <Compile Include="Model\MediaAccount.cs" />
+    <Compile Include="Model\MediaElement.cs" />
+    <Compile Include="Model\MediaFolder.cs" />
+    <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
@@ -717,6 +794,7 @@
     <Compile Include="Plugin\HotFixes\133_MigrationRollupsFor11_1_2.cs" />
     <Compile Include="Plugin\HotFixes\132_CheckinClientInstaller.cs" />
     <Compile Include="Reporting\DataFilter\Person\CreatedNotesFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\NoteDataViewFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\CreatedNotesCountSelect.cs" />
     <Compile Include="Reporting\ReportGetQueryableArgs.cs" />
     <Compile Include="Reporting\RockReportingException.cs" />
@@ -729,6 +807,7 @@
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
+    <Compile Include="Tasks\ProcessTransactionAlertActions.cs" />
     <Compile Include="Tasks\ProcessAchievements.cs" />
     <Compile Include="Tasks\AddPersonViewed.cs" />
     <Compile Include="Transactions\AchievementsProcessTransaction.cs" />
@@ -740,9 +819,11 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
+    <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
+    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
-    <Compile Include="Utility\RockSerializableDictionary.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Model\IdentityVerification.cs" />
     <Compile Include="Model\IdentityVerificationCode.cs" />
@@ -799,6 +880,8 @@
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
+    <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
@@ -811,6 +894,7 @@
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
+    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -977,7 +1061,7 @@
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Field\Types\StreakTypeFieldType.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
-    <Compile Include="Lava\Blocks\JsonProperty.cs" />
+    <Compile Include="Lava\Blocks\JsonPropertyBlock.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberScheduleTemplateService.cs" />
     <Compile Include="Field\EntitySingleSelectionListFieldTypeBase.cs" />
@@ -992,7 +1076,7 @@
     <Compile Include="Jobs\PostV90DataMigrationsForDISC.cs" />
     <Compile Include="Financial\IWebhookGatewayComponent.cs" />
     <Compile Include="Jobs\ChargeFutureTransactions.cs" />
-    <Compile Include="Lava\Shortcodes\ScheduledContent.cs" />
+    <Compile Include="Lava\Shortcodes\ScheduledContentShortcode.cs" />
     <Compile Include="Financial\AutomatedPaymentProcessor.cs" />
     <Compile Include="Financial\AutomatedPaymentArgs.cs" />
     <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
@@ -1064,8 +1148,7 @@
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
     <Compile Include="Jobs\PostV84DataMigrations.cs" />
-    <Compile Include="Lava\Shortcodes\Scripturize.cs" />
-    <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
+    <Compile Include="Lava\Shortcodes\ScripturizeShortcode.cs" />
     <Compile Include="Badge\Component\Assessment.cs" />
     <Compile Include="Model\Step.cs" />
     <Compile Include="Model\Streak.cs" />
@@ -1169,7 +1252,6 @@
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
     <Compile Include="Utility\RockColor.cs" />
-    <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
@@ -1306,8 +1388,6 @@
     <Compile Include="Data\IOrdered.cs" />
     <Compile Include="Data\IRockEntity.cs" />
     <Compile Include="Data\IService.cs" />
-    <Compile Include="Data\LavaIgnoreAttribute.cs" />
-    <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Data\Model.cs" />
@@ -1534,30 +1614,21 @@
     <Compile Include="Jobs\SparkLink.cs" />
     <Compile Include="Jobs\SendRegistrationReminders.cs" />
     <Compile Include="Jobs\UpdatePersistedDataviews.cs" />
-    <Compile Include="Lava\Blocks\Execute.cs" />
-    <Compile Include="Lava\Blocks\RockEntity.cs" />
-    <Compile Include="Lava\Blocks\RockLavaBlockBase.cs" />
-    <Compile Include="Lava\Blocks\Search.cs" />
-    <Compile Include="Lava\Blocks\Javascript.cs" />
-    <Compile Include="Lava\Blocks\Cache.cs" />
-    <Compile Include="Lava\Blocks\TagList.cs" />
-    <Compile Include="Lava\Blocks\Stylesheet.cs" />
-    <Compile Include="Lava\Blocks\WebRequest.cs" />
-    <Compile Include="Lava\Blocks\Sql.cs" />
-    <Compile Include="Lava\Blocks\WorkflowActivate.cs" />
-    <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
-    <Compile Include="Lava\ILiquidizable.cs" />
+    <Compile Include="Lava\Blocks\ExecuteBlock.cs" />
+    <Compile Include="Lava\Blocks\RockEntityBlock.cs" />
+    <Compile Include="Lava\Blocks\SearchBlock.cs" />
+    <Compile Include="Lava\Blocks\JavascriptBlock.cs" />
+    <Compile Include="Lava\Blocks\CacheBlock.cs" />
+    <Compile Include="Lava\Blocks\TagListTag.cs" />
+    <Compile Include="Lava\Blocks\StylesheetBlock.cs" />
+    <Compile Include="Lava\Blocks\WebRequestBlock.cs" />
+    <Compile Include="Lava\Blocks\SqlBlock.cs" />
+    <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Lava\LegacyLavaUpdater.cs" />
-    <Compile Include="Lava\RockFilters.cs" />
-    <Compile Include="Lava\Shortcodes\DynamicShortcodeBlock.cs" />
-    <Compile Include="Lava\Shortcodes\DynamicShortcodeInline.cs" />
-    <Compile Include="Lava\Shortcodes\IRockShortcode.cs" />
-    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBlockBase.cs" />
-    <Compile Include="Lava\Shortcodes\RockLavaShortcodeBase.cs" />
-    <Compile Include="Lava\Shortcodes\BootstrapAlert.cs" />
+    <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
@@ -2726,7 +2797,6 @@
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
-    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
@@ -2848,6 +2918,7 @@
     <Compile Include="Web\UI\Validation\DataAnnotationValidator.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelper.cs" />
+    <Compile Include="Web\Utilities\Enums\DotNetVersionCheckResult.cs" />
     <Compile Include="Web\Utilities\WebControlHelper.cs" />
     <Compile Include="Web\BrowserClient.cs" />
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
@@ -3150,6 +3221,14 @@
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj">
+      <Project>{37e293dd-f282-4a34-91fa-5fb8503d5672}</Project>
+      <Name>Rock.Lava</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>

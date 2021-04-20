@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -195,7 +196,21 @@ namespace Rock.Model
             var entities = query.ToList();
             var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e, attributeValues ) ).ToList();
 
-            new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
+            // Queue a transaction to launch workflow
+            var msg = new LaunchWorkflows.Message
+            {
+                WorkflowTypeId = workflowTypeId
+            };
+
+            msg.WorkflowDetails = entities
+                .Select( p => new LaunchWorkflows.WorkflowDetail
+                {
+                    EntityId = p.Id,
+                    EntityTypeId = p.TypeId,
+                    WorkflowAttributeValues = attributeValues
+                } ).ToList();
+
+            msg.Send();
         }
 
         /// <summary>

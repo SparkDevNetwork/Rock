@@ -740,7 +740,7 @@ namespace Rock.Web.UI.Controls
                         var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
                         var nbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
-                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, nbAccountAmountMulti.Text.AsDecimalOrNull() ) );
+                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, nbAccountAmountMulti.Value ) );
                     }
                 }
                 else
@@ -794,7 +794,7 @@ namespace Rock.Web.UI.Controls
 
                     var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
                     _ddlAccountSingle.SetValue( displayedAccountId );
-                    _nbAmountAccountSingle.Text = selectedAccountAmount.Amount?.ToString( "N2" );
+                    _nbAmountAccountSingle.Text = selectedAccountAmount.Amount.FormatAsCurrency();
                     _nbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;
                 }
             }
@@ -833,7 +833,7 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.ID = "_nbAmountAccountSingle";
             _nbAmountAccountSingle.Attributes["placeholder"] = "0";
             _nbAmountAccountSingle.Attributes["type"] = "number";
-            _nbAmountAccountSingle.CssClass = "amount-input form-control";
+            _nbAmountAccountSingle.CssClass = "amount-input form-control js-amount-input";
             _nbAmountAccountSingle.Attributes["min"] = "0";
             _nbAmountAccountSingle.Attributes["max"] = int.MaxValue.ToString();
 
@@ -937,7 +937,7 @@ namespace Rock.Web.UI.Controls
                 var currencyBox = new CurrencyBox
                 {
                     ID = RepeaterControlIds.ID_nbAccountAmountMulti,
-                    CssClass = "amount-input account-amount-multi",
+                    CssClass = "amount-input account-amount-multi js-amount-input",
                     NumberType = ValidationDataType.Currency,
                     MaximumValue = int.MaxValue.ToString(),
                     MinimumValue = "0"

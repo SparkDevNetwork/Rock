@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -88,7 +89,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> that is being logged.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Workflow Workflow { get; set; }
 
         #endregion

@@ -19,6 +19,7 @@ namespace Rock.Tests.Integration.RockTests.Model
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.StreakAchievement";
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
+        private const int NUMBER_OF_ALIASES = 2;
 
         private static RockContext _rockContext { get; set; }
         private static StreakTypeService _streakTypeService { get; set; }
@@ -26,8 +27,8 @@ namespace Rock.Tests.Integration.RockTests.Model
 
         private static int _streakTypeId { get; set; }
         private static int _streakId { get; set; }
-        private static int _personAliasId { get; set; }
-        private static int _personId { get; set; }
+        private static int _firstPersonAliasId { get; set; }
+        private static int _lastPersonAliasId { get; set; }
 
         private static int _achievementTypeId { get; set; }
 
@@ -46,11 +47,6 @@ namespace Rock.Tests.Integration.RockTests.Model
         /// </summary>
         private static void CreateStreakTypeData()
         {
-            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
-            var personAlias = new PersonAliasService( _rockContext ).Queryable().First( pa => pa.Person.Guid == tedDeckerGuid );
-            _personAliasId = personAlias.Id;
-            _personId = personAlias.PersonId;
-
             var streakType = new StreakType
             {
                 Guid = new Guid( StreakTypeGuidString ),
@@ -63,8 +59,16 @@ namespace Rock.Tests.Integration.RockTests.Model
             var streak = new Streak
             {
                 EnrollmentDate = new DateTime( 2019, 1, 1 ),
-                PersonAliasId = _personAliasId,
-                EngagementMap = new byte[] { 0b_0010_0010, 0b_1011_1110, 0b_0001_1001, 0b_1000_0011 },
+                PersonAliasId = _lastPersonAliasId,
+                EngagementMap = new byte[] { 0b_0010_0010, 0b_1011_1110, 0b_0000_0000, 0b_0000_0000 },
+                ExclusionMap = new byte[] { 0b_0000_0010, 0b_0000_0100 }
+            };
+
+            var streak2 = new Streak
+            {
+                EnrollmentDate = new DateTime( 2019, 1, 1 ),
+                PersonAliasId = _firstPersonAliasId,
+                EngagementMap = new byte[] { 0b_0000_0000, 0b_0000_0000, 0b_0001_1001, 0b_1000_0011 },
                 ExclusionMap = new byte[] { 0b_0000_0010, 0b_0000_0100 }
             };
 
@@ -75,11 +79,41 @@ namespace Rock.Tests.Integration.RockTests.Model
 
             streakType.StreakTypeExclusions.Add( exclusion );
             streakType.Streaks.Add( streak );
+            streakType.Streaks.Add( streak2 );
             _streakTypeService.Add( streakType );
             _rockContext.SaveChanges( true );
 
             _streakTypeId = streakType.Id;
             _streakId = streak.Id;
+        }
+
+        /// <summary>
+        /// Creates the person alias data.
+        /// </summary>
+        private static void CreatePersonAliasData()
+        {
+            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
+
+            var personAliasService = new PersonAliasService( _rockContext );
+            var personAliases = personAliasService.Queryable().Where( pa => pa.Person.Guid == tedDeckerGuid ).ToList();
+            var personAliasesToAdd = NUMBER_OF_ALIASES - personAliases.Count;
+
+            var personService = new PersonService( _rockContext );
+            var aliasPersonId = personService.Queryable().Max( p => p.Id ) + 1;
+            personAliasService.DeleteRange( personAliasService.Queryable().Where( pa => pa.AliasPersonId >= aliasPersonId ) );
+
+            _rockContext.SaveChanges();
+            var tedDecker = personService.Get( tedDeckerGuid );
+
+            for ( var i = personAliasesToAdd; i > 0; i-- )
+            {
+                personAliasService.Add( new PersonAlias { Person = tedDecker, AliasPersonGuid = Guid.NewGuid(), AliasPersonId = aliasPersonId + i } );
+            }
+            _rockContext.SaveChanges();
+
+            var personAlias = personAliasService.Queryable().Where( pa => pa.Person.Guid == tedDeckerGuid ).Take( NUMBER_OF_ALIASES ).Select( p => p.Id ).ToList();
+            _firstPersonAliasId = personAlias.First();
+            _lastPersonAliasId = personAlias.Last();
         }
 
         /// <summary>
@@ -111,7 +145,8 @@ namespace Rock.Tests.Integration.RockTests.Model
                 // SourceEntityQualifierValue = _streakTypeId.ToString(),
                 ComponentEntityTypeId = EntityTypeCache.GetId( ComponentEntityTypeName ) ?? 0,
                 MaxAccomplishmentsAllowed = 2,
-                AllowOverAchievement = false
+                AllowOverAchievement = false,
+                AchieverEntityTypeId = EntityTypeCache.Get<PersonAlias>().Id
             };
 
             _achievementTypeService.Add( achievementType );
@@ -136,6 +171,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             _achievementTypeService = new AchievementTypeService( _rockContext );
 
             DeleteTestData();
+            CreatePersonAliasData();
             CreateStreakTypeData();
             CreateAchievementTypeData();
         }
@@ -169,7 +205,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId
+                    && (saa.AchieverEntityId == _firstPersonAliasId || saa.AchieverEntityId == _lastPersonAliasId) )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
@@ -237,7 +274,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId
+                    && ( saa.AchieverEntityId == _firstPersonAliasId || saa.AchieverEntityId == _lastPersonAliasId ) )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
@@ -248,7 +286,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                 AchievementAttemptStartDateTime = new DateTime( 2019, 1, 1 ),
                 AchievementAttemptEndDateTime = new DateTime( 2019, 1, 2 ),
                 Progress = .5m,
-                AchieverEntityId = _personAliasId,
+                AchieverEntityId = _firstPersonAliasId,
                 AchievementTypeId = _achievementTypeId,
             };
             var attemptService = new AchievementAttemptService( _rockContext );
@@ -323,7 +361,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         {
             var attemptsQuery = new AchievementAttemptService( _rockContext ).Queryable()
                 .AsNoTracking()
-                .Where( saa => saa.AchievementTypeId == _achievementTypeId && saa.AchieverEntityId == _personAliasId )
+                .Where( saa => saa.AchievementTypeId == _achievementTypeId
+                    && ( saa.AchieverEntityId == _firstPersonAliasId || saa.AchieverEntityId == _lastPersonAliasId ) )
                 .OrderBy( saa => saa.AchievementAttemptStartDateTime );
 
             // There should be no attempts
@@ -334,7 +373,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                 AchievementAttemptStartDateTime = new DateTime( 2019, 2, 1 ),
                 AchievementAttemptEndDateTime = new DateTime( 2019, 2, 1 ),
                 Progress = .5m,
-                AchieverEntityId = _personAliasId,
+                AchieverEntityId = _firstPersonAliasId,
                 AchievementTypeId = _achievementTypeId,
                 IsClosed = true,
                 IsSuccessful = true

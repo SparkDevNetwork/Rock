@@ -690,6 +690,11 @@ namespace Rock
         /// <returns></returns>
         public static string LeftWithEllipsis( this string str, int length )
         {
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+
             return Left( str, length ) + ( char ) 8230;
         }
 
@@ -701,6 +706,7 @@ namespace Rock
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
+        [RockObsolete("1.12")]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
         {
             return str.SubstringSafe( startIndex, maxLength );
@@ -1228,6 +1234,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all whitespace in a string, including carriage return and line feed characters.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns></returns>
+        public static string RemoveWhiteSpace( this string input )
+        {
+            return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
+        }
+
+        /// <summary>
         /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
         /// from https://stackoverflow.com/a/1450889/1755417
         /// </summary>
@@ -1280,6 +1296,16 @@ namespace Rock
             writer.Flush();
             stream.Position = 0;
             return new System.IO.StreamReader( stream );
+        }
+
+        /// <summary>
+        /// A string extension method that escape XML.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A string.</returns>
+        public static string EscapeXml( this string str )
+        {
+            return str.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ).Replace( "\"", "&quot;" ).Replace( "'", "&apos;" );
         }
 
         #endregion String Extensions

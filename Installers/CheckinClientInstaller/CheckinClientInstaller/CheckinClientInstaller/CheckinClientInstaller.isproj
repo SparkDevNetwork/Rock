@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<!-- Select a Product Configuration -->
 		<InstallShieldProductConfiguration>Express</InstallShieldProductConfiguration>
@@ -27,7 +27,7 @@
 			<TargetPath>My Test Exe.exe</TargetPath>
 		</TaggedOutputs> -->
 	</ItemGroup>
-	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2018\InstallShield.targets"/>
+	<Import Project="$(MSBuildExtensionsPath32)\InstallShield\2020\InstallShield.targets"/>
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\..\Rock-WindowsCheckin\CheckinClient.csproj">
 			<Name>CheckinClient</Name>

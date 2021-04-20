@@ -35,6 +35,7 @@ using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Tasks;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -954,7 +955,7 @@ namespace RockWeb.Blocks.Event
         {
             var state = e.State["event"];
 
-            if ( CurrentPanel > 0 && state != null && hfAllowNavigate.Value.AsBoolean() )
+            if ( CurrentPanel > 0 && state != null && hfAllowNavigate.Value.AsBoolean() && !IsPostBack )
             {
                 string[] commands = state.Split( ',' );
 
@@ -1302,7 +1303,7 @@ namespace RockWeb.Blocks.Event
                 CurrentRegistrantIndex = RegistrationState != null ? RegistrationState.RegistrantCount - 1 : 0;
                 CurrentFormIndex = FormCount - 1;
 
-                nbAmountPaid.Text = string.Empty;
+                nbAmountPaid.Value = null;
                 RegistrationState.PaymentAmount = null;
 
                 ShowRegistrant( false, false );
@@ -3198,7 +3199,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private Person SavePerson( RockContext rockContext, Person person, Guid familyGuid, int? campusId, Location location, int adultRoleId, int childRoleId, Dictionary<Guid, int> multipleFamilyGroupIds, ref int? singleFamilyId )
         {
-            if( !person.PrimaryCampusId.HasValue && campusId.HasValue )
+            if ( !person.PrimaryCampusId.HasValue && campusId.HasValue )
             {
                 person.PrimaryCampusId = campusId;
                 rockContext.SaveChanges();
@@ -4380,8 +4381,8 @@ namespace RockWeb.Blocks.Event
                 var enableSavedAccount = this.GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean();
 
                 if ( enableSavedAccount && ( nbAmountPaid.Visible = true ) &&
-                    nbAmountPaid.Text.AsDecimalOrNull().HasValue &&
-                    nbAmountPaid.Text.AsDecimalOrNull().Value > 0.0M &&
+                    nbAmountPaid.Value.HasValue &&
+                    nbAmountPaid.Value.Value > 0.0M &&
                     ( rblSavedCC.Items.Count == 0 || ( rblSavedCC.SelectedValueAsId() ?? 0 ) == 0 ) )
                 {
                     cbSaveAccount.Visible = true;
@@ -4568,10 +4569,10 @@ namespace RockWeb.Blocks.Event
                 amountPaid = balanceDue
             }}
         }}
-        $(this).val(amountPaid.toFixed(2));
+        $(this).val(amountPaid.toFixed({16}));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '{6}' + amountRemaining.toFixed(2) );
+        $('#{4}').text( '{6}' + amountRemaining.toFixed({16}) );
     }});
 
     // Detect credit card type
@@ -4627,7 +4628,7 @@ namespace RockWeb.Blocks.Event
             , hfPreviouslyPaid.ClientID              // {3}
             , lRemainingDue.ClientID                 // {4}
             , hfTriggerScroll.ClientID               // {5}
-            , GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
+            , RockCurrencyCodeInfo.GetCurrencySymbol()   // {6}
             , hfRequiredDocumentQueryString.ClientID // {7}
             , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {8}
             , hfRequiredDocumentLinkUrl.ClientID     // {9}
@@ -4638,6 +4639,7 @@ namespace RockWeb.Blocks.Event
             , controlFamilyGuid                      // {14}
             // NULL check not needed here because it is checked at the start of this method.
             , RegistrationTemplate.ShowCurrentFamilyMembers.ToString().ToLower() // {15}
+            , RockCurrencyCodeInfo.GetDecimalPlaces() // {16}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -4981,33 +4983,33 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper.ApplyFieldVisibilityRules( phRegistrantControls );
 
                 var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
-                foreach ( var field in form.Fields
-                    .Where( f =>
-                        !f.IsInternal &&
-                        ( !registrant.OnWaitList || f.ShowOnWaitlist ) )
-                    .OrderBy( f => f.Order ) )
+                var formFields = form.Fields
+                    .Where( f => !f.IsInternal && ( !registrant.OnWaitList || f.ShowOnWaitlist ) )
+                    .OrderBy( f => f.Order );
+
+                foreach ( var formField in formFields )
                 {
                     object value = null;
                     bool updateField = true;
 
-                    if ( field.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( formField.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        value = ParsePersonField( field );
+                        value = ParsePersonField( formField );
                     }
                     else
                     {
-                        value = ParseAttributeField( field, out updateField );
+                        value = ParseAttributeField( formField, out updateField );
                     }
 
                     if ( updateField )
                     {
                         if ( value != null )
                         {
-                            registrant.FieldValues.AddOrReplace( field.Id, new FieldValueObject( field, value ) );
+                            registrant.FieldValues.AddOrReplace( formField.Id, new FieldValueObject( formField, value ) );
                         }
                         else
                         {
-                            registrant.FieldValues.Remove( field.Id );
+                            registrant.FieldValues.Remove( formField.Id );
                         }
                     }
                 }
@@ -5020,6 +5022,10 @@ namespace RockWeb.Blocks.Event
                         if ( feeValues != null )
                         {
                             registrant.FeeValues.AddOrReplace( fee.Id, feeValues );
+                        }
+                        else
+                        {
+                            registrant.FeeValues.Remove( fee.Id );
                         }
                     }
                 }
@@ -5648,7 +5654,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     nbAmountPaid.Visible = allowPartialPayment;
-                    nbAmountPaid.Text = ( RegistrationState.PaymentAmount ?? 0.0m ).ToString( "N2" );
+                    nbAmountPaid.Value = ( RegistrationState.PaymentAmount ?? 0.0m );
 
                     // If a previous payment was made, or partial payment is allowed, show the amount remaining after selected payment amount
                     lRemainingDue.Visible = allowPartialPayment;
@@ -5758,6 +5764,8 @@ namespace RockWeb.Blocks.Event
 
                     RegistrationState.TotalCost = 0.0m;
                     RegistrationState.DiscountedCost = 0.0m;
+                    RegistrationState.PaymentAmount = 0.0m;
+                    nbAmountPaid.Value = null;
                     pnlCostAndFees.Visible = false;
                     pnlPaymentInfo.Visible = false;
                 }
@@ -5882,7 +5890,7 @@ namespace RockWeb.Blocks.Event
                     RegistrationState.FamilyGuid = Guid.NewGuid();
                 }
 
-                RegistrationState.PaymentAmount = nbAmountPaid.Text.AsDecimal();
+                RegistrationState.PaymentAmount = nbAmountPaid.Value ?? 0.0m;
             }
         }
 
@@ -5980,10 +5988,10 @@ namespace RockWeb.Blocks.Event
                     }
 
                     string discountTypeAndAmountString = discount.DiscountPercentage > 0.0m ? discount.DiscountPercentage.FormatAsPercent() : discount.DiscountAmount.FormatAsCurrency();
-                    
+
                     nbDiscountCode.Visible = true;
                     nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code,  discountTypeAndAmountString, discountRegistrantNumberString );
+                    nbDiscountCode.Text = string.Format( "The {0} {1} of {2} {3} was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code, discountTypeAndAmountString, discountRegistrantNumberString );
                     return true;
                 }
             }

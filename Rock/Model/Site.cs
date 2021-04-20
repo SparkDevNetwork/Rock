@@ -30,6 +30,7 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -595,7 +596,7 @@ namespace Rock.Model
         /// <value>
         /// The change password page.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Page ChangePasswordPage { get; set; }
 
         /// <summary>
@@ -676,7 +677,7 @@ namespace Rock.Model
         /// <value>
         /// The fav icon binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile FavIconBinaryFile { get; set; }
 
         /// <summary>
@@ -685,7 +686,7 @@ namespace Rock.Model
         /// <value>
         /// The site logo binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile SiteLogoBinaryFile { get; set; }
 
         /// <summary>
@@ -694,7 +695,7 @@ namespace Rock.Model
         /// <value>
         /// The thumbnail binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ThumbnailBinaryFile { get; set; }
 
         /// <summary>
@@ -703,7 +704,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile phone binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobilePhoneBinaryFile { get; set; }
 
         /// <summary>
@@ -712,7 +713,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile tablet binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobileTabletBinaryFile { get; set; }
 
         /// <summary>
@@ -721,7 +722,7 @@ namespace Rock.Model
         /// <value>
         /// The default domain URI.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Uri DefaultDomainUri
         {
             get

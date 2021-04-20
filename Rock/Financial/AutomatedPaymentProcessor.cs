@@ -536,6 +536,13 @@ namespace Rock.Financial
                 return false;
             }
 
+            if ( !string.IsNullOrWhiteSpace( _automatedPaymentArgs.AmountCurrencyCode)
+                && !_automatedGatewayComponent.IsCurrencyCodeSupported( GetCurrencyCodeDefinedValueCache( _automatedPaymentArgs.AmountCurrencyCode ), _referencePaymentInfo.CreditCardTypeValue ) )
+            {
+                errorMessage = "The gateway does not support the currency and credit card combination.";
+                return false;
+            }
+
             return true;
         }
 
@@ -569,6 +576,7 @@ namespace Rock.Financial
                 return null;
             }
 
+            _referencePaymentInfo.AmountCurrencyCodeValueId = GetCurrencyCodeDefinedValueCache( _automatedPaymentArgs.AmountCurrencyCode )?.Id;
             _referencePaymentInfo.Amount = _automatedPaymentArgs.AutomatedPaymentDetails.Sum( d => d.Amount );
             _referencePaymentInfo.Email = _authorizedPerson.Email;
 
@@ -624,10 +632,11 @@ namespace Rock.Financial
 
             try
             {
-                _rockContext.WrapTransaction(() => {
+                _rockContext.WrapTransaction( () =>
+                {
                     financialTransaction = SaveTransaction( transactionGuid );
                 } );
-                
+
                 return financialTransaction;
             }
             catch ( Exception exception )
@@ -639,7 +648,8 @@ namespace Rock.Financial
 
                 try
                 {
-                    _rockContext.WrapTransaction( () => {
+                    _rockContext.WrapTransaction( () =>
+                    {
                         financialTransaction = SaveTransaction( transactionGuid );
                     } );
 
@@ -789,6 +799,9 @@ namespace Rock.Financial
             financialTransaction.ForeignKey = _payment.ForeignKey;
             financialTransaction.FutureProcessingDateTime = _automatedPaymentArgs.FutureProcessingDateTime;
 
+
+            financialTransaction.ForeignCurrencyCodeValueId = GetCurrencyCodeDefinedValueCache( _automatedPaymentArgs.AmountCurrencyCode )?.Id;
+
             // Create a new payment detail or update the future transaction's payment detail now that it has been charged
             var financialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? new FinancialPaymentDetail();
             financialPaymentDetail.AccountNumberMasked = _payment.AccountNumberMasked;
@@ -817,15 +830,33 @@ namespace Rock.Financial
             // Future transactions already have the appropriate FinancialTransactionDetail models
             if ( _futureTransaction == null )
             {
+                var doesHaveForeignCurrency = financialTransaction.ForeignCurrencyCodeValueId != null;
+
                 foreach ( var detailArgs in _automatedPaymentArgs.AutomatedPaymentDetails )
                 {
+
                     var transactionDetail = new FinancialTransactionDetail
                     {
                         Amount = detailArgs.Amount,
                         AccountId = detailArgs.AccountId
                     };
 
+                    if ( doesHaveForeignCurrency )
+                    {
+                        transactionDetail.ForeignCurrencyAmount = detailArgs.Amount;
+                    }
+
                     financialTransaction.TransactionDetails.Add( transactionDetail );
+                }
+
+                if ( doesHaveForeignCurrency )
+                {
+                    /*
+                     * The amount coming from the gateway is always in the Organization's currency.
+                     * As such the Amount value could be different than the original amount passed in if the 
+                     * specified currency code is different then the Organization's currency code.
+                     */
+                    financialTransaction.SetApportionedDetailAmounts( _payment.Amount );
                 }
             }
 
@@ -939,6 +970,14 @@ namespace Rock.Financial
             }
 
             return $"{sourceName}: {firstAccountName}";
+        }
+
+        private DefinedValueCache GetCurrencyCodeDefinedValueCache( string currencyCode )
+        {
+            return DefinedTypeCache
+                .Get( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )
+                .DefinedValues
+                .FirstOrDefault( dv => dv.Value.Equals( currencyCode, StringComparison.InvariantCultureIgnoreCase ) );
         }
 
         /// <summary>

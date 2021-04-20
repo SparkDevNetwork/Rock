@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Data;
@@ -481,10 +482,21 @@ namespace Rock.Model
                 Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                 cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
+                string clientIPAddress;
+                try
+                {
+                    clientIPAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+                }
+                catch
+                {
+                    // if we get an exception getting the IP Address, just ignore it
+                    clientIPAddress = "";
+                }
+
                 relatedDataBuilder.AppendFormat(
                     " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
                     cleanUrl,
-                    Rock.Web.UI.RockPage.GetClientIpAddress() );
+                    clientIPAddress );
             }
 
             var historyChangeList = new History.HistoryChangeList();
@@ -497,7 +509,25 @@ namespace Rock.Model
 
             var historyList = HistoryService.GetChanges( typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, null, null, null, null, null );
 
-            new Rock.Transactions.SaveHistoryTransaction( historyList ).Enqueue();
+            if ( historyList.Any() )
+            {
+                Task.Run( async () =>
+                {
+                    // Wait 1 second to allow all post save actions to complete
+                    await Task.Delay( 1000 );
+                    try
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            rockContext.BulkInsert( historyList );
+                        }
+                    }
+                    catch ( SystemException ex )
+                    {
+                        ExceptionLogService.LogException( ex, null );
+                    }
+                } );
+            }
         }
 
         /// <summary>

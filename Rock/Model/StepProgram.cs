@@ -76,7 +76,7 @@ namespace Rock.Model
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Category"/>.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Category"/>.
         /// </summary>
         /// [DataMember]
         public int? CategoryId { get; set; }
@@ -135,7 +135,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/>.
         /// </summary>
         [DataMember]
         public virtual Category Category { get; set; }

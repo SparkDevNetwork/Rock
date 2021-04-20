@@ -113,12 +113,13 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
+        Rock.controls.fullScreen.initialize();
         // Transfer mode: when user selects "Select Connector" show the connector picker
         var syncTransferConnectorControls = function () {
             var selectedOptionIsSelectConnector = $(this).is('#<%= rbRequestModalViewModeTransferModeSelectConnector.ClientID %>');
                 $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle(selectedOptionIsSelectConnector);
             };
-                        
+
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
         $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
     });
@@ -128,7 +129,7 @@
     };
 </script>
 
-<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional">
+<asp:UpdatePanel ID="upnlRoot" runat="server" UpdateMode="Conditional" class="styled-scroll">
     <ContentTemplate>
 
         <asp:UpdatePanel ID="upnlBlockLevelControls" runat="server">
@@ -138,9 +139,9 @@
             </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow d-flex flex-wrap flex-sm-nowrap justify-content-between">
+            <asp:UpdatePanel ID="upnlHeader" runat="server" UpdateMode="Conditional" class="panel-heading panel-follow-fullscreen">
                 <ContentTemplate>
 
                         <h2 class="panel-title">
@@ -152,15 +153,16 @@
                                 Campaign Requests
                             </asp:LinkButton>
                         </div>
-                        <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" data-toggle="tooltip" data-placement="top" title="Click to Follow"></asp:Panel>
-
-
+                        <div class="panel-follow-full-container">
+                            <asp:Panel runat="server" ID="pnlFollowing" CssClass="panel-follow-status js-follow-status" title="Click to Follow"></asp:Panel>
+                            <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
+                        </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-                    <div class="panel-collapsable">
-                        <div class="panel-toolbar d-flex flex-wrap flex-sm-nowrap justify-content-between">
-                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server">
+                    <div class="panel-collapsible">
+                        <div class="panel-toolbar">
+                            <asp:UpdatePanel ID="upnlOpportunitiesList" runat="server" class="toolbar-group">
                                 <ContentTemplate>
                                     <div class="d-inline-block btn-group-mega js-btn-group-mega">
                                         <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -210,7 +212,7 @@
                                     </asp:LinkButton>
                                 </ContentTemplate>
                             </asp:UpdatePanel>
-                            <div class="d-block">
+                            <div class="toolbar-group">
                                 <div class="btn-group">
                                     <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-user"></i>
@@ -240,13 +242,13 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div class="d-block">
+                            <div class="toolbar-group">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fa fa-sort"></i>
                                         <asp:Literal runat="server" ID="lSortText" />
                                     </button>
-                                    <ul class="dropdown-menu">
+                                    <ul class="dropdown-menu dropdown-menu-right">
                                         <asp:Repeater ID="rptSort" runat="server" OnItemCommand="rptSort_ItemCommand">
                                             <ItemTemplate>
                                                 <li>
@@ -289,7 +291,7 @@
                         </div>
 
                         <div runat="server" id="divFilterDrawer" class="panel-drawer" style="display: none;">
-                            <div class="container-fluid padding-t-md padding-b-md">
+                            <div class="container-fluid py-3">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <Rock:SlidingDateRangePicker ID="sdrpLastActivityDateRangeFilter" runat="server" Label="Last Activity Date Range" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
@@ -326,36 +328,36 @@
                         </div>
                     </div>
 
-            <asp:UpdatePanel ID="upnlGridView" runat="server">
+            <asp:UpdatePanel ID="upnlGridView" runat="server" class="grid-view-container">
                 <ContentTemplate>
-                    <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
-                        <Columns>
-                            <Rock:SelectField></Rock:SelectField>
-                            <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
-                            <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
-                            <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
-                            <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
-                            <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
-                            <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
-                            <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
-                            <Rock:SecurityField />
-                            <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
-                            <Rock:DeleteField OnClick="gRequests_Delete" />
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="panel-body p-0">
+                        <Rock:Grid ID="gRequests" CssClass="border-top-0" runat="server" OnRowDataBound="gRequests_RowDataBound" OnRowSelected="gRequests_RowSelected" OnGridRebind="gRequests_GridRebind">
+                            <Columns>
+                                <Rock:SelectField></Rock:SelectField>
+                                <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 align-middle" />
+                                <Rock:RockBoundField DataField="PersonFullname" HeaderText="Name" />
+                                <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
+                                <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                <Rock:RockBoundField DataField="ConnectorPersonFullname" HeaderText="Connector" />
+                                <Rock:RockBoundField DataField="LastActivityText" HeaderText="Last Activity" HtmlEncode="false" />
+                                <Rock:RockLiteralField ID="lState" HeaderText="State" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:RockLiteralField ID="lStatus" HeaderText="Status" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1" />
+                                <Rock:SecurityField />
+                                <Rock:PersonProfileLinkField LinkedPageAttributeKey="PersonProfilePage" />
+                                <Rock:DeleteField OnClick="gRequests_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional">
+            <asp:UpdatePanel ID="upnlBoardView" runat="server" UpdateMode="Conditional" Class="drag-scroll-zone-container">
                 <ContentTemplate>
-                    <div class="drag-scroll-zone-container position-relative">
-                        <div class="panel-body p-0 overflow-scroll board-column-container dragscroll js-dragscroll">
-                            <div class="d-flex flex-row w-100 h-100 js-column-container"></div>
+                        <div class="panel-body p-0 overflow-scroll dragscroll js-dragscroll">
+                            <div class="board-column-container js-column-container"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-left drag-scroll-zone drag-scroll-zone-left"></div>
                             <div class="js-drag-scroll-zone js-drag-scroll-zone-right drag-scroll-zone drag-scroll-zone-right"></div>
                         </div>
-                    </div>
                 </ContentTemplate>
             </asp:UpdatePanel>
 
@@ -383,7 +385,7 @@
                             <asp:Literal ID="lRequestModalViewModeHeading" runat="server" />
                             <div class="row">
                                 <div class="col-sm-2">
-                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo mx-auto mb-3"></div>
+                                    <div id="divRequestModalViewModePhoto" runat="server" class="request-modal-photo"></div>
                                 </div>
                                 <div class="col-sm-10">
                                     <asp:Literal runat="server" ID="lRequestModalViewModeStatusIcons" />
@@ -443,7 +445,7 @@
 
                                     </div>
 
-                                    <asp:Panel runat="server" CssClass="badge-bar margin-b-sm" ID="pnlRequestModalViewModeBadges">
+                                    <asp:Panel runat="server" CssClass="badge-bar mb-2" ID="pnlRequestModalViewModeBadges">
                                         <Rock:BadgeListControl ID="blRequestModalViewModeBadges" runat="server" />
                                     </asp:Panel>
                                 </div>
@@ -451,7 +453,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <asp:Literal ID="lRequestModalViewModeMainDescription" runat="server" />
+                                    <asp:Literal ID="lRequestModalViewModeComments" runat="server" />
                                 </div>
                             </div>
                             <asp:Literal ID="lRequestModalViewModeBadgeBar" runat="server" />
@@ -462,7 +464,7 @@
                                 <div id="divRequestModalViewModeWorkflows" runat="server" class="col-md-6">
                                     <Rock:ModalAlert ID="mdWorkflowLaunched" runat="server" />
                                     <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                                    <div class="margin-b-lg">
+                                    <div class="mb-4">
                                         <asp:Repeater ID="rptRequestWorkflows" runat="server" OnItemCommand="rptRequestWorkflows_ItemCommand">
                                             <ItemTemplate>
                                                 <asp:LinkButton ID="lbRequestWorkflow" runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
@@ -566,7 +568,7 @@
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeSelectConnector" runat="server" CssClass="js-transfer-connector" Text="Select Connector" GroupName="TransferOpportunityConnector" />
-                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="margin-l-lg" runat="server" Style="display: none" />
+                                                <Rock:RockDropDownList ID="ddlRequestModalViewModeTransferModeOpportunityConnector" CssClass="ml-4" runat="server" Style="display: none" />
                                             </div>
                                             <div>
                                                 <Rock:RockRadioButton ID="rbRequestModalViewModeTransferModeNoConnector" runat="server" CssClass="js-transfer-connector" Text="No Connector" GroupName="TransferOpportunityConnector" />
@@ -685,12 +687,12 @@
 
 <script id="js-template-column" type="text/template">
     <div class="board-column">
-        <div class="board-heading mt-3 px-3">
-            <div class="d-flex justify-content-between align-items-center">
+        <div class="board-heading">
+            <div class="board-heading-details">
                 <span class="board-column-title">{{Name}}</span>
                 <span class="board-count">{{RequestCount}}</span>
             </div>
-            <div class="board-heading-pill mt-2 mb-3" style="background: {{HighlightColor}}"></div>
+            <div class="board-heading-pill" style="background: {{HighlightColor}}"></div>
         </div>
         <div class="board-cards js-card-container" data-status-id="{{Id}}">
         </div>
@@ -700,7 +702,7 @@
 </script>
 
 <script id="js-template-column-sentry" type="text/template">
-    <div class="board-card-base board-column-sentry text-muted small p-3">
+    <div class="board-card-base board-column-sentry small">
         <p class="mb-2"><strong>More requests exist</strong></p>
         <p>Please adjust sorting, use filters, or even use the grid mode to interact with them.</p>
     </div>
@@ -709,17 +711,17 @@
 <script id="js-template-card" type="text/template">
     <div class="board-card js-board-card" data-request-id="{{Id}}" data-opportunity-id="{{ConnectionOpportunityId}}">
         <div class="board-card-content js-board-card-content">
-            <div class="d-flex justify-content-between">
+            <div class="board-card-header">
                 {{StatusIconsHtml}}
                 {{CampusHtml}}
             </div>
-            <div class="board-card-main d-flex">
+            <div class="board-card-main">
                 <div class="flex-grow-1 mb-2">
-                    <div class="board-card-photo mb-1" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
+                    <div class="board-card-photo" style="background-image: url( '{{PersonPhotoUrl}}' );" title="{{PersonFullname}} Profile Photo"></div>
                     <div class="board-card-name">
                         {{PersonFullname}}
                     </div>
-                    <span class="board-card-assigned d-block text-muted">
+                    <span class="board-card-assigned">
                         {{ConnectorPersonFullname}}
                     </span>
                 </div>
@@ -749,12 +751,12 @@
                     </div>
                 </div>
             </div>
-            <div class="board-card-meta d-flex justify-content-between">
-                <span class="text-muted" title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
+            <div class="board-card-meta">
+                <span title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
                     <i class="fa fa-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}
                 </span>
-                <span class="text-muted" title="{{DaysSinceOpeningLongText}}">
+                <span title="{{DaysSinceOpeningLongText}}">
                     <i class="fa fa-calendar"></i>
                     {{DaysSinceOpeningShortText}}
                 </span>

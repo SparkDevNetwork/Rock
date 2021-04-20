@@ -35,5 +35,10 @@ namespace Rock.SystemGuid
         /// The transferred activity type
         /// </summary>
         public const string TRANSFERRED = "6E7C8475-2A03-42EB-A883-5B2CC6CAE519";
+
+        /// <summary>
+        /// The Future Follow-up Complete activity type
+        /// </summary>
+        public const string FUTURE_FOLLOWUP_COMPLETE = "D0FBB866-9029-4705-B3BA-07364F3D7FC1";
     }
 }

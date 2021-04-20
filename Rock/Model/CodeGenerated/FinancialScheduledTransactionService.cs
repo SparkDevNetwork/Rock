@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -142,6 +143,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this FinancialScheduledTransaction object to a new FinancialScheduledTransaction object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static FinancialScheduledTransaction CloneWithoutIdentity( this FinancialScheduledTransaction source )
+        {
+            var target = new FinancialScheduledTransaction();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another FinancialScheduledTransaction object to this FinancialScheduledTransaction object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -154,6 +178,7 @@ namespace Rock.Model
             target.EndDate = source.EndDate;
             target.FinancialGatewayId = source.FinancialGatewayId;
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            target.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;

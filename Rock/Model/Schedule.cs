@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
 using Ical.Net;
@@ -30,6 +31,7 @@ using Ical.Net.DataTypes;
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -39,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered
+    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -76,11 +78,14 @@ namespace Rock.Model
             {
                 return _iCalendarContent ?? string.Empty;
             }
+
             set
             {
+                _getICalEvent = null;
                 _iCalendarContent = value;
             }
         }
+
         private string _iCalendarContent;
 
         /// <summary>
@@ -176,14 +181,24 @@ namespace Rock.Model
             }
         }
 
+        #region Additional Lava Properties
+
+        /*
+            2021-02-17 - DJL
+
+            These properties exist to simplify Lava code that needs to query if the schedule or check-in is currently active.
+            They have been reinstated at the request of the community after being marked obsolete in v1.8.
+
+            Reason: Community Request, Issue #3471 (https://github.com/SparkDevNetwork/Rock/issues/3471)
+        */
+
         /// <summary>
         /// Gets a value indicating whether this schedule is currently active.
         /// </summary>
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", true )]
+        [LavaVisible]
         public virtual bool IsScheduleActive
         {
             get
@@ -198,8 +213,7 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", true )]
+        [LavaVisible]
         public virtual bool IsCheckInActive
         {
             get
@@ -207,6 +221,8 @@ namespace Rock.Model
                 return WasCheckInActive( RockDateTime.Now );
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Gets a value indicating whether this schedule (or it's check-in window) is currently active.
@@ -253,7 +269,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
         public virtual DateTime? NextStartDateTime
@@ -291,7 +307,7 @@ namespace Rock.Model
                  * To improve performance, only go out a week (or so) if this is a weekly or daily schedule.
                  * If this optimization fails to find a next scheduled date, fall back to looking out a full year
                  */
-                
+
                 if ( rrule?.Frequency == FrequencyType.Weekly )
                 {
                     var everyXWeeks = rrule.Interval;
@@ -313,7 +329,7 @@ namespace Rock.Model
                     occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                     nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
                 }
-                
+
                 return nextOccurrence;
             }
             else
@@ -329,7 +345,7 @@ namespace Rock.Model
         /// The first start date time.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTime => GetFirstStartDateTime();
 
         /// <summary>
@@ -339,7 +355,7 @@ namespace Rock.Model
         /// The first start date time this week.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual DateTime? FirstStartDateTimeThisWeek
         {
             get
@@ -357,7 +373,7 @@ namespace Rock.Model
         /// <value>
         /// The start time of day.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual TimeSpan StartTimeOfDay
         {
             get
@@ -383,7 +399,7 @@ namespace Rock.Model
         /// <value>
         /// The duration in minutes.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int DurationInMinutes
         {
             get
@@ -413,7 +429,7 @@ namespace Rock.Model
         /// <value>
         /// The friendly schedule text.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual string FriendlyScheduleText
         {
@@ -445,6 +461,34 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return NamedScheduleCache.Get( this.Id );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            NamedScheduleCache.FlushItem( this.Id );
+        }
+
+        #endregion ICacheable
 
         /// <summary>
         /// Pres the save changes.
@@ -558,7 +602,7 @@ namespace Rock.Model
                 }
             }
 
-            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date || EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
+            return (EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
         }
 
         /// <summary>
@@ -593,11 +637,17 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Ical.Net.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-
         public virtual Ical.Net.Event GetICalEvent()
         {
-            return InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+            if ( _getICalEvent == null )
+            {
+                _getICalEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
+            }
+
+            return _getICalEvent;
         }
+
+        private Ical.Net.Event _getICalEvent = null;
 
         /// <summary>
         /// Gets the occurrences.
@@ -698,18 +748,24 @@ namespace Rock.Model
         {
             var occurrences = new List<Occurrence>();
 
-            var calEvent = GetICalEvent();
-            if ( calEvent == null )
-            {
-                return occurrences;
-            }
+            DateTime? scheduleStartDateTime;
 
             if ( scheduleStartDateTimeOverride.HasValue )
             {
-                calEvent.DtStart = new CalDateTime( scheduleStartDateTimeOverride.Value );
+                scheduleStartDateTime = scheduleStartDateTimeOverride;
+            }
+            else
+            {
+                Event calEvent = GetICalEvent();
+                if ( calEvent == null )
+                {
+                    return occurrences;
+                }
+
+                scheduleStartDateTime = calEvent.DtStart?.Value;
             }
 
-            if ( calEvent.DtStart != null )
+            if ( scheduleStartDateTime != null )
             {
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
@@ -723,9 +779,7 @@ namespace Rock.Model
                     }
                 }
 
-                foreach ( var occurrence in endDateTime.HasValue ?
-                    InetCalendarHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
-                    InetCalendarHelper.GetOccurrences( calEvent, beginDateTime ) )
+                foreach ( var occurrence in InetCalendarHelper.GetOccurrences( iCalendarContent, beginDateTime, endDateTime, scheduleStartDateTimeOverride ) )
                 {
                     bool exclude = false;
                     if ( exclusionDates.Any() && occurrence.Period.StartTime != null )
@@ -831,7 +885,6 @@ namespace Rock.Model
 
             return result;
         }
-
 
         /// <summary>
         /// Gets the first start date time.
@@ -941,7 +994,6 @@ namespace Rock.Model
                 if ( calendarEvent.RecurrenceRules.Any() )
                 {
                     // some type of recurring schedule
-
                     var rrule = calendarEvent.RecurrenceRules[0];
                     switch ( rrule.Frequency )
                     {
@@ -1002,7 +1054,7 @@ namespace Rock.Model
                                 // The Nth <DayOfWeekName>.  We only support one *day* in the ByDay list, but multiple *offsets*.
                                 // So, it can be the "The first and third Monday" of every month.
                                 var bydate = rrule.ByDay[0];
-                                var offsetNames = NthNamesAbbreviated.Where( a => rrule.ByDay.Select( o=>o.Offset ).Contains( a.Key ) ).Select( a => a.Value );
+                                var offsetNames = NthNamesAbbreviated.Where( a => rrule.ByDay.Select( o => o.Offset ).Contains( a.Key ) ).Select( a => a.Value );
                                 if ( offsetNames != null )
                                 {
                                     result = string.Format( "The {0} {1} of every month", offsetNames.JoinStringsWithCommaAnd(), bydate.DayOfWeek.ConvertToString() );
@@ -1023,18 +1075,16 @@ namespace Rock.Model
 
                         default:
                             // some other type of recurring type (probably specific dates).  Just return the Name of the schedule
-
                             break;
                     }
                 }
                 else
                 {
                     // not any type of recurring, might be one-time or from specific dates, etc
-                    var dates = calendarEvent.GetOccurrences( DateTime.MinValue, DateTime.MaxValue ).Where( a =>
-                                a.Period != null &&
-                                a.Period.StartTime != null )
-                            .Select( a => a.Period.StartTime.Value )
-                            .OrderBy( a => a ).ToList();
+                    var dates = InetCalendarHelper.GetOccurrences( iCalendarContent, DateTime.MinValue, DateTime.MaxValue, null )
+                        .Where( a => a.Period != null && a.Period.StartTime != null )
+                        .Select( a => a.Period.StartTime.Value )
+                        .OrderBy( a => a ).ToList();
 
                     if ( dates.Count() > 1 )
                     {
@@ -1044,7 +1094,6 @@ namespace Rock.Model
                         }
                         else
                         {
-
                             var listHtml = "<ul class='list-unstyled'>" + Environment.NewLine;
                             foreach ( var date in dates )
                             {
@@ -1199,15 +1248,15 @@ namespace Rock.Model
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
-
-            // invalid condition, end before the start
+            
             if ( checkOutEndDateCompare < 0 )
             {
+                // invalid condition, end before the start
                 return false;
             }
-            // the start and end are on the same day, so we can do simple time checking
             else if ( checkOutEndDateCompare == 0 )
             {
+                // the start and end are on the same day, so we can do simple time checking
                 // Is the current time earlier the event's allowed check-in window?
                 if ( time.TimeOfDay.TotalSeconds < checkInStart.Value.TimeOfDay.TotalSeconds )
                 {
@@ -1222,10 +1271,11 @@ namespace Rock.Model
                     return false;
                 }
             }
-            // Does the end time spill over to a different day...
-            // if so, we have to look for crossover conditions
             else if ( checkOutEndDateCompare > 0 )
             {
+                // Does the end time spill over to a different day...
+                // if so, we have to look for crossover conditions
+
                 // The current time is before the start time and later than the end time:
                 // ex: 11PM-2AM window, and it's 10PM -- not in the window
                 // ex: 11PM-2AM window, and it's 3AM -- not in the window
@@ -1269,7 +1319,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.ToFriendlyScheduleText();
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
+            }
+            else
+            {
+                return this.ToFriendlyScheduleText();
+            }
         }
 
         #endregion
@@ -1280,22 +1337,22 @@ namespace Rock.Model
         /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
         /// </summary>
         public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> {
-            {1, "First"},
-            {2, "Second"},
-            {3, "Third"},
-            {4, "Fourth"},
-            {-1, "Last"}
+            { 1, "First" },
+            { 2, "Second" },
+            { 3, "Third" },
+            { 4, "Fourth" },
+            { -1, "Last" }
         };
 
         /// <summary>
         /// The abbreviated "nth" names for DayName of Month (1st, 2nd, 3rd, 4th, last)
         /// </summary>
         private static readonly Dictionary<int, string> NthNamesAbbreviated = new Dictionary<int, string> {
-            {1, "1st"},
-            {2, "2nd"},
-            {3, "3rd"},
-            {4, "4th"},
-            {-1, "last"}
+            { 1, "1st" },
+            { 2, "2nd" },
+            { 3, "3rd" },
+            { 4, "4th" },
+            { -1, "last" }
         };
 
         #endregion
@@ -1559,51 +1616,44 @@ namespace Rock.Model
     /// </remarks>
     public static class InetCalendarHelper
     {
-        private static object _initLock;
-        private static Dictionary<string, Ical.Net.Event> _iCalSchedules = new Dictionary<string, Ical.Net.Event>();
+        // using MemoryCache instead RockCacheManager, since Occurrences isn't serializable.
+        private static MemoryCache _iCalOccurrencesCache = new MemoryCache( "Rock.InetCalendarHelper._iCalOccurrences" );
 
-        static InetCalendarHelper()
-        {
-            // iCal.Net.LoadFromStream is not threadsafe, so use locking
-            InetCalendarHelper._initLock = new object();
-        }
+        // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
+        private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
         /// <summary>
         /// Gets the calendar event.
         /// </summary>
-        /// <param name="iCalendarContent">Content of the iCalendar.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
+        [RockObsolete( "12.4" )]
+        [Obsolete( "Use CreateCalendarEvent instead" )]
         public static Ical.Net.Event GetCalendarEvent( string iCalendarContent )
         {
-            string trimmedContent = iCalendarContent.Trim();
+            // changed to obsolete because this used to return a shared object that could be altered or create thread-safety issues
+            return CreateCalendarEvent( iCalendarContent );
+        }
 
-            if ( string.IsNullOrWhiteSpace( trimmedContent ) )
-            {
-                return null;
-            }
-
+        /// <summary>
+        /// Creates the calendar event.
+        /// </summary>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <returns></returns>
+        public static Event CreateCalendarEvent( string iCalendarContent )
+        {
+            StringReader stringReader = new StringReader( iCalendarContent );
+            var calendarList = Calendar.LoadFromStream( stringReader );
             Event calendarEvent = null;
 
-            lock ( InetCalendarHelper._initLock )
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+            if ( calendarList.Count() > 0 )
             {
-                if ( _iCalSchedules.ContainsKey( trimmedContent ) )
+                var calendar = calendarList[0] as Calendar;
+                if ( calendar != null )
                 {
-                    return _iCalSchedules[trimmedContent];
-                }
-
-                StringReader stringReader = new StringReader( trimmedContent );
-                var calendarList = Calendar.LoadFromStream( stringReader );
-
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-                //// We just need one Calendar and one Event
-                if ( calendarList.Count > 0 )
-                {
-                    var calendar = calendarList[0] as Calendar;
-                    if ( calendar != null )
-                    {
-                        calendarEvent = calendar.Events[0] as Event;
-                        _iCalSchedules.AddOrReplace( trimmedContent, calendarEvent );
-                    }
+                    calendarEvent = calendar.Events[0] as Event;
                 }
             }
 
@@ -1611,31 +1661,79 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the occurrences.
+        /// Gets the occurrences for the specified iCal
         /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <param name="startDateTime">The start date time.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime )
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime )
         {
-            lock ( InetCalendarHelper._initLock )
-            {
-                return icalEvent.GetOccurrences( startTime ).ToList();
-            }
+            return GetOccurrences( iCalendarContent, startDateTime, null );
         }
 
         /// <summary>
         /// Gets the occurrences.
         /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="endTime">The end time.</param>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
         /// <returns></returns>
-        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime, DateTime endTime )
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime )
         {
-            lock ( InetCalendarHelper._initLock )
+            return GetOccurrences( iCalendarContent, startDateTime, endDateTime, null );
+        }
+
+        /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
+        /// <returns></returns>
+        public static IList<Occurrence> GetOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
+            string occurrenceLookupKey = $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__{scheduleStartDateTimeOverride?.ToShortDateTimeString()}__{iCalendarContent.Trim()}".XxHash();
+
+            Occurrence[] occurrenceList = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
+
+            if ( occurrenceList == null )
             {
-                return icalEvent.GetOccurrences( startTime, endTime ).ToList();
+                occurrenceList = LoadOccurrences( iCalendarContent, startDateTime, endDateTime, scheduleStartDateTimeOverride );
+                _iCalOccurrencesCache.AddOrGetExisting( occurrenceLookupKey, occurrenceList, cacheItemPolicy10Minutes );
+            }
+
+            return occurrenceList;
+        }
+
+        /// <summary>
+        /// Loads the occurrences.
+        /// </summary>
+        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
+        /// <returns></returns>
+        private static Occurrence[] LoadOccurrences( string iCalendarContent, DateTime startDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
+            var iCalEvent = CreateCalendarEvent( iCalendarContent );
+            if ( iCalEvent == null )
+            {
+                return new Occurrence[0];
+            }
+
+            if ( scheduleStartDateTimeOverride.HasValue )
+            {
+                iCalEvent.DtStart = new CalDateTime( scheduleStartDateTimeOverride.Value );
+            }
+
+            if ( endDateTime.HasValue )
+            {
+                return iCalEvent.GetOccurrences( startDateTime, endDateTime.Value ).ToArray();
+            }
+            else
+            {
+                return iCalEvent.GetOccurrences( startDateTime ).ToArray();
             }
         }
     }

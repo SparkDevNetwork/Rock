@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lucene.Net.Support;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -104,13 +103,8 @@ namespace Rock.Achievement
             // Get all of the attempts for this streak and achievement combo, ordered by start date DESC so that
             // the most recent attempts can be found with FirstOrDefault
             var achievementAttemptService = new AchievementAttemptService( rockContext );
-            var attempts = achievementAttemptService.Queryable()
-                .Where( aa =>
-                    aa.AchievementTypeId == achievementTypeCache.Id &&
-                    aa.AchieverEntityId == streak.PersonAliasId )
-                .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
-                .ToList();
-
+            var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, streak.PersonAliasId );
+                
             var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
             var overachievementPossible = achievementTypeCache.AllowOverAchievement && mostRecentSuccess != null && !mostRecentSuccess.IsClosed;
             var successfulAttemptCount = attempts.Count( saa => saa.IsSuccessful );

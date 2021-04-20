@@ -24,7 +24,7 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Humanizer;
 
 using Rock.Data;
@@ -33,6 +33,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -70,7 +71,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is reprensented by the GroupMember.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is represented by the GroupMember.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -177,7 +178,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -187,7 +188,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>
         /// </summary>
         /// <value>
         /// The schedule template identifier.
@@ -196,7 +197,7 @@ namespace Rock.Model
         public int? ScheduleTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule start date.
@@ -232,7 +233,7 @@ namespace Rock.Model
         public GroupMember()
             : base()
         {
-            CommunicationPreference = CommunicationType.Email;
+            CommunicationPreference = CommunicationType.RecipientPreference;
         }
 
         #endregion
@@ -254,7 +255,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -267,7 +268,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -276,7 +277,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member requirements.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberRequirement">group member requirements</see>.
         /// </summary>
         /// <value>
         /// The group member requirements.
@@ -285,7 +286,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
 
         /// <summary>
-        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>. 
         /// </summary>
         /// <value>
         /// The schedule template.
@@ -303,7 +304,7 @@ namespace Rock.Model
         private List<HistoryItem> HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member assignments.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment">group member assignments</see>.
         /// </summary>
         /// <value>
         /// The group member assignments.
@@ -664,11 +665,13 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    IndexEntityTransaction transaction = new IndexEntityTransaction();
-                    transaction.EntityTypeId = groupType.Id;
-                    transaction.EntityId = group.Id;
+                    var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                    {
+                        EntityTypeId = groupType.Id,
+                        EntityId = group.Id
+                    };
 
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    processEntityTypeIndexMsg.Send();
                 }
             }
 
@@ -704,7 +707,25 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( changes ).Enqueue();
+                    if ( changes.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( changes );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
 
                     var groupMemberChanges = HistoryService.GetChanges(
                         typeof( GroupMember ),
@@ -717,7 +738,25 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( groupMemberChanges ).Enqueue();
+                    if ( groupMemberChanges.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( groupMemberChanges );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
                 }
             }
 

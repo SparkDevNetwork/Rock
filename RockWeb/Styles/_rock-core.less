@@ -166,6 +166,11 @@ a.warning {
   }
 }
 
+.rock-fullname {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 
 // 4. Bootstrap Overrides
 //--------------------------------
@@ -472,9 +477,16 @@ th[align="right"] {
 }
 
 .panel-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   border-bottom: 1px solid #dbdbdb;
   padding: 4px 16px;
   font-size: 12px;
+
+  @media (min-width: @screen-sm-min) {
+    flex-wrap: nowrap;
+  }
 
   .btn-tool,
   .picker .picker-label {
@@ -486,6 +498,7 @@ th[align="right"] {
     line-height: @line-height-small;
     background: transparent;
 
+    &:focus,
     &:hover,
     &:active,
     &.active {

@@ -308,7 +308,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return new LocationService( new RockContext() ).Get( _hfLocationId.ValueAsInt() );
+                var locationId = _hfLocationId.ValueAsInt();
+                if ( locationId > 0 )
+                {
+                    return new LocationService( new RockContext() ).Get( locationId );
+                }
+
+                return null;
             }
 
             private set

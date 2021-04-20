@@ -138,6 +138,7 @@ namespace RockWeb.Blocks.GroupScheduling
             Page.Response.Cache.SetNoStore();
 
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Rock/Controls/GroupScheduler/groupScheduler.js" );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-scheduler.css", true );
 
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -770,13 +771,13 @@ btnCopyToClipboard.ClientID );
             }
             else if ( selectedLocations.Count() == 1 )
             {
-                selectedLocationFilterText = selectedLocations.First().ToString();
+                selectedLocationFilterText = selectedLocations.First().ToString( true );
             }
             else
             {
                 selectedLocationFilterText = string.Format(
                     "<span title='{0}'>{1} Locations</span>",
-                    selectedLocations.Select( a => a.ToString() ).ToList().AsDelimited( ", " ).EncodeHtml(),
+                    selectedLocations.Select( a => a.ToString( true ) ).ToList().AsDelimited( ", " ).EncodeHtml(),
                     selectedLocations.Count() );
             }
 
@@ -794,11 +795,11 @@ btnCopyToClipboard.ClientID );
                     {
                         if ( selectedLocationIds.Contains( locationId.Value ) )
                         {
-                            locationButton.Text = string.Format( "<i class='fa fa-check'></i> {0}", location.ToString().EncodeHtml() );
+                            locationButton.Text = string.Format( "<i class='fa fa-check'></i> {0}", location.ToString( true ).EncodeHtml() );
                         }
                         else
                         {
-                            locationButton.Text = string.Format( " {0}", location.ToString() );
+                            locationButton.Text = string.Format( " {0}", location.ToString( true ) );
                         }
                     }
                 }
@@ -2232,7 +2233,7 @@ btnCopyToClipboard.ClientID );
             if ( location != null )
             {
                 btnSelectLocation.CommandArgument = location.Id.ToString();
-                btnSelectLocation.Text = location.ToString();
+                btnSelectLocation.Text = location.ToString( true );
             }
             else
             {

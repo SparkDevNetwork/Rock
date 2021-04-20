@@ -112,24 +112,65 @@ namespace Rock.Jobs
                                     // get the metric value from the DataView
                                     if ( metric.DataView != null )
                                     {
-                                        if ( metricPartitions.Count > 1 || metricPartitions.First().EntityTypeId.HasValue )
+                                        bool parseCampusPartition = metricPartitions.Count == 1
+                                            && metric.AutoPartitionOnPrimaryCampus
+                                            && metric.DataView.EntityTypeId == Web.Cache.EntityTypeCache.GetId( SystemGuid.EntityType.PERSON )
+                                            && metricPartitions[0].EntityTypeId == Web.Cache.EntityTypeCache.GetId( SystemGuid.EntityType.CAMPUS );
+
+                                        // Dataview metrics can be partitioned by campus only and AutoPartitionOnPrimaryCampus must be selected.
+                                        if ( metricPartitions.Count > 1
+                                            || ( metricPartitions[0].EntityTypeId.HasValue && parseCampusPartition == false ) )
                                         {
-                                            throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
+                                            throw new NotImplementedException( "Partitioned Metrics using DataViews is only supported for Person data views using a single partition of type 'Campus' with 'Auto Partition on Primary Campus' checked. Any other dataview partition configuration is not supported." );
+                                        }
+                                        
+                                        Stopwatch stopwatch = Stopwatch.StartNew();
+                                        var qry = metric.DataView.GetQuery( new DataViewGetQueryArgs() );
+
+                                        if ( parseCampusPartition )
+                                        {
+                                            // Create a dictionary of campus IDs with a person count
+                                            var campusPartitionValues = new Dictionary<int, int>();
+                                            foreach( var person in qry.ToList() )
+                                            {
+                                                var iPerson = ( Person ) person;
+                                                int campusId = iPerson.GetCampus().Id;
+                                                campusPartitionValues.TryGetValue( campusId, out var currentCount );
+                                                campusPartitionValues[campusId] = currentCount + 1;
+                                            }
+
+                                            // Use the dictionary to create the ResultValues for each campus (partition)
+                                            foreach( var campusPartitionValue in campusPartitionValues )
+                                            {
+                                                var resultValue = new ResultValue
+                                                {
+                                                    MetricValueDateTime = scheduleDateTime,
+                                                    Partitions = new List<ResultValuePartition>(),
+                                                    Value = campusPartitionValue.Value
+                                                };
+
+                                                resultValue.Partitions.Add( new ResultValuePartition
+                                                {
+                                                    PartitionPosition = 0,
+                                                    EntityId = campusPartitionValue.Key
+                                                } );
+
+                                                resultValues.Add( resultValue );
+                                            }
                                         }
                                         else
                                         {
-                                            Stopwatch stopwatch = Stopwatch.StartNew();
-                                            var dataViewGetQueryArgs = new DataViewGetQueryArgs();
-                                            var qry = metric.DataView.GetQuery( dataViewGetQueryArgs );
-                                            var resultValue = new ResultValue();
-                                            resultValue.Value = Convert.ToDecimal( qry.Count() );
-                                            stopwatch.Stop();
-                                            resultValue.Partitions = new List<ResultValuePartition>();
-                                            resultValue.MetricValueDateTime = scheduleDateTime;
-                                            resultValues.Add( resultValue );
-                                            DataViewService.AddRunDataViewTransaction( metric.DataView.Id,
-                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                                            // Put the entire set in one result since there is no partition
+                                            resultValues.Add( new ResultValue
+                                            {
+                                                Value = Convert.ToDecimal( qry.Count() ),
+                                                MetricValueDateTime = scheduleDateTime,
+                                                Partitions = new List<ResultValuePartition>()
+                                            } );
                                         }
+
+                                        stopwatch.Stop();
+                                        DataViewService.AddRunDataViewTransaction( metric.DataView.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                                     }
                                 }
                                 else if ( metric.SourceValueType.Guid == metricSourceValueTypeSqlGuid )

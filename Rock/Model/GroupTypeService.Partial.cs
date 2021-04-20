@@ -125,7 +125,16 @@ namespace Rock.Model
 
             foreach ( var rootCheckinAreaGroupTypeId in checkinTemplates.Select( a => a.Id ) )
             {
-                result.AddRange( this.GetCheckinAreaDescendantsPath( rootCheckinAreaGroupTypeId ) );
+                var checkinAreaDescendantsPath = GetCheckinAreaDescendantsPath( rootCheckinAreaGroupTypeId );
+                foreach ( var checkinAreaDescendantPath in checkinAreaDescendantsPath )
+                {
+                    // just in case multiple checkin areas share a child group type, check for duplicates
+                    var alreadyExists = result.Any( x => x.GroupTypeId == checkinAreaDescendantPath.GroupTypeId );
+                    if ( !alreadyExists )
+                    {
+                        result.Add( checkinAreaDescendantPath );
+                    }
+                }
             }
 
             return result;
@@ -470,6 +479,9 @@ namespace Rock.Model
         {
             List<GroupTypeCache> parentGroupTypeList = new List<GroupTypeCache>();
             var parentGroupType = checkinArea;
+
+            bool hasMultipleParents = false;
+
             while ( parentGroupType != null )
             {
                 if ( rootGroupType != null && parentGroupType.Id == rootGroupType.Id )
@@ -488,19 +500,48 @@ namespace Rock.Model
 
                 if ( parentGroupType.ParentGroupTypes.Count > 1 )
                 {
-                    // A CheckinArea shouldn't have more than 1 parent, but since this one does,
-                    // exclude any parents that are the root group, and exclude any we already have
-                    // then pick the first of whatever are remaining
-                    parentGroupType = parentGroupType
-                        .ParentGroupTypes
-                        .Where( a =>
-                             a.Id != rootGroupType.Id
-                             && !parentGroupTypeList.Any( p => p.Id == a.Id ) )
+                    hasMultipleParents = true;
+
+                    /* A CheckinArea shouldn't have more than 1 parent, but since this one does,
+                       we'll have to parent path the makes the most sense
+                    */
+
+                    // if the group type has the specified rootGroupType as a parent,
+                    // we can stop there since that would be the best path 
+                    if ( parentGroupType.ParentGroupTypes.Any( x => x.Id == rootGroupType.Id ) )
+                    {
+                        break;
+                    }
+
+                    // We can eliminate parent group types that we have already discovered,
+                    // then pick the first of whatever are remaining, preferring
+                    // ones that aren't a Checkin Template group type (like Weekend Service)
+                    parentGroupType = parentGroupType.ParentGroupTypes.Where( a =>!parentGroupTypeList.Any( p => p.Id == a.Id ) )
+                        .OrderByDescending( x => x.GroupTypePurposeValue?.Guid != Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
                         .FirstOrDefault();
                 }
                 else
                 {
                     parentGroupType = parentGroupType.ParentGroupTypes.FirstOrDefault();
+                }
+            }
+
+            if ( hasMultipleParents )
+            {
+                // In a normal case, the Checkin Template (Weekend Service, Volunteer, etc) doesn't get
+                // included as part of the path string, but if there were multiple parent CheckIn Types (normally there shouldn't be),
+                // the ParentGroupType list might start with a Checkin Template (Weekend Service, Volunteer, etc).
+                // For example, if Elementary Area is in both Weekend Service and Volunteer area,
+                // the Path String might get built as 'Volunteer Area > Elementary Area',
+                // instead of just 'Elementary Area'.
+                // If that happens, we'll trim off the Check-in Template group type from the list.
+                var firstParentGroupType = parentGroupTypeList.FirstOrDefault();
+                if ( firstParentGroupType != null )
+                {
+                    if ( firstParentGroupType.GroupTypePurposeValue?.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
+                    {
+                        parentGroupTypeList.Remove( firstParentGroupType );
+                    }
                 }
             }
 
@@ -541,7 +582,7 @@ namespace Rock.Model
         public int GroupTypeId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the full associated ancestor path of the parent checkin areas (group types).
+        /// Gets or sets the full associated ancestor path ('Area 1 > Area2 > Area51') of the parent checkin areas (group types).
         /// </summary>
         /// <value>
         /// The path.

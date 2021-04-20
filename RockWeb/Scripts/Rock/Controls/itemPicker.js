@@ -25,11 +25,13 @@
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
+                        expandedCategoryIds: this.options.expandedCategoryIds,
                         showSelectChildren: this.options.showSelectChildren,
                         id: this.options.startingId
                     },
                     $hfItemIds = $control.find('.js-item-id-value'),
-                    $hfExpandedIds = $control.find('.js-initial-item-parent-ids-value');
+                    $hfExpandedIds = $control.find('.js-initial-item-parent-ids-value'),
+                    $hfExpandedCategoryIds = $control.find('.js-expanded-category-ids');
 
                 if (typeof this.options.mapItems === 'function') {
                     treeOptions.mapping = {
@@ -68,6 +70,10 @@
 
                 if ($hfExpandedIds.val()) {
                     treeOptions.expandedIds = $hfExpandedIds.val().split(',');
+                }
+
+                if ($hfExpandedCategoryIds.val()) {
+                    treeOptions.expandedCategoryIds = $hfExpandedCategoryIds.val().split(',');
                 }
 
                 $tree.rockTree(treeOptions);
@@ -247,6 +253,7 @@
                 defaultText: '',
                 selectedIds: null,
                 expandedIds: null,
+                expandedCategoryIds: null,
                 showSelectChildren: false
             },
             controls: {},

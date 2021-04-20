@@ -99,7 +99,7 @@ $.ajax({{
     url: Rock.settings.get('baseUrl') + 'api/Badges/FamilyAttendance/{Person.Id}/{monthsToDisplay}' ,
     statusCode: {{
         200: function (data, status, xhr) {{
-            var chartHtml = '<ul class=\'attendance-chart list-unstyled\'>';
+            var chartHtml = '<ul class=\'attendance-chart trend-chart list-unstyled\'>';
             $.each(data, function() {{
                 var barHeight = (this.AttendanceCount / this.SundaysInMonth) * 100;
                 if (barHeight < {minBarHeight}) {{

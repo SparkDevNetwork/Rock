@@ -15,7 +15,7 @@ namespace Rock.Tests.Integration.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
-    public class EventScheduledInstanceCommandTests
+    public class EventScheduledInstanceCommandTests : LavaIntegrationTestBase
     {
         private static string StaffMeetingEventGuidString = "93104654-DAFA-489B-A175-5F2AB3A846F1";
 
@@ -30,23 +30,6 @@ namespace Rock.Tests.Integration.Lava
   {% endfor %}
 {% endeventscheduledinstance %}
 ";
-
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            InitializeTestData();
-
-            // Initialize the Lava Engine.
-            Liquid.UseRubyDateFormat = false;
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-
-            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-
-            // Register the Lava commands required for testing.
-            var lavaCommand = new EventScheduledInstance();
-
-            lavaCommand.OnStartup();
-        }
 
         private string GetTestTemplate( string parameters )
         {
@@ -274,13 +257,24 @@ namespace Rock.Tests.Integration.Lava
     {% endfor %}
 {% endeventscheduledinstance %}
 ";
-            var output = template.ResolveMergeFields( null );
+            TestHelper.AssertAction( ( engine ) =>
+            {
+                //if ( engine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.Fluid )
+                //{
+                //    return;
+                //}
 
-            // Verify that the output contains series headings and relevant dates for both schedules.
-            Assert.That.Contains( output, "<b>Series 1</b>" );
-            Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
-            Assert.That.Contains( output, "<b>Series 2</b>" );
-            Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template ); //, new LavaTestRenderOptions {  } );
+                //var output = template.ResolveMergeFields( null );
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "<b>Series 1</b>" );
+                Assert.That.Contains( output, "<li>Jan 4, 2020 in Meeting Room 1</li>" );
+                Assert.That.Contains( output, "<b>Series 2</b>" );
+                Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
+            } );
         }
 
         #region Test Data

@@ -41,6 +41,7 @@ namespace Rock.Field.Types
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
         private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
+        private const string FORCE_VISIBLE_KEY = "forceVisible";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -225,6 +226,11 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) )
             {
                 campusPicker.CampusStatusFilter = configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false ).ToList().AsIntegerList();
+            }
+
+            if ( configurationValues != null && configurationValues.ContainsKey( FORCE_VISIBLE_KEY ) )
+            {
+                campusPicker.ForceVisible = configurationValues[FORCE_VISIBLE_KEY].Value.AsBoolean();
             }
 
             return campusPicker;

@@ -100,6 +100,16 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbHideNavigationBar" runat="server" Label="Hide Navigation Bar" Help="Hides the Navigation Bar and makes the Status Bar background color transparent. Page content will reach to the top edge of the screen." />
+                        </div>
+
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbShowFullScreen" runat="server" Label="Show Full Screen" Help="When enabled the page will replace the entire shell to prevent the user from navigating via the flyout or tab bar." />
+                        </div>
+                    </div>
+
                     <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
 
                     <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />

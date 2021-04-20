@@ -78,7 +78,13 @@
 
     .action-extended {
       width: auto;
-      padding-top: 6px;
+      .dropdown {
+        padding: 6px 0 4px;
+      }
+
+      .dropdown-menu {
+        right: -1px;
+      }
     }
   }
 
@@ -437,7 +443,7 @@
   }
 }
 
-.attendance-chart {
+.trend-chart {
   //http://codepen.io/Victa/pen/xDqbf
   display: -ms-flexbox;
   display: flex;
@@ -476,6 +482,7 @@
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
     overflow: hidden;
+    margin-right: 2px;
 
     &:hover {
       opacity: .85;
@@ -489,8 +496,7 @@
       position: absolute;
       bottom: 0;
       display: block;
-      width: 8px;
-      width: ~"calc(100% - 2px)";
+      width: 100%;
       min-width: 2px;
       min-height: 1px;
       max-height: 100%;
@@ -502,6 +508,12 @@
         -o-animation: bar-grow 1s ease-in-out;
         animation: bar-grow 1s ease-in-out;
       }
+    }
+  }
+
+  &-gap {
+    li {
+      margin-right: 5px;
     }
   }
 }
@@ -662,7 +674,7 @@
   .weeks-metric {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #686576;
 
     &::before {
@@ -704,7 +716,7 @@
   .badge-content {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #4f89bd;
 
     .badge-icon {
@@ -825,7 +837,7 @@
   .badge-content {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #4f89bd;
 
     .badge-icon {

@@ -27,8 +27,6 @@ using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -169,9 +167,6 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
-                // Perform any Rock startups
-                RunStartups();
-
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
@@ -195,6 +190,10 @@ namespace RockWeb
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
+
+                // Perform any Rock startups
+                RunStartups();
+
             }
             catch ( Exception ex )
             {
@@ -771,7 +770,7 @@ namespace RockWeb
 
                         try
                         {
-                            mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            mergeFields.Add( "Exception", ex );
                         }
                         catch
                         {

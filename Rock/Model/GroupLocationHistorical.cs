@@ -45,7 +45,7 @@ namespace Rock.Model
         public int? GroupLocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for this group's location at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Group"/> id for this group's location at this point in history
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -60,6 +60,7 @@ namespace Rock.Model
         /// The group location type value identifier.
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.GROUP_LOCATION_TYPE )]
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Rock.Model
         public string GroupLocationTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the location id of this group's location at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Location"/> id of this group's location at this point in history
         /// </summary>
         /// <value>
         /// The location identifier.
@@ -82,7 +83,7 @@ namespace Rock.Model
         public int LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location name of this group's location at this point in history (Group.GroupLocation.Location.ToString())
+        /// Gets or sets the <see cref="Rock.Model.Location"/> name of this group's location at this point in history (Group.GroupLocation.Location.ToString())
         /// </summary>
         /// <value>
         /// The location name.
@@ -140,7 +141,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group location that this is a historical snapshot for
+        /// Gets or sets the <see cref="Rock.Model.GroupLocation"/> that this is a historical snapshot for
         /// </summary>
         /// <value>
         /// The group location.
@@ -149,7 +150,7 @@ namespace Rock.Model
         public virtual GroupLocation GroupLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the group for this group's location at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Group"/> for this group's location at this point in history
         /// </summary>
         /// <value>
         /// The group.
@@ -158,7 +159,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the location of this group's location at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Location"/> of this group's location at this point in history
         /// </summary>
         /// <value>
         /// The location.
@@ -187,7 +188,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static GroupLocationHistorical CreateCurrentRowFromGroupLocation( GroupLocation groupLocation, DateTime effectiveDateTime )
         {
-            var locationName = groupLocation.Location?.ToString();
+            var locationName = groupLocation.Location?.ToString( true );
 
             var groupLocationHistoricalCurrent = new GroupLocationHistorical
             {

@@ -47,7 +47,7 @@
 
   var body = '<div class="form-group">' +
     '<label>' + 'Paste the word content below, then press the Insert button' + '</label>' +
-    '<div contentEditable=true class="note-editor note-frame js-paste-area" style="height: 300px; overflow:hidden;" />' +
+    '<div contentEditable=true class="js-paste-area form-control" style="height: 300px; overflow:hidden;" />' +
     '</div>';
   var footer = '<button href="#" class="btn btn-primary js-paste-word-btn" >' + 'Insert' + '</button>';
 

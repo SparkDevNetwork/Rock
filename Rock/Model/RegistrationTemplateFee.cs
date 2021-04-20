@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Web.UI.Controls;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -53,7 +54,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration template identifier.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/> identifier.
         /// </summary>
         /// <value>
         /// The registration template identifier.
@@ -142,12 +143,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the registration template.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
         /// </summary>
         /// <value>
         /// The registration template.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace Rock.Model
         /// <value>
         /// The fee items.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual ICollection<RegistrationTemplateFeeItem> FeeItems { get; set; } = new List<RegistrationTemplateFeeItem>();
 

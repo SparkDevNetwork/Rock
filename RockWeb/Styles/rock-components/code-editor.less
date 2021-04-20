@@ -6,10 +6,25 @@
   position: relative;
 }
 
-// styles for ace when instead of summer note
+// styles for ace when inside of summer note
 .note-editor {
+  // Add extra padding when in code to prevent control height from decreasing when resize bar is hidden.
+  &.code-editor-visible {
+    padding-bottom: 10px;
+    background: #f5f5f5;
+  }
+
   .ace_editor {
     margin: 0;
     border-radius: 0;
+  }
+}
+
+// Prevent Code Editor from flashing onto page before JS has moved it into HtmlEditor control.
+.html-editor-code-editor {
+  display: none;
+
+  .control-wrapper & {
+    display: block;
   }
 }

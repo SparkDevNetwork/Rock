@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -81,7 +82,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -92,6 +93,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 2 )]
         public int AttributeId { get; set; }
 
         /// <summary>
@@ -104,6 +106,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> that identifies the Id of the entity instance that uses this AttributeValue.
         /// </value>
         [DataMember]
+        [Index( "IX_EntityId_AttributeId", IsUnique = true, Order = 1 )]
         public int? EntityId { get; set; }
 
         /// <summary>
@@ -138,7 +141,7 @@ namespace Rock.Model
         /// <value>
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public decimal? ValueAsNumeric
         {
             get
@@ -181,7 +184,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
@@ -192,7 +195,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
@@ -208,7 +211,7 @@ namespace Rock.Model
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public int? ValueAsPersonId { get; private set; }
 
         /// <summary>
@@ -243,7 +246,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
@@ -253,7 +256,7 @@ namespace Rock.Model
         /// The attribute values historical.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; } = new Collection<AttributeValueHistorical>();
 
         /// <summary>
@@ -262,7 +265,7 @@ namespace Rock.Model
         /// <value>
         /// The value formatted.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ValueFormatted
         {
             get
@@ -287,7 +290,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the attribute.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeName
         {
             get
@@ -312,7 +315,7 @@ namespace Rock.Model
         /// <value>
         /// The attribute key.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeKey
         {
             get
@@ -337,7 +340,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool AttributeIsGridColumn
         {
             get
@@ -780,10 +783,10 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         private AttributeValue GetRootMatrixAttributeValue()
-            {
+        {
             var rockContext = new RockContext();
             var attributeMatrixService = new AttributeMatrixService( rockContext );
-            var attributeService = new AttributeService(rockContext);
+            var attributeService = new AttributeService( rockContext );
             var attributeValueService = new AttributeValueService( rockContext );
 
             var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>

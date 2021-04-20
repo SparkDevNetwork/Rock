@@ -19,7 +19,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Linq;
 
 using Rock.Attribute;
@@ -131,6 +132,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this FinancialPersonSavedAccount object to a new FinancialPersonSavedAccount object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static FinancialPersonSavedAccount CloneWithoutIdentity( this FinancialPersonSavedAccount source )
+        {
+            var target = new FinancialPersonSavedAccount();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another FinancialPersonSavedAccount object to this FinancialPersonSavedAccount object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -148,6 +172,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
+            target.PreferredForeignCurrencyCodeValueId = source.PreferredForeignCurrencyCodeValueId;
             target.ReferenceNumber = source.ReferenceNumber;
             target.TransactionCode = source.TransactionCode;
             target.CreatedDateTime = source.CreatedDateTime;

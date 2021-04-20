@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -87,7 +88,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Category Category { get; set; }
 
         #endregion

@@ -35,7 +35,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the content channel item identifier.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/> identifier.
         /// </summary>
         /// <value>
         /// The content channel item identifier.
@@ -69,7 +69,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the content channel item.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/>.
         /// </summary>
         /// <value>
         /// The content channel item.

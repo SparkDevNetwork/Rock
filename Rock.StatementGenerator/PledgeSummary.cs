@@ -17,14 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Utility;
 
 namespace Rock.StatementGenerator
 {
     /// <summary>
     /// A Pledge (or Multiple Pledges) for a specific Account
     /// </summary>
-    /// <seealso cref="DotLiquid.Drop" />
-    public class PledgeSummary: DotLiquid.Drop
+    public class PledgeSummary: RockDynamic
     {
         /// <summary>
         /// Gets or sets the pledge list.

@@ -59,6 +59,10 @@
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Obsidian\Rock.Obsidian.csproj">
       <Project>{e8c5f154-201f-4c67-bcdc-34787deffeae}</Project>
       <Name>Rock.Obsidian</Name>

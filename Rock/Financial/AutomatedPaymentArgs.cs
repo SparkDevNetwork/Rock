@@ -89,6 +89,12 @@ namespace Rock.Financial
         public string IdempotencyKey { get; set; }
 
         /// <summary>
+        /// The 3 letter ISO currency code of the amounts in the payment details. If this is not the organization's currency then the actual amount
+        /// may be more or less depending on this currency's exchange rate. The actual amount should be returned from the payment processor.
+        /// </summary>
+        public string AmountCurrencyCode { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public class AutomatedPaymentDetailArgs

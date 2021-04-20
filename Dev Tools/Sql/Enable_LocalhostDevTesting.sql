@@ -3,14 +3,18 @@
 /* If this script returns 'O rows affected', then you are already set for localhost testing */
 
 /*  Update Organization Website Global Attribute to the localhost url that RockWeb uses when developing locally */
+
+/* set @localDevRootUrl to be the base url you are using for your dev environment (usually 'http://localhost:6229/') */
+DECLARE @localDevRootUrl nvarchar(100) = 'http://localhost:6229/';
+
 DECLARE @OrganizationWebSiteId int = (SELECT TOP 1 Id FROM [Attribute] WHERE [Key] = 'OrganizationWebSite' AND [IsActive] = 1)
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @OrganizationWebSiteId )
 BEGIN
 	UPDATE [AttributeValue]
 	SET
-		[Value] = 'http://localhost:6229/'
+		[Value] = @localDevRootUrl
 	WHERE [AttributeId] = @OrganizationWebSiteId
-	AND [Value] != 'http://localhost:6229/'
+	AND [Value] != @localDevRootUrl
 END
 ELSE
 BEGIN
@@ -28,7 +32,7 @@ BEGIN
            (1
            ,@OrganizationWebSiteId
            ,null
-           ,'http://localhost:6229/'
+           ,@localDevRootUrl
            ,'E257083E-B0C2-479B-880B-E8702A6E25A3'
            ,GetDate()
            ,GetDate()
@@ -43,9 +47,9 @@ IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @PublicAppl
 BEGIN
 	UPDATE [AttributeValue]
 	SET
-		[Value] = 'http://localhost:6229/'
+		[Value] = @localDevRootUrl
 	WHERE [AttributeId] = @PublicApplicationRootId
-	AND [Value] != 'http://localhost:6229/'
+	AND [Value] != @localDevRootUrl
 END
 ELSE
 BEGIN
@@ -63,7 +67,7 @@ BEGIN
            (1
            ,@PublicApplicationRootId
            ,null
-           ,'http://localhost:6229/'
+           ,@localDevRootUrl
            ,'A416AD46-028C-4EEC-A23D-FB2093AEB1A8'
            ,GetDate()
            ,GetDate()
@@ -78,9 +82,9 @@ IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @InternalAp
 BEGIN
 	UPDATE [AttributeValue]
 	SET
-		[Value] = 'http://localhost:6229/'
+		[Value] = @localDevRootUrl
 	WHERE [AttributeId] = @InternalApplicationRootId
-	AND [Value] != 'http://localhost:6229/'
+	AND [Value] != @localDevRootUrl
 END
 ELSE
 BEGIN
@@ -98,7 +102,7 @@ BEGIN
            (1
            ,@InternalApplicationRootId
            ,null
-           ,'http://localhost:6229/'
+           ,@localDevRootUrl
            ,'06E0E3FC-9A1C-43AF-8B3B-C760F9951012'
            ,GetDate()
            ,GetDate()

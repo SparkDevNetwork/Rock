@@ -83,7 +83,7 @@ namespace Rock.Web.Cache
         /// <param name="content">The content.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead", true )]
+        [Obsolete( "Use Get instead", true )]
         public static LavaTemplateCache Read( string content )
         {
             return Get( content );

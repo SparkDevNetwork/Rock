@@ -19,12 +19,12 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     /// <summary>
     /// Connection Request Service
     /// </summary>
@@ -454,8 +454,7 @@ namespace Rock.Model
                     (
                         cr.FollowupDate.HasValue &&
                         cr.FollowupDate.Value < midnight
-                    )
-                );
+                    ) );
             }
 
             // Filter last activity
@@ -597,7 +596,15 @@ namespace Rock.Model
                 viewModel.IsUnassigned
             };
 
-            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            }
+            else
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+            }
+
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", connectionType.DaysUntilRequestIdle ) );
             return template.ResolveMergeFields( mergeFields );
         }
@@ -846,11 +853,13 @@ namespace Rock.Model
             {
                 return _statusHighlightColor.IsNullOrWhiteSpace() ? ConnectionStatus.DefaultHighlightColor : _statusHighlightColor;
             }
+
             set
             {
                 _statusHighlightColor = value;
             }
         }
+
         private string _statusHighlightColor = null;
 
         /// <summary>
@@ -1009,9 +1018,10 @@ namespace Rock.Model
             {
                 if ( !LastActivityTypeName.IsNullOrWhiteSpace() && LastActivityDate.HasValue )
                 {
-                    return string.Format( "{0} (<span class='small'>{1}</small>)",
-                            LastActivityTypeName,
-                            LastActivityDate.ToRelativeDateString() );
+                    return string.Format(
+                        "{0} (<span class='small'>{1}</small>)",
+                        LastActivityTypeName,
+                        LastActivityDate.ToRelativeDateString() );
                 }
 
                 return string.Empty;
@@ -1047,9 +1057,15 @@ namespace Rock.Model
         {
             get
             {
-                return PersonPhotoId.HasValue ?
-                    string.Format( "/GetImage.ashx?id={0}", PersonPhotoId.Value ) :
-                    "/Assets/Images/person-no-photo-unknown.svg";
+                if ( PersonPhotoId.HasValue )
+                {
+                    return string.Format( "/GetImage.ashx?id={0}", PersonPhotoId.Value );
+                }
+                else
+                {
+                    Person person = new PersonService( new RockContext() ).Get( PersonId );
+                    return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                }
             }
         }
 
@@ -1060,9 +1076,22 @@ namespace Rock.Model
         {
             get
             {
-                return ConnectorPhotoId.HasValue ?
-                    string.Format( "/GetImage.ashx?id={0}", ConnectorPhotoId.Value ) :
-                    "/Assets/Images/person-no-photo-unknown.svg";
+                if ( ConnectorPhotoId.HasValue )
+                {
+                    return string.Format( "/GetImage.ashx?id={0}", ConnectorPhotoId.Value );
+                }
+                else
+                {
+                    if ( ConnectorPersonId.HasValue )
+                    {
+                        Person person = new PersonService( new RockContext() ).Get( ConnectorPersonId.Value );
+                        return Person.GetPersonPhotoUrl( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue?.Guid, person.AgeClassification );
+                    }
+                    else
+                    {
+                        return "/Assets/Images/person-no-photo-unknown.svg";
+                    }
+                }
             }
         }
 
@@ -1078,7 +1107,8 @@ namespace Rock.Model
                     return string.Empty;
                 }
 
-                return string.Format( @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
+                return string.Format(
+                    @"<span class=""badge badge-info font-weight-normal"" title=""{0}"">{1}</span>",
                     CampusName,
                     CampusCode );
             }

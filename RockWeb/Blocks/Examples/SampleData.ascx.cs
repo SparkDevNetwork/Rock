@@ -60,10 +60,20 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
+        private IHubContext _hubContext = null;
+
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
         /// </summary>
-        private IHubContext _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
+        private IHubContext GetHubContext()
+        {
+            if ( _hubContext == null )
+            {
+                _hubContext = GlobalHost.ConnectionManager.GetHubContext<RockMessageHub>();
+            }
+
+            return _hubContext;
+        }
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -325,7 +335,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
                     {
-                        _hubContext.Clients.All.showLog( );
+                        GetHubContext().Clients.All.showLog( );
                     }
 
                     ProcessXml( saveFile );
@@ -345,7 +355,11 @@ namespace RockWeb.Blocks.Examples
             }
             catch ( Exception ex )
             {
-                _hubContext.Clients.All.showLog();
+                if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+                {
+                    GetHubContext().Clients.All.showLog();
+                }
+
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
@@ -533,17 +547,17 @@ namespace RockWeb.Blocks.Examples
                     _stopwatch.Start();
                     AppendFormat( "00:00.00 started <br/>" );
 
-                // Delete this stuff that might have people attached to it
-                DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
+                    // Delete this stuff that might have people attached to it
+                    DeleteRegistrationTemplates( elemRegistrationTemplates, rockContext );
 
-                // Now we'll clean up by deleting any previously created data such as
-                // families, addresses, people, photos, attendance data, etc.
-                DeleteExistingGroups( elemGroups, rockContext );
-                DeleteExistingFamilyData( elemFamilies, rockContext );
+                    // Now we'll clean up by deleting any previously created data such as
+                    // families, addresses, people, photos, attendance data, etc.
+                    DeleteExistingGroups( elemGroups, rockContext );
+                    DeleteExistingFamilyData( elemFamilies, rockContext );
 
-                //rockContext.ChangeTracker.DetectChanges();
-                //rockContext.SaveChanges( disablePrePostProcessing: true );
-                LogElapsed( "data deleted" );
+                    //rockContext.ChangeTracker.DetectChanges();
+                    //rockContext.SaveChanges( disablePrePostProcessing: true );
+                    LogElapsed( "data deleted" );
 
                 } );
 
@@ -602,10 +616,24 @@ namespace RockWeb.Blocks.Examples
                     AddPeoplesPreviousNames( elemFamilies, rockContext );
                     rockContext.SaveChanges( disablePrePostProcessing: true );
                     LogElapsed( "previous names added" );
-
-                    // Add Person Meta-phone/Sounds-like stuff
-                    AddMetaphone();
                 } );
+
+                // Add Person Meta-phone/Sounds-like stuff
+                AddMetaphone();
+
+                // since some PostSaveChanges was disabled, call these cleanup tasks
+                using ( var personRockContext = new Rock.Data.RockContext() )
+                {
+                    // these should all be pretty quick, but just in case
+                    personRockContext.Database.CommandTimeout = 180;
+                    PersonService.UpdatePrimaryFamilyAll( personRockContext );
+                    PersonService.UpdateGivingLeaderIdAll( personRockContext );
+                    PersonService.UpdateGivingIdAll( personRockContext );
+                    PersonService.UpdatePersonAgeClassificationAll( rockContext );
+                    PersonService.UpdateBirthDateAll( personRockContext );
+
+                    DbService.ExecuteCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
+                }
 
                 // done.
                 LogElapsed( "done" );
@@ -646,9 +674,12 @@ namespace RockWeb.Blocks.Examples
         /// <param name="args"></param>
         private void AppendFormat( string format, params Object[] args)
         {
-            var x = string.Format( format, args );
-            _sb.Append( x );
-            _hubContext.Clients.All.receiveNotification( "sampleDataImport", x );
+            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
+            {
+                var x = string.Format( format, args );
+                _sb.Append( x );
+                GetHubContext().Clients.All.receiveNotification( "sampleDataImport", x );
+            }
         }
 
         /// <summary>
@@ -1561,6 +1592,10 @@ namespace RockWeb.Blocks.Examples
                 foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
                 {
                     attendance.PersonAliasId = aliasKeyValue.Value;
+
+                    // make sure the attendance has a unique guid
+                    attendance.Guid = Guid.NewGuid();
+
                     attendanceService.Add( attendance );
                 }
             }

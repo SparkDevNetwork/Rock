@@ -243,6 +243,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenFieldWithClass _hfItemId;
         private HiddenFieldWithClass _hfInitialItemParentIds;
+        private HiddenFieldWithClass _hfExpandedCategoryIds;
         private HiddenFieldWithClass _hfItemName;
         private HiddenFieldWithClass _hfItemRestUrlExtraParams;
         private HtmlAnchor _btnSelect;
@@ -394,7 +395,9 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the initial item parent ids.
+        /// Gets or sets the initial item parent ids.  This should be a comma delimited list of ids of parents of
+        /// selected items so that the tree view can expand them.  This should not be used for categories (only parent
+        /// items of the same type, for example groups).
         /// </summary>
         /// <value>
         /// The initial item parent ids.
@@ -416,6 +419,34 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfInitialItemParentIds.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the expanded category ids.  This should be a comma delimited list of ids of categories that
+        /// contain selected items so that the tree view can expand them.  For example, if a selected metric in a metric
+        /// picker is underneath a category, this should contain the category id.
+        /// </summary>
+        /// <value>
+        /// The expanded category ids.
+        /// </value>
+        public virtual string ExpandedCategoryIds
+        {
+            get
+            {
+                EnsureChildControls();
+                if ( string.IsNullOrWhiteSpace( _hfExpandedCategoryIds.Value ) )
+                {
+                    _hfExpandedCategoryIds.Value = Constants.None.IdValue;
+                }
+
+                return _hfExpandedCategoryIds.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfExpandedCategoryIds.Value = value;
             }
         }
 
@@ -585,7 +616,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The category prefix used when <see cref="UseCategorySelection"/> is true.
         /// </summary>
-        private const string CategoryPrefix = "C";
+        public const string CategoryPrefix = "C";
 
         #endregion
 
@@ -647,6 +678,7 @@ $@"Rock.controls.itemPicker.initialize({{
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
     expandedIds: [{this.InitialItemParentIds}],
+    expandedCategoryIds: [{this.ExpandedCategoryIds}],
     showSelectChildren: {this.ShowSelectChildren.ToString().ToLower()}
 }});
 ";
@@ -670,6 +702,10 @@ $@"Rock.controls.itemPicker.initialize({{
             _hfInitialItemParentIds = new HiddenFieldWithClass();
             _hfInitialItemParentIds.ID = this.ID + "_hfInitialItemParentIds";
             _hfInitialItemParentIds.CssClass = "js-initial-item-parent-ids-value";
+
+            _hfExpandedCategoryIds = new HiddenFieldWithClass();
+            _hfExpandedCategoryIds.ID = this.ID + "_hfExpandedCategoryIds";
+            _hfExpandedCategoryIds.CssClass = "js-expanded-category-ids";
 
             _hfItemName = new HiddenFieldWithClass();
             _hfItemName.ID = this.ID + "_hfItemName";
@@ -711,6 +747,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
             Controls.Add( _hfItemId );
             Controls.Add( _hfInitialItemParentIds );
+            Controls.Add( _hfExpandedCategoryIds );
             Controls.Add( _hfItemName );
             Controls.Add( _hfItemRestUrlExtraParams );
             Controls.Add( _btnSelect );
@@ -755,6 +792,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
                 _hfItemId.RenderControl( writer );
                 _hfInitialItemParentIds.RenderControl( writer );
+                _hfExpandedCategoryIds.RenderControl( writer );
                 _hfItemName.RenderControl( writer );
                 _hfItemRestUrlExtraParams.RenderControl( writer );
 

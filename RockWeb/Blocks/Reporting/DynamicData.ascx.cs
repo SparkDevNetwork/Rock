@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -26,7 +27,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -475,25 +478,53 @@ namespace RockWeb.Blocks.Reporting
                             return;
                         }
 
-                        foreach ( DataTable dataTable in dataSet.Tables )
+                        if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                         {
-                            var dropRows = new List<DataRowDrop>();
-                            foreach ( DataRow row in dataTable.Rows )
+                            foreach ( DataTable dataTable in dataSet.Tables )
                             {
-                                dropRows.Add( new DataRowDrop( row ) );
-                            }
+                                var lavaRows = new List<DataRowDrop>();
+                                foreach ( DataRow row in dataTable.Rows )
+                                {
+                                    lavaRows.Add( new DataRowDrop( row ) );
+                                }
 
-                            if ( dataSet.Tables.Count > 1 )
-                            {
-                                var tableField = new Dictionary<string, object>();
-                                tableField.Add( "rows", dropRows );
-                                mergeFields.Add( "table" + i.ToString(), tableField );
+                                if ( dataSet.Tables.Count > 1 )
+                                {
+                                    var tableField = new Dictionary<string, object>();
+                                    tableField.Add( "rows", lavaRows );
+                                    mergeFields.Add( "table" + i.ToString(), tableField );
+                                }
+                                else
+                                {
+                                    mergeFields.Add( "rows", lavaRows );
+                                }
+
+                                i++;
                             }
-                            else
+                        }
+                        else
+                        {
+                            foreach ( DataTable dataTable in dataSet.Tables )
                             {
-                                mergeFields.Add( "rows", dropRows );
+                                var lavaRows = new List<DataRowLavaData>();
+                                foreach ( DataRow row in dataTable.Rows )
+                                {
+                                    lavaRows.Add( new DataRowLavaData( row ) );
+                                }
+
+                                if ( dataSet.Tables.Count > 1 )
+                                {
+                                    var tableField = new Dictionary<string, object>();
+                                    tableField.Add( "rows", lavaRows );
+                                    mergeFields.Add( "table" + i.ToString(), tableField );
+                                }
+                                else
+                                {
+                                    mergeFields.Add( "rows", lavaRows );
+                                }
+
+                                i++;
                             }
-                            i++;
                         }
                     }
 
@@ -966,6 +997,30 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
+        private class DataRowLavaData : LavaDataObject
+        {
+            private readonly DataRow _dataRow;
+
+            public DataRowLavaData( DataRow dataRow )
+            {
+                _dataRow = dataRow;
+            }
+
+            protected override bool OnTryGetValue( string key, out object result )
+            {
+                if ( _dataRow.Table.Columns.Contains( key ) )
+                {
+                    result = _dataRow[key];
+                    return true;
+                }
+
+                result = null;
+                return false;
+            }
+        }
+
+        #region RockLiquid Lava implementation
+
         /// <summary>
         ///
         /// </summary>
@@ -988,5 +1043,7 @@ namespace RockWeb.Blocks.Reporting
                 return null;
             }
         }
+
+        #endregion
     }
 }

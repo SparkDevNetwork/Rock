@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -120,12 +121,12 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the channels.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannel">channels</see>.
         /// </summary>
         /// <value>
         /// The channels.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannel> Channels { get; set; }
 
         /// <summary>
