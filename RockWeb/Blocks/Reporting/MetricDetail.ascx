@@ -82,7 +82,7 @@
                                 </asp:Panel>
 
                                 <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                    <div class="row">
+                                      <div class="row">
                                         <div class="col-md-6"><Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" /></div>
                                         <div class="col-md-6"><Rock:RockCheckBox ID="cbAutoPartionPrimaryCampus" runat="server" Label="Auto Partition on Primary Campus" Visible="false" Help="Enabling this feature will auto partition the individuals in the data view based on their primary campus. This must be selected for the campus partion to work." /></div>
                                     </div>
@@ -126,8 +126,14 @@
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
-                    <Rock:HighlightLabel ID="lMetricChartSummary" runat="server" Text="Summary of Values" />
-                    <Rock:LineChart ID="lcMetricsChart" runat="server" />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
+                            <div id="pnlActivityChart" runat="server" class="chart-banner">
+                                <canvas id="chartCanvas" runat="server" />
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-md-6">
