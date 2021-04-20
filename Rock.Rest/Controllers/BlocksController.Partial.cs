@@ -285,6 +285,36 @@ namespace Rock.Rest.Controllers
                 var actionParameters = new Dictionary<string, JToken>();
 
                 //
+                // Parse any posted parameter data.
+                //
+                if ( parameters != null )
+                {
+                    try
+                    {
+                        foreach ( var kvp in parameters.ToObject<Dictionary<string, JToken>>() )
+                        {
+                            if ( kvp.Key == "__context" )
+                            {
+                                var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+
+                                foreach ( var pageParam in pageParameters )
+                                {
+                                    rockBlock.RequestContext.OriginalPageParameters[pageParam.Key] = pageParam.Value;
+                                }
+                            }
+                            else
+                            {
+                                actionParameters.AddOrReplace( kvp.Key, kvp.Value );
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        return BadRequest( "Invalid parameter data." );
+                    }
+                }
+
+                //
                 // Parse any query string parameter data.
                 //
                 foreach ( var q in Request.GetQueryNameValuePairs() )
@@ -447,9 +477,15 @@ namespace Rock.Rest.Controllers
             {
                 return ( IHttpActionResult ) result;
             }
-            else if ( result is Rock.Blocks.BlockActionResult actionResult )
+            else if ( result is BlockActionResult actionResult )
             {
-                if ( actionResult.Error != null )
+                var isErrorStatusCode = ( int ) actionResult.StatusCode >= 400;
+
+                if ( isErrorStatusCode && actionResult.Content is string )
+                {
+                    return Content( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ) );
+                }
+                else if ( actionResult.Error != null )
                 {
                     return Content( actionResult.StatusCode, new HttpError( actionResult.Error ) );
                 }

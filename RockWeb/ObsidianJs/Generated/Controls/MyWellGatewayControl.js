@@ -69,13 +69,42 @@ System.register(["vue", "../Elements/LoadingIndicator", "./GatewayControl"], fun
                 data: function () {
                     return {
                         tokenizer: null,
-                        token: '',
                         loading: true
                     };
                 },
                 methods: {
+                    mountControl: function () {
+                        return __awaiter(this, void 0, void 0, function () {
+                            var globalVarName, script, sleep, settings;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        globalVarName = 'Tokenizer';
+                                        if (!!window[globalVarName]) return [3 /*break*/, 3];
+                                        script = document.createElement('script');
+                                        script.type = 'text/javascript';
+                                        script.src = 'https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js'; // TODO - this should come from the gateway
+                                        document.getElementsByTagName('head')[0].appendChild(script);
+                                        sleep = function () { return new Promise(function (resolve) { return setTimeout(resolve, 20); }); };
+                                        _a.label = 1;
+                                    case 1:
+                                        if (!!window[globalVarName]) return [3 /*break*/, 3];
+                                        return [4 /*yield*/, sleep()];
+                                    case 2:
+                                        _a.sent();
+                                        return [3 /*break*/, 1];
+                                    case 3:
+                                        settings = this.getTokenizerSettings();
+                                        this.tokenizer = new window[globalVarName](settings);
+                                        this.tokenizer.create();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
+                    },
                     handleResponse: function (response) {
                         var _a;
+                        this.loading = false;
                         if (!(response === null || response === void 0 ? void 0 : response.status) || response.status === 'error') {
                             var errorResponse = response || null;
                             this.$emit('error', (errorResponse === null || errorResponse === void 0 ? void 0 : errorResponse.message) || 'There was an unexpected problem communicating with the gateway.');
@@ -119,21 +148,14 @@ System.register(["vue", "../Elements/LoadingIndicator", "./GatewayControl"], fun
                                 console.error('MyWell response does not have the expected token:', JSON.stringify(response));
                                 return;
                             }
-                            this.$emit('success', successResponse.token);
+                            this.$emit('successRaw', successResponse.token);
                             return;
                         }
                         this.$emit('error', 'There was an unexpected problem communicating with the gateway.');
                         console.error('MyWell response has invalid status:', JSON.stringify(response));
-                    }
-                },
-                computed: {
-                    publicApiKey: function () {
-                        return this.settings.PublicApiKey;
                     },
-                    gatewayUrl: function () {
-                        return this.settings.GatewayUrl;
-                    },
-                    tokenizerSettings: function () {
+                    /** Generates the tokenizer settings */
+                    getTokenizerSettings: function () {
                         var _this = this;
                         return {
                             onLoad: function () { _this.loading = false; },
@@ -192,42 +214,35 @@ System.register(["vue", "../Elements/LoadingIndicator", "./GatewayControl"], fun
                         };
                     }
                 },
+                computed: {
+                    publicApiKey: function () {
+                        return this.settings.PublicApiKey;
+                    },
+                    gatewayUrl: function () {
+                        return this.settings.GatewayUrl;
+                    }
+                },
                 watch: {
                     submit: function () {
-                        if (!this.token && this.submit && this.tokenizer) {
+                        if (this.submit && this.tokenizer) {
+                            this.loading = true;
                             this.tokenizer.submit();
                         }
                     }
                 },
                 mounted: function () {
                     return __awaiter(this, void 0, void 0, function () {
-                        var globalVarName, script, sleep;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0:
-                                    globalVarName = 'Tokenizer';
-                                    if (!!window[globalVarName]) return [3 /*break*/, 3];
-                                    script = document.createElement('script');
-                                    script.type = 'text/javascript';
-                                    script.src = 'https://sandbox.gotnpgateway.com/tokenizer/tokenizer.js'; // TODO - this should come from the gateway
-                                    document.getElementsByTagName('head')[0].appendChild(script);
-                                    sleep = function () { return new Promise(function (resolve) { return setTimeout(resolve, 20); }); };
-                                    _a.label = 1;
+                                case 0: return [4 /*yield*/, this.mountControl()];
                                 case 1:
-                                    if (!!window[globalVarName]) return [3 /*break*/, 3];
-                                    return [4 /*yield*/, sleep()];
-                                case 2:
                                     _a.sent();
-                                    return [3 /*break*/, 1];
-                                case 3:
-                                    this.tokenizer = new window[globalVarName](this.tokenizerSettings);
-                                    this.tokenizer.create();
                                     return [2 /*return*/];
                             }
                         });
                     });
                 },
-                template: "\n<div v-if=\"!token\">\n    <div ref=\"container\" style=\"min-height: 49px;\"></div>\n    <div v-if=\"loading\" class=\"text-center\">\n        <LoadingIndicator />\n    </div>\n</div>"
+                template: "\n<div>\n    <div ref=\"container\" style=\"min-height: 49px;\"></div>\n    <div v-if=\"loading\" class=\"text-center\">\n        <LoadingIndicator />\n    </div>\n</div>"
             }));
         }
     };

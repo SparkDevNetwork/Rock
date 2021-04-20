@@ -42,6 +42,5 @@ export default defineComponent( {
     template: `
 <div>
     <div v-html="messageHtml"></div>
-    <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>
 </div>`
 } );

@@ -176,6 +176,14 @@ export default defineComponent( {
         {
             return this.registrationEntryState.ViewModel;
         },
+        mustLogin (): boolean
+        {
+            return !this.$store.state.currentPerson && this.viewModel.IsUnauthorized;
+        },
+        isUnauthorized (): boolean
+        {
+            return this.viewModel.IsUnauthorized;
+        },
         currentStep (): string
         {
             return this.registrationEntryState.CurrentStep;
@@ -340,6 +348,14 @@ export default defineComponent( {
     <Alert v-if="notFound" alertType="warning">
         <strong>Sorry</strong>
         <p>The selected registration could not be found or is no longer active.</p>
+    </Alert>
+    <Alert v-else-if="mustLogin" alertType="warning">
+        <strong>Please log in</strong>
+        <p>You must be logged in to access this registration.</p>
+    </Alert>
+    <Alert v-else-if="isUnauthorized" alertType="warning">
+        <strong>Sorry</strong>
+        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
     </Alert>
     <template v-else>
         <template v-if="currentStep !== steps.intro">

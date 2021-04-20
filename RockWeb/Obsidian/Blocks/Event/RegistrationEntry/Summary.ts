@@ -497,6 +497,13 @@ export default defineComponent( {
             }
         },
 
+        /** The gateway was requested by the user to reset. The token should be cleared */
+        async onGatewayControlReset ()
+        {
+            this.registrationEntryState.GatewayToken = '';
+            this.doGatewayControlSubmit = false;
+        },
+
         /**
          * The gateway indicated an error
          * @param message
@@ -711,6 +718,7 @@ export default defineComponent( {
                     :gatewayControlModel="gatewayControlModel"
                     :submit="doGatewayControlSubmit"
                     @success="onGatewayControlSuccess"
+                    @reset="onGatewayControlReset"
                     @error="onGatewayControlError"
                     @validation="onGatewayControlValidation" />
             </div>

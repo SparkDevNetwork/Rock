@@ -108,7 +108,8 @@ export interface RegistrationEntryBlockViewModel
     InstanceName: string,
     AmountDueToday: number | null,
     InitialAmountToPay: number | null,
-    Session: RegistrationEntryBlockSession | null
+    Session: RegistrationEntryBlockSession | null,
+    IsUnauthorized: boolean
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

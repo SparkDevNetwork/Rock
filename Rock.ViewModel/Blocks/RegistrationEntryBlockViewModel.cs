@@ -36,6 +36,14 @@ namespace Rock.ViewModel.Blocks
         public RegistrationEntryBlockSession Session { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is unauthorized.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is unauthorized; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsUnauthorized { get; set; }
+
+        /// <summary>
         /// Gets or sets the instructions HTML.
         /// </summary>
         /// <value>

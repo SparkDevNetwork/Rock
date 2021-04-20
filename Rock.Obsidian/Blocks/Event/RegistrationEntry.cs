@@ -172,7 +172,8 @@ namespace Rock.Obsidian.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
-                return GetViewModel( rockContext );
+                var viewModel = GetViewModel( rockContext );
+                return viewModel;
             }
         }
 
@@ -1684,7 +1685,9 @@ namespace Rock.Obsidian.Blocks.Event
             };
 
             // If the registration is existing, then add the args that describe it to the view model
+            var shouldHaveSession = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
             viewModel.Session = GetRegistrationEntryBlockSession( rockContext, registrationTemplate, registrationInstance );
+            viewModel.IsUnauthorized = shouldHaveSession && viewModel.Session == null;
 
             return viewModel;
         }

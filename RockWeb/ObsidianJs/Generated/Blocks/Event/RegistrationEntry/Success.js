@@ -43,7 +43,7 @@ System.register(["vue"], function (exports_1, context_1) {
                         return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.MessageHtml) || "You have successfully completed this " + this.registrationTerm;
                     }
                 },
-                template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n    <pre>{{JSON.stringify(registrationEntryState, null, 2)}}</pre>\n</div>"
+                template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n</div>"
             }));
         }
     };

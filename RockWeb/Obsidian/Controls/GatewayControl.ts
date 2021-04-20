@@ -15,6 +15,7 @@
 // </copyright>
 //
 import { defineComponent, PropType } from 'vue';
+import JavaScriptAnchor from '../Elements/JavaScriptAnchor';
 import ComponentFromUrl from './ComponentFromUrl';
 
 export interface GatewayControlModel {
@@ -31,13 +32,19 @@ export enum ValidationField {
 export default defineComponent({
     name: 'GatewayControl',
     components: {
-        ComponentFromUrl
+        ComponentFromUrl,
+        JavaScriptAnchor
     },
     props: {
         gatewayControlModel: {
             type: Object as PropType<GatewayControlModel>,
             required: true
         }
+    },
+    data() {
+        return {
+            isSuccess: false
+        };
     },
     computed: {
         url(): string {
@@ -48,6 +55,30 @@ export default defineComponent({
         }
     },
     methods: {
+        /** Reset the component */
+        reset ()
+        {
+            // Remove the component from the DOM
+            this.isSuccess = true;
+
+            // Add the component back to the DOM on the next DOM update cycle
+            this.$nextTick( () =>
+            {
+                this.isSuccess = false;
+                this.$emit( 'reset' );
+            } );
+        },
+
+        /**
+         * Intercept the success event, so that local state can reflect it.
+         * @param token
+         */
+        async onSuccess ( token: string )
+        {
+            this.isSuccess = true;
+            this.$emit( 'success', token );
+        },
+
         /**
          * This method transforms the enum values into human friendly validation messages.
          * @param validationFields
@@ -80,5 +111,13 @@ export default defineComponent({
         }
     },
     template: `
-<ComponentFromUrl :url="url" :settings="settings" @validationRaw="transformValidation" />`
+<ComponentFromUrl v-if="!isSuccess" :url="url" :settings="settings" @validationRaw="transformValidation" @successRaw="onSuccess" />
+<div v-else class="text-center">
+    Your payment is ready.
+    <small>
+        <JavaScriptAnchor @click="reset">
+            Reset Payment
+        </JavaScriptAnchor>
+    </small>
+</div>`
 });
