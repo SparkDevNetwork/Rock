@@ -30,7 +30,7 @@ namespace Rock.Net
     /// NOTE: If you are developing a new app, use RestSharp instead of this class
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
-    [Obsolete( " Use RestSharp.RestClient instead. You might also want to use the RestSharp.NewtonSoft.Json nuget package too." )]
+    //[Obsolete( " Use RestSharp.RestClient instead. You might also want to use the RestSharp.NewtonSoft.Json nuget package too." )]
     public class RockRestClient : WebClient
     {
         /// <summary>
