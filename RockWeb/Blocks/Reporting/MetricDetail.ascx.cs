@@ -1201,7 +1201,7 @@ The Lava can include Lava merge fields:";
             {
                 SizeToFitContainerWidth = true,
                 MaintainAspectRatio = false,
-                LineTension = 0.4m
+                LineTension = 0m
             } );
 
             string script = string.Format(
@@ -1232,63 +1232,31 @@ The Lava can include Lava merge fields:";
             }
 
             List<MetricValue> metricValues = GetMetricValues( metric, startDate, endDate );
-            IEnumerable<ChartDatasetInfo> dataPoints;
 
             // Initialize a new Chart Factory.
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
-            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
-            {
-                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-
-                dataPoints = metricValues
-                    .Where( a => a.YValue.HasValue )
-                    .GroupBy( x => new
-                    {
-                        DateKey = x.MetricValueDateKey.Value / 100,
-                        MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
-                    } )
-                    .Select( x => new
-                    {
-                        x.Key,
-                        Value = x.Select( a => a.YValue.Value )
-                    } )
-                    .ToList()
-                    .Select( x =>
-                    new ChartDatasetInfo
-                    {
-                        MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
-                        DateTime = ( x.Key.DateKey * 100 + 1 ).GetDateKeyDate(), // +1 to get first day of month
-                        Value = x.Value.Sum()
-                    } );
-            }
-            else
-            {
-                factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
-                dataPoints = metricValues
-                   .Where( a => a.YValue.HasValue )
-                   .GroupBy( x => new
-                   {
-                       DateKey = x.MetricValueDateKey.Value,
-                       MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
-                   } )
-                   .Select( x => new
-                   {
-                       x.Key,
-                       Value = x.Select( a => a.YValue.Value )
-                   } )
-                   .ToList()
-                   .Select( x => new ChartDatasetInfo
-                   {
-                       MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
-                       DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
+            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto;
+            var dataPoints = metricValues
+               .Where( a => a.YValue.HasValue )
+               .GroupBy( x => new
+               {
+                   DateKey = x.MetricValueDateKey.Value,
+                   MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
+               } )
+               .Select( x => new
+               {
+                   x.Key,
+                   Value = x.Select( a => a.YValue.Value )
+               } )
+               .ToList()
+               .Select( x => new ChartDatasetInfo
+               {
+                   MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
+                   DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                        Value = x.Value.Sum()
-                   } );
-            }
+               } );
 
-            var groupByDay = factory.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day;
-            factory.StartDateTime = startDate;
-            factory.EndDateTime = endDate;
             factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
 
             var dataSeriesDatasets = dataPoints
@@ -1322,9 +1290,8 @@ The Lava can include Lava merge fields:";
                 foreach ( var dataseriesName in seriesNameKeyValue.Keys )
                 {
                     var dataset = new ChartJsTimeSeriesDataset();
-
-                    dataset.Name = seriesNameKeyValue[dataseriesName];
-
+                    var datasetName = seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value";
+                    dataset.Name = datasetName;
                     dataset.DataPoints = dataPoints
                                             .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
                                             .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )

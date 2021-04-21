@@ -452,7 +452,7 @@ namespace Rock.Chart
             }
 
             // Allow Chart.js to scale the X-axis to best fit.
-            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { displayFormats = new { month = DateFormatStringMonthYear }, tooltipFormat = DateFormatStringMonthYear, minUnit = "month", min = minDate, max = maxDate } } };
+            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { tooltipFormat = "MM/DD/YYYY" }, min = minDate, max = maxDate } };
 
             return optionsXaxes;
         }
