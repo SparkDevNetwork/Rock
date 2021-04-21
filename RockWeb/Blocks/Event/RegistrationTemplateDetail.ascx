@@ -136,9 +136,12 @@
 
                         <div class="well">
                             <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-sm-6">
                                     <Rock:Toggle ID="tglSetCostOnTemplate" runat="server" Label="Set Cost On" OnText="Template" OffText="Instance"
                                         ActiveButtonCssClass="btn-info" OnCheckedChanged="tglSetCost_CheckedChanged" ButtonSizeCssClass="btn-xs" />
+                                </div>
+                                <div class="col-sm-6">
+                                    <Rock:Switch ID="sUsePushPay" runat="server" Visible="false" Label="Use Pushpay for Payment" OnCheckedChanged="sUsePushPay_CheckedChanged" AutoPostBack="true" />
                                 </div>
                             </div>
                             <div class="row">
@@ -151,9 +154,11 @@
                                         Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                        Help="The financial gateway to use for processing registration payments." ShowAll="true" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
-                                    <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
+                                    <asp:Panel ID="pnlGatewayPanel" runat="server">
+                                        <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
+                                            Help="The financial gateway to use for processing registration payments." ShowAll="true" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
+                                        <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
+                                    </asp:Panel>
                                 </div>
                             </div>
                         </div>

@@ -212,6 +212,57 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
+        /// Persists the specified arguments.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult Persist( RegistrationEntryBlockArgs args )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, args, out var errorResult );
+
+                if ( errorResult != null )
+                {
+                    return errorResult;
+                }
+
+                var sessionData = new RegistrationEntryBlockSession {
+                    AmountToPayNow = args.AmountToPayNow,
+                    DiscountAmount = context.Discount?.RegistrationTemplateDiscount?.DiscountAmount ?? 0,
+                    DiscountCode = context.Discount?.RegistrationTemplateDiscount?.Code,
+                    DiscountPercentage = context.Discount?.RegistrationTemplateDiscount?.DiscountPercentage ?? 0,
+                    FieldValues = args.FieldValues,
+                    GatewayToken = args.GatewayToken,
+                    PreviouslyPaid = 0,
+                    Registrants = args.Registrants,
+                    Registrar = args.Registrar,
+                    RegistrationGuid = context.Registration?.Guid
+                };
+
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+
+                var registrationSession = new RegistrationSession
+                {
+                    RegistrationInstanceId = context.RegistrationInstance.Id,
+                    RegistrationData = sessionData.ToJson(),
+                    SessionStartDateTime = RockDateTime.Now,
+                    ExpirationDateTime = RockDateTime.Now.AddMinutes( 30 ),
+                    RegistrationId = context.Registration?.Id,
+                    SessionStatus = SessionStatus.PaymentPending
+                };
+
+                registrationSessionService.Add( registrationSession );
+                rockContext.SaveChanges();
+
+                return new BlockActionResult( System.Net.HttpStatusCode.Created, registrationSession.Guid );
+            }
+        }
+
+        /// <summary>
         /// Submits the registration.
         /// </summary>
         /// <param name="args">The arguments.</param>
@@ -221,136 +272,76 @@ namespace Rock.Obsidian.Blocks.Event
         {
             var currentPerson = GetCurrentPerson();
 
-            // Basic check on the args to see that they appear valid
-            if ( args == null )
-            {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The args cannot be null" );
-            }
-
-            if ( args.AmountToPayNow < 0 )
-            {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The amount to pay now cannot be less than zero" );
-            }
-
-            if ( args.Registrants?.Any() != true )
-            {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one registrant is required" );
-            }
-
-            if ( args.Registrar == null )
-            {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "A registrar is required" );
-            }
-
             using ( var rockContext = new RockContext() )
             {
-                // Load the instance and template
-                var includes = "RegistrationTemplate.Forms.Fields, RegistrationTemplate.FinancialGateway, Account";
-                var registrationInstance = GetRegistrationInstanceQuery( rockContext, includes ).FirstOrDefault();
-                var registrationTemplate = registrationInstance?.RegistrationTemplate;
+                var context = GetContext( rockContext, args, out var errorResult );
 
-                if ( registrationTemplate == null )
+                if ( errorResult != null )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration template or instance was not found" );
+                    return errorResult;
                 }
 
-                // Validate that there are enough spots left for this registration
-                var waitListEnabled = registrationTemplate.WaitListEnabled;
-                var spotsRemaining = registrationInstance.MaxAttendees;
-
-                if ( !waitListEnabled && spotsRemaining < args.Registrants.Count )
-                {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "There are not enough spots left for this many registrants" );
-                }
-
-                // Look up and validate the discount by the code
-                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-                var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstance.Id, args.DiscountCode );
-
-                if ( !args.DiscountCode.IsNullOrWhiteSpace() && discount == null )
-                {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The discount code is not valid" );
-                }
-
-                // Get or create the registration
                 var registrationChanges = new History.HistoryChangeList();
-                var registrationService = new RegistrationService( rockContext );
-                var registration = args.RegistrationGuid.HasValue ? registrationService.Get( args.RegistrationGuid.Value ) : null;
                 Person registrar = null;
-
-                if ( registration == null && args.RegistrationGuid.HasValue )
-                {
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration was not found" );
-                }
-
-                var isNewRegistration = registration == null;
+                var isNewRegistration = context.Registration == null;
 
                 if ( isNewRegistration )
                 {
                     // This is a new registration
-                    registration = new Registration
+                    context.Registration = new Registration
                     {
-                        RegistrationInstanceId = registrationInstance.Id,
+                        RegistrationInstanceId = context.RegistrationInstance.Id,
                         PersonAliasId = currentPerson?.PrimaryAliasId
                     };
 
-                    registrationService.Add( registration );
+                    var registrationService = new RegistrationService( rockContext );
+                    registrationService.Add( context.Registration );
                     registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
                     registrar = currentPerson;
-                }
-                else if ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
-                {
-                    // This existing registration does not belong to this person
-                    return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized, "Your existing registration was not found" );
-                }
-                else if ( registration.RegistrationInstanceId != registrationInstance.Id )
-                {
-                    // This existing registration is not for this instance
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound, "Your existing registration was not found" );
                 }
                 else
                 {
                     // This is an existing registration
-                    registrar = registration.PersonAlias.Person;
+                    registrar = context.Registration.PersonAlias.Person;
                 }
 
                 // Apply the registrar values to the registration record
-                History.EvaluateChange( registrationChanges, "First Name", registration.FirstName, args.Registrar.NickName );
-                registration.FirstName = args.Registrar.NickName;
+                History.EvaluateChange( registrationChanges, "First Name", context.Registration.FirstName, args.Registrar.NickName );
+                context.Registration.FirstName = args.Registrar.NickName;
 
-                History.EvaluateChange( registrationChanges, "Last Name", registration.LastName, args.Registrar.LastName );
-                registration.LastName = args.Registrar.LastName;
+                History.EvaluateChange( registrationChanges, "Last Name", context.Registration.LastName, args.Registrar.LastName );
+                context.Registration.LastName = args.Registrar.LastName;
 
-                History.EvaluateChange( registrationChanges, "Confirmation Email", registration.ConfirmationEmail, args.Registrar.Email );
-                registration.ConfirmationEmail = args.Registrar.Email;
+                History.EvaluateChange( registrationChanges, "Confirmation Email", context.Registration.ConfirmationEmail, args.Registrar.Email );
+                context.Registration.ConfirmationEmail = args.Registrar.Email;
 
-                History.EvaluateChange( registrationChanges, "Discount Code", registration.DiscountCode, args.DiscountCode );
-                registration.DiscountCode = args.DiscountCode;
+                History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, args.DiscountCode );
+                context.Registration.DiscountCode = args.DiscountCode;
 
-                var discountPercentage = discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Percentage", registration.DiscountPercentage, discountPercentage );
-                registration.DiscountPercentage = discountPercentage;
+                var discountPercentage = context.Discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
+                History.EvaluateChange( registrationChanges, "Discount Percentage", context.Registration.DiscountPercentage, discountPercentage );
+                context.Registration.DiscountPercentage = discountPercentage;
 
-                var discountAmount = discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Amount", registration.DiscountAmount, discountAmount );
-                registration.DiscountAmount = discountAmount;
+                var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
+                History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
+                context.Registration.DiscountAmount = discountAmount;
 
                 // If the registrar person record does not exist, find or create that record
                 var personService = new PersonService( rockContext );
 
                 if ( registrar == null )
                 {
-                    registrar = personService.FindPerson( registration.FirstName, registration.LastName, registration.ConfirmationEmail, true );
+                    registrar = personService.FindPerson( context.Registration.FirstName, context.Registration.LastName, context.Registration.ConfirmationEmail, true );
 
                     if ( registrar != null )
                     {
-                        registration.PersonAliasId = registrar.PrimaryAliasId;
+                        context.Registration.PersonAliasId = registrar.PrimaryAliasId;
                     }
                     else
                     {
                         registrar = null;
-                        registration.PersonAlias = null;
-                        registration.PersonAliasId = null;
+                        context.Registration.PersonAlias = null;
+                        context.Registration.PersonAliasId = null;
                     }
                 }
 
@@ -374,15 +365,15 @@ namespace Rock.Obsidian.Blocks.Event
                 int? singleFamilyId = null;
                 var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
-                if ( !registration.PersonAliasId.HasValue )
+                if ( !context.Registration.PersonAliasId.HasValue )
                 {
                     // If a match was not found, create a new person
                     var person = new Person
                     {
-                        FirstName = registration.FirstName,
-                        LastName = registration.LastName,
+                        FirstName = context.Registration.FirstName,
+                        LastName = context.Registration.LastName,
                         IsEmailActive = true,
-                        Email = registration.ConfirmationEmail,
+                        Email = context.Registration.ConfirmationEmail,
                         EmailPreference = EmailPreference.EmailAllowed,
                         RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                         ConnectionStatusValueId = dvcConnectionStatus?.Id
@@ -398,21 +389,21 @@ namespace Rock.Obsidian.Blocks.Event
                         person.RecordStatusValueId = dvcRecordStatus.Id;
                     }
 
-                    registrar = SavePerson( rockContext, registrationTemplate, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                    registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
+                    registrar = SavePerson( rockContext, context.RegistrationTemplate, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                    context.Registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
                     History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
                 }
 
                 // Update the registrar's email if applicable
                 var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
-                if ( forceEmailUpdate && registration.PersonAliasId.HasValue )
+                if ( forceEmailUpdate && context.Registration.PersonAliasId.HasValue )
                 {
-                    var person = personService.Get( registration.PersonAliasId.Value );
+                    var person = personService.Get( context.Registration.PersonAliasId.Value );
 
                     if ( person != null )
                     {
-                        person.Email = registration.ConfirmationEmail;
+                        person.Email = context.Registration.ConfirmationEmail;
                         rockContext.SaveChanges();
                     }
                 }
@@ -460,36 +451,36 @@ namespace Rock.Obsidian.Blocks.Event
                 {
                     group = new GroupService( rockContext ).Get( groupId.Value );
 
-                    if ( group != null && ( !registration.GroupId.HasValue || registration.GroupId.Value != group.Id ) )
+                    if ( group != null && ( !context.Registration.GroupId.HasValue || context.Registration.GroupId.Value != group.Id ) )
                     {
-                        registration.GroupId = group.Id;
+                        context.Registration.GroupId = group.Id;
                         History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
                     }
                 }
 
                 // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
-                registration.IsTemporary = false;
+                context.Registration.IsTemporary = false;
 
                 // Set attribute values on the registration
-                var registrationAttributes = GetRegistrationAttributes( registrationTemplate.Id );
-                registration.LoadAttributes( rockContext );
+                var registrationAttributes = GetRegistrationAttributes( context.RegistrationTemplate.Id );
+                context.Registration.LoadAttributes( rockContext );
 
                 foreach ( var attribute in registrationAttributes )
                 {
                     var value = args.FieldValues.GetValueOrNull( attribute.Guid );
-                    registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
+                    context.Registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
                 }
 
                 // Save the registration ( so we can get an id )
                 rockContext.SaveChanges();
-                registration.SaveAttributeValues( rockContext );
+                context.Registration.SaveAttributeValues( rockContext );
 
                 // Save the history
                 Task.Run( () => HistoryService.SaveChanges(
                     new RockContext(),
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
+                    context.Registration.Id,
                     registrationChanges,
                     true,
                     currentPerson?.PrimaryAliasId ) );
@@ -501,17 +492,14 @@ namespace Rock.Obsidian.Blocks.Event
 
                     foreach ( var registrantInfo in args.Registrants )
                     {
-                        var forceWaitlist = spotsRemaining < 1;
+                        var forceWaitlist = context.SpotsRemaining < 1;
 
                         UpsertRegistrant(
                             rockContext,
-                            registrationTemplate,
-                            registrationInstance,
-                            registration,
+                            context,
                             registrar,
                             registrarFamily.Guid,
                             registrantInfo,
-                            discount,
                             index,
                             multipleFamilyGroupIds,
                             ref singleFamilyId,
@@ -521,6 +509,21 @@ namespace Rock.Obsidian.Blocks.Event
                     }
 
                     rockContext.SaveChanges();
+
+                    var errorMessage = string.Empty;
+                    var transactionGuid = args.AmountToPayNow > 0 ?
+                        ProcessPayment( rockContext, context, args, registrar, out errorMessage ) :
+                        null;
+
+                    if ( !errorMessage.IsNullOrWhiteSpace() )
+                    {
+                        throw new Exception( errorMessage );
+                    }
+
+                    if ( args.AmountToPayNow > 0 && !transactionGuid.HasValue )
+                    {
+                        throw new Exception( "There was a problem with the payment" );
+                    }
                 }
                 catch ( Exception )
                 {
@@ -530,7 +533,7 @@ namespace Rock.Obsidian.Blocks.Event
                         if ( isNewRegistration )
                         {
                             var newRegistrationService = new RegistrationService( newRockContext );
-                            var savedRegistration = new RegistrationService( newRockContext ).Get( registration.Id );
+                            var savedRegistration = new RegistrationService( newRockContext ).Get( context.Registration.Id );
 
                             if ( savedRegistration != null )
                             {
@@ -545,16 +548,7 @@ namespace Rock.Obsidian.Blocks.Event
                     throw;
                 }
 
-                if ( args.AmountToPayNow > registration.TotalCost )
-                {
-                    args.AmountToPayNow = registration.TotalCost;
-                }
-
-                var transactionGuid = args.AmountToPayNow > 0 ?
-                    ProcessPayment( rockContext, registrationTemplate, registrationInstance, registration, args, registrar, out var errorMessage ) :
-                    null;
-
-                var successViewModel = GetSuccessViewModel( registration.Id );
+                var successViewModel = GetSuccessViewModel( context.Registration.Id );
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
         }
@@ -924,36 +918,46 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
+        /// Gets the registrant cost.
+        /// </summary>
+        /// <param name="registrationTemplate">The registration template.</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="discount">The discount.</param>
+        /// <returns></returns>
+        private decimal? GetMinimumInitialPaymentAmount( RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
+        {
+            var cost = registrationTemplate.SetCostOnInstance == true ?
+                        ( registrationInstance.MinimumInitialPayment ?? registrationTemplate.MinimumInitialPayment ) :
+                        registrationTemplate.MinimumInitialPayment;
+
+            return cost;
+        }
+
+        /// <summary>
         /// Upserts the registrant.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="registrationTemplate">The registration template.</param>
-        /// <param name="registrationInstance">The registration instance.</param>
-        /// <param name="registration">The registration.</param>
+        /// <param name="context">The context.</param>
         /// <param name="registrar">The registrar.</param>
         /// <param name="registrarFamilyGuid">The registrar family unique identifier.</param>
         /// <param name="registrantInfo">The registrant information.</param>
-        /// <param name="discount">The discount.</param>
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
         /// <param name="isWaitlist">if set to <c>true</c> [is waitlist].</param>
         private void UpsertRegistrant(
             RockContext rockContext,
-            RegistrationTemplate registrationTemplate,
-            RegistrationInstance registrationInstance,
-            Registration registration,
+            Context context,
             Person registrar,
             Guid registrarFamilyGuid,
             ViewModel.Blocks.RegistrantInfo registrantInfo,
-            RegistrationTemplateDiscountWithUsage discount,
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
             bool isWaitlist )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
-            isWaitlist |= ( registrationTemplate.WaitListEnabled && registrantInfo.IsOnWaitList );
+            isWaitlist |= ( context.RegistrationTemplate.WaitListEnabled && registrantInfo.IsOnWaitList );
 
             var personService = new PersonService( rockContext );
             var registrantService = new RegistrationRegistrantService( rockContext );
@@ -964,13 +968,13 @@ namespace Rock.Obsidian.Blocks.Event
             RegistrationRegistrant registrant = null;
             Person person = null;
 
-            var firstName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
-            var lastName = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
-            var email = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
-            var birthday = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
-            var mobilePhone = GetPersonFieldValue( registrationTemplate, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+            var firstName = GetPersonFieldValue( context.RegistrationTemplate, RegistrationPersonFieldType.FirstName, registrantInfo.FieldValues ).ToStringSafe();
+            var lastName = GetPersonFieldValue( context.RegistrationTemplate, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
+            var email = GetPersonFieldValue( context.RegistrationTemplate, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
+            var birthday = GetPersonFieldValue( context.RegistrationTemplate, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerViewModel>().ToDateTime();
+            var mobilePhone = GetPersonFieldValue( context.RegistrationTemplate, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
 
-            registrant = registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
+            registrant = context.Registration.Registrants.FirstOrDefault( r => r.Guid == registrantInfo.Guid );
 
             if ( registrant != null )
             {
@@ -995,7 +999,7 @@ namespace Rock.Obsidian.Blocks.Event
             }
             else
             {
-                if ( registrantInfo.PersonGuid.HasValue && registrationTemplate.ShowCurrentFamilyMembers )
+                if ( registrantInfo.PersonGuid.HasValue && context.RegistrationTemplate.ShowCurrentFamilyMembers )
                 {
                     person = personService.Get( registrantInfo.PersonGuid.Value );
                 }
@@ -1078,12 +1082,12 @@ namespace Rock.Obsidian.Blocks.Event
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
 
             // Set any of the template's person fields
-            foreach ( var field in registrationTemplate.Forms
+            foreach ( var field in context.RegistrationTemplate.Forms
                 .SelectMany( f => f.Fields
                     .Where( t => t.FieldSource == RegistrationFieldSource.PersonField ) ) )
             {
                 // Find the registrant's value
-                var fieldValue = GetPersonFieldValue( registrationTemplate, field.PersonFieldType, registrantInfo.FieldValues );
+                var fieldValue = GetPersonFieldValue( context.RegistrationTemplate, field.PersonFieldType, registrantInfo.FieldValues );
 
                 if ( fieldValue != null )
                 {
@@ -1165,13 +1169,13 @@ namespace Rock.Obsidian.Blocks.Event
             }
 
             // Save the person ( and family if needed )
-            SavePerson( rockContext, registrationTemplate, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+            SavePerson( rockContext, context.RegistrationTemplate, person, registrantInfo.FamilyGuid ?? Guid.NewGuid(), campusId, location, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
 
             // Load the person's attributes
             person.LoadAttributes();
 
             // Set any of the template's person attribute fields
-            foreach ( var field in registrationTemplate.Forms
+            foreach ( var field in context.RegistrationTemplate.Forms
                 .SelectMany( f => f.Fields
                     .Where( t =>
                         t.FieldSource == RegistrationFieldSource.PersonAttribute &&
@@ -1230,23 +1234,23 @@ namespace Rock.Obsidian.Blocks.Event
                 registrant = new RegistrationRegistrant();
                 registrant.Guid = registrantInfo.Guid;
                 registrantService.Add( registrant );
-                registrant.RegistrationId = registration.Id;
+                registrant.RegistrationId = context.Registration.Id;
             }
 
             registrant.OnWaitList = isWaitlist;
             registrant.PersonAliasId = person.PrimaryAliasId;
-            registrant.Cost = isWaitlist ? 0 : GetBaseRegistrantCost( registrationTemplate, registrationInstance );
+            registrant.Cost = isWaitlist ? 0 : GetBaseRegistrantCost( context.RegistrationTemplate, context.RegistrationInstance );
 
             // Check if discount applies
-            var maxRegistrants = discount?.RegistrationTemplateDiscount.MaxRegistrants;
+            var maxRegistrants = context.Discount?.RegistrationTemplateDiscount.MaxRegistrants;
             var isWithinMaxRegistrants = !maxRegistrants.HasValue || index < maxRegistrants.Value;
-            var usesRemaining = discount?.UsagesRemaining ?? int.MaxValue;
+            var usesRemaining = context.Discount?.UsagesRemaining ?? int.MaxValue;
             var isWithinUsageCap = usesRemaining >= 1;
             registrant.DiscountApplies = isWithinMaxRegistrants && isWithinUsageCap;
 
-            if ( registrant.DiscountApplies && discount?.UsagesRemaining != null )
+            if ( registrant.DiscountApplies && context.Discount?.UsagesRemaining != null )
             {
-                discount.UsagesRemaining--;
+                context.Discount.UsagesRemaining--;
             }
 
             var registrantFeeService = new RegistrationRegistrantFeeService( rockContext );
@@ -1271,7 +1275,7 @@ namespace Rock.Obsidian.Blocks.Event
             // Upsert fees if not on the waiting list
             if ( !isWaitlist )
             {
-                var feeModels = registrationTemplate.Fees?
+                var feeModels = context.RegistrationTemplate.Fees?
                     .Where( f => f.IsActive )
                     .OrderBy( f => f.Order )
                     .ToList() ?? new List<RegistrationTemplateFee>();
@@ -1299,7 +1303,7 @@ namespace Rock.Obsidian.Blocks.Event
                         }
 
                         // If there is a limited supply, ensure that more are not ordered than available
-                        var countRemaining = feeItemModel.GetUsageCountRemaining( registrationInstance, null );
+                        var countRemaining = feeItemModel.GetUsageCountRemaining( context.RegistrationInstance, null );
 
                         // Don't allow quantity to be more than supply
                         if ( countRemaining.HasValue && countRemaining < quantity )
@@ -1369,7 +1373,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             // Set any of the template's registrant attributes
             registrant.LoadAttributes();
-            var registrantAttributeFields = registrationTemplate.Forms
+            var registrantAttributeFields = context.RegistrationTemplate.Forms
                 .SelectMany( f => f.Fields.Where( ff => ff.AttributeId.HasValue && ff.FieldSource == RegistrationFieldSource.RegistrantAttribute ) )
                 .ToList();
 
@@ -1424,7 +1428,7 @@ namespace Rock.Obsidian.Blocks.Event
                     new RockContext(),
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
+                    context.Registration.Id,
                     registrantChanges,
                     "Registrant: " + person.FullName,
                     null,
@@ -1642,6 +1646,9 @@ namespace Rock.Obsidian.Blocks.Event
             var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
             var financialGatewayComponent = financialGateway?.GetGatewayComponent() as IObsidianFinancialGateway;
 
+            // Determine if this is a redirect gateway
+            var isRedirectGateway = ( financialGateway?.GetGatewayComponent() as IRedirectionGateway ) != null;
+
             // Get the amount due today and the initial amount to recommend paying
             var amountDueToday = registrationTemplate.SetCostOnInstance == true ?
                 registrationInstance.MinimumInitialPayment :
@@ -1671,11 +1678,12 @@ namespace Rock.Obsidian.Blocks.Event
                 ForceEmailUpdate = forceEmailUpdate,
                 RegistrarOption = ( int ) registrationTemplate.RegistrarOption,
                 Cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance ),
-                GatewayControl = new GatewayControlViewModel
+                GatewayControl = isRedirectGateway ? null : new GatewayControlViewModel
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
                 },
+                IsRedirectGateway = isRedirectGateway,
                 SpotsRemaining = spotsRemaining,
                 WaitListEnabled = waitListEnabled,
                 InstanceName = registrationInstance.Name,
@@ -1725,14 +1733,12 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns></returns>
         private Guid? ProcessPayment(
             RockContext rockContext,
-            RegistrationTemplate registrationTemplate,
-            RegistrationInstance registrationInstance,
-            Registration registration,
+            Context context,
             RegistrationEntryBlockArgs args,
             Person registrar,
             out string errorMessage )
         {
-            var gateway = registrationTemplate?.FinancialGateway?.GetGatewayComponent();
+            var gateway = context.RegistrationTemplate?.FinancialGateway?.GetGatewayComponent();
 
             if ( gateway == null )
             {
@@ -1740,9 +1746,9 @@ namespace Rock.Obsidian.Blocks.Event
                 return null;
             }
 
-            if ( !registrationInstance.AccountId.HasValue || registrationInstance.Account == null )
+            if ( !context.RegistrationInstance.AccountId.HasValue || context.RegistrationInstance.Account == null )
             {
-                errorMessage = "There was a problem with the account configuration for this " + registrationTemplate.RegistrationTerm.ToLower();
+                errorMessage = "There was a problem with the account configuration for this " + context.RegistrationTemplate.RegistrationTerm.ToLower();
                 return null;
             }
 
@@ -1753,27 +1759,26 @@ namespace Rock.Obsidian.Blocks.Event
                 FirstName = args.Registrar.NickName,
                 LastName = args.Registrar.LastName,
                 ReferenceNumber = args.GatewayToken,
-                Comment1 = string.Format( "{0} ({1})", registrationInstance.Name, registrationInstance.Account.GlCode )
+                Comment1 = string.Format( "{0} ({1})", context.RegistrationInstance.Name, context.RegistrationInstance.Account.GlCode )
             };
 
-            var transaction = gateway.Charge( registrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
-            return SaveTransaction( gateway, registrationTemplate, registrationInstance, registration, transaction, paymentInfo, rockContext, args.AmountToPayNow );
+            var transaction = gateway.Charge( context.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
+            return SaveTransaction( gateway, context, transaction, paymentInfo, rockContext, args.AmountToPayNow );
         }
 
         /// <summary>
         /// Saves the transaction.
         /// </summary>
         /// <param name="gateway">The gateway.</param>
-        /// <param name="registration">The registration.</param>
+        /// <param name="context">The context.</param>
         /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="amount">The amount.</param>
         /// <returns></returns>
         private Guid? SaveTransaction(
             GatewayComponent gateway,
-            RegistrationTemplate registrationTemplate,
-            RegistrationInstance registrationInstance,
-            Registration registration,
+            Context context,
             FinancialTransaction transaction,
             PaymentInfo paymentInfo,
             RockContext rockContext,
@@ -1786,9 +1791,9 @@ namespace Rock.Obsidian.Blocks.Event
 
             var currentPerson = GetCurrentPerson();
 
-            transaction.AuthorizedPersonAliasId = registration.PersonAliasId;
+            transaction.AuthorizedPersonAliasId = context.Registration.PersonAliasId;
             transaction.TransactionDateTime = RockDateTime.Now;
-            transaction.FinancialGatewayId = registrationTemplate.FinancialGatewayId;
+            transaction.FinancialGatewayId = context.RegistrationTemplate.FinancialGatewayId;
 
             var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
             transaction.TransactionTypeValueId = txnType.Id;
@@ -1818,13 +1823,13 @@ namespace Rock.Obsidian.Blocks.Event
                 }
             }
 
-            transaction.Summary = registration.GetSummary( registrationInstance );
+            transaction.Summary = context.Registration.GetSummary( context.RegistrationInstance );
 
             var transactionDetail = new FinancialTransactionDetail();
             transactionDetail.Amount = amount;
-            transactionDetail.AccountId = registrationInstance.AccountId.Value;
+            transactionDetail.AccountId = context.RegistrationInstance.AccountId.Value;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-            transactionDetail.EntityId = registration.Id;
+            transactionDetail.EntityId = context.Registration.Id;
             transaction.TransactionDetails.Add( transactionDetail );
 
             var batchChanges = new History.HistoryChangeList();
@@ -1835,9 +1840,9 @@ namespace Rock.Obsidian.Blocks.Event
 
                 // determine batch prefix
                 string batchPrefix = string.Empty;
-                if ( !string.IsNullOrWhiteSpace( registrationTemplate.BatchNamePrefix ) )
+                if ( !string.IsNullOrWhiteSpace( context.RegistrationTemplate.BatchNamePrefix ) )
                 {
-                    batchPrefix = registrationTemplate.BatchNamePrefix;
+                    batchPrefix = context.RegistrationTemplate.BatchNamePrefix;
                 }
                 else
                 {
@@ -1850,7 +1855,7 @@ namespace Rock.Obsidian.Blocks.Event
                 currencyType,
                 creditCardType,
                 transaction.TransactionDateTime.Value,
-                registrationTemplate.FinancialGateway.GetBatchTimeOffset() );
+                context.RegistrationTemplate.FinancialGateway.GetBatchTimeOffset() );
 
                 if ( batch.Id == 0 )
                 {
@@ -1899,7 +1904,7 @@ namespace Rock.Obsidian.Blocks.Event
                     new RockContext(),
                     typeof( Registration ),
                     Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registration.Id,
+                    context.Registration.Id,
                     registrationChanges,
                     true,
                     currentPerson?.PrimaryAliasId ) );
@@ -2161,6 +2166,168 @@ namespace Rock.Obsidian.Blocks.Event
             return session;
         }
 
+        /// <summary>
+        /// Validates the arguments.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        private Context GetContext( RockContext rockContext, RegistrationEntryBlockArgs args, out BlockActionResult errorResult )
+        {
+            errorResult = null;
+            var currentPerson = GetCurrentPerson();
+
+            // Basic check on the args to see that they appear valid
+            if ( args == null )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The args cannot be null" );
+                return null;
+            }
+
+            if ( args.Registrants?.Any() != true )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one registrant is required" );
+                return null;
+            }
+
+            if ( args.Registrar == null )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "A registrar is required" );
+                return null;
+            }
+
+            // Load the instance and template
+            var includes = "RegistrationTemplate.Forms.Fields, RegistrationTemplate.FinancialGateway, Account";
+            var registrationInstance = GetRegistrationInstanceQuery( rockContext, includes ).FirstOrDefault();
+            var registrationTemplate = registrationInstance?.RegistrationTemplate;
+
+            if ( registrationTemplate == null )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration template or instance was not found" );
+            }
+
+            // Validate that there are enough spots left for this registration
+            var waitListEnabled = registrationTemplate.WaitListEnabled;
+            var spotsRemaining = registrationInstance.MaxAttendees;
+
+            if ( !waitListEnabled && spotsRemaining < args.Registrants.Count )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "There are not enough spots left for this many registrants" );
+            }
+
+            // Look up and validate the discount by the code
+            var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
+            var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstance.Id, args.DiscountCode );
+
+            if ( !args.DiscountCode.IsNullOrWhiteSpace() && discount == null )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The discount code is not valid" );
+            }
+
+            // Get or create the registration
+            var registrationService = new RegistrationService( rockContext );
+            var registration = args.RegistrationGuid.HasValue ? registrationService.Get( args.RegistrationGuid.Value ) : null;
+
+            if ( registration == null && args.RegistrationGuid.HasValue )
+            {
+                errorResult = new BlockActionResult( System.Net.HttpStatusCode.NotFound, "The registration was not found" );
+            }
+
+            // Validate the amount to pay today
+            var isNewRegistration = registration == null;
+            var cost = GetBaseRegistrantCost( registrationTemplate, registrationInstance );
+
+            // Cannot pay less than 0
+            if ( args.AmountToPayNow < 0 )
+            {
+                args.AmountToPayNow = 0;
+            }
+
+            // Cannot pay more than is owed
+            if ( args.AmountToPayNow > cost )
+            {
+                args.AmountToPayNow = cost;
+            }
+
+            // Validate the charge amount is not too low according to the initial payment amount
+            if ( isNewRegistration && cost > 0 )
+            {
+                var minimumInitialPayment = GetMinimumInitialPaymentAmount( registrationTemplate, registrationInstance ) ?? cost;
+
+                if ( args.AmountToPayNow < minimumInitialPayment )
+                {
+                    args.AmountToPayNow = minimumInitialPayment;
+                }
+            }
+
+            if ( !isNewRegistration )
+            {
+                if ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                {
+                    // This existing registration does not belong to this person
+                    errorResult = new BlockActionResult( System.Net.HttpStatusCode.Unauthorized, "Your existing registration was not found" );
+                }
+                else if ( registration.RegistrationInstanceId != registrationInstance.Id )
+                {
+                    // This existing registration is not for this instance
+                    errorResult = new BlockActionResult( System.Net.HttpStatusCode.NotFound, "Your existing registration was not found" );
+                }
+            }
+
+            return new Context
+            {
+                RegistrationTemplate = registrationTemplate,
+                RegistrationInstance = registrationInstance,
+                Registration = registration,
+                Discount = discount,
+                SpotsRemaining = spotsRemaining
+            };
+        }
+
         #endregion Helpers
+
+        /// <summary>
+        /// Context
+        /// </summary>
+        private class Context {
+            /// <summary>
+            /// Gets or sets the registration template.
+            /// </summary>
+            /// <value>
+            /// The registration template.
+            /// </value>
+            public RegistrationTemplate RegistrationTemplate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registration instance.
+            /// </summary>
+            /// <value>
+            /// The registration instance.
+            /// </value>
+            public RegistrationInstance RegistrationInstance { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registration.
+            /// </summary>
+            /// <value>
+            /// The registration.
+            /// </value>
+            public Registration Registration { get; set; }
+
+            /// <summary>
+            /// Gets or sets the discount.
+            /// </summary>
+            /// <value>
+            /// The discount.
+            /// </value>
+            public RegistrationTemplateDiscountWithUsage Discount { get; set; }
+
+            /// <summary>
+            /// Gets or sets the spots remaining.
+            /// </summary>
+            /// <value>
+            /// The spots remaining.
+            /// </value>
+            public int? SpotsRemaining { get; set; }
+        }
     }
 }

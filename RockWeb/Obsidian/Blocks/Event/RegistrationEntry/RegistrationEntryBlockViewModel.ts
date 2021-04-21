@@ -103,6 +103,7 @@ export interface RegistrationEntryBlockViewModel
     RegistrarOption: RegistrarOption;
     Cost: number;
     GatewayControl: GatewayControlModel,
+    IsRedirectGateway: boolean,
     SpotsRemaining: number | null,
     WaitListEnabled: boolean,
     InstanceName: string,

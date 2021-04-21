@@ -377,6 +377,12 @@ export default defineComponent( {
         previouslyPaidFormatted (): string
         {
             return `$${asFormattedString( this.previouslyPaid )}`;
+        },
+
+        /** The text to be displayed on the "Finish" button */
+        finishButtonText (): string
+        {
+            return this.viewModel.IsRedirectGateway ? 'Pay' : 'Finish';
         }
     },
     methods: {
@@ -387,16 +393,27 @@ export default defineComponent( {
         },
 
         /** User clicked the "finish" button */
-        async onNext()
+        async onNext ()
         {
             this.loading = true;
 
             // If there is a cost, then the gateway will need to be used to pay
             if ( this.total )
             {
-                this.gatewayErrorMessage = '';
-                this.gatewayValidationFields = {};
-                this.doGatewayControlSubmit = true;
+                // If this is a redirect gateway, then persist and redirect now
+                if ( this.viewModel.IsRedirectGateway )
+                {
+                    await this.persist();
+                    // TODO redirect
+                    console.log('redirect');
+                }
+                else
+                {
+                    // Otherwise, this is a traditional gateway
+                    this.gatewayErrorMessage = '';
+                    this.gatewayValidationFields = {};
+                    this.doGatewayControlSubmit = true;
+                }
             }
             else
             {
@@ -526,18 +543,24 @@ export default defineComponent( {
             this.gatewayValidationFields = invalidFields;
         },
 
+        /** Get the common submission or persist args */
+        getArgs (): RegistrationEntryBlockArgs
+        {
+            return {
+                GatewayToken: this.registrationEntryState.GatewayToken,
+                DiscountCode: this.registrationEntryState.DiscountCode,
+                FieldValues: this.registrationEntryState.RegistrationFieldValues,
+                Registrar: this.registrationEntryState.Registrar,
+                Registrants: this.registrationEntryState.Registrants,
+                AmountToPayNow: this.amountToPayToday
+            };
+        },
+
         /** Submit the registration to the server */
         async submit(): Promise<boolean>
         {
             const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>( 'SubmitRegistration', {
-                args: {
-                    GatewayToken: this.registrationEntryState.GatewayToken,
-                    DiscountCode: this.registrationEntryState.DiscountCode,
-                    FieldValues: this.registrationEntryState.RegistrationFieldValues,
-                    Registrar: this.registrationEntryState.Registrar,
-                    Registrants: this.registrationEntryState.Registrants,
-                    AmountToPayNow: this.amountToPayToday
-                } as RegistrationEntryBlockArgs
+                args: this.getArgs()
             } );
 
             if ( result.isError || !result.data )
@@ -547,6 +570,21 @@ export default defineComponent( {
             else
             {
                 this.registrationEntryState.SuccessViewModel = result.data;
+            }
+
+            return result.isSuccess;
+        },
+
+        /** Persist the args to the server so the user can be redirected for payment */
+        async persist (): Promise<boolean>
+        {
+            const result = await this.invokeBlockAction<Guid>( 'Persist', {
+                args: this.getArgs()
+            } );
+
+            if ( result.isError || !result.data )
+            {
+                this.submitErrorMessage = result.errorMessage || 'Unknown error';
             }
 
             return result.isSuccess;
@@ -709,7 +747,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="total && amountToPayToday" class="well">
+        <div v-if="gatewayControlModel && total && amountToPayToday" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />
@@ -740,7 +778,7 @@ export default defineComponent( {
                 Previous
             </RockButton>
             <RockButton btnType="primary" class="pull-right" type="submit" :isLoading="loading">
-                Finish
+                {{finishButtonText}}
             </RockButton>
         </div>
     </RockForm>

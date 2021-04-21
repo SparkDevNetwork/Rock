@@ -180,6 +180,14 @@ namespace Rock.ViewModel.Blocks
         public GatewayControlViewModel GatewayControl { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is redirect gateway.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is redirect gateway; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRedirectGateway { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration term.
         /// </summary>
         /// <value>
