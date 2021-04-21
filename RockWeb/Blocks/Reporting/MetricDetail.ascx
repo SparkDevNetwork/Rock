@@ -82,8 +82,8 @@
                                 </asp:Panel>
 
                                 <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                      <div class="row">
-                                        <div class="col-md-6"><Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" /></div>
+                                    <div class="row">
+                                        <div class="col-md-6"><Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" OnSelectItem="dvpDataView_SelectItem" /></div>
                                         <div class="col-md-6"><Rock:RockCheckBox ID="cbAutoPartionPrimaryCampus" runat="server" Label="Auto Partition on Primary Campus" Visible="false" Help="Enabling this feature will auto partition the individuals in the data view based on their primary campus. This must be selected for the campus partion to work." /></div>
                                     </div>
                                     <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
