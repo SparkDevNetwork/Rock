@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Reporting
 
     #region Block Attributes
 
-    [BooleanField
-        ( "Show Chart",
-          Key = AttributeKey.ShowChart,
-          DefaultValue = "true",
-          Order = 0 )]
+    [BooleanField(
+        "Show Chart",
+        Key = AttributeKey.ShowChart,
+        DefaultValue = "true",
+        Order = 0 )]
 
     [DefinedValueField(
         "Chart Style",
