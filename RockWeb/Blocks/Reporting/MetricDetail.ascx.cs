@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Reporting
         #endregion AttributeKey
         #region Properties
 
-        private List<MetricPartition> MetricPartitionsState { get; set; }
+        private List<MetricPartition> MetricPartitionsState { get; set; } = new List<MetricPartition>();
 
         #endregion
 
@@ -606,6 +606,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 ltLastRunDateTime.Visible = isManual;
                 rcwSchedule.Visible = isManual;
             }
+
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -1471,5 +1473,10 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
+
+        protected void dvpDataView_SelectItem( object sender, EventArgs e )
+        {
+            ShowHideAutoPartitionPrimaryCampus();
+        }
     }
 }
