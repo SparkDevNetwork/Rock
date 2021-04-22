@@ -176,7 +176,8 @@ namespace RockWeb.Blocks.Steps
                 .Union( stepType.StepProgram.StepWorkflowTriggers )
                 .Where( x => x.TriggerType == StepWorkflowTrigger.WorkflowTriggerCondition.Manual
                         && x.WorkflowType != null
-                        && ( x.WorkflowType.IsActive ?? false ) )
+                        && ( x.WorkflowType.IsActive ?? false )
+                        && ( !x.StepTypeId.HasValue || x.StepTypeId.Value == stepType.Id ) )
                 .OrderBy( w => w.WorkflowType.Name )
                 .ToList();
 
