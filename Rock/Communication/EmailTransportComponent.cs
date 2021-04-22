@@ -1075,19 +1075,10 @@ namespace Rock.Communication
             // Create the communication record
             if ( recipientEmailMessage.CreateCommunicationRecord )
             {
-                var recipients = new List<RockMessageRecipient>() { rockMessageRecipient };
-                var addCommunicationRecipientsMsg = new AddCommunicationRecipients.Message()
-                {
-                    Recipients = recipients,
-                    FromName = recipientEmailMessage.FromName,
-                    FromAddress = recipientEmailMessage.FromEmail,
-                    Subject = recipientEmailMessage.Subject,
-                    HtmlMessage = recipientEmailMessage.Message,
-                    RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull(),
-                    RecipientStatus = result.Status
-                };
-
-                addCommunicationRecipientsMsg.Send();
+                var transaction = new SaveCommunicationTransaction( rockMessageRecipient, recipientEmailMessage.FromName, recipientEmailMessage.FromEmail, recipientEmailMessage.Subject, recipientEmailMessage.Message );
+                transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
+                transaction.RecipientStatus = result.Status;
+                RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
             return sendResult;
