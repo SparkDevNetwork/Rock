@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -277,6 +278,25 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether the control should be displayed Full-Width
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable full width]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableFullWidth
+        {
+            get
+            {
+                return ViewState["EnableFullWidth"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["EnableFullWidth"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the address summary text.
         /// </summary>
         /// <value>
@@ -432,7 +452,15 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            this.CssClass = "picker picker-select rollover-container";
+            List<string> pickerClasses = new List<string>();
+            pickerClasses.Add( "picker" );
+            if ( EnableFullWidth )
+            {
+                pickerClasses.Add( "picker-fullwidth" );
+            }
+
+            pickerClasses.Add( "picker-select rollover-container");
+            this.CssClass = pickerClasses.AsDelimited( " " );
 
             _hfLocationId = new HiddenField { ID = "hfLocationId" };
             this.Controls.Add( _hfLocationId );
