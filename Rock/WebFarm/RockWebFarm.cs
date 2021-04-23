@@ -430,7 +430,7 @@ namespace Rock.WebFarm
                 }
 
                 // Add a note if recycling
-                var recyclingText = _isBeingRecycled ? "(Recycling) " : string.Empty;
+                var recyclingText = _isBeingRecycled ? "Recycling - " : string.Empty;
 
                 // Write to ClusterNodeLog shutdown message
                 AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"{recyclingText}{shutdownReasonText}" );
@@ -763,11 +763,22 @@ namespace Rock.WebFarm
                 {
                     Debug( "I didn't hear from a twin process, so there must have been an abrupt shutdown" );
 
+                    // 4-23-21 BJW
+                    // We are commenting out this notification for now. We have not been able to successfully detect App Pool
+                    // Recycling as of yet. Once we can consistently detect the recycling, then this alert could be re-enabled
+                    // if desired.
+
+                    /*
                     using ( var rockContext = new RockContext() )
                     {
                         AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, _nodeId, EventType.Error, "Detected previous abrupt shutdown on load." );
                         rockContext.SaveChanges();
                     }
+                    */
+                }
+                else
+                {
+                    Debug( "I heard from a twin process, so that means I am the new replacement after a recycle" );
                 }
             } );
         }
@@ -879,10 +890,10 @@ namespace Rock.WebFarm
         {
             /*
              * Circumventing the code below is considered an integrity violation and harmful to the
-             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm 
-             * feature is designed for the largest churches. Using this feature, as a very large 
-             * church without supporting the Rock Community, costs smaller churches with less 
-             * resources. Please contact Spark to get a key and support the vision of accessibility 
+             * Rock Community. It also breaks the Rock "License" (see top of this file). This Web Farm
+             * feature is designed for the largest churches. Using this feature, as a very large
+             * church without supporting the Rock Community, costs smaller churches with less
+             * resources. Please contact Spark to get a key and support the vision of accessibility
              * for smaller churches.
              *
              * Core Team: See the Web Farm engineering document for more information on keys.
