@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Media;
 
 namespace Rock.Model
 {
@@ -109,7 +110,17 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [DataMember]
-        public string ThumbnailData { get; set; }
+        public string ThumbnailData
+        {
+            get
+            {
+                return ThumbnailDatas.ToJson();
+            }
+            set
+            {
+                ThumbnailDatas = value.FromJsonOrNull<List<ThumbnailData>>() ?? new List<ThumbnailData>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the media element data.
@@ -118,7 +129,17 @@ namespace Rock.Model
         /// The media element data.
         /// </value>
         [DataMember]
-        public string MediaElementData { get; set; }
+        public string MediaElementData
+        {
+            get
+            {
+                return MediaElementDatas.ToJson();
+            }
+            set
+            {
+                MediaElementDatas = value.FromJsonOrNull<List<MediaElementData>>() ?? new List<MediaElementData>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the download data.
@@ -141,6 +162,24 @@ namespace Rock.Model
         /// </value>
         [Rock.Lava.LavaVisibleAttribute]
         public virtual MediaFolder MediaFolder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media element data.
+        /// </summary>
+        /// <value>
+        /// The media element data.
+        /// </value>
+        [NotMapped]
+        public virtual List<MediaElementData> MediaElementDatas { get; set; } = new List<MediaElementData>();
+
+        /// <summary>
+        /// Gets or sets the thumbnail data.
+        /// </summary>
+        /// <value>
+        /// The thumbnail data.
+        /// </value>
+        [NotMapped]
+        public virtual List<ThumbnailData> ThumbnailDatas { get; set; } = new List<ThumbnailData>();
 
         #endregion
 
