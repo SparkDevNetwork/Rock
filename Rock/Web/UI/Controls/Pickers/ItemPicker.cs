@@ -254,6 +254,25 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether the control should be displayed Full-Width
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable full width]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableFullWidth
+        {
+            get
+            {
+                return ViewState["EnableFullWidth"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["EnableFullWidth"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the item rest URL.
         /// </summary>
         /// <value>
@@ -782,12 +801,23 @@ $@"Rock.controls.itemPicker.initialize({{
             if ( this.Enabled )
             {
                 writer.AddAttribute( "id", this.ClientID.ToString() );
-                writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
-                foreach( string styleKey in this.Style.Keys)
+
+                List<string> pickerClasses = new List<string>();
+                pickerClasses.Add( "picker" );
+                if ( EnableFullWidth )
+                {
+                    pickerClasses.Add( "picker-fullwidth" );
+                }
+
+                pickerClasses.Add( "picker-select rollover-container " + this.CssClass );
+
+                writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
+
+                foreach ( string styleKey in this.Style.Keys )
                 {
                     writer.AddStyleAttribute( styleKey, this.Style[styleKey] );
                 }
-                
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _hfItemId.RenderControl( writer );
@@ -868,7 +898,17 @@ $@"Rock.controls.itemPicker.initialize({{
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.AddAttribute( "class", "picker picker-select" );
+                List<string> pickerClasses = new List<string>();
+                pickerClasses.Add( "picker" );
+                if ( EnableFullWidth )
+                {
+                    pickerClasses.Add( "picker-fullwidth" );
+                }
+
+                pickerClasses.Add( "picker-select" );
+
+                writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";

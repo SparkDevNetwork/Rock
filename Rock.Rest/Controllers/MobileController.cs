@@ -38,6 +38,33 @@ namespace Rock.Rest.Controllers
     public class MobileController : ApiControllerBase
     {
         /// <summary>
+        /// Gets the communication interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The communication interaction channel identifier.
+        /// </value>
+        private static int CommunicationInteractionChannelId
+        {
+            get
+            {
+                if ( _communicationInteractionChannelId == 0 )
+                {
+                    _communicationInteractionChannelId = InteractionChannelCache.GetId( SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() ).Value;
+                }
+
+                return _communicationInteractionChannelId;
+            }
+        }
+        private static int _communicationInteractionChannelId;
+
+        /// <summary>
+        /// The communication interaction channel unique identifier
+        /// </summary>
+        private static readonly Guid _communicationInteractionChannelGuid = SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+
+        #region API Methods
+
+        /// <summary>
         /// Gets the launch packet.
         /// </summary>
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
@@ -354,9 +381,13 @@ namespace Rock.Rest.Controllers
                             interaction.ChannelCustomIndexed1 = mobileInteraction.ChannelCustomIndexed1;
 
                             interactionService.Add( interaction );
-                            rockContext.SaveChanges();
+
+                            // Attempt to process this as a communication interaction.
+                            ProcessCommunicationInteraction( mobileSession, mobileInteraction, rockContext );
                         }
                     }
+
+                    rockContext.SaveChanges();
                 } );
             }
 
@@ -412,5 +443,60 @@ namespace Rock.Rest.Controllers
                 return Ok( mobilePerson );
             }
         }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Checks if the interaction is for a communication and if so do
+        /// additional steps to mark the communication as opened..
+        /// </summary>
+        /// <param name="session">The interaction session.</param>
+        /// <param name="interaction">The interaction data.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ProcessCommunicationInteraction( MobileInteractionSession session, MobileInteraction interaction, Rock.Data.RockContext rockContext )
+        {
+            // The interaction must be for the communication channel.
+            if ( interaction.ChannelGuid != _communicationInteractionChannelGuid && interaction.ChannelId != CommunicationInteractionChannelId )
+            {
+                return;
+            }
+
+            // We need the communication recipient identifier and the communication identifier.
+            if ( !interaction.EntityId.HasValue || !interaction.ComponentEntityId.HasValue )
+            {
+                return;
+            }
+
+            // Only process "Opened" operations for now.
+            if ( !interaction.Operation.Equals( "OPENED", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return;
+            }
+
+            // Because this is a mostly open API, don't trust just the
+            // recipient identifier. Do a query that makes sure both the
+            // communication identifier and the recipient identifier match
+            // for a bit of extra security.
+            var communicationRecipient = new CommunicationRecipientService( rockContext ).Queryable()
+                .Where( a => a.Id == interaction.EntityId && a.CommunicationId == interaction.ComponentEntityId )
+                .FirstOrDefault();
+
+            if ( communicationRecipient == null )
+            {
+                return;
+            }
+
+            communicationRecipient.Status = CommunicationRecipientStatus.Opened;
+            communicationRecipient.OpenedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( interaction.DateTime );
+            communicationRecipient.OpenedClient = string.Format(
+                "{0} {1} ({2})",
+                session.OperatingSystem ?? "unknown",
+                session.Application ?? "unknown",
+                session.ClientType ?? "unknown" );
+        }
+
+        #endregion
     }
 }
