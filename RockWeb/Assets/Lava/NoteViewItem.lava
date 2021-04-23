@@ -87,7 +87,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         </hgroup>
         {% endif %}
         {% if approvalStatusHtml != '' %}
-            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{% endif %}{{- -}}">
+            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{%- endif %}">
                 {{ approvalStatusHtml }}
                 {{ approvalActionsHtml }}
             </hgroup>
@@ -219,7 +219,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             {% unless NoteOptions.ExpandReplies or expandNote %}
                 {% assign childNotesStyle = 'display: none;' %}
             {% endunless %}
-            {{- -}}<div class="note-comments">
+            <div class="note-comments">
         {% endif %}
 
         <ul class="list-unstyled note-list note-list-nested js-childnotes" style="{{ childNotesStyle }}">
@@ -229,7 +229,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         {% endfor %}
         </ul>
         {% if noteReplyDepth == 1 %}
-            {{- -}}</div>
+            </div>
         {% endif %}
     {% endif %}
 </li>
