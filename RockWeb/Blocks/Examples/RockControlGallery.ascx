@@ -539,6 +539,11 @@
                         <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
                     </div>
 
+                    <a id="GroupPicker FullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="gpExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:GroupPicker (FullWidth)" AllowMultiSelect="true" />
+                    </div>
+
                     <a id="GroupTypePicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:GroupTypePicker ID="gpGroupType" runat="server" Label="Rock:GroupTypePicker" />
@@ -602,6 +607,11 @@
                     <a id="PersonPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
+                    </div>
+
+                    <a id="PersonPickerFullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:PersonPicker ( FullWidth )" />
                     </div>
 
                     <a id="PersonAndBusinessPicker"></a>
