@@ -300,6 +300,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // Do the person search
             var personService = new PersonService( rockContext );
             List<int> personIds = null;
+
+            // ignore the result of reversed (LastName, FirstName vs FirstName LastName
             bool reversed = false;
 
             string searchValue = tbSearch.Text.Trim();
