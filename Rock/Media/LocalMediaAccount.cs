@@ -14,20 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Linq;
-using Rock.Data;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Rock.Model;
-using Rock.Web;
 
 namespace Rock.Media
 {
     /// <summary>
-     /// 
-     /// </summary>
-     /// <seealso cref="Rock.Media.MediaAccountComponent" />
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.Media.MediaAccountComponent" />
     [Description( "Local Media Account" )]
     [Export( typeof( MediaAccountComponent ) )]
     [ExportMetadata( "ComponentName", "LocalMediaAccount" )]
@@ -36,151 +35,96 @@ namespace Rock.Media
         #region Media Account Component Implementation
 
         /// <summary>
-        /// Gets the html to display on media account detail page.
-        /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        public override string GetAccountSummary( MediaAccount mediaAccount )
-        {
-            return $"<p>{mediaAccount.Name}</p>";
-        }
-
-        /// <summary>
-        /// Gets the html to display on media folder detail page.
-        /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <returns></returns>
-        public override string GetFolderSummary( MediaAccount mediaAccount, string folderId )
-        {
-            var folderSummaryHtml = string.Empty;
-            var folderIdInt = folderId.AsIntegerOrNull();
-            if ( mediaAccount != null && folderIdInt.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var mediaFolder = new MediaFolderService( rockContext ).Get( folderIdInt.Value );
-                    if ( mediaFolder != null )
-                    {
-                        var descriptionList = new DescriptionList();
-                        descriptionList.Add( "Name", mediaFolder.Name );
-                        if ( mediaFolder.Description.IsNotNullOrWhiteSpace() )
-                        {
-                            descriptionList.Add( "Description", mediaFolder.Description );
-                        }
-
-                        folderSummaryHtml = descriptionList.Html;
-                    }
-                }
-            }
-    
-            return folderSummaryHtml;
-        }
-
-        /// <summary>
-        /// Gets the html to display on media element detail page.
-        /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <param name="elementId">The element identifier.</param>
-        /// <returns></returns>
-        public override string GetMediaElementSummary( MediaAccount mediaAccount, string folderId, string elementId )
-        {
-            var elementSummaryHtml = string.Empty;
-            var elementIdInt = elementId.AsIntegerOrNull();
-            if ( mediaAccount != null && elementIdInt.HasValue )
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    var mediaElement = new MediaElementService( rockContext ).Get( elementIdInt.Value );
-                    if ( mediaElement != null )
-                    {
-                        var descriptionList = new DescriptionList();
-                        descriptionList.Add( "Name", mediaElement.Name );
-                        if ( mediaElement.Description.IsNotNullOrWhiteSpace() )
-                        {
-                            descriptionList.Add( "Description", mediaElement.Description );
-                        }
-
-                        elementSummaryHtml = descriptionList.Html;
-                    }
-                }
-            }
-
-            return elementSummaryHtml;
-        }
-
-        /// <summary>
         /// Gets a value if this account allows the individual to add/edit/delete folders and media files.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [allows manual entry]; otherwise, <c>false</c>.
+        ///   <c>true</c> if manual entry of folders and media is allowed; otherwise, <c>false</c>.
         /// </value>
-        public override bool AllowsManualEntry
+        public override bool AllowsManualEntry => true;
+
+        /// <summary>
+        /// Gets the HTML to display on media account detail page.
+        /// </summary>
+        /// <param name="mediaAccount">The media account.</param>
+        /// <returns>
+        /// A string of HTML content.
+        /// </returns>
+        public override string GetAccountHtmlSummary( MediaAccount mediaAccount )
         {
-            get { return true; }
+            return string.Empty;
         }
 
         /// <summary>
-        /// Returns a boolean value indicating if full sync of the folders and media is successful. 
+        /// Gets the HTML to display on media folder detail page.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        public override bool SyncMedia( MediaAccount mediaAccount )
+        /// <param name="mediaFolder">The media folder.</param>
+        /// <returns>
+        /// A string of HTML content.
+        /// </returns>
+        public override string GetFolderHtmlSummary( MediaFolder mediaFolder )
         {
-            return false;
+            return string.Empty;
         }
 
         /// <summary>
-        /// Returns a boolean value indicating if analytics is synced. 
+        /// Gets the HTML to display on media element detail page.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        public override bool SyncAnalytics( MediaAccount mediaAccount )
+        /// <param name="mediaElement">The media element.</param>
+        /// <returns>
+        /// A string of HTML content.
+        /// </returns>
+        public override string GetMediaElementHtmlSummary( MediaElement mediaElement )
         {
-            return false;
+            return string.Empty;
         }
 
         /// <summary>
-        /// Gets the list of all the media elements for the given folder from the provider.
+        /// Performs a full synchronization of folders and media content for the account.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <returns></returns>
-        public override List<MediaElement> GetMediaElementsfromFolder( MediaAccount mediaAccount, string folderId )
+        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>
+        /// A <see cref="SyncOperationResult" /> object with the result of the operation.
+        /// </returns>
+        /// <remarks>
+        /// The <see cref="MediaAccount.LastRefreshDateTime" /> is updated when
+        /// <see cref="SyncOperationResult.IsSuccess" /> is <c>true</c>.
+        /// </remarks>
+        public override Task<SyncOperationResult> SyncMediaAsync( MediaAccount mediaAccount, CancellationToken cancellationToken )
         {
-            var mediaElements = new List<MediaElement>();
-            var folderIdInt = folderId.AsIntegerOrNull();
-            if ( mediaAccount != null && folderIdInt.HasValue )
-            {
-                var rockContext = new RockContext();
-                mediaElements = new MediaElementService( rockContext )
-                    .Queryable()
-                    .Where( a => a.MediaFolderId == folderIdInt && a.MediaFolder.MediaAccountId == mediaAccount.Id )
-                    .ToList();
-            }
-
-            return mediaElements;
+            return Task.FromResult( new SyncOperationResult() );
         }
 
         /// <summary>
-        /// Gets the list of folders from the provier.
+        /// Performs a synchronization of all analytics data for the media account.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        public override List<MediaFolder> GetFolders( MediaAccount mediaAccount )
+        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>
+        /// A <see cref="SyncOperationResult" /> object with the result of the operation.
+        /// </returns>
+        public override Task<SyncOperationResult> SyncAnalyticsAsync( MediaAccount mediaAccount, CancellationToken cancellationToken )
         {
-            var mediaFolders = new List<MediaFolder>();
-            if ( mediaAccount != null )
-            {
-                var rockContext = new RockContext();
-                mediaFolders = new MediaFolderService( rockContext )
-                    .Queryable()
-                    .Where( a => a.MediaAccountId == mediaAccount.Id )
-                    .ToList();
-            }
+            return Task.FromResult( new SyncOperationResult() );
+        }
 
-            return mediaFolders;
+        /// <summary>
+        /// Performs a partial synchronization of folders and media content for
+        /// the account. This should be a very fast operation. As such it is
+        /// normal to only pull in newly created folders or media elements.
+        /// </summary>
+        /// <param name="mediaAccount">The media account to be refreshed.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>
+        /// A <see cref="SyncOperationResult" /> object with the result of the operation.
+        /// </returns>
+        /// <remarks>
+        /// The <see cref="MediaAccount.LastRefreshDateTime" /> is updated when
+        /// <see cref="SyncOperationResult.IsSuccess" /> is <c>true</c>.
+        /// </remarks>
+        public override Task<SyncOperationResult> RefreshAccountAsync( MediaAccount mediaAccount, CancellationToken cancellationToken )
+        {
+            return Task.FromResult( new SyncOperationResult() );
         }
 
         #endregion

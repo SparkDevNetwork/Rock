@@ -14,83 +14,91 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Rock.Model;
 
 namespace Rock.Media
 {
     /// <summary>
-    /// 
+    /// Component that provides functionality for syncing to a media storage
+    /// provider.
     /// </summary>
     public interface IMediaAccountComponent
     {
+        /// <summary>
+        /// Gets a value if this account allows the individual to add/edit/delete folders and media files.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if manual entry of folders and media is allowed; otherwise, <c>false</c>.
+        /// </value>
+        bool AllowsManualEntry { get; }
+
         /// <summary>
         /// Gets the attribute value for the media account.
         /// </summary>
         /// <param name="mediaAccount">The media account.</param>
         /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <returns>The attribute value.</returns>
         string GetAttributeValue( MediaAccount mediaAccount, string key );
 
         /// <summary>
-        /// Gets the html to display on media account detail page.
+        /// Gets the additional HTML to display on media account detail page.
         /// </summary>
         /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        string GetAccountSummary( MediaAccount mediaAccount );
+        /// <returns>A string of HTML content.</returns>
+        /// <remarks>This is normally any metrics data that should be displayed.</remarks>
+        string GetAccountHtmlSummary( MediaAccount mediaAccount );
 
         /// <summary>
-        /// Gets the html to display on media folder detail page.
+        /// Gets the additional HTML to display on media folder detail page.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <returns></returns>
-        string GetFolderSummary( MediaAccount mediaAccount, string folderId );
+        /// <param name="mediaFolder">The media folder.</param>
+        /// <returns>A string of HTML content.</returns>
+        /// <remarks>This is normally any metrics data that should be displayed.</remarks>
+        string GetFolderHtmlSummary( MediaFolder mediaFolder );
 
         /// <summary>
-        /// Gets the html to display on media element detail page.
+        /// Gets the additional HTML to display on media element detail page.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <param name="elementId">The element identifier.</param>
-        /// <returns></returns>
-        string GetMediaElementSummary( MediaAccount mediaAccount, string folderId, string elementId );
+        /// <param name="mediaElement">The media element.</param>
+        /// <returns>A string of HTML content.</returns>
+        /// <remarks>This is normally any metrics data that should be displayed.</remarks>
+        string GetMediaElementHtmlSummary( MediaElement mediaElement );
 
         /// <summary>
-        /// Gets a value if this account allows the individual to add/edit/delete folders and media files.
+        /// Performs a full synchronization of folders and media content for the account. 
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [allows manual entry]; otherwise, <c>false</c>.
-        /// </value>
-        bool AllowsManualEntry { get; }
+        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
+        /// <remarks>
+        /// The <see cref="MediaAccount.LastRefreshDateTime"/> is updated when
+        /// <see cref="SyncOperationResult.IsSuccess"/> is <c>true</c>.
+        /// </remarks>
+        Task<SyncOperationResult> SyncMediaAsync( MediaAccount mediaAccount, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Returns a boolean value indicating if full sync of the folders and media is successful. 
+        /// Performs a synchronization of all analytics data for the media account.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        bool SyncMedia( MediaAccount mediaAccount );
+        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
+        Task<SyncOperationResult> SyncAnalyticsAsync( MediaAccount mediaAccount, CancellationToken cancellationToken );
 
         /// <summary>
-        /// Returns a boolean value indicating if analytics is synced. 
+        /// Performs a partial synchronization of folders and media content for
+        /// the account. This should be a very fast operation. As such it is
+        /// normal to only pull in newly created folders or media elements.
         /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        bool SyncAnalytics( MediaAccount mediaAccount );
-
-        /// <summary>
-        /// Gets the list of all the media elements for the given folder from the provider.
-        /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <param name="folderId">The folder identifier.</param>
-        /// <returns></returns>
-        List<MediaElement> GetMediaElementsfromFolder( MediaAccount mediaAccount, string folderId );
-
-        /// <summary>
-        /// Gets the list of folders from the provier.
-        /// </summary>
-        /// <param name="mediaAccount">The media account.</param>
-        /// <returns></returns>
-        List<MediaFolder> GetFolders( MediaAccount mediaAccount );
+        /// <param name="mediaAccount">The media account to be refreshed.</param>
+        /// <param name="cancellationToken">Indicator that the operation should be stopped.</param>
+        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
+        /// <remarks>
+        /// The <see cref="MediaAccount.LastRefreshDateTime"/> is updated when
+        /// <see cref="SyncOperationResult.IsSuccess"/> is <c>true</c>.
+        /// </remarks>
+        Task<SyncOperationResult> RefreshAccountAsync( MediaAccount mediaAccount, CancellationToken cancellationToken );
     }
 }

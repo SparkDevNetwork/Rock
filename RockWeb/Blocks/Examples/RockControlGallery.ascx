@@ -527,6 +527,11 @@
                         <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
                     </div>
 
+                    <a id="MediaElementPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" />
+                    </div>
+
                     <h2>Groups and Group Types</h2>
 
                     <a id="GroupPicker"></a>
