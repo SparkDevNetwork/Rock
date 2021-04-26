@@ -242,6 +242,22 @@ namespace Rock.ViewModel.Blocks
         /// The initial amount to pay.
         /// </value>
         public decimal? InitialAmountToPay { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has discounts available.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has discounts available; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasDiscountsAvailable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the redirect gateway URL.
+        /// </summary>
+        /// <value>
+        /// The redirect gateway URL.
+        /// </value>
+        public string RedirectGatewayUrl { get; set; }
     }
 
     /// <summary>
@@ -477,7 +493,7 @@ namespace Rock.ViewModel.Blocks
     /// <summary>
     /// RegistrationEntryBlockVisibilityViewModel
     /// </summary>
-    public class RegistrationEntryBlockVisibilityViewModel
+    public sealed class RegistrationEntryBlockVisibilityViewModel
     {
         /// <summary>
         /// Gets or sets the compared to registration template form field unique identifier.
@@ -502,5 +518,59 @@ namespace Rock.ViewModel.Blocks
         /// The compared to value.
         /// </value>
         public string ComparedToValue { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationEntryBlockLineItemViewModel
+    /// </summary>
+    public sealed class RegistrationEntryBlockLineItemViewModel
+    {
+        /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
+        public Guid Key { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is fee.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is fee; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFee { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount.
+        /// </summary>
+        /// <value>
+        /// The amount.
+        /// </value>
+        public decimal Amount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discounted amount.
+        /// </summary>
+        /// <value>
+        /// The discounted amount.
+        /// </value>
+        public decimal DiscountedAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discount help.
+        /// </summary>
+        /// <value>
+        /// The discount help.
+        /// </value>
+        public string DiscountHelp { get; set; }
     }
 }

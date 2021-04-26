@@ -110,7 +110,9 @@ export interface RegistrationEntryBlockViewModel
     AmountDueToday: number | null,
     InitialAmountToPay: number | null,
     Session: RegistrationEntryBlockSession | null,
-    IsUnauthorized: boolean
+    IsUnauthorized: boolean,
+    HasDiscountsAvailable: boolean,
+    RedirectGatewayUrl: string
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

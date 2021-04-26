@@ -517,6 +517,19 @@ namespace Rock.Financial
                 new KeyValuePair<string, string>("3", $"Test {merchantId}-3"),
             };
         }
-        #endregion
+
+        /// <summary>
+        /// Gets the redirect URL.
+        /// </summary>
+        /// <param name="fundId">The fund identifier.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public string GetRedirectUrl( string fundId, RedirectGatewayLinkArgs args )
+        {
+            return "https://www.google.com/search?q=rockrms";
+        }
+
+        #endregion IRedirectionGateway Implementation
     }
 }

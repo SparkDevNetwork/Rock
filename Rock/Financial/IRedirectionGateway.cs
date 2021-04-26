@@ -37,5 +37,12 @@ namespace Rock.Financial
         /// <returns></returns>
         IEnumerable<KeyValuePair<string, string>> GetMerchantFunds( string merchantId );
 
+        /// <summary>
+        /// Gets the redirect URL.
+        /// </summary>
+        /// <param name="fundId">The fund identifier.</param>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        string GetRedirectUrl( string fundId, RedirectGatewayLinkArgs args );
     }
 }

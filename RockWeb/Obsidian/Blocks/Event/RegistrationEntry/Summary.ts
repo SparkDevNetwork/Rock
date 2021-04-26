@@ -644,7 +644,7 @@ export default defineComponent( {
             <h4>Payment Summary</h4>
             <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
             <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
-            <div class="clearfix">
+            <div v-if="viewModel.HasDiscountsAvailable" class="clearfix">
                 <div class="form-group pull-right">
                     <label class="control-label">Discount Code</label>
                     <div class="input-group">
