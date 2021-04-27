@@ -153,7 +153,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupTypeRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the synchronize <see cref="T:Rock.Model.Dataview"/>.
+        /// Gets or sets the syncDataview.
         /// </summary>
         /// <value>
         /// The synchronize data view.

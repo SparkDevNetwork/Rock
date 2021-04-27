@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -98,6 +99,12 @@ namespace Rock.Field.Types
             nbEnhanceForLongListsThreshold.TextChanged += OnQualifierUpdated;
             controls.Add( nbEnhanceForLongListsThreshold );
 
+            var mpLimits = new MediaElementPicker();
+            mpLimits.Label = "Limit To";
+            mpLimits.Help = "Enforces the account or folder selections and hides them from the user.";
+            mpLimits.ShowMediaPicker = false;
+            controls.Add( mpLimits );
+
             var cbAllowRefresh = new RockCheckBox();
             cbAllowRefresh.Label = "Allow Refresh";
             cbAllowRefresh.Help = "If enabled the user will be allowed to request a refresh of the folders and media items.";
@@ -105,12 +112,6 @@ namespace Rock.Field.Types
             cbAllowRefresh.AutoPostBack = true;
             cbAllowRefresh.CheckedChanged += OnQualifierUpdated;
             controls.Add( cbAllowRefresh );
-
-            var mpLimits = new MediaElementPicker();
-            mpLimits.Label = "Limit To";
-            mpLimits.Help = "Enforces the account or folder selections and hides them from the user.";
-            mpLimits.ShowMediaPicker = false;
-            controls.Add( mpLimits );
 
             return controls;
         }
@@ -144,15 +145,15 @@ namespace Rock.Field.Types
                 configurationValues[CONFIG_ENHANCE_FOR_LONG_LISTS_THRESHOLD].Value = nbEnhanceForLongListsThreshold.IntegerValue.ToStringSafe();
             }
 
-            if ( controls.Count >= 3 && controls[2] is RockCheckBox cbAllowRefresh )
-            {
-                configurationValues[CONFIG_ALLOW_REFRESH].Value = cbAllowRefresh.Checked.ToString();
-            }
-
-            if ( controls.Count >= 4 && controls[3] is MediaElementPicker mpLimits )
+            if ( controls.Count >= 3 && controls[2] is MediaElementPicker mpLimits )
             {
                 configurationValues[CONFIG_LIMIT_TO_ACCOUNT].Value = mpLimits.MediaAccountId.ToStringSafe();
                 configurationValues[CONFIG_LIMIT_TO_FOLDER].Value = mpLimits.MediaFolderId.ToStringSafe();
+            }
+
+            if ( controls.Count >= 4 && controls[3] is RockCheckBox cbAllowRefresh )
+            {
+                configurationValues[CONFIG_ALLOW_REFRESH].Value = cbAllowRefresh.Checked.ToString();
             }
 
             return configurationValues;
@@ -186,15 +187,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            if ( controls.Count >= 3 && controls[2] is RockCheckBox cbAllowRefresh )
-            {
-                if ( configurationValues?.ContainsKey( CONFIG_ALLOW_REFRESH ) == true )
-                {
-                    cbAllowRefresh.Checked = configurationValues[CONFIG_ALLOW_REFRESH].Value.AsBoolean( true );
-                }
-            }
-
-            if ( controls.Count >= 4 && controls[3] is MediaElementPicker mpLimits )
+            if ( controls.Count >= 3 && controls[2] is MediaElementPicker mpLimits )
             {
                 if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_ACCOUNT ) == true )
                 {
@@ -204,6 +197,14 @@ namespace Rock.Field.Types
                 if ( configurationValues?.ContainsKey( CONFIG_LIMIT_TO_FOLDER ) == true )
                 {
                     mpLimits.MediaFolderId = configurationValues[CONFIG_LIMIT_TO_FOLDER].Value.AsIntegerOrNull();
+                }
+            }
+
+            if ( controls.Count >= 4 && controls[3] is RockCheckBox cbAllowRefresh )
+            {
+                if ( configurationValues?.ContainsKey( CONFIG_ALLOW_REFRESH ) == true )
+                {
+                    cbAllowRefresh.Checked = configurationValues[CONFIG_ALLOW_REFRESH].Value.AsBoolean( true );
                 }
             }
         }
@@ -258,9 +259,18 @@ namespace Rock.Field.Types
                     return string.Empty;
                 }
 
+                var thumbnails = mediaInfo.ThumbnailData.FromJsonOrNull<List<ThumbnailData>>();
                 var thumbnailUrl = string.Empty;
 
-                return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.Replace( "'", "\\'" )}' class='img-responsive' />";
+                if ( thumbnails != null )
+                {
+                    thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
+                        .OrderByDescending( t => t.Height )
+                        .Select( t => t.Link )
+                        .FirstOrDefault() ?? string.Empty;
+                }
+
+                return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
             }
         }
 
