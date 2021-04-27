@@ -77,6 +77,10 @@
     <Compile Include="Migrations\202104262212301_CheckinManagerPhase3.Designer.cs">
       <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.cs" />
+    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.Designer.cs">
+      <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -1662,6 +1666,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202104262212301_CheckinManagerPhase3.resx">
       <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104271544551_AddFinancialStatementTemplate.resx">
+      <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
