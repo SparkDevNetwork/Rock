@@ -740,6 +740,7 @@ td.grid-actions {
 
   &:hover,
   &:focus {
+    color: @navbartop-color;
     background: fade(@white, 10%);
   }
 }
@@ -759,10 +760,6 @@ td.grid-actions {
   .navbar-zone-login {
     display: flex;
     float: right;
-
-    .btn {
-      &:extend(.btn-nav-zone all);
-    }
   }
 
   @media (min-width: @screen-sm-min) {
