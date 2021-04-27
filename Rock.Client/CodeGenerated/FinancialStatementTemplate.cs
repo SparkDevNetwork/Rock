@@ -27,9 +27,9 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for MediaElement that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for FinancialStatementTemplate that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class MediaElementEntity
+    public partial class FinancialStatementTemplateEntity
     {
         /// <summary />
         public int Id { get; set; }
@@ -38,10 +38,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public string DownloadData { get; set; }
-
-        /// <summary />
-        public decimal? Duration { get; set; }
+        public string FooterTemplate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,10 +47,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MediaElementData { get; set; } = @"[]";
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public int MediaFolderId { get; set; }
+        public int? LogoBinaryFileId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -64,22 +61,10 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public DateTime? SourceCreatedDateTime { get; set; }
+        public string ReportSettings { get; set; }
 
         /// <summary />
-        public string SourceData { get; set; }
-
-        /// <summary />
-        public string SourceKey { get; set; }
-
-        /// <summary />
-        public string SourceMetric { get; set; }
-
-        /// <summary />
-        public DateTime? SourceModifiedDateTime { get; set; }
-
-        /// <summary />
-        public string ThumbnailData { get; set; } = @"[]";
+        public string ReportTemplate { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -108,27 +93,22 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source MediaElement object
+        /// Copies the base properties from a source FinancialStatementTemplate object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( MediaElement source )
+        public void CopyPropertiesFrom( FinancialStatementTemplate source )
         {
             this.Id = source.Id;
             this.Description = source.Description;
-            this.DownloadData = source.DownloadData;
-            this.Duration = source.Duration;
+            this.FooterTemplate = source.FooterTemplate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MediaElementData = source.MediaElementData;
-            this.MediaFolderId = source.MediaFolderId;
+            this.IsActive = source.IsActive;
+            this.LogoBinaryFileId = source.LogoBinaryFileId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.SourceCreatedDateTime = source.SourceCreatedDateTime;
-            this.SourceData = source.SourceData;
-            this.SourceKey = source.SourceKey;
-            this.SourceMetric = source.SourceMetric;
-            this.SourceModifiedDateTime = source.SourceModifiedDateTime;
-            this.ThumbnailData = source.ThumbnailData;
+            this.ReportSettings = source.ReportSettings;
+            this.ReportTemplate = source.ReportTemplate;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -140,10 +120,13 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for MediaElement that includes all the fields that are available for GETs. Use this for GETs (use MediaElementEntity for POST/PUTs)
+    /// Client model for FinancialStatementTemplate that includes all the fields that are available for GETs. Use this for GETs (use FinancialStatementTemplateEntity for POST/PUTs)
     /// </summary>
-    public partial class MediaElement : MediaElementEntity
+    public partial class FinancialStatementTemplate : FinancialStatementTemplateEntity
     {
+        /// <summary />
+        public BinaryFile LogoBinaryFile { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>
