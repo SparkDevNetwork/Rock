@@ -259,7 +259,7 @@ namespace Rock.Field.Types
                     return string.Empty;
                 }
 
-                var thumbnails = mediaInfo.ThumbnailData.FromJsonOrNull<List<ThumbnailData>>();
+                var thumbnails = mediaInfo.ThumbnailData.FromJsonOrNull<List<MediaElementThumbnailData>>();
                 var thumbnailUrl = string.Empty;
 
                 if ( thumbnails != null )

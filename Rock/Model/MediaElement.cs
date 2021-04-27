@@ -132,7 +132,7 @@ namespace Rock.Model
             }
             set
             {
-                ThumbnailDatas = value.FromJsonOrNull<List<ThumbnailData>>() ?? new List<ThumbnailData>();
+                ThumbnailDatas = value.FromJsonOrNull<List<MediaElementThumbnailData>>() ?? new List<MediaElementThumbnailData>();
             }
         }
 
@@ -151,7 +151,7 @@ namespace Rock.Model
             }
             set
             {
-                MediaElementDatas = value.FromJsonOrNull<List<MediaElementData>>() ?? new List<MediaElementData>();
+                MediaElementDatas = value.FromJsonOrNull<List<MediaElementFileData>>() ?? new List<MediaElementFileData>();
             }
         }
 
@@ -184,7 +184,7 @@ namespace Rock.Model
         /// The media element data.
         /// </value>
         [NotMapped]
-        public virtual List<MediaElementData> MediaElementDatas { get; set; } = new List<MediaElementData>();
+        public virtual List<MediaElementFileData> MediaElementDatas { get; set; } = new List<MediaElementFileData>();
 
         /// <summary>
         /// Gets or sets the thumbnail data.
@@ -193,7 +193,7 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [NotMapped]
-        public virtual List<ThumbnailData> ThumbnailDatas { get; set; } = new List<ThumbnailData>();
+        public virtual List<MediaElementThumbnailData> ThumbnailDatas { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
 
