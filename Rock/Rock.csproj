@@ -751,6 +751,7 @@
     <Compile Include="Media\ThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialStatementTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
     <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
@@ -761,6 +762,7 @@
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
     <Compile Include="Model\CommunicationResponseAttachment.cs" />
+    <Compile Include="Model\FinancialStatementTemplate.cs" />
     <Compile Include="Model\FinancialTransactionAlert.cs" />
     <Compile Include="Model\FinancialTransactionAlertType.cs" />
     <Compile Include="Model\MediaAccount.cs" />
