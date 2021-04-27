@@ -112,7 +112,9 @@ export interface RegistrationEntryBlockViewModel
     Session: RegistrationEntryBlockSession | null,
     IsUnauthorized: boolean,
     HasDiscountsAvailable: boolean,
-    RedirectGatewayUrl: string
+    RedirectGatewayUrl: string,
+    LoginRequiredToRegister: boolean,
+    SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

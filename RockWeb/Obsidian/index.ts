@@ -38,7 +38,8 @@ export type PageConfig = {
     pageGuid: Guid;
     pageParameters: Record<string, unknown>,
     currentPerson: Person | null,
-    contextEntities: Record<string, Entity>
+    contextEntities: Record<string, Entity>,
+    loginUrlWithReturnUrl: string
 };
 
 type DebugTimingConfig = {

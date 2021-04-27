@@ -32,7 +32,8 @@ System.register(["vuex", "./CommonEntities"], function (exports_1, context_1) {
                     pageId: 0,
                     pageGuid: '',
                     executionStartTime: new Date(),
-                    debugTimings: []
+                    debugTimings: [],
+                    loginUrlWithReturnUrl: ''
                 },
                 getters: {
                     isAuthenticated: function (state) {
@@ -63,6 +64,7 @@ System.register(["vuex", "./CommonEntities"], function (exports_1, context_1) {
                         state.pageId = pageConfig.pageId || 0;
                         state.pageGuid = pageConfig.pageGuid || '';
                         state.executionStartTime = pageConfig.executionStartTime;
+                        state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;
                     },
                     reportOnLoadDebugTiming: function (state, payload) {
                         var pageStartTime = state.executionStartTime.getTime();
@@ -86,6 +88,11 @@ System.register(["vuex", "./CommonEntities"], function (exports_1, context_1) {
                         for (var _i = 0, commonEntities_1 = CommonEntities_1.commonEntities; _i < commonEntities_1.length; _i++) {
                             var commonEntity = commonEntities_1[_i];
                             context.dispatch(commonEntity.namespace + "/initialize");
+                        }
+                    },
+                    redirectToLogin: function (context) {
+                        if (context.state.loginUrlWithReturnUrl) {
+                            window.location.href = context.state.loginUrlWithReturnUrl;
                         }
                     }
                 },

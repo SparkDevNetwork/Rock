@@ -131,7 +131,12 @@ export default defineComponent( {
         const hasPreAttributes = viewModel.RegistrationAttributesStart?.length > 0;
         let currentStep = steps.intro;
 
-        if ( viewModel.Session )
+        if ( viewModel.SuccessViewModel )
+        {
+            // This is after having paid via redirect gateway
+            currentStep = steps.success;
+        }
+        else if ( viewModel.Session )
         {
             // This is an existing registration, start at the summary
             currentStep = steps.reviewAndPayment;
@@ -159,7 +164,7 @@ export default defineComponent( {
             },
             GatewayToken: '',
             DiscountCode: viewModel.Session?.DiscountCode || '',
-            SuccessViewModel: null
+            SuccessViewModel: viewModel.SuccessViewModel
         } as RegistrationEntryState );
 
         provide( 'registrationEntryState', registrationEntryState );
@@ -178,7 +183,7 @@ export default defineComponent( {
         },
         mustLogin (): boolean
         {
-            return !this.$store.state.currentPerson && this.viewModel.IsUnauthorized;
+            return !this.$store.state.currentPerson && ( this.viewModel.IsUnauthorized || this.viewModel.LoginRequiredToRegister );
         },
         isUnauthorized (): boolean
         {
@@ -341,6 +346,13 @@ export default defineComponent( {
         {
             this.registrationEntryState.CurrentStep = this.steps.success;
             Page.smoothScrollToTop();
+        }
+    },
+    mounted ()
+    {
+        if ( this.viewModel.LoginRequiredToRegister && !this.$store.state.currentPerson )
+        {
+            this.$store.dispatch( 'redirectToLogin' );
         }
     },
     template: `

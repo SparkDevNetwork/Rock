@@ -146,7 +146,7 @@ namespace Rock.Net
             // Setup the page parameters.
             //
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-            foreach ( var key in request.QueryString.AllKeys )
+            foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
             }

@@ -1166,7 +1166,8 @@ Obsidian.whenReady(() => {{
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {PageParameters().ToJson()},
             currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
-            contextEntities: {GetContextViewModels().ToJson()}
+            contextEntities: {GetContextViewModels().ToJson()},
+            loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
 }});";
@@ -2240,6 +2241,15 @@ Sys.Application.add_load(function () {
             }
 
             return resolvedUrl;
+        }
+
+        /// <summary>
+        /// Gets the login URL with return URL.
+        /// </summary>
+        /// <returns></returns>
+        public string GetLoginUrlWithReturnUrl()
+        {
+            return Site.GetLoginUrlWithReturnUrl();
         }
 
         /// <summary>

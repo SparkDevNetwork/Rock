@@ -153,9 +153,11 @@ namespace Rock.Obsidian.Blocks.Event
         {
             public const string RegistrationId = "RegistrationId";
             public const string RegistrationInstanceId = "RegistrationInstanceId";
+            public const string RegistrationSessionGuid = "sr";
             public const string CampusId = "CampusId";
             public const string Slug = "Slug";
             public const string GroupId = "GroupId";
+            public const string PaymentToken = "paymentToken";
         }
 
         #endregion Keys
@@ -266,7 +268,7 @@ namespace Rock.Obsidian.Blocks.Event
 
                 // Generate the redirect URL
                 var redirectUrl = GenerateRedirectUrl( rockContext, context, discountedCost, args.Registrar, args.Registrants, registrationSession.Guid );
-                return new BlockActionResult( System.Net.HttpStatusCode.Created, registrationSession.Guid );
+                return new BlockActionResult( System.Net.HttpStatusCode.Created, redirectUrl );
             }
         }
 
@@ -289,270 +291,11 @@ namespace Rock.Obsidian.Blocks.Event
                     return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
                 }
 
-                var registrationChanges = new History.HistoryChangeList();
-                Person registrar = null;
-                var isNewRegistration = context.Registration == null;
+                SubmitRegistration( rockContext, context, args, out errorMessage );
 
-                if ( isNewRegistration )
+                if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    // This is a new registration
-                    context.Registration = new Registration
-                    {
-                        RegistrationInstanceId = context.RegistrationInstance.Id,
-                        PersonAliasId = currentPerson?.PrimaryAliasId
-                    };
-
-                    var registrationService = new RegistrationService( rockContext );
-                    registrationService.Add( context.Registration );
-                    registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
-                    registrar = currentPerson;
-                }
-                else
-                {
-                    // This is an existing registration
-                    registrar = context.Registration.PersonAlias.Person;
-                }
-
-                // Apply the registrar values to the registration record
-                History.EvaluateChange( registrationChanges, "First Name", context.Registration.FirstName, args.Registrar.NickName );
-                context.Registration.FirstName = args.Registrar.NickName;
-
-                History.EvaluateChange( registrationChanges, "Last Name", context.Registration.LastName, args.Registrar.LastName );
-                context.Registration.LastName = args.Registrar.LastName;
-
-                History.EvaluateChange( registrationChanges, "Confirmation Email", context.Registration.ConfirmationEmail, args.Registrar.Email );
-                context.Registration.ConfirmationEmail = args.Registrar.Email;
-
-                History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, args.DiscountCode );
-                context.Registration.DiscountCode = args.DiscountCode;
-
-                var discountPercentage = context.Discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Percentage", context.Registration.DiscountPercentage, discountPercentage );
-                context.Registration.DiscountPercentage = discountPercentage;
-
-                var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
-                History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
-                context.Registration.DiscountAmount = discountAmount;
-
-                // If the registrar person record does not exist, find or create that record
-                var personService = new PersonService( rockContext );
-
-                if ( registrar == null )
-                {
-                    registrar = personService.FindPerson( context.Registration.FirstName, context.Registration.LastName, context.Registration.ConfirmationEmail, true );
-
-                    if ( registrar != null )
-                    {
-                        context.Registration.PersonAliasId = registrar.PrimaryAliasId;
-                    }
-                    else
-                    {
-                        registrar = null;
-                        context.Registration.PersonAlias = null;
-                        context.Registration.PersonAliasId = null;
-                    }
-                }
-
-                // Load some attribute values about family roles and statuses
-                var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
-                var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
-                var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-                var adultRoleId = familyGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                var childRoleId = familyGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-
-                // Make sure there's an actual person associated to registration
-                var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
-
-                // variables to keep track of the family that new people should be added to
-                int? singleFamilyId = null;
-                var multipleFamilyGroupIds = new Dictionary<Guid, int>();
-
-                if ( !context.Registration.PersonAliasId.HasValue )
-                {
-                    // If a match was not found, create a new person
-                    var person = new Person
-                    {
-                        FirstName = context.Registration.FirstName,
-                        LastName = context.Registration.LastName,
-                        IsEmailActive = true,
-                        Email = context.Registration.ConfirmationEmail,
-                        EmailPreference = EmailPreference.EmailAllowed,
-                        RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
-                        ConnectionStatusValueId = dvcConnectionStatus?.Id
-                    };
-
-                    if ( dvcConnectionStatus != null )
-                    {
-                        person.ConnectionStatusValueId = dvcConnectionStatus.Id;
-                    }
-
-                    if ( dvcRecordStatus != null )
-                    {
-                        person.RecordStatusValueId = dvcRecordStatus.Id;
-                    }
-
-                    registrar = SavePerson( rockContext, context.RegistrationTemplate, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
-                    context.Registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
-                    History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
-                }
-
-                // Update the registrar's email if applicable
-                var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
-
-                if ( forceEmailUpdate && context.Registration.PersonAliasId.HasValue )
-                {
-                    var person = personService.Get( context.Registration.PersonAliasId.Value );
-
-                    if ( person != null )
-                    {
-                        person.Email = context.Registration.ConfirmationEmail;
-                        rockContext.SaveChanges();
-                    }
-                }
-
-                // Determine the campus
-                var registrarFamily = registrar.GetFamily( rockContext );
-                campusId = campusId ?? registrarFamily.CampusId;
-
-                // Set the family guid for any other registrants that were selected to be in the same family
-                multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
-
-                if ( !singleFamilyId.HasValue )
-                {
-                    singleFamilyId = registrarFamily.Id;
-                }
-
-                // If the Registration Instance linkage specified a group, load it now
-                var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
-                var registrationSlug = PageParameter( PageParameterKey.Slug );
-
-                if ( !groupId.HasValue && !registrationSlug.IsNullOrWhiteSpace() )
-                {
-                    var dateTime = RockDateTime.Now;
-                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( l =>
-                            l.UrlSlug == registrationSlug &&
-                            l.RegistrationInstance != null &&
-                            l.RegistrationInstance.IsActive &&
-                            l.RegistrationInstance.RegistrationTemplate != null &&
-                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                        .FirstOrDefault();
-
-                    if ( linkage != null )
-                    {
-                        groupId = linkage.GroupId;
-                    }
-                }
-
-                Group group = null;
-
-                if ( groupId.HasValue )
-                {
-                    group = new GroupService( rockContext ).Get( groupId.Value );
-
-                    if ( group != null && ( !context.Registration.GroupId.HasValue || context.Registration.GroupId.Value != group.Id ) )
-                    {
-                        context.Registration.GroupId = group.Id;
-                        History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
-                    }
-                }
-
-                // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
-                context.Registration.IsTemporary = false;
-
-                // Set attribute values on the registration
-                var registrationAttributes = GetRegistrationAttributes( context.RegistrationTemplate.Id );
-                context.Registration.LoadAttributes( rockContext );
-
-                foreach ( var attribute in registrationAttributes )
-                {
-                    var value = args.FieldValues.GetValueOrNull( attribute.Guid );
-                    context.Registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
-                }
-
-                // Save the registration ( so we can get an id )
-                rockContext.SaveChanges();
-                context.Registration.SaveAttributeValues( rockContext );
-
-                // Save the history
-                Task.Run( () => HistoryService.SaveChanges(
-                    new RockContext(),
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    context.Registration.Id,
-                    registrationChanges,
-                    true,
-                    currentPerson?.PrimaryAliasId ) );
-
-                try
-                {
-                    // Get each registrant
-                    var index = 0;
-
-                    foreach ( var registrantInfo in args.Registrants )
-                    {
-                        var forceWaitlist = context.SpotsRemaining < 1;
-
-                        UpsertRegistrant(
-                            rockContext,
-                            context,
-                            registrar,
-                            registrarFamily.Guid,
-                            registrantInfo,
-                            index,
-                            multipleFamilyGroupIds,
-                            ref singleFamilyId,
-                            forceWaitlist );
-
-                        index++;
-                    }
-
-                    rockContext.SaveChanges();
-
-                    var transactionGuid = args.AmountToPayNow > 0 ?
-                        ProcessPayment( rockContext, context, args, registrar, out errorMessage ) :
-                        null;
-
-                    if ( !errorMessage.IsNullOrWhiteSpace() )
-                    {
-                        throw new Exception( errorMessage );
-                    }
-
-                    if ( args.AmountToPayNow > 0 && !transactionGuid.HasValue )
-                    {
-                        throw new Exception( "There was a problem with the payment" );
-                    }
-                }
-                catch ( Exception )
-                {
-                    using ( var newRockContext = new RockContext() )
-                    {
-                        // Cleanup any new records created since there was an error
-                        if ( isNewRegistration )
-                        {
-                            var newRegistrationService = new RegistrationService( newRockContext );
-                            var savedRegistration = new RegistrationService( newRockContext ).Get( context.Registration.Id );
-
-                            if ( savedRegistration != null )
-                            {
-                                HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
-
-                                newRegistrationService.Delete( savedRegistration );
-                                newRockContext.SaveChanges();
-                            }
-                        }
-                    }
-
-                    throw;
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
                 }
 
                 var successViewModel = GetSuccessViewModel( context.Registration.Id );
@@ -563,6 +306,289 @@ namespace Rock.Obsidian.Blocks.Event
         #endregion Block Actions
 
         #region Helpers
+
+        /// <summary>
+        /// Submits the registration.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="args">The arguments.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">There was a problem with the payment</exception>
+        private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryBlockArgs args, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var currentPerson = GetCurrentPerson();
+
+            var registrationChanges = new History.HistoryChangeList();
+            Person registrar = null;
+            var isNewRegistration = context.Registration == null;
+
+            if ( isNewRegistration )
+            {
+                // This is a new registration
+                context.Registration = new Registration
+                {
+                    RegistrationInstanceId = context.RegistrationInstance.Id,
+                    PersonAliasId = currentPerson?.PrimaryAliasId
+                };
+
+                var registrationService = new RegistrationService( rockContext );
+                registrationService.Add( context.Registration );
+                registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
+                registrar = currentPerson;
+            }
+            else
+            {
+                // This is an existing registration
+                registrar = context.Registration.PersonAlias.Person;
+            }
+
+            // Apply the registrar values to the registration record
+            History.EvaluateChange( registrationChanges, "First Name", context.Registration.FirstName, args.Registrar.NickName );
+            context.Registration.FirstName = args.Registrar.NickName;
+
+            History.EvaluateChange( registrationChanges, "Last Name", context.Registration.LastName, args.Registrar.LastName );
+            context.Registration.LastName = args.Registrar.LastName;
+
+            History.EvaluateChange( registrationChanges, "Confirmation Email", context.Registration.ConfirmationEmail, args.Registrar.Email );
+            context.Registration.ConfirmationEmail = args.Registrar.Email;
+
+            History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, args.DiscountCode );
+            context.Registration.DiscountCode = args.DiscountCode;
+
+            var discountPercentage = context.Discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
+            History.EvaluateChange( registrationChanges, "Discount Percentage", context.Registration.DiscountPercentage, discountPercentage );
+            context.Registration.DiscountPercentage = discountPercentage;
+
+            var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
+            History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
+            context.Registration.DiscountAmount = discountAmount;
+
+            // If the registrar person record does not exist, find or create that record
+            var personService = new PersonService( rockContext );
+
+            if ( registrar == null )
+            {
+                registrar = personService.FindPerson( context.Registration.FirstName, context.Registration.LastName, context.Registration.ConfirmationEmail, true );
+
+                if ( registrar != null )
+                {
+                    context.Registration.PersonAliasId = registrar.PrimaryAliasId;
+                }
+                else
+                {
+                    registrar = null;
+                    context.Registration.PersonAlias = null;
+                    context.Registration.PersonAliasId = null;
+                }
+            }
+
+            // Load some attribute values about family roles and statuses
+            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var adultRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            var childRoleId = familyGroupType.Roles
+                .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+
+            // Make sure there's an actual person associated to registration
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+
+            // variables to keep track of the family that new people should be added to
+            int? singleFamilyId = null;
+            var multipleFamilyGroupIds = new Dictionary<Guid, int>();
+
+            if ( !context.Registration.PersonAliasId.HasValue )
+            {
+                // If a match was not found, create a new person
+                var person = new Person
+                {
+                    FirstName = context.Registration.FirstName,
+                    LastName = context.Registration.LastName,
+                    IsEmailActive = true,
+                    Email = context.Registration.ConfirmationEmail,
+                    EmailPreference = EmailPreference.EmailAllowed,
+                    RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
+                    ConnectionStatusValueId = dvcConnectionStatus?.Id
+                };
+
+                if ( dvcConnectionStatus != null )
+                {
+                    person.ConnectionStatusValueId = dvcConnectionStatus.Id;
+                }
+
+                if ( dvcRecordStatus != null )
+                {
+                    person.RecordStatusValueId = dvcRecordStatus.Id;
+                }
+
+                registrar = SavePerson( rockContext, context.RegistrationTemplate, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                context.Registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
+                History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
+            }
+
+            // Update the registrar's email if applicable
+            var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+
+            if ( forceEmailUpdate && context.Registration.PersonAliasId.HasValue )
+            {
+                var person = personService.Get( context.Registration.PersonAliasId.Value );
+
+                if ( person != null )
+                {
+                    person.Email = context.Registration.ConfirmationEmail;
+                    rockContext.SaveChanges();
+                }
+            }
+
+            // Determine the campus
+            var registrarFamily = registrar.GetFamily( rockContext );
+            campusId = campusId ?? registrarFamily.CampusId;
+
+            // Set the family guid for any other registrants that were selected to be in the same family
+            multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
+
+            if ( !singleFamilyId.HasValue )
+            {
+                singleFamilyId = registrarFamily.Id;
+            }
+
+            // If the Registration Instance linkage specified a group, load it now
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var registrationSlug = PageParameter( PageParameterKey.Slug );
+
+            if ( !groupId.HasValue && !registrationSlug.IsNullOrWhiteSpace() )
+            {
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( l =>
+                        l.UrlSlug == registrationSlug &&
+                        l.RegistrationInstance != null &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    groupId = linkage.GroupId;
+                }
+            }
+
+            Group group = null;
+
+            if ( groupId.HasValue )
+            {
+                group = new GroupService( rockContext ).Get( groupId.Value );
+
+                if ( group != null && ( !context.Registration.GroupId.HasValue || context.Registration.GroupId.Value != group.Id ) )
+                {
+                    context.Registration.GroupId = group.Id;
+                    History.EvaluateChange( registrationChanges, "Group", string.Empty, group.Name );
+                }
+            }
+
+            // if this registration was marked as temporary (started from another page, then specified in the url), set IsTemporary to False now that we are done
+            context.Registration.IsTemporary = false;
+
+            // Set attribute values on the registration
+            var registrationAttributes = GetRegistrationAttributes( context.RegistrationTemplate.Id );
+            context.Registration.LoadAttributes( rockContext );
+
+            foreach ( var attribute in registrationAttributes )
+            {
+                var value = args.FieldValues.GetValueOrNull( attribute.Guid );
+                context.Registration.SetAttributeValue( attribute.Key, value.ToStringSafe() );
+            }
+
+            // Save the registration ( so we can get an id )
+            rockContext.SaveChanges();
+            context.Registration.SaveAttributeValues( rockContext );
+
+            // Save the history
+            Task.Run( () => HistoryService.SaveChanges(
+                new RockContext(),
+                typeof( Registration ),
+                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                context.Registration.Id,
+                registrationChanges,
+                true,
+                currentPerson?.PrimaryAliasId ) );
+
+            try
+            {
+                // Get each registrant
+                var index = 0;
+
+                foreach ( var registrantInfo in args.Registrants )
+                {
+                    var forceWaitlist = context.SpotsRemaining < 1;
+
+                    UpsertRegistrant(
+                        rockContext,
+                        context,
+                        registrar,
+                        registrarFamily.Guid,
+                        registrantInfo,
+                        index,
+                        multipleFamilyGroupIds,
+                        ref singleFamilyId,
+                        forceWaitlist );
+
+                    index++;
+                }
+
+                rockContext.SaveChanges();
+
+                var transactionGuid = args.AmountToPayNow > 0 ?
+                    ProcessPayment( rockContext, context, args, out errorMessage ) :
+                    null;
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    throw new Exception( errorMessage );
+                }
+
+                if ( args.AmountToPayNow > 0 && !transactionGuid.HasValue )
+                {
+                    throw new Exception( "There was a problem with the payment" );
+                }
+            }
+            catch ( Exception )
+            {
+                using ( var newRockContext = new RockContext() )
+                {
+                    // Cleanup any new records created since there was an error
+                    if ( isNewRegistration )
+                    {
+                        var newRegistrationService = new RegistrationService( newRockContext );
+                        var savedRegistration = new RegistrationService( newRockContext ).Get( context.Registration.Id );
+
+                        if ( savedRegistration != null )
+                        {
+                            HistoryService.DeleteChanges( newRockContext, typeof( Registration ), savedRegistration.Id );
+
+                            newRegistrationService.Delete( savedRegistration );
+                            newRockContext.SaveChanges();
+                        }
+                    }
+                }
+
+                throw;
+            }
+
+            return context.Registration;
+        }
 
         /// <summary>
         /// Gets a person field value.
@@ -1462,6 +1488,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns></returns>
         private RegistrationEntryBlockViewModel GetViewModel( RockContext rockContext )
         {
+            // Get the registration context (template, instance, actual registration (if exisiting))
             var context = GetContext( rockContext, out var errorMessage );
             var registrationInstance = context?.RegistrationInstance;
             var registrationTemplate = context?.RegistrationTemplate;
@@ -1471,6 +1498,31 @@ namespace Rock.Obsidian.Blocks.Event
                 return null;
             }
 
+            // If the registration is existing, then add the args that describe it to the view model
+            var isExistingRegistration = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
+            var session = GetRegistrationEntryBlockSession( rockContext, registrationTemplate, registrationInstance );
+            var isUnauthorized = isExistingRegistration && session == null;
+            var wasRedirectedFromPayment = session != null && !isExistingRegistration;
+            RegistrationEntryBlockSuccessViewModel successViewModel = null;
+
+            if ( wasRedirectedFromPayment )
+            {
+                // This is a redirect from a redirect gateway. The user was sent to another site, made payment, and has come back after completion
+                SubmitRegistration( rockContext, context, new RegistrationEntryBlockArgs
+                {
+                    AmountToPayNow = session.AmountToPayNow,
+                    DiscountCode = session.DiscountCode,
+                    FieldValues = session.FieldValues,
+                    GatewayToken = null,
+                    Registrants = session.Registrants,
+                    Registrar = session.Registrar,
+                    RegistrationGuid = null
+                }, out errorMessage );
+
+                successViewModel = GetSuccessViewModel( context.Registration.Id );
+            }
+
+            // Get models needed for the view model
             var hasDiscountsAvailable = registrationTemplate.Discounts?.Any() == true;
             var formModels = registrationTemplate.Forms?.OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateForm>();
 
@@ -1664,7 +1716,6 @@ namespace Rock.Obsidian.Blocks.Event
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
-                Session = null,
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,
@@ -1695,13 +1746,12 @@ namespace Rock.Obsidian.Blocks.Event
                 AmountDueToday = amountDueToday,
                 InitialAmountToPay = initialAmountToPay,
                 HasDiscountsAvailable = hasDiscountsAvailable,
-                RedirectGatewayUrl = redirectGatewayUrl
+                RedirectGatewayUrl = redirectGatewayUrl,
+                LoginRequiredToRegister = context.RegistrationTemplate.LoginRequired,
+                Session = session,
+                IsUnauthorized = isUnauthorized,
+                SuccessViewModel = successViewModel
             };
-
-            // If the registration is existing, then add the args that describe it to the view model
-            var shouldHaveSession = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull().HasValue;
-            viewModel.Session = GetRegistrationEntryBlockSession( rockContext, registrationTemplate, registrationInstance );
-            viewModel.IsUnauthorized = shouldHaveSession && viewModel.Session == null;
 
             return viewModel;
         }
@@ -1755,7 +1805,8 @@ namespace Rock.Obsidian.Blocks.Event
                 EmailAddress = registrar.Email,
                 SourceReference = registrationSessionGuid.ToString(),
                 FundVisibility = RedirectGatewayLinkArgs.FundVisibilityOption.Hide,
-                Note = $"Event registration for {context.RegistrationInstance.Name} for {registrantNames} by {registrarName}"
+                Note = $"Event registration for {context.RegistrationInstance.Name} for {registrantNames} by {registrarName}",
+                RedirectUrl = "rock-registration-entry"
             } );
         }
 
@@ -1787,14 +1838,14 @@ namespace Rock.Obsidian.Blocks.Event
         /// Processes the payment.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="registration">The registration.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="args">The arguments.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         private Guid? ProcessPayment(
             RockContext rockContext,
             RegistrationContext context,
             RegistrationEntryBlockArgs args,
-            Person registrar,
             out string errorMessage )
         {
             var gateway = context.RegistrationTemplate?.FinancialGateway?.GetGatewayComponent();
@@ -1802,6 +1853,14 @@ namespace Rock.Obsidian.Blocks.Event
             if ( gateway == null )
             {
                 errorMessage = "There was a problem creating the payment gateway information";
+                return null;
+            }
+
+            if ( gateway is IRedirectionGateway )
+            {
+                // Do not charge a payment, as it was already made via redirection
+                args.AmountToPayNow = 0;
+                errorMessage = string.Empty;
                 return null;
             }
 
@@ -2051,6 +2110,27 @@ namespace Rock.Obsidian.Blocks.Event
                 return registrationInstanceId.Value;
             }
 
+            // Try a session. This is typically from a PushPay redirect
+            var registrationSessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+
+            if ( registrationSessionGuid.HasValue )
+            {
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var registrationSession = registrationSessionService.Queryable()
+                    .AsNoTracking()
+                    .Where( rs => rs.Guid == registrationSessionGuid.Value )
+                    .Select( rs => new
+                    {
+                        rs.RegistrationInstanceId
+                    } )
+                    .FirstOrDefault();
+
+                if ( registrationSession != null )
+                {
+                    return registrationSession.RegistrationInstanceId;
+                }
+            }
+
             // Try a url slug
             var slug = PageParameter( PageParameterKey.Slug );
 
@@ -2104,6 +2184,28 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns></returns>
         private RegistrationEntryBlockSession GetRegistrationEntryBlockSession( RockContext rockContext, RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
         {
+            // Try to restore the session from the RegistrationSessionGuid, which is typically a PushPay redirect
+            var registrationSessionGuid = PageParameter( PageParameterKey.RegistrationSessionGuid ).AsGuidOrNull();
+
+            if ( registrationSessionGuid.HasValue )
+            {
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var registrationSession = registrationSessionService.Queryable()
+                    .AsNoTracking()
+                    .Where( rs => rs.Guid == registrationSessionGuid.Value )
+                    .Select( rs => new
+                    {
+                        rs.RegistrationData
+                    } )
+                    .FirstOrDefault();
+
+                if ( registrationSession != null )
+                {
+                    return registrationSession.RegistrationData.FromJsonOrNull<RegistrationEntryBlockSession>();
+                }
+            }
+
+            // Try to restore the session from an existing registration
             var currentPerson = GetCurrentPerson();
             var registrationId = PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
 

@@ -31,7 +31,8 @@ export interface RootState {
     pageId: number;
     pageGuid: Guid;
     executionStartTime: Date;
-    debugTimings: DebugTimingViewModel[]
+    debugTimings: DebugTimingViewModel[],
+    loginUrlWithReturnUrl: string
 }
 
 declare module '@vue/runtime-core' {
@@ -58,7 +59,8 @@ export default createStore<RootState>({
         pageId: 0,
         pageGuid: '' as Guid,
         executionStartTime: new Date(),
-        debugTimings: []
+        debugTimings: [],
+        loginUrlWithReturnUrl: ''
     },
     getters: {
         isAuthenticated(state) {
@@ -88,6 +90,7 @@ export default createStore<RootState>({
             state.pageId = pageConfig.pageId || 0;
             state.pageGuid = pageConfig.pageGuid || '';
             state.executionStartTime = pageConfig.executionStartTime;
+            state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;
         },
         reportOnLoadDebugTiming(state, payload: ReportDebugTimingArgs) {
             const pageStartTime = state.executionStartTime.getTime();
@@ -111,6 +114,13 @@ export default createStore<RootState>({
             // Initialize each common entity module
             for (const commonEntity of commonEntities) {
                 context.dispatch(`${commonEntity.namespace}/initialize`);
+            }
+        },
+        redirectToLogin ( context )
+        {
+            if ( context.state.loginUrlWithReturnUrl )
+            {
+                window.location.href = context.state.loginUrlWithReturnUrl;
             }
         }
     },

@@ -403,9 +403,12 @@ export default defineComponent( {
                 // If this is a redirect gateway, then persist and redirect now
                 if ( this.viewModel.IsRedirectGateway )
                 {
-                    await this.persist();
-                    // TODO redirect
-                    console.log('redirect');
+                    const redirectUrl = await this.persist();
+
+                    if ( redirectUrl )
+                    {
+                        location.href = redirectUrl;
+                    }
                 }
                 else
                 {
@@ -575,10 +578,10 @@ export default defineComponent( {
             return result.isSuccess;
         },
 
-        /** Persist the args to the server so the user can be redirected for payment */
-        async persist (): Promise<boolean>
+        /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
+        async persist (): Promise<string>
         {
-            const result = await this.invokeBlockAction<Guid>( 'Persist', {
+            const result = await this.invokeBlockAction<string>( 'Persist', {
                 args: this.getArgs()
             } );
 
@@ -587,7 +590,7 @@ export default defineComponent( {
                 this.submitErrorMessage = result.errorMessage || 'Unknown error';
             }
 
-            return result.isSuccess;
+            return result.data || '';
         }
     },
     created ()
@@ -708,7 +711,7 @@ export default defineComponent( {
                             </div>
                         </div>
                     </div>
-                    <div class="form-group static-control">
+                    <div v-if="previouslyPaid" class="form-group static-control">
                         <label class="control-label">Previously Paid</label>
                         <div class="control-wrapper">
                             <div class="form-control-static">

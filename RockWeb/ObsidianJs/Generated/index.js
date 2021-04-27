@@ -157,4 +157,4 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
         }
     };
 });
-//# sourceMappingURL=Index.js.map
+//# sourceMappingURL=index.js.map

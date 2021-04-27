@@ -233,7 +233,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetFirstName( RegistrationTemplate template, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
         {
-            object value = GetPersonFieldValue( template, registrantInfo, RegistrationPersonFieldType.LastName );
+            object value = GetPersonFieldValue( template, registrantInfo, RegistrationPersonFieldType.FirstName );
 
             if ( value == null )
             {
@@ -255,6 +255,7 @@ namespace Rock.Model
         /// Gets the last name.
         /// </summary>
         /// <param name="template">The template.</param>
+        /// <param name="registrantInfo">The registrant information.</param>
         /// <returns></returns>
         public string GetLastName( RegistrationTemplate template, Rock.ViewModel.Blocks.RegistrantInfo registrantInfo )
         {

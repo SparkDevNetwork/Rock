@@ -258,6 +258,22 @@ namespace Rock.ViewModel.Blocks
         /// The redirect gateway URL.
         /// </value>
         public string RedirectGatewayUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [login required to register].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [login required to register]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LoginRequiredToRegister { get; set; }
+
+        /// <summary>
+        /// Gets or sets the success view model.
+        /// </summary>
+        /// <value>
+        /// The success view model.
+        /// </value>
+        public RegistrationEntryBlockSuccessViewModel SuccessViewModel { get; set; }
     }
 
     /// <summary>
