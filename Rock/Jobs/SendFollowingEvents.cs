@@ -139,7 +139,8 @@ namespace Rock.Jobs
                     // Get a distinct list of each entitytype/entity that is being followed by anyone that subscribes to events
                     var followings = followingService
                         .Queryable( "PersonAlias" ).AsNoTracking()
-                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId ) )
+                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId )
+                            && string.IsNullOrEmpty( f.PurposeKey ) )
                         .ToList();
 
                     // group the followings by their type

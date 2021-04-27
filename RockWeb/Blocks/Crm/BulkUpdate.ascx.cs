@@ -2071,6 +2071,7 @@ namespace RockWeb.Blocks.Crm
                             var alreadyFollowingIds = followingService.Queryable()
                                 .Where( f =>
                                     f.EntityTypeId == personAliasEntityTypeId &&
+                                    string.IsNullOrEmpty( f.PurposeKey ) &&
                                     f.PersonAlias.Id == followedPersonAliasId )
                                 .Join( paQry, f => f.EntityId, p => p.Id, ( f, p ) => new { PersonAlias = p } )
                                 .Select( p => p.PersonAlias.PersonId )
@@ -2101,6 +2102,7 @@ namespace RockWeb.Blocks.Crm
                             foreach ( var following in followingService.Queryable()
                                 .Where( f =>
                                     f.EntityTypeId == personAliasEntityTypeId &&
+                                    ( f.PurposeKey == null || f.PurposeKey == string.Empty ) &&
                                     paQry.Contains( f.EntityId ) &&
                                     f.PersonAlias.Id == _currentPersonAliasId ) )
                             {

@@ -104,6 +104,7 @@ namespace Rock.Workflow.Action
                         .FirstOrDefault( f =>
                             f.EntityTypeId == entityType.Id &&
                             f.EntityId == entityToFollow.Id &&
+                            string.IsNullOrEmpty( f.PurposeKey ) &&
                             f.PersonAlias.Person.Id == personAlias.PersonId );
 
                     if ( following == null )

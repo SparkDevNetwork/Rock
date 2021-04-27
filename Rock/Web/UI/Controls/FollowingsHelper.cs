@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
                 return;
             }
 
-            SetFollowing( followEntity.TypeId, followEntity.Id, followControl, follower );
+            SetFollowing( followEntity.TypeId, followEntity.Id, followControl, follower, string.Empty, string.Empty );
         }
 
         /// <summary>
@@ -55,6 +55,37 @@ namespace Rock.Web.UI.Controls
         /// <param name="callbackScript">The callback script.</param>
         public static void SetFollowing( int entityTypeId, int entityId, WebControl followControl, Person follower, string callbackScript = "" )
         {
+            SetFollowing( entityTypeId, entityId, followControl, follower, callbackScript, string.Empty );
+        }
+
+        /// <summary>
+        /// Configures a control to display and toggle following for the specified entity
+        /// </summary>
+        /// <param name="followEntity">The follow entity. NOTE: Make sure to use PersonAlias instead of Person when following a Person</param>
+        /// <param name="followControl">The follow control.</param>
+        /// <param name="follower">The follower.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        public static void SetFollowing( IEntity followEntity, WebControl followControl, Person follower, string purposeKey )
+        {
+            if ( followEntity == null )
+            {
+                return;
+            }
+
+            SetFollowing( followEntity.TypeId, followEntity.Id, followControl, follower, string.Empty, purposeKey );
+        }
+
+        /// <summary>
+        /// Configures a control to display and toggle following for the specified entity
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="followControl">The follow control.</param>
+        /// <param name="follower">The follower.</param>
+        /// <param name="callbackScript">The callback script.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        public static void SetFollowing( int entityTypeId, int entityId, WebControl followControl, Person follower, string callbackScript = "", string purposeKey = "" )
+        {
             if ( follower != null && follower.PrimaryAliasId.HasValue )
             {
                 using ( var rockContext = new RockContext() )
@@ -62,12 +93,16 @@ namespace Rock.Web.UI.Controls
                     var personAliasService = new PersonAliasService( rockContext );
                     var followingService = new FollowingService( rockContext );
 
+                    // If PurposeKey is null then the provided purposeKey must be
+                    // empty.
+                    // If PurposeKey is not null then it must match the provided
+                    // purposeKey.
                     var followingQry = followingService.Queryable()
                         .Where( f =>
                             f.EntityTypeId == entityTypeId &&
-                            f.PersonAlias.PersonId == follower.Id );
-
-                    followingQry = followingQry.Where( f => f.EntityId == entityId );
+                            f.EntityId == entityId &&
+                            f.PersonAlias.PersonId == follower.Id &&
+                            ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) );
 
                     if ( followingQry.Any() )
                     {
@@ -83,10 +118,11 @@ namespace Rock.Web.UI.Controls
                 followControl.Visible = entityId > 0;
 
                 string script = string.Format(
-                    @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, {3}, {4}, {5});",
+                    @"Rock.controls.followingsToggler.initialize($('#{0}'), {1}, {2}, '{3}', {4}, {5}, {6});",
                         followControl.ClientID,
                         entityTypeId,
                         entityId,
+                        purposeKey.Replace( "'", "\\'" ),
                         follower.Id,
                         follower.PrimaryAliasId,
                         callbackScript.IsNullOrWhiteSpace() ? "null" : callbackScript );
