@@ -1661,6 +1661,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="icalEvent">The ical event.</param>
+        /// <param name="startTime">The start time.</param>
+        /// <returns></returns>
+        [Obsolete("Use the override with the string instead of the Ical.Net.Event.")]
+        [RockObsolete("12.4")]
+        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime )
+        {
+            return icalEvent.GetOccurrences( startTime ).ToList();
+        }
+
+        /// <summary>
+        /// Gets the occurrences.
+        /// </summary>
+        /// <param name="icalEvent">The ical event.</param>
+        /// <param name="startTime">The start time.</param>
+        /// <param name="endTime">The end time.</param>
+        /// <returns></returns>
+        [Obsolete("Use the override with the string instead of the Ical.Net.Event.")]
+        [RockObsolete("12.4")]
+        public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime, DateTime endTime )
+        {
+            return icalEvent.GetOccurrences( startTime, endTime ).ToList();
+        }
+
+        /// <summary>
         /// Gets the occurrences for the specified iCal
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
