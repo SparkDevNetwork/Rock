@@ -17,12 +17,12 @@
                             <ItemTemplate>
                                 <tr>
                                     <td>
+                                        <span class="d-block"><asp:Literal ID="lAccounts" runat="server" /></span>
                                         <span class="d-block small text-muted"><%# Eval("TransactionFrequencyValue.Value") %>: Next Gift
-                                    <asp:Literal ID="lNextPaymentDate" runat="server" /></span>
-                                        <span>
-                                            <asp:Literal ID="lAccounts" runat="server" /></span>
+                                            <asp:Literal ID="lNextPaymentDate" runat="server" />
+                                        </span>
                                     </td>
-                                    <td class="align-middle text-right"><%# Eval("TotalAmount") %></td>
+                                    <td class="align-middle text-right"><%# ((decimal)Eval("TotalAmount")).FormatAsCurrency() %></td>
                                     <td class="w-1 align-middle">
                                         <asp:LinkButton runat="server" OnCommand="rptScheduledTransaction_Edit" CommandArgument='<%# Eval("Guid") %>' CssClass="btn btn-sm btn-square btn-link text-muted">
                                         <i class="fa fa-pencil"></i>
@@ -70,8 +70,8 @@
                             <ItemTemplate>
                                 <tr>
                                     <td>
+                                        <span class="d-block"><%# Eval("Account.Name") %></span>
                                         <span class="d-block small text-muted"><asp:Literal ID="lPledgeDate" runat="server" /></span>
-                                        <span><%# Eval("Account.Name") %></span>
                                     </td>
                                     <td class="align-middle text-right"><%# ((decimal)Eval("TotalAmount")).FormatAsCurrency() %></td>
                                     <td class="w-1 align-middle">

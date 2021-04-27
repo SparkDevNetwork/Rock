@@ -933,14 +933,16 @@ icon {
 
 .modal-anchor-top {
     margin: 0 0 48 0;
+    corner-radius: 0 8;
 }
 
 .modal-anchor-bottom {
     margin: 48 0 0 0;
+    corner-radius: 8 0;
 }
 
 .modal-header {
-    background-color: ?color-brand;
+    background-color: ?color-gray-400;
     padding: 16;
 }
 
@@ -967,6 +969,11 @@ icon {
     margin: 0;
     padding: 0;
 }
+
+.modal-close {
+    opacity: 0.5;
+}
+
 
 /* Divider */
 .divider {
@@ -1349,18 +1356,6 @@ icon {
 
 .next-month {
     padding-right: 0;
-}
-
-/* Modals */
-.modal-header {
-    background-color: ?color-gray-400;
-}
-
-.modal-title {  
-}
-
-.modal-close {
-    opacity: 0.5;
 }
 
 /* Forms Styles */

@@ -45,6 +45,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// This is where you implement the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public override void RenderBaseControl( HtmlTextWriter writer )
+        {
+            if ( EnableFullWidth )
+            {
+                this.RemoveCssClass( "picker-mergefield picker-novalue" );
+            }
+            else
+            {
+                this.AddCssClass( "picker-mergefield picker-novalue" );
+            }
+
+            // NOTE: The base ItemPicker.RenderBaseControl will do additional CSS class additions.
+            base.RenderBaseControl( writer );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>

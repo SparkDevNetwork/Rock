@@ -65,8 +65,11 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Decimal"/> representing the purchase/gift amount.
         /// </value>
+        /// <remarks>
+        /// This value will be in the currency specified by the Organization Standard Currency Code which defaults to USD.
+        /// </remarks>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -103,8 +106,11 @@ namespace Rock.Model
         /// <value>
         /// The fee coverage amount.
         /// </value>
+        /// <remarks>
+        /// This value will be in the currency specified by the Organization Standard Currency Code which defaults to USD.
+        /// </remarks>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
         [DecimalPrecision(18, 2)]
         public decimal? FeeCoverageAmount { get; set; }
         #endregion

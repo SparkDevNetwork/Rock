@@ -430,10 +430,10 @@ namespace Rock.WebFarm
                 }
 
                 // Add a note if recycling
-                var recyclingText = _isBeingRecycled ? "(Recycling) " : string.Empty;
+                var recyclingText = _isBeingRecycled ? "Recycling - " : string.Empty;
 
                 // Write to ClusterNodeLog shutdown message
-                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"Process ID: {ProcessId} - {recyclingText}{shutdownReasonText}" );
+                AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Info, _nodeId, EventType.Shutdown, $"{recyclingText}{shutdownReasonText}" );
                 rockContext.SaveChanges();
             }
 
@@ -798,11 +798,22 @@ namespace Rock.WebFarm
                 {
                     Debug( "I didn't hear from a twin process, so there must have been an abrupt shutdown" );
 
+                    // 4-23-21 BJW
+                    // We are commenting out this notification for now. We have not been able to successfully detect App Pool
+                    // Recycling as of yet. Once we can consistently detect the recycling, then this alert could be re-enabled
+                    // if desired.
+
+                    /*
                     using ( var rockContext = new RockContext() )
                     {
                         AddLog( rockContext, WebFarmNodeLog.SeverityLevel.Warning, _nodeId, EventType.Error, "Detected previous abrupt shutdown on load." );
                         rockContext.SaveChanges();
                     }
+                    */
+                }
+                else
+                {
+                    Debug( "I heard from a twin process, so that means I am the new replacement after a recycle" );
                 }
             } );
         }
@@ -888,7 +899,7 @@ namespace Rock.WebFarm
                 Severity = severity,
                 WriterWebFarmNodeId = _nodeId,
                 WebFarmNodeId = subjectNodeId,
-                Message = text,
+                Message = $"(Process ID: {ProcessId}) {text}",
                 EventType = eventType
             } );
 

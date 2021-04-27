@@ -31,9 +31,29 @@
             </asp:Panel>
 
             <div class="actions">
-                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn-link" OnClick="btnDelete_Click" />
+                <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
             </div>
 
         </div>
+
+        <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Move Person" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">
+            <Content>
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlMovePersonSchedule" runat="server" Label="Service" OnSelectedIndexChanged="ddlMovePersonSchedule_SelectedIndexChanged" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:LocationItemPicker ID="lpMovePersonLocation" runat="server" Label="Location" OnSelectItem="lpMovePersonLocation_SelectItem" EnableFullWidth="true" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" />
+                    </div>
+                </div>
+
+                <Rock:NotificationBox ID="nbMovePersonLocationFull" runat="server" NotificationBoxType="Warning" />
+
+            </Content>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>

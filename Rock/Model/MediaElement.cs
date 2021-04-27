@@ -1,13 +1,28 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
+using Rock.Media;
 
 namespace Rock.Model
 {
@@ -109,7 +124,17 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [DataMember]
-        public string ThumbnailData { get; set; }
+        public string ThumbnailData
+        {
+            get
+            {
+                return ThumbnailDatas.ToJson();
+            }
+            set
+            {
+                ThumbnailDatas = value.FromJsonOrNull<List<ThumbnailData>>() ?? new List<ThumbnailData>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the media element data.
@@ -118,7 +143,17 @@ namespace Rock.Model
         /// The media element data.
         /// </value>
         [DataMember]
-        public string MediaElementData { get; set; }
+        public string MediaElementData
+        {
+            get
+            {
+                return MediaElementDatas.ToJson();
+            }
+            set
+            {
+                MediaElementDatas = value.FromJsonOrNull<List<MediaElementData>>() ?? new List<MediaElementData>();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the download data.
@@ -141,6 +176,24 @@ namespace Rock.Model
         /// </value>
         [Rock.Lava.LavaVisibleAttribute]
         public virtual MediaFolder MediaFolder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media element data.
+        /// </summary>
+        /// <value>
+        /// The media element data.
+        /// </value>
+        [NotMapped]
+        public virtual List<MediaElementData> MediaElementDatas { get; set; } = new List<MediaElementData>();
+
+        /// <summary>
+        /// Gets or sets the thumbnail data.
+        /// </summary>
+        /// <value>
+        /// The thumbnail data.
+        /// </value>
+        [NotMapped]
+        public virtual List<ThumbnailData> ThumbnailDatas { get; set; } = new List<ThumbnailData>();
 
         #endregion
 

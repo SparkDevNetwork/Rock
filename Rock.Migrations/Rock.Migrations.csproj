@@ -61,6 +61,34 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs" />
+    <Compile Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.Designer.cs">
+      <DependentUpon>202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104161249583_AddForeignCurrencySupport.cs" />
+    <Compile Include="Migrations\202104161249583_AddForeignCurrencySupport.Designer.cs">
+      <DependentUpon>202104161249583_AddForeignCurrencySupport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.cs" />
+    <Compile Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.Designer.cs">
+      <DependentUpon>202104161716420_Definedtype_EnableSecurityOnValues.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104262212301_CheckinManagerPhase3.cs" />
+    <Compile Include="Migrations\202104262212301_CheckinManagerPhase3.Designer.cs">
+      <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.cs" />
+    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.Designer.cs">
+      <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104271710211_Rollup_04271.cs" />
+    <Compile Include="Migrations\202104271710211_Rollup_04271.Designer.cs">
+      <DependentUpon>202104271710211_Rollup_04271.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104271748244_CodeGenerated_0427.cs" />
+    <Compile Include="Migrations\202104271748244_CodeGenerated_0427.Designer.cs">
+      <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -411,6 +439,27 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.resx">
+      <DependentUpon>202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104161249583_AddForeignCurrencySupport.resx">
+      <DependentUpon>202104161249583_AddForeignCurrencySupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.resx">
+      <DependentUpon>202104161716420_Definedtype_EnableSecurityOnValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104262212301_CheckinManagerPhase3.resx">
+      <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104271544551_AddFinancialStatementTemplate.resx">
+      <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104271710211_Rollup_04271.resx">
+      <DependentUpon>202104271710211_Rollup_04271.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104271748244_CodeGenerated_0427.resx">
+      <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
     </EmbeddedResource>

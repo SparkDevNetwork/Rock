@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Core
                                         if ( selectedCategory != null )
                                         {
                                             string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
-                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
+                                            parentIdList.Insert( 0, categoryExpandedID );
                                         }
                                     }
                                 }

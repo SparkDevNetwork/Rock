@@ -24,6 +24,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.StatementGenerator.Rest
@@ -682,7 +683,7 @@ namespace Rock.StatementGenerator.Rest
                     mergeFields.Add( "Pledges", pledgeSummaryList );
                 }
 
-                mergeFields.Add( "Options", options );
+                mergeFields.Add( "Options", new RockDynamic( options ) );
 
                 var currentPerson = this.GetPerson();
                 result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );

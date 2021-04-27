@@ -1683,7 +1683,6 @@ $('#{0}').tooltip();
             if ( personScheduleSignup.MaxScheduled )
             {
                 cbSignupSchedule.Text += " (filled)";
-                cbSignupSchedule.AddCssClass( "text-muted" );
             }
 
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
@@ -1872,7 +1871,7 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
-                            // If there is a maximum Campacity then find out how many aleady RSVP with "Yes"
+                            // If there is a maximum Capacity then find out how many already RSVP with "Yes"
                             var currentScheduled = maximumCapacitySetting != null
                                 ? attendanceService
                                     .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )

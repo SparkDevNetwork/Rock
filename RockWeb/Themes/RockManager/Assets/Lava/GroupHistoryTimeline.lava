@@ -380,7 +380,7 @@
                                                         <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and</span>
                                                         {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
-                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{{- -}}
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>
                                                         {%- else -%}
                                                             removed the <span class='history-valuename'>{{ historyValueName }}</span>
                                                         {%- endif -%}
@@ -388,7 +388,7 @@
                                                         {%- if history.NewValue -%}
                                                             <span class='history-valuename'>{{ historyValueName }}</span> to
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
-                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>{{- -}}
+                                                            <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>
                                                         {%- else -%}
                                                             removed the <span class='history-valuename'>{{ historyValueName }}</span>
                                                         {%- endif -%}

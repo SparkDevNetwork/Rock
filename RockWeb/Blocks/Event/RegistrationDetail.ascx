@@ -164,11 +164,11 @@
                                                                 </div>
 
                                                                 <div runat="server" class="col-sm-3 fee-value" visible='<%# PercentageDiscountExists %>'>
-                                                                    <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %>
+                                                                    <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %>
                                                                 </div>
 
                                                                 <div class="col-sm-3 fee-value">
-                                                                    <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
+                                                                    <span class="visible-xs-inline">Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("Cost")) %>
                                                                 </div>
 
                                                             </div>

@@ -15,21 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.SystemKey;
-using Rock.Utility;
 using Rock.Utility.Settings.GivingAnalytics;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -271,10 +266,10 @@ namespace RockWeb.Blocks.Finance
             financialTransactionAlertType.RepeatPreventionDuration = nbRepeatPreventionDuration.Text.AsIntegerOrNull();
             financialTransactionAlertType.AmountSensitivityScale = nbAmountSensitivityScale.Text.AsDecimalOrNull();
             financialTransactionAlertType.FrequencySensitivityScale = nbFrequencySensitivityScale.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MinimumGiftAmount = cbMinimumGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MaximumGiftAmount = cbMaximumGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MinimumMedianGiftAmount = cbMinimumMedianGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MaximumMedianGiftAmount = cbMaximumMedianGiftAmount.Text.AsDecimalOrNull();
+            financialTransactionAlertType.MinimumGiftAmount = cbMinimumGiftAmount.Value;
+            financialTransactionAlertType.MaximumGiftAmount = cbMaximumGiftAmount.Value;
+            financialTransactionAlertType.MinimumMedianGiftAmount = cbMinimumMedianGiftAmount.Value;
+            financialTransactionAlertType.MaximumMedianGiftAmount = cbMaximumMedianGiftAmount.Value;
             financialTransactionAlertType.DataViewId = dvpPersonDataView.SelectedValueAsInt();
             financialTransactionAlertType.SendBusEvent = cbSendBusEvent.Checked;
             financialTransactionAlertType.ConnectionOpportunityId = ddlConnectionOpportunity.SelectedValueAsId();
@@ -388,10 +383,10 @@ namespace RockWeb.Blocks.Finance
             nbRepeatPreventionDuration.Text = financialTransactionAlertType.RepeatPreventionDuration.ToStringSafe();
             nbAmountSensitivityScale.Text = financialTransactionAlertType.AmountSensitivityScale.ToStringSafe();
             nbFrequencySensitivityScale.Text = financialTransactionAlertType.FrequencySensitivityScale.ToStringSafe();
-            cbMinimumGiftAmount.Text = financialTransactionAlertType.MinimumGiftAmount.ToStringSafe();
-            cbMaximumGiftAmount.Text = financialTransactionAlertType.MaximumGiftAmount.ToStringSafe();
-            cbMinimumMedianGiftAmount.Text = financialTransactionAlertType.MinimumMedianGiftAmount.ToStringSafe();
-            cbMaximumMedianGiftAmount.Text = financialTransactionAlertType.MaximumMedianGiftAmount.ToStringSafe();
+            cbMinimumGiftAmount.Value = financialTransactionAlertType.MinimumGiftAmount;
+            cbMaximumGiftAmount.Value = financialTransactionAlertType.MaximumGiftAmount;
+            cbMinimumMedianGiftAmount.Value = financialTransactionAlertType.MinimumMedianGiftAmount;
+            cbMaximumMedianGiftAmount.Value = financialTransactionAlertType.MaximumMedianGiftAmount;
             dvpPersonDataView.SetValue( financialTransactionAlertType.DataViewId );
             cbSendBusEvent.Checked = financialTransactionAlertType.SendBusEvent;
             wtpLaunchWorkflow.SetValue( financialTransactionAlertType.WorkflowTypeId );

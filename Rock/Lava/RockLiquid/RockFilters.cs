@@ -33,9 +33,8 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
 
-using Ical.Net;
 using Ical.Net.DataTypes;
-using Calendar = Ical.Net.Calendar;
+
 using DotLiquid;
 using DotLiquid.Util;
 using Context = DotLiquid.Context;
@@ -43,11 +42,8 @@ using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
-
 using ImageResizer;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -57,7 +53,6 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
 using UAParser;
 
 namespace Rock.Lava
@@ -1353,17 +1348,16 @@ namespace Rock.Lava
         /// <returns>a list of datetimes</returns>
         private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
-            var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-            var calendarEvent = calendar.Events[0] as Event;
-
+            var calendarEvent = InetCalendarHelper.CreateCalendarEvent( iCalString );
+            
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.StartTime.Value ).ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.EndTime.Value ).ToList();
             }
             else
@@ -1984,7 +1978,7 @@ namespace Rock.Lava
             }
         }
         /// <summary>
-        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// Formats the specified input as currency using the Currency Code information from Global Attributes
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -1995,18 +1989,21 @@ namespace Rock.Lava
                 return null;
             }
 
-            if ( input is string )
-            {
-                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-                return string.Format( "{0}{1}", currencySymbol, input );
-            }
-            else
+            var inputAsDecimal = input.ToString().AsDecimalOrNull();
+            if(inputAsDecimal != null )
             {
                 // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
-                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
                 return inputAsDecimal.FormatAsCurrency();
             }
+
+            // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+            var currencyInfo = new RockCurrencyCodeInfo();
+            if ( currencyInfo.SymbolLocation.Equals( "left", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return string.Format( "{0}{1}", currencyInfo.Symbol, input );
+            }
+
+            return string.Format( "{1}{0}", currencyInfo.Symbol, input );
         }
 
         /// <summary>

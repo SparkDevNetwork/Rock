@@ -23,3 +23,9 @@ Rock released under the [Rock Community License](https://www.rockrms.com/license
 ## Crafted By
 
 A community of developers led by the [Spark Development Network](https://www.sparkdevnetwork.com/).
+
+## Installer Note
+
+Normally the [Rock installer](https://www.rockrms.com/Download) generates a unique `PasswordKey`
+`DataEncryptionKey` and MachineKey's `validationKey` and `decryptionKey`. So if you decide
+to clone the repo and run it directly, you will need to handle that aspect yourself.

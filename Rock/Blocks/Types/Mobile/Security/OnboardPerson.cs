@@ -1777,9 +1777,10 @@ namespace Rock.Blocks.Types.Mobile.Security
                         {
                             var personalDevice = new PersonalDeviceService( rockContext ).Get( request.PersonalDeviceGuid.Value );
 
-                            if ( personalDevice != null && personalDevice.PersonAliasId != person.PrimaryAliasId )
+                            if ( personalDevice != null )
                             {
                                 personalDevice.PersonAliasId = person.PrimaryAliasId;
+                                personalDevice.DeviceRegistrationId = request.Details.PushToken;
 
                                 rockContext.SaveChanges();
                             }

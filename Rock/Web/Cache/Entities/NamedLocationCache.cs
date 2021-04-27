@@ -74,6 +74,18 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsActive { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Location.FirmRoomThreshold"/>
+        [DataMember]
+        public int? FirmRoomThreshold { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Location.SoftRoomThreshold"/>
+        [DataMember]
+        public int? SoftRoomThreshold { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Location.PrinterDeviceId "/>
+        [DataMember]
+        public int? PrinterDeviceId { get; internal set; }
+
         /// <inheritdoc cref="Rock.Model.Location.ParentLocation" />
         public NamedLocationCache ParentLocation => this.ParentLocationId.HasValue ? NamedLocationCache.Get( ParentLocationId.Value ) : null;
 
@@ -176,7 +188,7 @@ namespace Rock.Web.Cache
         {
             // since there could be a very large number of Locations in the database,
             // and we really only want to support Named locations, don't support All()
-            throw new NotSupportedException("NameLocationCache does not support All()");
+            throw new NotSupportedException( "NameLocationCache does not support All()" );
         }
 
         /// <summary>
@@ -196,6 +208,9 @@ namespace Rock.Web.Cache
             this.Name = location.Name;
             this.ParentLocationId = location.ParentLocationId;
             this.IsActive = location.IsActive;
+            this.FirmRoomThreshold = location.FirmRoomThreshold;
+            this.SoftRoomThreshold = location.SoftRoomThreshold;
+            this.PrinterDeviceId = location.PrinterDeviceId;
         }
 
         /// <summary>

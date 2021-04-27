@@ -851,5 +851,25 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_LAST_CLASSIFICATION_DATE = "7220B230-03CE-4D1E-985B-26AA28BE06F8";
 
         #endregion Giving Analytics
+
+        /// <summary>
+        /// The currency code symbol
+        /// </summary>
+        public const string CURRENCY_CODE_SYMBOL = "1268AD58-5459-4C1C-A036-B7A6D948198F";
+
+        /// <summary>
+        /// The currency code position
+        /// </summary>
+        public const string CURRENCY_CODE_POSITION = "909B35DA-5B14-42FF-90E5-328033A07415";
+
+        /// <summary>
+        /// The currency code decimal places
+        /// </summary>
+        public const string CURRENCY_CODE_DECIMAL_PLACES = "98699FDB-DFD3-4015-AB25-ABCB91EE35EB";
+
+        /// <summary>
+        /// The organization currency code
+        /// </summary>
+        public const string ORGANIZATION_CURRENCY_CODE = "60B61A30-3FE8-4158-8848-D4D95DBC64CD";
     }
 }

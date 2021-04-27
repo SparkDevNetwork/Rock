@@ -50,7 +50,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MediaElementData { get; set; }
+        public string MediaElementData { get; set; } = @"[]";
 
         /// <summary />
         public int MediaFolderId { get; set; }
@@ -79,7 +79,7 @@ namespace Rock.Client
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary />
-        public string ThumbnailData { get; set; }
+        public string ThumbnailData { get; set; } = @"[]";
 
         /// <summary>
         /// Leave this as NULL to let Rock set this

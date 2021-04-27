@@ -2109,6 +2109,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communication != null )
                 {
                     if ( communication.CommunicationType == CommunicationType.Email
+                         || communication.CommunicationType == CommunicationType.PushNotification
                          || communication.CommunicationType == CommunicationType.RecipientPreference )
                     {
                         communicationTypeHasAnalytics = true;

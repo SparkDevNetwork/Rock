@@ -212,8 +212,9 @@ textarea,
 .badge {
   .btn-xs &,
   .btn-group-xs > .btn & {
-    top: -1px;
+    top: -2px;
     line-height: 1;
+    font-size: 11px;
   }
 }
 
@@ -729,9 +730,7 @@ td.grid-actions {
 }
 
 .btn-nav-zone {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: inline-block;
   width: 100%;
   padding: 7px 14px;
   color: @navbartop-color;
@@ -741,6 +740,7 @@ td.grid-actions {
 
   &:hover,
   &:focus {
+    color: @navbartop-color;
     background: fade(@white, 10%);
   }
 }
@@ -760,10 +760,6 @@ td.grid-actions {
   .navbar-zone-login {
     display: flex;
     float: right;
-
-    .btn {
-      &:extend(.btn-nav-zone all);
-    }
   }
 
   @media (min-width: @screen-sm-min) {

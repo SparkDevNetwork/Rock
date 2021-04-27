@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Finance
             pledge.PersonAliasId = ppPerson.PersonAliasId;
             pledge.GroupId = ddlGroup.SelectedValueAsInt();
             pledge.AccountId = apAccount.SelectedValue.AsIntegerOrNull();
-            pledge.TotalAmount = tbAmount.Text.AsDecimal();
+            pledge.TotalAmount = tbAmount.Value ?? 0.0m;
 
             pledge.StartDate = dpDateRange.LowerValue.HasValue ? dpDateRange.LowerValue.Value : DateTime.MinValue;
             pledge.EndDate = dpDateRange.UpperValue.HasValue ? dpDateRange.UpperValue.Value : DateTime.MaxValue;
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Finance
 
                 apAccount.SetValue( pledge.Account );
                 apAccount.Enabled = !isReadOnly;
-                tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
+                tbAmount.Value = !isNewPledge ? pledge.TotalAmount : ( decimal? ) null;
                 tbAmount.ReadOnly = isReadOnly;
 
                 dpDateRange.LowerValue = pledge.StartDate;
@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Finance
 
             int? personId = ppPerson.PersonId;
             Guid? groupTypeGuid = GetAttributeValue( "SelectGroupType" ).AsGuidOrNull();
-            if ( personId.HasValue && groupTypeGuid.HasValue  )
+            if ( personId.HasValue && groupTypeGuid.HasValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         ddlGroup.DataSource = groups;
                         ddlGroup.DataBind();
-                        ddlGroup.Items.Insert(0, new ListItem() );
+                        ddlGroup.Items.Insert( 0, new ListItem() );
                         ddlGroup.SetValue( currentGroupId );
                     }
                 }

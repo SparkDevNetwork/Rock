@@ -84,10 +84,10 @@
 
                                 <Rock:LinkButtonField ID="btnCancel" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-danger btn-square js-cancel-checkin" Text="<i class='fa fa-times'></i>" ToolTip="Cancel" OnClick="btnCancel_Click" OnDataBound="btnCancel_DataBound" />
                                 <Rock:LinkButtonField ID="btnPresent" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-success btn-square js-mark-present" Text="<i class='fa fa-user-check'></i>" ToolTip="Mark Present" OnClick="btnPresent_Click" OnDataBound="btnPresent_DataBound" />
-
-                                <Rock:LinkButtonField ID="btnCheckOut" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-primary btn-square" Text="<i class='fa fa-user-minus'></i>" ToolTip="Check out" OnClick="btnCheckOut_Click" OnDataBound="btnCheckOut_DataBound" />
+                                
                                 <Rock:LinkButtonField ID="btnStaying" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-user-clock'></i>" ToolTip="Staying" OnClick="btnStaying_Click" />
-                                <Rock:LinkButtonField ID="btnNotPresent" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-external-link-alt'></i>" ToolTip="Not Present" OnClick="btnNotPresent_Click" OnDataBound="btnNotPresent_DataBound" />
+                                <Rock:LinkButtonField ID="btnNotPresent" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-user-slash'></i>" ToolTip="Not Present" OnClick="btnNotPresent_Click" OnDataBound="btnNotPresent_DataBound" />
+                                <Rock:LinkButtonField ID="btnCheckOut" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-primary btn-square" Text="<i class='fa fa-user-minus'></i>" ToolTip="Check out" OnClick="btnCheckOut_Click" OnDataBound="btnCheckOut_DataBound" />
                             </Columns>
                         </Rock:Grid>
                     </div>

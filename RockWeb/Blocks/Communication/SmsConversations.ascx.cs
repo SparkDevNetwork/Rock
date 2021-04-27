@@ -186,7 +186,7 @@ namespace RockWeb.Blocks.Communication
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues;
+            var smsNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) );
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             if ( selectedNumberGuids.Any() )

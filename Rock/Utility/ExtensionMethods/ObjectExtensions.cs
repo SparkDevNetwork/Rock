@@ -17,8 +17,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-
-using Rock.Web.Cache;
+using Rock.Utility;
 
 namespace Rock
 {
@@ -156,7 +155,7 @@ namespace Rock
                 var stringValue = obj.ToString();
 
                 if ( !string.IsNullOrWhiteSpace( stringValue ) )
-                { 
+                {
                     return stringValue;
                 }
             }
@@ -186,12 +185,24 @@ namespace Rock
         /// <returns></returns>
         public static object ReverseCurrencyFormatting( this object input )
         {
+            return input.ReverseCurrencyFormatting( null );
+        }
+
+        /// <summary>
+        /// Reverses the currency formatting.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
+        /// <returns></returns>
+        public static object ReverseCurrencyFormatting( this object input, int? currencyCodeDefinedValueId )
+        {
             var exportValueString = input as string;
 
             // If the object is a string...
             if ( exportValueString != null )
             {
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+                var currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
+                var currencySymbol = currencyInfo.Symbol;
 
                 // ... that contains the currency symbol ...
                 if ( exportValueString.Contains( currencySymbol ) )
@@ -203,7 +214,7 @@ namespace Rock
                     if ( decimal.TryParse( decimalString, out exportValueDecimal ) )
                     {
                         // ... that matches the input string when formatted as currency ...
-                        if ( exportValueDecimal.FormatAsCurrency() == exportValueString )
+                        if ( exportValueDecimal.FormatAsCurrency( currencyCodeDefinedValueId ) == exportValueString )
                         {
                             // ... return the input as a decimal
                             return exportValueDecimal;

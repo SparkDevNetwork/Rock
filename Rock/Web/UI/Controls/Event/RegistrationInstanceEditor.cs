@@ -292,12 +292,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbCost.Text.AsDecimalOrNull();
+                return _cbCost.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbCost.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbCost.Value = value;
             }
         }
 
@@ -312,12 +312,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbMinimumInitialPayment.Text.AsDecimalOrNull();
+                return _cbMinimumInitialPayment.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbMinimumInitialPayment.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbMinimumInitialPayment.Value = value;
             }
         }
 
@@ -332,12 +332,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                return _cbDefaultPaymentAmount.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbDefaultPaymentAmount.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbDefaultPaymentAmount.Value = value;
             }
         }
 
@@ -662,11 +662,11 @@ namespace Rock.Web.UI.Controls
 
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
-                _cbCost.Text = instance.Cost.HasValue ? instance.Cost.Value.ToString() : string.Empty;
+                _cbCost.Value = instance.Cost;
                 _cbCost.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
-                _cbMinimumInitialPayment.Text = instance.MinimumInitialPayment.HasValue ? instance.MinimumInitialPayment.Value.ToString() : string.Empty;
+                _cbMinimumInitialPayment.Value = instance.MinimumInitialPayment;
                 _cbMinimumInitialPayment.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
-                _cbDefaultPaymentAmount.Text = instance.DefaultPayment.HasValue ? instance.DefaultPayment.Value.ToString() : string.Empty;
+                _cbDefaultPaymentAmount.Value = instance.DefaultPayment;
                 _cbDefaultPaymentAmount.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _apAccount.SetValue( instance.AccountId );
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
@@ -725,9 +725,9 @@ namespace Rock.Web.UI.Controls
                 _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
-                _cbCost.Text = string.Empty;
-                _cbMinimumInitialPayment.Text = string.Empty;
-                _cbDefaultPaymentAmount.Text = string.Empty;
+                _cbCost.Value = null;
+                _cbMinimumInitialPayment.Value = null;
+                _cbDefaultPaymentAmount.Value = null;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
@@ -762,9 +762,9 @@ namespace Rock.Web.UI.Controls
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
-                instance.Cost = _cbCost.Text.AsDecimalOrNull();
-                instance.MinimumInitialPayment = _cbMinimumInitialPayment.Text.AsDecimalOrNull();
-                instance.DefaultPayment = _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                instance.Cost = _cbCost.Value;
+                instance.MinimumInitialPayment = _cbMinimumInitialPayment.Value;
+                instance.DefaultPayment = _cbDefaultPaymentAmount.Value;
                 int accountId = _apAccount.SelectedValue.AsInteger();
                 instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;

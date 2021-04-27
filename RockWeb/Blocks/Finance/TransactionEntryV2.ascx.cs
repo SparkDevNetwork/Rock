@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -1251,7 +1252,7 @@ mission. We are so grateful for your commitment.</p>
 
                 cbGiveNowCoverTheFee.Text = string.Format(
                     "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text'></span> to cover processing fee.",
-                    GlobalAttributesCache.Value( "CurrencySymbol" ) );
+                    RockCurrencyCodeInfo.GetCurrencySymbol() );
             }
 
             pnlGiveNowCoverTheFee.Visible = true;

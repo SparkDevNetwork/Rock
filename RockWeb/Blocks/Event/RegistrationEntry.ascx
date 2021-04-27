@@ -252,11 +252,11 @@
                                 
                             <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
                                 <Rock:HelpBlock runat="server" Text='This item is not eligible for the discount.' Visible='<%# ((RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) && ((decimal)Eval("Cost") == (decimal)Eval("DiscountedCost")) && ((decimal)Eval("Cost") > 0.0m)) %>'></Rock:HelpBlock>
-                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("DiscountedCost")) %> 
+                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %> 
                             </div>
 
                             <div class="col-sm-3 fee-value">
-                                <span class="visible-xs-inline">Amount:</span> <%# Rock.Web.Cache.GlobalAttributesCache.Value( "CurrencySymbol" )%> <%# string.Format("{0:N}", Eval("Cost")) %>
+                                <span class="visible-xs-inline">Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("Cost")) %>
                             </div>
                                     
                         </div>
@@ -278,7 +278,7 @@
                     <Rock:RockLiteral ID="lMinimumDue" runat="server" Label="Minimum Due Today" />
                     
                     <div class="form-right">
-                        <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" NumberType="Currency" Label="Amount To Pay Today" Required="true" />
+                        <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" Label="Amount To Pay Today" Required="true" />
                     </div>
                                  
                     <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />

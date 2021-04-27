@@ -169,7 +169,7 @@
 
     // Custom control indicators
     //
-    // Build the custom controls out of psuedo-elements.
+    // Build the custom controls out of pseudo-elements.
     .label-text {
 
       // Background-color and (when enabled) gradient
@@ -276,9 +276,17 @@
 .global-custom-controls(false) {
   .checkbox-inline:first-child,
   .radio-inline:first-child {
-    // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines.
+    // when inline checkbox lists wrap the first one on the first line sticks out more than subsequent lines.
     // padding-left = (.checkbox-inline + .checkbox-inline margin-left) + .checkbox-inline padding-left
     padding-left: 30px;
+
+    &.rock-checkbox-icon {
+      padding-left: 0 !important;
+
+      i {
+        width: 30px;
+      }
+    }
   }
 
   .assessment {

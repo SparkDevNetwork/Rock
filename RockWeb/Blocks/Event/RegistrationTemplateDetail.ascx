@@ -24,7 +24,7 @@
 
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
-            <Rock:RockDropDownList ID="test" OnSelectedIndexChanged
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-clipboard"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
