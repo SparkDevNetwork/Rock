@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         "Filter By",
         Key = AttributeKey.FilterBy,
         DefaultValue = "2",
-        ListSource = "2^Checked-In,3^Present,4^Checked-Out",
+        ListSource = "2^Checked-in,3^Present,4^Checked-out",
         IsRequired = true,
         Order = 1
         )]

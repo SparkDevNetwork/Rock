@@ -427,7 +427,7 @@ namespace Rock.CheckIn
                 If StatusFilter == All, no further filtering is needed.
                 If StatusFilter == Checked-in, only retrieve records that have neither a EndDateTime nor a PresentDateTime value.
                 If StatusFilter == Present, only retrieve records that have a PresentDateTime value but don't have a EndDateTime value.
-                If StatusFilter == Checked-Out, only retrieve records that have an EndDateTime
+                If StatusFilter == Checked-out, only retrieve records that have an EndDateTime
             */
             switch ( rosterStatusFilter )
             {
