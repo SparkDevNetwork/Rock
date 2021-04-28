@@ -337,7 +337,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier.
+        /// Gets or sets the giving leader's Person Id.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -486,7 +486,7 @@ namespace Rock.Model
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for the primary family.
+        /// Gets or sets the group id for the <see cref="Person.PrimaryFamily" />.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -2245,6 +2245,7 @@ namespace Rock.Model
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id  );
         }
 
         /// <summary>
@@ -2422,7 +2423,10 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            // Check that a family even existed. If not, return their name.
+            //  There are a couple of cases where there would be no familyMembers
+            // 1) There are no adults in the family, and includeChildren=false .
+            // 2) All the members of the family are deceased/inactive.
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
             if ( !familyMembersList.Any() )
             {
                 return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";

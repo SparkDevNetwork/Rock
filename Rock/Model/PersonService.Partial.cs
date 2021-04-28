@@ -4421,6 +4421,38 @@ FROM (
             }
         }
 
+        /// <summary>
+        /// Updates the person's family's Group Solution fields and saves any changes to the database.
+        /// Returns number of records that were changed (either 1 or 0)
+        /// See <seealso cref="Group.GroupSalutation"/> and <seealso cref="Group.GroupSalutationFull"/>
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        public static int UpdateGroupSalutations( int personId )
+        {
+            // use a separate context so that we can save changes without affecting the caller
+            using ( var updateSalutationContext = new RockContext() )
+            {
+                var person = new PersonService( updateSalutationContext ).GetInclude( personId, s => s.PrimaryFamily );
+                if ( person.PrimaryFamily == null)
+                {
+                    // shouldn't happen, but just in case
+                    return 0;
+                }
+
+                var groupSalutation = Person.GetFamilySalutation( person, includeChildren: false );
+                var groupSalutationFull = Person.GetFamilySalutation( person, includeChildren: true );
+                if ( ( person.PrimaryFamily.GroupSalutation != groupSalutation ) || ( person.PrimaryFamily.GroupSalutationFull != groupSalutation ) )
+                {
+                    person.PrimaryFamily.GroupSalutation = groupSalutation;
+                    person.PrimaryFamily.GroupSalutationFull = groupSalutationFull;
+                    updateSalutationContext.SaveChanges();
+                    return 1;
+                }
+
+                return 0;
+            }
+        }
+
         #endregion
 
         #region Anonymous Giver

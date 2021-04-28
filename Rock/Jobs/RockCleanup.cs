@@ -190,6 +190,8 @@ namespace Rock.Jobs
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup( dataMap ) );
 
+            RunCleanupTask( "family salutation", () => GroupSalutationCleanup( dataMap ) );
+
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
             RunCleanupTask( "temporary registration", () => CleanUpTemporaryRegistrations() );
@@ -375,6 +377,29 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Updates <see cref="Group.GroupSalutation" />
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int GroupSalutationCleanup( JobDataMap dataMap )
+        {
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+            var personIdList = new PersonService( rockContext ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => a.Id );
+            var recordsUpdated = 0;
+
+            foreach( var personId in personIdList )
+            {
+                recordsUpdated += PersonService.UpdateGroupSalutations( personId );
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
         /// Does cleanup of Person Aliases and Metaphones
         /// </summary>
         /// <param name="dataMap">The data map.</param>
@@ -516,6 +541,8 @@ namespace Rock.Jobs
 
                 familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group { IsActive = false } );
             }
+
+            
 
             return resultCount;
         }
