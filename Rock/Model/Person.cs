@@ -2245,7 +2245,7 @@ namespace Rock.Model
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
-            PersonService.UpdateGroupSalutations( this.Id );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -2588,7 +2588,7 @@ namespace Rock.Model
             }
 
             // Children:
-            if ( includeChildren )
+            if ( includeChildren || !adults.Any() )
             {
                 var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
 

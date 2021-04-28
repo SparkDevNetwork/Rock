@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -695,7 +696,7 @@ namespace Rock.Model
                     PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
 
                     // NOTE, make sure to do this after UpdatePrimaryFamily
-                    PersonService.UpdateGroupSalutations( this.PersonId  );
+                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
                 }
             }
         }

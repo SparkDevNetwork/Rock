@@ -4307,7 +4307,26 @@ FROM (
 
             if ( personId.HasValue )
             {
-                return rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+                var recordsChanged = rockContext.Database.ExecuteSqlCommand( sqlUpdateBuilder.ToString(), new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) );
+
+                if ( recordsChanged > 0 )
+                {
+                    // Since PrimaryFamily is populated in straight SQL, we'll need to tell EF what the Person's new PrimaryFamilyId is
+                    var affectedPerson = rockContext.People.FirstOrDefault( a => a.Id == personId );
+                    if ( affectedPerson != null )
+                    {
+                        var primaryFamilyId = rockContext.Database.SqlQuery<int?>( $"SELECT TOP 1 [PrimaryFamilyId] FROM [Person] WHERE [Id] = @personId", new System.Data.SqlClient.SqlParameter( "@personId", personId.Value ) ).FirstOrDefault();
+                        if ( primaryFamilyId != null && primaryFamilyId != affectedPerson.PrimaryFamilyId )
+                        {
+                            // since the PrimaryFamily changed, null out PrimaryFamily and set the new PrimaryFamilyId.
+                            // This will make sure any queries to this Person for the remainder of the current rockContext will get the updated PrimaryFamilyId
+                            affectedPerson.PrimaryFamily = null;
+                            affectedPerson.PrimaryFamilyId = primaryFamilyId;
+                        }
+                    }
+                }
+
+                return recordsChanged;
             }
             else if ( groupId.HasValue )
             {
@@ -4424,33 +4443,48 @@ FROM (
         /// <summary>
         /// Updates the person's family's Group Solution fields and saves any changes to the database.
         /// Returns number of records that were changed (either 1 or 0)
-        /// See <seealso cref="Group.GroupSalutation"/> and <seealso cref="Group.GroupSalutationFull"/>
+        /// See <seealso cref="Group.GroupSalutation" /> and <seealso cref="Group.GroupSalutationFull" />
         /// </summary>
         /// <param name="personId">The person identifier.</param>
-        public static int UpdateGroupSalutations( int personId )
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGroupSalutations( int personId, RockContext rockContext )
         {
-            // use a separate context so that we can save changes without affecting the caller
-            using ( var updateSalutationContext = new RockContext() )
+            // use specified rockContext to get Person and Family because rockContext might
+            // might be in a transaction that hasn't been committed yet
+            var person = new PersonService( rockContext ).GetInclude( personId, s => s.PrimaryFamily );
+
+            if ( !person.PrimaryFamilyId.HasValue )
             {
-                var person = new PersonService( updateSalutationContext ).GetInclude( personId, s => s.PrimaryFamily );
-                if ( person.PrimaryFamily == null )
-                {
-                    // shouldn't happen, but just in case
-                    return 0;
-                }
 
-                var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) {  RockContext = updateSalutationContext } );
-                var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = updateSalutationContext } );
-                if ( ( person.PrimaryFamily.GroupSalutation != groupSalutation ) || ( person.PrimaryFamily.GroupSalutationFull != groupSalutation ) )
-                {
-                    person.PrimaryFamily.GroupSalutation = groupSalutation;
-                    person.PrimaryFamily.GroupSalutationFull = groupSalutationFull;
-                    updateSalutationContext.SaveChanges();
-                    return 1;
-                }
+                // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
+                // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
+                return 0;
 
+            }
+
+            var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
+
+            if ( primaryFamily == null )
+            {
+                // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
                 return 0;
             }
+
+            var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
+            var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
+            if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
+            {
+                primaryFamily.GroupSalutation = groupSalutation;
+                primaryFamily.GroupSalutationFull = groupSalutationFull;
+
+                // save changes without pre/post processing so we don't get stuck in recursion
+                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                return 1;
+            }
+
+            return 0;
+
         }
 
         #endregion

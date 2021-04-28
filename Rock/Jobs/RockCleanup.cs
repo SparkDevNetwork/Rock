@@ -385,10 +385,9 @@ namespace Rock.Jobs
         /// <returns></returns>
         private int GroupSalutationCleanup( JobDataMap dataMap )
         {
-            var rockContext = new RockContext();
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var personIdListWithFamilyId = new PersonService( rockContext ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+            var personIdListWithFamilyId = new PersonService( new RockContext() ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
             var recordsUpdated = 0;
 
             // we only need one person from each family (and it doesn't matter who)
@@ -396,7 +395,10 @@ namespace Rock.Jobs
 
             foreach ( var personId in personIdList )
             {
-                recordsUpdated += PersonService.UpdateGroupSalutations( personId );
+                using ( var rockContext = new RockContext() )
+                {
+                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                }
             }
 
             return recordsUpdated;
