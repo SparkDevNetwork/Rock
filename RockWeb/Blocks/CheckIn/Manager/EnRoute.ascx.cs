@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             foreach ( var attendance in attendances )
             {
                 var listItem = new ListItem();
-                listItem.Text = $"{attendance.Occurrence.Group.Name} in {attendance.Occurrence.Location.Name} at {attendance.Occurrence.Schedule.Name}.";
+                listItem.Text = $"{attendance.Occurrence.Group.Name} in {attendance.Occurrence.Location.Name} at {attendance.Occurrence.Schedule.Name}";
                 listItem.Value = attendance.Id.ToString();
                 ddlMovePersonSelectAttendance.Items.Add( listItem );
             }
