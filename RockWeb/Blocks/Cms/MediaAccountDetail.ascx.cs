@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Cms
                 hlLastRefresh.Text = "Last Refreshed: " + mediaAccount.LastRefreshDateTime.Value.Humanize();
             }
 
-            lMetricData.Text = mediaAccount.GetMediaAccountComponent().GetAccountHtmlSummary( mediaAccount );
+            lMetricData.Text = mediaAccount.GetMediaAccountComponent()?.GetAccountHtmlSummary( mediaAccount );
         }
 
         /// <summary>

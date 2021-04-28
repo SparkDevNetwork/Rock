@@ -485,7 +485,7 @@ namespace RockWeb.Blocks.Cms
             lDescription.Text = descriptionList.Html;
 
             lMetricData.Text = mediaElement.MediaFolder.MediaAccount.GetMediaAccountComponent()
-                .GetMediaElementHtmlSummary( mediaElement );
+                ?.GetMediaElementHtmlSummary( mediaElement );
 
             gViewMediaFiles.DataSource = MediaElementDatasState
               .ToList();
