@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Cms
 
             mediaElement.Name = tbName.Text;
             mediaElement.Description = tbDescription.Text;
-            mediaElement.Duration = nbDuration.Text.AsDecimalOrNull();
+            mediaElement.Duration = nbDuration.Text.AsIntegerOrNull();
             mediaElement.ThumbnailData = ThumbnailDatasState.ToJson();
             mediaElement.MediaElementData = MediaElementDatasState.ToJson();
             rockContext.SaveChanges();

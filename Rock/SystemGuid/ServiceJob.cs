@@ -153,7 +153,7 @@ namespace Rock.SystemGuid
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
 
         /// <summary>
-        /// The collect hosting metrcis job - collect metrics regarding database connections, Etc.
+        /// The collect hosting metrics job - collect metrics regarding database connections, Etc.
         /// </summary>
         public const string COLLECT_HOSTING_METRICS = "36FA38CA-9DB0-40A8-BABD-5411121B4809";
 
@@ -171,5 +171,10 @@ namespace Rock.SystemGuid
         /// The Job to execute giving analytics logic
         /// </summary>
         public const string GIVING_ANALYTICS = "B6DE0544-8C91-444E-B911-453D4CE71515";
+
+        /// <summary>
+        /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.
+        /// </summary>
+        public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
     }
 }

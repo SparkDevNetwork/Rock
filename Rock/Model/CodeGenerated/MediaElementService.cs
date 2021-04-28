@@ -99,7 +99,7 @@ namespace Rock.Model
             target.SourceCreatedDateTime = source.SourceCreatedDateTime;
             target.SourceData = source.SourceData;
             target.SourceKey = source.SourceKey;
-            target.SourceMetric = source.SourceMetric;
+            target.MetricData = source.MetricData;
             target.SourceModifiedDateTime = source.SourceModifiedDateTime;
             target.ThumbnailData = source.ThumbnailData;
             target.CreatedDateTime = source.CreatedDateTime;

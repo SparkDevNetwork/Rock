@@ -64,54 +64,53 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or set the duration of media element.
+        /// Gets or set the duration in seconds of media element.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Decimal"/> representing the duration of media element.
+        /// A integer representing the duration in seconds of media element.
         /// </value>
         [DataMember]
-        [DecimalPrecision( 18, 2 )]
-        public decimal? Duration { get; set; }
+        public int? Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets the source created date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was created on the provider.
         /// </summary>
         /// <value>
-        /// The source created date time.
+        /// The <see cref="DateTime"/> this instance was created on the provider.
         /// </value>
         public DateTime? SourceCreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source modified date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was modified on the provider.
         /// </summary>
         /// <value>
-        /// The source modified date time.
+        /// The <see cref="DateTime"/> this instance was modified on the provider.
         /// </value>
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source data.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The source data.
+        /// The custom provider data for this instance.
         /// </value>
         [DataMember]
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source metric.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The source metric.
+        /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
-        public string SourceMetric { get; set; }
+        public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source key.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The source key.
+        /// The provider's unique identifier for this instance.
         /// </value>
         [DataMember]
         [MaxLength( 60 )]

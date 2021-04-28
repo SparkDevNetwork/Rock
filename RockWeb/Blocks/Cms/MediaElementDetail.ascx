@@ -78,7 +78,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Duration" />
+                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" />
                         </div>
                     </div>
                     <div class="row">
