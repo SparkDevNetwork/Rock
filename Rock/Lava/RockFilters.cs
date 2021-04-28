@@ -2827,14 +2827,14 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Families the salutation.
+        /// Return's the FamilySalutation for the specified Person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
-        /// <param name="finalfinalSeparator">The finalfinal separator.</param>
+        /// <param name="finalfinalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
         public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
@@ -2846,7 +2846,36 @@ namespace Rock.Lava
                 return null;
             }
 
-            return Person.GetFamilySalutation( person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator );
+            string familySalutation = string.Empty;
+
+            if ( includeInactive == false && useFormalNames == false && finalfinalSeparator == "&" && separator == "," && person.PrimaryFamilyId.HasValue )
+            {
+                // if default parameters are specified, we can get the family salutation from the GroupSalutionField of the person's PrimaryFamily
+                if ( includeChildren )
+                {
+                    familySalutation = person.PrimaryFamily?.GroupSalutationFull;
+                }
+                else
+                {
+                    familySalutation = person.PrimaryFamily?.GroupSalutation;
+                }
+            }
+
+            if ( familySalutation.IsNotNullOrWhiteSpace())
+            {
+                return familySalutation;
+            }
+
+            // if non-default parameters are specified, we'll have to calculate
+            var args = new Person.CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalfinalSeparator,
+                Separator = separator
+            };
+
+            return Person.CalculateFamilySalutation( person, args );
         }
 
         /// <summary>

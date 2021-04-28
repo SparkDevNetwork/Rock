@@ -4433,14 +4433,14 @@ FROM (
             using ( var updateSalutationContext = new RockContext() )
             {
                 var person = new PersonService( updateSalutationContext ).GetInclude( personId, s => s.PrimaryFamily );
-                if ( person.PrimaryFamily == null)
+                if ( person.PrimaryFamily == null )
                 {
                     // shouldn't happen, but just in case
                     return 0;
                 }
 
-                var groupSalutation = Person.GetFamilySalutation( person, includeChildren: false );
-                var groupSalutationFull = Person.GetFamilySalutation( person, includeChildren: true );
+                var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) {  RockContext = updateSalutationContext } );
+                var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = updateSalutationContext } );
                 if ( ( person.PrimaryFamily.GroupSalutation != groupSalutation ) || ( person.PrimaryFamily.GroupSalutationFull != groupSalutation ) )
                 {
                     person.PrimaryFamily.GroupSalutation = groupSalutation;

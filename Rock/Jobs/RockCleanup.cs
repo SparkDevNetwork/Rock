@@ -23,7 +23,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
 using Humanizer;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -121,7 +123,7 @@ namespace Rock.Jobs
             public const string CommandTimeout = "CommandTimeout";
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
         }
-       
+
         /// <summary>
         /// Empty constructor for job initialization
         /// <para>
@@ -384,14 +386,15 @@ namespace Rock.Jobs
         private int GroupSalutationCleanup( JobDataMap dataMap )
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = commandTimeout;
-
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var personIdList = new PersonService( rockContext ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => a.Id );
+            var personIdListWithFamilyId = new PersonService( rockContext ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
             var recordsUpdated = 0;
 
-            foreach( var personId in personIdList )
+            // we only need one person from each family (and it doesn't matter who)
+            var personIdList = personIdListWithFamilyId.GroupBy( a => a.PrimaryFamilyId.Value ).Select( s => s.FirstOrDefault()?.Id ).Where( a => a.HasValue ).Select( s => s.Value ).ToList();
+
+            foreach ( var personId in personIdList )
             {
                 recordsUpdated += PersonService.UpdateGroupSalutations( personId );
             }
@@ -542,7 +545,7 @@ namespace Rock.Jobs
                 familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group { IsActive = false } );
             }
 
-            
+
 
             return resultCount;
         }
