@@ -2136,7 +2136,7 @@ Sys.Application.add_load(function () {
             if ( Context.Request != null && Context.Request.Url != null )
             {
                 string protocol = WebRequestHelper.IsSecureConnection( Context ) ? "https" : Context.Request.Url.Scheme;
-                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.UrlProxySafe().Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();
