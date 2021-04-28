@@ -42,7 +42,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {% endif %}
 
 {%- assign noteText = note.Text | Escape | Linkify | FromMarkdown | NewlineToBr -%}
-{%- comment -%}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{%- endcomment -%}
+{% comment %}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{% endcomment %}
 {%- assign approvalStatusHtml = '' -%}
 {%- assign approvalActionsHtml = '' -%}
 {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus != 'Approved' -%}
