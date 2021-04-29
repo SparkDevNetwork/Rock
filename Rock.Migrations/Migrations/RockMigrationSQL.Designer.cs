@@ -2333,11 +2333,130 @@ namespace Rock.Migrations.Migrations {
         ///{%- endif -%}
         ///{%- assign showtitleseparator = showtitleseparator | AsBoolean -%}
         ///
-        ///{%- if title != &apos;&apos;&apos;&apos; -%}&lt;h3 id=&quot;{{ title | ToCssClass }}&quot; class=&quot;kpi-t [rest of string was truncated]&quot;;.
+        ///{%- if title != &apos;&apos;&apos;&apos; -%}&lt;h3 id=&quot;{{ title | ToCssClass }}&quot; class [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202104131841162_Rollup_0413_kpiupdate {
             get {
                 return ResourceManager.GetString("_202104131841162_Rollup_0413_kpiupdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Family]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
+        ///CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104272207110_GroupSalutation_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_202104272207110_GroupSalutation_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104272207110_GroupSalutation_spFinance_ContributionStatementQuery {
+            get {
+                return ResourceManager.GetString("_202104272207110_GroupSalutation_spFinance_ContributionStatementQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the household name from a giving id.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		String of household name. 
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnCrm_GetFamilyTitleFromGivingId](&apos;G63&apos;) -- Decker&apos;s (married) Returns &apos;Ted &amp; Cindy Decker&apos;
+        ///		SELECT [dbo].[ufnCrm_GetFamilyTitleFromGivingId](&apos;G64&apos;) -- Jones&apos; (single) Returns &apos;Ben Jones&apos;
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ////* #Obsolete# - Family Title can be gotten from Group.GroupSalutation */
+        ///ALTER FUNC [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId {
+            get {
+                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }
