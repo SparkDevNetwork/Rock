@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -64,7 +65,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipients" )]
-        public List<StatementGeneratorRecipient> GetStatementGeneratorRecipients( [FromBody]StatementGeneratorOptions options )
+        public List<StatementGeneratorRecipient> GetStatementGeneratorRecipients( [FromBody] StatementGeneratorOptions options )
         {
             if ( options == null )
             {
@@ -256,7 +257,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, ( Guid? ) null, options );
         }
@@ -271,7 +272,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, personId, ( Guid? ) null, options );
         }
@@ -286,7 +287,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, Guid? locationGuid, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, locationGuid, options );
         }
@@ -308,7 +309,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
             if ( options == null )
             {
@@ -426,7 +427,23 @@ namespace Rock.StatementGenerator.Rest
                 var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
                 mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
-                var familyTitle = Rock.Data.RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, null, false, !options.ExcludeInActiveIndividuals );
+                string familyTitle;
+                if ( person != null && person.PrimaryFamilyId == groupId )
+                {
+                    // this is how familyTitle should able to be determined in most cases
+                    familyTitle = person.PrimaryFamily.GroupSalutation;
+                }
+                else
+                {
+                    // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
+                    familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                }
+
+                if ( familyTitle.IsNotNullOrWhiteSpace() )
+                {
+                    // shouldn't happen, just in case the familyTitle is blank, just return the person's name
+                    familyTitle = person.FullName;
+                }
 
                 mergeFields.Add( "Salutation", familyTitle );
 
