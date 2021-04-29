@@ -26,6 +26,7 @@ import CurrencyBox from '../../../Elements/CurrencyBox';
 import EmailBox from '../../../Elements/EmailBox';
 import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
+import StaticFormControl from '../../../Elements/StaticFormControl';
 import TextBox from '../../../Elements/TextBox';
 import { ruleArrayToString } from '../../../Rules/Index';
 import { asFormattedString } from '../../../Services/Number';
@@ -65,7 +66,8 @@ export default defineComponent( {
         GatewayControl,
         RockValidation,
         JavaScriptAnchor,
-        CurrencyBox
+        CurrencyBox,
+        StaticFormControl
     },
     setup()
     {
@@ -115,6 +117,12 @@ export default defineComponent( {
         };
     },
     computed: {
+        /** Is the registrar option set to UseLoggedInPerson */
+        useLoggedInPersonForRegistrar (): boolean
+        {
+            return ( !!this.currentPerson ) && this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson;
+        },
+
         /** The settings for the gateway (MyWell, etc) control */
         gatewayControlModel (): GatewayControlModel
         {
@@ -627,20 +635,37 @@ export default defineComponent( {
 
         <div class="well">
             <h4>This Registration Was Completed By</h4>
-            <div class="row">
-                <div class="col-md-6">
-                    <TextBox label="First Name" rules="required" v-model="registrar.NickName" />
+            <template v-if="useLoggedInPersonForRegistrar">
+                <div class="row">
+                    <div class="col-md-6">
+                        <StaticFormControl label="First Name" v-model="registrar.NickName" />
+                    </div>
+                    <div class="col-md-6">
+                        <StaticFormControl label="Last Name" v-model="registrar.LastName" />
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <TextBox label="Last Name" rules="required" v-model="registrar.LastName" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <StaticFormControl label="Email" v-model="registrar.Email" />
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
-                    <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
+            </template>
+            <template v-else>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox label="First Name" rules="required" v-model="registrar.NickName" />
+                    </div>
+                    <div class="col-md-6">
+                        <TextBox label="Last Name" rules="required" v-model="registrar.LastName" />
+                    </div>
                 </div>
-            </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
+                        <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
+                    </div>
+                </div>
+            </template>
         </div>
 
         <div v-if="total">

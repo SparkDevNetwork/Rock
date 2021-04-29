@@ -34,6 +34,7 @@ import NumberUpDown from '../../Elements/NumberUpDown';
 import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
 import Toggle from '../../Elements/Toggle';
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../Elements/ItemsWithPreAndPostHtml';
+import StaticFormControl from '../../Elements/StaticFormControl';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -70,7 +71,8 @@ export default defineComponent({
         NumberUpDown,
         AddressControl,
         Toggle,
-        ItemsWithPreAndPostHtml
+        ItemsWithPreAndPostHtml,
+        StaticFormControl
     },
     data() {
         return {
@@ -234,6 +236,18 @@ export default defineComponent({
             <template #gallery>
                 <NumberUpDown label="NumberUpDown 1" v-model="numberUpDown" />
                 <NumberUpDown label="NumberUpDown 2" v-model="numberUpDown" />
+            </template>
+            <template #result>
+                {{numberUpDown}}
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                StaticFormControl
+            </template>
+            <template #gallery>
+                <StaticFormControl label="StaticFormControl 1" v-model="numberUpDown" />
+                <StaticFormControl label="StaticFormControl 2" v-model="numberUpDown" />
             </template>
             <template #result>
                 {{numberUpDown}}
