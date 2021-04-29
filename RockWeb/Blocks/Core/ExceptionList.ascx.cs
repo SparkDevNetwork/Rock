@@ -1335,49 +1335,56 @@ namespace RockWeb.Blocks.Administration
                 // Exclude all inner exceptions.
                 filterQuery = exceptionService.FilterByOutermost( filterQuery );
 
+                // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it.
+                var filterQueryList = filterQuery.Select( s => new { s.ExceptionType, s.Description, s.CreatedDateTime, s.Id } ).ToList();
+
                 // Select data for the list items.
-                var listItemQuery = filterQuery
+                var exceptionSummaryList = filterQueryList.Select( s => new { s.ExceptionType, s.Description, s.CreatedDateTime, s.Id } )
                                         .GroupBy( e => new
                                         {
                                             Type = e.ExceptionType,
-                                            Description = e.Description.Substring( 0, ExceptionLogService.DescriptionGroupingPrefixLength )
+                                            Description = e.Description.Truncate( ExceptionLogService.DescriptionGroupingPrefixLength, false )
                                         } )
-                                        .Select( eg => new ExceptionLogViewModel
-                                        {
-                                            Id = eg.Max( e => e.Id ),
-                                            ExceptionTypeName = eg.Key.Type,
-                                            Description = eg.FirstOrDefault( e => e.Id == eg.Max( e2 => e2.Id ) ).Description,
-                                            LastExceptionDate = eg.Max( e => e.CreatedDateTime ),
-                                            TotalCount = eg.Count(),
-                                            SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
-                                        } );
+                                        .Select( eg => {
+
+                                            var mostRecentException = eg.OrderBy( e => e.CreatedDateTime ).FirstOrDefault();
+
+                                            var exceptionLogViewModel = new ExceptionLogViewModel
+                                            {
+                                                Id = mostRecentException.Id,
+                                                ExceptionTypeName = mostRecentException.ExceptionType,
+                                                Description = mostRecentException.Description,
+                                                LastExceptionDate = mostRecentException.CreatedDateTime,
+                                                TotalCount = eg.Count(),
+                                                SubsetCount = eg.Count( e => e.CreatedDateTime.HasValue && e.CreatedDateTime.Value >= minSummaryCountDate )
+                                            };
+
+                                            return exceptionLogViewModel;
+                                        } ).ToList();
 
                 // Apply sort parameters.
                 if ( gExceptionList.SortProperty != null )
                 {
-                    listItemQuery = listItemQuery.Sort( gExceptionList.SortProperty );
+                    exceptionSummaryList = exceptionSummaryList.AsQueryable().Sort( gExceptionList.SortProperty ).ToList();
                 }
                 else
                 {
-                    listItemQuery = listItemQuery.OrderByDescending( e => e.LastExceptionDate );
+                    exceptionSummaryList = exceptionSummaryList.OrderByDescending( e => e.LastExceptionDate ).ToList();
                 }
 
-                // Get the query results.
-                var exceptions = listItemQuery.ToList();
-
                 // Abbreviate the Exception Type Name to reduce the list width.
-                foreach ( var exception in exceptions )
+                foreach ( var exceptionSummary in exceptionSummaryList )
                 {
-                    var periodIndex = exception.ExceptionTypeName.LastIndexOf( "." );
+                    var periodIndex = exceptionSummary.ExceptionTypeName.LastIndexOf( "." );
 
                     if ( periodIndex > 0 )
                     {
-                        exception.ExceptionTypeName = exception.ExceptionTypeName.Substring( periodIndex + 1 );
+                        exceptionSummary.ExceptionTypeName = exceptionSummary.ExceptionTypeName.Substring( periodIndex + 1 );
                     }
                 }
 
                 // Populate the grid.
-                gExceptionList.DataSource = exceptions;
+                gExceptionList.DataSource = exceptionSummaryList;
 
                 gExceptionList.DataBind();
 
