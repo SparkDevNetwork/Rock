@@ -173,7 +173,6 @@ namespace RockWeb.Blocks.Connection
             this.BlockUpdated += Block_BlockUpdated;
 
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
-            gConnectionRequestActivities.Actions.ShowAdd = true;
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
             gConnectionRequestActivities.RowDataBound += gConnectionRequestActivities_RowDataBound;
@@ -1538,7 +1537,7 @@ namespace RockWeb.Blocks.Connection
             {
                 return;
             }
-
+                        
             var connector = connectionRequest.ConnectorPersonAlias != null ?
                 connectionRequest.ConnectorPersonAlias.Person :
                 null;
@@ -1558,6 +1557,11 @@ namespace RockWeb.Blocks.Connection
                     @"<div class=""board-card-photo mb-1"" style=""background-image: url( '{0}' );"" title=""{1} Profile Photo""></div>",
                     "/Assets/Images/person-no-photo-unknown.svg",
                     "Unassigned" );
+            }
+
+            if ( !rConnectorSelect.Visible )
+            {
+                return;
             }
 
             var connectorViewModels = GetConnectors( true, connectionRequest.CampusId )
@@ -1607,7 +1611,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityId">The connectionOpportunity id.</param>
         public void ShowDetail( int connectionRequestId, int? connectionOpportunityId )
         {
-            bool editAllowed = UserCanEdit;
+            bool editAllowed = false;
 
             // autoexpand the person picker if this is an add
             this.Page.ClientScript.RegisterStartupScript(
@@ -1701,7 +1705,7 @@ namespace RockWeb.Blocks.Connection
                     lTitle.Text = string.Format( "New {0} Connection Request", connectionOpportunity.Name );
                 }
 
-                // Only users that have Edit rights to block, or edit rights to the opportunity
+                // Only users that have edit rights to the opportunity
                 if ( !editAllowed )
                 {
                     editAllowed = connectionRequest.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -1718,7 +1722,7 @@ namespace RockWeb.Blocks.Connection
                         .Any( g =>
                             !g.CampusId.HasValue &&
                             g.ConnectorGroup != null &&
-                            g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) );
+                            g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                     if ( !editAllowed )
                     {
@@ -1737,6 +1741,7 @@ namespace RockWeb.Blocks.Connection
 
                 lbConnect.Visible = editAllowed;
                 lbEdit.Visible = editAllowed;
+                rConnectorSelect.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
 

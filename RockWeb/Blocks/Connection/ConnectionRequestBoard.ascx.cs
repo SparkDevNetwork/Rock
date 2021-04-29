@@ -57,14 +57,6 @@ namespace RockWeb.Blocks.Connection
         IsRequired = true,
         Order = 0 )]
 
-    [BooleanField(
-        "Enable Request Security",
-        DefaultBooleanValue = false,
-        Description = "When enabled, the security column for request would be displayed.",
-        Key = AttributeKey.EnableRequestSecurity,
-        IsRequired = true,
-        Order = 1 )]
-
     [LinkedPage(
         "Person Profile Page",
         Description = "Page used for viewing a person's profile. If set a view profile button will show for each grid item.",
@@ -244,7 +236,6 @@ namespace RockWeb.Blocks.Connection
             public const string LavaHeadingTemplate = "LavaHeadingTemplate";
             public const string MaxCards = "MaxCards";
             public const string ConnectionRequestStatusIconsTemplate = "ConnectionRequestStatusIconsTemplate";
-            public const string EnableRequestSecurity = "EnableRequestSecurity";
             public const string PersonProfilePage = "PersonProfilePage";
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
@@ -828,7 +819,10 @@ namespace RockWeb.Blocks.Connection
             lRequestModalViewModeEmail.Text = GetEmailLinkMarkup( viewModel.PersonId, viewModel.PersonEmail );
             aRequestModalViewModeProfileLink.Attributes["href"] = string.Format( "/person/{0}", viewModel.PersonId );
             btnRequestModalViewModeTransfer.Visible = DoShowTransferButton();
-            btnRequestModalViewModeConnect.Visible = viewModel.CanConnect;
+            btnRequestModalViewModeConnect.Visible = viewModel.CanConnect && CanUserEditConnectionRequest();
+            btnRequestModalViewModeEdit.Visible = CanUserEditConnectionRequest();
+            lbRequestModalViewModeAddActivity.Visible = CanUserEditConnectionRequest();
+            rRequestModalViewModeConnectorSelect.Visible = CanUserEditConnectionRequest();
 
             // Bind the phone repeater
             var hasSmsLink = GetAttributeValue( AttributeKey.SmsLinkPage ).IsNotNullOrWhiteSpace();
@@ -1172,6 +1166,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRequestModalAddEditModeSave_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             var isAddMode = IsRequestModalAddMode();
 
             var rockContext = new RockContext();
@@ -1721,6 +1720,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddRequest_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             ConnectionRequestId = null;
             ViewAllActivities = false;
             IsRequestModalAddEditMode = true;
@@ -1953,13 +1957,30 @@ namespace RockWeb.Blocks.Connection
         #endregion Manual Workflows
 
         #region Request Grid
+        protected int ConnectionRequestEntityTypeId
+        {
+            get
+            {
+                return EntityTypeCache.Get<ConnectionRequest>().Id;
+            }
+        }
+
+        protected bool ShowSecurityButton
+        {
+            get
+            {
+                var connectionOpportunity = GetConnectionOpportunity();
+                return connectionOpportunity.ConnectionType.EnableRequestSecurity
+                        && connectionOpportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            }
+        }
 
         /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindRequestsGrid()
         {
-            var connectionRequestEntityId = EntityTypeCache.Get<ConnectionRequest>().Id;
+            var connectionRequestEntityId = ConnectionRequestEntityTypeId;
 
             gRequests.EntityIdField = "Id";
             gRequests.PersonIdField = "PersonId";
@@ -1974,12 +1995,14 @@ namespace RockWeb.Blocks.Connection
             gRequests.IsDeleteEnabled = canEdit;
             deleteField.Visible = canEdit;
 
+
             var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = connectionRequestEntityId;
-            securityField.Visible = GetAttributeValue( AttributeKey.EnableRequestSecurity ).AsBoolean();
+            securityField.Visible = ShowSecurityButton;
 
             // Bind the data
-            var viewModelQuery = GetConnectionRequestViewModelQuery();
+            var rockContext = new RockContext();
+            var viewModelQuery = GetConnectionRequestViewModelQuery( rockContext );
             gRequests.SetLinqDataSource( viewModelQuery );
             gRequests.DataBind();
         }
@@ -2267,7 +2290,63 @@ namespace RockWeb.Blocks.Connection
             }
 
             var connectionOpportunities = GetConnectionOpportunities();
-            return connectionOpportunities != null && connectionOpportunities.Count > 1;
+            return connectionOpportunities != null && connectionOpportunities.Count > 1 && CanUserEditConnectionRequest();
+        }
+
+        private bool CanUserEditConnectionRequest()
+        {
+            var connectionOpportunity = GetConnectionOpportunity();
+            var connectionRequest = GetConnectionRequest();
+            var connectionType = GetConnectionType();
+
+            var userCanEditConnectionRequest = false;
+
+            if ( connectionType != null && connectionType.EnableRequestSecurity && connectionRequest != null )
+            {
+                userCanEditConnectionRequest = connectionRequest.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+            else if ( connectionOpportunity != null )
+            {
+                userCanEditConnectionRequest = connectionOpportunity.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+
+            // Grants edit access to those in the opportunity's connector groups
+            if ( !userCanEditConnectionRequest && CurrentPersonId.HasValue )
+            {
+                var qryConnectionOpportunityConnectorGroups = new ConnectionOpportunityConnectorGroupService( new RockContext() )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id );
+
+                // Grant edit access to any of those in a non campus-specific connector group
+                userCanEditConnectionRequest = qryConnectionOpportunityConnectorGroups
+                    .Any( g =>
+                        !g.CampusId.HasValue &&
+                        g.ConnectorGroup != null &&
+                        g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+
+                if ( !userCanEditConnectionRequest )
+                {
+                    // If this is a new request, grant edit access to any connector group. Otherwise, match the request's campus to the corresponding campus-specific connector group
+                    var groupCampuses = qryConnectionOpportunityConnectorGroups
+                        .Where( g =>
+                            g.ConnectorGroup != null &&
+                            g.ConnectorGroup.Members.Any( m => m.PersonId == CurrentPersonId ) );
+
+                    if ( connectionRequest != null )
+                    {
+                        groupCampuses = groupCampuses.Where( g => ( connectionRequest.Id == 0 || ( connectionRequest.CampusId.HasValue && g.CampusId == connectionRequest.CampusId.Value ) ) );
+                    }
+
+                    foreach ( var groupCampus in groupCampuses )
+                    {
+                        userCanEditConnectionRequest = true;
+                        break;
+                    }
+                }
+            }
+
+            return userCanEditConnectionRequest;
         }
 
         /// <summary>
@@ -2275,7 +2354,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindRequestModalViewModeActivitiesGrid()
         {
-            var canEdit = CanEdit();
+            var canEdit = CanEdit() && CanUserEditConnectionRequest();
             gRequestModalViewModeActivities.IsDeleteEnabled = canEdit;
             gRequestModalViewModeActivities.ColumnsOfType<DeleteField>().First().Visible = canEdit;
 
@@ -2322,6 +2401,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRequestModalViewModeAddActivity_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             CurrentActivityId = null;
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_AddEditActivity;
             ShowRequestModal();
@@ -2334,7 +2418,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeAddActivityModeSave_Click( object sender, EventArgs e )
         {
-            if ( !ConnectionRequestId.HasValue )
+            if ( !ConnectionRequestId.HasValue || !CanUserEditConnectionRequest() )
             {
                 return;
             }
@@ -2381,6 +2465,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRequestModalViewModeActivities_Delete( object sender, RowEventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             var activityId = e.RowKeyId;
 
             var rockContext = new RockContext();
@@ -2506,6 +2595,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeTransferModeSearch_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_TransferSearch;
             ShowRequestModal();
         }
@@ -2530,6 +2624,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeTransferModeSave_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
@@ -2793,6 +2892,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeEdit_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_View;
             IsRequestModalAddEditMode = true;
             ShowRequestModal();
@@ -2805,6 +2909,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeTransfer_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_Transfer;
             IsRequestModalAddEditMode = false;
             ShowRequestModal();
@@ -2817,6 +2926,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRequestModalViewModeConnect_Click( object sender, EventArgs e )
         {
+            if ( !CanUserEditConnectionRequest() )
+            {
+                return;
+            }
+
             MarkRequestConnected();
             ShowRequestModal();
 
@@ -2839,7 +2953,7 @@ namespace RockWeb.Blocks.Connection
         {
             var newConnectorPersonAliasId = e.CommandArgument.ToStringSafe().AsIntegerOrNull();
 
-            if ( !newConnectorPersonAliasId.HasValue || !ConnectionRequestId.HasValue )
+            if ( !newConnectorPersonAliasId.HasValue || !ConnectionRequestId.HasValue || !CanUserEditConnectionRequest() )
             {
                 return;
             }
@@ -3681,6 +3795,7 @@ namespace RockWeb.Blocks.Connection
                 ShowError( "At least one connection opportunity is required before this block can be used" );
                 return;
             }
+            var connectionOpportunity = GetConnectionOpportunity();
 
             BindHeader();
             BindViewModeToggle();
@@ -3691,6 +3806,8 @@ namespace RockWeb.Blocks.Connection
             BindFavoriteConnectionOpportunities();
             BindConnectionTypesRepeater();
             BindBoardOrGrid();
+
+            lbAddRequest.Visible = CanUserEditConnectionRequest();
 
             upnlHeader.Update();
         }
@@ -4122,6 +4239,12 @@ namespace RockWeb.Blocks.Connection
                         return;
                     }
 
+                    if ( !service.IsAuthorizedToEdit( connectionRequest, CurrentPerson ) )
+                    {
+                        ShowError( "You are not authorized to delete this Connection Request." );
+                        return;
+                    }
+
                     rockContext.WrapTransaction( () =>
                     {
                         new ConnectionRequestActivityService( rockContext ).DeleteRange( connectionRequest.ConnectionRequestActivities );
@@ -4362,7 +4485,6 @@ namespace RockWeb.Blocks.Connection
                 ConnectionRequestId.Value,
                 new ConnectionRequestViewModelQueryArgs(),
                 GetConnectionRequestStatusIconsTemplate() );
-
             return _connectionRequestViewModel;
         }
 
@@ -4619,9 +4741,8 @@ namespace RockWeb.Blocks.Connection
         /// Gets the connection request view models.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<ConnectionRequestViewModel> GetConnectionRequestViewModelQuery()
+        private IQueryable<ConnectionRequestViewModel> GetConnectionRequestViewModelQuery( RockContext rockContext )
         {
-            var rockContext = new RockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
 
             var minDate = sdrpLastActivityDateRangeFilter.SelectedDateRange.Start;
