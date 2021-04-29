@@ -212,12 +212,14 @@ export default defineComponent( {
                 return 0;
             }
 
+            const stepsBeforePre = this.registrationEntryState.FirstStep === this.steps.intro ? 1 : 0;
+
             if ( this.currentStep === this.steps.registrationStartForm )
             {
-                return 1;
+                return stepsBeforePre;
             }
 
-            const stepsBeforeRegistrants = this.hasPreAttributes ? 2 : 1;
+            const stepsBeforeRegistrants = stepsBeforePre + ( this.hasPreAttributes ? 1 : 0 );
 
             if ( this.currentStep === this.steps.perRegistrantForms )
             {
@@ -290,11 +292,16 @@ export default defineComponent( {
         /** The items to display in the progress tracker */
         progressTrackerItems (): ProgressTrackerItem[]
         {
-            const items: ProgressTrackerItem[] = [ {
-                Key: 'Start',
-                Title: 'Start',
-                Subtitle: this.viewModel.RegistrationTerm
-            } ];
+            const items: ProgressTrackerItem[] = [];
+
+            if ( this.registrationEntryState.FirstStep === this.steps.intro )
+            {
+                items.push( {
+                    Key: 'Start',
+                    Title: 'Start',
+                    Subtitle: this.viewModel.RegistrationTerm
+                } );
+            }
 
             if ( this.hasPreAttributes )
             {

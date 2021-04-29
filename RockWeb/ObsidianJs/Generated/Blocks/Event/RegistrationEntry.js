@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page", "../../Elements/ProgressTracker"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressTracker", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, Number_1, String_1, Alert_1, Success_1, Page_1, ProgressTracker_1, Step;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, Success_1, Page_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
         var ownFamilyGuid = Guid_1.newGuid();
@@ -75,6 +75,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             function (Summary_1_1) {
                 Summary_1 = Summary_1_1;
             },
+            function (ProgressTracker_1_1) {
+                ProgressTracker_1 = ProgressTracker_1_1;
+            },
             function (Number_1_1) {
                 Number_1 = Number_1_1;
             },
@@ -89,9 +92,6 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             },
             function (Page_1_1) {
                 Page_1 = Page_1_1;
-            },
-            function (ProgressTracker_1_1) {
-                ProgressTracker_1 = ProgressTracker_1_1;
             }
         ],
         execute: function () {
@@ -115,8 +115,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     RegistrationEntryRegistrationEnd: RegistrationEnd_1.default,
                     RegistrationEntrySummary: Summary_1.default,
                     RegistrationEntrySuccess: Success_1.default,
-                    Alert: Alert_1.default,
-                    ProgressTracker: ProgressTracker_1.default
+                    ProgressTracker: ProgressTracker_1.default,
+                    Alert: Alert_1.default
                 },
                 setup: function () {
                     var _a;
@@ -201,10 +201,11 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         if (this.currentStep === this.steps.intro) {
                             return 0;
                         }
+                        var stepsBeforePre = this.registrationEntryState.FirstStep === this.steps.intro ? 1 : 0;
                         if (this.currentStep === this.steps.registrationStartForm) {
-                            return 1;
+                            return stepsBeforePre;
                         }
-                        var stepsBeforeRegistrants = this.hasPreAttributes ? 2 : 1;
+                        var stepsBeforeRegistrants = stepsBeforePre + (this.hasPreAttributes ? 1 : 0);
                         if (this.currentStep === this.steps.perRegistrantForms) {
                             return this.registrationEntryState.CurrentRegistrantIndex + stepsBeforeRegistrants;
                         }
@@ -251,11 +252,14 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     },
                     /** The items to display in the progress tracker */
                     progressTrackerItems: function () {
-                        var items = [{
+                        var items = [];
+                        if (this.registrationEntryState.FirstStep === this.steps.intro) {
+                            items.push({
                                 Key: 'Start',
                                 Title: 'Start',
                                 Subtitle: this.viewModel.RegistrationTerm
-                            }];
+                            });
+                        }
                         if (this.hasPreAttributes) {
                             items.push({
                                 Key: 'Pre',

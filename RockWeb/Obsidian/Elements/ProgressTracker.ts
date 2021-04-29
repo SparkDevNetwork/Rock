@@ -93,7 +93,8 @@ const ProgressTrackerItem = defineComponent( {
 const ProgressTracker = defineComponent( {
     name: 'ProgressTracker',
     components: {
-        ProgressTrackerItem
+        ProgressTrackerItem,
+        JavaScriptAnchor
     },
     props: {
         currentIndex: {
@@ -167,24 +168,50 @@ const ProgressTracker = defineComponent( {
                 return;
             }
 
-            // Collapse the first index that can be collapsed
-            for ( let i = 0; i <= this.lastIndex; i++ )
+            // Collapse the furthest away index that can be collapsed
+            const midPoint = this.lastIndex / 2;
+
+            if ( this.currentIndex > midPoint )
             {
-                if ( this.doNotCollapseIndexes.indexOf( i ) !== -1 )
+                for ( let i = 0; i <= this.lastIndex; i++ )
                 {
-                    continue;
-                }
+                    if ( this.doNotCollapseIndexes.indexOf( i ) !== -1 )
+                    {
+                        continue;
+                    }
 
-                if ( this.isCollapsed( i ) )
+                    if ( this.isCollapsed( i ) )
+                    {
+                        continue;
+                    }
+
+                    // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
+                    // collapse more if needed
+                    this.collapsedIndexes.push( i );
+                    this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
+                    return;
+                }
+            }
+            else
+            {
+                for ( let i = this.lastIndex; i >= 0; i-- )
                 {
-                    continue;
-                }
+                    if ( this.doNotCollapseIndexes.indexOf( i ) !== -1 )
+                    {
+                        continue;
+                    }
 
-                // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
-                // collapse more if needed
-                this.collapsedIndexes.push( i );
-                this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
-                return;
+                    if ( this.isCollapsed( i ) )
+                    {
+                        continue;
+                    }
+
+                    // After collapsing the first index that can be, then wait for the DOM to update (nexttick) and
+                    // collapse more if needed
+                    this.collapsedIndexes.push( i );
+                    this.$nextTick( () => this.collapseItemsBecauseOfWidth() );
+                    return;
+                }
             }
         }
     },
@@ -203,9 +230,9 @@ const ProgressTracker = defineComponent( {
         <ul :id="progressTrackerElementId" class="progress-steps">
             <template v-for="(item, index) in items" :key="item.key">
                 <li v-if="isCollapsed(index)" class="progress-step progress-tracker-more">
-                    <a href="#" class="progress-step-link">
+                    <JavaScriptAnchor class="progress-step-link">
                         <i class="fas fa-ellipsis-v"></i>
-                    </a>
+                    </JavaScriptAnchor>
                     <div class="progress-tracker-arrow">
                         <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
                             <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
