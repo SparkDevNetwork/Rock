@@ -2377,6 +2377,7 @@ namespace Rock.Model
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
+        [RockObsolete( "12.4" )]
         [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
         {
@@ -2499,7 +2500,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext  ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
+            var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
 
             // Filter for inactive.
             if ( !includeInactive )

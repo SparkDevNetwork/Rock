@@ -121,7 +121,7 @@ BEGIN
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
             SELECT CASE max(convert(INT, CASE 
-     WHEN av.ValueAsBoolean IS NULL
+ WHEN av.ValueAsBoolean IS NULL
                                     THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
