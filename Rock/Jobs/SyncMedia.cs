@@ -24,35 +24,41 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.SystemKey;
+using Rock.Web;
 
 namespace Rock.Jobs
 {
     /// <summary>
     /// This job synchronizes media content from configured <see cref="MediaAccount">accounts</see>.
     /// </summary>
-    [DisplayName( "Media Sync" )]
+    [DisplayName( "Sync Media" )]
     [Description( "Synchronizes media content from configured Media Accounts." )]
 
-    [BooleanField( "Refresh Only",
-        Description = "This will pull new data but not synchronize changes to existing data, but is often faster.",
-        DefaultBooleanValue = false,
-        Key = AttributeKey.RefreshOnly,
+    [BooleanField(
+        "Limit Full Sync to Once a Day",
+        Key = AttributeKey.LimitFullSyncToOnceADay,
+        Description = "A full sync downloads additional analytics information and can take longer to process.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        Category = "General",
         Order = 0 )]
+
     [DisallowConcurrentExecution]
-    public class MediaSync : IJob
+    public class SyncMedia : IJob
     {
         /// <summary>
-        /// Attribute Keys for the <see cref="MediaSync"/> job.
+        /// Attribute Keys for the <see cref="SyncMedia"/> job.
         /// </summary>
         private static class AttributeKey
         {
-            public const string RefreshOnly = "RefreshOnly";
+            public const string LimitFullSyncToOnceADay = "LimitFullSyncToOnceADay";
         }
 
         /// <summary> 
         /// Empty constructor for job initialization.
         /// </summary>
-        public MediaSync()
+        public SyncMedia()
         {
         }
 
@@ -64,10 +70,15 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var refreshOnly = dataMap.GetString( AttributeKey.RefreshOnly ).AsBoolean();
+            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean();
+
+            // Determine if we are doing a full sync or just a refresh.
+            var currentDateTime = RockDateTime.Now;
+            var lastFullSync = SystemSettings.GetValue( SystemSetting.MEDIA_SYNC_LAST_FULL_SYNC_DATETIME ).AsDateTime();
+            var haveStatsSyncedToday = lastFullSync.HasValue && lastFullSync.Value.Date == currentDateTime.Date;
+            var refreshOnly = limitFullSync && haveStatsSyncedToday;
 
             var errors = new List<string>();
-            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             // Start a task that will let us run the Async methods in order.
             var task = Task.Run( async () =>
@@ -84,7 +95,7 @@ namespace Rock.Jobs
                 }
                 else
                 {
-                    // Quick refresh operation.
+                    // Quick refresh media and folders only.
                     var results = await MediaAccountService.RefreshMediaInAllAccountsAsync();
                     errors.AddRange( results.Errors );
                 }
@@ -94,18 +105,19 @@ namespace Rock.Jobs
             {
                 // Wait for our main task to complete.
                 task.GetAwaiter().GetResult();
-                sw.Stop();
+
+                SystemSettings.SetValue( SystemSetting.MEDIA_SYNC_LAST_FULL_SYNC_DATETIME, currentDateTime.ToString() );
+
+                context.Result = $"{( refreshOnly ? "Refreshed" : "Synchronized" )} all accounts successfully.";
+
+                if ( errors.Any() )
+                {
+                    throw new Exception( "One or more errors occurred while syncing accounts..." + Environment.NewLine + errors.AsDelimited( Environment.NewLine ) );
+                }
             }
             catch ( Exception ex )
             {
                 throw new Exception( "One or more accounts failed to process.", ex );
-            }
-
-            context.Result = $"Synchronized all accounts in {sw.ElapsedMilliseconds:n0}ms.";
-
-            if ( errors.Any() )
-            {
-                throw new Exception( "One or more errors occurred while syncing accounts..." + Environment.NewLine + errors.AsDelimited( Environment.NewLine ) );
             }
         }
     }

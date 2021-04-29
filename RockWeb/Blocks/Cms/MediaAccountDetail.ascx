@@ -21,9 +21,14 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
-                    <div class="row margin-b-lg">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lDescription" runat="server" />
+                    <div class="row">
+                        <div class="col-sm-6 col-md-7 col-lg-8">
+                            <div class="margin-b-lg">
+                                <asp:Literal ID="lDescription" runat="server" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-5 col-lg-4">
+                            <asp:Literal ID="lMetricData" runat="server" />
                         </div>
                     </div>
                     <div class="actions">

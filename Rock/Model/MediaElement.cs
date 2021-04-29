@@ -64,54 +64,53 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or set the duration of media element.
+        /// Gets or set the duration in seconds of media element.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Decimal"/> representing the duration of media element.
+        /// A integer representing the duration in seconds of media element.
         /// </value>
         [DataMember]
-        [DecimalPrecision( 18, 2 )]
-        public decimal? Duration { get; set; }
+        public int? Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets the source created date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was created on the provider.
         /// </summary>
         /// <value>
-        /// The source created date time.
+        /// The <see cref="DateTime"/> this instance was created on the provider.
         /// </value>
         public DateTime? SourceCreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source modified date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was modified on the provider.
         /// </summary>
         /// <value>
-        /// The source modified date time.
+        /// The <see cref="DateTime"/> this instance was modified on the provider.
         /// </value>
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source data.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The source data.
+        /// The custom provider data for this instance.
         /// </value>
         [DataMember]
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source metric.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The source metric.
+        /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
-        public string SourceMetric { get; set; }
+        public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source key.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The source key.
+        /// The provider's unique identifier for this instance.
         /// </value>
         [DataMember]
         [MaxLength( 60 )]
@@ -132,7 +131,7 @@ namespace Rock.Model
             }
             set
             {
-                ThumbnailDatas = value.FromJsonOrNull<List<ThumbnailData>>() ?? new List<ThumbnailData>();
+                ThumbnailDatas = value.FromJsonOrNull<List<MediaElementThumbnailData>>() ?? new List<MediaElementThumbnailData>();
             }
         }
 
@@ -151,7 +150,7 @@ namespace Rock.Model
             }
             set
             {
-                MediaElementDatas = value.FromJsonOrNull<List<MediaElementData>>() ?? new List<MediaElementData>();
+                MediaElementDatas = value.FromJsonOrNull<List<MediaElementFileData>>() ?? new List<MediaElementFileData>();
             }
         }
 
@@ -184,7 +183,7 @@ namespace Rock.Model
         /// The media element data.
         /// </value>
         [NotMapped]
-        public virtual List<MediaElementData> MediaElementDatas { get; set; } = new List<MediaElementData>();
+        public virtual List<MediaElementFileData> MediaElementDatas { get; set; } = new List<MediaElementFileData>();
 
         /// <summary>
         /// Gets or sets the thumbnail data.
@@ -193,7 +192,7 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [NotMapped]
-        public virtual List<ThumbnailData> ThumbnailDatas { get; set; } = new List<ThumbnailData>();
+        public virtual List<MediaElementThumbnailData> ThumbnailDatas { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
 

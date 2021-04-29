@@ -386,6 +386,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             lDescription.Text = descriptionList.Html;
+
+            lMetricData.Text = mediaFolder.MediaAccount.GetMediaAccountComponent()?.GetFolderHtmlSummary( mediaFolder );
         }
 
         /// <summary>

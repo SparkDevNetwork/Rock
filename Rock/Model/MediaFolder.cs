@@ -65,8 +65,11 @@ namespace Rock.Model
         /// Gets or sets a value indicating if this Media Folder is public.
         /// </summary>
         /// <value>
-        ///  A <see cref="System.Boolean"/> that is <c>true</c> if this Media Folder is public, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean" /> that is <c>true</c> if this Media Folder is public, otherwise <c>false</c>.
         /// </value>
+        /// <remarks>
+        /// This value is synchronized to the provider.
+        /// </remarks>
         [DataMember]
         public bool? IsPublic
         {
@@ -76,28 +79,28 @@ namespace Rock.Model
         private bool? _isPublic = true;
 
         /// <summary>
-        /// Gets or sets the source data.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The source data.
+        /// The custom provider data for this instance.
         /// </value>
         [DataMember]
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the metric data.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The metric data.
+        /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
         public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source key.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The source key.
+        /// The provider's unique identifier for this instance.
         /// </value>
         [DataMember]
         [MaxLength( 60 )]

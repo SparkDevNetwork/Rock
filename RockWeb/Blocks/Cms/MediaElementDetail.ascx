@@ -24,10 +24,17 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
-                    <div class="margin-b-lg">
-                        <asp:Literal ID="lDescription" runat="server" />
+                    <div class="row">
+                        <div class="col-sm-6 col-md-7 col-lg-8">
+                            <div class="margin-b-lg">
+                                <asp:Literal ID="lDescription" runat="server" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-5 col-lg-4">
+                            <asp:Literal ID="lMetricData" runat="server" />
+                        </div>
                     </div>
-                      <div class="row margin-b-md">
+                    <div class="row margin-b-md">
                         <div class="col-md-12">
                             <label>Media Files</label>
                             <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" UseFullStylesForLightGrid="true" >
@@ -71,7 +78,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Double" Label="Duration" />
+                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" />
                         </div>
                     </div>
                     <div class="row">

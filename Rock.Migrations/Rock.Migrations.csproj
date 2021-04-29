@@ -89,6 +89,10 @@
     <Compile Include="Migrations\202104271748244_CodeGenerated_0427.Designer.cs">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.cs" />
+    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.Designer.cs">
+      <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -460,6 +464,9 @@
     <EmbeddedResource Include="Migrations\202104271748244_CodeGenerated_0427.resx">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104282103218_MediaElementModelChanges.resx">
+      <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
     </EmbeddedResource>
@@ -785,7 +792,7 @@
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
-	<ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
       <Name>Rock.Lava.Shared</Name>
     </ProjectReference>
