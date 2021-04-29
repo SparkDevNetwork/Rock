@@ -23,9 +23,9 @@ using System.Threading.Tasks;
 using Quartz;
 
 using Rock.Attribute;
+using Rock.Data;
+using Rock.Media;
 using Rock.Model;
-using Rock.SystemKey;
-using Rock.Web;
 
 namespace Rock.Jobs
 {
@@ -70,54 +70,138 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean();
-
-            // Determine if we are doing a full sync or just a refresh.
-            var currentDateTime = RockDateTime.Now;
-            var lastFullSync = SystemSettings.GetValue( SystemSetting.MEDIA_SYNC_LAST_FULL_SYNC_DATETIME ).AsDateTime();
-            var haveStatsSyncedToday = lastFullSync.HasValue && lastFullSync.Value.Date == currentDateTime.Date;
-            var refreshOnly = limitFullSync && haveStatsSyncedToday;
-
-            var errors = new List<string>();
+            var limitFullSync = dataMap.GetString( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.
-            var task = Task.Run( async () =>
+            var task = Task.Run( () => ProcessAllAccounts( limitFullSync ) );
+
+            // Wait for our main task to complete.
+            var result = task.GetAwaiter().GetResult();
+
+            context.Result = result.Message;
+
+            if ( result.Errors.Any() )
             {
-                if ( !refreshOnly )
-                {
-                    // First sync all the media and folders.
-                    var results = await MediaAccountService.SyncMediaInAllAccountsAsync();
-                    errors.AddRange( results.Errors );
+                throw new Exception( "One or more errors occurred while syncing accounts..." + Environment.NewLine + string.Join( Environment.NewLine, result.Errors ) );
+            }
+        }
 
-                    // Next sync all the analytics.
-                    results = await MediaAccountService.SyncAnalyticsInAllAccountsAsync();
-                    errors.AddRange( results.Errors );
-                }
-                else
-                {
-                    // Quick refresh media and folders only.
-                    var results = await MediaAccountService.RefreshMediaInAllAccountsAsync();
-                    errors.AddRange( results.Errors );
-                }
-            } );
-
-            try
+        /// <summary>
+        /// Synchronizes the folders and media in all active accounts.
+        /// </summary>
+        /// <param name="limitFullSync"><c>true</c> if a full-sync should only be performed once per day.</param>
+        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
+        private async Task<OperationResult> ProcessAllAccounts( bool limitFullSync )
+        {
+            using ( var rockContext = new RockContext() )
             {
-                // Wait for our main task to complete.
-                task.GetAwaiter().GetResult();
+                var tasks = new List<Task<OperationResult>>();
+                var mediaAccounts = new MediaAccountService( rockContext ).Queryable()
+                    .Where( a => a.IsActive )
+                    .Select( a => new
+                    {
+                        a.Id,
+                        a.Name,
+                        a.LastRefreshDateTime
+                    } )
+                    .ToList();
 
-                SystemSettings.SetValue( SystemSetting.MEDIA_SYNC_LAST_FULL_SYNC_DATETIME, currentDateTime.ToString() );
-
-                context.Result = $"{( refreshOnly ? "Refreshed" : "Synchronized" )} all accounts successfully.";
-
-                if ( errors.Any() )
+                if ( mediaAccounts.Count == 0 )
                 {
-                    throw new Exception( "One or more errors occurred while syncing accounts..." + Environment.NewLine + errors.AsDelimited( Environment.NewLine ) );
+                    return new OperationResult( "No active accounts to process.", new string[0] );
+                }
+
+                // Start a SyncMedia task for each active account.
+                foreach ( var mediaAccount in mediaAccounts )
+                {
+                    var task = Task.Run( async () =>
+                    {
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
+                        var errors = new List<string>();
+
+                        // Determine if this is a full sync or a partial refresh.
+                        var currentDateTime = RockDateTime.Now;
+                        var lastFullSync = mediaAccount.LastRefreshDateTime;
+                        var haveSyncedToday = lastFullSync.HasValue && lastFullSync.Value.Date == currentDateTime.Date;
+                        var refreshOnly = limitFullSync && haveSyncedToday;
+
+                        if ( refreshOnly )
+                        {
+                            // Quick refresh media and folders only.
+                            var result = await MediaAccountService.RefreshMediaInAccountAsync( mediaAccount.Id );
+                            errors.AddRange( result.Errors );
+                        }
+                        else
+                        {
+                            // First sync all the media and folders.
+                            var result = await MediaAccountService.SyncMediaInAccountAsync( mediaAccount.Id );
+                            errors.AddRange( result.Errors );
+
+                            // Next sync all the analytics.
+                            result = await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccount.Id );
+                            errors.AddRange( result.Errors );
+                        }
+
+                        sw.Stop();
+                        var seconds = ( int ) sw.Elapsed.TotalSeconds;
+
+                        var message = $"{(refreshOnly ? "Refreshed" : "Synchronized")} account {mediaAccount.Name} in {seconds}s.";
+
+                        // Since we will be aggregating errors include the
+                        // account name if there were any errors.
+                        return new OperationResult( message, errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
+                    } );
+
+                    tasks.Add( task );
+                }
+
+                try
+                {
+                    // Wait for all operational tasks to complete and then
+                    // aggregate the results.
+                    var results = await Task.WhenAll( tasks );
+
+                    var message = string.Join( Environment.NewLine, results.Select( a => a.Message ) );
+
+                    return new OperationResult( message, results.SelectMany( a => a.Errors ) );
+                }
+                catch
+                {
+                    throw new AggregateException( "One or more accounts failed to sync media.", tasks.Where( t => t.IsFaulted ).SelectMany( t => t.Exception.InnerExceptions ) );
                 }
             }
-            catch ( Exception ex )
+        }
+
+        /// <summary>
+        /// The result of one of our internal operations.
+        /// </summary>
+        private class OperationResult
+        {
+            /// <summary>
+            /// Gets the message.
+            /// </summary>
+            /// <value>
+            /// The message.
+            /// </value>
+            public string Message { get; }
+
+            /// <summary>
+            /// Gets the errors.
+            /// </summary>
+            /// <value>
+            /// The errors.
+            /// </value>
+            public List<string> Errors { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="OperationResult"/> class.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="errors">The errors.</param>
+            public OperationResult( string message, IEnumerable<string> errors )
             {
-                throw new Exception( "One or more accounts failed to process.", ex );
+                Message = message;
+                Errors = errors.ToList();
             }
         }
     }
