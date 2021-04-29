@@ -436,8 +436,7 @@ namespace RockWeb.Blocks.Connection
                         .ToList();
                 }
 
-                var canView = canEdit ||
-                                opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                var canView = opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
                                 ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
 
                 // Is user is authorized to view this opportunity type...

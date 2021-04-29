@@ -41,7 +41,7 @@ namespace Rock.Client
         public string DownloadData { get; set; }
 
         /// <summary />
-        public decimal? Duration { get; set; }
+        public int? Duration { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -54,6 +54,9 @@ namespace Rock.Client
 
         /// <summary />
         public int MediaFolderId { get; set; }
+
+        /// <summary />
+        public string MetricData { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -71,9 +74,6 @@ namespace Rock.Client
 
         /// <summary />
         public string SourceKey { get; set; }
-
-        /// <summary />
-        public string SourceMetric { get; set; }
 
         /// <summary />
         public DateTime? SourceModifiedDateTime { get; set; }
@@ -121,12 +121,12 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.MediaElementData = source.MediaElementData;
             this.MediaFolderId = source.MediaFolderId;
+            this.MetricData = source.MetricData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SourceCreatedDateTime = source.SourceCreatedDateTime;
             this.SourceData = source.SourceData;
             this.SourceKey = source.SourceKey;
-            this.SourceMetric = source.SourceMetric;
             this.SourceModifiedDateTime = source.SourceModifiedDateTime;
             this.ThumbnailData = source.ThumbnailData;
             this.CreatedDateTime = source.CreatedDateTime;

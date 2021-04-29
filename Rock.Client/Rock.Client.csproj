@@ -60,6 +60,7 @@
     <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="CodeGenerated\Assessment.cs" />
     <Compile Include="CodeGenerated\AssessmentType.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="CodeGenerated\FinancialPledge.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplate.cs" />
     <Compile Include="CodeGenerated\FinancialTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionAlert.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionAlertType.cs" />
@@ -208,6 +210,9 @@
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LocationExport.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
+    <Compile Include="CodeGenerated\MediaAccount.cs" />
+    <Compile Include="CodeGenerated\MediaElement.cs" />
+    <Compile Include="CodeGenerated\MediaFolder.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
     <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
     <Compile Include="CodeGenerated\MetaLastNameLookup.cs" />

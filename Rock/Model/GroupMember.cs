@@ -32,6 +32,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 using Rock.Lava;
 
@@ -762,7 +763,8 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
-            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily is updated
+            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
+            // GivingLeadId, and GroupSalution is updated
             // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
             var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
             if ( groupTypeFamilyRoleIds?.Any() == true )
@@ -772,6 +774,9 @@ namespace Rock.Model
                     PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
                     PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
+
+                    // NOTE, make sure to do this after UpdatePrimaryFamily
+                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
                 }
             }
         }

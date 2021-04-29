@@ -31,12 +31,15 @@
 			* Group Role - Child: C8B1814F-6AA7-4055-B2D7-48FE20429CB9
 	</remarks>
 	<code>
-		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2015', '01-01-2016', null, null, 0, 1 -- year 2015 statements for all persons that have a mailing address
+		EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2015', '01-01-2022', null, null, 0, 1 -- year 2015 statements for all persons that have a mailing address
         EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, null, 1, 1 -- year 2014 statements for all persons regardless of mailing address
         EXEC [dbo].[spFinance_ContributionStatementQuery] '01-01-2014', '01-01-2015', null, 2, 1, 1  -- year 2014 statements for Ted Decker
 	</code>
 </doc>
 */
+
+
+/* #Obsolete# - Statements can be gotten using the StatementGenerator, Statement Generator REST Endpoints */
 ALTER PROCEDURE [dbo].[spFinance_ContributionStatementQuery]
 	@StartDate datetime
 	, @EndDate datetime
@@ -95,7 +98,7 @@ BEGIN
     SELECT 
 		  [pg].[PersonId]
 		, [pg].[GroupId]
-		, [pn].[PersonNames] [AddressPersonNames]
+		, [pg].[GroupSalutation] [AddressPersonNames]
         , case when l.Id is null then 0 else 1 end [HasAddress]
 		, [l].[Street1]
 		, [l].[Street2]
@@ -112,6 +115,7 @@ BEGIN
 		SELECT DISTINCT
 			null [PersonId] 
 			, [g].[Id] [GroupId]
+            , [g].[GroupSalutation]
 		FROM 
 			[Person] [p]
 		INNER JOIN 
@@ -130,7 +134,8 @@ BEGIN
 		-- to determine which address(es) the statements need to be mailed to 
 		SELECT  
 			[p].[Id] [PersonId],
-			[g].[Id] [GroupId]
+			[g].[Id] [GroupId],
+            [g].[GroupSalutation]
 		FROM
 			[Person] [p]
 		JOIN 
@@ -153,8 +158,6 @@ BEGIN
 		)
 		AND [p].GivingId IN (SELECT GivingId FROM tranListCTE)
 	) [pg]
-	CROSS APPLY 
-		[ufnCrm_GetFamilyTitle]([pg].[PersonId], [pg].[GroupId], default, default) [pn]
 	LEFT OUTER JOIN (
     SELECT l.*, gl.GroupId from
 		[GroupLocation] [gl] 

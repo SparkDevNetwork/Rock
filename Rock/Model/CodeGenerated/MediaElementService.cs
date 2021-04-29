@@ -118,11 +118,11 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.MediaElementData = source.MediaElementData;
             target.MediaFolderId = source.MediaFolderId;
+            target.MetricData = source.MetricData;
             target.Name = source.Name;
             target.SourceCreatedDateTime = source.SourceCreatedDateTime;
             target.SourceData = source.SourceData;
             target.SourceKey = source.SourceKey;
-            target.MetricData = source.MetricData;
             target.SourceModifiedDateTime = source.SourceModifiedDateTime;
             target.ThumbnailData = source.ThumbnailData;
             target.CreatedDateTime = source.CreatedDateTime;

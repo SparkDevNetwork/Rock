@@ -133,14 +133,20 @@
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
     <Compile Include="Controllers\CheckinController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AnalyticsSourceGivingUnitsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCheckInSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthClaimsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthClientsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AuthScopesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CommunicationResponseAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
@@ -159,6 +165,8 @@
     <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberScheduleTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupSyncsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaAccountsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaElementsController.cs" />
@@ -172,6 +180,7 @@
     <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationSessionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
@@ -187,7 +196,6 @@
     <Compile Include="Controllers\CodeGenerated\AchievementAttemptsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
     <Compile Include="Controllers\CodeGenerated\AchievementTypePrerequisitesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
@@ -197,6 +205,7 @@
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\CodeGenerated\SystemCommunicationsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WebFarmNodeLogsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\WebFarmNodeMetricsController.cs" />
     <Compile Include="Controllers\CodeGenerated\WebFarmNodesController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />

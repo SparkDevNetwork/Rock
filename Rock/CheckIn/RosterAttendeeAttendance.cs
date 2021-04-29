@@ -163,34 +163,44 @@ namespace Rock.CheckIn
         public int? ScheduleId { get; internal set; }
 
         /// <summary>
+        /// Gets the name of the parents.
+        /// </summary>
+        /// <value>
+        /// The name of the parents.
+        /// </value>
+        public string ParentsNames { get; internal set; }
+
+        /// <summary>
         /// Selects a RosterAttendeeAttendance from specified attendance query.
         /// </summary>
         /// <param name="attendanceQuery">The attendance query.</param>
         /// <returns></returns>
         public static IQueryable<RosterAttendeeAttendance> Select( IQueryable<Attendance> attendanceQuery )
         {
-            var rosterAttendeeAttendanceQry = attendanceQuery.Select( a => new RosterAttendeeAttendance
-            {
-                Id = a.Id,
-                Schedule = a.Occurrence.Schedule,
-                ScheduleId = a.Occurrence.ScheduleId,
-                IsFirstTime = a.IsFirstTime,
-                StartDateTime = a.StartDateTime,
-                PresentDateTime = a.PresentDateTime,
-                EndDateTime = a.EndDateTime,
-                AttendanceCode = a.AttendanceCode.Code,
-                PersonId = a.PersonAlias.PersonId,
-                Person = a.PersonAlias.Person,
-                LocationId = a.Occurrence.LocationId,
+            var rosterAttendeeAttendanceQry = attendanceQuery
+                .Select( a => new RosterAttendeeAttendance
+                {
+                    Id = a.Id,
+                    Schedule = a.Occurrence.Schedule,
+                    ScheduleId = a.Occurrence.ScheduleId,
+                    IsFirstTime = a.IsFirstTime,
+                    StartDateTime = a.StartDateTime,
+                    PresentDateTime = a.PresentDateTime,
+                    EndDateTime = a.EndDateTime,
+                    AttendanceCode = a.AttendanceCode.Code,
+                    PersonId = a.PersonAlias.PersonId,
+                    Person = a.PersonAlias.Person,
+                    ParentsNames = a.PersonAlias.Person.PrimaryFamily.GroupSalutation,
+                    LocationId = a.Occurrence.LocationId,
 
-                GroupId = a.Occurrence.GroupId,
-                GroupTypeId = a.Occurrence.Group.GroupTypeId,
-                GroupName = a.Occurrence.Group.Name,
+                    GroupId = a.Occurrence.GroupId,
+                    GroupTypeId = a.Occurrence.Group.GroupTypeId,
+                    GroupName = a.Occurrence.Group.Name,
 
-                ParentGroupId = a.Occurrence.Group.ParentGroupId,
-                ParentGroupGroupTypeId = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.GroupTypeId : ( int? ) null,
-                ParentGroupName = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.Name : null
-            } );
+                    ParentGroupId = a.Occurrence.Group.ParentGroupId,
+                    ParentGroupGroupTypeId = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.GroupTypeId : ( int? ) null,
+                    ParentGroupName = a.Occurrence.Group.ParentGroupId.HasValue ? a.Occurrence.Group.ParentGroup.Name : null
+                } );
 
             return rosterAttendeeAttendanceQry;
         }
