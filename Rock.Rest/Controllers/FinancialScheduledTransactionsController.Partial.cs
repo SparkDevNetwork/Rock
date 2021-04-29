@@ -126,6 +126,10 @@ namespace Rock.Rest.Controllers
                 DefinedValueCache.Get( financialScheduledTransaction.SourceTypeValueId.Value ).Guid :
                 ( Guid? ) null;
 
+            var currencyCode = financialScheduledTransaction.ForeignCurrencyCodeValueId.HasValue ?
+                DefinedValueCache.Get( financialScheduledTransaction.ForeignCurrencyCodeValueId.Value ).Value :
+                string.Empty;
+
             var automatedPaymentArgs = new AutomatedPaymentArgs
             {
                 ScheduledTransactionId = scheduledTransactionId,
@@ -133,7 +137,8 @@ namespace Rock.Rest.Controllers
                 AutomatedGatewayId = financialScheduledTransaction.FinancialGatewayId.Value,
                 AutomatedPaymentDetails = details,
                 IdempotencyKey = idempotencyKey,
-                FinancialSourceGuid = sourceGuid
+                FinancialSourceGuid = sourceGuid,
+                AmountCurrencyCode = currencyCode
             };
 
             var errorMessage = string.Empty;

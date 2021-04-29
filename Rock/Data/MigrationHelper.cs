@@ -813,7 +813,7 @@ namespace Rock.Data
 
             if ( skipIfAlreadyExists )
             {
-                addPageSQL = $"if not exists (select * from Page where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
+                addPageSQL = $"if not exists (select * from [Page] where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
             }
 
             Migration.Sql( addPageSQL );

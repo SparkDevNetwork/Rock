@@ -16,14 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock.Utility;
 
 namespace Rock.StatementGenerator
 {
     /// <summary>
     /// 
     /// </summary>
-    public class StatementGeneratorOptions : RockDynamic
+    public class StatementGeneratorOptions
     {
         /// <summary>
         /// Gets or sets the start date.

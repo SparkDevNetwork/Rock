@@ -722,7 +722,7 @@
                 resourceName.text(schedulerResource.PersonName);
 
                 if (schedulerResource.ConfirmationStatus == 'declined') {
-                    var resourceNameToolTipHtml = schedulerResource.DeclinedReason ?? 'No reason given.';
+                    var resourceNameToolTipHtml = schedulerResource.DeclinedReason || 'No reason given.';
                     resourceName.attr('data-original-title', resourceNameToolTipHtml);
                     resourceName.tooltip({ html: true });
                 }                

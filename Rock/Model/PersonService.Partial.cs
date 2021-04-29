@@ -960,7 +960,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by marital status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be

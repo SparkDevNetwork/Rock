@@ -1,4 +1,4 @@
-﻿{%- comment -%}
+﻿{% comment %}
   This is the lava template for all of occurrences for the GroupScheduleRoster block
    Available Lava Fields:
 
@@ -17,7 +17,7 @@
           + CurrentlyCheckedIn (bool. True if the person is checked in)
           + ScheduledAttendanceItemStatus (Pending, Confirmed, or Declined).
               Note: Only scheduled individuals (or ones that have checked in) will be included in the list of ScheduledIndividuals
-{%- endcomment -%}
+{% endcomment %}
 
 <style>
 @media print {
@@ -61,7 +61,7 @@
   {%- assign Location = occurrence.Location -%}
   {%- assign ScheduledIndividuals = occurrence.ScheduledIndividuals -%}
   {%- assign scheduledIndividualCount = 0 -%}
-{%- comment -%}get a count of confirmed or checked-in individuals since that is all we are going to show{%- endcomment -%}
+{% comment %}get a count of confirmed or checked-in individuals since that is all we are going to show{% endcomment %}
   {%- for scheduledIndividual in ScheduledIndividuals -%}
         {%- if scheduledIndividual.ScheduledAttendanceItemStatus == "Confirmed" or  scheduledIndividual.CurrentlyCheckedIn  -%}
           {%- assign scheduledIndividualCount = scheduledIndividualCount | Plus:1 -%}

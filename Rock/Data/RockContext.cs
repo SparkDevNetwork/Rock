@@ -926,6 +926,14 @@ namespace Rock.Data
         public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial statement templates.
+        /// </summary>
+        /// <value>
+        /// The financial statement templates.
+        /// </value>
+        public DbSet<FinancialStatementTemplate> FinancialStatementTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>

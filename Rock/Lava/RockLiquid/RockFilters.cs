@@ -5843,6 +5843,7 @@ namespace Rock.Lava
                 var followed = new FollowingService( rockContext ).Queryable()
                     .Where( f => f.EntityTypeId == followingEntityTypeId && f.EntityId == entity.Id )
                     .Where( f => f.PersonAlias.PersonId == person.Id )
+                    .Where( f => string.IsNullOrEmpty( f.PurposeKey ) )
                     .Any();
 
                 return followed;

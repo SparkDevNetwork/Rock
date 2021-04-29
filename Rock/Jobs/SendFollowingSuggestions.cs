@@ -163,7 +163,7 @@ namespace Rock.Jobs
 
                                             // Get the existing followings for any of the followers 
                                             suggestionTypeComponent.ExistingFollowings = new Dictionary<int, List<int>>();
-                                            foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
+                                            foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && string.IsNullOrEmpty( f.PurposeKey ) && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
                                             {
                                                 suggestionTypeComponent.ExistingFollowings.AddOrIgnore( following.PersonAlias.PersonId, new List<int>() );
                                                 suggestionTypeComponent.ExistingFollowings[following.PersonAlias.PersonId].Add( following.EntityId );

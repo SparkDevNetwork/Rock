@@ -659,7 +659,6 @@
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="SystemGuid\FinancialGateway.cs" />
-    <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
@@ -711,6 +710,7 @@
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\CheckinConfigurationTypeFieldType.cs" />
     <Compile Include="Field\Types\LocationListFieldType.cs" />
+    <Compile Include="Field\Types\MediaElementFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
@@ -734,6 +734,7 @@
     <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
+    <Compile Include="Jobs\MediaSync.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\Blocks\EventScheduledInstanceBlock.cs" />
     <Compile Include="Lava\Blocks\InteractionWriteBlock.cs" />
@@ -747,8 +748,16 @@
     <Compile Include="Logging\RockLogEvent.cs" />
     <Compile Include="Logging\RockLogSystemSettings.cs" />
     <Compile Include="Logging\RockSerilogReader.cs" />
+    <Compile Include="Media\IMediaAccountComponent.cs" />
+    <Compile Include="Media\LocalMediaAccount.cs" />
+    <Compile Include="Media\MediaAccountComponent.cs" />
+    <Compile Include="Media\MediaAccountContainer.cs" />
+    <Compile Include="Media\MediaElementData.cs" />
+    <Compile Include="Media\SyncOperationResult.cs" />
+    <Compile Include="Media\ThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialStatementTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertTypeService.cs" />
     <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
@@ -759,9 +768,11 @@
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
     <Compile Include="Model\CommunicationResponseAttachment.cs" />
+    <Compile Include="Model\FinancialStatementTemplate.cs" />
     <Compile Include="Model\FinancialTransactionAlert.cs" />
     <Compile Include="Model\FinancialTransactionAlertType.cs" />
     <Compile Include="Model\MediaAccount.cs" />
+    <Compile Include="Model\MediaAccountService.Partial.cs" />
     <Compile Include="Model\MediaElement.cs" />
     <Compile Include="Model\MediaFolder.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
@@ -903,6 +914,7 @@
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

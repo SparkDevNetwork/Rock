@@ -191,7 +191,7 @@ namespace Rock.Model
         public bool ShowConnectionStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to show the Person's martial status as a column in the Group Member Grid
+        /// Gets or sets a value indicating whether to show the Person's marital status as a column in the Group Member Grid
         /// </summary>
         /// <value>
         /// <c>true</c> if [show marital status]; otherwise, <c>false</c>.

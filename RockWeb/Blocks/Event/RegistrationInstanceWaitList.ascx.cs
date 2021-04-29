@@ -376,7 +376,7 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARTIAL_STATUS_ID ) as DefinedValuePicker;
+                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARITAL_STATUS_ID ) as DefinedValuePicker;
                                 if ( dvpMaritalStatusFilter != null )
                                 {
                                     fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_MaritalStatus, "Marital Status", dvpMaritalStatusFilter.SelectedValue );
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Event
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
-                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARTIAL_STATUS_ID ) as DefinedValuePicker;
+                                var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARITAL_STATUS_ID ) as DefinedValuePicker;
                                 if ( dvpMaritalStatusFilter != null )
                                 {
                                     dvpMaritalStatusFilter.SetValue( ( Guid? ) null );
@@ -1055,7 +1055,7 @@ namespace RockWeb.Blocks.Event
                                     break;
 
                                 case RegistrationPersonFieldType.MaritalStatus:
-                                    var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARTIAL_STATUS_ID ) as DefinedValuePicker;
+                                    var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( FILTER_MARITAL_STATUS_ID ) as DefinedValuePicker;
                                     if ( dvpMaritalStatusFilter != null )
                                     {
                                         var maritalStatusId = dvpMaritalStatusFilter.SelectedValue.AsIntegerOrNull();

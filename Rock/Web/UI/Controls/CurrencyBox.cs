@@ -48,6 +48,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Updates the currency code.
+        /// </summary>
+        /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
         private void UpdateCurrencyCode( int currencyCodeDefinedValueId )
         {
             if ( currencyCodeDefinedValueId == 0 || currencyCodeDefinedValueId == _organizationCurrencyCodeInfo.CurrencyCodeDefinedValueId )
@@ -59,7 +63,6 @@ namespace Rock.Web.UI.Controls
 
             var currencyCodeInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
             PrependText = currencyCodeInfo.Symbol;
-            Help += $"{currencyCodeInfo.Description} ({currencyCodeInfo.CurrencyCode})";
 
             _currencyDecimalPlaces = currencyCodeInfo.DecimalPlaces;
         }
@@ -92,6 +95,10 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
