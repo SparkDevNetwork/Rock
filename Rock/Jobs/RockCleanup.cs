@@ -387,7 +387,14 @@ namespace Rock.Jobs
         {
             var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-            var personIdListWithFamilyId = new PersonService( new RockContext() ).Queryable().Where( a => a.PrimaryFamilyId.HasValue ).Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+            // get list of Families that don't have a GroupSalutation populated yet. Include deceased and businesses.
+            var personIdListWithFamilyId = new PersonService( new RockContext() )
+                .Queryable( true, true )
+                .Where( a =>
+                    a.PrimaryFamilyId.HasValue
+                    && ( a.PrimaryFamily.GroupSalutation == null || a.PrimaryFamily.GroupSalutationFull == null || a.PrimaryFamily.GroupSalutation == "" || a.PrimaryFamily.GroupSalutationFull == "" ) )
+                .Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+
             var recordsUpdated = 0;
 
             // we only need one person from each family (and it doesn't matter who)

@@ -29,8 +29,19 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            //UpdateSchema_Up();
+            UpdateSchema_Up();
             UpdateStoredProcedures_Up();
+
+            AddJobToUpdateGroupSalutations();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            UpdateSchema_Down();
+            RemoveJobToUpdateGroupSalutations();
         }
 
         private void UpdateStoredProcedures_Up()
@@ -77,20 +88,53 @@ namespace Rock.Migrations
             AddColumn( "dbo.Group", "GroupSalutationFull", c => c.String( maxLength: 250 ) );
         }
 
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()
-        {
-            UpdateSchema_Down();
-        }
-
         private void UpdateSchema_Down()
         {
             DropIndex( "dbo.AnalyticsSourceGivingUnit", new[] { "Guid" } );
             DropColumn( "dbo.Group", "GroupSalutationFull" );
             DropColumn( "dbo.Group", "GroupSalutation" );
             DropTable( "dbo.AnalyticsSourceGivingUnit" );
+        }
+
+        private void AddJobToUpdateGroupSalutations()
+        {
+            Sql( $@"
+            IF NOT EXISTS (
+                SELECT 1
+                FROM [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV124DataMigrationsUpdateGroupSalutations'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS}'
+            )
+            BEGIN
+                INSERT INTO [ServiceJob] (
+                    [IsSystem]
+                    ,[IsActive]
+                    ,[Name]
+                    ,[Description]
+                    ,[Class]
+                    ,[CronExpression]
+                    ,[NotificationStatus]
+                    ,[Guid]
+                ) VALUES (
+                    1
+                    ,1
+                    ,'Rock Update Helper v12.4 - Update Group Salutation fields on Rock.Model.Group.'
+                    ,'Updates Group Salutation fields on Rock.Model.Group.'
+                    ,'Rock.Jobs.PostV124DataMigrationsUpdateGroupSalutations'
+                    ,'0 0 21 1/1 * ? *'
+                    ,1
+                    ,'{SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS}'
+                );
+            END" );
+        }
+
+        private void RemoveJobToUpdateGroupSalutations()
+        {
+            Sql( $@"
+                DELETE [ServiceJob]
+                WHERE [Class] = 'Rock.Jobs.PostV124DataMigrationsUpdateGroupSalutations'
+                                AND [Guid] = '{SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS}'
+                " );
         }
     }
 }
