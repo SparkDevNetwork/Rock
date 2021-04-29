@@ -647,7 +647,7 @@
     <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
-    <Compile Include="Jobs\MediaSync.cs" />
+    <Compile Include="Jobs\SyncMedia.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\Blocks\InteractionWrite.cs" />
@@ -664,9 +664,9 @@
     <Compile Include="Media\LocalMediaAccount.cs" />
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
-    <Compile Include="Media\MediaElementData.cs" />
+    <Compile Include="Media\MediaElementFileData.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
-    <Compile Include="Media\ThumbnailData.cs" />
+    <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.cs" />
@@ -745,6 +745,7 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
+    <Compile Include="Finance\StatementTemplate\ReportSetting.cs" />
     <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />

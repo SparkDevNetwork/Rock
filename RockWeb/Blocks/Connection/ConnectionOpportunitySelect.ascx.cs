@@ -364,7 +364,8 @@ namespace RockWeb.Blocks.Connection
                 .AsNoTracking()
                 .Where( f =>
                     f.PersonAliasId == CurrentPersonAliasId &&
-                    f.EntityTypeId == opportunityEntityTypeId )
+                    f.EntityTypeId == opportunityEntityTypeId &&
+                    string.IsNullOrEmpty( f.PurposeKey ) )
                 .Select( f => f.EntityId )
                 .ToList();
 

@@ -2360,9 +2360,9 @@ namespace Rock.Migrations.Migrations {
         ///        ,@RecordStatusActiveId INT = (
         ///    [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _202104272207110_GroupSalutation_spAnalytics_ETL_Family {
+        public static string _202104291818024_GroupSalutation_spAnalytics_ETL_Family {
             get {
-                return ResourceManager.GetString("_202104272207110_GroupSalutation_spAnalytics_ETL_Family", resourceCulture);
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_spAnalytics_ETL_Family", resourceCulture);
             }
         }
         
@@ -2390,9 +2390,9 @@ namespace Rock.Migrations.Migrations {
         ///	&lt;/returns&gt;
         ///	&lt;par [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _202104272207110_GroupSalutation_spFinance_ContributionStatementQuery {
+        public static string _202104291818024_GroupSalutation_spFinance_ContributionStatementQuery {
             get {
-                return ResourceManager.GetString("_202104272207110_GroupSalutation_spFinance_ContributionStatementQuery", resourceCulture);
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_spFinance_ContributionStatementQuery", resourceCulture);
             }
         }
         
@@ -2407,12 +2407,12 @@ namespace Rock.Migrations.Migrations {
         ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
         ///        Example4 (just kids [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitle {
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle {
             get {
-                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitle", resourceCulture);
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to /*
         ///&lt;doc&gt;
@@ -2437,9 +2437,9 @@ namespace Rock.Migrations.Migrations {
         ////* #Obsolete# - Family Title can be gotten from Group.GroupSalutation */
         ///ALTER FUNC [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId {
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId {
             get {
-                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId", resourceCulture);
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId", resourceCulture);
             }
         }
         
@@ -2454,9 +2454,9 @@ namespace Rock.Migrations.Migrations {
         ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
         ///        Example4 (just kids [rest of string was truncated]&quot;;.
         /// </summary>
-        public static string _202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive {
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive {
             get {
-                return ResourceManager.GetString("_202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }

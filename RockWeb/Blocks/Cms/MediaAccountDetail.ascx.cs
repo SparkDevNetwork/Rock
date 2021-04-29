@@ -325,8 +325,12 @@ namespace RockWeb.Blocks.Cms
             hlLastRefresh.Visible = mediaAccount.LastRefreshDateTime.HasValue;
             if ( mediaAccount.LastRefreshDateTime.HasValue )
             {
-                hlLastRefresh.Text = "LastRefreshed: " + mediaAccount.LastRefreshDateTime.Value.Humanize();
+                var refreshTimeSpan = RockDateTime.Now - mediaAccount.LastRefreshDateTime.Value;
+
+                hlLastRefresh.Text = "Last Refreshed: " + refreshTimeSpan.Humanize();
             }
+
+            lMetricData.Text = mediaAccount.GetMediaAccountComponent()?.GetAccountHtmlSummary( mediaAccount );
         }
 
         /// <summary>

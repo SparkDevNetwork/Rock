@@ -46,11 +46,11 @@ namespace Rock.Migrations
 
         private void UpdateStoredProcedures_Up()
         {
-            Sql( MigrationSQL._202104272207110_GroupSalutation_spAnalytics_ETL_Family );
-            Sql( MigrationSQL._202104272207110_GroupSalutation_spFinance_ContributionStatementQuery );
-            Sql( MigrationSQL._202104272207110_GroupSalutation_ufnCrm_GetFamilyTitle );
-            Sql( MigrationSQL._202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId );
-            Sql( MigrationSQL._202104272207110_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive );
+            Sql( MigrationSQL._202104291818024_GroupSalutation_spAnalytics_ETL_Family );
+            Sql( MigrationSQL._202104291818024_GroupSalutation_spFinance_ContributionStatementQuery );
+            Sql( MigrationSQL._202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle );
+            Sql( MigrationSQL._202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId );
+            Sql( MigrationSQL._202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive );
         }
 
         private void UpdateSchema_Up()

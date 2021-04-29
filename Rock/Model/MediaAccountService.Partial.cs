@@ -46,208 +46,69 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Synchronizes the folders and media in all active accounts.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
-        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        public static async Task<SyncOperationResult> SyncMediaInAllAccountsAsync( CancellationToken cancellationToken = default )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var tasks = new List<Task<SyncOperationResult>>();
-                var mediaAccounts = new MediaAccountService( rockContext ).Queryable()
-                    .Where( a => a.IsActive )
-                    .ToList();
-
-                if ( mediaAccounts.Count == 0 )
-                {
-                    return new SyncOperationResult();
-                }
-
-                // Set time to just before we start. Better to have a small
-                // amount of overlap than miss data.
-                var refreshDateTime = RockDateTime.Now;
-
-                // Start a SyncMedia task for each active account.
-                foreach ( var mediaAccount in mediaAccounts )
-                {
-                    var task = Task.Run( async () =>
-                    {
-                        var result = await SyncMediaInAccountAsync( mediaAccount, cancellationToken );
-
-                        if ( result.IsSuccess )
-                        {
-                            mediaAccount.LastRefreshDateTime = refreshDateTime;
-                        }
-
-                        // Since we will be aggregating errors include the
-                        // account name if there were any errors.
-                        return new SyncOperationResult( result.Errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
-                    } );
-
-                    tasks.Add( task );
-                }
-
-                try
-                {
-                    var results = await Task.WhenAll( tasks );
-
-                    return new SyncOperationResult( results.SelectMany( a => a.Errors ) );
-                }
-                catch
-                {
-                    throw new AggregateException( "One or more accounts failed to sync media.", tasks.Where( t => t.IsFaulted ).SelectMany( t => t.Exception.InnerExceptions ) );
-                }
-                finally
-                {
-                    rockContext.SaveChanges();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Synchronizes the analytics data in all active accounts.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
-        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        public static async Task<SyncOperationResult> SyncAnalyticsInAllAccountsAsync( CancellationToken cancellationToken = default )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var tasks = new List<Task<SyncOperationResult>>();
-                var mediaAccounts = new MediaAccountService( rockContext ).Queryable()
-                    .Where( a => a.IsActive )
-                    .ToList();
-
-                // Start a SyncAnalytics task for each active account.
-                foreach ( var mediaAccount in mediaAccounts )
-                {
-                    var task = Task.Run( async () =>
-                    {
-                        var result = await SyncAnalyticsInAccountAsync( mediaAccount, cancellationToken );
-
-                        // Since we will be aggregating errors include the
-                        // account name if there were any errors.
-                        return new SyncOperationResult( result.Errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
-                    } );
-
-                    tasks.Add( task );
-                }
-
-                try
-                {
-                    var results = await Task.WhenAll( tasks );
-
-                    return new SyncOperationResult( results.SelectMany( a => a.Errors ) );
-                }
-                catch
-                {
-                    throw new AggregateException( "One or more accounts failed to sync analytics.", tasks.Where( t => t.IsFaulted ).SelectMany( t => t.Exception.InnerExceptions ) );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Import any newly created folders and media into Rock from all
-        /// provider accounts.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
-        /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        public static async Task<SyncOperationResult> RefreshMediaInAllAccountsAsync( CancellationToken cancellationToken = default )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var tasks = new List<Task<SyncOperationResult>>();
-                var mediaAccounts = new MediaAccountService( rockContext ).Queryable()
-                    .Where( a => a.IsActive )
-                    .ToList();
-
-                if ( mediaAccounts.Count == 0 )
-                {
-                    return new SyncOperationResult();
-                }
-
-                // Set time to just before we start. Better to have a small
-                // amount of overlap than miss data.
-                var refreshDateTime = RockDateTime.Now;
-
-                // Start a SyncMedia task for each active account.
-                foreach ( var mediaAccount in mediaAccounts )
-                {
-                    var task = Task.Run( async () =>
-                    {
-                        var result = await SyncMediaInAccountAsync( mediaAccount, cancellationToken );
-
-                        if ( result.IsSuccess )
-                        {
-                            mediaAccount.LastRefreshDateTime = refreshDateTime;
-                        }
-
-                        // Since we will be aggregating errors include the
-                        // account name if there were any errors.
-                        return new SyncOperationResult( result.Errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
-                    } );
-
-                    tasks.Add( task );
-                }
-
-                try
-                {
-                    var results = await Task.WhenAll( tasks );
-
-                    return new SyncOperationResult( results.SelectMany( a => a.Errors ) );
-                }
-                catch
-                {
-                    throw new AggregateException( "One or more accounts failed to refresh media.", tasks.Where( t => t.IsFaulted ).SelectMany( t => t.Exception.InnerExceptions ) );
-                }
-                finally
-                {
-                    rockContext.SaveChanges();
-                }
-            }
-        }
-
-        /// <summary>
         /// Requests that an account synchronize the data in Rock with all of
         /// the media content stored on the provider.
         /// </summary>
-        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="mediaAccountId">The media account identifier to be synchronized.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
-        public static Task<SyncOperationResult> SyncMediaInAccountAsync( MediaAccount mediaAccount, CancellationToken cancellationToken = default )
+        public static async Task<SyncOperationResult> SyncMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            if ( mediaAccount == null )
+            using ( var rockContext = new RockContext() )
             {
-                throw new ArgumentNullException( nameof( mediaAccount ) );
-            }
+                var mediaAccount = new MediaAccountService( rockContext ).Get( mediaAccountId );
 
-            return EnqueueOperationAsync( mediaAccount.Id, () =>
-            {
-                return mediaAccount.GetMediaAccountComponent().SyncMediaAsync( mediaAccount, cancellationToken );
-            }, cancellationToken );
+                if ( mediaAccount == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account was not found." } );
+                }
+
+                // Set time to just before we start. Better to have a small
+                // amount of overlap than miss data.
+                var refreshDateTime = RockDateTime.Now;
+
+                var result = await EnqueueOperationAsync( mediaAccountId, () =>
+                {
+                    return mediaAccount.GetMediaAccountComponent().SyncMediaAsync( mediaAccount, cancellationToken );
+                }, cancellationToken );
+
+                if ( result.IsSuccess )
+                {
+                    mediaAccount.LastRefreshDateTime = refreshDateTime;
+                    rockContext.SaveChanges();
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
         /// Requests that an account synchronize all the analytics data in Rock
         /// with the data on the provider.
         /// </summary>
-        /// <param name="mediaAccount">The media account to be synchronized.</param>
+        /// <param name="mediaAccountId">The media account identifier to be synchronized.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
-        public static Task<SyncOperationResult> SyncAnalyticsInAccountAsync( MediaAccount mediaAccount, CancellationToken cancellationToken = default )
+        public static async Task<SyncOperationResult> SyncAnalyticsInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            if ( mediaAccount == null )
+            using ( var rockContext = new RockContext() )
             {
-                throw new ArgumentNullException( nameof( mediaAccount ) );
-            }
+                var mediaAccount = new MediaAccountService( rockContext ).GetNoTracking( mediaAccountId );
 
-            return EnqueueOperationAsync( mediaAccount.Id, () =>
-            {
-                return mediaAccount.GetMediaAccountComponent().SyncAnalyticsAsync( mediaAccount, cancellationToken );
-            }, cancellationToken );
+                if ( mediaAccount == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account was not found." } );
+                }
+
+                var result = await EnqueueOperationAsync( mediaAccountId, () =>
+                {
+                    return mediaAccount.GetMediaAccountComponent().SyncAnalyticsAsync( mediaAccount, cancellationToken );
+                }, cancellationToken );
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -255,21 +116,38 @@ namespace Rock.Model
         /// or media items on the provider. This will only add new media
         /// items, it will not delete or update existing items.
         /// </summary>
-        /// <param name="mediaAccount">The media account to be refreshed.</param>
+        /// <param name="mediaAccountId">The media account identifier to be refreshed.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
         /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
-        public static Task<SyncOperationResult> RefreshMediaInAccountAsync( MediaAccount mediaAccount, CancellationToken cancellationToken = default )
+        public static async Task<SyncOperationResult> RefreshMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
-            if ( mediaAccount == null )
+            using ( var rockContext = new RockContext() )
             {
-                throw new ArgumentNullException( nameof( mediaAccount ) );
-            }
+                var mediaAccount = new MediaAccountService( rockContext ).Get( mediaAccountId );
 
-            return EnqueueOperationAsync( mediaAccount.Id, () =>
-            {
-                return mediaAccount.GetMediaAccountComponent().RefreshAccountAsync( mediaAccount, cancellationToken );
-            }, cancellationToken );
+                if ( mediaAccount == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account was not found." } );
+                }
+
+                // Set time to just before we start. Better to have a small
+                // amount of overlap than miss data.
+                var refreshDateTime = RockDateTime.Now;
+
+                var result = await EnqueueOperationAsync( mediaAccountId, () =>
+                {
+                    return mediaAccount.GetMediaAccountComponent().RefreshAccountAsync( mediaAccount, cancellationToken );
+                }, cancellationToken );
+
+                if ( result.IsSuccess )
+                {
+                    mediaAccount.LastRefreshDateTime = refreshDateTime;
+                    rockContext.SaveChanges();
+                }
+
+                return result;
+            }
         }
 
         /// <summary>

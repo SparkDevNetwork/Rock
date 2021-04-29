@@ -35,13 +35,33 @@ namespace Rock.Model
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns><c>true</c> if the entity is now followed; otherwise <c>false</c>.</returns>
+        /// <remarks>Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.</remarks>
         public bool ToggleFollowing( int entityTypeId, int entityId, int personAliasId )
         {
+            return ToggleFollowing( entityTypeId, entityId, personAliasId, string.Empty );
+        }
+
+        /// <summary>
+        /// If the person is following, then removes the follow. If the person is not following, then adds. The value
+        /// returned indicates if the person is now following.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        /// <returns><c>true</c> if the entity is now followed; otherwise <c>false</c>.</returns>
+        /// <remarks>Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.</remarks>
+        public bool ToggleFollowing( int entityTypeId, int entityId, int personAliasId, string purposeKey )
+        {
+            purposeKey = purposeKey ?? string.Empty;
+
             var followings = Queryable()
                 .Where( f =>
                     f.EntityTypeId == entityTypeId &&
                     f.EntityId == entityId &&
-                    f.PersonAliasId == personAliasId )
+                    f.PersonAliasId == personAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
                 .ToList();
 
             if ( followings.Any() )
@@ -54,7 +74,8 @@ namespace Rock.Model
             {
                 EntityTypeId = entityTypeId,
                 EntityId = entityId,
-                PersonAliasId = personAliasId
+                PersonAliasId = personAliasId,
+                PurposeKey = purposeKey
             } );
 
             return true;
@@ -69,9 +90,27 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetFollowedItems( int entityTypeId, int personId )
         {
+            return GetFollowedItems( entityTypeId, personId, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the entity query
+        /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        /// <returns></returns>
+        public IQueryable<IEntity> GetFollowedItems( int entityTypeId, int personId, string purposeKey )
+        {
             EntityTypeCache itemEntityType = EntityTypeCache.Get( entityTypeId );
             var rockContext = this.Context as RockContext;
-            var followedItemsQry = this.Queryable().Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == entityTypeId );
+
+            purposeKey = purposeKey ?? string.Empty;
+
+            var followedItemsQry = this.Queryable()
+                .Where( a => a.PersonAlias.PersonId == personId && a.EntityTypeId == entityTypeId )
+                .Where( f => ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey );
 
             if ( itemEntityType.AssemblyName != null )
             {

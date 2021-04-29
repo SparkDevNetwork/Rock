@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.3-40302")]
-    public sealed partial class GroupSalutation : IMigrationMetadata
+    public sealed partial class MediaElementModelChanges : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupSalutation));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(MediaElementModelChanges));
         
         string IMigrationMetadata.Id
         {
-            get { return "202104272207110_GroupSalutation"; }
+            get { return "202104282103218_MediaElementModelChanges"; }
         }
         
         string IMigrationMetadata.Source

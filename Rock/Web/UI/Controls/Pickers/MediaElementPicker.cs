@@ -691,28 +691,30 @@ namespace Rock.Web.UI.Controls
         {
             if ( eventArgument == "Refresh" && MediaAccountId.IsNotNullOrZero() )
             {
-                using ( var rockContext = new RockContext() )
+                var task = Task.Run( async () =>
                 {
-                    var account = new MediaAccountService( rockContext ).GetNoTracking( MediaAccountId.Value );
+                    await MediaAccountService.RefreshMediaInAccountAsync( MediaAccountId.Value );
+                } );
 
-                    if ( account == null )
-                    {
-                        return;
-                    }
+                try
+                {
+                    Task.WhenAny( task, Task.Delay( 7500 ) ).GetAwaiter().GetResult();
 
-                    var task = Task.Run( async () =>
+                    using ( var rockContext = new RockContext() )
                     {
-                        await MediaAccountService.RefreshMediaInAccountAsync( account );
-                    } );
+                        var originalFolderId = MediaFolderId;
+                        var originalElementId = MediaElementId;
 
-                    try
-                    {
-                        Task.WhenAny( task, Task.Delay( 7500 ) ).GetAwaiter().GetResult();
+                        LoadMediaFolders( MediaAccountId.Value, rockContext );
+
+                        // This will trigger a reload of media elements too.
+                        SetMediaFolderIdInternal( originalFolderId, rockContext );
+                        SetMediaElementIdInternal( originalElementId, rockContext );
                     }
-                    catch ( Exception ex )
-                    {
-                        ExceptionLogService.LogException( ex, Context );
-                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, Context );
                 }
             }
         }
