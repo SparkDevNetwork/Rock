@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Finance.ReportSetting;
 
 namespace Rock.Model
 {
@@ -28,7 +29,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialStatementTemplate" )]
     [DataContract]
-    public partial class FinancialStatementTemplate : Model<FinancialStatementTemplate>
+    public partial class FinancialStatementTemplate : Model<FinancialStatementTemplate>, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -94,7 +95,17 @@ namespace Rock.Model
         /// The report settings.
         /// </value>
         [DataMember]
-        public string ReportSettings { get; set; }
+        public string ReportSettings
+        {
+            get
+            {
+                return ReportSetting.ToJson();
+            }
+            set
+            {
+                ReportSetting = value.FromJsonOrNull<ReportSetting>() ?? new ReportSetting();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the image file identifier for the Logo Image
@@ -117,6 +128,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual BinaryFile LogoBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the report setting.
+        /// </summary>
+        /// <value>
+        /// The report setting.
+        /// </value>
+        [NotMapped]
+        public virtual ReportSetting ReportSetting { get; set; } = new ReportSetting();
 
         #endregion Virtual Properties
     }
