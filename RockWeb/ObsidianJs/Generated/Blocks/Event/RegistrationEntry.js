@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressBar", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page", "../../Elements/ProgressTracker"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressBar_1, Number_1, String_1, Alert_1, Success_1, Page_1, Step;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, Number_1, String_1, Alert_1, Success_1, Page_1, ProgressTracker_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
         var ownFamilyGuid = Guid_1.newGuid();
@@ -75,9 +75,6 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             function (Summary_1_1) {
                 Summary_1 = Summary_1_1;
             },
-            function (ProgressBar_1_1) {
-                ProgressBar_1 = ProgressBar_1_1;
-            },
             function (Number_1_1) {
                 Number_1 = Number_1_1;
             },
@@ -92,6 +89,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             },
             function (Page_1_1) {
                 Page_1 = Page_1_1;
+            },
+            function (ProgressTracker_1_1) {
+                ProgressTracker_1 = ProgressTracker_1_1;
             }
         ],
         execute: function () {
@@ -115,8 +115,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     RegistrationEntryRegistrationEnd: RegistrationEnd_1.default,
                     RegistrationEntrySummary: Summary_1.default,
                     RegistrationEntrySuccess: Success_1.default,
-                    ProgressBar: ProgressBar_1.default,
-                    Alert: Alert_1.default
+                    Alert: Alert_1.default,
+                    ProgressTracker: ProgressTracker_1.default
                 },
                 setup: function () {
                     var _a;
@@ -197,37 +197,25 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     hasPostAttributes: function () {
                         return this.viewModel.RegistrationAttributesEnd.length > 0;
                     },
-                    numberOfPages: function () {
-                        return 2 + // Intro and summary
-                            (this.hasPostAttributes ? 1 : 0) +
-                            (this.hasPreAttributes ? 1 : 0) +
-                            (this.viewModel.RegistrantForms.length * this.registrants.length);
-                    },
-                    completionPercentDecimal: function () {
+                    progressTrackerIndex: function () {
                         if (this.currentStep === this.steps.intro) {
                             return 0;
                         }
                         if (this.currentStep === this.steps.registrationStartForm) {
-                            return 1 / this.numberOfPages;
-                        }
-                        if (this.currentStep === this.steps.perRegistrantForms) {
-                            var firstRegistrantPage = this.viewModel.RegistrationAttributesStart.length === 0 ? 1 : 2;
-                            var finishedRegistrantForms = this.registrationEntryState.CurrentRegistrantIndex * this.viewModel.RegistrantForms.length;
-                            return (firstRegistrantPage + this.registrationEntryState.CurrentRegistrantFormIndex + finishedRegistrantForms) / this.numberOfPages;
-                        }
-                        if (this.currentStep === this.steps.registrationEndForm) {
-                            return (this.numberOfPages - 2) / this.numberOfPages;
-                        }
-                        if (this.currentStep === this.steps.reviewAndPayment) {
-                            return (this.numberOfPages - 1) / this.numberOfPages;
-                        }
-                        if (this.currentStep === this.steps.success) {
                             return 1;
                         }
+                        var stepsBeforeRegistrants = this.hasPreAttributes ? 2 : 1;
+                        if (this.currentStep === this.steps.perRegistrantForms) {
+                            return this.registrationEntryState.CurrentRegistrantIndex + stepsBeforeRegistrants;
+                        }
+                        var stepsToCompleteRegistrants = this.registrationEntryState.Registrants.length + stepsBeforeRegistrants;
+                        if (this.currentStep === this.steps.registrationEndForm) {
+                            return stepsToCompleteRegistrants;
+                        }
+                        if (this.currentStep === this.steps.reviewAndPayment) {
+                            return stepsToCompleteRegistrants + (this.hasPostAttributes ? 1 : 0);
+                        }
                         return 0;
-                    },
-                    completionPercentInt: function () {
-                        return this.completionPercentDecimal * 100;
                     },
                     uppercaseRegistrantTerm: function () {
                         return String_1.default.toTitleCase(this.viewModel.RegistrantTerm);
@@ -260,6 +248,59 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.TitleHtml) || 'Congratulations';
                         }
                         return '';
+                    },
+                    /** The items to display in the progress tracker */
+                    progressTrackerItems: function () {
+                        var items = [{
+                                Key: 'Start',
+                                Title: 'Start',
+                                Subtitle: this.viewModel.RegistrationTerm
+                            }];
+                        if (this.hasPreAttributes) {
+                            items.push({
+                                Key: 'Pre',
+                                Title: this.viewModel.RegistrationAttributeTitleStart,
+                                Subtitle: this.viewModel.RegistrationTerm
+                            });
+                        }
+                        if (!this.registrationEntryState.Registrants.length) {
+                            items.push({
+                                Key: 'Registrant',
+                                Title: String_1.toTitleCase(this.viewModel.RegistrantTerm),
+                                Subtitle: this.viewModel.RegistrationTerm
+                            });
+                        }
+                        for (var i = 0; i < this.registrationEntryState.Registrants.length; i++) {
+                            var registrant = this.registrationEntryState.Registrants[i];
+                            var info = getRegistrantBasicInfo(registrant, this.viewModel.RegistrantForms);
+                            if ((info === null || info === void 0 ? void 0 : info.FirstName) && (info === null || info === void 0 ? void 0 : info.LastName)) {
+                                items.push({
+                                    Key: "Registrant-" + registrant.Guid,
+                                    Title: info.FirstName,
+                                    Subtitle: info.LastName
+                                });
+                            }
+                            else {
+                                items.push({
+                                    Key: "Registrant-" + registrant.Guid,
+                                    Title: String_1.toTitleCase(this.viewModel.RegistrantTerm),
+                                    Subtitle: String_1.toTitleCase(Number_1.toWord(i + 1))
+                                });
+                            }
+                        }
+                        if (this.hasPostAttributes) {
+                            items.push({
+                                Key: 'Post',
+                                Title: this.viewModel.RegistrationAttributeTitleEnd,
+                                Subtitle: this.viewModel.RegistrationTerm
+                            });
+                        }
+                        items.push({
+                            Key: 'Finalize',
+                            Title: 'Finalize',
+                            Subtitle: this.viewModel.RegistrationTerm
+                        });
+                        return items;
                     }
                 },
                 methods: {
@@ -305,7 +346,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         this.$store.dispatch('redirectToLogin');
                     }
                 },
-                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <template v-else>\n        <template v-if=\"currentStep !== steps.intro\">\n            <h1 v-html=\"stepTitleHtml\"></h1>\n            <ProgressBar :percent=\"completionPercentInt\" />\n        </template>\n\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
+                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <template v-else>\n        <h1 v-if=\"currentStep !== steps.intro\" v-html=\"stepTitleHtml\"></h1>\n        <ProgressTracker v-if=\"currentStep !== steps.success\" :items=\"progressTrackerItems\" :currentIndex=\"progressTrackerIndex\">\n            <template #aside>\n                <div class=\"remaining-time flex-grow-1 flex-md-grow-0\">\n                    <span class=\"remaining-time-title\">Time left before timeout</span>\n                    <p class=\"remaining-time-countdown\">10:34</p>\n                </div>\n            </template>\n        </ProgressTracker>\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
             }));
         }
     };

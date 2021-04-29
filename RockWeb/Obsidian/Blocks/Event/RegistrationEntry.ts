@@ -25,9 +25,9 @@ import RegistrationEntryRegistrationStart from './RegistrationEntry/Registration
 import RegistrationEntryRegistrationEnd from './RegistrationEntry/RegistrationEnd';
 import RegistrationEntrySummary from './RegistrationEntry/Summary';
 import Registrants from './RegistrationEntry/Registrants';
-import ProgressBar from '../../Elements/ProgressBar';
-import NumberFilter from '../../Services/Number';
-import StringFilter, { isNullOrWhitespace } from '../../Services/String';
+import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTracker';
+import NumberFilter, { toWord } from '../../Services/Number';
+import StringFilter, { isNullOrWhitespace, toTitleCase } from '../../Services/String';
 import Alert from '../../Elements/Alert';
 import RegistrationEntrySuccess from './RegistrationEntry/Success';
 import Page from '../../Util/Page';
@@ -106,7 +106,7 @@ export default defineComponent( {
         RegistrationEntryRegistrationEnd,
         RegistrationEntrySummary,
         RegistrationEntrySuccess,
-        ProgressBar,
+        ProgressTracker,
         Alert
     },
     setup ()
@@ -205,14 +205,7 @@ export default defineComponent( {
         {
             return this.viewModel.RegistrationAttributesEnd.length > 0;
         },
-        numberOfPages (): number
-        {
-            return 2 + // Intro and summary
-                ( this.hasPostAttributes ? 1 : 0 ) +
-                ( this.hasPreAttributes ? 1 : 0 ) +
-                ( this.viewModel.RegistrantForms.length * this.registrants.length );
-        },
-        completionPercentDecimal (): number
+        progressTrackerIndex (): number
         {
             if ( this.currentStep === this.steps.intro )
             {
@@ -221,36 +214,29 @@ export default defineComponent( {
 
             if ( this.currentStep === this.steps.registrationStartForm )
             {
-                return 1 / this.numberOfPages;
+                return 1;
             }
+
+            const stepsBeforeRegistrants = this.hasPreAttributes ? 2 : 1;
 
             if ( this.currentStep === this.steps.perRegistrantForms )
             {
-                const firstRegistrantPage = this.viewModel.RegistrationAttributesStart.length === 0 ? 1 : 2;
-                const finishedRegistrantForms = this.registrationEntryState.CurrentRegistrantIndex * this.viewModel.RegistrantForms.length;
-                return ( firstRegistrantPage + this.registrationEntryState.CurrentRegistrantFormIndex + finishedRegistrantForms ) / this.numberOfPages;
+                return this.registrationEntryState.CurrentRegistrantIndex + stepsBeforeRegistrants;
             }
+
+            const stepsToCompleteRegistrants = this.registrationEntryState.Registrants.length + stepsBeforeRegistrants;
 
             if ( this.currentStep === this.steps.registrationEndForm )
             {
-                return ( this.numberOfPages - 2 ) / this.numberOfPages;
+                return stepsToCompleteRegistrants;
             }
 
             if ( this.currentStep === this.steps.reviewAndPayment )
             {
-                return ( this.numberOfPages - 1 ) / this.numberOfPages;
-            }
-
-            if ( this.currentStep === this.steps.success )
-            {
-                return 1;
+                return stepsToCompleteRegistrants + ( this.hasPostAttributes ? 1 : 0 );
             }
 
             return 0;
-        },
-        completionPercentInt (): number
-        {
-            return this.completionPercentDecimal * 100;
         },
         uppercaseRegistrantTerm (): string
         {
@@ -299,6 +285,74 @@ export default defineComponent( {
             }
 
             return '';
+        },
+
+        /** The items to display in the progress tracker */
+        progressTrackerItems (): ProgressTrackerItem[]
+        {
+            const items: ProgressTrackerItem[] = [ {
+                Key: 'Start',
+                Title: 'Start',
+                Subtitle: this.viewModel.RegistrationTerm
+            } ];
+
+            if ( this.hasPreAttributes )
+            {
+                items.push( {
+                    Key: 'Pre',
+                    Title: this.viewModel.RegistrationAttributeTitleStart,
+                    Subtitle: this.viewModel.RegistrationTerm
+                } );
+            }
+
+            if ( !this.registrationEntryState.Registrants.length )
+            {
+                items.push( {
+                    Key: 'Registrant',
+                    Title: toTitleCase( this.viewModel.RegistrantTerm ),
+                    Subtitle: this.viewModel.RegistrationTerm
+                } );
+            }
+
+            for ( let i = 0; i < this.registrationEntryState.Registrants.length; i++ )
+            {
+                const registrant = this.registrationEntryState.Registrants[ i ];
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+
+                if ( info?.FirstName && info?.LastName )
+                {
+                    items.push( {
+                        Key: `Registrant-${registrant.Guid}`,
+                        Title: info.FirstName,
+                        Subtitle: info.LastName
+                    } );
+                }
+                else
+                {
+                    items.push( {
+                        Key: `Registrant-${registrant.Guid}`,
+                        Title: toTitleCase( this.viewModel.RegistrantTerm ),
+                        Subtitle: toTitleCase( toWord( i + 1 ) )
+                    } );
+                }
+            }
+
+            if ( this.hasPostAttributes )
+            {
+                items.push( {
+                    Key: 'Post',
+                    Title: this.viewModel.RegistrationAttributeTitleEnd,
+                    Subtitle: this.viewModel.RegistrationTerm
+                } );
+            }
+
+            items.push( {
+                Key: 'Finalize',
+                Title: 'Finalize',
+                Subtitle: this.viewModel.RegistrationTerm
+            } );
+
+            return items;
         }
     },
     methods: {
@@ -370,11 +424,15 @@ export default defineComponent( {
         <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
     </Alert>
     <template v-else>
-        <template v-if="currentStep !== steps.intro">
-            <h1 v-html="stepTitleHtml"></h1>
-            <ProgressBar :percent="completionPercentInt" />
-        </template>
-
+        <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
+        <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
+            <template #aside>
+                <div class="remaining-time flex-grow-1 flex-md-grow-0">
+                    <span class="remaining-time-title">Time left before timeout</span>
+                    <p class="remaining-time-countdown">10:34</p>
+                </div>
+            </template>
+        </ProgressTracker>
         <RegistrationEntryIntro v-if="currentStep === steps.intro" @next="onIntroNext" />
         <RegistrationEntryRegistrationStart v-else-if="currentStep === steps.registrationStartForm" @next="onRegistrationStartNext" @previous="onRegistrationStartPrevious" />
         <RegistrationEntryRegistrants v-else-if="currentStep === steps.perRegistrantForms" @next="onRegistrantNext" @previous="onRegistrantPrevious" />

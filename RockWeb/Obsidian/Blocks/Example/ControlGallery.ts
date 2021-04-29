@@ -18,7 +18,7 @@ import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
 import DefinedTypePicker from '../../Controls/DefinedTypePicker';
 import DefinedValuePicker from '../../Controls/DefinedValuePicker';
 import CampusPicker from '../../Controls/CampusPicker';
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 import store from '../../Store/Index';
 import TextBox from '../../Elements/TextBox';
 import EmailBox from '../../Elements/EmailBox';
@@ -35,16 +35,23 @@ import AddressControl, { getDefaultAddressControlModel } from '../../Controls/Ad
 import Toggle from '../../Elements/Toggle';
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../Elements/ItemsWithPreAndPostHtml';
 import StaticFormControl from '../../Elements/StaticFormControl';
+import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTracker';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
     components: {
         PanelWidget
     },
+    props: {
+        splitWidth: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    },
     template: `
 <PanelWidget>
     <template #header><slot name="header" /></template>
-    <div class="row">
+    <div v-if="splitWidth" class="row">
         <div class="col-md-6">
             <slot name="gallery" />
         </div>
@@ -52,6 +59,14 @@ const GalleryAndResult = defineComponent({
             <slot name="result" />
         </div>
     </div>
+    <template v-else>
+        <div>
+            <slot name="gallery" />
+        </div>
+        <div>
+            <slot name="result" />
+        </div>
+    </template>
 </PanelWidget>`
 });
 
@@ -72,7 +87,8 @@ export default defineComponent({
         AddressControl,
         Toggle,
         ItemsWithPreAndPostHtml,
-        StaticFormControl
+        StaticFormControl,
+        ProgressTracker
     },
     data() {
         return {
@@ -95,7 +111,20 @@ export default defineComponent({
             prePostHtmlItems: [
                 { PreHtml: '<div class="row"><div class="col-sm-6">', PostHtml: '</div>', SlotName: 'item1' },
                 { PreHtml: '<div class="col-sm-6">', PostHtml: '</div></div>', SlotName: 'item2' }
-            ] as ItemWithPreAndPostHtml[]
+            ] as ItemWithPreAndPostHtml[],
+            progressTrackerIndex: 0,
+            progressTrackerItems: [
+                { Key: 'S', Title: 'Start', Subtitle: 'The beginning' },
+                { Key: '1', Title: 'Step 1', Subtitle: 'The first step' },
+                { Key: '2', Title: 'Step 2', Subtitle: 'The second step' },
+                { Key: '3', Title: 'Step 3', Subtitle: 'The third step' },
+                { Key: '4', Title: 'Step 4', Subtitle: 'The fourth step' },
+                { Key: '5', Title: 'Step 5', Subtitle: 'The fifth step' },
+                { Key: '6', Title: 'Step 6', Subtitle: 'The sixth step' },
+                { Key: '7', Title: 'Step 7', Subtitle: 'The seventh step' },
+                { Key: '8', Title: 'Step 8', Subtitle: 'The eighth step' },
+                { Key: 'F', Title: 'Finish', Subtitle: 'The finish' }
+            ] as ProgressTrackerItem[]
         };
     },
     methods: {
@@ -296,6 +325,17 @@ export default defineComponent({
                         <div style="background-color: #ccf; padding: 5px;">This is item 2</div>
                     </template>
                 </ItemsWithPreAndPostHtml>
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult :splitWidth="false">
+            <template #header>
+                ProgressTracker
+            </template>
+            <template #gallery>
+                <NumberUpDown label="Index" v-model="progressTrackerIndex" :min="-100" :max="100" />
+            </template>
+            <template #result>
+                <ProgressTracker :items="progressTrackerItems" :currentIndex="progressTrackerIndex" />
             </template>
         </GalleryAndResult>
     </template>

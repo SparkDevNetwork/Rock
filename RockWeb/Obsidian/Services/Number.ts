@@ -74,7 +74,7 @@ export function toOrdinalSuffix(num: number | null) {
 
 /**
  * Convert a number to an ordinal.
- * Ex: 1 => First
+ * Ex: 1 => first
  * @param num
  */
 export function toOrdinal(num: number | null) {
@@ -94,6 +94,29 @@ export function toOrdinal(num: number | null) {
         case 9: return 'ninth';
         case 10: return 'tenth';
         default: return toOrdinalSuffix(num);
+    }
+}
+
+/**
+ * Convert a number to a word.
+ * Ex: 1 => one
+ * @param num
+ */
+export function toWord ( num: number | null )
+{
+    switch ( num )
+    {
+        case 1: return 'one';
+        case 2: return 'two';
+        case 3: return 'three';
+        case 4: return 'four';
+        case 5: return 'five';
+        case 6: return 'six';
+        case 7: return 'seven';
+        case 8: return 'eight';
+        case 9: return 'nine';
+        case 10: return 'ten';
+        default: return `${num}`;
     }
 }
 

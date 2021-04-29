@@ -71,7 +71,7 @@ System.register([], function (exports_1, context_1) {
     exports_1("toOrdinalSuffix", toOrdinalSuffix);
     /**
      * Convert a number to an ordinal.
-     * Ex: 1 => First
+     * Ex: 1 => first
      * @param num
      */
     function toOrdinal(num) {
@@ -93,6 +93,27 @@ System.register([], function (exports_1, context_1) {
         }
     }
     exports_1("toOrdinal", toOrdinal);
+    /**
+     * Convert a number to a word.
+     * Ex: 1 => one
+     * @param num
+     */
+    function toWord(num) {
+        switch (num) {
+            case 1: return 'one';
+            case 2: return 'two';
+            case 3: return 'three';
+            case 4: return 'four';
+            case 5: return 'five';
+            case 6: return 'six';
+            case 7: return 'seven';
+            case 8: return 'eight';
+            case 9: return 'nine';
+            case 10: return 'ten';
+            default: return "" + num;
+        }
+    }
+    exports_1("toWord", toWord);
     function zeroPad(num, length) {
         var str = num.toString();
         while (str.length < length) {
