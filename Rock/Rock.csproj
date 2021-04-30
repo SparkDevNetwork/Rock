@@ -618,7 +618,6 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
-    <Compile Include="Financial\RedirectGatewayLinkArgs.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />

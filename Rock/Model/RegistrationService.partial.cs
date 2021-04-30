@@ -65,7 +65,7 @@ namespace Rock.Model
             errorMessage = string.Empty;
 
             // Load the instance and template
-            var registrationInstance = GetRegistrationInstanceQuery( registrationInstanceId ).FirstOrDefault();
+            var registrationInstance = GetActiveRegistrationInstance( registrationInstanceId );
             var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
             if ( registrationTemplate == null )
@@ -204,25 +204,33 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the registration instance query.
+        /// Gets the active registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns></returns>
-        private IQueryable<RegistrationInstance> GetRegistrationInstanceQuery( int registrationInstanceId )
+        private RegistrationInstance GetActiveRegistrationInstance( int registrationInstanceId )
         {
             var now = RockDateTime.Now;
+            var registrationInstanceService = new RegistrationInstanceService( Context as RockContext );
+            var registrationInstance = registrationInstanceService.Get( registrationInstanceId );
+            var registrationTemplate = registrationInstance?.RegistrationTemplate;
 
-            var query = new RegistrationInstanceService( Context as RockContext )
-                .Queryable()
-                .Where( r =>
-                    r.Id == registrationInstanceId &&
-                    r.IsActive &&
-                    r.RegistrationTemplate != null &&
-                    r.RegistrationTemplate.IsActive &&
-                    ( !r.StartDateTime.HasValue || r.StartDateTime <= now ) &&
-                    ( !r.EndDateTime.HasValue || r.EndDateTime > now ) );
+            // Ensure that the registration entities are active
+            if ( registrationInstance is null || registrationTemplate is null || !registrationTemplate.IsActive || !registrationInstance.IsActive )
+            {
+                return null;
+            }
 
-            return query;
+            // Make sure the registration is open
+            var isBeforeRegistrationOpens = registrationInstance.StartDateTime.HasValue && registrationInstance.StartDateTime > now;
+            var isAfterRegistrationCloses = registrationInstance.EndDateTime.HasValue && registrationInstance.EndDateTime > now;
+
+            if ( isBeforeRegistrationOpens || isAfterRegistrationCloses )
+            {
+                return null;
+            }
+
+            return registrationInstance;
         }
 
         /// <summary>

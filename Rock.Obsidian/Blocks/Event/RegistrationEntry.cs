@@ -1513,7 +1513,7 @@ namespace Rock.Obsidian.Blocks.Event
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
                     FieldValues = session.FieldValues,
-                    GatewayToken = null,
+                    GatewayToken = PageParameter( PageParameterKey.PaymentToken ),
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
                     RegistrationGuid = null
@@ -1794,19 +1794,13 @@ namespace Rock.Obsidian.Blocks.Event
             var registrantNames = registrants.Select( r => GetRegistrantFullName( context, r ) ).JoinStringsWithCommaAnd();
             var registrarName = $"{registrar.NickName} {registrar.LastName}";
 
-            return redirectGateway.GetRedirectUrl( fundId.ToStringSafe(), new RedirectGatewayLinkArgs
+            return redirectGateway.GetEventRegistrationRedirectUrl( fundId.ToStringSafe(), amount, new Dictionary<string, string>
             {
-                Amount = amount,
-                AmountLock = true,
-                Recurring = RedirectGatewayLinkArgs.RecurringOption.No,
-                RecurringVisibility = false,
-                FirstName = registrar.NickName,
-                LastName = registrar.LastName,
-                EmailAddress = registrar.Email,
-                SourceReference = registrationSessionGuid.ToString(),
-                FundVisibility = RedirectGatewayLinkArgs.FundVisibilityOption.Hide,
-                Note = $"Event registration for {context.RegistrationInstance.Name} for {registrantNames} by {registrarName}",
-                RedirectUrl = "rock-registration-entry"
+                { "FirstName", registrar.NickName },
+                { "LastName", registrar.LastName },
+                { "EmailAddress", registrar.Email },
+                { "SourceReference", registrationSessionGuid.ToString() },
+                { "Note", $"Event registration for {context.RegistrationInstance.Name} for {registrantNames} by {registrarName}" }
             } );
         }
 
@@ -1848,7 +1842,9 @@ namespace Rock.Obsidian.Blocks.Event
             RegistrationEntryBlockArgs args,
             out string errorMessage )
         {
+            errorMessage = string.Empty;
             var gateway = context.RegistrationTemplate?.FinancialGateway?.GetGatewayComponent();
+            var redirectGateway = gateway as IRedirectionGateway;
 
             if ( gateway == null )
             {
@@ -1856,19 +1852,15 @@ namespace Rock.Obsidian.Blocks.Event
                 return null;
             }
 
-            if ( gateway is IRedirectionGateway )
-            {
-                // Do not charge a payment, as it was already made via redirection
-                args.AmountToPayNow = 0;
-                errorMessage = string.Empty;
-                return null;
-            }
-
-            if ( !context.RegistrationInstance.AccountId.HasValue || context.RegistrationInstance.Account == null )
+            if ( redirectGateway == null && ( !context.RegistrationInstance.AccountId.HasValue || context.RegistrationInstance.Account == null ) )
             {
                 errorMessage = "There was a problem with the account configuration for this " + context.RegistrationTemplate.RegistrationTerm.ToLower();
                 return null;
             }
+
+            var comment = redirectGateway == null ?
+                $"{context.RegistrationInstance.Name} ({context.RegistrationInstance.Account.GlCode})" :
+                context.RegistrationInstance.Name;
 
             var paymentInfo = new ReferencePaymentInfo
             {
@@ -1877,11 +1869,25 @@ namespace Rock.Obsidian.Blocks.Event
                 FirstName = args.Registrar.NickName,
                 LastName = args.Registrar.LastName,
                 ReferenceNumber = args.GatewayToken,
-                Comment1 = string.Format( "{0} ({1})", context.RegistrationInstance.Name, context.RegistrationInstance.Account.GlCode )
+                Comment1 = comment
             };
 
-            var transaction = gateway.Charge( context.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
-            return SaveTransaction( gateway, context, transaction, paymentInfo, rockContext, args.AmountToPayNow );
+            FinancialTransaction transaction;
+
+            if ( gateway is IRedirectionGateway redirectionGateway )
+            {
+                // Download the payment from the redirect gateway
+                var merchantId = context.RegistrationInstance.ExternalGatewayMerchantId.ToStringSafe();
+                transaction = redirectionGateway.FetchTransaction( rockContext, context.RegistrationTemplate.FinancialGateway, merchantId, args.GatewayToken );
+                paymentInfo.Amount = transaction.TotalAmount;
+            }
+            else
+            {
+                // Charge a new payment with the tokenized payment method
+                transaction = gateway.Charge( context.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
+            }
+
+            return SaveTransaction( gateway, context, transaction, paymentInfo, rockContext, paymentInfo.Amount );
         }
 
         /// <summary>
@@ -1943,9 +1949,9 @@ namespace Rock.Obsidian.Blocks.Event
 
             transaction.Summary = context.Registration.GetSummary( context.RegistrationInstance );
 
-            var transactionDetail = new FinancialTransactionDetail();
+            var transactionDetail = transaction.TransactionDetails?.FirstOrDefault() ?? new FinancialTransactionDetail();
             transactionDetail.Amount = amount;
-            transactionDetail.AccountId = context.RegistrationInstance.AccountId.Value;
+            transactionDetail.AccountId = transactionDetail.AccountId == 0 ? context.RegistrationInstance.AccountId.Value : transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
             transaction.TransactionDetails.Add( transactionDetail );

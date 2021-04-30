@@ -522,12 +522,33 @@ namespace Rock.Financial
         /// Gets the redirect URL.
         /// </summary>
         /// <param name="fundId">The fund identifier.</param>
-        /// <param name="args">The arguments.</param>
+        /// <param name="amount">The amount.</param>
+        /// <param name="metadata">The metadata.</param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public string GetRedirectUrl( string fundId, RedirectGatewayLinkArgs args )
+        public string GetEventRegistrationRedirectUrl( string fundId, decimal amount, Dictionary<string, string> metadata )
         {
             return "https://www.google.com/search?q=rockrms";
+        }
+
+        /// <summary>
+        /// Fetches the transaction from the database if it already exists or the API otherwise.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="merchantId">The merchant identifier.</param>
+        /// <param name="paymentToken">The payment token.</param>
+        /// <returns></returns>
+        public FinancialTransaction FetchTransaction( Data.RockContext rockContext, FinancialGateway financialGateway, string merchantId, string paymentToken )
+        {
+            return new FinancialTransaction
+            {
+                TransactionCode = paymentToken,
+                TransactionDetails = new List<FinancialTransactionDetail> {
+                    new FinancialTransactionDetail {
+                        Amount = 10
+                    }
+                }
+            };
         }
 
         #endregion IRedirectionGateway Implementation
