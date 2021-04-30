@@ -17,11 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Humanizer;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -31,7 +30,6 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -276,16 +274,24 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var channel = new ContentChannelService( rockContext ).GetNoTracking( channelGuid.Value );
 
-                // add channel attributes
-                channel.LoadAttributes();
-                channelAttributes = channel.Attributes.Select( a => a.Value ).ToList();
+                // Fake in-memory content channel item so we can properly
+                // load all the attributes.
+                var contentChannelItem = new ContentChannelItem
+                {
+                    ContentChannelId = channel.Id,
+                    ContentChannelTypeId = channel.ContentChannelTypeId
+                };
+
+                // add content channel item attributes
+                contentChannelItem.LoadAttributes( rockContext );
+                channelAttributes = contentChannelItem.Attributes.Select( a => a.Value ).ToList();
             }
 
             ddlChannelAttribute.Items.Clear();
             ddlChannelAttribute.Items.Add( new ListItem() );
             foreach ( var attribute in channelAttributes )
             {
-                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.VideoFileFieldType ).FullName )
+                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
                 {
                     ddlChannelAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToStringSafe() ) );
                 }

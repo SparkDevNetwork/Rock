@@ -19,17 +19,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Humanizer;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Media;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
-using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {

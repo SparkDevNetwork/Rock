@@ -134,10 +134,11 @@ namespace Rock.Model
         public ContentChannelItemStatus? Status { get; set; }
 
         /// <summary>
-        /// Gets or sets the content channel attribute identifier.
+        /// Gets or sets the synced content channel item attribute identifier
+        /// to store the Guid value into.
         /// </summary>
         /// <value>
-        /// The content channel attribute identifier.
+        /// The synced content channel item attribute identifier.
         /// </value>
         [DataMember]
         public int? ContentChannelAttributeId { get; set; }
