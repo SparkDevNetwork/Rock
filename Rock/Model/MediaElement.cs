@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Media;
@@ -34,6 +37,16 @@ namespace Rock.Model
     [DataContract]
     public partial class MediaElement : Model<MediaElement>
     {
+        #region Fields
+
+        /// <summary>
+        /// <c>true</c> if the <see cref="PostSaveChanges(Data.DbContext)"/> method
+        /// call will be for an add operation.
+        /// </summary>
+        private bool _saveOperationIsAdd;
+
+        #endregion
+
         #region Entity Properties
 
         /// <summary>
@@ -197,6 +210,36 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context this operation was called on.</param>
+        /// <param name="entry">The entry that identifies this entity in the change tracker.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( entry.State == EntityState.Added )
+            {
+                _saveOperationIsAdd = true;
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context this operation was called on.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( _saveOperationIsAdd )
+            {
+                // We don't need to wait for this to complete.
+                Task.Run( () => MediaElementService.AddSyncedContentChannelItem( this.Id ) );
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -37,7 +37,7 @@
                     <div class="row margin-b-md">
                         <div class="col-md-12">
                             <label>Media Files</label>
-                            <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" UseFullStylesForLightGrid="true" >
+                            <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" >
                                 <Columns>
                                     <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
                                     <Rock:RockBoundField DataField="Format" HeaderText="Format" />
@@ -52,7 +52,7 @@
                     <div class="row margin-b-md">
                         <div class="col-md-12">
                             <label>Thumbnail Files</label>
-                            <Rock:Grid ID="gViewThumbnailFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true" UseFullStylesForLightGrid="true">
+                            <Rock:Grid ID="gViewThumbnailFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
                                     <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
@@ -78,7 +78,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" />
+                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration (seconds)" />
                         </div>
                     </div>
                     <div class="row">

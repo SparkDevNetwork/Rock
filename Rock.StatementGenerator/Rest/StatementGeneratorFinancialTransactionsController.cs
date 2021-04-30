@@ -440,7 +440,7 @@ namespace Rock.StatementGenerator.Rest
                     familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
                 }
 
-                if ( familyTitle.IsNotNullOrWhiteSpace() )
+                if ( familyTitle.IsNullOrWhiteSpace() )
                 {
                     // shouldn't happen, just in case the familyTitle is blank, just return the person's name
                     familyTitle = person.FullName;
