@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -74,6 +75,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbActionResult.Text = string.Empty;
 
             if ( !Page.IsPostBack )
             {
@@ -208,17 +211,28 @@ namespace RockWeb.Blocks.Cms
         {
             if ( hfId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add
+                // Canceling on Add
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString[PageParameterKey.MediaAccountId] = hfMediaAccountId.Value;
                 NavigateToParentPage( qryString );
             }
             else
             {
-                // Cancelling on Edit
+                // Canceling on Edit
                 var mediaFolder = new MediaFolderService( new RockContext() ).Get( int.Parse( hfId.Value ) );
                 ShowReadonlyDetails( mediaFolder );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSyncContentChannelItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSyncContentChannelItems_Click( object sender, EventArgs e )
+        {
+            Task.Run( () => MediaFolderService.AddMissingSyncedContentChannelItems( hfId.ValueAsInt() ) );
+            nbActionResult.Text = "Content channel item creation has started and will continue in the background.";
         }
 
         /// <summary>
@@ -358,17 +372,22 @@ namespace RockWeb.Blocks.Cms
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnSyncContentChannelItems.Visible = false;
+
                 ShowReadonlyDetails( mediaFolder );
             }
             else
             {
                 btnEdit.Visible = true;
+
                 if ( mediaFolder.Id > 0 )
                 {
+                    btnSyncContentChannelItems.Visible = !( mediaFolder.MediaAccount.GetMediaAccountComponent()?.AllowsManualEntry ?? true );
                     ShowReadonlyDetails( mediaFolder );
                 }
                 else
                 {
+                    btnSyncContentChannelItems.Visible = false;
                     ShowEditDetails( mediaFolder );
                 }
             }
@@ -384,8 +403,18 @@ namespace RockWeb.Blocks.Cms
 
             lActionTitle.Text = mediaFolder.Name.FormatAsHtmlTitle();
 
+            hlSyncStatus.Visible = mediaFolder.IsContentChannelSyncEnabled;
+
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Account", mediaFolder.MediaAccount.Name );
+
+            if ( mediaFolder.IsContentChannelSyncEnabled )
+            {
+                descriptionList.Add( "Content Channel", mediaFolder.ContentChannel?.Name );
+                descriptionList.Add( "Content Channel Attribute", mediaFolder.ContentChannelAttribute?.Name );
+                descriptionList.Add( "Content Channel Item Status", mediaFolder.ContentChannelItemStatus?.ConvertToString() );
+            }
+
             if ( mediaFolder.Description.IsNotNullOrWhiteSpace() )
             {
                 descriptionList.Add( "Description", mediaFolder.Description );

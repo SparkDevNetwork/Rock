@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 
 using Humanizer;
@@ -72,6 +73,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbActionResult.Text = string.Empty;
 
             if ( !Page.IsPostBack )
             {
@@ -166,6 +169,24 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSyncWithProvider control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSyncWithProvider_Click( object sender, EventArgs e )
+        {
+            var mediaAccountId = hfMediaAccountId.ValueAsInt();
+
+            Task.Run( async () =>
+            {
+                await MediaAccountService.SyncMediaInAccountAsync( mediaAccountId );
+                await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccountId );
+            } );
+
+            nbActionResult.Text = "Synchronization with provider started and will continue in the background.";
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -248,18 +269,23 @@ namespace RockWeb.Blocks.Cms
             {
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
+                btnSyncWithProvider.Visible = false;
+
                 ShowReadonlyDetails( mediaAccount );
             }
             else
             {
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
+
                 if ( mediaAccount.Id > 0 )
                 {
+                    btnSyncWithProvider.Visible = !( mediaAccount.GetMediaAccountComponent()?.AllowsManualEntry ?? true );
                     ShowReadonlyDetails( mediaAccount );
                 }
                 else
                 {
+                    btnSyncWithProvider.Visible = false;
                     ShowEditDetails( mediaAccount );
                 }
             }

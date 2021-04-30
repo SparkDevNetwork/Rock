@@ -7,7 +7,12 @@
 
             <div class="panel-heading ">
                 <h1 class="panel-title"><i class="fa fa-play-circle"></i>
-                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" />
+                </div>
             </div>
 
             <div class="panel-body">
@@ -28,8 +33,16 @@
                         </div>
                     </div>
 
+                    <Rock:NotificationBox ID="nbActionResult" runat="server" NotificationBoxType="Info" Dismissable="true" />
+
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+
+                        <span class="pull-right">
+                            <asp:LinkButton ID="btnSyncContentChannelItems" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Create missing content channel items." data-toggle="tooltip" OnClick="btnSyncContentChannelItems_Click" CausesValidation="false">
+                                <i class="fa fa-bullhorn"></i>
+                            </asp:LinkButton>
+                        </span>
                     </div>
                 </div>
                 <div id="pnlEditDetails" runat="server">

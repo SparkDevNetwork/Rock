@@ -33,7 +33,7 @@ namespace Rock.Model
         /// the given identifier.
         /// </summary>
         /// <param name="mediaElementId">The media element identifier.</param>
-        internal static void AddSyncedContentChannelItem( int mediaElementId )
+        public static void AddSyncedContentChannelItem( int mediaElementId )
         {
             try
             {
@@ -95,9 +95,8 @@ namespace Rock.Model
                     {
                         rockContext.SaveChanges();
 
-                        contentChannelItem.LoadAttributes( rockContext );
-                        contentChannelItem.SetAttributeValue( attribute.Key, mediaElement.Guid.ToString() );
-                        contentChannelItem.SaveAttributeValues( rockContext );
+                        // 2.5x faster than LoadAttributes/SaveAttributeValues.
+                        Rock.Attribute.Helper.SaveAttributeValue( contentChannelItem, attribute, mediaElement.Guid.ToString(), rockContext );
                     } );
                 }
             }
