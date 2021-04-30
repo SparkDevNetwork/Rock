@@ -97,6 +97,10 @@
     <Compile Include="Migrations\202104291818024_GroupSalutation.Designer.cs">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.cs" />
+    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.Designer.cs">
+      <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -1697,6 +1701,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202104291818024_GroupSalutation.resx">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.resx">
+      <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>

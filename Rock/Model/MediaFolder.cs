@@ -131,7 +131,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of the ContentItem.
         /// </value>
         [DataMember]
-        public ContentChannelItemStatus? Status { get; set; }
+        public ContentChannelItemStatus? ContentChannelItemStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the synced content channel item attribute identifier
@@ -142,6 +142,18 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ContentChannelAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type identifier. This workflow is
+        /// launched whenever a new <see cref="MediaElement"/> is added to
+        /// the system. The <see cref="MediaElement"/> is passed as the Entity
+        /// object to the workflow.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? WorkflowTypeId { get; set; }
 
         #endregion
 
@@ -173,6 +185,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Attribute ContentChannelAttribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the workflow that will be launched when
+        /// a new <see cref="MediaElement"/> is added.
+        /// </summary>
+        /// <value>
+        /// The type of the workflow.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.MediaElement">Elements</see> that belong to this Folder.
@@ -213,9 +235,10 @@ namespace Rock.Model
         /// </summary>
         public MediaFolderConfiguration()
         {
-            this.HasRequired( p => p.MediaAccount ).WithMany( p => p.MediaFolders ).HasForeignKey( p => p.MediaAccountId ).WillCascadeOnDelete( true );
-            this.HasOptional( i => i.ContentChannel ).WithMany().HasForeignKey( i => i.ContentChannelId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.ContentChannelAttribute ).WithMany().HasForeignKey( a => a.ContentChannelAttributeId ).WillCascadeOnDelete( false );
+            this.HasRequired( f => f.MediaAccount ).WithMany( a => a.MediaFolders ).HasForeignKey( p => p.MediaAccountId ).WillCascadeOnDelete( true );
+            this.HasOptional( f => f.ContentChannel ).WithMany().HasForeignKey( f => f.ContentChannelId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.ContentChannelAttribute ).WithMany().HasForeignKey( f => f.ContentChannelAttributeId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.WorkflowType ).WithMany().HasForeignKey( f => f.WorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

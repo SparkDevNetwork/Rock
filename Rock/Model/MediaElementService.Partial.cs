@@ -62,7 +62,7 @@ namespace Rock.Model
                     var contentChannelTypeId = mediaElement.MediaFolder.ContentChannel?.ContentChannelTypeId;
                     var contentChannelId = mediaElement.MediaFolder.ContentChannelId;
                     var attributeId = mediaElement.MediaFolder.ContentChannelAttributeId;
-                    var status = mediaElement.MediaFolder.Status;
+                    var status = mediaElement.MediaFolder.ContentChannelItemStatus;
 
                     // Missing required information.
                     if ( !contentChannelTypeId.HasValue || !contentChannelId.HasValue || !attributeId.HasValue || !status.HasValue )

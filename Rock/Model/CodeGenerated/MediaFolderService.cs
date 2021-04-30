@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ContentChannelAttributeId = source.ContentChannelAttributeId;
             target.ContentChannelId = source.ContentChannelId;
+            target.ContentChannelItemStatus = source.ContentChannelItemStatus;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -100,7 +101,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.SourceData = source.SourceData;
             target.SourceKey = source.SourceKey;
-            target.Status = source.Status;
+            target.WorkflowTypeId = source.WorkflowTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

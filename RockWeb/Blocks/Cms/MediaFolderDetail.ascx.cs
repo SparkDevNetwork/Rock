@@ -184,13 +184,13 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 mediaFolder.ContentChannelAttributeId = ddlChannelAttribute.SelectedValueAsInt();
-                mediaFolder.Status = rrbContentChannelItemStatus.SelectedValueAsEnum<ContentChannelItemStatus>();
+                mediaFolder.ContentChannelItemStatus = rrbContentChannelItemStatus.SelectedValueAsEnum<ContentChannelItemStatus>();
             }
             else
             {
                 mediaFolder.ContentChannelId = null;
                 mediaFolder.ContentChannelAttributeId = null;
-                mediaFolder.Status = null;
+                mediaFolder.ContentChannelItemStatus = null;
             }
 
             rockContext.SaveChanges();
@@ -425,7 +425,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 ddlContentChannel_SelectedIndexChanged( null, null );
-                rrbContentChannelItemStatus.SetValue( mediaFolder.Status.ConvertToInt().ToString() );
+                rrbContentChannelItemStatus.SetValue( mediaFolder.ContentChannelItemStatus.ConvertToInt().ToString() );
                 if ( mediaFolder.ContentChannelAttributeId.HasValue )
                 {
                     ddlChannelAttribute.SetValue( mediaFolder.ContentChannelAttributeId.Value );
