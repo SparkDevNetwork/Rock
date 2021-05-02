@@ -21,7 +21,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -197,9 +196,10 @@ namespace RockWeb.Blocks.Cms
             }
 
             rockContext.SaveChanges();
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.MediaAccountId] = mediaFolder.MediaAccountId.ToStringSafe();
-            NavigateToParentPage( qryParams );
+
+            var pageReference = RockPage.PageReference;
+            pageReference.Parameters.AddOrReplace( PageParameterKey.MediaFolderId, mediaFolder.Id.ToString() );
+            Response.Redirect( pageReference.BuildUrl(), false );
         }
 
         /// <summary>

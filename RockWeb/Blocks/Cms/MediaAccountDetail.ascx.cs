@@ -20,9 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.UI;
-
 using Humanizer;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -219,7 +217,9 @@ namespace RockWeb.Blocks.Cms
             mediaAccount.SaveAttributeValues( rockContext );
             rockContext.SaveChanges();
 
-            NavigateToParentPage();
+            var pageReference = RockPage.PageReference;
+            pageReference.Parameters.AddOrReplace( PageParameterKey.MediaAccountId, mediaAccount.Id.ToString() );
+            Response.Redirect( pageReference.BuildUrl(), false );
         }
 
         /// <summary>
@@ -229,7 +229,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            if ( hfMediaAccountId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString[PageParameterKey.MediaAccountId] = hfMediaAccountId.Value;
+                NavigateToParentPage( qryString );
+            }
+            else
+            {
+                // Cancelling on Edit
+                var mediaAccount = new MediaAccountService( new RockContext() ).Get( int.Parse( hfMediaAccountId.Value ) );
+                ShowReadonlyDetails( mediaAccount );
+            }
         }
 
         #endregion Events
