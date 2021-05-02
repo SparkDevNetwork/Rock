@@ -479,7 +479,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( mediaElement.DurationSeconds.HasValue )
             {
-                descriptionList.Add( "Duration", mediaElement.DurationSeconds );
+                descriptionList.Add( "Duration", mediaElement.DurationSeconds.ToFriendlyDuration() );
             }
 
             lDescription.Text = descriptionList.Html;
