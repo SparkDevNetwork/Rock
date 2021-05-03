@@ -281,7 +281,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             if ( GetAttributeValue( AttributeKeys.BirthDateShow ).AsBoolean() )
             {
-                person.SetBirthDate( profile.BirthDate );
+                person.SetBirthDate( profile.BirthDate?.Date );
             }
 
             if ( GetAttributeValue( AttributeKeys.CampusShow ).AsBoolean() )

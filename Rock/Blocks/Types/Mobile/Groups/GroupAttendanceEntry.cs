@@ -392,7 +392,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <returns>A collection of string/string pairs.</returns>
         [BlockAction]
-        public BlockActionResult GetGroupData( Guid groupGuid, DateTime? date = null )
+        public BlockActionResult GetGroupData( Guid groupGuid, DateTimeOffset? date = null )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -403,13 +403,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
+                // Special case, we are dealing with absolute dates so don't
+                // convert to organization date time.
+                var absDate = date?.Date;
+
                 var dates = GetValidDates( group );
 
                 if ( !AllowAnyDateSelection && dates != null )
                 {
-                    if ( !date.HasValue || !dates.Contains( date.Value ) )
+                    if ( !date.HasValue || !dates.Contains( absDate.Value ) )
                     {
-                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                        absDate = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
                     }
                 }
 
@@ -417,19 +421,23 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 {
                     if ( dates != null )
                     {
-                        date = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
+                        absDate = dates.Where( a => a <= RockDateTime.Now.Date ).LastOrDefault();
                     }
 
-                    date = date ?? RockDateTime.Now.Date;
+                    absDate = absDate ?? RockDateTime.Now.Date;
                 }
 
-                var occurrence = GetOccurrence( rockContext, group, date ?? DateTime.MinValue, false );
+                var occurrence = GetOccurrence( rockContext, group, absDate ?? DateTime.MinValue, false );
+                var rockDates = dates
+                    .Select( a => DateTime.SpecifyKind( a, DateTimeKind.Unspecified ) )
+                    .Select( a => new DateTimeOffset( a, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( a ) ) )
+                    .ToList();
 
                 return ActionOk( new GroupData
                 {
                     Header = GetHeader( group ),
-                    Date = date.Value,
-                    Dates = dates,
+                    Date = absDate.Value,
+                    Dates = rockDates,
                     DidNotMeet = occurrence?.DidNotOccur ?? false,
                     Attendees = GetAttendees( rockContext, occurrence, group )
                 } );
@@ -445,7 +453,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="attended">if set to <c>true</c> the person is marked as attended.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveSingleAttendance( Guid groupGuid, DateTime date, Guid personGuid, bool attended )
+        public BlockActionResult SaveSingleAttendance( Guid groupGuid, DateTimeOffset date, Guid personGuid, bool attended )
         {
             return SaveAttendance( groupGuid, date, new List<Attendee>
             {
@@ -466,7 +474,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="didNotMeet">if set to <c>true</c> the group did not meet.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveAttendance( Guid groupGuid, DateTime date, List<Attendee> attendees, bool didNotMeet )
+        public BlockActionResult SaveAttendance( Guid groupGuid, DateTimeOffset date, List<Attendee> attendees, bool didNotMeet )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -477,13 +485,17 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
+                // Special case, we are dealing with absolute dates so don't
+                // convert to organization date time.
+                var absDate = date.Date;
+
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( absDate ) )
                 {
                     return ActionNotFound();
                 }
 
-                SaveAttendanceData( rockContext, group, date, attendees, didNotMeet );
+                SaveAttendanceData( rockContext, group, absDate, attendees, didNotMeet );
 
                 return ActionOk();
             }
@@ -498,7 +510,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <param name="didNotMeet">if set to <c>true</c> then the group did not meet.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult DidNotMeet( Guid groupGuid, DateTime date, bool didNotMeet )
+        public BlockActionResult DidNotMeet( Guid groupGuid, DateTimeOffset date, bool didNotMeet )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -510,15 +522,19 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return ActionNotFound();
                 }
 
+                // Special case, we are dealing with absolute dates so don't
+                // convert to organization date time.
+                var absDate = date.Date;
+
                 var dates = GetValidDates( group );
-                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( date ) )
+                if ( !AllowAnyDateSelection && dates != null && !dates.Contains( absDate ) )
                 {
                     return ActionNotFound();
                 }
 
-                SaveAttendanceData( rockContext, group, date, new List<Attendee>(), didNotMeet );
+                SaveAttendanceData( rockContext, group, absDate, new List<Attendee>(), didNotMeet );
 
-                return GetGroupData( groupGuid, date );
+                return GetGroupData( groupGuid, absDate );
             }
         }
 
