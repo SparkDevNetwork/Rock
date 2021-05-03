@@ -69,6 +69,11 @@
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" />
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.5\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
@@ -116,12 +121,12 @@
     </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.1\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
@@ -139,19 +144,38 @@
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Field.Types\UrlLinkFieldTypeTests.cs" />
+    <Compile Include="Jobs\GivingAnalyticsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
-    <Compile Include="Lava\CachingTests.cs" />
-    <Compile Include="Lava\LavaFilterTests.cs" />
-    <Compile Include="Lava\MiscellaneousFilterTests.cs" />
+    <Compile Include="Lava\Commands\RockEntityTests.cs" />
+    <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
+    <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
+    <Compile Include="Lava\Engine\ConfigurationTests.cs" />
+    <Compile Include="Lava\Engine\ParsingTests.cs" />
+    <Compile Include="Lava\Engine\ScopeTests.cs" />
+    <Compile Include="Lava\Engine\ParallelExecutionTests.cs" />
+    <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
+    <Compile Include="Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Lava\Filters\WebFilterTests.cs" />
+    <Compile Include="Lava\Filters\MiscellaneousFilterTests.cs" />
     <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
     <Compile Include="Lava\CalendarEventsCommandTests.cs" />
+    <Compile Include="Lava\Engine\LavaCommentsTests.cs" />
+    <Compile Include="Lava\Filters\DateFilterTests.cs" />
+    <Compile Include="Lava\Filters\NumericFilterTests.cs" />
+    <Compile Include="Lava\FileSystem\LavaFileSystemTests.cs" />
+    <Compile Include="Lava\LavaIntegrationTestHelper.cs" />
+    <Compile Include="Lava\LavaIntegrationTestBase.cs" />
+    <Compile Include="Lava\FileSystem\MockFileInfo.cs" />
+    <Compile Include="Lava\FileSystem\MockFileProvider.cs" />
+    <Compile Include="Lava\Commands\ShortcodeCodeTests.cs" />
+    <Compile Include="Lava\Commands\CommandTests.cs" />
+    <Compile Include="Lava\Commands\ShortcodeTemplateTests.cs" />
     <Compile Include="Lava\SqlTests.cs" />
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />
-    <Compile Include="Lava\RockEntityTests.cs" />
     <Compile Include="Model\BinaryFileTests.cs" />
     <Compile Include="Model\LocationTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
@@ -207,7 +231,7 @@
     <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
     <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
-    <Compile Include="TestInitializer.cs" />
+    <Compile Include="IntegrationTestInitializer.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="test.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -224,6 +248,8 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="settings\lava-dotliquid-engine.runsettings" />
+    <None Include="settings\lava-fluid-engine.runsettings" />
     <None Include="test.runsettings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>
@@ -235,6 +261,14 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj">
+      <Project>{37e293dd-f282-4a34-91fa-5fb8503d5672}</Project>
+      <Name>Rock.Lava</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Mailgun\Rock.Mailgun.csproj">
       <Project>{d6b19c0d-da5e-4f75-8001-04ded86b741f}</Project>

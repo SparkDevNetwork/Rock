@@ -33,14 +33,14 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> to which this prerequisite. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepType"/> to which this prerequisite. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
         public int StepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> that is a prerequisite. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepType"/> that is a prerequisite. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -61,13 +61,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Step Type.
+        /// Gets or sets the <see cref="Rock.Model.StepType"/>.
         /// </summary>
         [DataMember]
         public virtual StepType StepType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Prerequisite Step Type.
+        /// Gets or sets the Prerequisite <see cref="Rock.Model.StepType"/>.
         /// </summary>
         [DataMember]
         public virtual StepType PrerequisiteStepType { get; set; }

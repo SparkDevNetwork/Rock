@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a connection request activity
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionRequestActivity" )]
     [DataContract]
     public partial class ConnectionRequestActivity : Model<ConnectionRequestActivity>
@@ -38,7 +38,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection request identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request identifier.
@@ -49,7 +49,7 @@ namespace Rock.Model
         public int ConnectionRequestId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection activity type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionActivityType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection activity type identifier.
@@ -59,7 +59,7 @@ namespace Rock.Model
         public int ConnectionActivityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector person alias identifier.
+        /// Gets or sets the connector <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The connector person alias identifier.
@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -91,7 +91,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection request.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/>.
         /// </summary>
         /// <value>
         /// The connection request.
@@ -100,7 +100,7 @@ namespace Rock.Model
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the connection activity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionActivityType">type</see> of the connection activity.
         /// </summary>
         /// <value>
         /// The type of the connection activity.
@@ -109,7 +109,7 @@ namespace Rock.Model
         public virtual ConnectionActivityType ConnectionActivityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector person alias.
+        /// Gets or sets the connector <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The connector person alias.
@@ -118,7 +118,7 @@ namespace Rock.Model
         public virtual PersonAlias ConnectorPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.

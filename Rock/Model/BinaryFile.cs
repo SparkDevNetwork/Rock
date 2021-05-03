@@ -30,11 +30,12 @@ using ImageResizer;
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents any file that has either been uploaded to or generated and saved to Rock.  
+    /// Represents any file that has either been uploaded to or generated and saved to Rock.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
@@ -152,9 +153,9 @@ namespace Rock.Model
         /// The storage entity settings.
         /// </value>
         /// <remarks>
-        /// Because a Storage provider's settings are stored with the binary file type, and that binary file 
-        /// type may change the settings or storage provider, the setting values at the time this file was 
-        /// saved need to be stored with the binary file so that the storage provider is still able to 
+        /// Because a Storage provider's settings are stored with the binary file type, and that binary file
+        /// type may change the settings or storage provider, the setting values at the time this file was
+        /// saved need to be stored with the binary file so that the storage provider is still able to
         /// retrieve the file using these settings
         /// </remarks>
         public string StorageEntitySettings { get; set; }
@@ -198,8 +199,8 @@ namespace Rock.Model
         /// </value>
         /// <remarks>
         /// Because the Content property is not part of the EF model, changes to just the content
-        /// would not mark the entity as modified when it is saved. Because the storage providers will 
-        /// only get notified of new content when this model is added or changed, this property is 
+        /// would not mark the entity as modified when it is saved. Because the storage providers will
+        /// only get notified of new content when this model is added or changed, this property is
         /// required in order to flag the entity as being modified whenever the content is updated.
         /// </remarks>
         [DataMember]
@@ -222,9 +223,9 @@ namespace Rock.Model
         /// Gets or sets a <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. This object can be used for temporary storage or be persisted to the database.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
+        /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFileData DatabaseData { get; set; }
 
         /// <summary>
@@ -234,7 +235,7 @@ namespace Rock.Model
         /// The storage provider.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
@@ -395,7 +396,7 @@ namespace Rock.Model
                         {
                             if ( BinaryFileType.MaxHeight.HasValue &&
                                 BinaryFileType.MaxHeight != 0 &&
-                                BinaryFileType.MaxWidth.HasValue && 
+                                BinaryFileType.MaxWidth.HasValue &&
                                 BinaryFileType.MaxWidth != 0 )
                             {
                                 ResizeSettings settings = new ResizeSettings();
@@ -480,11 +481,11 @@ namespace Rock.Model
 
                 else if ( entry.State == EntityState.Modified )
                 {
-                    // when a file is saved (unless it is getting Deleted/Added), 
+                    // when a file is saved (unless it is getting Deleted/Added),
                     // it should use the StorageEntityType that is associated with the BinaryFileType
                     if ( BinaryFileType != null )
                     {
-                        // if the storage provider changed, or any of its settings specific 
+                        // if the storage provider changed, or any of its settings specific
                         // to the binary file type changed, delete the original provider's content
                         if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
                         {

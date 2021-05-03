@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -49,7 +50,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this SiteDomain references. This property is required.
         /// </summary>
@@ -59,7 +60,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int SiteId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
@@ -94,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Site Site { get; set; }
 
         #endregion
@@ -141,7 +142,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Site Domain Configuration class.
     /// </summary>

@@ -30,11 +30,12 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
+    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually
     /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
     /// </summary>
     [RockDomain( "CMS" )]
@@ -145,11 +146,11 @@ namespace Rock.Model
         public string Theme { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>. 
+        /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <remarks>
         /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user browses to the root of one of the Site's <see cref="Rock.Model.SiteDomain"/>
-        /// (i.e. http://www.mychurchdomain.org/) without providing a page or route. 
+        /// (i.e. http://www.mychurchdomain.org/) without providing a page or route.
         /// </remarks>
         /// <value>
         /// An <see cref="System.Int32"/> containing the Id of the Site's default <see cref="Rock.Model.Page"/>. If the site doesn't have a default <see cref="Rock.Model.Page"/>
@@ -239,7 +240,7 @@ namespace Rock.Model
         /// This is the <see cref="Rock.Model.Page"/> that is loaded when a page is not found.
         /// </remarks>
         /// <value>
-        /// An <see cref="System.Int32"/> containing the Id of the Site's 404 <see cref="Rock.Model.Page"/>. 
+        /// An <see cref="System.Int32"/> containing the Id of the Site's 404 <see cref="Rock.Model.Page"/>.
         /// </value>
         [DataMember]
         public int? PageNotFoundPageId { get; set; }
@@ -557,7 +558,7 @@ namespace Rock.Model
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The default <see cref="Rock.Model.Page"/> for the site. 
+        /// The default <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page DefaultPage { get; set; }
@@ -575,7 +576,7 @@ namespace Rock.Model
         /// Gets or sets the login <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The login <see cref="Rock.Model.Page"/> for the site. 
+        /// The login <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page LoginPage { get; set; }
@@ -595,7 +596,7 @@ namespace Rock.Model
         /// <value>
         /// The change password page.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Page ChangePasswordPage { get; set; }
 
         /// <summary>
@@ -611,7 +612,7 @@ namespace Rock.Model
         /// Gets or sets the registration <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The registration <see cref="Rock.Model.Page"/> for the site. 
+        /// The registration <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page RegistrationPage { get; set; }
@@ -629,13 +630,13 @@ namespace Rock.Model
         /// Gets or sets the 404 <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The 404 <see cref="Rock.Model.Page"/> for the site. 
+        /// The 404 <see cref="Rock.Model.Page"/> for the site.
         /// </value>
         [DataMember]
         public virtual Page PageNotFoundPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site. 
+        /// Gets or sets the 404 <see cref="Rock.Model.PageRoute"/> page route for this site.
         /// </summary>
         /// <value>
         /// The registration page route.
@@ -676,7 +677,7 @@ namespace Rock.Model
         /// <value>
         /// The fav icon binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile FavIconBinaryFile { get; set; }
 
         /// <summary>
@@ -685,7 +686,7 @@ namespace Rock.Model
         /// <value>
         /// The site logo binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile SiteLogoBinaryFile { get; set; }
 
         /// <summary>
@@ -694,7 +695,7 @@ namespace Rock.Model
         /// <value>
         /// The thumbnail binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ThumbnailBinaryFile { get; set; }
 
         /// <summary>
@@ -703,7 +704,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile phone binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobilePhoneBinaryFile { get; set; }
 
         /// <summary>
@@ -712,7 +713,7 @@ namespace Rock.Model
         /// <value>
         /// The configuration mobile tablet binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile ConfigurationMobileTabletBinaryFile { get; set; }
 
         /// <summary>
@@ -721,7 +722,7 @@ namespace Rock.Model
         /// <value>
         /// The default domain URI.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Uri DefaultDomainUri
         {
             get

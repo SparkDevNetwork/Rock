@@ -40,6 +40,10 @@
                                     </div>
                                 </div>
 
+                                <%-- Special input with rock-fullname class --%>
+                                <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                                <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
+
                                 <asp:Panel ID="pnlPersonEntryRow1" runat="server" CssClass="row">
                                     <%-- Person 1 --%>
                                     <asp:Panel ID="pnlPersonEntryRow1Column1" runat="server" CssClass="col-md-6">

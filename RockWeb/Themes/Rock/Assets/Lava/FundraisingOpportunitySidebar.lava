@@ -86,7 +86,7 @@
         {% assign registrationInstanceLinkagesCount = RegistrationInstanceLinkages | Size %}
         {% if registrationInstanceLinkagesCount > 0 %}
             {% for registrationInstanceLinkage in RegistrationInstanceLinkages %}
-                {% assign registrationButtonText = 'Register for ' | Plus:registrationInstanceLinkage.PublicName %}
+                {% assign registrationButtonText = 'Register for ' | Append:registrationInstanceLinkage.PublicName %}
                 {% if registrationInstanceLinkage.UrlSlug != '' %}
                   <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&Slug={{registrationInstanceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
                 {% else %}

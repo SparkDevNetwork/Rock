@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -108,7 +109,7 @@ namespace Rock.Model
         /// <value>
         /// The metric.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual EntitySet EntitySet { get; set; }
 
         #endregion
@@ -120,7 +121,7 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get 
+            get
             {
                 return this.EntitySet != null ? this.EntitySet : base.ParentAuthority;
             }

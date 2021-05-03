@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.CheckIn
         "Known Relationship Types",
         description: "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
         listSource: @"
-SELECT 
+SELECT
 	R.[Guid] AS [Value],
 	R.[Name] AS [Text]
 FROM [GroupType] T
@@ -980,7 +980,7 @@ ORDER BY [Text]",
 
                         var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id,
                             locationId, scheduleId, attendanceGroup.CampusId, null, null, null, null, null, null, attendanceTypeValueId );
-                        
+
                     }
                 }
 
@@ -1339,7 +1339,7 @@ ORDER BY [Text]",
             var recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             var recordStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             var connectionStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
-            var marriedMartialStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var marriedMaritalStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -1402,10 +1402,10 @@ ORDER BY [Text]",
                     if ( watcher.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                     {
 
-                        person.MaritalStatusValueId = marriedMartialStatusValueId;
-                        if ( primaryPerson.MaritalStatusValueId != marriedMartialStatusValueId )
+                        person.MaritalStatusValueId = marriedMaritalStatusValueId;
+                        if ( primaryPerson.MaritalStatusValueId != marriedMaritalStatusValueId )
                         {
-                            primaryPerson.MaritalStatusValueId = marriedMartialStatusValueId;
+                            primaryPerson.MaritalStatusValueId = marriedMaritalStatusValueId;
                         }
                     }
 

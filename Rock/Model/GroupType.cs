@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -92,7 +93,7 @@ namespace Rock.Model
         /// Gets or sets the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> that belongs to this GroupType is called.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this 
+        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this
         /// GroupType is called.
         /// </value>
         /// <example>
@@ -190,7 +191,7 @@ namespace Rock.Model
         public bool ShowConnectionStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to show the Person's martial status as a column in the Group Member Grid
+        /// Gets or sets a value indicating whether to show the Person's marital status as a column in the Group Member Grid
         /// </summary>
         /// <value>
         /// <c>true</c> if [show marital status]; otherwise, <c>false</c>.
@@ -388,9 +389,9 @@ namespace Rock.Model
 			<div class=""alert alert-{{ warningLevel }} margin-t-sm"">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
 		{% endif %}
 	{% endif %}
-	
-	
-	
+
+
+
 {% if Group.Description != '' -%}
     <p class='description'>{{ Group.Description }}</p>
 {% endif -%}
@@ -470,7 +471,7 @@ namespace Rock.Model
 		        <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
 		        {% endif %}
 		    <a href = '{{ GroupMapUrl }}'><img class='img-thumbnail' src='{{ mapLink }}'/></a>
-		    </div>	
+		    </div>
 		    {% endif %}
 		{% endfor %}
 		{% endif %}
@@ -786,7 +787,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -795,12 +796,12 @@ namespace Rock.Model
         private ICollection<Group> _groups;
 
         /// <summary>
-        /// Gets or sets the collection of GroupTypes that inherit from this GroupType.
+        /// Gets or sets the collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that inherit from this GroupType.
         /// </summary>
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
         /// </value>
-        [DataMember, LavaIgnore]
+        [DataMember, LavaHidden]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             /* 2020-09-03 MDP
@@ -813,7 +814,7 @@ namespace Rock.Model
                     - Area 1
                         - Kittens Group
                     - Area 2
-                        - Bobcat Group    
+                        - Bobcat Group
                     - Area 3
                         - Tigers Group
                         - Bears Group
@@ -866,7 +867,7 @@ namespace Rock.Model
             set { _triggers = value; }
         }
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-        
+
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -896,7 +897,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
+        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a
         /// <see cref="Rock.Model.Group"/> of this GroupType.
         /// </summary>
         /// <value>
@@ -970,7 +971,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the number of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int GroupCount
         {
             get
@@ -996,11 +997,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from. 
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.
         /// This is similar to a parent or a template GroupType.
         /// </summary>
         /// <value>The <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.</value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupType InheritedGroupType { get; set; }
 
         /// <summary>
@@ -1142,7 +1143,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a list of GroupType Ids, including our own Id, that identifies the
-        /// inheritence tree.
+        /// inheritance tree.
         /// </summary>
         /// <param name="rockContext">The database context to operate in.</param>
         /// <returns>A list of GroupType Ids, including our own Id, that identifies the inheritance tree.</returns>
@@ -1417,7 +1418,7 @@ namespace Rock.Model
     public enum AttendanceRule
     {
         /// <summary>
-        /// None, person does not need to belong to the group, and they will not automatically 
+        /// None, person does not need to belong to the group, and they will not automatically
         /// be added to the group
         /// </summary>
         None = 0,

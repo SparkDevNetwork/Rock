@@ -36,6 +36,7 @@ using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -275,10 +276,10 @@ namespace Rock.Model
         public Gender Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.
+        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.  This value is nullable.
+        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.  This value is nullable.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
@@ -304,7 +305,7 @@ namespace Rock.Model
         public int? GraduationYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
+        /// Gets or sets the <see cref="Rock.Model.Group">giving group</see> id.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
         /// <value>
@@ -570,13 +571,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the primary alias.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
         /// </summary>
         /// <value>
         /// The primary alias.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -586,7 +587,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary alias identifier.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
         /// </summary>
         /// <value>
         /// The primary alias identifier.
@@ -903,7 +904,7 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         public virtual string PhotoUrl
         {
@@ -955,7 +956,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -965,12 +966,12 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the aliases for this person
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">aliases</see> for this person.
         /// </summary>
         /// <value>
         /// The aliases.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
@@ -1066,7 +1067,7 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -1075,34 +1076,34 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary family.
+        /// Gets or sets the <see cref="Rock.Model.Group">primary family</see>.
         /// </summary>
         /// <value>
         /// The primary family.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's primary campus.
+        /// Gets or sets the person's <see cref="Rock.Model.Campus">primary campus</see>.
         /// </summary>
         /// <value>
         /// The primary campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's default financial account gift designation.
+        /// Gets or sets the person's default <see cref="Rock.Model.FinancialAccount" /> gift designation.
         /// </summary>
         /// <value>
         /// The financial account.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
 
         /// <summary>
@@ -1390,7 +1391,7 @@ namespace Rock.Model
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual double? AgePrecise
         {
             get
@@ -1586,7 +1587,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ImpersonationParameter
         {
             get
@@ -1622,7 +1623,7 @@ namespace Rock.Model
         /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public override string UrlEncodedKey
         {
             get
@@ -2746,7 +2747,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the person image tag.
-        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead 
+        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>

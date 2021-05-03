@@ -251,9 +251,9 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         /// <summary>
-        /// Queries the MigrationHistory and the PluginMigration tables and returns 
+        /// Queries the MigrationHistory and the PluginMigration tables and returns
         /// the name (MigrationId) of the last core migration that was run and a table
-        /// listing the last plugin assembly's migration name and number that was run. 
+        /// listing the last plugin assembly's migration name and number that was run.
         /// </summary>
         /// <returns>An HTML fragment of the MigrationId of the last core migration and a table of the
         /// last plugin migrations.</returns>
@@ -268,9 +268,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             var tableResult = DbService.GetDataTable( @"
-    WITH summary AS 
+    WITH summary AS
     (
-        SELECT p.[PluginAssemblyName], p.MigrationName, p.[MigrationNumber], ROW_NUMBER() 
+        SELECT p.[PluginAssemblyName], p.MigrationName, p.[MigrationNumber], ROW_NUMBER()
             OVER( PARTITION BY p.[PluginAssemblyName] ORDER BY p.[MigrationNumber] DESC ) AS section
         FROM [PluginMigration] p
     )
@@ -536,8 +536,10 @@ namespace RockWeb.Blocks.Administration
 
             lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
             lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;
-            
+
             lLastMigrations.Text = GetLastMigrationData();
+
+            lLavaEngine.Text = RockInstanceConfig.LavaEngineName;
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );
             lTransactionQueue.Text = transactionQueueStats.Select( a => string.Format( "{0}: {1}", a.Name, a.Count ) ).ToList().AsDelimited( "<br/>" );

@@ -30,17 +30,17 @@ namespace Rock.Mobile
     {
         #region Private Fields
 
-        private const string _defaultFlyoutXaml = @"<ListView SeparatorVisibility=""None"" 
-    HasUnevenRows=""true"" 
+        private const string _defaultFlyoutXaml = @"<ListView SeparatorVisibility=""None""
+    HasUnevenRows=""true""
     ItemsSource=""{Binding MenuItems}"">
 
     <ListView.Header>
         <StackLayout VerticalOptions=""FillAndExpand""
             Orientation=""Vertical"">
 
-            <Rock:LoginStatus Padding=""20, 70, 20, 50"" 
-                ImageSize=""120"" 
-                ImageBorderColor=""rgba(255, 255, 255, 0.4)"" 
+            <Rock:LoginStatus Padding=""20, 70, 20, 50""
+                ImageSize=""120""
+                ImageBorderColor=""rgba(255, 255, 255, 0.4)""
                 ImageBorderSize=""5"" />
 
             <BoxView HeightRequest=""1"" BackgroundColor=""rgba(255, 255, 255, 0.2)""
@@ -52,14 +52,14 @@ namespace Rock.Mobile
     <ListView.ItemTemplate>
         <DataTemplate>
             <Rock:ViewCell SelectedBackgroundColor=""rgba(255, 255, 255, 0.2)"">
-            
-                <StackLayout VerticalOptions=""FillAndExpand"" 
+
+                <StackLayout VerticalOptions=""FillAndExpand""
                     Orientation=""Vertical"">
 
                     <ContentView StyleClass=""pt-16, pb-12"">
                         <Label StyleClass=""text-white, ml-32, flyout-menu-item""
-                            Text=""{Binding Title}"" 
-                            VerticalOptions=""Center"" 
+                            Text=""{Binding Title}""
+                            VerticalOptions=""Center""
                             HorizontalOptions=""FillAndExpand"" />
                     </ContentView>
 
@@ -248,5 +248,13 @@ namespace Rock.Mobile
         /// The communication view page identifier.
         /// </value>
         public int? CommunicationViewPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to enable notifications automatically.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if application should enable notifications automatically; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableNotificationsAutomatically { get; set; } = true;
     }
 }

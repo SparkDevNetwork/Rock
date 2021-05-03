@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 var attendees = GetAttendees( rockContext );
 
-                var attendeesSorted = attendees.OrderByDescending( a => a.Status == RosterAttendeeStatus.Present ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
+                var attendeesSorted = attendees.OrderByDescending( a => a.MeetsRosterStatusFilter( RosterStatusFilter.Present ) ).ThenByDescending( a => a.CheckInTime ).ThenBy( a => a.PersonGuid ).ToList();
 
                 gAttendees.DataSource = attendeesSorted;
                 gAttendees.DataBind();
@@ -300,6 +300,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             // Do the person search
             var personService = new PersonService( rockContext );
             List<int> personIds = null;
+
+            // ignore the result of reversed (LastName, FirstName vs FirstName LastName
             bool reversed = false;
 
             string searchValue = tbSearch.Text.Trim();
@@ -340,14 +342,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Get *all* of today's transactions.
                 // Not sure why we aren't filtering by PersonIds yet, but
                 // it could be to make performance more consistent in case the PersonQuery is complex.
-                var attendanceQueryList = attendanceQuery.AsNoTracking().ToList();
+                var attendanceQueryList = RosterAttendeeAttendance.Select( attendanceQuery ).ToList();
 
                 // join (in memory) matching person ids and attendances
                 var peopleAttendances = personIds
                         .GroupJoin(
                             attendanceQueryList,
                             pId => pId,
-                            a => a.PersonAlias.PersonId,
+                            a => a.PersonId,
                             ( p, a ) => a )
                         .SelectMany( a => a )
                         .Distinct()

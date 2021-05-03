@@ -29,6 +29,7 @@ using System.Web.Hosting;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -52,7 +53,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int? EntityTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
@@ -63,17 +64,17 @@ namespace Rock.Model
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
         public string UserName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the password. 
+        /// A <see cref="System.String"/> representing the password.
         /// </value>
         [MaxLength( 128 )]
         [HideFromReporting]
         public string Password { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if the UserLogin has been confirmed.
         /// </summary>
@@ -122,7 +123,7 @@ namespace Rock.Model
         [NotAudited]
         [DataMember]
         public bool? IsOnLine { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if the UserLogin is currently locked out.
         /// </summary>
@@ -150,7 +151,7 @@ namespace Rock.Model
         [NotAudited]
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the number of failed password attempts within the failed password attempt window.
         /// </summary>
@@ -188,7 +189,7 @@ namespace Rock.Model
         [DataMember]
         [HideFromReporting]
         public string ApiKey { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who this UserLogin belongs to.
         /// </summary>
@@ -217,7 +218,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -227,7 +228,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
@@ -237,7 +238,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool IsAuthenticated
         {
             get

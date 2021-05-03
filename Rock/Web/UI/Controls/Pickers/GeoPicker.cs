@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
     /// This control will create a Google map with drawring tools that
     /// allows the user to define a single point or a polygon which forms a geo-fence
     /// depending on the <see cref="Rock.Web.UI.Controls.GeoPicker.ManagerDrawingMode.Point"/>.
-    /// 
+    ///
     /// To use on a page or usercontrol:
     /// <example>
     /// <code>
@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
     ///    DbGeography point = gpGeoPoint.SelectedValue;
     /// </code>
     /// </example>
-    /// 
+    ///
     /// If you wish to set an appropriate, initial center point you can use the <see cref="CenterPoint"/> property.
     /// </summary>
     public class GeoPicker : CompositeControl, IRockControl
@@ -253,6 +253,25 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether the control should be displayed Full-Width
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable full width]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableFullWidth
+        {
+            get
+            {
+                return ViewState["EnableFullWidth"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["EnableFullWidth"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the point that map should initially be centered on
         /// </summary>
         /// <value>
@@ -260,8 +279,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public DbGeography CenterPoint
         {
-            get 
-            { 
+            get
+            {
                 string centerLat = ViewState["CenterLat"] as string;
                 string centerLong = ViewState["CenterLong"] as string;
                 if (!string.IsNullOrWhiteSpace(centerLat) && !string.IsNullOrWhiteSpace(centerLong))
@@ -446,7 +465,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <value>
         ///   A style guid as found in the defined values (e.g., Rock, Retro, Old Timey, etc.) for the Map Styles
-        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />). 
+        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />).
         /// </value>
         [
         Bindable( true ),
@@ -601,7 +620,18 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 writer.AddAttribute( "id", this.ClientID.ToString() );
-                writer.AddAttribute("class", "picker picker-geography rollover-container");
+
+                List<string> pickerClasses = new List<string>();
+                pickerClasses.Add( "picker" );
+                if ( EnableFullWidth )
+                {
+                    pickerClasses.Add( "picker-fullwidth" );
+                }
+
+                pickerClasses.Add( "picker-geography rollover-container" );
+
+                writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.Write( string.Format( @"
@@ -611,7 +641,7 @@ namespace Rock.Web.UI.Controls
                         <b class='fa fa-caret-down pull-right'></b>
                     </a>", this.ClientID, this.GeoDisplayName ) );
                 writer.WriteLine();
-                
+
                 _btnSelectNone.RenderControl( writer );
 
                 // picker menu
@@ -659,7 +689,16 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.AddAttribute( "class", "picker picker-select" );
+                List<string> pickerClasses = new List<string>();
+                pickerClasses.Add( "picker" );
+                if ( EnableFullWidth )
+                {
+                    pickerClasses.Add( "picker-fullwidth" );
+                }
+
+                pickerClasses.Add( "picker-select" );
+
+                writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
@@ -690,7 +729,7 @@ namespace Rock.Web.UI.Controls
                 GeoDisplayName = Rock.Constants.None.TextHtml;
             }
         }
-        
+
         /// <summary>
         /// Registers the java script.
         /// </summary>
@@ -852,7 +891,7 @@ if ($('#{1}').length > 0)
 
         /// <summary>
         /// Attempt to determine if the polygon is clockwise or counter-clockwise.
-        /// Thank you dominoc!  
+        /// Thank you dominoc!
         /// http://dominoc925.blogspot.com/2012/03/c-code-to-determine-if-polygon-vertices.html
         /// </summary>
         /// <param name="polygon"></param>
@@ -904,7 +943,7 @@ if ($('#{1}').length > 0)
                     errorMessage = "The selected geo-fence path is invalid.";
                     return false;
                 }
-                
+
                 if ( sqlGeography.STNumGeometries() > 1 )
                 {
                     errorMessage=  "The geo-fence has overlapping lines or is made up of multiple polygons. Only one polygon is allowed.";
@@ -945,7 +984,7 @@ if ($('#{1}').length > 0)
                 SelectGeography( sender, e );
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the select dbGeography.
         /// </summary>

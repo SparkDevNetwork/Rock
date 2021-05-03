@@ -108,6 +108,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person identifier for the specified PersonAliasGuid
+        /// </summary>
+        /// <param name="personAliasGuid">The person alias unique identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPersonId( Guid personAliasGuid )
+        {
+            return this.GetSelect( personAliasGuid, s => s.PersonId );
+        }
+
+        /// <summary>
         /// Gets the PersonAlias the by AliasPersonId
         /// </summary>
         /// <param name="aliasPersonId">The alias person identifier.</param>
@@ -121,7 +131,7 @@ namespace Rock.Model
             }
             else
             {
-                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal
                 // to that personId.  If there isn't for some reason, create it now.
                 var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonId );
                 if ( person != null )
@@ -158,7 +168,7 @@ namespace Rock.Model
             }
             else
             {
-                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal
                 // to that personId.  If there isn't for some reason, create it now.
                 var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonGuid );
                 if ( person != null )

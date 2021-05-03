@@ -19,12 +19,13 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using Rock.Extension;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
 {
     /// <summary>
-    /// Base class for merge template types (i.e. Word Document, HTML, etc) 
+    /// Base class for merge template types (i.e. Word Document, HTML, etc)
     /// </summary>
     public abstract class MergeTemplateType : Component
     {
@@ -57,7 +58,7 @@ namespace Rock.MergeTemplates
         }
 
         /// <summary>
-        /// Gets the supported file extensions 
+        /// Gets the supported file extensions
         /// Returns NULL if the file extension doesn't matter or doesn't apply
         /// Rock will use this to warn the user if the file extension isn't supported
         /// </summary>
@@ -81,7 +82,7 @@ namespace Rock.MergeTemplates
         /// <returns></returns>
         public static string GetDefaultLavaDebugInfo( List<object> mergeObjectList, Dictionary<string, object> globalMergeFields, string preText = null )
         {
-            DotLiquid.Hash debugMergeFields = new DotLiquid.Hash();
+            var debugMergeFields = new LavaDataDictionary();
 
             if ( mergeObjectList.Count >= 1 )
             {

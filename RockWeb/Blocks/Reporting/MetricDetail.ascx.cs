@@ -13,16 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
+using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Lava;
@@ -36,21 +39,84 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Metric Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of the given metric." )]
 
-    [BooleanField( "Show Chart", DefaultValue = "true" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes: "Last,Previous,Current,DateRange" )]
-    [BooleanField( "Combine Chart Series" )]
+    #region Block Attributes
+
+    [BooleanField(
+        "Show Chart",
+        Key = AttributeKey.ShowChart,
+        DefaultValue = "true",
+        Order = 0 )]
+
+    [DefinedValueField(
+        "Chart Style",
+        Key = AttributeKey.ChartStyle,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Order = 1 )]
+
+    [SlidingDateRangeField(
+        "Chart Date Range",
+        Key = AttributeKey.SlidingDateRange,
+        DefaultValue = "-1||||",
+        EnabledSlidingDateRangeTypes = "Last,Previous,Current,DateRange",
+        Order = 2 )]
+
+    [BooleanField(
+        "Combine Chart Series",
+        Key = AttributeKey.CombineChartSeries,
+        Order = 3 )]
+
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowChart = "Show Chart";
+            public const string SlidingDateRange = "SlidingDateRange";
+            public const string CombineChartSeries = "CombineChartSeries";
+            public const string ChartStyle = "ChartStyle";
+        }
+
+        #endregion
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string MetricId = "MetricId";
+            public const string MetricCategoryId = "MetricCategoryId";
+            public const string ParentCategoryId = "ParentCategoryId";
+            public const string ExpandedIds = "ExpandedIds";
+            public const string CategoryId = "CategoryId";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region ViewStateKeys
+
+        private static class ViewStateKey
+        {
+            public const string MetricPartitionsState = "MetricPartitionsState";
+        }
+
+        #endregion ViewStateKeys
+
         #region Properties
 
-        private List<MetricPartition> MetricPartitionsState { get; set; }
+        private List<MetricPartition> MetricPartitionsState { get; set; } = new List<MetricPartition>();
 
         #endregion
 
@@ -82,11 +148,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
             cpMetricCategories.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.MetricCategory ) ).Id;
 
-            lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-
             gMetricPartitions.Actions.ShowAdd = true;
             gMetricPartitions.GridReorder += gMetricPartitions_GridReorder;
             gMetricPartitions.Actions.AddClick += gMetricPartitions_AddClick;
+
+            // NOTE: moment.js must be loaded before Chart.js
+            RockPage.AddScriptLink( "~/Scripts/moment.min.js", true );
+            RockPage.AddScriptLink( "~/Scripts/Chartjs/Chart.js", true );
         }
 
         /// <summary>
@@ -100,10 +168,10 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( !Page.IsPostBack )
             {
                 // in case called normally
-                int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
+                int? metricId = PageParameter( PageParameterKey.MetricId ).AsIntegerOrNull();
 
                 // in case called from CategoryTreeView
-                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
+                int? metricCategoryId = PageParameter( PageParameterKey.MetricCategoryId ).AsIntegerOrNull();
                 MetricCategory metricCategory = null;
                 if ( metricCategoryId.HasValue )
                 {
@@ -127,7 +195,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     }
                 }
 
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
 
                 if ( metricId.HasValue )
                 {
@@ -150,7 +218,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["MetricPartitionsState"] as string;
+            string json = ViewState[ViewStateKey.MetricPartitionsState] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 MetricPartitionsState = new List<MetricPartition>();
@@ -175,11 +243,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["MetricPartitionsState"] = JsonConvert.SerializeObject( MetricPartitionsState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.MetricPartitionsState] = JsonConvert.SerializeObject( MetricPartitionsState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
 
+        #endregion Base Control Methods
         #region Events
 
         // handlers called by the controls on your block
@@ -260,10 +329,13 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             // ensure there is at least one partition
             if ( !metric.MetricPartitions.Any() )
             {
-                var metricPartition = new MetricPartition();
-                metricPartition.EntityTypeId = null;
-                metricPartition.IsRequired = true;
-                metricPartition.Order = 0;
+                var metricPartition = new MetricPartition()
+                {
+                    EntityTypeId = null,
+                    IsRequired = true,
+                    Order = 0
+                };
+
                 metric.MetricPartitions.Add( metricPartition );
             }
 
@@ -315,10 +387,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( metric.SourceValueTypeId == sourceTypeDataView )
             {
                 metric.DataViewId = dvpDataView.SelectedValueAsId();
+                metric.AutoPartitionOnPrimaryCampus = cbAutoPartionPrimaryCampus.Checked;
             }
             else
             {
                 metric.DataViewId = null;
+                metric.AutoPartitionOnPrimaryCampus = false;
             }
 
             var scheduleSelectionType = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>();
@@ -338,7 +412,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( !metric.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -356,11 +430,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 int metricScheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
                 if ( schedule == null )
                 {
-                    schedule = new Schedule();
-
-                    // make it an "Unnamed" metrics schedule
-                    schedule.Name = string.Empty;
-                    schedule.CategoryId = metricScheduleCategoryId;
+                    schedule = new Schedule()
+                    {
+                        // make it an "Unnamed" metrics schedule
+                        Name = string.Empty,
+                        CategoryId = metricScheduleCategoryId
+                    };
                 }
 
                 // if the schedule was a unique schedule (configured in the Metric UI, set the schedule's ical content to the schedule builder UI's value
@@ -402,7 +477,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     rockContext.SaveChanges();
                 }
 
-                // update MetricCategories for Metric            
+                // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
@@ -446,16 +521,16 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             } );
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["MetricId"] = metric.Id.ToString();
+            qryParams[PageParameterKey.MetricId] = metric.Id.ToString();
             if ( hfMetricCategoryId.ValueAsInt() == 0 )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
             }
 
-            qryParams["MetricCategoryId"] = hfMetricCategoryId.Value;
-            qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+            qryParams[PageParameterKey.MetricCategoryId] = hfMetricCategoryId.Value;
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -469,12 +544,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         {
             if ( hfMetricId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -572,6 +647,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 ltLastRunDateTime.Visible = isManual;
                 rcwSchedule.Visible = isManual;
             }
+
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -729,22 +806,22 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             nbSQLHelp.InnerHtml = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
 <br />
 <br />
-<h4>Example #1</h4> 
+<h4>Example #1</h4>
 Simple metric with the default partition
 <ul>
   <li>The 1st Column will be the YValue </li>
 </ul>
 
 <pre>
-SELECT COUNT(*) 
-FROM [Attendance] 
+SELECT COUNT(*)
+FROM [Attendance]
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 </pre>
 
 <br />
-<h4>Example #2</h4> 
+<h4>Example #2</h4>
 Simple metric with GroupId as the Partition.
 <ul>
   <li>The 1st Column will be the YValue </li>
@@ -756,13 +833,13 @@ SELECT COUNT(*), O.[GroupId]
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId]
 </pre>
 
 <br />
-<h4>Example #3</h4> 
+<h4>Example #3</h4>
 A metric with multiple partitions.
 <ul>
     <li>The 1st Column will be the YValue </li>
@@ -776,14 +853,14 @@ SELECT COUNT(*), O.[GroupId], A.[CampusId], O.[ScheduleId]
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
 
 <br />
-<h4>Example #4</h4> 
-A metric with multiple partitions with a specific MetricValueDateTime specified. 
+<h4>Example #4</h4>
+A metric with multiple partitions with a specific MetricValueDateTime specified.
 <ul>
     <li>The 1st Column will be the YValue </li>
     <li>If a [MetricValueDateTime] field is specified as the 2nd column, that will be the metric value date. NOTE: This should be a constant value for all rows
@@ -799,7 +876,7 @@ SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], O.[GroupId], A.[Camp
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}'
   AND StartDateTime < '{{ weekEndDate | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
@@ -808,15 +885,13 @@ NOTE: If a [MetricValueDateTime] is specified and there is already a metric valu
 <hr>
 The SQL can include Lava merge fields:";
 
-
             nbSQLHelp.InnerHtml += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
-
 
             ceSourceLava.Text = metric.SourceLava;
             nbLavaHelp.InnerHtml = @"There are several ways to design your Lava to populate the Metric Values. If you use the 'Lava' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set.
 <br />
 <br />
-<h4>Example #1</h4> 
+<h4>Example #1</h4>
 Simple metric with the default partition
 <ul>
   <li>The output will be the YValue </li>
@@ -831,7 +906,7 @@ Lava Output:
 <pre>15052</pre>
 
 <br />
-<h4>Example #2</h4> 
+<h4>Example #2</h4>
 Simple metric with a MetricValueDateTime specified
 <ul>
   <li>The 1st Column will be the YValue </li>
@@ -840,7 +915,7 @@ Simple metric with a MetricValueDateTime specified
 <br />
 Lava Template:
 <pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers' %}
-    {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }} 
+    {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }}
 {% endwebrequest %}</pre>
 
 Lava Output:
@@ -896,7 +971,6 @@ NOTE: If a [MetricValueDateTime] is specified and there is already a metric valu
 <hr>
 The Lava can include Lava merge fields:";
 
-
             nbLavaHelp.InnerHtml += metric.GetMergeObjects( RockDateTime.Now ).lavaDebugInfo();
 
             if ( metric.Schedule != null )
@@ -951,6 +1025,10 @@ The Lava can include Lava merge fields:";
             }
 
             BindMetricPartitionsGrid();
+
+            // and populate it's value, otherwise this prop is not available and should be set to false.
+            ShowHideAutoPartitionPrimaryCampus();
+            cbAutoPartionPrimaryCampus.Checked = cbAutoPartionPrimaryCampus.Visible && metric.AutoPartitionOnPrimaryCampus;
 
             metric.LoadAttributes();
             avcEditAttributeValues.AddEditControls( metric, Rock.Security.Authorization.EDIT, CurrentPerson );
@@ -1009,13 +1087,7 @@ The Lava can include Lava merge fields:";
             SetEditMode( false );
             hfMetricId.SetValue( metric.Id );
 
-            lcMetricsChart.Visible = GetAttributeValue( "ShowChart" ).AsBooleanOrNull() ?? true;
-
-            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "-1||" );
-            lcMetricsChart.StartDate = chartDateRange.Start;
-            lcMetricsChart.EndDate = chartDateRange.End;
-            lcMetricsChart.MetricId = metric.Id;
-            lcMetricsChart.CombineValues = GetAttributeValue( "CombineChartSeries" ).AsBooleanOrNull() ?? false;
+            CreateChart( metric );
 
             lReadOnlyTitle.Text = metric.Title.FormatAsHtmlTitle();
 
@@ -1105,6 +1177,226 @@ The Lava can include Lava merge fields:";
             lblMainDetails.Text = descriptionListMain.Html;
         }
 
+        private void CreateChart( Metric metric )
+        {
+            if ( !GetAttributeValue( AttributeKey.ShowChart ).AsBoolean() )
+            {
+                pnlActivityChart.Visible = false;
+                return;
+            }
+
+            var chartFactory = GetChartJsFactory( metric );
+            pnlActivityChart.Visible = chartFactory.HasData && GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
+            nbActivityChartMessage.Visible = !chartFactory.HasData;
+
+            if ( !chartFactory.HasData )
+            {
+                nbActivityChartMessage.Text = "There are no completed Steps matching the current filter.";
+                return;
+            }
+
+            // Add client script to construct the chart.
+            var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                SizeToFitContainerWidth = true,
+                MaintainAspectRatio = false,
+                LineTension = 0m
+            } );
+
+            string script = string.Format(
+                @"
+            var barCtx = $('#{0}')[0].getContext('2d');
+            var barChart = new Chart(barCtx, {1});",
+                                    chartCanvas.ClientID,
+                                    chartDataJson );
+
+            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "stepProgramActivityChartScript", script, true );
+        }
+
+        /// <summary>
+        /// Gets a configured factory that creates the data required for the chart.
+        /// </summary>
+        /// <returns></returns>
+        private ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( Metric metric )
+        {
+            var reportPeriod = new TimePeriod( GetAttributeValue( AttributeKey.SlidingDateRange ) ?? "-1||" );
+
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate.HasValue )
+            {
+                startDate = startDate.Value.Date;
+            }
+
+            List<MetricValue> metricValues = GetMetricValues( metric, startDate, endDate );
+
+            // Initialize a new Chart Factory.
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+
+            factory.TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Auto;
+            var dataPoints = metricValues
+               .Where( a => a.YValue.HasValue )
+               .GroupBy( x => new
+               {
+                   DateKey = x.MetricValueDateKey.Value,
+                   MetricValuePartitionEntityIds = x.MetricValuePartitionEntityIds
+               } )
+               .Select( x => new
+               {
+                   x.Key,
+                   Value = x.Select( a => a.YValue.Value )
+               } )
+               .ToList()
+               .Select( x => new ChartDatasetInfo
+               {
+                   MetricValuePartitionEntityIds = x.Key.MetricValuePartitionEntityIds,
+                   DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
+                       Value = x.Value.Sum()
+               } );
+
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line;
+
+            var dataSeriesDatasets = dataPoints
+                .Select( x => x.MetricValuePartitionEntityIds )
+                .Distinct();
+
+            var combineValues = GetAttributeValue( AttributeKey.CombineChartSeries ).AsBooleanOrNull() ?? false;
+            if ( combineValues )
+            {
+                var dataset = new ChartJsTimeSeriesDataset();
+
+                dataset.Name = metric.YAxisLabel ?? "value";
+
+                dataset.DataPoints = dataPoints
+                    .GroupBy( a => a.DateTime )
+                    .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.Key, Value = x.Select( a => a.Value ).Sum() } )
+                    .Cast<IChartJsTimeSeriesDataPoint>()
+                    .ToList();
+
+                factory.Datasets.Add( dataset );
+            }
+            else
+            {
+                var seriesNameKeyValue = new Dictionary<string, string>();
+                foreach ( var dataSeriesDataset in dataSeriesDatasets )
+                {
+                    var seriesNamValue = GetSeriesPartitionName( dataSeriesDataset );
+                    seriesNameKeyValue.Add( dataSeriesDataset, seriesNamValue );
+                }
+
+                foreach ( var dataseriesName in seriesNameKeyValue.Keys )
+                {
+                    var dataset = new ChartJsTimeSeriesDataset();
+                    var datasetName = seriesNameKeyValue[dataseriesName] ?? metric.YAxisLabel ?? "value";
+                    dataset.Name = datasetName;
+                    dataset.DataPoints = dataPoints
+                                            .Where( x => x.MetricValuePartitionEntityIds == dataseriesName )
+                                            .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.Value } )
+                                            .Cast<IChartJsTimeSeriesDataPoint>()
+                                            .ToList();
+
+                    factory.Datasets.Add( dataset );
+                }
+            }
+
+            return factory;
+        }
+
+        private static List<MetricValue> GetMetricValues( Metric metric, DateTime? startDate, DateTime? endDate )
+        {
+            // include MetricValuePartitions and each MetricValuePartition's MetricPartition so that MetricValuePartitionEntityIds doesn't have to lazy load
+            var metricValuesQry = new MetricValueService( new RockContext() )
+                .Queryable()
+                .Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) )
+                .Where( a => a.MetricId == metric.Id );
+
+            if ( startDate.HasValue )
+            {
+                metricValuesQry = metricValuesQry.Where( a => a.MetricValueDateTime >= startDate.Value );
+            }
+
+            if ( endDate.HasValue )
+            {
+                metricValuesQry = metricValuesQry.Where( a => a.MetricValueDateTime <= endDate.Value );
+            }
+
+            metricValuesQry = metricValuesQry.OrderBy( a => a.MetricValueDateTime );
+
+            var metricValues = metricValuesQry.ToList();
+            return metricValues;
+        }
+
+        private string GetSeriesPartitionName( string dataSeriesDataset )
+        {
+            var seriesNamValue = string.Empty;
+
+            var rockContext = new RockContext();
+            List<string> seriesPartitionValues = new List<string>();
+
+            var entityTypeEntityIdList = dataSeriesDataset
+                .SplitDelimitedValues( "," )
+                .Select( a => a.Split( '|' ) )
+                .Select( a =>
+                new
+                {
+                    EntityTypeId = a[0].AsIntegerOrNull(),
+                    EntityId = a[1].AsIntegerOrNull()
+                } );
+
+            foreach ( var entityTypeEntity in entityTypeEntityIdList )
+            {
+                if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
+                {
+                    var entityTypeCache = EntityTypeCache.Get( entityTypeEntity.EntityTypeId.Value );
+                    if ( entityTypeCache != null )
+                    {
+                        if ( entityTypeCache.Id == EntityTypeCache.GetId<Campus>() )
+                        {
+                            var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
+                            if ( campus != null )
+                            {
+                                seriesPartitionValues.Add( campus.Name );
+                            }
+                        }
+                        else if ( entityTypeCache.Id == EntityTypeCache.GetId<DefinedValue>() )
+                        {
+                            var definedValue = DefinedValueCache.Get( entityTypeEntity.EntityId.Value );
+                            if ( definedValue != null )
+                            {
+                                seriesPartitionValues.Add( definedValue.ToString() );
+                            }
+                        }
+                        else
+                        {
+                            Type[] modelType = { entityTypeCache.GetEntityType() };
+                            Type genericServiceType = typeof( Rock.Data.Service<> );
+                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                            var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                            var result = getMethod.Invoke( serviceInstance, new object[] { entityTypeEntity.EntityId } );
+                            if ( result != null )
+                            {
+                                seriesPartitionValues.Add( result.ToString() );
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( seriesPartitionValues.Any() )
+            {
+                seriesNamValue = seriesPartitionValues.AsDelimited( "," );
+            }
+            else
+            {
+                seriesNamValue = null;
+            }
+
+            return seriesNamValue;
+        }
+
         /// <summary>
         /// Sets the edit mode.
         /// </summary>
@@ -1162,6 +1454,18 @@ The Lava can include Lava merge fields:";
             {
                 ddlMetricPartitionDefinedTypePicker.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
+        }
+
+        /// <summary>
+        /// If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox
+        /// </summary>
+        private void ShowHideAutoPartitionPrimaryCampus()
+        {
+            // If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox and populate it's value, otherwise this prop is not available and should be set to false.
+            cbAutoPartionPrimaryCampus.Visible = dvpDataView.Visible == true
+                && dvpDataView.SelectedValueAsId() != null
+                && MetricPartitionsState.Count == 1
+                && MetricPartitionsState[0].EntityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.CAMPUS );
         }
 
         #endregion
@@ -1252,6 +1556,7 @@ The Lava can include Lava merge fields:";
             MetricPartitionsState.RemoveEntity( rowGuid );
 
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -1363,8 +1668,8 @@ The Lava can include Lava merge fields:";
             }
 
             MetricPartitionsState.Add( metricPartition );
-
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
             mdMetricPartitionDetail.Hide();
         }
 
@@ -1411,7 +1716,19 @@ The Lava can include Lava merge fields:";
         #region block specific enums
 
         /// <summary>
-        /// 
+        /// Stores information about a dataset to be displayed on a chart.
+        /// </summary>
+        private class ChartDatasetInfo
+        {
+            public string MetricValuePartitionEntityIds { get; set; }
+
+            public DateTime DateTime { get; set; }
+
+            public decimal Value { get; set; }
+        }
+
+        /// <summary>
+        ///
         /// </summary>
         public enum ScheduleSelectionType
         {
@@ -1420,5 +1737,10 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
+
+        protected void dvpDataView_SelectItem( object sender, EventArgs e )
+        {
+            ShowHideAutoPartitionPrimaryCampus();
+        }
     }
 }

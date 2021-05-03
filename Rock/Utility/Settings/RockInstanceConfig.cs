@@ -131,5 +131,16 @@ namespace Rock.Utility.Settings
                 return _serviceInstance.IsClustered;
             }
         }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public static string LavaEngineName
+        {
+            get
+            {
+                return _serviceInstance.LavaEngineName;
+            }
+        }
     }
 }

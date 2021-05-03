@@ -39,7 +39,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            Sql( MigrationSQL._201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder );
+            //Sql( MigrationSQL._201804272301456_MergeFromV7_4_spCrm_PersonDuplicateFinder );
         }
     }
 }

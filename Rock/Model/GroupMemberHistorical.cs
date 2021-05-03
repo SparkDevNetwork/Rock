@@ -44,7 +44,7 @@ namespace Rock.Model
         public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets GroupId for this group member record at this point in history
+        /// Gets or sets <see cref="Rock.Model.Group">GroupId</see> for this group member record at this point in history
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -166,7 +166,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group member for this group member historical record
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/> for this group member historical record
         /// </summary>
         /// <value>
         /// The group member.
@@ -175,7 +175,7 @@ namespace Rock.Model
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets or sets the group for this group member record at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Group"/> for this group member record at this point in history
         /// </summary>
         /// <value>
         /// The group.
@@ -184,7 +184,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member at this point in history
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member at this point in history
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -193,7 +193,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group role for this group member at this point in history
+        /// Gets or sets the <see cref="Rock.Model.GroupTypeRole"/> for this group member at this point in history
         /// </summary>
         /// <value>
         /// The group role.

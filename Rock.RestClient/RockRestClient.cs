@@ -26,11 +26,11 @@ using Newtonsoft.Json;
 namespace Rock.Net
 {
     /// <summary>
-    /// The RestClient that the WPF CheckScanner and StatementGenerator use. 
+    /// The RestClient that the WPF CheckScanner and StatementGenerator use.
     /// NOTE: If you are developing a new app, use RestSharp instead of this class
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
-    [Obsolete( " Use RestSharp.RestClient instead. You might also want to use the RestSharp.NewtonSoft.Json nuget package too." )]
+    //[Obsolete( " Use RestSharp.RestClient instead. You might also want to use the RestSharp.NewtonSoft.Json nuget package too." )]
     public class RockRestClient : WebClient
     {
         /// <summary>
@@ -148,7 +148,7 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class IdResult
         {
@@ -572,8 +572,8 @@ namespace Rock.Net
         /// <returns></returns>
         public static string ToJson( object obj )
         {
-            return JsonConvert.SerializeObject( 
-                obj, 
+            return JsonConvert.SerializeObject(
+                obj,
                 Formatting.Indented,
                 new JsonSerializerSettings()
                 {
@@ -583,7 +583,7 @@ namespace Rock.Net
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class HttpErrorException : Exception
     {

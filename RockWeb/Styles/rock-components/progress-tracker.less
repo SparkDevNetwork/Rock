@@ -1,0 +1,158 @@
+.progress-tracker {
+  display: flex;
+  border: 1px solid @panel-border;
+  background: @white;
+  border-radius: @border-radius-base;
+}
+
+.progress-tracker-container {
+  flex-grow: 1;
+  overflow: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.progress-steps {
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-step {
+  display: flex;
+  flex: 1 1 0;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+}
+
+.progress-tracker-arrow {
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 14px;
+  color: @panel-border;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.progress-step-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 6px 12px 6px 8px;
+  line-height: 1.25;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: @gray-light;
+  position: relative;
+
+  // &:hover {
+  //   color: #9ca3af;
+  // }
+}
+
+.progress-tracker-icon {
+  display: flex;
+  background: @brand-primary;
+  color: @white;
+  justify-content: center;
+  align-items: center;
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  transition-property: background-color, border-color, color, fill, stroke,
+    opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  margin-right: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 1px 0 0 0;
+
+  // .progress-step-link:hover & {
+  //   background: #d15d10;
+  // }
+
+  &.current {
+    background: @white;
+    border: 2px solid @brand-primary;
+  }
+
+  // .progress-step-link:hover &.current {
+  //   border-color: #d15d10;
+  //   background: @white
+  // }
+
+  &.upcoming {
+    background: @white;
+    border: 2px solid @gray-light;
+  }
+
+  // .progress-step-link:hover &.upcoming {
+  //   background: @white;
+  //   border-color: @gray;
+  // }
+}
+
+.progress-tracker-more {
+  flex: 0 1 auto;
+  min-width: 56px;
+
+  .progress-step-link {
+    font-size: 24px;
+    padding: 4px 14px;
+  }
+}
+
+.progress-tracker-details {
+  margin-top: 2px;
+  min-width: 0;
+}
+
+.progress-tracker-title {
+  color: @text-color;
+}
+
+.progress-tracker-subtitle {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: @text-muted;
+  margin: 0;
+  font-weight: 400;
+}
+
+.remaining-time {
+  position: relative;
+  margin-left: auto;
+  padding: 6px 20px;
+  text-align: center;
+  border-left: 1px solid @panel-border;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.remaining-time-title {
+  font-size: 12px;
+  white-space: nowrap;
+  color: @text-muted;
+  line-height: 14px;
+}
+
+.remaining-time-countdown {
+  line-height: 1;
+  color: @brand-primary;
+  font-weight: 500;
+  margin: 0;
+}

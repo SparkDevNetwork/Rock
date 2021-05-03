@@ -120,7 +120,7 @@ namespace Rock.Model
         public virtual EntityType ProviderEntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the binary file.
+        /// Gets or sets the type of the <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <value>
         /// The type of the binary file.
@@ -149,7 +149,7 @@ namespace Rock.Model
         public virtual SystemCommunication InviteSystemCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the documents.
+        /// Gets or sets the <see cref="Rock.Model.SignatureDocument">documents</see>.
         /// </summary>
         /// <value>
         /// The documents.

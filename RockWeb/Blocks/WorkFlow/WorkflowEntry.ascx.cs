@@ -285,6 +285,20 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             using ( var personEntryRockContext = new RockContext() )
             {
                 GetWorkflowFormPersonEntryValues( personEntryRockContext );
@@ -1104,17 +1118,17 @@ namespace RockWeb.Blocks.WorkFlow
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 
                     /* 2020-11-16 MDP
-                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them 
+                     *  It is possible that the Spouse label could be something other than spouse. So, we won't prevent them
                      *  from changing the Marital status on the two people. However, this should be considered a mis-use of this feature.
-                     *  Unexpected things could happen. 
-                     *  
+                     *  Unexpected things could happen.
+                     *
                      *  Example of what would happen if 'Daughter' was the label for 'Spouse':
                      *  Ted Decker is Person1, and Cindy Decker gets auto-filled as Person2. but since the label is 'Daughter', he changes
                      *  Cindy's information to Alex Decker's information, then sets Marital status to Single.
-                     *  
+                     *
                      *  This would result in Ted Decker no longer having Cindy as his spouse (and vice-versa). This was discussed on 2020-11-13
                      *  and it was decided we shouldn't do anything to prevent this type of problem.
-                     
+
                      */
                     personEntryPersonSpouse.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
                     personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;

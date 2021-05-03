@@ -307,11 +307,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-
         #endregion Note Options
 
         #region Properties
-
 
         /// <summary>
         /// Returns the ViewState StateBag of the NoteContainer
@@ -340,7 +338,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                _noteOptions = _noteOptions ?? new NoteOptions(this);
+                _noteOptions = _noteOptions ?? new NoteOptions( this );
                 return _noteOptions;
             }
 
@@ -459,7 +457,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the current display count. Only applies if notes are in descending order. 
+        /// Gets or sets the current display count. Only applies if notes are in descending order.
         /// If notes are displayed in ascending order, all notes will always be displayed
         /// </summary>
         public int DisplayCount
@@ -557,6 +555,20 @@ namespace Rock.Web.UI.Controls
                             noteId = parameters.AsIntegerOrNull();
                             WatchNote( noteId, false );
                             break;
+
+                        case "EditNote":
+                            noteId = parameters.AsIntegerOrNull();
+                            EditNote( noteId );
+                            break;
+
+                        case "ReplyToNote":
+                            var parentNoteId = parameters.AsIntegerOrNull();
+                            ReplyToNote( parentNoteId );
+                            break;
+
+                        case "AddNote":
+                            AddNote();
+                            break;
                     }
                 }
             }
@@ -652,7 +664,7 @@ namespace Rock.Web.UI.Controls
                     if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         string errorMessage;
-                        if ( service.CanDeleteChildNotes(note, currentPerson, out errorMessage) && service.CanDelete( note, out errorMessage ) )
+                        if ( service.CanDeleteChildNotes( note, currentPerson, out errorMessage ) && service.CanDelete( note, out errorMessage ) )
                         {
                             service.Delete( note, true );
                             rockContext.SaveChanges();
@@ -704,6 +716,50 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds the note.
+        /// </summary>
+        private void AddNote()
+        {
+            var note = new Note();
+            note.CreatedByPersonAlias = this.RockBlock()?.CurrentPersonAlias;
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
+        }
+
+        /// <summary>
+        /// Edits the note.
+        /// </summary>
+        /// <param name="noteId">The note identifier.</param>
+        private void EditNote( int? noteId )
+        {
+            if ( !noteId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var noteService = new NoteService( rockContext );
+            var note = noteService.Get( noteId.Value );
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
+        }
+
+        /// <summary>
+        /// Replies to note.
+        /// </summary>
+        /// <param name="parentNoteId">The parent note identifier.</param>
+        private void ReplyToNote( int? parentNoteId )
+        {
+            var note = new Note();
+            note.ParentNoteId = parentNoteId;
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
         }
 
         /// <summary>
@@ -869,10 +925,10 @@ namespace Rock.Web.UI.Controls
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyMember control.
+        /// Handles the SaveButtonClick event of the note control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="NoteEventArgs"/> instance containing the event data.</param>
         protected void note_SaveButtonClick( object sender, NoteEventArgs e )
         {
             EnsureChildControls();

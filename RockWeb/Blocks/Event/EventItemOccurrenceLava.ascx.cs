@@ -148,13 +148,12 @@ namespace RockWeb.Blocks.Event
                     qry = qry.Where( i => i.Linkages.Any( l => l.UrlSlug == registrationSlug ) );
                 }
 
-
                 eventItemOccurrence = qry.FirstOrDefault();
 
                 registrationCounts = qry
                     .SelectMany( o => o.Linkages )
                     .SelectMany( l => l.RegistrationInstance.Registrations )
-                    .Select( r => new { r.RegistrationInstanceId, RegistrantCount = r.Registrants.Where( reg => reg.OnWaitList ).Count() } )
+                    .Select( r => new { r.RegistrationInstanceId, RegistrantCount = r.Registrants.Where( reg => !reg.OnWaitList ).Count() } )
                     .GroupBy( r => r.RegistrationInstanceId )
                     .Select( r => new { RegistrationInstanceId = r.Key, TotalRegistrantCount = r.Sum( rr => rr.RegistrantCount ) } )
                     .ToDictionary( r => r.RegistrationInstanceId, r => r.TotalRegistrantCount );
@@ -225,7 +224,7 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "RegistrationStatusLabel", registrationStatusLabels.Values.FirstOrDefault() );
 
 
-                // Status of each registration instance 
+                // Status of each registration instance
                 mergeFields.Add( "RegistrationStatusLabels", registrationStatusLabels );
 
                 mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );

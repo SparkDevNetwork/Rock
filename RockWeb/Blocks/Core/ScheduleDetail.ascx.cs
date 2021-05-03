@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             hfScheduleId.Value = schedule.Id.ToString();
-            
+
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -428,13 +428,6 @@ namespace RockWeb.Blocks.Core
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
             hlInactive.Visible = schedule.IsActive == false;
 
-            string occurrenceText = string.Empty;
-            var occurrences = schedule.GetICalOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
-            if ( occurrences.Any() )
-            {
-                occurrenceText = GetOccurrenceText( occurrences[0] );
-            }
-
             if ( schedule.CategoryId.HasValue )
             {
                 var today = RockDateTime.Today;
@@ -466,7 +459,7 @@ namespace RockWeb.Blocks.Core
             {
                 friendlyText = string.Format( "<label class='label label-warning'>{0}</label> <i class='fa fa-exclamation-triangle text-warning'></i>", friendlyText );
             }
-            
+
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
@@ -484,7 +477,7 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = descriptionList.Html;
-            
+
             schedule.LoadAttributes();
             Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
         }

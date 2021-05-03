@@ -34,14 +34,15 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents an individual webpage in Rock. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
     /// consists of one or more content area zones. Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
-    /// 
-    /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
+    ///
+    /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the
     /// page hierarchy is used to create the SiteMap.
     /// </summary>
     [RockDomain( "CMS" )]
@@ -119,7 +120,7 @@ namespace Rock.Model
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if view state should be enabled on the page. 
+        /// Gets or sets a flag indicating if view state should be enabled on the page.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if view state should be enabled on the page, otherwise <c>false</c>.
@@ -197,11 +198,11 @@ namespace Rock.Model
         /// Gets or sets a value indicating when the Page should be displayed in the navigation.
         /// </summary>
         /// <value>
-        /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation 
+        /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation
         /// 0 = When Security Allows
         /// 1 = Always
-        /// 3 = Never   
-        /// 
+        /// 3 = Never
+        ///
         /// Enum[DisplayInNavWhen].
         /// </value>
         [Required]
@@ -300,7 +301,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page 
+        /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the Page description.
@@ -318,7 +319,7 @@ namespace Rock.Model
         public string KeyWords { get; set; }
 
         /// <summary>
-        /// Gets or sets html content to add to the page header area of the page when rendered.
+        /// Gets or sets HTML content to add to the page header area of the page when rendered.
         /// </summary>
         /// <value>
         /// The content of the header.
@@ -460,16 +461,16 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Page"/> entity for the parent Page
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon binary file.
+        /// Gets or sets the icon <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
         /// <value>
         /// The icon binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
@@ -496,7 +497,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Layout"/> entity that the Page is using
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Layout Layout { get; set; }
 
         /// <summary>
@@ -564,7 +565,7 @@ namespace Rock.Model
         /// Gets or sets a collection of <see cref="Rock.Model.PageContext" /> entities that are used on this page.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.PageContext"/> entities that are used on the page. 
+        /// A collection of <see cref="Rock.Model.PageContext"/> entities that are used on the page.
         /// </value>
         [DataMember]
         public virtual ICollection<PageContext> PageContexts
@@ -576,7 +577,7 @@ namespace Rock.Model
         private ICollection<PageContext> _pageContexts;
 
         /// <summary>
-        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless 
+        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless
         /// explicitly overridden.  If there is no parent page, it is inherited from the site (through the layout)
         /// </summary>
         /// <value>

@@ -101,8 +101,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
             gDataViewResults.GridRebind += gDataViewResults_GridRebind;
 
-            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
-            //// note: this only makes a difference on Postback, not on the initial page visit
+            //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )

@@ -25,8 +25,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
-using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -44,20 +42,34 @@ namespace RockWeb.Blocks.Finance
 
     [LinkedPage(
         "Detail Page",
+        Description = "The transaction detail page",
+        DefaultValue = Rock.SystemGuid.Page.TRANSACTION_DETAIL_TRANSACTIONS,
         Order = 0,
         Key = AttributeKey.TransactionPage )]
 
+    [LinkedPage(
+        "Config Page",
+        Description = "The page to configure what criteria should be used to generate alerts.",
+        Order = 1,
+        Key = AttributeKey.ConfigPage )]
+
     #endregion  Block Attributes
+
     public partial class GivingAnalyticsAlerts : RockBlock
     {
         #region Attribute Keys
 
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
         private static class AttributeKey
         {
             public const string TransactionPage = "TransactionPage";
+            public const string ConfigPage = "ConfigPage";
         }
 
         #endregion Attribute Keys
+
         #region Page Parameter Constants
 
         private static class PageParameterKey
@@ -66,6 +78,11 @@ namespace RockWeb.Blocks.Finance
             /// The person identifier
             /// </summary>
             public const string PersonGuid = "PersonGuid";
+
+            /// <summary>
+            /// The person identifier
+            /// </summary>
+            public const string PersonId = "PersonId";
 
             /// <summary>
             /// The campus identifier
@@ -112,6 +129,9 @@ namespace RockWeb.Blocks.Finance
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlAlerts );
+
+            // Only show the config page if configured
+            lbConfig.Visible = !GetAttributeValue( AttributeKey.ConfigPage ).IsNullOrWhiteSpace();
         }
 
         /// <summary>
@@ -132,6 +152,16 @@ namespace RockWeb.Blocks.Finance
         #endregion Control Methods
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbConfig control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbConfig_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.ConfigPage );
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -295,7 +325,11 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            bool isAlertByAmountRaised = IsAlertByAmountRaised( alert );
+            // Determine if the alert was caused by amount, frequency, or both
+            var reasons = alert.ReasonsKey.FromJsonOrNull<string[]>() ?? new string[0];
+            var isFrequencyAlert = reasons.Contains( nameof( FinancialTransactionAlertType.FrequencySensitivityScale ) );
+            var isAmountAlert = reasons.Contains( nameof( FinancialTransactionAlertType.AmountSensitivityScale ) );
+
             if ( alert.Amount.HasValue )
             {
                 var lGiftAmount = e.Row.FindControl( "lGiftAmount" ) as Literal;
@@ -317,7 +351,7 @@ namespace RockWeb.Blocks.Finance
                 var lAmountMedian = e.Row.FindControl( "lAmountMedian" ) as Literal;
                 if ( lAmountMedian != null && alert.AmountCurrentMedian.HasValue )
                 {
-                    if ( isAlertByAmountRaised && !isExporting )
+                    if ( isAmountAlert && !isExporting )
                     {
                         lAmountMedian.Text = string.Format( "<span class='label label-{1}'>{0}</span>", ( alert.Amount - alert.AmountCurrentMedian ).FormatAsCurrency(), cssClass );
                     }
@@ -331,7 +365,7 @@ namespace RockWeb.Blocks.Finance
             var lDaysMean = e.Row.FindControl( "lDaysMean" ) as Literal;
             if ( lDaysMean != null && alert.FrequencyDifferenceFromMean.HasValue )
             {
-                if ( !isAlertByAmountRaised && !isExporting )
+                if ( isFrequencyAlert && !isExporting )
                 {
                     lDaysMean.Text = string.Format( "<span class='label label-{1}'>{0}</span>", alert.FrequencyDifferenceFromMean, cssClass );
                 }
@@ -344,13 +378,27 @@ namespace RockWeb.Blocks.Finance
             var lAmtMeasures = e.Row.FindControl( "lAmtMeasures" ) as Literal;
             if ( lAmtMeasures != null )
             {
-                lAmtMeasures.Text = string.Format( "{0}<span class='small text-muted'> {1} IQR</span>", alert.AmountCurrentMedian.FormatAsCurrency(), alert.AmountCurrentIqr );
+                var amountMeasures = alert.AmountIqrMultiplier ?? 0m;
+                var amountMeasuresText = amountMeasures > 100 ?
+                    string.Format( "<span title='{0:N1}'>HIGH</span>", amountMeasures ) :
+                    amountMeasures < -100 ?
+                        string.Format( "<span title='{0:N1}'>LOW</span>", amountMeasures ) :
+                        amountMeasures.ToString( "N1" );
+
+                lAmtMeasures.Text = string.Format( "{0}<span class='small text-muted'> ${1:N0} IQR</span>", amountMeasuresText, alert.AmountCurrentIqr ?? 0m );
             }
 
             var lFreqMeasures = e.Row.FindControl( "lFreqMeasures" ) as Literal;
             if ( lFreqMeasures != null )
             {
-                lFreqMeasures.Text = string.Format( "{0}<span class='small text-muted'> {1} IQR</span>", alert.FrequencyCurrentMean, alert.FrequencyCurrentStandardDeviation );
+                var frequencyMeasures = alert.FrequencyZScore ?? 0m;
+                var frequencyMeasuresText = frequencyMeasures > 100 ?
+                    string.Format( "<span title='{0:N1}'>HIGH</span>", frequencyMeasures ) :
+                    frequencyMeasures < -100 ?
+                        string.Format( "<span title='{0:N1}'>LOW</span>", frequencyMeasures ) :
+                        frequencyMeasures.ToString( "N1" );
+
+                lFreqMeasures.Text = string.Format( "{0}<span class='small text-muted'> {1:N1}d σ</span>", frequencyMeasuresText, alert.FrequencyCurrentStandardDeviation ?? 0m );
             }
         }
 
@@ -364,6 +412,13 @@ namespace RockWeb.Blocks.Finance
         private int? GetPerson( RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
+            var personId = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
+            if ( personId.HasValue )
+            {
+                return personId;
+            }
+
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
 
             if ( personGuid.HasValue )
@@ -433,7 +488,6 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                cpCampus.ForceVisible = true;
                 cpCampus.SelectedCampusId = gfAlertFilter.GetUserPreference( FilterKey.Campus ).AsIntegerOrNull();
             }
         }
@@ -500,6 +554,14 @@ namespace RockWeb.Blocks.Finance
             {
                 personId = ppPerson.SelectedValue;
             }
+            else if ( personId.HasValue && !ppPerson.Visible )
+            {
+                var personField = gAlertList.ColumnsOfType<RockBoundField>().Where( a => a.HeaderText == "Name" ).FirstOrDefault();
+                if ( personField != null )
+                {
+                    personField.Visible = false;
+                }
+            }
 
             if ( personId.HasValue )
             {
@@ -537,38 +599,21 @@ namespace RockWeb.Blocks.Finance
                 financialTransactionAlertQry = financialTransactionAlertQry
                         .Where( a => a.FinancialTransactionAlertType.CampusId.HasValue || a.FinancialTransactionAlertType.CampusId == campusId.Value );
             }
+            else if ( CampusCache.All().Count == 1 )
+            {
+                // Hide the campus field if there is only one campus in the system
+                var campusField = gAlertList.ColumnsOfType<RockBoundField>().Where( a => a.HeaderText == "Campus" ).FirstOrDefault();
+
+                if ( campusField != null )
+                {
+                    campusField.Visible = false;
+                }
+            }
 
             gAlertList.EntityTypeId = EntityTypeCache.Get<FinancialTransactionAlert>().Id;
             var sortProperty = gAlertList.SortProperty;
             gAlertList.DataSource = sortProperty != null ? financialTransactionAlertQry.Sort( sortProperty ).ToList() : financialTransactionAlertQry.OrderByDescending( p => p.AlertDateTime ).ToList();
             gAlertList.DataBind();
-        }
-
-        private bool IsAlertByAmountRaised( FinancialTransactionAlert alert )
-        {
-            if ( alert.Amount.HasValue &&
-                ( alert.FinancialTransactionAlertType.MinimumGiftAmount.HasValue || alert.FinancialTransactionAlertType.MaximumGiftAmount.HasValue ) )
-            {
-                var minimumGiftAmount = alert.FinancialTransactionAlertType.MinimumGiftAmount ?? 0.00M;
-                var maximumGiftAmount = alert.FinancialTransactionAlertType.MaximumGiftAmount ?? decimal.MaxValue;
-                if ( alert.Amount >= minimumGiftAmount && alert.Amount <= maximumGiftAmount )
-                {
-                    return true;
-                }
-            }
-
-            if ( alert.AmountCurrentMedian.HasValue &&
-                ( alert.FinancialTransactionAlertType.MinimumMedianGiftAmount.HasValue || alert.FinancialTransactionAlertType.MaximumMedianGiftAmount.HasValue ) )
-            {
-                var minimumMedianGiftAmount = alert.FinancialTransactionAlertType.MinimumMedianGiftAmount ?? 0.00M;
-                var maximumMedianGiftAmount = alert.FinancialTransactionAlertType.MaximumMedianGiftAmount ?? decimal.MaxValue;
-                if ( alert.AmountCurrentMedian >= minimumMedianGiftAmount && alert.AmountCurrentMedian <= maximumMedianGiftAmount )
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         #endregion Internal Methods

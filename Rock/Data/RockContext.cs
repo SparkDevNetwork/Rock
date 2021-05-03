@@ -380,7 +380,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-                
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
@@ -926,6 +926,14 @@ namespace Rock.Data
         public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial statement templates.
+        /// </summary>
+        /// <value>
+        /// The financial statement templates.
+        /// </value>
+        public DbSet<FinancialStatementTemplate> FinancialStatementTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
@@ -1284,6 +1292,30 @@ namespace Rock.Data
         /// the Location.
         /// </value>
         public DbSet<Location> Locations { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media accounts.
+        /// </summary>
+        /// <value>
+        /// The media accounts.
+        /// </value>
+        public DbSet<MediaAccount> MediaAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media elements.
+        /// </summary>
+        /// <value>
+        /// The media elements.
+        /// </value>
+        public DbSet<MediaElement> MediaElements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media folders.
+        /// </summary>
+        /// <value>
+        /// The media folders.
+        /// </value>
+        public DbSet<MediaFolder> MediaFolders { get; set; }
 
         /// <summary>
         /// Gets or sets the merge templates.

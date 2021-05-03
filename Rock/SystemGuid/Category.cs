@@ -118,6 +118,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";
 
+        /// <summary>
+        /// History of connection request changes
+        /// </summary>
+        public const string HISTORY_CONNECTION_REQUEST = "A8542DD2-91B1-4CCA-873A-D052BCD6EE06";
+
         #endregion
 
         #region Schedule Categories
@@ -161,16 +166,21 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
+        /// <summary>
+        /// The person attributes giving analytics
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = "61823196-8EA1-4C2B-A7DF-1654BD085667";
+
         #endregion
 
-        #region PowerBI 
+        #region PowerBI
 
         /// <summary>
         /// The category for defined types for PowerBI
         /// </summary>
         public const string POWERBI_DEFINED_TYPE = "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C";
 
-        #endregion 
+        #endregion
 
         #region Group Categories (for a specific group type)
 

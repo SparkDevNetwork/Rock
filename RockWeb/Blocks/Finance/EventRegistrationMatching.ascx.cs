@@ -132,6 +132,13 @@ namespace RockWeb.Blocks.Finance
 
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < 185 )
+            {
+                sm.AsyncPostBackTimeout = 185;
+                Server.ScriptTimeout = 185;
+            }
         }
 
         /// <summary>
@@ -324,6 +331,7 @@ namespace RockWeb.Blocks.Finance
         {
             _financialTransactionDetailList = null;
             RockContext rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 180;
 
             List<DataControlField> tableColumns = new List<DataControlField>();
             tableColumns.Add( new RockLiteralField { ID = "lPerson", HeaderText = "Person" } );
@@ -514,6 +522,8 @@ namespace RockWeb.Blocks.Finance
         private void LoadDropDowns()
         {
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = 180;
+
             var financialBatchList = new FinancialBatchService( rockContext ).Queryable()
                 .Where( a => a.Status == BatchStatus.Open ).OrderBy( a => a.Name ).Select( a => new
                 {
@@ -535,53 +545,70 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void LoadRegistrationDropDowns()
         {
-            if ( _financialTransactionDetailList == null || !RegistrationInstanceId.HasValue )
+            try
             {
-                return;
-            }
-
-            var rockContext = new RockContext();
-            Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
-
-            var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
-            var registrationQry = new RegistrationService( new RockContext() )
-                .Queryable();
-            var registationListForInstance = registrationQry.AsNoTracking().Include( t => t.PersonAlias.Person ).Include( a => a.Registrants )
-                .Where( a => a.RegistrationInstanceId == RegistrationInstanceId.Value ).AsEnumerable();
-
-            if ( cbHideFullyPaidRegistrations.Checked )
-            {
-                registationListForInstance = registationListForInstance.Where( a => a.BalanceDue > 0 );
-            }
-
-            foreach ( var ddlRegistration in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlRegistration_" ) ) )
-            {
-                ddlRegistration.Items.Clear();
-                ddlRegistration.Items.Add( new ListItem() );
-                foreach ( var registration in registationListForInstance )
+                if ( _financialTransactionDetailList == null || !RegistrationInstanceId.HasValue )
                 {
-                    ddlRegistration.Items.Add( new ListItem( GetRegistrationName( registration, true, RegistrationInstanceId.Value ), registration.Id.ToString() ) );
+                    return;
                 }
 
-                // if there is no value, make sure the controls don't have anything selected
-                ddlRegistration.SetValue( ( int? ) null );
-            }
+                var rockContext = new RockContext();
+                rockContext.Database.CommandTimeout = 180;
 
-            var registrationList = registrationQry
-                .AsNoTracking()
-                .Include( a => a.RegistrationInstance ).Include( t => t.PersonAlias.Person ).Include( a => a.Registrants )
-                .Where( a => entityLookup.Values.Contains( a.Id ) )
-                .ToList();
+                Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
 
-            foreach ( var lMatchedRegistration in phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID != null && a.ID.StartsWith( "lMatchedRegistration_" ) ) )
-            {
-                var financialTransactionDetailId = lMatchedRegistration.ID.Replace( "lMatchedRegistration_", string.Empty ).AsInteger();
-                var registrationId = entityLookup.GetValueOrNull( financialTransactionDetailId );
-                var registration = registrationList.FirstOrDefault( a => a.Id == registrationId );
-                if ( registration != null )
+                var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
+                var registrationQry = new RegistrationService( rockContext ).Queryable();
+
+                var registationListForInstance = registrationQry
+                    .AsNoTracking()
+                    .Include( t => t.PersonAlias.Person )
+                    .Include( a => a.Registrants )
+                    .Where( a => a.RegistrationInstanceId == RegistrationInstanceId.Value )
+                    .AsEnumerable();
+
+                if ( cbHideFullyPaidRegistrations.Checked )
                 {
-                    lMatchedRegistration.Text = "<td>" + GetRegistrationName( registration, false, RegistrationInstanceId.Value ) + "</td>";
+                    registationListForInstance = registationListForInstance.Where( a => a.BalanceDue > 0 );
                 }
+
+                foreach ( var ddlRegistration in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlRegistration_" ) ) )
+                {
+                    ddlRegistration.Items.Clear();
+                    ddlRegistration.Items.Add( new ListItem() );
+                    foreach ( var registration in registationListForInstance )
+                    {
+                        ddlRegistration.Items.Add( new ListItem( GetRegistrationName( registration, true, RegistrationInstanceId.Value ), registration.Id.ToString() ) );
+                    }
+
+                    // if there is no value, make sure the controls don't have anything selected
+                    ddlRegistration.SetValue( ( int? ) null );
+                }
+
+                var registrationList = registrationQry
+                    .AsNoTracking()
+                    .Include( a => a.RegistrationInstance ).Include( t => t.PersonAlias.Person ).Include( a => a.Registrants )
+                    .Where( a => entityLookup.Values.Contains( a.Id ) )
+                    .ToList();
+
+                foreach ( var lMatchedRegistration in phTableRows.ControlsOfTypeRecursive<LiteralControl>().Where( a => a.ID != null && a.ID.StartsWith( "lMatchedRegistration_" ) ) )
+                {
+                    var financialTransactionDetailId = lMatchedRegistration.ID.Replace( "lMatchedRegistration_", string.Empty ).AsInteger();
+                    var registrationId = entityLookup.GetValueOrNull( financialTransactionDetailId );
+                    var registration = registrationList.FirstOrDefault( a => a.Id == registrationId );
+                    if ( registration != null )
+                    {
+                        lMatchedRegistration.Text = "<td>" + GetRegistrationName( registration, false, RegistrationInstanceId.Value ) + "</td>";
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                nbErrorMessage.Text = "There was a problem loading the registration drop-down lists.";
+                nbErrorMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbErrorMessage.Details = ex.Message;
+                nbErrorMessage.Visible = true;
             }
         }
 

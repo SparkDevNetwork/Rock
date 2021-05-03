@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = _canAddEditDelete;
             gList.IsDeleteEnabled = _canAddEditDelete;
 
-            // in case this is used as a Person Block, set the TargetPerson 
+            // in case this is used as a Person Block, set the TargetPerson
             TargetPerson = ContextEntity<Person>();
         }
 
@@ -148,9 +148,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
-            
+
             int entityTypeId = new BenevolenceRequest().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Finance
             {
                 AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
-            
+
         }
 
         /// <summary>
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             if ( result.Amount != null )
                             {
-                                stringBuilder.Append( string.Format( "<div class='row'>{0} ({1}{2:0.00})</div>", result.ResultTypeValue, GlobalAttributesCache.Value( "CurrencySymbol" ), result.Amount ) );
+                                stringBuilder.Append( string.Format( "<div class='row'>{0} ({1})</div>", result.ResultTypeValue, result.Amount.FormatAsCurrency() ) );
                             }
                             else
                             {
@@ -586,14 +586,14 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // Filter by First Name 
+                // Filter by First Name
                 string firstName = tbFirstName.Text;
                 if ( !string.IsNullOrWhiteSpace( firstName ) )
                 {
                     qry = qry.Where( b => b.FirstName.StartsWith( firstName ) );
                 }
 
-                // Filter by Last Name 
+                // Filter by Last Name
                 string lastName = tbLastName.Text;
                 if ( !string.IsNullOrWhiteSpace( lastName ) )
                 {
@@ -697,10 +697,10 @@ namespace RockWeb.Blocks.Finance
 
             foreach ( KeyValuePair<string, decimal> keyValuePair in resultTotals )
             {
-                phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}{2:#,##0.00}</div></div>", keyValuePair.Key, GlobalAttributesCache.Value( "CurrencySymbol" ), keyValuePair.Value ) ) );
+                phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'>{0}: </div><div class='col-xs-4 text-right'>{1}</div></div>", keyValuePair.Key, keyValuePair.Value.FormatAsCurrency() ) ) );
             }
 
-            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}{1:#,##0.00}</b></div></div>", GlobalAttributesCache.Value( "CurrencySymbol" ), grandTotal ) ) );
+            phSummary.Controls.Add( new LiteralControl( string.Format( "<div class='row'><div class='col-xs-8'><b>Total: </div><div class='col-xs-4 text-right'>{0}</b></div></div>", grandTotal.FormatAsCurrency() ) ) );
         }
 
         #endregion

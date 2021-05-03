@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// and the values selected for check-in
     /// </summary>
     [DataContract]
-    public class CheckInStatus 
+    public class CheckInStatus
     {
         /// <summary>
         /// Gets or sets a value indicating whether the search value was entered by a user (vs. scanned)
@@ -39,8 +39,8 @@ namespace Rock.CheckIn
         public bool UserEnteredSearch { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if a single family result should be confirmed 
-        /// by user.  Usually the user entered values will need to be confirmed, while the 
+        /// Gets or sets a value indicating if a single family result should be confirmed
+        /// by user.  Usually the user entered values will need to be confirmed, while the
         /// scanned values are more unique and will not need to be confirmed
         /// </summary>
         /// <value>
@@ -50,14 +50,26 @@ namespace Rock.CheckIn
         public bool ConfirmSingleFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of value that was scanned or entered (i.e. "Barcode",  
+        /// Gets or sets the type of value that was scanned or entered (i.e. "Barcode",
         /// "Phone Number", etc)
         /// </summary>
         /// <value>
         /// The type of the search.
         /// </value>
+        public DefinedValueCache SearchType
+        {
+            get
+            {
+                return searchTypeId.HasValue ? DefinedValueCache.Get( searchTypeId.Value ) : null;
+            }
+            set
+            {
+                searchTypeId = value?.Id;
+            }
+        }
+
         [DataMember]
-        public DefinedValueCache SearchType { get; set; }
+        private int? searchTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the search value that was scanned or entered by user

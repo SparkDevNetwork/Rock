@@ -51,12 +51,18 @@ namespace Rock.Model
         public bool CanDelete( Attribute item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
+            if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelAttributeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, MediaFolder.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<RegistrationTemplateFormField>( Context ).Queryable().Any( a => a.AttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, RegistrationTemplateFormField.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }

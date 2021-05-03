@@ -72,9 +72,12 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            foreach ( var cacheManager in _allManagers )
+            lock ( Obj )
             {
-                cacheManager?.Clear();
+                foreach ( var cacheManager in _allManagers )
+                {
+                    cacheManager?.Clear();
+                }
             }
 
             // Clear object cache keys
@@ -156,7 +159,7 @@ namespace Rock.Web.Cache
             {
                 _objectCacheKeyReferences = value;
             }
-        } 
+        }
         private static List<CacheKeyReference> _objectCacheKeyReferences = new List<CacheKeyReference>();
 
         /// <summary>
@@ -270,7 +273,7 @@ namespace Rock.Web.Cache
                 Expiration = expiration,
                 AllowCacheBypass = false
             };
-            
+
             return GetOrAddExisting(args);
         }
 
@@ -720,7 +723,7 @@ namespace Rock.Web.Cache
                 {
                     configurationOptions.Password = password;
                 }
-                
+
                 var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
                 return redisConnection.IsConnected;
             }

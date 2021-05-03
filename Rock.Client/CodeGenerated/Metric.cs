@@ -38,6 +38,9 @@ namespace Rock.Client
         public int? AdminPersonAliasId { get; set; }
 
         /// <summary />
+        public bool AutoPartitionOnPrimaryCampus { get; set; }
+
+        /// <summary />
         public int? DataViewId { get; set; }
 
         /// <summary />
@@ -133,6 +136,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdminPersonAliasId = source.AdminPersonAliasId;
+            this.AutoPartitionOnPrimaryCampus = source.AutoPartitionOnPrimaryCampus;
             this.DataViewId = source.DataViewId;
             this.Description = source.Description;
             this.EnableAnalytics = source.EnableAnalytics;
@@ -175,12 +179,12 @@ namespace Rock.Client
         public DefinedValue SourceValueType { get; set; }
 
         /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }

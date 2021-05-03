@@ -79,7 +79,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification.
+        /// Gets or sets the <see cref="Rock.Model.Notification"/>.
         /// </summary>
         /// <value>
         /// The notification.
@@ -87,13 +87,13 @@ namespace Rock.Model
         [DataMember]
         public virtual Notification Notification { get; set; }
 
-        #endregion       
+        #endregion
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class NotificationRecipientConfiguration : EntityTypeConfiguration<NotificationRecipient>
     {

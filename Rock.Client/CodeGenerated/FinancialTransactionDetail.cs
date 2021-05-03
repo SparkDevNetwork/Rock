@@ -53,6 +53,9 @@ namespace Rock.Client
         public decimal? FeeCoverageAmount { get; set; }
 
         /// <summary />
+        public decimal? ForeignCurrencyAmount { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -108,6 +111,7 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.FeeAmount = source.FeeAmount;
             this.FeeCoverageAmount = source.FeeCoverageAmount;
+            this.ForeignCurrencyAmount = source.ForeignCurrencyAmount;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -135,12 +139,12 @@ namespace Rock.Client
         public EntityType EntityType { get; set; }
 
         /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }

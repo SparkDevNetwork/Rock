@@ -113,26 +113,26 @@
             </div>
 
             <div class="row">
-                <asp:Panel ID="pnlCheckedIn" runat="server" CssClass="col-lg-4">
+                <asp:Panel ID="pnlPresentCount" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedInPeople" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Checked-In People</span>
+                            <span class="h3 font-weight-bolder"><asp:Literal ID="lPresentPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold"><asp:Literal ID="lPresentPeopleLabel" runat="server" Text="Present People" /> </span>
                         </div>
                     </div>
                 </asp:Panel>
-                <asp:Panel ID="pnlPending" runat="server" CssClass="col-lg-4">
+                <asp:Panel ID="pnlPendingCount" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lPendingPeople" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Pending People</span>
+                            <span class="h3 font-weight-bolder"><asp:Literal ID="lPendingPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold"><asp:Literal ID="lPendingPeopleLabel" runat="server" Text="Present People" /> </span>
                         </div>
                     </div>
                 </asp:Panel>
-                <asp:Panel ID="pnlCheckedOut" runat="server" CssClass="col-lg-4">
+                <asp:Panel ID="pnlCheckedOutCount" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedOutPeople" runat="server" /></span>
+                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedOutPeopleCount" runat="server" /></span>
                             <span class="d-block small text-muted font-weight-bold">Checked-Out People</span>
                         </div>
                     </div>

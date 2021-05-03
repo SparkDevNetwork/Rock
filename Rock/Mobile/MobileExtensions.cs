@@ -48,6 +48,30 @@ namespace Rock.Mobile
         }
 
         #endregion
+
+        #region Gender
+
+        /// <summary>
+        /// Converts the Rock <see cref="Rock.Model.Gender"/> enumeration to the mobile counterpart.
+        /// </summary>
+        /// <param name="gender">The gender.</param>
+        /// <returns>The <see cref="Gender"/> equivalent.</returns>
+        public static Gender ToMobile( this Rock.Model.Gender gender )
+        {
+            switch ( gender )
+            {
+                case Model.Gender.Male:
+                    return Gender.Male;
+
+                case Model.Gender.Female:
+                    return Gender.Female;
+
+                default:
+                    return Gender.Unknown;
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>

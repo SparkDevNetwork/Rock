@@ -55,7 +55,6 @@
                         </Rock:GridFilter>
 
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-
                         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found"
                             RowItemText="Transaction" AllowSorting="true" ExportSource="ColumnOutput" >
                             <Columns>
@@ -65,6 +64,7 @@
                                     SortExpression="_PERSONNAME_" />
                                 <Rock:RockBoundField DataField="TransactionDateTime" HeaderText="Date / Time" SortExpression="TransactionDateTime" />
                                 <Rock:CurrencyField DataField="TotalAmount" HeaderText="Amount" SortExpression="TotalAmount" />
+                                <Rock:RockLiteralField ID="lForeignCurrencySymbol" HeaderText="Foreign Currency" />
                                 <Rock:RockLiteralField ID="lCurrencyType" HeaderText="Currency Type" />
                                 <Rock:RockBoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" ColumnPriority="DesktopSmall" />
                                 <Rock:RockBoundField DataField="ForeignKey" HeaderText="Foreign Key" SortExpression="ForeignKey" ColumnPriority="DesktopSmall" />

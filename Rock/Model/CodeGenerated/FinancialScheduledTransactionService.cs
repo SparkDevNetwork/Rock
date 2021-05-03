@@ -51,12 +51,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialScheduledTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -122,6 +122,7 @@ namespace Rock.Model
             target.EndDate = source.EndDate;
             target.FinancialGatewayId = source.FinancialGatewayId;
             target.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            target.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;

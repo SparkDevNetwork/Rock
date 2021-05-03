@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Workflow;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -142,7 +143,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType" /> that performs this ActionType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -256,7 +257,7 @@ namespace Rock.Model
                 WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
             }
 
-            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified ); 
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified );
             WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 

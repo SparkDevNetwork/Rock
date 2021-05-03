@@ -19,6 +19,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -69,7 +70,7 @@ namespace Rock.Model
         /// <value>
         /// The binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The communication response.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual CommunicationResponse CommunicationResponse { get; set; }
 
         #endregion Virtual Properties

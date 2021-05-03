@@ -80,6 +80,11 @@
                         $groupLocations.data('locations-expanded', 1);
                     }
                 });
+
+                var declinedTooltips = $('.js-declined-tooltip');
+                if (declinedTooltips.length > 0) {
+                    declinedTooltips.tooltip({ html: true });
+                }
             });
         </script>
     </ContentTemplate>

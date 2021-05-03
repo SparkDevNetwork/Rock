@@ -241,13 +241,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
     ##HEADER##
 
     ##FIELDS##
-    
+
     <Rock:Validator x:Name=""vForm"">
         ##VALIDATORS##
     </Rock:Validator>
-    
+
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Error"" />
-    
+
     <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""24 0 0 0"" Command=""{Binding Callback}"">
         <Button.CommandParameter>
             <Rock:CallbackParameters Name=""Save"" Validator=""{x:Reference vForm}"" Notification=""{x:Reference nbError}"">
@@ -299,6 +299,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Member Edit"" />
 <Rock:Divider />" );
+            }
+            else
+            {
+                content = content.Replace( "##HEADER##", string.Empty );
             }
 
             return content.Replace( "##FIELDS##", fieldsContent )

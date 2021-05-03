@@ -33,6 +33,7 @@ using OfficeOpenXml;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -460,7 +461,7 @@ namespace Rock.Web.UI.Controls
         {
             get => ViewState["CustomActionConfigs"]
                 .ToStringSafe()
-                .FromJsonOrNull<List<CustomActionConfig>>() ?? 
+                .FromJsonOrNull<List<CustomActionConfig>>() ??
                 new List<CustomActionConfig>();
             set => ViewState["CustomActionConfigs"] = value.ToJson();
         }
@@ -841,7 +842,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the default workflow launch control is visible. 
+        /// Gets or sets a value indicating whether the default workflow launch control is visible.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable default launch workflow]; otherwise, <c>false</c>.
@@ -2373,18 +2374,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 // get all properties of the objects in the grid
                 List<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
 
-                // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
-                if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
-                {
-                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
-                }
-                // If this is a RockDynamic class, don't include any of the properties that are inherited from RockDynamic
-                else if ( typeof( RockDynamic ).IsAssignableFrom( oType ) )
-                {
-                    var dropProperties = typeof( RockDynamic ).GetProperties().Select( a => a.Name );
-                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
-                }
+                // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+                allprops = FilterDynamicObjectPropertiesCollection( oType, allprops );
 
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
                 // The fields are exported in the same order as they appear in the Grid.
@@ -2662,6 +2653,53 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
 
             // send the spreadsheet to the browser
             excel.SendToBrowser( this.Page, filename );
+        }
+
+        /// <summary>
+        /// Filters a collection of properties from a dynamic type to exclude properties of the base class.
+        /// </summary>
+        /// <param name="dataSourceObjectType"></param>
+        /// <param name="additionalMergeProperties"></param>
+        /// <returns></returns>
+        private List<PropertyInfo> FilterDynamicObjectPropertiesCollection( Type dataSourceObjectType, List<PropertyInfo> additionalMergeProperties )
+        {
+            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
+                if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
+                {
+                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                }
+                // If this is a RockDynamic class, don't include any of the properties that are inherited from RockDynamic
+                else if ( typeof( RockDynamic ).IsAssignableFrom( dataSourceObjectType ) )
+                {
+                    var dropProperties = typeof( RockDynamic ).GetProperties().Select( a => a.Name );
+                    additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                }
+            }
+            else
+            {
+                // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+                Type excludeType = null;
+
+                if ( typeof( LavaDataObject ).IsAssignableFrom( dataSourceObjectType ) )
+                {
+                    excludeType = typeof( LavaDataObject );
+                }
+                else if ( typeof( RockDynamic ).IsAssignableFrom( dataSourceObjectType ) )
+                {
+                    excludeType = typeof( RockDynamic );
+                }
+
+                if ( excludeType != null )
+                {
+                    var excludeProperties = excludeType.GetProperties().Select( a => a.Name );
+                    additionalMergeProperties = additionalMergeProperties.Where( a => !excludeProperties.Contains( a.Name ) ).ToList();
+                }
+            }
+
+            return additionalMergeProperties;
         }
 
         /// <summary>
@@ -3669,12 +3707,8 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 additionalMergeProperties = dataSourceObjectType.GetProperties().ToList();
             }
 
-            // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
-            if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
-            {
-                var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
-            }
+            // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+            additionalMergeProperties = FilterDynamicObjectPropertiesCollection( dataSourceObjectType, additionalMergeProperties );
 
             var gridDataFields = this.Columns.OfType<BoundField>().ToList();
 

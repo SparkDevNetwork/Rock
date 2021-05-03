@@ -32,9 +32,9 @@ using Rock.UniversalSearch.IndexModels;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents any document in Rock.  
+    /// Represents any document in Rock.
     /// </summary>
-    [RockDomain( "CRM" )]
+    [RockDomain( "Core" )]
     [Table( "Document" )]
     [DataContract]
     public partial class Document : Model<Document>, IRockIndexable
@@ -75,7 +75,7 @@ namespace Rock.Model
         /// Gets or sets the given Name of the document.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the given Name of the document. 
+        /// A <see cref="System.String"/> representing the given Name of the document.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -141,7 +141,7 @@ namespace Rock.Model
         /// Gets or sets a <see cref="Rock.Model.BinaryFile"/> that contains the content of the file.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.BinaryFile"/> that contains the content of the file. 
+        /// The <see cref="Rock.Model.BinaryFile"/> that contains the content of the file.
         /// </value>
         [DataMember]
         public virtual BinaryFile BinaryFile { get; set; }

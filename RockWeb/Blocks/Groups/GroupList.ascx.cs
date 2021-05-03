@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -507,7 +508,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( archive )
                     {
-                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly 
+                        // NOTE: Delete will AutoArchive, but since we know that we need to archive, we can call .Archive directly
                         groupMemberService.Archive( groupMember, this.CurrentPersonAliasId, true );
                     }
                     else
@@ -1000,7 +1001,7 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroup.Items.Clear();
                 ddlGroup.Required = true;
-                
+
                 var groupService = new GroupService( new RockContext() );
                 bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
 

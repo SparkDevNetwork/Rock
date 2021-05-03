@@ -145,11 +145,9 @@ namespace Rock.Rest.Controllers
 
             if ( group == null )
             {
-                return ControllerContext.Request.CreateErrorResponse(
-                HttpStatusCode.NotFound,
-                $"Specified group not found." );
+                return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "Specified group not found." );
             }
-            
+
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -157,12 +155,10 @@ namespace Rock.Rest.Controllers
 
                 if ( registrationInstance == null )
                 {
-                    return ControllerContext.Request.CreateErrorResponse(
-                    HttpStatusCode.NotFound,
-                    $"Specified registration instance not found." );
+                    return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "Specified registration instance not found." );
                 }
 
-                registrationInstanceService.DeleteRegistrationInstancePlacementGroup( registrationInstance, group );
+                registrationInstanceService.DeleteRegistrationInstancePlacementGroup( registrationInstance, group, registrationTemplatePlacementId );
             }
             else
             {
@@ -171,9 +167,7 @@ namespace Rock.Rest.Controllers
 
                 if ( registrationTemplatePlacement == null )
                 {
-                    return ControllerContext.Request.CreateErrorResponse(
-                    HttpStatusCode.NotFound,
-                    $"Specified registration template placement not found." );
+                    return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "Specified registration template placement not found." );
                 }
 
                 registrationTemplatePlacementService.DeleteRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, group );

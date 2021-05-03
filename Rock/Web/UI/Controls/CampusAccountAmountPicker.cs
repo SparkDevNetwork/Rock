@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -41,8 +42,7 @@ namespace Rock.Web.UI.Controls
 
         private Panel _pnlAccountAmountEntrySingle;
 
-        // NOTE: we want a stock asp.net TextBox because this will have special styling
-        private TextBox _nbAmountAccountSingle;
+        private CurrencyBox _cbAmountAccountSingle;
 
         private RockDropDownList _ddlSingleAccountCampus;
         private RockDropDownList _ddlAccountSingle;
@@ -89,14 +89,40 @@ namespace Rock.Web.UI.Controls
             internal const string ID_hfAccountAmountMultiAccountId = "hfAccountAmountMultiAccountId";
 
             /// <summary>
-            /// The control ID for the nbAccountAmountMulti currency box
+            /// The control ID for the cbAccountAmountMulti currency box
             /// </summary>
-            internal const string ID_nbAccountAmountMulti = "nbAccountAmountMulti";
+            internal const string ID_cbAccountAmountMulti = "cbAccountAmountMulti";
         }
 
         #endregion private constants
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The currency code value identifier.
+        /// </value>
+        public int CurrencyCodeDefinedValueId
+        {
+            get
+            {
+                var storedValue = ViewState["CurrencyCodeDefinedValueId"].ToStringSafe().AsIntegerOrNull();
+
+                if ( storedValue.HasValue )
+                {
+                    return storedValue.Value;
+                }
+
+                return new RockCurrencyCodeInfo().CurrencyCodeDefinedValueId;
+            }
+            set
+            {
+                ViewState["CurrencyCodeDefinedValueId"] = value;
+                SyncCurrencyBoxesCurrencyCodes();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the amount entry mode (Defaults to <seealso cref="AccountAmountEntryMode.SingleAccount"/> )
@@ -348,13 +374,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _nbAmountAccountSingle.Text.AsDecimalOrNull();
+                return _cbAmountAccountSingle.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                _nbAmountAccountSingle.Text = value?.ToString( "N" );
+                _cbAmountAccountSingle.Value = value;
             }
         }
 
@@ -638,6 +664,25 @@ namespace Rock.Web.UI.Controls
         #region private methods
 
         /// <summary>
+        /// Synchronizes the currency boxes currency codes.
+        /// </summary>
+        private void SyncCurrencyBoxesCurrencyCodes()
+        {
+            if ( AmountEntryMode == AccountAmountEntryMode.MultipleAccounts )
+            {
+                foreach ( var rptItem in _rptPromptForAccountAmountsMulti.Items.OfType<RepeaterItem>() )
+                {
+                    var cbAccountAmountMulti = rptItem.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
+                    cbAccountAmountMulti.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
+                }
+            }
+            else
+            {
+                _cbAmountAccountSingle.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
+            }
+        }
+
+        /// <summary>
         /// Loads the campuses.
         /// </summary>
         private void LoadCampuses()
@@ -739,8 +784,8 @@ namespace Rock.Web.UI.Controls
                         var displayedAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
                         var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
                         var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
-                        var nbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
-                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, nbAccountAmountMulti.Text.AsDecimalOrNull() ) );
+                        var cbAccountAmountMulti = item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
+                        resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, cbAccountAmountMulti.Value ) );
                     }
                 }
                 else
@@ -749,7 +794,7 @@ namespace Rock.Web.UI.Controls
                     var displayedAccount = FinancialAccountsLookup.GetValueOrNull( displayedAccountId );
                     var returnedAccountId = this.GetBestMatchingAccountIdForCampusFromDisplayedAccount( _ddlMultiAccountCampus.SelectedValue.AsInteger(), displayedAccount );
 
-                    resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, _nbAmountAccountSingle.Text.AsDecimalOrNull() ) );
+                    resultAccountAmounts.Add( new AccountIdAmount( returnedAccountId, _cbAmountAccountSingle.Value ) );
                 }
 
                 return resultAccountAmounts.ToArray();
@@ -775,9 +820,10 @@ namespace Rock.Web.UI.Controls
                             int itemAccountId = hfAccountAmountMultiAccountId.Value.AsInteger();
                             if ( itemAccountId == displayedAccountId )
                             {
-                                var nbAccountAmountMulti = rptItem.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
-                                nbAccountAmountMulti.Value = selectedAmount;
-                                nbAccountAmountMulti.ReadOnly = selectedAccountAmount.ReadOnly;
+                                var cbAccountAmountMulti = rptItem.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
+                                cbAccountAmountMulti.Value = selectedAmount;
+                                cbAccountAmountMulti.ReadOnly = selectedAccountAmount.ReadOnly;
+                                cbAccountAmountMulti.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
                             }
                         }
                     }
@@ -788,14 +834,15 @@ namespace Rock.Web.UI.Controls
                     if ( selectedAccountAmount == null )
                     {
                         // an empty dictionary of a selectedAccountAmount was specified so assume they meant to set the selected amount to null
-                        _nbAmountAccountSingle.Text = string.Empty;
+                        _cbAmountAccountSingle.Value = null;
                         return;
                     }
 
                     var displayedAccountId = GetDisplayedAccountFromSelectedAccount( FinancialAccountsLookup.GetValueOrNull( selectedAccountAmount.AccountId ) )?.Id;
                     _ddlAccountSingle.SetValue( displayedAccountId );
-                    _nbAmountAccountSingle.Text = selectedAccountAmount.Amount?.ToString( "N2" );
-                    _nbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;
+                    _cbAmountAccountSingle.Value = selectedAccountAmount.Amount;
+                    _cbAmountAccountSingle.ReadOnly = selectedAccountAmount.ReadOnly;
+                    _cbAmountAccountSingle.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
                 }
             }
         }
@@ -829,30 +876,17 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _pnlAccountAmountEntrySingle );
 
             // Special big entry for entering a single dollar amount
-            _nbAmountAccountSingle = new TextBox();
-            _nbAmountAccountSingle.ID = "_nbAmountAccountSingle";
-            _nbAmountAccountSingle.Attributes["placeholder"] = "0";
-            _nbAmountAccountSingle.Attributes["type"] = "number";
-            _nbAmountAccountSingle.CssClass = "amount-input form-control js-amount-input";
-            _nbAmountAccountSingle.Attributes["min"] = "0";
-            _nbAmountAccountSingle.Attributes["max"] = int.MaxValue.ToString();
+            _cbAmountAccountSingle = new CurrencyBox();
+            _cbAmountAccountSingle.ID = "_cbAmountAccountSingle";
+            _cbAmountAccountSingle.CssClass = "js-amount-input";
+            _cbAmountAccountSingle.Attributes["min"] = "0";
+            _cbAmountAccountSingle.Attributes["max"] = int.MaxValue.ToString();
+            _cbAmountAccountSingle.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
 
             // set max length to prevent input from accepting more than $99,999,999.99 (99 million dollars), this will help prevent an Int32 overflow if amount is stored in cents
             // However, browsers don't seem to enforce this, and we really want to limit to int.MaxValue so we'll also check in validation
-            _nbAmountAccountSingle.Attributes["maxlength"] = "14";
-
-            _nbAmountAccountSingle.Attributes["step"] = "0.01";
-
-            /* 2020-11-20 MDP
-               inputmode tells the browser what type of input to expect. If we 
-               see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
-
-               This fixes an issue where some browsers (especially mobile phones) would allow non-decimal characters to be allowed in the input box
-            */
-
-            _nbAmountAccountSingle.Attributes["inputmode"] = "decimal";
-
-            _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
+            _cbAmountAccountSingle.Attributes["maxlength"] = "14";
+            _pnlAccountAmountEntrySingle.Controls.Add( _cbAmountAccountSingle );
 
             var pnlSingleCampusDiv = new Panel() { CssClass = "campus-dropdown " };
             _pnlAccountAmountEntrySingle.Controls.Add( pnlSingleCampusDiv );
@@ -936,7 +970,7 @@ namespace Rock.Web.UI.Controls
 
                 var currencyBox = new CurrencyBox
                 {
-                    ID = RepeaterControlIds.ID_nbAccountAmountMulti,
+                    ID = RepeaterControlIds.ID_cbAccountAmountMulti,
                     CssClass = "amount-input account-amount-multi js-amount-input",
                     NumberType = ValidationDataType.Currency,
                     MaximumValue = int.MaxValue.ToString(),
@@ -966,7 +1000,8 @@ namespace Rock.Web.UI.Controls
             }
 
             var hfAccountAmountMultiAccountId = e.Item.FindControl( RepeaterControlIds.ID_hfAccountAmountMultiAccountId ) as HiddenField;
-            var nbAccountAmountMulti = e.Item.FindControl( RepeaterControlIds.ID_nbAccountAmountMulti ) as CurrencyBox;
+            var nbAccountAmountMulti = e.Item.FindControl( RepeaterControlIds.ID_cbAccountAmountMulti ) as CurrencyBox;
+            nbAccountAmountMulti.CurrencyCodeDefinedValueId = CurrencyCodeDefinedValueId;
 
             hfAccountAmountMultiAccountId.Value = financialAccount.Id.ToString();
             nbAccountAmountMulti.Label = financialAccount.PublicName;

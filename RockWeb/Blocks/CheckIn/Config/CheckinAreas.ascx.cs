@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected void checkinGroup_AddLocationClick( object sender, EventArgs e )
         {
-            locationPicker.SetValue( null );
+            locationPicker.SetValue( (int?)null );
             mdLocationPicker.Show();
         }
 

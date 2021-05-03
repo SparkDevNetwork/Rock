@@ -69,7 +69,7 @@
                                     Help="An optional field used to qualify what the over-all purpose of this group type is for.  Additional values can be added by editing the 'Group Type Purpose' Defined Type." />
 
                                 <Rock:RockCheckBox ID="cbAllowAnyChildGroupType" runat="server" Label="Allow Any Child Group Type" Help="Determines if all types of child groups can be added to groups of this type" AutoPostBack="true" OnCheckedChanged="cbAllowAnyChildGroupType_CheckedChanged" />
-                                <Rock:RockControlWrapper ID="rcwAllowedChildGroupTypes" runat="server" Label="Allowed Child Group Types" 
+                                <Rock:RockControlWrapper ID="rcwAllowedChildGroupTypes" runat="server" Label="Allowed Child Group Types"
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
 
                                     <div class="grid">
@@ -139,7 +139,7 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
-                                            Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
+                                            Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs they will be kept. Unchecking this box will NOT prevent them from running." />
                                         <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
                                             Help="Determines if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
                                         <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag"

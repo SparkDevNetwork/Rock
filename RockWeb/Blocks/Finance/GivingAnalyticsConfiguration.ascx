@@ -73,7 +73,7 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.FinancialTransactionAlertType, Rock" PropertyName="Name" Required="true" ValidationGroup="vgAlertDetails" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" ValidationGroup="vgAlertDetails" />
+                        <Rock:CampusPicker ID="cpCampus" runat="server" ValidationGroup="vgAlertDetails" />
                     </div>
                 </div>
                 <div class="row">

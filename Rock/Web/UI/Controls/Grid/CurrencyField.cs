@@ -17,8 +17,6 @@
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Web.Cache;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -27,6 +25,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CurrencyField runat=server></{0}:CurrencyField>" )]
     public class CurrencyField : RockBoundField
     {
+        /// <summary>
+        /// Gets or sets the currency code defined value id.
+        /// </summary>
+        /// <value>
+        /// The currency code defined value identifier.
+        /// </value>
+        public int? CurrencyCodeDefinedValueId { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CurrencyField"/> class.
         /// </summary>
@@ -49,8 +55,13 @@ namespace Rock.Web.UI.Controls
         {
             if ( dataValue != null )
             {
-                return string.Format( "{0}{1:N}", GlobalAttributesCache.Value( "CurrencySymbol" ), dataValue );
+                var decimalValue = 0m;
+                if ( decimal.TryParse( dataValue.ToString(), out decimalValue ) )
+                {
+                    return decimalValue.FormatAsCurrency( CurrencyCodeDefinedValueId );
+                }
             }
+
             return base.FormatDataValue( dataValue, encode );
         }
     }

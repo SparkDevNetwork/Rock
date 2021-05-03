@@ -27,6 +27,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data.Entity;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.RSVP
 {
@@ -152,7 +153,7 @@ namespace RockWeb.Blocks.RSVP
             {
                 key = string.Format( "{0}-{1}", groupId.Value.ToString(), key );
             }
-            
+
             return "RSVPList-" + key;
         }
 
@@ -577,7 +578,7 @@ namespace RockWeb.Blocks.RSVP
 
     #region Helper Class
 
-    public class RSVPListOccurrence : Rock.Utility.RockDynamic
+    public class RSVPListOccurrence : RockDynamic
     {
         public int Id { get; set; }
         public DateTime OccurrenceDate { get; set; }

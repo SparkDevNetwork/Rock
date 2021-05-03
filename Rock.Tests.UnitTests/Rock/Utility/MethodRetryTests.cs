@@ -65,8 +65,8 @@ namespace Rock.Tests.UnitTests.Rock.Utility
             }
 
             var maxExpectedRuntime = ( expectedMaxWait * expectedCallCount );
-            // Add 1% fudge factor.
-            maxExpectedRuntime += Convert.ToInt32( Math.Round( maxExpectedRuntime * .01 ) );
+            // Add 5% fudge factor.
+            maxExpectedRuntime += Convert.ToInt32( Math.Round( maxExpectedRuntime * .05 ) );
             if ( stopWatch.ElapsedMilliseconds > maxExpectedRuntime )
             {
                 Assert.That.Fail( $"Execute took too long to run. Expected a maximum of {maxExpectedRuntime}ms, but ran for {stopWatch.ElapsedMilliseconds}ms" );
@@ -129,8 +129,8 @@ namespace Rock.Tests.UnitTests.Rock.Utility
             }
 
             var maxExpectedRuntime = ( expectedMaxWait * expectedCallCount );
-            // Add 1% fudge factor.
-            maxExpectedRuntime += Convert.ToInt32( Math.Round( maxExpectedRuntime * .01 ) );
+            // Add 5% fudge factor.
+            maxExpectedRuntime += Convert.ToInt32( Math.Round( maxExpectedRuntime * .05 ) );
             if ( stopWatch.ElapsedMilliseconds > maxExpectedRuntime )
             {
                 Assert.That.Fail( $"Execute took too long to run. Expected a maximum of {maxExpectedRuntime}ms, but ran for {stopWatch.ElapsedMilliseconds}ms" );

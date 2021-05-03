@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
@@ -53,6 +54,42 @@ namespace Rock.Model
                     personAliasIdQuery.Contains( aa.AchieverEntityId )
                 )
             );
+        }
+
+        /// <summary>
+        /// Gets the ordered person attempts.
+        /// </summary>
+        /// <param name="attemptsQuery">The attempts query.</param>
+        /// <param name="achievementTypeCache">The achievement type cache.</param>
+        /// <param name="achieverEntityId">The achiever entity identifier.</param>
+        /// <returns></returns>
+        public List<AchievementAttempt> GetOrderedAchieverAttempts( IQueryable<AchievementAttempt> attemptsQuery, AchievementTypeCache achievementTypeCache, int achieverEntityId )
+        {
+            attemptsQuery = attemptsQuery.Where( aa => aa.AchievementTypeId == achievementTypeCache.Id );
+
+            // If the achiever type is person alias we need to add all achievements of this type for that person.
+            if ( EntityTypeCache.Get<PersonAlias>().Id == achievementTypeCache.AchieverEntityTypeId )
+            {
+                var personAliasService = new PersonAliasService( ( RockContext ) Context );
+                var personAliasQuery = personAliasService
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( pa => pa.Id == achieverEntityId )
+                    .SelectMany( pa => pa.Person.Aliases )
+                    .Select( pa => pa.Id );
+
+                attemptsQuery = attemptsQuery
+                    .Where( aa => personAliasQuery.Contains( aa.AchieverEntityId ) );
+            }
+            else
+            {
+                attemptsQuery = attemptsQuery
+                    .Where( aa => aa.AchieverEntityId == achieverEntityId );
+            }
+
+            return attemptsQuery
+                .OrderByDescending( saa => saa.AchievementAttemptStartDateTime )
+                .ToList();
         }
     }
 }

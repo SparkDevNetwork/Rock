@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -45,7 +46,7 @@ namespace Rock.Model
         public int NoteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/> 
+        /// Gets or sets the BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing BinaryFileId of the attachment's <see cref="Rock.Model.BinaryFile"/>
@@ -63,7 +64,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Note"/> that this attachment belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Note Note { get; set; }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The attachment's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
 
         #endregion
@@ -115,7 +116,7 @@ namespace Rock.Model
                     }
                 case EntityState.Deleted:
                     {
-                        // if deleting, and there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=true 
+                        // if deleting, and there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=true
                         // so that it'll get cleaned up
                         if ( !binaryFile.IsTemporary )
                         {

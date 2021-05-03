@@ -1,10 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupScheduler.ascx.cs" Inherits="RockWeb.Blocks.GroupScheduling.GroupScheduler" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
+<asp:UpdatePanel ID="upnlContent" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false" class="block-content-main">
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll panel-groupscheduler">
             <%-- Panel Header --%>
-            <div class="panel-heading">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
                     <i class="fa fa-calendar-alt"></i>
                     Group Scheduler
@@ -18,7 +18,7 @@
                     </button>
 
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
-                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
+                        data-toggle="tooltip" data-placement="bottom" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
                         class="btn btn-link p-0 btn-copy-to-clipboard text-color"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
                         <i class='fa fa-clipboard'></i>
@@ -70,170 +70,160 @@
                         </ul>
                     </asp:Panel>
                 </div>
+                <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
+            </div>
+
+            <%-- Filter Options (Header) --%>
+            <div class="panel-collapsable p-0">
+                <div id="filter-drawer" class="panel-drawer" style="display: none;">
+                    <div class="p-3">
+                        <div>
+                        <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
+                        <p><strong>Scheduling Basics</strong></p>
+                        <p>This screen allows you to schedule individuals into groups. Openings are shown for each group location schedule to meet the configured minimum number of individuals. Additional individuals can be added by dropping them into the ‘Add Individual’ zone.</p>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <p><strong>Scheduled Individual Legend</strong></p>
+                                <p>Scheduled individuals have several states that they can be in. These states are described using an icon to determine how the invite matches their preference. A color describes the status of the invite.</p>
+                                <div class="text-center mb-5"><img src="/Assets/Images/group-scheduler/scheduled-legend.svg"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p><strong>Unscheduled Individuals Legend</strong></p>
+                                <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow indicates a conflict for one or more schedules.</p>
+                                <div class="text-left mb-5"><img src="/Assets/Images/group-scheduler/unscheduled-legend.svg"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Group Location Schedule Status</strong></p>
+                                <p>At the top of the group location for each schedule is a status bar. This bar displays quite a bit of information for you.</p>
+                                <p>The green bar represents the individuals who have accepted invites while yellow are those still pending. People who have declined will not be represented on this bar.</p>
+                                <p>The white line represents the minimum number of individuals you need. The black bar is your desired number.</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p>&nbsp;</p>
+                                <div class="text-left mb-3"><img src="/Assets/Images/group-scheduler/progress-example.svg"></div>
+                                <p>So in this case enough people have accepted your invite to meet the minimum. If all remaining invites are accepted you would have enough to meet your desired number.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row row-eq-height no-gutters">
+                    <div class="col-lg-3 col-md-4">
+                        <%-- Resource List - Filter Options (Header) --%>
+                        <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options align-items-center">
+                            <asp:Panel ID="pnlResourceListFilter" runat="server">
+                                <div class="btn-group">
+                                    <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                        <i class="fa fa-list-ul"></i>
+                                        <asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />
+                                        List: <asp:Literal ID="lSelectedResourceTypeDropDownText" runat="server" Text="Group Members" />
+                                    </div>
+
+                                    <ul class="dropdown-menu" role="menu">
+                                        <asp:Repeater ID="rptSchedulerResourceListSourceType" runat="server" OnItemDataBound="rptSchedulerResourceListSourceType_ItemDataBound">
+                                            <ItemTemplate>
+                                                <li>
+                                                    <asp:LinkButton ID="btnResourceListSourceType" runat="server" Text="-" CommandArgument="-" OnClick="ResourceListSourceType_Change" />
+                                                </li>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </ul>
+                                </div>
+                            </asp:Panel>
+
+                            <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-tool js-add-resource" ToolTip="Add Person">
+                                <i class="fa fa-plus"></i>
+                            </asp:Panel>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-md-8">
+                        <%-- AttendanceOccurrences - Filter Options (Header) --%>
+                        <!--<div class="group-scheduler-occurrence-filter occurrences-filter-options">-->
+                            <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
+                            <div class="panel-toolbar">
+                                <!-- Filter for Groups/ChildGroups -->
+                                <div class="d-flex">
+                                    <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
+                                    <div>
+                                    <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn" Text="<i class='fa fa-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
+                                    </div>
+                                </div>
+
+                                <!-- Filter for Week -->
+                                <div class="d-block">
+                                    <asp:Panel ID="pnlWeekFilter" CssClass="btn-group" runat="server">
+                                            <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                                <asp:HiddenField ID="hfWeekSundayDate" runat="server" />
+                                                <asp:Literal ID="lWeekFilterText" runat="server" Text="Week: -- " />
+                                            </div>
+
+                                            <ul class="dropdown-menu" role="menu">
+                                                <asp:Repeater ID="rptWeekSelector" runat="server" OnItemDataBound="rptWeekSelector_ItemDataBound">
+                                                    <ItemTemplate>
+                                                        <li>
+                                                            <asp:LinkButton ID="btnSelectWeek" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectWeek_Click" />
+                                                        </li>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </ul>
+                                    </asp:Panel>
+
+                                <!-- Filter for Locations -->
+                                    <asp:Panel ID="pnlLocationFilter" CssClass="btn-group" runat="server">
+
+                                            <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                                <asp:HiddenField ID="hfPickedLocationIds" runat="server" />
+                                                <asp:Literal ID="lSelectedLocationFilterText" runat="server" Text="Locations...." />
+                                            </div>
+
+
+                                            <ul class="dropdown-menu" role="menu">
+                                                <asp:Repeater ID="rptLocationSelector" runat="server" OnItemDataBound="rptLocationSelector_ItemDataBound">
+                                                    <ItemTemplate>
+                                                        <li>
+                                                            <asp:LinkButton ID="btnSelectLocation" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectLocation_Click" />
+                                                        </li>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </ul>
+                                    </asp:Panel>
+
+                                <!-- Filter for Schedules -->
+                                    <asp:Panel ID="pnlScheduleFilter" CssClass="btn-group" runat="server">
+                                            <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
+                                                <asp:HiddenField ID="hfSelectedScheduleId" runat="server" />
+                                                <asp:Literal ID="lScheduleFilterText" runat="server" Text="Schedule..." />
+                                            </div>
+
+                                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                                <asp:Repeater ID="rptScheduleSelector" runat="server" OnItemDataBound="rptScheduleSelector_ItemDataBound">
+                                                    <ItemTemplate>
+                                                        <li>
+                                                            <asp:LinkButton ID="btnSelectSchedule" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectSchedule_Click" />
+                                                        </li>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </ul>
+                                    </asp:Panel>
+                                </div>
+                            </div>
+                    <!-- </div> -->
+                    </div>
+                </div>
             </div>
 
             <%-- Panel Body --%>
-            <div class="panel-body p-0">
+            <div class="panel-body-parent">
 
-                <div class="visible-xs-block">
-                    <div class="alert alert-warning">
-                        This block is not supported on mobile.
-                    </div>
-                </div>
-
-                <%-- Filter Options (Header) --%>
-                <div class="panel-collapsable p-0">
-                    <div class="row row-eq-height no-gutters">
-                        <div class="col-lg-3 col-md-4">
-                            <%-- Resource List - Filter Options (Header) --%>
-                            <div class="panel-toolbar styled-scroll-white h-100 pr-1 resource-filter-options align-items-center">
-                                <asp:Panel ID="pnlResourceListFilter" runat="server">
-                                    <div class="btn-group">
-                                        <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                            <i class="fa fa-list-ul"></i>
-                                            <asp:HiddenField ID="hfSchedulerResourceListSourceType" runat="server" />
-                                            List: <asp:Literal ID="lSelectedResourceTypeDropDownText" runat="server" Text="Group Members" />
-                                        </div>
-
-                                        <ul class="dropdown-menu" role="menu">
-                                            <asp:Repeater ID="rptSchedulerResourceListSourceType" runat="server" OnItemDataBound="rptSchedulerResourceListSourceType_ItemDataBound">
-                                                <ItemTemplate>
-                                                    <li>
-                                                        <asp:LinkButton ID="btnResourceListSourceType" runat="server" Text="-" CommandArgument="-" OnClick="ResourceListSourceType_Change" />
-                                                    </li>
-                                                </ItemTemplate>
-                                            </asp:Repeater>
-                                        </ul>
-                                    </div>
-                                </asp:Panel>
-
-                                <asp:Panel ID="pnlAddPerson" runat="server" CssClass="btn btn-xs btn-tool js-add-resource" ToolTip="Add Person">
-                                    <i class="fa fa-plus"></i>
-                                </asp:Panel>
-                            </div>
-                        </div>
-                        <div class="col-lg-9 col-md-8">
-                            <%-- AttendanceOccurrences - Filter Options (Header) --%>
-                            <!--<div class="group-scheduler-occurrence-filter occurrences-filter-options">-->
-                                <asp:HiddenField ID="hfSelectedGroupId" runat="server" />
-                                <div class="panel-toolbar">
-                                    <!-- Filter for Groups/ChildGroups -->
-                                    <div class="d-flex">
-                                        <Rock:GroupPicker ID="gpPickedGroups" runat="server" Label="" AllowMultiSelect="true" OnValueChanged="gpPickedGroups_ValueChanged" CssClass="occurrences-groups-picker" LimitToSchedulingEnabledGroups="true" />
-                                        <div>
-                                        <asp:LinkButton ID="btnShowChildGroups" runat="server" CssClass="btn" Text="<i class='fa fa-square'></i> Show Child Groups" AutoPostBack="true" OnClick="btnShowChildGroups_Click" />
-                                        </div>
-                                    </div>
-
-                                    <!-- Filter for Week -->
-                                    <div class="d-block">
-                                        <asp:Panel ID="pnlWeekFilter" CssClass="btn-group" runat="server">
-                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                                    <asp:HiddenField ID="hfWeekSundayDate" runat="server" />
-                                                    <asp:Literal ID="lWeekFilterText" runat="server" Text="Week: -- " />
-                                                </div>
-
-                                                <ul class="dropdown-menu" role="menu">
-                                                    <asp:Repeater ID="rptWeekSelector" runat="server" OnItemDataBound="rptWeekSelector_ItemDataBound">
-                                                        <ItemTemplate>
-                                                            <li>
-                                                                <asp:LinkButton ID="btnSelectWeek" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectWeek_Click" />
-                                                            </li>
-                                                        </ItemTemplate>
-                                                    </asp:Repeater>
-                                                </ul>
-                                        </asp:Panel>
-
-                                    <!-- Filter for Locations -->
-                                        <asp:Panel ID="pnlLocationFilter" CssClass="btn-group" runat="server">
-
-                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                                    <asp:HiddenField ID="hfPickedLocationIds" runat="server" />
-                                                    <asp:Literal ID="lSelectedLocationFilterText" runat="server" Text="Locations...." />
-                                                </div>
-
-
-                                                <ul class="dropdown-menu" role="menu">
-                                                    <asp:Repeater ID="rptLocationSelector" runat="server" OnItemDataBound="rptLocationSelector_ItemDataBound">
-                                                        <ItemTemplate>
-                                                            <li>
-                                                                <asp:LinkButton ID="btnSelectLocation" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectLocation_Click" />
-                                                            </li>
-                                                        </ItemTemplate>
-                                                    </asp:Repeater>
-                                                </ul>
-                                        </asp:Panel>
-
-                                    <!-- Filter for Schedules -->
-                                        <asp:Panel ID="pnlScheduleFilter" CssClass="btn-group" runat="server">
-                                                <div class="dropdown-toggle btn btn-xs btn-tool" data-toggle="dropdown">
-                                                    <asp:HiddenField ID="hfSelectedScheduleId" runat="server" />
-                                                    <asp:Literal ID="lScheduleFilterText" runat="server" Text="Schedule..." />
-                                                </div>
-
-                                                <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                                    <asp:Repeater ID="rptScheduleSelector" runat="server" OnItemDataBound="rptScheduleSelector_ItemDataBound">
-                                                        <ItemTemplate>
-                                                            <li>
-                                                                <asp:LinkButton ID="btnSelectSchedule" runat="server" Text="-" CommandArgument="-" OnClick="btnSelectSchedule_Click" />
-                                                            </li>
-                                                        </ItemTemplate>
-                                                    </asp:Repeater>
-                                                </ul>
-                                        </asp:Panel>
-                                    </div>
-                                </div>
-                        <!-- </div> -->
-                        </div>
-                    </div>
-
-                    <div id="filter-drawer" class="panel-drawer" style="display: none;">
-                        <div class="p-3">
-                            <div>
-                            <h5 class="mt-0 mb-4">Group Scheduler Help</h5>
-                            <p><strong>Scheduling Basics</strong></p>
-                            <p>This screen allows you to schedule individuals into groups. Openings are shown for each group location schedule to meet the configured minimum number of individuals. Additional individuals can be added by dropping them into the ‘Add Individual’ zone.</p>
-                            </div>
-                            <div class="row mt-4">
-                                <div class="col-md-6">
-                                    <p><strong>Scheduled Individual Legend</strong></p>
-                                    <p>Scheduled individuals have several states that they can be in. These states are described using an icon to determine how the invite matches their preference. A color describes the status of the invite.</p>
-                                    <div class="text-center mb-5"><img src="/Assets/Images/group-scheduler/scheduled-legend.svg"></div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <p><strong>Unscheduled Individuals Legend</strong></p>
-                                    <p>A person who is not scheduled can also be in various states. Each of these is represented by an icon. Rolling over the individuals will give more details about the state. Yellow indicates a conflict for one or more schedules.</p>
-                                    <div class="text-left mb-5"><img src="/Assets/Images/group-scheduler/unscheduled-legend.svg"></div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Group Location Schedule Status</strong></p>
-                                    <p>At the top of the group location for each schedule is a status bar. This bar displays quite a bit of information for you.</p>
-                                    <p>The green bar represents the individuals who have accepted invites while yellow are those still pending. People who have declined will not be represented on this bar.</p>
-                                    <p>The white line represents the minimum number of individuals you need. The black bar is your desired number.</p>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <p>&nbsp;</p>
-                                    <div class="text-left mb-3"><img src="/Assets/Images/group-scheduler/progress-example.svg"></div>
-                                    <p>So in this case enough people have accepted your invite to meet the minimum. If all remaining invites are accepted you would have enough to meet your desired number.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-            <%-- Panel Body --%>
-            <div class="panel-body panel-body-parent p-0">
-
-                <div class="visible-xs-block">
-                    <div class="alert alert-warning">
-                        This block is not supported on mobile.
-                    </div>
+                <div class="alert alert-warning m-3 visible-xs-block">
+                    This block is not supported on mobile.
                 </div>
 
 
@@ -242,86 +232,85 @@
                 <Rock:NotificationBox ID="nbAuthorizedGroupsWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                 <asp:Literal ID="lDebug" runat="server" Visible="false" />
 
-                    <asp:Panel ID="pnlSchedulerContainer" runat="server" CssClass="h-100">
+                    <asp:Panel ID="pnlSchedulerContainer" runat="server" CssClass="panel-body p-0">
 
                         <%-- Scheduling: container for the scheduler scheduled containers --%>
-                        <asp:Panel ID="pnlScheduler" runat="server" CssClass="h-100">
+                        <asp:Panel ID="pnlScheduler" runat="server" CssClass="row row-eq-height no-gutters">
 
-                            <div class="row row-eq-height no-gutters">
                                 <div class="col-lg-3 col-md-4 hidden-xs">
                                     <div class="d-flex flex-column flex-fill h-100 mh-100 sidebar-border">
-                                    <%-- Resource List - Person List --%>
+                                        <%-- Resource List - Person List --%>
 
-                                    <%-- Resource List - Filter Options (Header Options) --%>
-                                    <div class="group-schedule-filter-options clearfix">
-                                        <asp:Panel ID="pnlResourceFilterAlternateGroup" runat="server" CssClass="m-2">
-                                            <Rock:GroupPicker ID="gpResourceListAlternateGroup" runat="server" Label="Alternate Group" OnValueChanged="gpResourceListAlternateGroup_ValueChanged" />
-                                        </asp:Panel>
+                                        <%-- Resource List - Filter Options (Header Options) --%>
+                                        <div class="group-schedule-filter-options clearfix">
+                                            <asp:Panel ID="pnlResourceFilterAlternateGroup" runat="server" CssClass="m-2">
+                                                <Rock:GroupPicker ID="gpResourceListAlternateGroup" runat="server" Label="Alternate Group" OnValueChanged="gpResourceListAlternateGroup_ValueChanged" />
+                                            </asp:Panel>
 
-                                        <asp:Panel ID="pnlResourceFilterDataView" runat="server" CssClass="m-2">
-                                            <Rock:DataViewItemPicker ID="dvpResourceListDataView" runat="server" Label="Data View" EntityTypeId="15" OnValueChanged="dvpResourceListDataView_ValueChanged" />
+                                            <asp:Panel ID="pnlResourceFilterDataView" runat="server" CssClass="m-2">
+                                                <Rock:DataViewItemPicker ID="dvpResourceListDataView" runat="server" Label="Data View" EntityTypeId="15" OnValueChanged="dvpResourceListDataView_ValueChanged" />
+                                            </asp:Panel>
+                                        </div>
+
+                                        <asp:Panel ID="pnlSchedulerResourceList" runat="server" CssClass="js-group-scheduler-resourcelist group-scheduler-resourcelist d-flex flex-column flex-fill mh-100">
+                                            <div class="hidden">
+                                            <Rock:HiddenFieldWithClass ID="hfOccurrenceGroupId" CssClass="js-occurrence-group-id" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfOccurrenceSundayDate" CssClass="js-occurrence-sunday-date" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfOccurrenceScheduleIds" CssClass="js-occurrence-schedule-ids" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfResourceGroupId" CssClass="js-resource-group-id" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfResourceGroupMemberFilterType" CssClass="js-resource-groupmemberfiltertype" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfResourceDataViewId" CssClass="js-resource-dataview-id" runat="server" />
+                                            <Rock:HiddenFieldWithClass ID="hfResourceAdditionalPersonIds" CssClass="js-resource-additional-person-ids" runat="server" />
+                                            </div>
+                                            <div class="js-unscheduled-resource-template" style="display: none">
+                                                <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
+
+                                                <div class="js-resource resource unselectable" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="" data-placement="bottom">
+                                                    <div class="flex">
+                                                        <span class="resource-name js-resource-name flex-grow-1"></span>
+                                                        <div class="js-resource-name-meta">
+                                                        <span class="resource-member-role js-resource-member-role"></span>
+                                                        </div>
+                                                        <div class="dropdown js-resource-actions hide-transit">
+                                                            <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="resource-preferences js-resource-preferences hide-transit small text-muted">
+                                                    </div>
+
+                                                    <div class="resource-scheduled js-resource-scheduled hide-transit small text-muted">
+                                                    </div>
+
+                                                    <div class="resource-meta">
+                                                        <div class="js-resource-meta text-right"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                                <div class="js-add-resource-picker margin-all-sm" style="display: none">
+                                                    <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                                                </div>
+
+                                                    <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
+
+
+                                            <div class="resource-list d-flex flex-fill">
+
+
+                                                    <div class="scroll-list">
+                                                        <%-- loading indicator --%>
+                                                        <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
+
+                                                        <%-- container for list of resources --%>
+
+                                                        <asp:Panel ID="pnlResourceListContainer" CssClass="js-scheduler-source-container resource-container dropzone" runat="server">
+                                                        </asp:Panel>
+                                                    </div>
+
+                                            </div>
                                         </asp:Panel>
                                     </div>
-
-                                    <asp:Panel ID="pnlSchedulerResourceList" runat="server" CssClass="js-group-scheduler-resourcelist group-scheduler-resourcelist d-flex flex-column flex-fill mh-100">
-                                        <div class="hidden">
-                                        <Rock:HiddenFieldWithClass ID="hfOccurrenceGroupId" CssClass="js-occurrence-group-id" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfOccurrenceSundayDate" CssClass="js-occurrence-sunday-date" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfOccurrenceScheduleIds" CssClass="js-occurrence-schedule-ids" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfResourceGroupId" CssClass="js-resource-group-id" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfResourceGroupMemberFilterType" CssClass="js-resource-groupmemberfiltertype" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfResourceDataViewId" CssClass="js-resource-dataview-id" runat="server" />
-                                        <Rock:HiddenFieldWithClass ID="hfResourceAdditionalPersonIds" CssClass="js-resource-additional-person-ids" runat="server" />
-                                        </div>
-                                        <div class="js-unscheduled-resource-template" style="display: none">
-                                            <%-- template that groupScheduler.js uses to populate unscheduled resources, data-status will always be "unscheduled" when it is in the list of unscheduled resources --%>
-
-                                            <div class="js-resource resource unselectable" data-status="unscheduled" data-has-scheduling-conflict="false" data-has-requirements-conflict="false" data-has-blackout-conflict="false" data-is-scheduled="" data-person-id="" data-placement="bottom">
-                                                <div class="flex">
-                                                    <span class="resource-name js-resource-name flex-grow-1"></span>
-                                                    <div class="js-resource-name-meta">
-                                                    <span class="resource-member-role js-resource-member-role"></span>
-                                                    </div>
-                                                    <div class="dropdown js-resource-actions hide-transit">
-                                                        <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="resource-preferences js-resource-preferences hide-transit small text-muted">
-                                                </div>
-
-                                                <div class="resource-scheduled js-resource-scheduled hide-transit small text-muted">
-                                                </div>
-
-                                                <div class="resource-meta">
-                                                    <div class="js-resource-meta text-right"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                            <div class="js-add-resource-picker margin-all-sm" style="display: none">
-                                                <Rock:PersonPicker ID="ppAddPerson" runat="server" Label="Select Person" OnSelectPerson="ppAddPerson_SelectPerson" />
-                                            </div>
-
-                                                <Rock:RockTextBox ID="sfResource" runat="server" CssClass="resource-search padding-all-sm js-resource-search" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
-
-
-                                        <div class="resource-list d-flex flex-fill">
-
-
-                                                <div class="scroll-list">
-                                                    <%-- loading indicator --%>
-                                                    <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
-
-                                                    <%-- container for list of resources --%>
-
-                                                    <asp:Panel ID="pnlResourceListContainer" CssClass="js-scheduler-source-container resource-container dropzone" runat="server">
-                                                    </asp:Panel>
-                                                </div>
-
-                                        </div>
-                                    </asp:Panel>
-                                </div>
                                 </div>
 
                                 <div class="col-lg-9 col-md-8">
@@ -494,7 +483,6 @@
                                     </asp:Panel>
                                     </div>
                                 </div>
-                            </div>
                         </asp:Panel>
                     </asp:Panel>
             </div>
@@ -530,6 +518,7 @@
 
         <script>
             Sys.Application.add_load(function () {
+                Rock.controls.fullScreen.initialize('body');
 
                 if ($('.js-groupscheduler-initialized').val() == 'true' ) {
                     return
