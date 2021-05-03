@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute's value to the selected person 
+    /// Sets an attribute's value to the selected person
     /// </summary>
     [ActionCategory( "People" )]
     [Description( "Sets an attribute to a person that matches based on any given name, email, mobile number, and birth date. If match is not found a new person will be created. Note: If a match is found, it does NOT update the person record with any of the supplied values except the email address if enabled by the action setting (the others are only used to find a match)." )]
@@ -111,11 +111,9 @@ namespace Rock.Workflow.Action
                 int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
                 int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
 
-                if ( string.IsNullOrWhiteSpace( firstName ) ||
-                    string.IsNullOrWhiteSpace( lastName ) ||
-                    ( string.IsNullOrWhiteSpace( email ) && string.IsNullOrWhiteSpace( mobileNumber ) ) )
+                if ( string.IsNullOrWhiteSpace( firstName ) || string.IsNullOrWhiteSpace( lastName ) )
                 {
-                    errorMessages.Add( "First Name, Last Name, and either Email or Mobile Number are required. One or more of these values was not provided!" );
+                    errorMessages.Add( "First Name and Last Name are required. One or more of these values was not provided!" );
                 }
                 else
                 {

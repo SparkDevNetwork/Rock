@@ -28,12 +28,13 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using OpenXmlPowerTools;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.MergeTemplates
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [System.ComponentModel.Description( "A Word Document merge template" )]
     [Export( typeof( MergeTemplateType ) )]
@@ -202,7 +203,7 @@ namespace Rock.MergeTemplates
                             var tempMergeTemplateX = new XDocument( sourceTemplateDocX );
                             var tempMergeTemplateBodyNode = tempMergeTemplateX.DescendantNodes().OfType<XElement>().FirstOrDefault( a => a.Name.LocalName.Equals( "body" ) );
 
-                            // find all the Nodes that have a {% next %}.  
+                            // find all the Nodes that have a {% next %}.
                             List<XElement> nextIndicatorNodes = new List<XElement>();
 
                             OpenXmlRegex.Match(
@@ -264,7 +265,7 @@ namespace Rock.MergeTemplates
                                 }
                                 else
                                 {
-                                    //// just in case they have shared parent node, or if there is trailing {{ next }} after the last lava 
+                                    //// just in case they have shared parent node, or if there is trailing {{ next }} after the last lava
                                     //// on the page, split the XML for each record and reassemble it when done
                                     List<string> xmlChunks = this.nextRecordRegEx.Split( recordContainerNodeXml ).ToList();
 
@@ -279,7 +280,7 @@ namespace Rock.MergeTemplates
                                             {
                                                 try
                                                 {
-                                                    DotLiquid.Hash wordMergeObjects = new DotLiquid.Hash();
+                                                    var wordMergeObjects = new LavaDataDictionary();
                                                     wordMergeObjects.Add( "Row", mergeObjectList[recordIndex] );
 
                                                     foreach ( var field in globalMergeFields )
@@ -375,17 +376,17 @@ namespace Rock.MergeTemplates
                         ( xx, mm ) =>
                         {
                             var afterSiblings = xx.ElementsAfterSelf().ToList();
-                            
+
                             // get all the paragraph elements after the 'next_empty' node and clear out the content
                             var nodesToClean = afterSiblings.Where( a => a.Name.LocalName == "p" ).ToList();
-                            
+
                             // if the next_empty node has lava, clean that up too
                             var xxContent = xx.ToString();
                             if ( lavaRegEx.IsMatch(xxContent) )
                             {
                                 nodesToClean.Add( xx );
                             }
-                            
+
                             foreach (var node in nodesToClean)
                             {
                                 // remove all child nodes from each paragraph node
@@ -416,7 +417,7 @@ namespace Rock.MergeTemplates
                         lastId++;
                     }
 
-                    DotLiquid.Hash globalMergeHash = new DotLiquid.Hash();
+                    LavaDataDictionary globalMergeHash = new LavaDataDictionary();
                     foreach ( var field in globalMergeFields )
                     {
                         globalMergeHash.Add( field.Key, field.Value );
@@ -463,7 +464,7 @@ namespace Rock.MergeTemplates
         /// </summary>
         /// <param name="outputDoc">The output document.</param>
         /// <param name="globalMergeHash">The global merge hash.</param>
-        private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, DotLiquid.Hash globalMergeHash )
+        private void HeaderFooterGlobalMerge( WordprocessingDocument outputDoc, LavaDataDictionary globalMergeHash )
         {
             // make sure that all proof codes get removed so that the lava can be found
             MarkupSimplifier.SimplifyMarkup( outputDoc, new SimplifyMarkupSettings { RemoveProof = true } );

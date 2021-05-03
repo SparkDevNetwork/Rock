@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -86,7 +87,7 @@ namespace Rock.Model
         public bool IsActivatedWithWorkflow { get; set; }
 
         /// <summary>
-        /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process. 
+        /// Gets or sets the order that this WorkflowActivityType will be executed in the WorkflowType's process.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> indicating the order that this Activity will be executed in the Workflow.
@@ -105,11 +106,11 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are 
+        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are
         /// performed by this WorkflowActivityType.
         /// </summary>
         /// <value>
@@ -124,7 +125,7 @@ namespace Rock.Model
         private ICollection<WorkflowActionType> _actionTypes;
 
         /// <summary>
-        /// Gets the parent security authority for this WorkflowActivityType. 
+        /// Gets the parent security authority for this WorkflowActivityType.
         /// </summary>
         /// <value>
         /// An entity object implementing the  <see cref="Security.ISecured"/> interface, representing the parent security authority.

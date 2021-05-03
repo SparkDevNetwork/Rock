@@ -11,8 +11,6 @@
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?RootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFolderRoot);
             iframeUrl += "&BrowserMode=image";
-            iframeUrl += "&FileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);
-            iframeUrl += "&ImageFileTypeWhiteList=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFileTypeWhiteList);
             iframeUrl += "&Theme=" + context.options.rockTheme;
             iframeUrl += "&ModalMode=1";
             iframeUrl += "&Title=Select%20Image";
@@ -34,7 +32,7 @@
                         var imageElement = document.createElement('img');
                         var url = encodeURI(Rock.settings.get('baseUrl') + resultParts[0]);
                         var altText = resultParts[1];
-                        
+
                         var imgTarget = context.invoke('editor.restoreTarget');
                         // if they already have an img selected, just change the src of the image
                         if (imgTarget) {
@@ -62,7 +60,7 @@
     });
 
     if (context.options.rockFileBrowserOptions.enabled) {
-        return button.render();   // return button as jquery object 
+        return button.render();   // return button as jquery object
     }
     else {
         return null;

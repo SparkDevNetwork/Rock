@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -45,16 +46,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ViewerPersonAliasId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the Target/Viewed <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Target/Viewed <see cref="Rock.Model.Person"/> 
+        /// A <see cref="System.Int32"/> representing the Id of the Target/Viewed <see cref="Rock.Model.Person"/>
         /// </value>
         [DataMember]
         public int? TargetPersonAliasId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Date and Time that the that the person was viewed.
         /// </summary>
@@ -63,7 +64,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? ViewDateTime { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the IP address of the computer/device that requested the page view.
         /// </summary>
@@ -73,7 +74,7 @@ namespace Rock.Model
         [MaxLength( 25 )]
         [DataMember]
         public string IpAddress { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the source of the view (site id or application name)
         /// </summary>
@@ -94,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the viewer.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias ViewerPersonAlias { get; set; }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Person"/> entity representing the person who was viewed.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
         #endregion
@@ -128,7 +129,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Person Viewed Configuration class.
     /// </summary>

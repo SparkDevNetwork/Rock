@@ -35,7 +35,7 @@ using Authorization = Rock.Security.Authorization;
 namespace Rock.Mobile
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class MobileHelper
     {
@@ -209,7 +209,7 @@ namespace Rock.Mobile
                 RockDateTime.Now,
                 RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ),
                 true,
-                false.ToString() );
+                username.StartsWith( "rckipid=" ).ToString() );
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
         }
@@ -365,7 +365,8 @@ namespace Rock.Mobile
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
-                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic
+                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
+                DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically
             };
 
             //

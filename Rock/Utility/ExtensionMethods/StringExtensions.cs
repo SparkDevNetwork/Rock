@@ -1234,6 +1234,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all whitespace in a string, including carriage return and line feed characters.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns></returns>
+        public static string RemoveWhiteSpace( this string input )
+        {
+            return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
+        }
+
+        /// <summary>
         /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
         /// from https://stackoverflow.com/a/1450889/1755417
         /// </summary>
@@ -1286,6 +1296,16 @@ namespace Rock
             writer.Flush();
             stream.Position = 0;
             return new System.IO.StreamReader( stream );
+        }
+
+        /// <summary>
+        /// A string extension method that escape XML.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A string.</returns>
+        public static string EscapeXml( this string str )
+        {
+            return str.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ).Replace( "\"", "&quot;" ).Replace( "'", "&apos;" );
         }
 
         #endregion String Extensions

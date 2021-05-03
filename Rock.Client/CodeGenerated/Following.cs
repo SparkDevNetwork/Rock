@@ -54,6 +54,9 @@ namespace Rock.Client
         /// <summary />
         public int PersonAliasId { get; set; }
 
+        /// <summary />
+        public string PurposeKey { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -93,6 +96,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PersonAliasId = source.PersonAliasId;
+            this.PurposeKey = source.PurposeKey;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -115,12 +119,12 @@ namespace Rock.Client
         public PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }

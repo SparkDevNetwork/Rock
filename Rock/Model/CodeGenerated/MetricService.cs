@@ -112,6 +112,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdminPersonAliasId = source.AdminPersonAliasId;
+            target.AutoPartitionOnPrimaryCampus = source.AutoPartitionOnPrimaryCampus;
             target.DataViewId = source.DataViewId;
             target.Description = source.Description;
             target.EnableAnalytics = source.EnableAnalytics;

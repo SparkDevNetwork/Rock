@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -50,7 +51,7 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EntityType"/> that this NoteType is used for.  A NoteType can only be associated with a single <see cref="Rock.Model.EntityType"/> and will 
+        /// Gets or sets the Id of the <see cref="Rock.Model.EntityType"/> that this NoteType is used for.  A NoteType can only be associated with a single <see cref="Rock.Model.EntityType"/> and will
         /// only contain notes for entities of this type. This property is required.
         /// </summary>
         /// <value>
@@ -61,7 +62,7 @@ namespace Rock.Model
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the qualifier column/property on the <see cref="Rock.Model.EntityType"/> that this NoteType applies to. If this is not 
+        /// Gets or sets the name of the qualifier column/property on the <see cref="Rock.Model.EntityType"/> that this NoteType applies to. If this is not
         /// provided, the note type can be used on all entities of the provided <see cref="Rock.Model.EntityType"/>.
         /// </summary>
         /// <value>
@@ -72,7 +73,7 @@ namespace Rock.Model
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value in the qualifier column that this note type applies to.  For instance this note type and related notes will only be applicable to entity 
+        /// Gets or sets the qualifier value in the qualifier column that this note type applies to.  For instance this note type and related notes will only be applicable to entity
         /// if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
         /// </summary>
         /// <value>
@@ -111,7 +112,7 @@ namespace Rock.Model
         [RockObsolete( "1.8" )]
         [Obsolete( "No Longer Supported", true )]
         [NotMapped]
-        [LavaIgnore]
+        [LavaHidden]
         public string CssClass
         {
             get
@@ -126,7 +127,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the name of an icon CSS class. 
+        /// Gets or sets the name of an icon CSS class.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the name of an icon CSS class
@@ -261,7 +262,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Note">Notes</see> of this NoteType 
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Note">Notes</see> of this NoteType
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> that this NoteType is associated with.
@@ -334,7 +335,7 @@ namespace Rock.Model
 
     }
 
-    #region Entity Configuration    
+    #region Entity Configuration
 
     /// <summary>
     /// Note Type Configuration class.

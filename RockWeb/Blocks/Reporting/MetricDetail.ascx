@@ -69,32 +69,35 @@
                             <div class="col-md-12">
                                 <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
 
-                                    <asp:Panel ID="pnlSQLSourceType" runat="server">
-                                        <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="fa fa-question-circle"></i></a>
-                                        <div class="alert alert-info js-sourcesql-help" id="nbSQLHelp" runat="server" style="display: none;"></div>
-                                        <Rock:CodeEditor ID="ceSourceSql" runat="server" EditorMode="Sql" />
-                                    </asp:Panel>
+                                <asp:Panel ID="pnlSQLSourceType" runat="server">
+                                    <label>Source SQL</label><a class="help" href="javascript: $('.js-sourcesql-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                    <div class="alert alert-info js-sourcesql-help" id="nbSQLHelp" runat="server" style="display: none;"></div>
+                                    <Rock:CodeEditor ID="ceSourceSql" runat="server" EditorMode="Sql" />
+                                </asp:Panel>
 
-                                    <asp:Panel ID="pnlLavaSourceType" runat="server">
-                                        <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
-                                        <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
-                                        <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
-                                    </asp:Panel>
+                                <asp:Panel ID="pnlLavaSourceType" runat="server">
+                                    <label>Source Lava</label><a class="help" href="javascript: $('.js-sourcelava-help').toggle;"><i class="fa fa-question-circle"></i></a>
+                                    <div class="alert alert-info js-sourcelava-help" id="nbLavaHelp" runat="server" style="display: none;"></div>
+                                    <Rock:CodeEditor ID="ceSourceLava" runat="server" EditorMode="Lava" />
+                                </asp:Panel>
 
-                                    <asp:Panel ID="pnlDataviewSourceType" runat="server">
-                                        <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" />
-                                        <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
-                                    </asp:Panel>
+                                <asp:Panel ID="pnlDataviewSourceType" runat="server">
+                                    <div class="row">
+                                        <div class="col-md-6"><Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" OnSelectItem="dvpDataView_SelectItem" /></div>
+                                        <div class="col-md-6"><Rock:RockCheckBox ID="cbAutoPartionPrimaryCampus" runat="server" Label="Auto Partition on Primary Campus" Visible="false" Help="Enabling this feature will auto partition the individuals in the data view based on their primary campus. This must be selected for the campus partion to work." /></div>
+                                    </div>
+                                    <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
+                                </asp:Panel>
 
-                                    <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Help="Select the schedule of when the metric values should be calculated.">
-                                        <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
+                                <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule" Help="Select the schedule of when the metric values should be calculated.">
+                                    <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
 
-                                        <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
+                                    <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
 
-                                        <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
-                                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
-                                    </Rock:RockControlWrapper>
-                                </div>
+                                    <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                                    <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
+                                </Rock:RockControlWrapper>
+                            </div>
                         </div>
                     </div>
 
@@ -123,8 +126,14 @@
                 </div>
 
                 <fieldset id="fieldsetViewDetails" runat="server">
-                    <Rock:HighlightLabel ID="lMetricChartSummary" runat="server" Text="Summary of Values" />
-                    <Rock:LineChart ID="lcMetricsChart" runat="server" />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
+                            <div id="pnlActivityChart" runat="server" class="chart-banner">
+                                <canvas id="chartCanvas" runat="server" />
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col-md-6">

@@ -33,6 +33,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -70,7 +71,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is reprensented by the GroupMember.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is represented by the GroupMember.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -136,7 +137,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the order of Groups of the Group's GroupType for the Person.
-        /// For example, if this is a FamilyGroupType, GroupOrder can be used to specify which family should be 
+        /// For example, if this is a FamilyGroupType, GroupOrder can be used to specify which family should be
         /// listed as 1st (primary), 2nd, 3rd, etc for the Person.
         /// If GroupOrder is null, the group will be listed in no particular order after the ones that do have a GroupOrder.
         /// NOTE: Use int.MaxValue in OrderBy statements for null GroupOrder values
@@ -177,7 +178,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -187,7 +188,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>
         /// </summary>
         /// <value>
         /// The schedule template identifier.
@@ -196,7 +197,7 @@ namespace Rock.Model
         public int? ScheduleTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule start date.
@@ -254,7 +255,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -267,7 +268,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -276,7 +277,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member requirements.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberRequirement">group member requirements</see>.
         /// </summary>
         /// <value>
         /// The group member requirements.
@@ -285,7 +286,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
 
         /// <summary>
-        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule template.
@@ -303,7 +304,7 @@ namespace Rock.Model
         private List<HistoryItem> HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member assignments.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment">group member assignments</see>.
         /// </summary>
         /// <value>
         /// The group member assignments.
@@ -367,7 +368,7 @@ namespace Rock.Model
              this has been implemented as allowing EDIT on GroupMember, regardless of the ManageMembers setting.
                - See https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberDetail.ascx.cs#L303
                   and https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberList.ascx.cs#L213
-            
+
              */
 
             if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
@@ -1245,7 +1246,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleTemplate ).WithMany().HasForeignKey( p => p.ScheduleTemplateId ).WillCascadeOnDelete( false );
 
-            // Tell EF that we never want archived group members. 
+            // Tell EF that we never want archived group members.
             // This will prevent archived members from being included in any GroupMember queries.
             // It will also prevent navigation properties of GroupMember from including archived group members.
             Z.EntityFramework.Plus.QueryFilterManager.Filter<GroupMember>( x => x.Where( m => m.IsArchived == false ) );

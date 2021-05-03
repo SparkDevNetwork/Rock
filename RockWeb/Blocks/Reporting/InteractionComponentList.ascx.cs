@@ -21,12 +21,12 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -49,11 +49,11 @@ namespace RockWeb.Blocks.Reporting
         </div>
 		<div class='panel-body'>
 			{% for component in InteractionComponents %}
-			
+
 				 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
                 {% endif %}
-                
+
 				 <div class='panel panel-widget'>
                     <div class='panel-heading clearfix'>
                         {% if component.Name != '' %}<h1 class='panel-title pull-left'>{{ component.Name }}</h1>{% endif %}
@@ -63,8 +63,8 @@ namespace RockWeb.Blocks.Reporting
                 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     </a>
                 {% endif %}
-				
-			{% endfor %}	
+
+			{% endfor %}
             <div class ='nav-paging'>
             {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != '' %}
                 <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i> Prev<a/>
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
                         .Select( g => new InteractionCount
                                     {
                                         ComponentId = g.Key,
-                                        Count = g.Count() 
+                                        Count = g.Count()
                                     } )
                         .ToList();
 
@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// POCO class for return interaction counts
         /// </summary>
-        class InteractionCount : DotLiquid.Drop, Rock.Lava.ILiquidizable
+        class InteractionCount : RockDynamic
         {
             /// <summary>
             /// Gets or sets the component identifier.
@@ -289,20 +289,6 @@ namespace RockWeb.Blocks.Reporting
             /// The count.
             /// </value>
             public int Count { get; set; }
-
-            /// <summary>
-            /// Gets the available keys (for debuging info).
-            /// </summary>
-            /// <value>
-            /// The available keys.
-            /// </value>
-            public List<string> AvailableKeys
-            {
-                get
-                {
-                    return new List<string> { "ComponentId", "Count" };
-                }
-            }
         }
     }
 }

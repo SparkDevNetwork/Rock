@@ -27,6 +27,7 @@ namespace Rock.Attribute
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
         private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
+        private const string FORCE_VISIBLE_KEY = "forceVisible";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusFieldAttribute" /> class.
@@ -101,5 +102,23 @@ namespace Rock.Attribute
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the campus picker should be forced visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the campus picker should be forced visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceVisible
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( FORCE_VISIBLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( FORCE_VISIBLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
     }
 }

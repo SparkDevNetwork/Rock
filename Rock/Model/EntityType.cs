@@ -24,11 +24,12 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Core" )]
     [NotAudited]
@@ -51,7 +52,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly name of the EntityType. 
+        /// Gets or sets the assembly name of the EntityType.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Assembly Name of the EntityType.
@@ -299,14 +300,14 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool IsSystem
         {
             get { return IsSecured || IsEntity; }
         }
 
         /// <summary>
-        /// Gets or sets the type of the single value field. 
+        /// Gets or sets the type of the single value field.
         /// This helps determine what type of control can be used to select this type of Entity (single values)
         /// </summary>
         /// <value>
@@ -315,7 +316,7 @@ namespace Rock.Model
         public virtual FieldType SingleValueFieldType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the multi value field.  
+        /// Gets or sets the type of the multi value field.
         /// This helps determine what type of control can be used to select this type of Entity (multiple values)
         /// </summary>
         /// <value>

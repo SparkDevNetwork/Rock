@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Store
                 {
                     string storeKey = StoreService.GetOrganizationKey();
 
-                    Response.Redirect("http://www.rockrms.com/Rock/Organization/" + storeKey );
+                    Response.Redirect("https://www.rockrms.com/Rock/Organization/" + storeKey );
                 }
                 else
                 {
@@ -111,14 +111,14 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            
+
         }
 
         #endregion
 
         #region Methods
 
-        
+
 
         #endregion
 

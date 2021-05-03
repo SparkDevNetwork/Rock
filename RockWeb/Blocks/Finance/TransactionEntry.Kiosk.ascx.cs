@@ -18,24 +18,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
 using System.Text.RegularExpressions;
-using System.Dynamic;
-
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Security;
-using Rock.Financial;
-using Rock.Communication;
-using System.Threading;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -52,10 +47,10 @@ namespace RockWeb.Blocks.Finance
     [AccountsField( "Accounts", "Accounts to allow giving. This list will be filtered by campus context when displayed.", true, "", "", 1 )]
     [TextField( "Batch Name Prefix", "The prefix to add to the financial batch.", true, "Kiosk Giving", "", 2 )]
     [LinkedPage( "Homepage", "Homepage of the kiosk.", true, "", "", 2 )]
-    [PersonField("Anonymous Person", "Person in the database to assign anonymous giving to.", true, "", "", 3)]
+    [PersonField( "Anonymous Person", "Person in the database to assign anonymous giving to.", true, "", "", 3 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use when creating a new individual.", true, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT, "", 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use when creating a new individual.", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 5 )]
-    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4,"", 6 )]
+    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4, "", 6 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
@@ -70,13 +65,13 @@ namespace RockWeb.Blocks.Finance
         // used for private variables
         private List<GivingUnit> GivingUnits
         {
-            get { return (List<GivingUnit>)ViewState["GivingUnits"]; }
+            get { return ( List<GivingUnit> ) ViewState["GivingUnits"]; }
             set { ViewState["GivingUnits"] = value; }
         }
 
         private GivingUnit SelectedGivingUnit
         {
-            get { return (GivingUnit)ViewState["SelectedGivingUnit"]; }
+            get { return ( GivingUnit ) ViewState["SelectedGivingUnit"]; }
             set { ViewState["SelectedGivingUnit"] = value; }
         }
 
@@ -94,7 +89,7 @@ namespace RockWeb.Blocks.Finance
 
         private int? AnonymousGiverPersonAliasId
         {
-            get { return (int)ViewState["AnonymousGiverPersonAliasId"]; }
+            get { return ( int ) ViewState["AnonymousGiverPersonAliasId"]; }
             set { ViewState["AnonymousGiverPersonAliasId"] = value; }
         }
 
@@ -196,7 +191,7 @@ namespace RockWeb.Blocks.Finance
                     BuildGivingUnitControls();
                 }
 
-                if (pnlAccountEntry.Visible)
+                if ( pnlAccountEntry.Visible )
                 {
                     BuildAccountControls();
                 }
@@ -241,7 +236,7 @@ namespace RockWeb.Blocks.Finance
         // called when a giving unit is selected
         void unitName_Click( object sender, EventArgs e )
         {
-            LinkButton lb = (LinkButton)sender;
+            LinkButton lb = ( LinkButton ) sender;
             this.SelectedGivingUnit = new GivingUnit( lb.CommandArgument );
 
             lbAccountEntryBack.Attributes.Add( "back-to", "giving-unit-select" );
@@ -304,17 +299,7 @@ namespace RockWeb.Blocks.Finance
                 CurrencyBox cb = phAccounts.FindControl( "tbAccount_" + account.Key.ToString() ) as CurrencyBox;
                 if ( cb != null )
                 {
-                    decimal fundAmount = 0;
-                    if ( !decimal.TryParse( cb.Text.Trim(), out fundAmount ) )
-                    {
-                        if ( !string.IsNullOrEmpty( cb.Text ) )
-                        {
-                            accountFieldsValid = false;
-                        }
-
-                        fundAmount = 0;
-                    }
-                    fundAmount = Math.Round( fundAmount, 2 );
+                    var fundAmount = cb.Value ?? 0.0M;
 
                     if ( fundAmount >= 0 )
                     {
@@ -327,7 +312,8 @@ namespace RockWeb.Blocks.Finance
             if ( !accountFieldsValid )
             {
                 nbAccountEntry.Text = "Please enter valid amounts in all fields.";
-            } else if ( totalAmount <= 0 )
+            }
+            else if ( totalAmount <= 0 )
             {
                 nbAccountEntry.Text = "Please enter a valid amount for one or more accounts.";
             }
@@ -681,7 +667,7 @@ namespace RockWeb.Blocks.Finance
                     if ( person.GivingGroupId == null )
                     {
                         // giving as an individuals
-                        searchResults.Add( new GivingUnit(person.PrimaryAliasId.Value, person.LastName, person.FirstName));
+                        searchResults.Add( new GivingUnit( person.PrimaryAliasId.Value, person.LastName, person.FirstName ) );
                     }
                     else
                     {
@@ -754,7 +740,7 @@ namespace RockWeb.Blocks.Finance
         // show receipt panel
         private void ShowReceiptPanel()
         {
-            var mergeFields = GetMergeFields(null);
+            var mergeFields = GetMergeFields( null );
 
             string template = GetAttributeValue( "ReceiptLava" );
 
@@ -762,7 +748,7 @@ namespace RockWeb.Blocks.Finance
             pnlReceipt.Visible = true;
         }
 
-        private Dictionary<string, object> GetMergeFields(Person givingUnit)
+        private Dictionary<string, object> GetMergeFields( Person givingUnit )
         {
             // get giving unit
             RockContext rockContext = new RockContext();
@@ -880,7 +866,7 @@ namespace RockWeb.Blocks.Finance
                     phGivingUnits.Controls.Add( lb );
                     lb.CommandArgument = unit.CommandArg;
                     lb.Click += new EventHandler( unitName_Click );
-                    lb.Text = string.Format("{0} <small>{1}</small>", unit.LastName, unit.FirstNames);
+                    lb.Text = string.Format( "{0} <small>{1}</small>", unit.LastName, unit.FirstNames );
                 }
             }
             else
@@ -922,7 +908,8 @@ namespace RockWeb.Blocks.Finance
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
             {
-                Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray(); ;
+                Guid[] selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( s => Guid.Parse( s ) ).ToArray();
+                ;
 
                 var accounts = accountService.Queryable()
                                 .Where( a => selectedAccounts.Contains( a.Guid ) );
@@ -996,7 +983,7 @@ namespace RockWeb.Blocks.Finance
         }
         #endregion
 
-}
+    }
 
     [Serializable]
     class GivingUnit

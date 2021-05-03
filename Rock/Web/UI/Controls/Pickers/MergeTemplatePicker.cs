@@ -144,13 +144,13 @@ namespace Rock.Web.UI.Controls
 
                         while ( parentCategory != null )
                         {
-                            parentCategoryIds += parentCategory.Id.ToString() + ",";
+                            parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
                             parentCategory = parentCategory.ParentCategory;
                         }
                     }
                 }
 
-                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ExpandedCategoryIds = parentCategoryIds.TrimEnd( new[] { ',' } );
                 ItemIds = ids;
                 ItemNames = names;
             }

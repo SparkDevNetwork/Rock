@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.WebFarm;
+
 namespace Rock.Bus.Queue
 {
     /// <summary>
@@ -29,5 +31,14 @@ namespace Rock.Bus.Queue
         /// The name.
         /// </value>
         public override string Name => "rock-web-farm-queue";
+
+        /// <summary>
+        /// Gets the name for configuration. For the web farm we want each node/process
+        /// combo to be a unique consumer. This is because of IIS process recycling.
+        /// </summary>
+        /// <value>
+        /// The name for configuration.
+        /// </value>
+        public override string NameForConfiguration => $"{Name}_{RockMessageBus.NodeName}_{RockWebFarm.ProcessId}";
     }
 }

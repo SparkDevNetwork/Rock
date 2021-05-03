@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -196,6 +197,15 @@ namespace Rock.Model
         [DataMember]
         public bool EnableAnalytics { get; set; }
 
+        /// <summary>
+        /// If set to true this feature will auto partition the individuals in the data view based on their primary campus.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic partition on primary campus]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoPartitionOnPrimaryCampus { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -206,7 +216,7 @@ namespace Rock.Model
         /// <value>
         /// The metric partitions.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<MetricPartition> MetricPartitions { get; set; }
 
         /// <summary>
@@ -215,7 +225,7 @@ namespace Rock.Model
         /// <value>
         /// The metric values.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
@@ -233,7 +243,7 @@ namespace Rock.Model
         /// <value>
         /// The data view.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataView DataView { get; set; }
 
         /// <summary>
@@ -242,7 +252,7 @@ namespace Rock.Model
         /// <value>
         /// The metric champion person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias MetricChampionPersonAlias { get; set; }
 
         /// <summary>
@@ -251,7 +261,7 @@ namespace Rock.Model
         /// <value>
         /// The admin person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias AdminPersonAlias { get; set; }
 
         /// <summary>
@@ -260,7 +270,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -280,7 +290,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the numeric data.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public MetricNumericDataType NumericDataType { get; set; }
 
         #endregion
@@ -322,7 +332,7 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            // Because a metric can belong to more than one category, security for a metric is handled a bit differently. 
+            // Because a metric can belong to more than one category, security for a metric is handled a bit differently.
             // If the user is specifically granted or denied access at the metric level, that will overrule any security defined
             // at any of the categories that metric belongs to.
 
@@ -334,8 +344,8 @@ namespace Rock.Model
                 return isAuthorized.Value;
             }
 
-            // If metric belongs to any categories, give them access if they have access to any of the categories (even if 
-            // one or more denies them access). If not granted access by a category, check to see if any category denies 
+            // If metric belongs to any categories, give them access if they have access to any of the categories (even if
+            // one or more denies them access). If not granted access by a category, check to see if any category denies
             // them access.
             if ( this.MetricCategories != null )
             {

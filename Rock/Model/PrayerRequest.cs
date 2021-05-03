@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -51,7 +52,7 @@ namespace Rock.Model
         /// Gets or sets the Last Name of the person that this prayer request is about. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> containing the last name of the person that this prayer request is about.  
+        /// A <see cref="System.String"/> containing the last name of the person that this prayer request is about.
         /// </value>
         [MaxLength( 50 )]
         [DataMember( IsRequired = false )]
@@ -118,7 +119,7 @@ namespace Rock.Model
         public DateTime EnteredDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the date that the prayer request expires. 
+        /// Gets or sets the date that the prayer request expires.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the date that the prayer request expires.
@@ -174,7 +175,7 @@ namespace Rock.Model
         public bool? IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the prayer request has been approved. 
+        /// Gets or sets a flag indicating if the prayer request has been approved.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this prayer request has been approved; otherwise <c>false</c>.
@@ -257,7 +258,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -275,7 +276,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -310,7 +311,7 @@ namespace Rock.Model
         /// Gets the name of the prayer request. The format for this is the EnteredDate - FullName. This is required to implement ICategorized
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Name of prayer request. 
+        /// A <see cref="System.String"/> representing the Name of prayer request.
         /// </value>
         public virtual string Name
         {

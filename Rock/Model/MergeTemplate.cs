@@ -22,11 +22,12 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "MergeTemplate" )]
@@ -103,7 +104,7 @@ namespace Rock.Model
         /// <value>
         /// The template binary file.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile TemplateBinaryFile { get; set; }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the merge template type entity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual EntityType MergeTemplateTypeEntityType { get; set; }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns the Name of the MergeTemplate 
+        /// Returns the Name of the MergeTemplate
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> that represents this instance.
@@ -246,7 +247,7 @@ namespace Rock.Model
     #region enums
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum MergeTemplateOwnership
     {

@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         DefaultValue = "fa fa-list-ol",
         Key = AttributeKey.DefaultIconCSSClass )]
-    
+
     [CategoryField( "Root Category",
         Description = "Select the root category to use as a starting point for the tree view.",
         AllowMultiple = false,
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Core
                                         if ( selectedCategory != null )
                                         {
                                             string categoryExpandedID = CategoryNodePrefix + selectedCategory.Id.ToString();
-                                            parentIdList.Insert( 0, CategoryNodePrefix + categoryExpandedID );
+                                            parentIdList.Insert( 0, categoryExpandedID );
                                         }
                                     }
                                 }

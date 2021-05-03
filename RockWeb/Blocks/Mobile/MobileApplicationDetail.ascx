@@ -174,7 +174,7 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
-                                        
+
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>
@@ -277,6 +277,8 @@
                     </div>
 
                     <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
+                        <Rock:RockCheckBox ID="cbEnableNotificationsAutomatically" runat="server" Label="Enable Notifications Automatically" Help="When turned on the mobile application will automatically request push notifications permission from the user at launch." />
+
                         <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 
                         <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>

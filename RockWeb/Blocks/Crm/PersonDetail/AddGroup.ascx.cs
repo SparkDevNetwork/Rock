@@ -990,7 +990,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string groupMembersHtml = string.Empty;
                 foreach ( var groupMember in sortedGroupMembers )
                 {
-                    string maritalStatusValue = "Unknown Martial Status";
+                    string maritalStatusValue = "Unknown Marital Status";
                     if ( groupMember.Person.MaritalStatusValue != null )
                     {
                         maritalStatusValue = groupMember.Person.MaritalStatusValue.Value;

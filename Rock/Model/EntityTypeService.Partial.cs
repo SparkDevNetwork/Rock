@@ -139,7 +139,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> with the 
+        /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> with the
         /// "Common" flag set to true.
         /// </summary>
         /// <returns>A list of <see cref="Rock.Model.EntityType"/> <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> ordered by their "Common" flag and FriendlyName</returns>
@@ -310,6 +310,16 @@ namespace Rock.Model
                     .OrderBy( a => a.Name )
                     .ToList();
 
+                // clean up entitytypes that don't have an Assembly, but somehow have IsEntity or IsSecured set
+                foreach ( var entityTypesWithoutAssembliesButIsEntity in entityTypeInDatabaseList.Where( e => string.IsNullOrEmpty( e.AssemblyName ) && ( e.IsEntity || e.IsSecured ) ) )
+                {
+                    if ( entityTypesWithoutAssembliesButIsEntity.AssemblyName.IsNullOrWhiteSpace() )
+                    {
+                        entityTypesWithoutAssembliesButIsEntity.IsEntity = false;
+                        entityTypesWithoutAssembliesButIsEntity.IsSecured = false;
+                    }
+                }
+
                 foreach ( var oldEntityType in reflectedEntityTypesThatNoLongerExist )
                 {
 
@@ -329,7 +339,6 @@ namespace Rock.Model
                           so, if this happens, we'll ignore any error it returns in those cases too
                          */
                     }
-                    
                     if ( foundType == null )
                     {
                         // it was manually registered but we can't create a Type from it
@@ -372,10 +381,10 @@ namespace Rock.Model
                     entityTypesFromReflection.Remove( existingEntityType.Name );
                 }
 
-                // Add the newly discovered entities 
+                // Add the newly discovered entities
                 foreach ( var entityType in entityTypesFromReflection.Values )
                 {
-                    // Don't add the EntityType entity as it will probably have been automatically 
+                    // Don't add the EntityType entity as it will probably have been automatically
                     // added by the audit on a previous save in this method.
                     if ( entityType.Name != "Rock.Model.EntityType" )
                     {

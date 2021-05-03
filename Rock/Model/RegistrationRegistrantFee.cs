@@ -19,11 +19,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationRegistrantFee" )]
@@ -97,7 +98,7 @@ namespace Rock.Model
         /// <value>
         /// The registration registrant.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>
@@ -106,7 +107,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplateFee RegistrationTemplateFee { get; set; }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The registration template fee item.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual RegistrationTemplateFeeItem RegistrationTemplateFeeItem { get; set; }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal TotalCost
         {
             get { return Quantity * Cost; }
@@ -143,7 +144,7 @@ namespace Rock.Model
         public decimal DiscountedCost ( decimal discountPercent )
         {
             var discountedCost = TotalCost;
-            
+
             if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies && ( RegistrationRegistrant == null || RegistrationRegistrant.DiscountApplies ) )
             {
                 discountedCost = discountedCost - ( discountedCost * discountPercent );

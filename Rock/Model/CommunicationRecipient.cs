@@ -27,6 +27,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Web.UI.Controls;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -156,7 +157,7 @@ namespace Rock.Model
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
-        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
+        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient.
         /// </value>
         [DataMember]
         public string AdditionalMergeValuesJson
@@ -219,7 +220,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Communication Communication { get; set; }
 
         /// <summary>

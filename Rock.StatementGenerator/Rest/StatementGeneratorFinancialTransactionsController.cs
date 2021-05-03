@@ -24,6 +24,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.StatementGenerator.Rest
@@ -92,9 +93,9 @@ namespace Rock.StatementGenerator.Rest
                         GroupId = a.Value
                     } ).Distinct();
 
-                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
-                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
-                // to determine which address(es) the statements need to be mailed to 
+                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.
+                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order
+                // to determine which address(es) the statements need to be mailed to
                 var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 var groupMembersQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
 
@@ -604,10 +605,10 @@ namespace Rock.StatementGenerator.Rest
                     //// Pledges but organized by Account (in case more than one pledge goes to the same account)
                     //// NOTE: In the case of multiple pledges to the same account (just in case they accidently or intentionally had multiple pledges to the same account)
                     ////  -- Date Range
-                    ////    -- StartDate: Earliest StartDate of all the pledges for that account 
+                    ////    -- StartDate: Earliest StartDate of all the pledges for that account
                     ////    -- EndDate: Lastest EndDate of all the pledges for that account
                     ////  -- Amount Pledged: Sum of all Pledges to that account
-                    ////  -- Amount Given: 
+                    ////  -- Amount Given:
                     ////    --  The sum of transaction amounts to that account between
                     ////      -- Start Date: Earliest Start Date of all the pledges to that account
                     ////      -- End Date: Whatever is earlier (Statement End Date or Pledges' End Date)
@@ -682,7 +683,7 @@ namespace Rock.StatementGenerator.Rest
                     mergeFields.Add( "Pledges", pledgeSummaryList );
                 }
 
-                mergeFields.Add( "Options", options );
+                mergeFields.Add( "Options", new RockDynamic( options ) );
 
                 var currentPerson = this.GetPerson();
                 result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );

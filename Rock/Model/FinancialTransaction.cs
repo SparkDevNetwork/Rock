@@ -26,6 +26,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -104,7 +105,7 @@ namespace Rock.Model
         public DateTime? FutureProcessingDateTime { get; set; }
 
         /// <summary>
-        /// For Credit Card transactions, this is the response code that the gateway returns. 
+        /// For Credit Card transactions, this is the response code that the gateway returns.
         /// For Scanned Checks, this is the check number.
         /// </summary>
         /// <value>
@@ -159,7 +160,7 @@ namespace Rock.Model
         public string CheckMicrEncrypted { get; set; }
 
         /// <summary>
-        /// One Way Encryption (SHA1 Hash) of Raw Track of the MICR read. The same raw MICR will result in the same hash.  
+        /// One Way Encryption (SHA1 Hash) of Raw Track of the MICR read. The same raw MICR will result in the same hash.
         /// Enables detection of duplicate scanned checks
         /// Note: duplicate detection requires that the duplicate check was scanned using the same scanner type (Ranger vs Magtek)
         /// </summary>
@@ -205,7 +206,7 @@ namespace Rock.Model
         public int? ScheduledTransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is 
+        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is
         /// from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
         /// </summary>
         /// <value>
@@ -214,7 +215,7 @@ namespace Rock.Model
         public int? ProcessedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when is when the transaction 
+        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when is when the transaction
         /// was matched (or started to match) to the person who wrote the check.
         /// </summary>
         /// <value>
@@ -299,17 +300,18 @@ namespace Rock.Model
 
             set
             {
-                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this
             }
         }
 
         /// <summary>
-        /// Gets or sets the non cash asset type value identifier.
+        /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/> identifier.
         /// </summary>
         /// <value>
         /// The non cash asset type value identifier.
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE )]
         public int? NonCashAssetTypeValueId { get; set; }
 
         /// <summary>
@@ -343,12 +345,22 @@ namespace Rock.Model
                         SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
+        public int? ForeignCurrencyCodeValueId { get; set; }
         #endregion Entity Properties
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the authorized person alias.
+        /// Gets or sets the authorized <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The authorized person alias.
@@ -362,11 +374,11 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway.
+        /// Gets or sets the <see cref="Rock.Model.FinancialGateway">gateway</see>.
         /// </summary>
         /// <value>
         /// The gateway.
@@ -375,7 +387,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial payment detail.
+        /// Gets or sets the <see cref="Rock.Model.FinancialPaymentDetail"/>.
         /// </summary>
         /// <value>
         /// The financial payment detail.
@@ -408,7 +420,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialTransactionRefund RefundDetails { get; set; }
 
         /// <summary>
@@ -417,17 +429,17 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is 
+        /// Gets or sets the PersonAlias of the <see cref="Rock.Model.PersonAlias"/> who processed the transaction. For example, if the transaction is
         /// from a scanned check, the ProcessedByPersonAlias is the person who matched (or started to match) the check to the person who wrote the check.
         /// </summary>
         /// <value>
         /// The processed by person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias ProcessedByPersonAlias { get; set; }
 
         /// <summary>
@@ -465,7 +477,7 @@ namespace Rock.Model
         /// <value>
         /// The refunds.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<FinancialTransactionRefund> Refunds
         {
             get { return _refunds ?? ( _refunds = new Collection<FinancialTransactionRefund>() ); }
@@ -479,7 +491,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {
@@ -492,7 +504,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeAmount
         {
@@ -517,7 +529,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeCoverageAmount
         {
@@ -590,7 +602,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the non cash asset type value.
+        /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <value>
         /// The non cash asset type value.
@@ -759,7 +771,7 @@ namespace Rock.Model
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
 
-                        // since images have a cascade delete relationship, make sure the PreSaveChanges gets called 
+                        // since images have a cascade delete relationship, make sure the PreSaveChanges gets called
                         var childImages = new FinancialTransactionImageService( dbContext as RockContext ).Queryable().Where( a => a.TransactionId == this.Id );
                         foreach ( var image in childImages )
                         {
@@ -924,7 +936,7 @@ namespace Rock.Model
     #region Extension Methods
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static partial class FinancialTransactionExtensionMethods
     {
@@ -1003,6 +1015,47 @@ namespace Rock.Model
 
                     detail.FeeAmount = apportionedFee;
                     totalFeeRemaining -= apportionedFee;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Distributes the Organization's currency total amount among the details of a transaction according to each detail's
+        /// percent of the total transaction amount.
+        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
+        /// If this method were called with a $11 amount, the detail's amount would be set to $9.9 and $1.1 respectively.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="totalOrganizationCurrencyAmount">The total amount for the transaction in the organization's currency</param>
+        public static void SetApportionedDetailAmounts( this FinancialTransaction transaction, decimal totalOrganizationCurrencyAmount )
+        {
+            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
+            {
+                return;
+            }
+
+            var totalAmount = transaction.TotalAmount;
+            var totalOrganizationCurrencyAmountRemaining = totalOrganizationCurrencyAmount;
+            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
+
+            foreach ( var detail in transaction.TransactionDetails )
+            {
+                numberOfDetailsRemaining--;
+                var isLastDetail = numberOfDetailsRemaining == 0;
+
+                if ( isLastDetail )
+                {
+                    // Ensure that the full amount is retained and some part of it
+                    // is not lost because of rounding
+                    detail.Amount = totalOrganizationCurrencyAmountRemaining;
+                }
+                else
+                {
+                    var percentOfTotal = detail.Amount / totalAmount;
+                    var organizationCurrencyAmount = Math.Round( percentOfTotal * totalOrganizationCurrencyAmount, 2 );
+
+                    detail.Amount = organizationCurrencyAmount;
+                    totalOrganizationCurrencyAmountRemaining -= organizationCurrencyAmount;
                 }
             }
         }

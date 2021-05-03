@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava.Blocks;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -8,20 +7,22 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class SqlTests
     {
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            var sqlLava = new Sql();
-            sqlLava.OnStartup();
-        }
+        //private static LavaIntegrationTestHelper _helper;
+
+        //[ClassInitialize]
+        //public static void ClassInitialize( TestContext testContext )
+        //{
+        //    _helper = LavaIntegrationTestHelper.New();
+        //}
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectShortTimeoutShouldFail()
         {
             var lavaScript = @"{% sql timeout:'10' %}
 
             WAITFOR DELAY '00:00:20';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -35,16 +36,18 @@ namespace Rock.Tests.Integration.Lava
             ]";
 
             var output = lavaScript.ResolveMergeFields( new Dictionary<string, object>(), null, "Sql" );
-            Assert.That.Contains( output, "Liquid error: Execution Timeout Expired." );
+
+            Assert.That.Contains( output, "Lava Error: Execution Timeout Expired." );
         }
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectLongTimeoutShouldPass()
         {
             var lavaScript = @"{% sql timeout:'40' %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -66,7 +69,7 @@ namespace Rock.Tests.Integration.Lava
         {
             var lavaScript = @"{% sql %}
 
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -84,12 +87,13 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlSelectNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
             var lavaScript = @"{% sql %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -103,10 +107,11 @@ namespace Rock.Tests.Integration.Lava
             ]";
 
             var output = lavaScript.ResolveMergeFields( new Dictionary<string, object>(), null, "Sql" );
-            Assert.That.Contains( output, "Liquid error: Execution Timeout Expired." );
+            Assert.That.Contains( output, "Lava Error: Execution Timeout Expired." );
         }
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandShortTimeoutShouldFail()
         {
             var lavaScript = @"{% sql statement:'command' timeout:'10' %}
@@ -117,10 +122,11 @@ namespace Rock.Tests.Integration.Lava
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
             var output = lavaScript.ResolveMergeFields( new Dictionary<string, object>(), null, "Sql" );
-            Assert.That.Contains( output, "Liquid error: Execution Timeout Expired." );
+            Assert.That.Contains( output, "Lava Error: Execution Timeout Expired." );
         }
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandLongTimeoutShouldPass()
         {
             var lavaScript = @"{% sql statement:'command' timeout:'40' %}
@@ -148,6 +154,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [TestProperty( "Execution Time", "Long" )]
         public void SqlCommandNoTimeoutButQueryLongerThen30SecondsShouldFail()
         {
             var lavaScript = @"{% sql statement:'command' %}
@@ -158,7 +165,7 @@ namespace Rock.Tests.Integration.Lava
             {{ results }} {{ 'record' | PluralizeForQuantity:results }} were deleted.";
 
             var output = lavaScript.ResolveMergeFields( new Dictionary<string, object>(), null, "Sql" );
-            Assert.That.Contains( output, "Liquid error: Execution Timeout Expired." );
+            Assert.That.Contains( output, "Lava Error: Execution Timeout Expired." );
         }
     }
 }

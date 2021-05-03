@@ -157,8 +157,7 @@ namespace Rock.Model
 
             // Make sure the enrollment does not already exist for the person
             var rockContext = Context as RockContext;
-            var streakService = new StreakService( rockContext );
-            var alreadyEnrolled = streakService.IsEnrolled( streakTypeCache.Id, personId );
+            var alreadyEnrolled = new StreakService( rockContext ).IsEnrolled( streakTypeCache.Id, personId );
 
             if ( alreadyEnrolled )
             {
@@ -186,9 +185,31 @@ namespace Rock.Model
                 EngagementMap = AllocateNewByteArray( streakTypeCache.OccurrenceMap?.Length )
             };
 
-            streakService.Add( streak );
-            return streak;
+            // create with a new context and save right away to the database to help prevent duplicate exceptions
+            using ( var newStreakContext = new RockContext() )
+            {
+                lock ( _addStreakLock )
+                {
+                    var streakService = new StreakService( newStreakContext );
+
+                    // double check the streak hasn't been added (this could happen if a new person checks into two services)
+                    var existingStreaks = streakService.GetByStreakTypeAndPerson( streakTypeCache.Id, personId );
+                    if ( !existingStreaks.Any() )
+                    {
+                        streakService.Add( streak );
+                        newStreakContext.SaveChanges();
+                        return streak;
+                    }
+                    else
+                    {
+                        // use existing streak
+                        return existingStreaks.First();
+                    }
+                }
+            }
         }
+
+        private static readonly object _addStreakLock = new object();
 
         /// <summary>
         /// Return the locations associated with the streak type structure
@@ -325,7 +346,7 @@ namespace Rock.Model
                 return;
             }
 
-            if (streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue)
+            if ( streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue )
             {
                 errorMessage = "A streak type linked activity entity id is required";
                 return;
@@ -1513,8 +1534,8 @@ namespace Rock.Model
         /// Handles the interaction record.
         /// </summary>
         /// <param name="interaction">The interaction.</param>
-        [RockObsolete("1.12")]
-        [Obsolete( "Use the override with the Interaction Id instead of the Interaction object.")]
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use the override with the Interaction Id instead of the Interaction object." )]
         public static void HandleInteractionRecord( Interaction interaction )
         {
             var rockContext = new RockContext();
@@ -1759,8 +1780,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="interaction"></param>
         /// <param name="errorMessage"></param>
-        [RockObsolete("1.11")]
-        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access.")]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
         public void HandleInteractionRecord( Interaction interaction, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1836,8 +1857,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="attendance"></param>
         /// <param name="errorMessage"></param>
-        [RockObsolete("1.11")]
-        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access.")]
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
         public void HandleAttendanceRecord( Attendance attendance, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1961,8 +1982,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence 
-        /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks 
+        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence
+        /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks
         /// should be synchronized, but the calling process should continue quickly and without regard to the success of this operation.
         /// This method creates it's own data context and any changes will be saved automatically.
         /// </summary>

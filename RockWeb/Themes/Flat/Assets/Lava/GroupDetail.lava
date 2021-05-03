@@ -78,9 +78,9 @@
 	</div>
 	{% endif %}
 
-	{% if LinkedPages.RosterPage != '' and  (LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False') %}
+	{% if LinkedPages.RosterPage and LinkedPages.AttendancePage and Group.GroupType.TakesAttendance == 'True' %}
 		<ul class="nav nav-tabs margin-v-lg">
-			{% if LinkedPages.RosterPage != '' %}
+			{% if LinkedPages.RosterPage != null %}
 				{% if LinkedPages.RosterPage == CurrentPage.Path %}
 					<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
 				{% else %}
@@ -88,7 +88,7 @@
 				{% endif %}
 			{% endif %}
 
-			{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+			{% if LinkedPages.AttendancePage != null and Group.GroupType.TakesAttendance == 'True' %}
 				{% if LinkedPages.AttendancePage == CurrentPage.Path %}
 					<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
 				{% else %}
@@ -306,7 +306,7 @@
 					<i class="fa fa-plus"></i> Add Member
 				</a>
 			{% endif %}
-			{% if LinkedPages.CommunicationPage != '' %}
+			{% if LinkedPages.CommunicationPage != null %}
 				{% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
 					<a href="#" onclick="{{ '' | Postback:'SendCommunication' }}" class="btn btn-default btn-xs">
 						<i class="fa fa-envelope-o"></i> Email Roster

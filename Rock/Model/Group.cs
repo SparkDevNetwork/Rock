@@ -33,6 +33,7 @@ using Rock.Security;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -86,7 +87,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not 
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not
         /// associated with a campus, this value is null.
         /// </value>
         [HideFromReporting]
@@ -95,7 +96,7 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule identifier.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -108,7 +109,7 @@ namespace Rock.Model
         /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the Group. 
+        /// A <see cref="System.String"/> representing the name of the Group.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -149,7 +150,7 @@ namespace Rock.Model
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
+        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the
         /// display priority this group has. This property is required.
         /// </summary>
         /// <value>
@@ -167,7 +168,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? AllowGuests { get; set; }
-       
+
         /// <summary>
         /// Gets or sets a value indicating whether the group should be shown in group finders
         /// </summary>
@@ -226,7 +227,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -264,7 +265,7 @@ namespace Rock.Model
         public AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias identifier.
@@ -273,7 +274,7 @@ namespace Rock.Model
         public int? ScheduleCancellationPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias identifier.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The group administrator person alias identifier.
@@ -288,7 +289,7 @@ namespace Rock.Model
         /// The inactive reason value identifier.
         /// </value>
         [DataMember]
-        [DefinedValue]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_INACTIVE_REASONS )]
         public int? InactiveReasonValueId { get; set; }
 
         /// <summary>
@@ -355,7 +356,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group's parent group. If this Group does not have a parent, the value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
@@ -377,7 +378,7 @@ namespace Rock.Model
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -395,7 +396,7 @@ namespace Rock.Model
         public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -404,7 +405,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The group administrator person alias.
@@ -418,7 +419,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of Groups that are children of this group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Group> Groups { get; set; } = new Collection<Group>();
 
         /// <summary>
@@ -450,16 +451,16 @@ namespace Rock.Model
         public virtual ICollection<GroupRequirement> GroupRequirements { get; set; } = new Collection<GroupRequirement>();
 
         /// <summary>
-        /// Gets or sets the group member workflow triggers.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberWorkflowTrigger">Group Member Workflow Triggers</see>.
         /// </summary>
         /// <value>
         /// The group member workflow triggers.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; } = new Collection<GroupMemberWorkflowTrigger>();
 
         /// <summary>
-        /// Gets or sets the group syncs.
+        /// Gets or sets the <see cref="Rock.Model.GroupSync">group syncs</see>.
         /// </summary>
         /// <value>
         /// The group syncs.
@@ -468,12 +469,12 @@ namespace Rock.Model
         public virtual ICollection<GroupSync> GroupSyncs { get; set; } = new Collection<GroupSync>();
 
         /// <summary>
-        /// Gets or sets the linkages.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceGroupMap">linkages</see>.
         /// </summary>
         /// <value>
         /// The linkages.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<EventItemOccurrenceGroupMap> Linkages { get; set; } = new Collection<EventItemOccurrenceGroupMap>();
 
         /// <summary>
@@ -575,7 +576,7 @@ namespace Rock.Model
         public virtual DefinedValue StatusValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias.
@@ -907,7 +908,7 @@ namespace Rock.Model
         {
             if ( originalIsActive == newActiveStatus || this.Id == 0 )
             {
-                // only change GroupMember status if the Group's status was changed 
+                // only change GroupMember status if the Group's status was changed
                 return;
             }
 
@@ -945,7 +946,7 @@ namespace Rock.Model
         {
             if ( originalIsArchived == newIsArchived || this.Id == 0 )
             {
-                // only change GroupMember archived value if the Group's archived value was changed 
+                // only change GroupMember archived value if the Group's archived value was changed
                 return;
             }
 
@@ -1250,7 +1251,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 
-            // Tell EF that we never want archived groups. 
+            // Tell EF that we never want archived groups.
             // This will prevent archived members from being included in any Group queries.
             // It will also prevent navigation properties of Group from including archived groups.
             Z.EntityFramework.Plus.QueryFilterManager.Filter<Group>( x => x.Where( m => m.IsArchived == false ) );
@@ -1282,7 +1283,7 @@ namespace Rock.Model
         PreSelect = 1,
 
         /// <summary>
-        /// Person cannot check into group unless they have been scheduled 
+        /// Person cannot check into group unless they have been scheduled
         /// </summary>
         ScheduleRequired = 2,
     }
@@ -1292,7 +1293,7 @@ namespace Rock.Model
     #region Custom Exceptions
 
     /// <summary>
-    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy.
     /// </summary>
     /// <remarks>
     ///  An example of this is when a child group is set as the parent of its parent group.

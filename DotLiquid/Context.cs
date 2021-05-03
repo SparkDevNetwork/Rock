@@ -32,7 +32,7 @@ namespace DotLiquid
             {
                 return null;
             }
-            
+
             // Check for concrete types
             if ( ValueTypeTransformers.ContainsKey( type ) )
                 return ValueTypeTransformers[type];
@@ -148,9 +148,9 @@ namespace DotLiquid
 
 		/// <summary>
 		/// pushes a new local scope on the stack, pops it at the end of the block
-		/// 
+		///
 		/// Example:
-		/// 
+		///
 		/// context.stack do
 		/// context['var'] = 'hi'
 		/// end
@@ -203,9 +203,9 @@ namespace DotLiquid
 		/// Strings, digits, floats and booleans (true,false). If no match is made we lookup the variable in the current scope and
 		/// later move up to the parent blocks to see if we can resolve the variable somewhere up the tree.
 		/// Some special keywords return symbols. Those symbols are to be called on the rhs object in expressions
-		/// 
+		///
 		/// Example:
-		/// 
+		///
 		/// products == empty #=> products.empty?
 		/// </summary>
 		/// <param name="key"></param>
@@ -250,19 +250,19 @@ namespace DotLiquid
 				return Range.Inclusive(Convert.ToInt32(Resolve(match.Groups[1].Value)),
 					Convert.ToInt32(Resolve(match.Groups[2].Value)));
 
-            // Floats.
+            // Decimals.
             match = FloatsRegex.Match( key );
 			if (match.Success)
 			{
 				// For cultures with "," as the decimal separator, allow
 				// both "," and "." to be used as the separator.
 				// First try to parse using current culture.
-				float result;
-				if (float.TryParse(match.Groups[1].Value, out result))
+				decimal result;
+				if (decimal.TryParse(match.Groups[1].Value, out result))
 					return result;
 
 				// If that fails, try to parse using invariant culture.
-				return float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+				return decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
 			}
 
 			return Variable(key);
@@ -298,9 +298,9 @@ namespace DotLiquid
 
 		/// <summary>
 		/// Resolves namespaced queries gracefully.
-		/// 
+		///
 		/// Example
-		/// 
+		///
 		/// @context['hash'] = {"name" => 'tobi'}
 		/// assert_equal 'tobi', @context['hash.name']
 		/// assert_equal 'tobi', @context['hash["name"]']
@@ -428,7 +428,7 @@ namespace DotLiquid
 
 			return value;
 		}
-        
+
 		private static object Liquidize(object obj)
 		{
 			if (obj == null)
@@ -465,7 +465,7 @@ namespace DotLiquid
                 var attr = (LiquidTypeAttribute)obj.GetType().GetCustomAttributes(typeof(LiquidTypeAttribute), false).First();
                 return new DropProxy(obj, attr.AllowedMembers);
             }
-            
+
 			throw new SyntaxException(Liquid.ResourceManager.GetString("ContextObjectInvalidException"), obj.ToString());
 		}
 

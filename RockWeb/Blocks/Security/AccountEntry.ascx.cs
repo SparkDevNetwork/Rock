@@ -323,7 +323,7 @@ var usernameTextbox = $('#{0}');
 var usernameRegExp = /{1}/;
 var usernameValidCaption = '{2}';
 var usernameFieldLabel = '{3}';
-        
+
 availabilityMessageRow.hide();
 
 usernameTextbox.blur(function () {{
@@ -370,7 +370,7 @@ usernameTextbox.blur(function () {{
                 tbUserName.ClientID, //0
                 regexString, //1
                 usernameValidCaption, //2
-                tbUserName.Label //3 
+                tbUserName.Label //3
                 );
 
             ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
@@ -412,7 +412,7 @@ usernameTextbox.blur(function () {{
                         cpCampus.Campuses = CampusCache.All( false );
                     }
                 }
-                
+
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( AttributeKey.MinimumAge ).AsInteger() > 0 )
                 {
@@ -574,6 +574,20 @@ usernameTextbox.blur(function () {{
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             int personId = Request.Form["DuplicatePerson"].AsInteger();
             if ( personId > 0 )
             {
@@ -691,6 +705,20 @@ usernameTextbox.blur(function () {{
         /// <param name="direction">The direction.</param>
         private void DisplayDuplicates( Direction direction )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                nbRockFullName.Visible = true;
+                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
+                nbRockFullName.Text = "Invalid Form Value";
+                return;
+            }
+
             bool displayed = false;
 
             if ( Convert.ToBoolean( GetAttributeValue( AttributeKey.Duplicates ) ) )

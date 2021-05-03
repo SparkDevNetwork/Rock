@@ -25,11 +25,9 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
-    [Obsolete( "Use AddCommunicationRecipients Task instead." )]
-    [RockObsolete( "1.13" )]
     public class SaveCommunicationTransaction : ITransaction
     {
         /// <summary>

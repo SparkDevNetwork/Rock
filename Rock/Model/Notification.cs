@@ -104,7 +104,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the recipients.
+        /// Gets or sets the <see cref="Rock.Model.NotificationRecipient">recipients</see>.
         /// </summary>
         /// <value>
         /// The recipients.

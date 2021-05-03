@@ -58,7 +58,7 @@ namespace Rock.Jobs
         #endregion Keys
         #region Constructor
 
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -75,7 +75,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will run quick SQL queries on a schedule.
-        /// 
+        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
@@ -156,6 +156,19 @@ namespace Rock.Jobs
 
                                 updateRockContext.ConnectionRequests.Attach( connectionRequest );
                                 connectionRequest.ConnectionState = ConnectionState.Active;
+
+                                var guid = Rock.SystemGuid.ConnectionActivityType.FUTURE_FOLLOWUP_COMPLETE.AsGuid();
+                                var futureFollowupCompleteActivityId = new ConnectionActivityTypeService( rockContext )
+                                    .Queryable()
+                                    .Where( t => t.Guid == guid )
+                                    .Select( t => t.Id )
+                                    .FirstOrDefault();
+
+                                ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
+                                connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
+                                connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
+                                connectionRequestActivity.ConnectionActivityTypeId = futureFollowupCompleteActivityId;
+                                new ConnectionRequestActivityService( updateRockContext ).Add( connectionRequestActivity );
                                 updateRockContext.SaveChanges();
                                 recordsUpdated += 1;
                             }

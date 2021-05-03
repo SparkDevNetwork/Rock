@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Field;
+using Rock.Lava;
 using Rock.Security;
 
 using Rock.Web.UI.Controls;
@@ -735,13 +736,13 @@ namespace Rock.Web.Cache
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        [LavaHidden]
         public override object this[object key]
         {
             get
             {
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() ) return null;
+                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any() ) return null;
 
                 var propValue = propInfo.GetValue( this, null );
 
@@ -758,8 +759,24 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public override bool ContainsKey( object key )
         {
-            var propInfo = GetType().GetProperty( key.ToStringSafe() );
-            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any();
+            return ContainsKey( key.ToStringSafe() );
+        }
+
+        #endregion
+
+        #region ILavaDataDictionary
+
+        /// <summary>
+        /// Determines whether the specified Attribute key exists.
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public override bool ContainsKey( string key )
+        {
+            var propInfo = GetType().GetProperty( key );
+            return propInfo != null && !propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Any();
         }
 
         #endregion

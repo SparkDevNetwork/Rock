@@ -63,7 +63,7 @@ namespace Rock.Model
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the group type at this point in history
+        /// Gets or sets the name of the <see cref="Rock.Model.GroupType"/> at this point in history
         /// </summary>
         /// <value>
         /// The name of the group type.
@@ -73,7 +73,7 @@ namespace Rock.Model
         public string GroupTypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier for this group at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> identifier for this group at this point in history
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -82,7 +82,7 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent group identifier at this point in history
+        /// Gets or sets the parent <see cref="Rock.Model.Group"/> identifier at this point in history
         /// </summary>
         /// <value>
         /// The parent group identifier.
@@ -223,7 +223,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group for this group historical record
+        /// Gets or sets the <see cref="Rock.Model.Group"/> for this group historical record
         /// </summary>
         /// <value>
         /// The group.
@@ -232,7 +232,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent group of this group at this point in history
+        /// Gets or sets the parent <see cref="Rock.Model.Group"/> of this group at this point in history
         /// </summary>
         /// <value>
         /// The parent group.
@@ -241,7 +241,7 @@ namespace Rock.Model
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type of this group at this point in history
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> of this group at this point in history
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -260,7 +260,7 @@ namespace Rock.Model
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus of this group at this point in history
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> of this group at this point in history
         /// </summary>
         /// <value>
         /// The campus.
@@ -269,7 +269,7 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group at this point in history
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group at this point in history
         /// </summary>
         /// <value>
         /// The archived by person alias.

@@ -320,8 +320,13 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_MANAGER_ROSTER = "BA04BF01-5244-4637-B12D-7A962D2A9E77";
 
         /// <summary>
+        /// The Check-in Manager En Route page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_EN_ROUTE = "F6466964-6593-4B20-A49B-D2386D8A260C";
+
+        /// <summary>
         /// Gets the Check-in Type page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         [RockObsolete( "1.12" )]
         [Obsolete( "Use CHECK_IN_MANAGER_SETTINGS instead (same guid)" )]
@@ -419,7 +424,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
 
@@ -563,7 +568,7 @@ namespace Rock.SystemGuid
         public const string CMS_CONFIGURATION = "B4A24AB7-9369-4055-883F-4F4892C39AE3";
 
         /// <summary>
-        /// Gets the Communication page guid
+        /// Gets the Communication page guid (stock external page)
         /// ParentPage: Support Pages
         /// </summary>
         public const string COMMUNICATION = "60002BC0-790A-4052-8F8D-B08C2C5D261C";
@@ -996,7 +1001,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the External Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
 
@@ -1240,7 +1245,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Internal Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
 

@@ -28,6 +28,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Security;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Event
 {
@@ -37,7 +39,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Event" )]
     [Description( "Block that takes a audience and displays calendar item occurrences for it using Lava." )]
-    
+
     [TextField("List Title", "The title to make available in the lava.", false, "Upcoming Events", order: 0)]
     [DefinedValueField(Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The audience to show calendar items for.", order: 0)]
     [EventCalendarField("Calendar", "Filters the events by a specific calendar.", false, order: 1)]
@@ -202,7 +204,7 @@ namespace RockWeb.Blocks.Event
                 // limit results
                 int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
                 itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).Take( maxItems ).ToList();
-                
+
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
 
@@ -210,7 +212,7 @@ namespace RockWeb.Blocks.Event
                 foreach (var contextEntityType in RockPage.GetContextEntityTypes())
                 {
                     var contextEntity = RockPage.GetCurrentContext(contextEntityType);
-                    if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                    if (contextEntity != null && contextEntity is ILavaRenderContext)
                     {
                         var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
                         if (type != null)

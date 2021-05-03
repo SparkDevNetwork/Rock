@@ -37,7 +37,7 @@ namespace Rock.Model
     public partial class PersonService
     {
         /// <summary>
-        /// The cut off (inclusive) score 
+        /// The cut off (inclusive) score
         /// </summary>
         private const int MATCH_SCORE_CUTOFF = 35;
 
@@ -159,7 +159,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities 
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities
         /// using the options specified the <see cref="PersonQueryOptions"/> (default is to exclude deceased people and nameless person records)
         /// </summary>
         /// <param name="personQueryOptions">The person query options.</param>
@@ -606,7 +606,7 @@ namespace Rock.Model
                 GenderMatched = query.Gender.HasValue & query.Gender == person.Gender;
 
                 EmailSearchSpecified = query.Email.IsNotNullOrWhiteSpace();
-                PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && query.Email == person.Email;
+                PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && person.Email.Equals( query.Email, StringComparison.CurrentCultureIgnoreCase );
 
                 if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
                 {
@@ -650,7 +650,7 @@ namespace Rock.Model
 
                     if ( EmailSearchSpecified )
                     {
-                        /* 
+                        /*
                             2020-11-12 - MDP
                             If Email is specified and the Matched Person has an email, it MUST match
                             the person's primary email OR one of the person's previous emails.
@@ -959,7 +959,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by marital status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
@@ -1723,7 +1723,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class PersonFamilyGivingXref
         {
@@ -2717,7 +2717,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Looks up a person using a Pre-V7 PersonToken. 
+        /// Looks up a person using a Pre-V7 PersonToken.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
@@ -2844,7 +2844,7 @@ namespace Rock.Model
 
             return GetFamilyMembers( person.Id )
                 .Where( m => m.GroupRoleId == adultRoleId )
-                // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic: 
+                // In the future, we may need to implement and check a GLOBAL Attribute "BibleStrict" with this logic:
                 .Where( m => m.Person.Gender != person.Gender || m.Person.Gender == Gender.Unknown || person.Gender == Gender.Unknown )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .OrderBy( m => groupOrderQuery.FirstOrDefault( x => x.GroupId == m.GroupId && x.PersonId == person.Id ).GroupOrder ?? int.MaxValue )
@@ -3411,7 +3411,7 @@ namespace Rock.Model
         #endregion
 
         /// <summary>
-        /// Gets all of the IsMappedLocation points for a given user. Although each family can only have one 
+        /// Gets all of the IsMappedLocation points for a given user. Although each family can only have one
         /// IsMapped point, the person may belong to more than one family
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -3450,7 +3450,7 @@ namespace Rock.Model
             string sql = $@"
                 UPDATE Person
                     SET [BirthDate] = (
-		                    CASE 
+		                    CASE
 			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
@@ -3458,7 +3458,7 @@ namespace Rock.Model
 		                    )
                     FROM Person
                     WHERE [BirthDate] != (
-		                    CASE 
+		                    CASE
 			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
@@ -3774,7 +3774,7 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
-                if ( group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ) )
+                if ( group.GroupTypeId == GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Id )
                 {
                     var oldMemberChanges = new History.HistoryChangeList();
                     History.EvaluateChange( oldMemberChanges, "Role", fm.GroupRole.Name, string.Empty );
@@ -4351,14 +4351,14 @@ FROM (
             return rockContext.Database.ExecuteSqlCommand( @"
 UPDATE Person
 SET GivingId = (
-		CASE 
+		CASE
 			WHEN [GivingGroupId] IS NOT NULL
 				THEN 'G' + CONVERT([varchar], [GivingGroupId])
 			ELSE 'P' + CONVERT([varchar], [Id])
 			END
 		)
 WHERE GivingId IS NULL OR GivingId != (
-		CASE 
+		CASE
 			WHEN [GivingGroupId] IS NOT NULL
 				THEN 'G' + CONVERT([varchar], [GivingGroupId])
 			ELSE 'P' + CONVERT([varchar], [Id])

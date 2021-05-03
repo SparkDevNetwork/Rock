@@ -58,9 +58,9 @@ namespace Rock.Transactions
             this.StepTypeId = entity.StepTypeId;
 
             // Store the Step status change parameters.
-            if ( entity.StepStatus != null )
+            if ( entity.StepStatusId != null )
             {
-                this.CurrentStepStatusId = entity.StepStatus.Id;
+                this.CurrentStepStatusId = entity.StepStatusId;
             }
 
             if ( entry.State == EntityState.Modified )

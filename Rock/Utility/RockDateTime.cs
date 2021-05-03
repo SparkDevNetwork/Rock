@@ -63,27 +63,27 @@ BEGIN
 	DECLARE @FirstDayOfWeek INT = {( int ) RockDateTime.FirstDayOfWeek}
 
 	-- Sql DOW is 1 based (1 = Sunday, 7 = Saturday )
-	-- So, lets convert it to the .NET standard of 0 = Sunday 
+	-- So, lets convert it to the .NET standard of 0 = Sunday
 	-- from http://stackoverflow.com/a/5109557/1755417 to get the day of week deterministically, but convert to .NET DOW
 	SET @InputDOW = ((datediff(day, convert(DATETIME, '18991231', 112), @inputDate) % 7))
-	
+
     -- Get the number of days until the next Sunday date
 	SET @sundayDiff = 7 - @InputDOW;
-	
+
     -- Figure out which DayOfWeek would be the lastDayOfWeek
 	-- which would be the DayOfWeek before the startDayOfWeek
 	-- If the First DOW is Sunday, then the Last DOW is Saturday. Otherwise, the Last DOW is the First DOW - 1
-	SET @lastDayOfWeek = CASE 
+	SET @lastDayOfWeek = CASE
 			WHEN @FirstDayOfWeek = 0
 				THEN 6
 			ELSE @FirstDayOfWeek - 1
 			END
-	
+
     -- There are 3 cases to deal with, and it can get confusing if Sunday isn't the last day of the week
 	-- 1) The input date's DOW is Sunday. Today is the Sunday, so the Sunday Date is today
 	-- 2) The input date's DOW is after the Last DOW (Today is Thursday, and the week ends next week on Tuesday).
 	-- 3) The input date's DOW is before the Last DOW (Today is Monday, but the week ends this week on Tuesday)
-	SET @sundayDate = CASE 
+	SET @sundayDate = CASE
 			WHEN (@InputDOW = 0)
 				THEN @InputDate
 			WHEN (@lastDayOfWeek < @InputDOW)
@@ -242,6 +242,19 @@ WHERE SundayDate IS NULL
         }
 
         /// <summary>
+        /// Converts the Rock date time to local date time.
+        /// Use this to convert a rock <see cref="DateTime"/> (for example, a
+        /// <see cref="DateTime"/> found in the database) to the local server
+        /// time zone.
+        /// </summary>
+        /// <param name="rockDateTime">The Rock date time.</param>
+        /// <returns>The local <see cref="DateTime"/>.</returns>
+        public static DateTime ConvertRockDateTimeToLocalDateTime( DateTime rockDateTime )
+        {
+            return TimeZoneInfo.ConvertTime( rockDateTime, OrgTimeZoneInfo, TimeZoneInfo.Local );
+        }
+
+        /// <summary>
         /// The Default DayOfWeek that Rock uses if a custom FirstDayOfWeek isn't set
         /// </summary>
         public static DayOfWeek DefaultFirstDayOfWeek = DayOfWeek.Monday;
@@ -323,7 +336,7 @@ WHERE SundayDate IS NULL
         public static DateTime GetSundayDate( DateTime inputDate )
         {
             var firstDayOfWeek = RockDateTime.FirstDayOfWeek;
-            return GetSundayDate( inputDate, firstDayOfWeek );            
+            return GetSundayDate( inputDate, firstDayOfWeek );
         }
 
         /// <summary>
@@ -336,14 +349,14 @@ WHERE SundayDate IS NULL
         {
             /*
              * 12-09-2019 BJW
-             * 
+             *
              * I restored the ability to specify the firstDayOfWeek so that each StreakType could have a custom setting. Some streaks, like those
              * for serving, make sense to measure Wed - Tues so that an entire three day "weekend" of services is counted as the same Sunday Date.
              * However, just because the church wants the streak type to have a Wed start of week for the streak type doesn't mean they want the
              * entire system to be configured this way.
-             * 
+             *
              * See Rock.Model.StreakType.FirstDayOfWeek
-             * Also see task: https://app.asana.com/0/1120115219297347/1152845555131825/f 
+             * Also see task: https://app.asana.com/0/1120115219297347/1152845555131825/f
              */
 
             // Get the number of days until the next Sunday date
@@ -375,7 +388,7 @@ WHERE SundayDate IS NULL
             }
             else if ( lastDayOfWeek < inputDate.DayOfWeek )
             {
-                // If the lastDayOfWeek after the current day of week, we can simply add 
+                // If the lastDayOfWeek after the current day of week, we can simply add
                 sundayDate = inputDate.AddDays( sundayDiff );
             }
             else

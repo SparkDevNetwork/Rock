@@ -38,7 +38,7 @@
                             You may obtain a copy of the License at
                         </p>
 
-                        <p style="text-align: center;"><a href="http://www.rockrms.com/license">http://www.rockrms.com/license</a></p>
+                        <p style="text-align: center;"><a href="https://www.rockrms.com/license">http://www.rockrms.com/license</a></p>
 
                         <p>
                             Unless required by applicable law or agreed to in writing, software

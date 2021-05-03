@@ -29,6 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -185,7 +186,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow type cache.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowTypeCache WorkflowTypeCache
         {
             get
@@ -495,7 +496,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class LogEntry
         {
@@ -599,7 +600,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="processStartTime">A <see cref="System.DateTime" /> that represents the process start time.</param>
         /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">A 
+        /// <param name="errorMessages">A
         /// <see cref="System.Collections.Generic.List{String}" /> containing error messages for any
         /// errors that occurred while the activity was being processed..</param>
         /// <returns>

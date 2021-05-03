@@ -31,11 +31,12 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a value of an <see cref="Rock.Model.Attribute"/>. 
+    /// Represents a value of an <see cref="Rock.Model.Attribute"/>.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AttributeValue" )]
@@ -81,7 +82,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -96,9 +97,9 @@ namespace Rock.Model
         public int AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each 
-        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured 
-        /// with a different value on each <see cref="Rock.Model.Block"/> that implements the <see cref="Rock.Model.BlockType"/>. This value will either be 0 or null for global attributes or attributes that have a 
+        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each
+        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured
+        /// with a different value on each <see cref="Rock.Model.Block"/> that implements the <see cref="Rock.Model.BlockType"/>. This value will either be 0 or null for global attributes or attributes that have a
         /// constant across all instances of an EntityType.
         /// </summary>
         /// <value>
@@ -140,7 +141,7 @@ namespace Rock.Model
         /// <value>
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public decimal? ValueAsNumeric
         {
             get
@@ -179,11 +180,11 @@ namespace Rock.Model
         /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
         /// </summary>
         /// <remarks>
-        /// see tgrAttributeValue_InsertUpdate                                                                                    
+        /// see tgrAttributeValue_InsertUpdate
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
@@ -194,7 +195,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
@@ -202,15 +203,15 @@ namespace Rock.Model
         /// </summary>
         /// <remarks>
         /// Computed Column Spec:
-        /// case 
-        ///     when [Value] like '________-____-____-____-____________' 
-        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value]) 
-        ///     else null 
+        /// case
+        ///     when [Value] like '________-____-____-____-____________'
+        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value])
+        ///     else null
         /// end
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [LavaIgnore]
+        [LavaHidden]
         public int? ValueAsPersonId { get; private set; }
 
         /// <summary>
@@ -245,7 +246,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Attribute"/> that uses this value.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Attribute Attribute { get; set; }
 
         /// <summary>
@@ -255,7 +256,7 @@ namespace Rock.Model
         /// The attribute values historical.
         /// </value>
         [DataMember]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<AttributeValueHistorical> AttributeValuesHistorical { get; set; } = new Collection<AttributeValueHistorical>();
 
         /// <summary>
@@ -264,7 +265,7 @@ namespace Rock.Model
         /// <value>
         /// The value formatted.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ValueFormatted
         {
             get
@@ -280,7 +281,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the name of the attribute 
+        /// Gets the name of the attribute
         /// </summary>
         /// <remarks>
         /// Note: this property is provided specifically for Lava templates when the Attribute property is not available
@@ -289,7 +290,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the attribute.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeName
         {
             get
@@ -314,7 +315,7 @@ namespace Rock.Model
         /// <value>
         /// The attribute key.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string AttributeKey
         {
             get
@@ -339,7 +340,7 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if [attribute is grid column]; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool AttributeIsGridColumn
         {
             get

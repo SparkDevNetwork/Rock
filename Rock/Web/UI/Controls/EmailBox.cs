@@ -22,13 +22,13 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.CurrencyBox"/> control with an associated label.
+    /// A <see cref="T:Rock.Web.UI.Controls.RockTextBox" /> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:EmailBox runat=server></{0}:EmailBox>" )]
     public class EmailBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.ViewState["AllowMultiple"] as bool? ?? false;
             }
-            
+
             set
             {
                 this.ViewState["AllowMultiple"] = value;

@@ -23,7 +23,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a transaction where a giver/purchaser was refunded a full or partial amount 
+    /// Represents a transaction where a giver/purchaser was refunded a full or partial amount
     /// on a <see cref="Rock.Model.FinancialTransaction"/>.
     /// </summary>
     [RockDomain( "Finance" )]
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// the reason why a refund was issued for the original transaction.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the DefinedValueId of the refund reason <see cref="Rock.Model.DefinedValue"/> 
+        /// A <see cref="System.Int32"/> representing the DefinedValueId of the refund reason <see cref="Rock.Model.DefinedValue"/>
         /// indicating the reason for the refund.
         /// </value>
         [DataMember]
@@ -69,7 +69,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the financial transaction.
+        /// Gets or sets the <see cref="Rock.Model.FinancialTransaction"/>.
         /// </summary>
         /// <value>
         /// The financial transaction.
@@ -78,7 +78,7 @@ namespace Rock.Model
         public virtual FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the original transaction.
+        /// Gets or sets the original <see cref="Rock.Model.FinancialTransaction">transaction</see>.
         /// </summary>
         /// <value>
         /// The original transaction.
@@ -87,7 +87,7 @@ namespace Rock.Model
         public virtual FinancialTransaction OriginalTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the refund reason <see cref="Rock.Model.DefinedValue"/> indicating the reason 
+        /// Gets or sets the refund reason <see cref="Rock.Model.DefinedValue"/> indicating the reason
         /// for the refund.
         /// </summary>
         /// <value>

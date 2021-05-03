@@ -26,12 +26,14 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using Context = DotLiquid.Context;
+
 using UAParser;
 
 namespace Rock.Lava
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class LavaHelper
     {
@@ -96,7 +98,7 @@ namespace Rock.Lava
                 foreach ( var contextEntityType in rockPage.GetContextEntityTypes() )
                 {
                     var contextEntity = rockPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                    if ( contextEntity != null && IsLavaDataObject( contextEntity ) )
                     {
                         var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                         if ( type != null )
@@ -178,21 +180,37 @@ namespace Rock.Lava
 
             try
             {
-                /*
-                    7/6/2020 - JH
-                    Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
-                    In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
-                    We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
-                    inheriting from the RockLavaBlockBase class.
-                */
-                foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
-                    .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
-                    .Select( a => a.Value )
-                    .OrderBy( a => a.Name )
-                    .ToList() )
+                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
-                    lavaCommands.Add( blockType.Name );
-                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    /*
+                        7/6/2020 - JH
+                        Some Lava Commands don't require a closing tag, and therefore inherit from DotLiquid.Tag instead of RockLavaBlockBase.
+                        In order to include these self-closing Lava Commands in the returned list, a new interface - IRockLavaBlock - was introduced.
+                        We'll also leave the RockLavaBlockBase check in place below, in case any plugins have been developed that add Commands
+                        inheriting from the RockLavaBlockBase class.
+                    */
+                    foreach ( var blockType in Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.IRockLavaBlock ) )
+                        .Union( Rock.Reflection.FindTypes( typeof( Rock.Lava.Blocks.RockLavaBlockBase ) ) )
+                        .Select( a => a.Value )
+                        .OrderBy( a => a.Name )
+                        .ToList() )
+                    {
+                        lavaCommands.Add( blockType.Name );
+                        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    }
+                }
+                else
+                {
+                    var commandTypes = Rock.Reflection.FindTypes( typeof( Rock.Lava.ILavaSecured ) );
+
+                    foreach ( var kvp in commandTypes )
+                    {
+                        var component = Activator.CreateInstance( kvp.Value ) as ILavaSecured;
+
+                        lavaCommands.Add( component.RequiredPermissionKey );
+                    }
+
+                    lavaCommands.Sort();
                 }
             }
             catch { }
@@ -209,10 +227,16 @@ namespace Rock.Lava
         /// </returns>
         public static bool IsLavaProperty( PropertyInfo propInfo )
         {
-            // If property has a [LavaIgnore] attribute return false
-            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIgnoreAttribute ) ).Count() > 0 )
+            // If property has a [LavaHidden] attribute return false
+            if ( propInfo.GetCustomAttributes( typeof( LavaHiddenAttribute ) ).Count() > 0 )
             {
                 return false;
+            }
+
+            // If property has a [LavaVisible] attribute return true
+            if ( propInfo.GetCustomAttributes( typeof( LavaVisibleAttribute ) ).Count() > 0 )
+            {
+                return true;
             }
 
             // If property has a [DataMember] attribute return true
@@ -221,11 +245,16 @@ namespace Rock.Lava
                 return true;
             }
 
-            // If property has a [LavaInclude] attribute return true
-            if ( propInfo.GetCustomAttributes( typeof( Rock.Data.LavaIncludeAttribute ) ).Count() > 0 )
+#pragma warning disable CS0618 // Type or member is obsolete
+            if ( propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Count() > 0 )
+            {
+                return false;
+            }
+            if ( propInfo.GetCustomAttributes( typeof( LavaIncludeAttribute ) ).Count() > 0 )
             {
                 return true;
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // otherwise return false
             return false;
@@ -247,7 +276,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <returns>The current person or null if not found.</returns>
         /// <exception cref="ArgumentNullException">context</exception>
-        public static Person GetCurrentPerson( DotLiquid.Context context )
+        public static Person GetCurrentPerson( ILavaRenderContext context )
         {
             if ( context == null )
             {
@@ -258,16 +287,7 @@ namespace Rock.Lava
             Person currentPerson = null;
 
             // First, check for a person override value included in the lava context.
-            if ( context.Scopes != null )
-            {
-                foreach ( var scope in context.Scopes )
-                {
-                    if ( scope.ContainsKey( currentPersonKey ) )
-                    {
-                        currentPerson = scope[currentPersonKey] as Person;
-                    }
-                }
-            }
+            currentPerson = context.GetMergeField( currentPersonKey, null ) as Person;
 
             if ( currentPerson == null )
             {
@@ -314,7 +334,240 @@ namespace Rock.Lava
         /// you can always choose to not use this helper method and instead roll your own implementation.
         /// </para>
         /// </param>
-        public static void ParseCommandMarkup( string markup, DotLiquid.Context context, Dictionary<string, string> parms )
+        public static void ParseCommandMarkup( string markup, ILavaRenderContext context, Dictionary<string, string> parms )
+        {
+            if ( markup.IsNull() )
+            {
+                return;
+            }
+
+            if ( context == null )
+            {
+                throw new ArgumentNullException( nameof( context ) );
+            }
+
+            if ( parms == null )
+            {
+                throw new ArgumentNullException( nameof( parms ) );
+            }
+
+            var mergeFields = context.GetMergeFields();
+
+            // Resolve merge fields.
+            var resolvedMarkup = markup.ResolveMergeFields( mergeFields );
+
+            // Harvest parameters.
+            var markupParms = Regex.Matches( resolvedMarkup, @"\S+:('[^']+'|\d+)" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var parm in markupParms )
+            {
+                var itemParts = parm.ToString().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    var key = itemParts[0].Trim().ToLower();
+                    var value = itemParts[1].Trim();
+
+                    if ( value[0] == '\'' )
+                    {
+                        // key:'value'
+                        parms.AddOrReplace( key, value.Substring( 1, value.Length - 2 ) );
+                    }
+                    else
+                    {
+                        // key:integer
+                        parms.AddOrReplace( key, value );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the specified command is authorized within the context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsAuthorized( ILavaRenderContext context, string command )
+        {
+            return LavaSecurityHelper.IsAuthorized( context, command );
+        }
+
+        /// <summary>
+        /// Returns a flag indicating if the target object is capable of being used as a data source in a Lava template.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static bool IsLavaDataObject( object obj )
+        {
+            if ( obj == null )
+            {
+                return false;
+            }
+
+            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                return obj != null && obj is Rock.Lava.ILiquidizable;
+            }
+
+            if ( obj is ILavaDataDictionary || obj is ILavaDataDictionarySource )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #region Lava Comments
+
+        private static string LavaTokenBlockCommentStart = @"/-";
+        private static string LavaTokenBlockCommentEnd = @"-/";
+        private static string LavaTokenLineComment = @"//-";
+
+        private static Regex _lavaCommentMatchGroupsRegex = null;
+
+        /// <summary>
+        /// Build the regular expression that will be used to remove Lava-style comments from the template.
+        /// </summary>
+        private static void InitializeLavaCommentsRegex()
+        {
+            const string stringElement = @"(('|"")[^'""]*('|""))+";
+
+            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
+
+            var blockCommentElement = Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd );
+
+            var rawBlock = @"\{%\sraw\s%\}(.*?)\{%\sendraw\s%\}";
+
+            var templateElementMatchGroups = rawBlock + "|" + blockCommentElement + "|" + lineCommentElement + "|" + stringElement;
+
+            // Create and compile the Regex, because it will be used very frequently.
+            _lavaCommentMatchGroupsRegex = new Regex( templateElementMatchGroups, RegexOptions.Compiled | RegexOptions.Singleline );
+        }
+
+        /// <summary>
+        /// Remove Lava-style comments from a Lava template.
+        /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
+        /// and can can be in one of the following forms:
+        ///
+        /// /- This Lava block comment style...
+        ///    ... can span multiple lines -/
+        ///
+        /// //- This Lava line comment style can be appended to any single line.
+        ///
+        /// </summary>
+        /// <param name="lavaTemplate"></param>
+        /// <returns></returns>
+        public static string RemoveLavaComments( string lavaTemplate )
+        {
+            if ( string.IsNullOrEmpty( lavaTemplate ) )
+            {
+               return string.Empty;
+            }
+
+            // Remove comments from the content.
+            var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
+                me => {
+                    // If the match group is a line comment, retain the end-of-line marker.
+                    if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) || me.Value.StartsWith( LavaTokenLineComment ) )
+                    {
+                        return me.Value.StartsWith( LavaTokenLineComment ) ? Environment.NewLine : string.Empty;
+                    }
+
+                    // Keep the literal strings
+                    return me.Value;
+                } );
+
+            return lavaWithoutComments;
+        }
+
+        #endregion
+
+        #region RockLiquid Lava Code
+
+        /// <summary>
+        /// Determines whether the specified command is authorized within the context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="command">The command.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsAuthorized( Context context, string command )
+        {
+            if ( context?.Registers?.ContainsKey( "EnabledCommands" ) == true && command.IsNotNullOrWhiteSpace() )
+            {
+                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
+
+                if ( enabledCommands.Contains( "All", StringComparer.OrdinalIgnoreCase ) || enabledCommands.Contains( command, StringComparer.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns>The current person or null if not found.</returns>
+        /// <exception cref="ArgumentNullException">context</exception>
+        public static Person GetCurrentPerson( Context context )
+        {
+            if ( context == null )
+            {
+                throw new ArgumentNullException( nameof( context ) );
+            }
+
+            string currentPersonKey = "CurrentPerson";
+            Person currentPerson = null;
+
+            // First, check for a person override value included in the lava context.
+            if ( context.Scopes != null )
+            {
+                foreach ( var scope in context.Scopes )
+                {
+                    if ( scope.ContainsKey( currentPersonKey ) )
+                    {
+                        currentPerson = scope[currentPersonKey] as Person;
+                    }
+                }
+            }
+
+            if ( currentPerson == null )
+            {
+                var httpContext = HttpContext.Current;
+                if ( httpContext != null && httpContext.Items.Contains( currentPersonKey ) )
+                {
+                    currentPerson = httpContext.Items[currentPersonKey] as Person;
+                }
+            }
+
+            return currentPerson;
+        }
+
+        /// <summary>
+        /// Parses the Lava Command markup, first resolving merge fields and then harvesting any provided parameters.
+        /// </summary>
+        /// <param name="markup">The Lava Command markup.</param>
+        /// <param name="context">The DotLiquid context.</param>
+        /// <param name="parms">
+        /// A dictionary into which any parameters discovered within the <paramref name="markup"/> will be added or replaced.
+        /// Default values may be pre-loaded into this collection, and will be overwritten if a matching key is present within the <paramref name="markup"/>.
+        /// Note that parameter keys should be added in lower case.
+        /// <para>
+        /// When searching the <paramref name="markup"/> for key/value parameter pairs, the following <see cref="Regex"/> pattern will be used: @"\S+:('[^']+'|\d+)".
+        /// This means that the following patterns will be matched: "key:'value'" OR "key:integer". While this should work for most - if not all - Lava Command parameters,
+        /// you can always choose to not use this helper method and instead roll your own implementation.
+        /// </para>
+        /// </param>
+        public static void ParseCommandMarkup( string markup, Context context, Dictionary<string, string> parms )
         {
             if ( markup.IsNull() )
             {
@@ -380,92 +633,6 @@ namespace Rock.Lava
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Determines whether the specified command is authorized within the context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="command">The command.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified command is authorized; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsAuthorized( DotLiquid.Context context, string command )
-        {
-            if ( context?.Registers?.ContainsKey( "EnabledCommands" ) == true && command.IsNotNullOrWhiteSpace() )
-            {
-                var enabledCommands = context.Registers["EnabledCommands"].ToString().Split( ',' ).ToList();
-
-                if ( enabledCommands.Contains( "All" ) || enabledCommands.Contains( command ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #region Lava Comments
-
-        private static string LavaTokenBlockCommentStart = @"/-";
-        private static string LavaTokenBlockCommentEnd = @"-/";
-        private static string LavaTokenLineComment = @"//-";
-
-        private static Regex _lavaCommentMatchGroupsRegex = null;
-
-        /// <summary>
-        /// Build the regular expression that will be used to remove Lava-style comments from the template.
-        /// </summary>
-        private static void InitializeLavaCommentsRegex()
-        {
-            const string stringElement = @"(('|"")[^'""]*('|""))+";
-
-            string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
-
-            var blockCommentElement = Regex.Escape( LavaTokenBlockCommentStart ) + @"(.*?)" + Regex.Escape( LavaTokenBlockCommentEnd );
-
-            var rawBlock = @"\{%\sraw\s%\}(.*?)\{%\sendraw\s%\}";
-
-            var templateElementMatchGroups = rawBlock + "|" + blockCommentElement + "|" + lineCommentElement + "|" + stringElement;
-
-            // Create and compile the Regex, because it will be used very frequently.
-            _lavaCommentMatchGroupsRegex = new Regex( templateElementMatchGroups, RegexOptions.Compiled | RegexOptions.Singleline );
-        }
-
-        /// <summary>
-        /// Remove Lava-style comments from a Lava template.
-        /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
-        /// and can can be in one of the following forms:
-        /// 
-        /// /- This Lava block comment style...
-        ///    ... can span multiple lines -/
-        ///
-        /// //- This Lava line comment style can be appended to any single line.
-        /// 
-        /// </summary>
-        /// <param name="lavaTemplate"></param>
-        /// <returns></returns>
-        public static string RemoveLavaComments( string lavaTemplate )
-        {
-            if ( string.IsNullOrEmpty( lavaTemplate ) )
-            {
-               return string.Empty;
-            }
-
-            // Remove comments from the content.
-            var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
-                me => {
-                    // If the match group is a line comment, retain the end-of-line marker.
-                    if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) || me.Value.StartsWith( LavaTokenLineComment ) )
-                    {
-                        return me.Value.StartsWith( LavaTokenLineComment ) ? Environment.NewLine : string.Empty;
-                    }
-
-                    // Keep the literal strings
-                    return me.Value;
-                } );
-
-            return lavaWithoutComments;
         }
 
         #endregion

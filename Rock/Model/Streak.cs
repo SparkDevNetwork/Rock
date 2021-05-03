@@ -41,7 +41,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StreakType"/> to which this Streak belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StreakType"/> to which this Streak belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -50,7 +50,7 @@ namespace Rock.Model
         public int StreakTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -79,7 +79,7 @@ namespace Rock.Model
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the location identifier by which the person's exclusions will be sourced.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> identifier by which the person's exclusions will be sourced.
         /// </summary>
         [DataMember]
         public int? LocationId { get; set; }
@@ -143,25 +143,25 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Person Alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the StreakType.
+        /// Gets or sets the <see cref="Rock.Model.StreakType"/>.
         /// </summary>
         [DataMember]
         public virtual StreakType StreakType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Location.
+        /// Gets or sets the <see cref="Rock.Model.Location"/>.
         /// </summary>
         [DataMember]
         public virtual Location Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the Location.
+        /// Gets or sets the IsActive.
         /// </summary>
         [DataMember]
         public virtual bool IsActive
@@ -217,7 +217,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // Running this as a task allows possibly changed streak type properties to be
-                // propogated to the streak type cache. Also there isn't really a reason that
+                // propagated to the streak type cache. Also there isn't really a reason that
                 // the data context save operation needs to wait while this is done.
                 Task.Run( () => StreakService.HandlePostSaveChanges( Id ) );
             }

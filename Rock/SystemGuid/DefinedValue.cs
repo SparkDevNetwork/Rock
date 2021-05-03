@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
         #region Block Template
 
         /// <summary>
+        /// The block template for mobile answer to prayer block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_ANSWER_TO_PRAYER = "D13256E3-D9ED-45C2-8EF7-C4AABCF4B2B7";
+
+        /// <summary>
         /// The block template for the event template on the mobile calendar event list.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST = "248587C7-5CE3-46B7-8728-2E03E725D0B2";
@@ -59,6 +64,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
 
         /// <summary>
+        /// The block template for mobile my prayer requests.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";
+
+        /// <summary>
         /// The block template for the mobile prayer session block.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
@@ -68,52 +78,52 @@ namespace Rock.SystemGuid
         #region Button Styles
 
         /// <summary>
-        /// Button HTML - Primary 
+        /// Button HTML - Primary
         /// </summary>
         public const string BUTTON_HTML_PRIMARY = "FDC397CD-8B4A-436E-BEA1-BCE2E6717C03";
 
         /// <summary>
-        /// Button HTML - Secondary 
+        /// Button HTML - Secondary
         /// </summary>
         public const string BUTTON_HTML_SECONDARY = "8CF6E927-4FA5-4241-991C-391038B79631";
 
         /// <summary>
-        /// Button HTML - Deny 
+        /// Button HTML - Deny
         /// </summary>
         public const string BUTTON_HTML_DENY = "D6B809A9-C1CC-4EBB-816E-33D8C1E53EA4";
 
         /// <summary>
-        /// Button HTML - Approve 
+        /// Button HTML - Approve
         /// </summary>
         public const string BUTTON_HTML_APPROVE = "C88FEF94-95B9-444A-BC93-58E983F3C047";
 
         /// <summary>
-        /// Button HTML - Success 
+        /// Button HTML - Success
         /// </summary>
         public const string BUTTON_HTML_SUCCESS = "53CA2CB9-8BFA-450C-A3AA-FD3F3FD3BC8A";
 
         /// <summary>
-        /// Button HTML - Info 
+        /// Button HTML - Info
         /// </summary>
         public const string BUTTON_HTML_INFO = "3C026B37-29D4-47CB-BB6E-DA43AFE779FE";
 
         /// <summary>
-        /// Button HTML - Warning 
+        /// Button HTML - Warning
         /// </summary>
         public const string BUTTON_HTML_WARNING = "F03C9591-C497-4E27-A714-6A482E745141";
 
         /// <summary>
-        /// Button HTML - Danger 
+        /// Button HTML - Danger
         /// </summary>
         public const string BUTTON_HTML_DANGER = "9B329020-E074-4326-8831-9DD534F491DF";
 
         /// <summary>
-        /// Button HTML - Default 
+        /// Button HTML - Default
         /// </summary>
         public const string BUTTON_HTML_DEFAULT = "638BEEE0-2F8F-4706-B9A4-5BAB70386697";
 
         /// <summary>
-        /// Button HTML - Cancel 
+        /// Button HTML - Cancel
         /// </summary>
         public const string BUTTON_HTML_CANCEL = "5683E775-B9F3-408C-80AC-94DE0E51CF3A";
 
@@ -378,7 +388,7 @@ namespace Rock.SystemGuid
         #region Group Location Type
 
         /// <summary>
-        /// Address Type - Home 
+        /// Address Type - Home
         /// </summary>
         public const string GROUP_LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
@@ -586,7 +596,7 @@ namespace Rock.SystemGuid
         public const string PERSON_RECORD_STATUS_ACTIVE = "618F906C-C33D-4FA3-8AEF-E58CB7B63F1E";
 
         /// <summary>
-        /// Record Status - Inactive 
+        /// Record Status - Inactive
         /// </summary>
         public const string PERSON_RECORD_STATUS_INACTIVE = "1DAD99D5-41A9-4865-8366-F269902B80A4";
 
@@ -600,7 +610,7 @@ namespace Rock.SystemGuid
         #region Person Record Status Reason
 
         /// <summary>
-        /// Record Status set to Inactive because person is Deceased 
+        /// Record Status set to Inactive because person is Deceased
         /// </summary>
         public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
@@ -701,12 +711,12 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// IOS platform
-        /// </summary>        
+        /// </summary>
         public const string PERSONAL_DEVICE_PLATFORM_IOS = "F00515E7-4EF3-480D-A45D-372CE3D80E69";
 
         /// <summary>
         /// Android platform
-        /// </summary>       
+        /// </summary>
         public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
 
         #endregion
@@ -788,7 +798,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Interaction Channel Type: UrlShortener
-        /// </summary>        
+        /// </summary>
         public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
 
         /// <summary>
@@ -805,6 +815,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Content Channel
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_WIFI_PRESENCE = "338CB800-C556-46CD-849D-8AE58FC7CB0E";
+
+        /// <summary>
+        /// Interaction Channel Type: System Events
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_SYSTEM_EVENTS = "5919214F-9C59-4913-BE4E-0DFB6A05F528";
 
         /// <summary>
         /// The PBX CDR medium value
@@ -919,27 +934,27 @@ namespace Rock.SystemGuid
         #region Conflict Profile
 
         /// <summary>
-        /// Conflict Profile: Avoiding 
+        /// Conflict Profile: Avoiding
         /// </summary>
         public const string CONFLICT_PROFILE_AVOIDING = "663B0F4A-DE1F-46BE-8BDD-D7C98863DDC4";
 
         /// <summary>
-        /// Conflict Profile: Compromising 
+        /// Conflict Profile: Compromising
         /// </summary>
         public const string CONFLICT_PROFILE_COMPROMISING = "CF78D6B1-38AA-4FF7-9A4B-E900438FA85A";
 
         /// <summary>
-        /// Conflict Profile: Resolving 
+        /// Conflict Profile: Resolving
         /// </summary>
         public const string CONFLICT_PROFILE_RESOLVING = "DF7B1EB2-7E7E-4F91-BD26-C6DFD88E38DF";
 
         /// <summary>
-        /// Conflict Profile: Winning 
+        /// Conflict Profile: Winning
         /// </summary>
         public const string CONFLICT_PROFILE_WINNING = "56300095-86AD-43FE-98D2-50829E9223C2";
 
         /// <summary>
-        /// Conflict Profile: Yielding 
+        /// Conflict Profile: Yielding
         /// </summary>
         public const string CONFLICT_PROFILE_YEILDING = "4AB06A6F-F5B1-4385-9365-199EA7969E50";
 
@@ -948,117 +963,117 @@ namespace Rock.SystemGuid
         #region Motivator
 
         /// <summary>
-        /// Motivator: Believing 
+        /// Motivator: Believing
         /// </summary>
         public const string MOTIVATOR_BELIEVING = "99F598E0-E0AC-4B4B-BEAF-589D41764EE1";
 
         /// <summary>
-        /// Motivator: Caring 
+        /// Motivator: Caring
         /// </summary>
         public const string MOTIVATOR_CARING = "FFD7EF9C-5D68-40D2-A362-416B2D660D51";
 
         /// <summary>
-        /// Motivator: Expressing 
+        /// Motivator: Expressing
         /// </summary>
         public const string MOTIVATOR_EXPRESSING = "FA70E27D-6642-4162-AF17-530F66B507E7";
 
         /// <summary>
-        /// Motivator: Empowering 
+        /// Motivator: Empowering
         /// </summary>
         public const string MOTIVATOR_EMPOWERING = "C171D01E-C607-488B-A550-1E341081210B";
 
         /// <summary>
-        /// Motivator: Engaging 
+        /// Motivator: Engaging
         /// </summary>
         public const string MOTIVATOR_ENGAGING = "5635E95B-3A07-43B7-837A-0F131EF1DA97";
 
         /// <summary>
-        /// Motivator: Adapting 
+        /// Motivator: Adapting
         /// </summary>
         public const string MOTIVATOR_ADAPTING = "BD5D99E7-E0FF-4535-8B26-BF73EF9B9F89";
 
         /// <summary>
-        /// Motivator: Gathering 
+        /// Motivator: Gathering
         /// </summary>
         public const string MOTIVATOR_GATHERING = "73087DD2-B892-4367-894F-8922477B2F10";
 
         /// <summary>
-        /// Motivator: Innovating 
+        /// Motivator: Innovating
         /// </summary>
         public const string MOTIVATOR_INNOVATING = "D84E58E4-87FC-4CEB-B83E-A2C6D186366C";
 
         /// <summary>
-        /// Motivator: Leading 
+        /// Motivator: Leading
         /// </summary>
         public const string MOTIVATOR_LEADING = "6A2354C6-3FA4-4BAD-89A8-7359FEC48FE3";
 
         /// <summary>
-        /// Motivator: Learning 
+        /// Motivator: Learning
         /// </summary>
         public const string MOTIVATOR_LEARNING = "7EA44A56-58CB-4E40-9779-CC0A79772926";
 
         /// <summary>
-        /// Motivator: Maximizing 
+        /// Motivator: Maximizing
         /// </summary>
         public const string MOTIVATOR_MAXIMIZING = "3F678404-5844-494F-BDB0-DD9FEEBC98C9";
 
         /// <summary>
-        /// Motivator: Organizing 
+        /// Motivator: Organizing
         /// </summary>
         public const string MOTIVATOR_ORGANIZING = "85459C0F-65A5-48F9-86F3-40B03F9C53E9";
 
         /// <summary>
-        /// Motivator: Pacing 
+        /// Motivator: Pacing
         /// </summary>
         public const string MOTIVATOR_PACING = "9F771853-2EBA-47A2-9AC5-26EBEA0A3B25";
 
         /// <summary>
-        /// Motivator: Perceiving 
+        /// Motivator: Perceiving
         /// </summary>
         public const string MOTIVATOR_PERCEIVING = "4C898A5C-B48E-4BAE-AB89-835F25A451BF";
 
         /// <summary>
-        /// Motivator: Relating 
+        /// Motivator: Relating
         /// </summary>
         public const string MOTIVATOR_RELATING = "D7F9BDE2-8BEB-469E-BAD9-AA4DEBD3D995";
 
         /// <summary>
-        /// Motivator: Serving 
+        /// Motivator: Serving
         /// </summary>
         public const string MOTIVATOR_SERVING = "D8430EAD-7A38-4AD1-B21A-B2119EE0F1CD";
 
         /// <summary>
-        /// Motivator: Thinking 
+        /// Motivator: Thinking
         /// </summary>
         public const string MOTIVATOR_THINKING = "0D82DC77-334C-44B0-84A6-989910907DD4";
 
         /// <summary>
-        /// Motivator: Transforming 
+        /// Motivator: Transforming
         /// </summary>
         public const string MOTIVATOR_TRANSFORMING = "2393C3CE-8E49-46FE-A75B-D5D624A37B49";
 
         /// <summary>
-        /// Motivator: Uniting 
+        /// Motivator: Uniting
         /// </summary>
         public const string MOTIVATOR_UNITING = "D7601B56-7495-4D7B-A916-8C48F78675E3";
 
         /// <summary>
-        /// Motivator: Persevering 
+        /// Motivator: Persevering
         /// </summary>
         public const string MOTIVATOR_PERSEVERING = "A027F6B2-56DD-4724-962D-F865606AEAB8";
 
         /// <summary>
-        /// Motivator: Risk-Taking 
+        /// Motivator: Risk-Taking
         /// </summary>
         public const string MOTIVATOR_RISKTAKING = "4D0A1A6D-3F5A-476E-A633-04EAEF457645";
 
         /// <summary>
-        /// Motivator: Visioning 
+        /// Motivator: Visioning
         /// </summary>
         public const string MOTIVATOR_VISIONING = "EE1603BA-41AE-4CFA-B220-065768996501";
 
         /// <summary>
-        /// Motivator: Growth Propensity 
+        /// Motivator: Growth Propensity
         /// </summary>
         public const string MOTIVATOR_GROWTH_PROPENSITY = "605F3702-6AE7-4545-BEBE-23693E60031C";
 
@@ -1072,17 +1087,17 @@ namespace Rock.SystemGuid
         public const string MOTIVATOR_RELATIONAL_THEME = "840C414E-A261-4243-8302-6117E8949FE4";
 
         /// <summary>
-        /// Motivator Theme: Directional 
+        /// Motivator Theme: Directional
         /// </summary>
         public const string MOTIVATOR_DIRECTIONAL_THEME = "112A35BE-3108-48D9-B057-125A788AB531";
 
         /// <summary>
-        /// Motivator Theme: Intellectual 
+        /// Motivator Theme: Intellectual
         /// </summary>
         public const string MOTIVATOR_INTELLECTUAL_THEME = "58FEF15F-561D-420E-8937-6CF51D296F0E";
 
         /// <summary>
-        /// Motivator Theme: Positional 
+        /// Motivator Theme: Positional
         /// </summary>
         public const string MOTIVATOR_POSITIONAL_THEME = "84322020-4E27-44EF-88F2-EAFDB7286A01";
 

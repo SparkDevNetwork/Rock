@@ -22,11 +22,12 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Used to map a site and token to a specific url 
+    /// Used to map a site and token to a specific url
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
@@ -76,7 +77,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this PageShortLink is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -85,7 +86,7 @@ namespace Rock.Model
         /// <value>
         /// The short link URL.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ShortLinkUrl
         {
             get
@@ -112,7 +113,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Static Properties/Methods 
+        #region Static Properties/Methods
 
         private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
         private static char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };

@@ -20,11 +20,12 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Reporting" )]
     [NotAudited]
@@ -74,7 +75,7 @@ namespace Rock.Model
         public int? DataSelectComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Selection is where the FieldType stores specific parameter values 
+        /// Selection is where the FieldType stores specific parameter values
         /// If ReportFieldType is Column or Attribute, it is the Column or Attribute name
         /// If ReportFieldType is DataSelectComponent, it will be some values of whatever the DataSelectComponent implements for specific parameters
         /// </summary>
@@ -148,7 +149,7 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Report Report { get; set; }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ReportFieldConfiguration : EntityTypeConfiguration<ReportField>
     {
@@ -181,7 +182,7 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum ReportFieldType
     {

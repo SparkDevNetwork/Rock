@@ -27,17 +27,17 @@ namespace Rock.Financial
     public class Payment
     {
         /// <summary>
-        /// Gets or sets the gross amount.
+        /// Gets or sets the gross amount. This value will always be in the organization's currency.
         /// </summary>
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the net amount (Amount minus FeeAmount).
+        /// Gets or sets the net amount (Amount minus FeeAmount). This value will always be in the organization's currency.
         /// </summary>
         public decimal? NetAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the fee amount.
+        /// Gets or sets the fee amount. This value will always be in the organization's currency.
         /// </summary>
         public decimal? FeeAmount { get; set; }
 
@@ -150,5 +150,21 @@ namespace Rock.Financial
         /// The expiration year encrypted.
         /// </value>
         public string ExpirationYearEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign currency amount.
+        /// </summary>
+        /// <value>
+        /// The foreign currency amount.
+        /// </value>
+        public decimal? ForeignCurrencyAmount { get; set; }
     }
 }

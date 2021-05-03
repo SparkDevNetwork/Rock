@@ -242,7 +242,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Notes_BlockUpdated( object sender, EventArgs e )
         {
-            ShowNotes();
+            // if block settings change, reload page
+            NavigateToCurrentPageReference();
         }
 
         #endregion

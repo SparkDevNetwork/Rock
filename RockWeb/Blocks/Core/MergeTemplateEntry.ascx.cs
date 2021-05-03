@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Merge Template Entry" )]
     [Category( "Core" )]
@@ -68,8 +68,7 @@ namespace RockWeb.Blocks.Core
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
-            //// note: this only makes a difference on Postback, not on the initial page visit
+            //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeout ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
@@ -318,7 +317,7 @@ namespace RockWeb.Blocks.Core
                             GroupId = x.Key,
                             // Order People to match ordering in the GroupMembers.ascx block.
                             Persons =
-                                    // Adult Male 
+                                    // Adult Male
                                     x.Where( xx => xx.GroupMember.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
                                     xx.GroupMember.Person.Gender == Gender.Male ).OrderByDescending( xx => xx.GroupMember.Person.BirthDate ).Select( xx => xx.Person )
                                     // Adult Female

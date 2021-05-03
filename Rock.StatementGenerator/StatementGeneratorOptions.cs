@@ -20,9 +20,9 @@ using System.Collections.Generic;
 namespace Rock.StatementGenerator
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class StatementGeneratorOptions : DotLiquid.Drop
+    public class StatementGeneratorOptions
     {
         /// <summary>
         /// Gets or sets the start date.
@@ -221,7 +221,7 @@ namespace Rock.StatementGenerator
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum OrderBy
     {
@@ -229,7 +229,7 @@ namespace Rock.StatementGenerator
         /// Sort by postal code
         /// </summary>
         PostalCode = 0,
-        
+
         /// <summary>
         /// Sort by Last Name
         /// </summary>

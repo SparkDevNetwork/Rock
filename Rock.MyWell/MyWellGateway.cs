@@ -740,7 +740,7 @@ namespace Rock.MyWell
                 billingFrequency = BillingFrequency.twice_monthly;
 
                 /* 2020-07-30 MDP
-                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it, 
+                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it,
                     but it really end up posting on whatever the next 1st or 15th lands on (which is what we want to happen).
                     For example, if we set up a 1st/15th schedule to start on July 23rd, it'll report that the NextBillDate is July 23rd,
                     but it won't really bill until Aug 1st. From then on, the NextBillDate will get reported as whatever the next 1st and 15th is.
@@ -1027,7 +1027,7 @@ namespace Rock.MyWell
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                // values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
@@ -1059,7 +1059,7 @@ namespace Rock.MyWell
                 var exception = new MyWellGatewayException( $"Error processing MyWell transaction. Message:  {response.Message}, " +
                     $"processorResponseCode: {response.ProcessorResponseCode}, " +
                     $"processorResponseText: {response.ProcessorResponseText} " );
-                
+
                 ExceptionLogService.LogException( exception );
 
                 return null;

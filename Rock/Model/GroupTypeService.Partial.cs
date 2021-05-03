@@ -32,7 +32,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
         /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the 
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
@@ -125,7 +125,16 @@ namespace Rock.Model
 
             foreach ( var rootCheckinAreaGroupTypeId in checkinTemplates.Select( a => a.Id ) )
             {
-                result.AddRange( this.GetCheckinAreaDescendantsPath( rootCheckinAreaGroupTypeId ) );
+                var checkinAreaDescendantsPath = GetCheckinAreaDescendantsPath( rootCheckinAreaGroupTypeId );
+                foreach ( var checkinAreaDescendantPath in checkinAreaDescendantsPath )
+                {
+                    // just in case multiple checkin areas share a child group type, check for duplicates
+                    var alreadyExists = result.Any( x => x.GroupTypeId == checkinAreaDescendantPath.GroupTypeId );
+                    if ( !alreadyExists )
+                    {
+                        result.Add( checkinAreaDescendantPath );
+                    }
+                }
             }
 
             return result;
@@ -252,7 +261,7 @@ namespace Rock.Model
                       FROM   [GroupTypeAssociation] GTA
 		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
                       WHERE  [GroupTypeId] = {0}
-                      UNION ALL 
+                      UNION ALL
                       SELECT
                             GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT2.[Order], 3)  )
                       FROM
@@ -266,7 +275,7 @@ namespace Rock.Model
                 SELECT GT3.*
                 FROM CTE
                 INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
-				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) ) 
+				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) )
                 ", parentGroupTypeId );
         }
 
@@ -292,7 +301,7 @@ namespace Rock.Model
                       FROM   [GroupTypeAssociation] GTA
 		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
                       WHERE  [GroupTypeId] = {0}
-                      UNION ALL 
+                      UNION ALL
                       SELECT
                             GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
                       FROM
@@ -470,6 +479,9 @@ namespace Rock.Model
         {
             List<GroupTypeCache> parentGroupTypeList = new List<GroupTypeCache>();
             var parentGroupType = checkinArea;
+
+            bool hasMultipleParents = false;
+
             while ( parentGroupType != null )
             {
                 if ( rootGroupType != null && parentGroupType.Id == rootGroupType.Id )
@@ -488,14 +500,24 @@ namespace Rock.Model
 
                 if ( parentGroupType.ParentGroupTypes.Count > 1 )
                 {
-                    // A CheckinArea shouldn't have more than 1 parent, but since this one does,
-                    // exclude any parents that are the root group, and exclude any we already have
-                    // then pick the first of whatever are remaining
-                    parentGroupType = parentGroupType
-                        .ParentGroupTypes
-                        .Where( a =>
-                             a.Id != rootGroupType.Id
-                             && !parentGroupTypeList.Any( p => p.Id == a.Id ) )
+                    hasMultipleParents = true;
+
+                    /* A CheckinArea shouldn't have more than 1 parent, but since this one does,
+                       we'll have to parent path the makes the most sense
+                    */
+
+                    // if the group type has the specified rootGroupType as a parent,
+                    // we can stop there since that would be the best path
+                    if ( parentGroupType.ParentGroupTypes.Any( x => x.Id == rootGroupType.Id ) )
+                    {
+                        break;
+                    }
+
+                    // We can eliminate parent group types that we have already discovered,
+                    // then pick the first of whatever are remaining, preferring
+                    // ones that aren't a Checkin Template group type (like Weekend Service)
+                    parentGroupType = parentGroupType.ParentGroupTypes.Where( a =>!parentGroupTypeList.Any( p => p.Id == a.Id ) )
+                        .OrderByDescending( x => x.GroupTypePurposeValue?.Guid != Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
                         .FirstOrDefault();
                 }
                 else
@@ -504,11 +526,30 @@ namespace Rock.Model
                 }
             }
 
+            if ( hasMultipleParents )
+            {
+                // In a normal case, the Checkin Template (Weekend Service, Volunteer, etc) doesn't get
+                // included as part of the path string, but if there were multiple parent CheckIn Types (normally there shouldn't be),
+                // the ParentGroupType list might start with a Checkin Template (Weekend Service, Volunteer, etc).
+                // For example, if Elementary Area is in both Weekend Service and Volunteer area,
+                // the Path String might get built as 'Volunteer Area > Elementary Area',
+                // instead of just 'Elementary Area'.
+                // If that happens, we'll trim off the Check-in Template group type from the list.
+                var firstParentGroupType = parentGroupTypeList.FirstOrDefault();
+                if ( firstParentGroupType != null )
+                {
+                    if ( firstParentGroupType.GroupTypePurposeValue?.Guid == Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() )
+                    {
+                        parentGroupTypeList.Remove( firstParentGroupType );
+                    }
+                }
+            }
+
             this.Path = parentGroupTypeList.Select( a => a.Name ).ToList().AsDelimited( " > " );
 
             // We're basically building a hierarchy ordering path using padded zeros of the GroupType's order
             // such that the results of the HierarchyOrder looks something like this:
-            //// 
+            ////
             //// |000
             //// |000
             //// |001
@@ -584,10 +625,10 @@ namespace Rock.Model
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the full associated ancestor path (of group type associations). 
+        /// Gets or sets the full associated ancestor path (of group type associations).
         /// </summary>
         /// <value>
-        /// Full path of the ancestor group type associations. 
+        /// Full path of the ancestor group type associations.
         /// </value>
         public string Path { get; set; }
 

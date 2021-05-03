@@ -115,14 +115,14 @@ namespace Rock.Workflow.Action
              * This activity will create a new assessment for each assessment type selected. If an assessment already exists for that type it is left in a pending status but a new assessment is still created.
              * Per Jon, code in Rock should account for the possibility of multiple assessments for a type that are in a pending state and only select the latest one.
              */
-             
+
             rockContext = rockContext ?? new RockContext();
 
             errorMessages = new List<string>();
 
             var assessmentTypesGuidString = GetAttributeValue( action, AttributeKey.AssessmentTypesKey, true );
             var assessmentTypeGuids = assessmentTypesGuidString.IsNullOrWhiteSpace() ? null : assessmentTypesGuidString.Split( new char[] { ',' } );
-            
+
             var personAliasGuid = GetAttributeValue( action, AttributeKey.Person, true ).AsGuidOrNull();
             Guid? requestedByAliasGuid = GetAttributeValue( action, AttributeKey.RequestedBy, true ).AsGuidOrNull();
             var dueDate = GetAttributeValue( action, AttributeKey.DueDate, true ).AsDateTime();
@@ -147,7 +147,12 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
-            var requestedByAlias = new PersonAliasService( rockContext ).Get( requestedByAliasGuid.Value );
+            PersonAlias requestedByAlias = null;
+
+            if ( requestedByAliasGuid != null )
+            {
+                requestedByAlias = new PersonAliasService( rockContext ).Get( requestedByAliasGuid.Value );
+            }
 
             foreach( string assessmentTypeGuid in assessmentTypeGuids )
             {
@@ -166,7 +171,7 @@ namespace Rock.Workflow.Action
                 {
                     PersonAliasId = personAlias.Id,
                     AssessmentTypeId = assessmentTypeId.Value,
-                    RequesterPersonAliasId = requestedByAlias.Id,
+                    RequesterPersonAliasId = requestedByAlias?.Id,
                     RequestedDateTime = RockDateTime.Now,
                     RequestedDueDate = dueDate,
                     Status = AssessmentRequestStatus.Pending

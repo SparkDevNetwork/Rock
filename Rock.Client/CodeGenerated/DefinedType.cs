@@ -41,6 +41,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableSecurityOnValues { get; set; }
+
+        /// <summary />
         public int? FieldTypeId { get; set; }
 
         /// <summary />
@@ -104,6 +107,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CategoryId = source.CategoryId;
             this.Description = source.Description;
+            this.EnableSecurityOnValues = source.EnableSecurityOnValues;
             this.FieldTypeId = source.FieldTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -138,12 +142,12 @@ namespace Rock.Client
         public FieldType FieldType { get; set; }
 
         /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }

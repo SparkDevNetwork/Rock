@@ -47,6 +47,11 @@ namespace Rock.SystemGuid
         public const string CHECKIN_MANAGER_PERSON_RECENT_ATTENDANCES = "087749E0-3C35-4093-980A-483D8D4C3142";
 
         /// <summary>
+        /// The checkin manager en route
+        /// </summary>
+        public const string CHECKIN_MANAGER_EN_ROUTE = "5F2403E2-1016-4914-8566-3369F3CB74E3";
+
+        /// <summary>
         /// The bio block
         /// </summary>
         public const string BIO = "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A";

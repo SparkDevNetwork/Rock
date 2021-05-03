@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -33,9 +34,9 @@ namespace Rock.Model
     /// Represents a <see cref="Rock.Model.Location"/> that is associated with a <see cref="Rock.Model.Group"/>.
     /// </summary>
     /// <remarks>
-    /// In Rock a <see cref="Rock.Model.Group"/> is defined any party or collection of <see cref="Rock.Model.Person">Persons</see>.  Examples of GroupLocaitons
-    /// could include a Person/Family's address, a Business' address, a church campus, a room where a Bible study meets.  Pretty much, it is any place where a 
-    /// group of people meet or are located. 
+    /// In Rock a <see cref="Rock.Model.Group"/> is defined any party or collection of <see cref="Rock.Model.Person">Persons</see>.  Examples of GroupLocations
+    /// could include a Person/Family's address, a Business' address, a church campus, a room where a Bible study meets.  Pretty much, it is any place where a
+    /// group of people meet or are located.
     /// </remarks>
     [RockDomain( "Group" )]
     [Table( "GroupLocation" )]
@@ -57,7 +58,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated with this GroupLocation. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated with this GroupLocation. 
+        /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated with this GroupLocation.
         /// </value>
         [DataMember]
         public int LocationId { get; set; }
@@ -75,7 +76,7 @@ namespace Rock.Model
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.  
+        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/> referenced by this GroupLocation is the mailing address/location for the <see cref="Rock.Model.Group"/>.
         /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
@@ -86,7 +87,7 @@ namespace Rock.Model
 
         //TODO: Document
         /// <summary>
-        /// Gets or sets a flag indicating if this is the mappable location for this 
+        /// Gets or sets a flag indicating if this is the mappable location for this
         /// This field is only supported in the UI for family groups
         /// </summary>
         /// <value>
@@ -96,7 +97,7 @@ namespace Rock.Model
         public bool IsMappedLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person alias identifier.  A GroupLocation can optionally be created by selecting one of the group 
+        /// Gets or sets the group member <see cref="Rock.Model.PersonAlias"/> identifier.  A GroupLocation can optionally be created by selecting one of the group
         /// member's locations.  If the GroupLocation is created this way, the member's person alias id is saved with the group location
         /// </summary>
         /// <value>
@@ -106,7 +107,7 @@ namespace Rock.Model
         public int? GroupMemberPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the 
+        /// Gets or sets the display order of the GroupLocation in the group location list. The lower the number the higher the
         /// display priority this GroupLocation has. This property is required.
         /// </summary>
         /// <value>
@@ -126,7 +127,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that is associated with this GroupLocation.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -148,13 +149,13 @@ namespace Rock.Model
         public virtual DefinedValue GroupLocationTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member person alias. A GroupLocation can optionally be created by selecting one of the 
+        /// Gets or sets the group member <see cref="Rock.Model.PersonAlias"/>. A GroupLocation can optionally be created by selecting one of the
         /// group member's locations. If the GroupLocation is created this way, the member is saved with the group location
         /// </summary>
         /// <value>
         /// The group member person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias GroupMemberPersonAlias { get; set; }
 
         /// <summary>
@@ -167,7 +168,7 @@ namespace Rock.Model
         public virtual ICollection<Schedule> Schedules { get; set; } = new Collection<Schedule>();
 
         /// <summary>
-        /// Gets or sets properties that are specific to Group+Location+Schedule 
+        /// Gets or sets properties that are specific to Group+Location+Schedule
         /// </summary>
         /// <value>
         /// The group location schedule configs.
@@ -287,7 +288,7 @@ namespace Rock.Model
         #endregion
 
     }
-    
+
     #region Entity Configuration
 
     /// <summary>

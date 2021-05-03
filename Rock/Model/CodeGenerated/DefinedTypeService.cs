@@ -51,12 +51,12 @@ namespace Rock.Model
         public bool CanDelete( DefinedType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.GroupStatusDefinedTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -119,6 +119,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
+            target.EnableSecurityOnValues = source.EnableSecurityOnValues;
             target.FieldTypeId = source.FieldTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

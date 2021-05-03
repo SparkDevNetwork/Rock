@@ -178,13 +178,11 @@ namespace RockWeb.Blocks.GroupScheduling
                     return;
                 }
 
+                UpdateAttendanceDeclineReasonAfterSubmit();
+
                 if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
                 {
                     NavigateToPage( PageParameter( "ReturnUrl" ).AsGuid(), null );
-                }
-                else
-                {
-                    UpdateAttendanceDeclineReasonAfterSubmit();
                 }
             }
         }
@@ -226,14 +224,10 @@ namespace RockWeb.Blocks.GroupScheduling
 
                 new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
                 rockContext.SaveChanges();
-                DetermineRecipientAndSendResponseEmails( attendanceId, rockContext );
+                DetermineRecipientAndSendResponseEmails( attendanceId );
             }
 
-            BindPendingConfirmations();
         }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptPendingConfirmations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
@@ -322,7 +316,7 @@ namespace RockWeb.Blocks.GroupScheduling
             nbError.Text = string.Format( "Thanks for letting us know. We’ll try to schedule another person for: {0}", attendance.Occurrence.Group.Name );
             nbError.Visible = true;
 
-            DetermineRecipientAndSendResponseEmails( attendance );
+            DetermineRecipientAndSendResponseEmails( attendance?.Id );
         }
 
         /// <summary>
@@ -495,7 +489,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         // Only send Confirm if the status has changed and change is to Yes
                         if ( attendance.RSVP == RSVP.Yes )
                         {
-                            DetermineRecipientAndSendResponseEmails( attendance );
+                            DetermineRecipientAndSendResponseEmails( attendance?.Id );
                         }
                     }
 
@@ -556,7 +550,7 @@ namespace RockWeb.Blocks.GroupScheduling
             }
             catch ( Exception ex )
             {
-                // ignore but log 
+                // ignore but log
                 ExceptionLogService.LogException( ex );
             }
         }
@@ -650,48 +644,33 @@ namespace RockWeb.Blocks.GroupScheduling
         /// Determines the recipient and send confirmation email.
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void DetermineRecipientAndSendResponseEmails( int? attendanceId, RockContext rockContext )
+        private void DetermineRecipientAndSendResponseEmails( int? attendanceId )
         {
-            if ( attendanceId.HasValue )
+            if ( !attendanceId.HasValue )
             {
-                DetermineRecipientAndSendResponseEmails( new AttendanceService( rockContext ).Get( attendanceId.Value ) );
-            }
-        }
-
-        /// <summary>
-        /// Determines the recipient and send Confirmation email or Cancellation Email
-        /// </summary>
-        /// <param name="attendance">The attendance.</param>
-        private void DetermineRecipientAndSendResponseEmails( Attendance attendance )
-        {
-            // The scheduler receives email add as a recipient for both Confirmation and Decline
-            if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
-            {
-                SendResponseEmail( attendance, attendance.ScheduledByPersonAlias.Person );
+                return;
             }
 
-            // if attendance is decline (no) also send email to Schedule Cancellation Person
-            if ( attendance.RSVP == RSVP.No && attendance.Occurrence.Group.ScheduleCancellationPersonAlias != null && attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person.IsEmailActive )
+            var attendanceService = new AttendanceService( new RockContext() );
+            var attendance = attendanceService.Get( attendanceId.Value );
+            if ( attendance == null )
             {
-                SendResponseEmail( attendance, attendance.Occurrence.Group.ScheduleCancellationPersonAlias.Person );
+                return;
             }
-        }
 
-        /// <summary>
-        /// Sends the response email.
-        /// </summary>
-        /// <param name="attendance">The attendance.</param>
-        /// <param name="recipientPerson">The recipient person.</param>
-        private void SendResponseEmail( Attendance attendance, Person recipientPerson )
-        {
             try
             {
-                var mergeFields = MergeFields( attendance, recipientPerson );
-                var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
-                emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
-                emailMessage.CreateCommunicationRecord = false;
-                emailMessage.Send();
+                // The scheduler receives email add as a recipient for both Confirmation and Decline
+                if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
+                {
+                    attendanceService.SendScheduledPersonResponseEmailToScheduler( attendance.Id, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
+                }
+
+                // if attendance is decline (no) also send email to Schedule Cancellation Person
+                if ( attendance.RSVP == RSVP.No )
+                {
+                    attendanceService.SendScheduledPersonDeclineEmail( attendance.Id, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
+                }
             }
             catch ( SystemException ex )
             {

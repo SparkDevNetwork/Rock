@@ -70,11 +70,14 @@ namespace Rock.Rest.Filters
                         var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Security.Authentication.PINAuthentication ).FullName );
 
                         // Don't allow PIN authentications.
-                        var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
-                        if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+                        if ( userLogin.EntityTypeId != null )
                         {
-                            actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
-                            return;
+                            var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
+                            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+                            {
+                                actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+                                return;
+                            }
                         }
                     }
                 }

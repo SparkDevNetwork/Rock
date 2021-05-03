@@ -703,7 +703,7 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            /*  
+            /*
                 2/16/2021 - JME
                 The code below provides the opportunity for an external system to disable
                 partial postbacks. This was put in place to allow dynamic language translation
@@ -2136,7 +2136,7 @@ Sys.Application.add_load(function () {
             if ( Context.Request != null && Context.Request.Url != null )
             {
                 string protocol = WebRequestHelper.IsSecureConnection( Context ) ? "https" : Context.Request.Url.Scheme;
-                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.UrlProxySafe().Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();

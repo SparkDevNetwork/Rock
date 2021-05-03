@@ -137,7 +137,7 @@ namespace Rock.Model
             var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
             var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees", attendanceTypeValueId );
 
-            // If we still don't have an occurrence record (i.e. validation failed) return null 
+            // If we still don't have an occurrence record (i.e. validation failed) return null
             if ( occurrence == null )
             {
                 return null;
@@ -286,6 +286,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Model.Attendance" /> for the given date, location, schedule, and RSVP. No other filtering is done.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="rsvp">The RSVP.</param>
+        /// <returns></returns>
+        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, Rock.Model.RSVP rsvp )
+        {
+            return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
+                .Where( a => a.Occurrence.OccurrenceDate == date.Date
+                    && a.Occurrence.LocationId == locationId
+                    && a.Occurrence.ScheduleId == scheduleId
+                    && a.RSVP == rsvp );
+        }
+
+        /// <summary>
         /// Gets the chart data.
         /// </summary>
         /// <param name="groupBy">The group by.</param>
@@ -369,7 +386,7 @@ namespace Rock.Model
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
-            // remove 0 from the list, just in case it is there 
+            // remove 0 from the list, just in case it is there
             campusIdList.Remove( 0 );
 
             if ( campusIdList.Any() )
@@ -650,7 +667,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class AttendanceWithSummaryDateTime
         {
@@ -1272,8 +1289,8 @@ namespace Rock.Model
                 {
                     PersonId = a.PersonId,
 
-                    /* 2020-07-17 MDP  
-                     *  This is their GroupMember information from the *ResourceGroup*, and not always the Occurrence Group. 
+                    /* 2020-07-17 MDP
+                     *  This is their GroupMember information from the *ResourceGroup*, and not always the Occurrence Group.
                      *  This is how the Group Member information displayed in the Resources Lists is determined:
                      *  - Group Member (Or Group Member Matching Preference)
                      *    - Occurrence Group
@@ -1566,7 +1583,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of SchedulerResourceAttend records 
+        /// Gets a list of SchedulerResourceAttend records
         /// </summary>
         /// <param name="attendanceOccurrenceId">The attendance occurrence identifier.</param>
         /// <returns></returns>
@@ -1643,6 +1660,7 @@ namespace Rock.Model
             {
                 AttendanceId = ap.Attendance.Id,
                 ap.Attendance.RSVP,
+                ap.Attendance.DeclineReasonValueId,
                 ap.Attendance.ScheduledToAttend,
                 PersonId = ap.Person.Id,
                 NickName = ap.Person.NickName,
@@ -1758,7 +1776,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            // they this schedule as a preference, but for a different location 
+                            // they this schedule as a preference, but for a different location
                             matchesPreference = ScheduledAttendanceItemMatchesPreference.NotMatchesPreference;
                         }
                     }
@@ -1786,6 +1804,7 @@ namespace Rock.Model
                     ConfirmationStatus = status.ConvertToString( false ).ToLower(),
                     MatchesPreference = matchesPreferenceAsDataAttribute,
                     PersonId = a.PersonId,
+                    DeclinedReason = DefinedValueCache.GetValue( a.DeclineReasonValueId ).EncodeHtml(),
 
                     GroupMemberId = attendanceOccurrenceGroupMemberInfo?.MemberId,
                     GroupRole = attendanceOccurrenceGroupMemberInfo?.GroupRole,
@@ -2242,6 +2261,72 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sends a response (accept or decline) email to the <see cref="Attendance.ScheduledByPersonAlias">Scheduler Person</see>
+        /// for this <see cref="Attendance"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonResponseEmailToScheduler( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends a decline email to the <see cref="Group.ScheduleCancellationPersonAlias">Scheduling Cancellation Person</see>
+        /// for this attendance's <see cref="AttendanceOccurrence.Group"/>
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        public void SendScheduledPersonDeclineEmail( int attendanceId, Guid? schedulingResponseEmailGuid )
+        {
+            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
+            var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
+            SendSendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+        }
+
+        /// <summary>
+        /// Sends the send scheduled person response email.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        /// <param name="recipientPerson">The recipient person.</param>
+        private void SendSendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        {
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
+
+            if ( attendance == null )
+            {
+                return;
+            }
+
+            if ( recipientPerson?.IsEmailActive != true )
+            {
+                return;
+            }
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            var group = attendance.Occurrence.Group;
+
+            mergeFields.Add( "Group", group );
+            mergeFields.Add( "ScheduledItem", attendance );
+            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+            mergeFields.Add( "Recipient", recipientPerson );
+
+            var emailMessage = new RockEmailMessage( schedulingResponseEmailGuid.Value );
+            emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+            emailMessage.CreateCommunicationRecord = false;
+            emailMessage.Send();
+        }
+
+        /// <summary>
         /// Gets a Queryable of Attendance Records that are Scheduled Attendances that are pending confirmation.
         /// This includes attendance records that have RequestedToAttend, not yet confirmed (not confirmed as scheduled and not declined), and didn't attend yet.
         /// This doesn't include attendance records that occurred in prior dates.
@@ -2275,7 +2360,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class GroupMemberAssignmentInfo
         {
@@ -2504,7 +2589,7 @@ namespace Rock.Model
                 .Select( a => new { PersonAliasId = a.Id, a.PersonId } )
                 .ToDictionary( k => k.PersonId, v => ( int? ) v.PersonAliasId );
 
-            // create a list of Attendances to BulkImport (specify the number of records we are going to put in the list initialize the list 
+            // create a list of Attendances to BulkImport (specify the number of records we are going to put in the list initialize the list
             List<Attendance> attendancesToBulkInsert = attendanceImportList.Select( attendanceImport =>
              {
                  var attendance = new Attendance
@@ -2514,7 +2599,7 @@ namespace Rock.Model
                  };
 
                  // If PersonId was specified, we'll use that (and ignore the imported PersonAliasId if there is one)
-                 // Then we'll use the PrimaryAliasId associated with the specified PersonId 
+                 // Then we'll use the PrimaryAliasId associated with the specified PersonId
                  if ( attendanceImport.PersonId.HasValue )
                  {
                      var personAliasId = primaryAliasIdFromPersonIdLookup.GetValueOrNull( attendanceImport.PersonId.Value );
@@ -2624,10 +2709,18 @@ namespace Rock.Model
         ///   <c>true</c> if this Person has blackout conflict; otherwise, <c>false</c>.
         /// </value>
         public override bool HasBlackoutConflict => this.BlackoutDates?.Contains( this.OccurrenceDate ) == true;
+
+        /// <summary>
+        /// Gets or sets the declined reason.
+        /// </summary>
+        /// <value>
+        /// The declined reason.
+        /// </value>
+        public string DeclinedReason { get; set; }
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Model.SchedulerResourceAssignment" />
     public class SchedulerResourcePreference : SchedulerResourceAssignment
@@ -2635,7 +2728,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Model.SchedulerResourceAssignment" />
     public class SchedulerResourceScheduled : SchedulerResourceAssignment
@@ -2643,7 +2736,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public abstract class SchedulerResourceAssignment
     {
@@ -2949,7 +3042,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum ScheduledAttendanceItemMatchesPreference
     {
@@ -2970,7 +3063,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum ScheduledAttendanceItemStatus
     {
@@ -2996,7 +3089,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockObsolete( "1.12" )]
     [Obsolete( "Use GroupSchedulerResourceListSourceType instead" )]
@@ -3020,7 +3113,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
@@ -3056,7 +3149,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum SchedulerResourceGroupMemberFilterType
     {
@@ -3072,7 +3165,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockClientInclude( "Use this as the Content of a ~/api/Attendances/GetSchedulerResources POST" )]
     public class SchedulerResourceParameters
@@ -3155,7 +3248,7 @@ namespace Rock.Model
     #endregion Group Scheduling related classes and types
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class AttendanceQryExtensions
     {
@@ -3263,7 +3356,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable of Attendance where the person is scheduled (RequestedToAttend), limited to scheduled persons with the specified <see cref="ScheduledAttendanceItemStatus">scheduledAttendanceItemStatuses</see> 
+        /// Returns a queryable of Attendance where the person is scheduled (RequestedToAttend), limited to scheduled persons with the specified <see cref="ScheduledAttendanceItemStatus">scheduledAttendanceItemStatuses</see>
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="scheduledAttendanceItemStatuses">The scheduled attendance item statuses.</param>

@@ -28,7 +28,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a batch or collection of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for a specified date-time range, campus (if applicable) and transaction type.  A batch 
+    /// Represents a batch or collection of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for a specified date-time range, campus (if applicable) and transaction type.  A batch
     /// has a known total value of all transactions that are included in the batch.
     /// </summary>
     [RockDomain( "Finance" )]
@@ -51,7 +51,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the start posting date and time range of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in this batch.  
+        /// Gets or sets the start posting date and time range of <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are included in this batch.
         /// Transactions that post on or after this date and time and before the <see cref="BatchEndDateTime"/> can be included in this batch.
         /// </summary>
         /// <value>
@@ -163,7 +163,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the campus that this batch is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this batch is associated with.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> that the batch is associated with.
@@ -172,7 +172,7 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are 
+        /// Gets or sets a collection that contains the <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that are
         /// included in the batch.
         /// </summary>
         /// <value>
@@ -350,7 +350,7 @@ namespace Rock.Model
     #region Batch Classes
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockClientInclude( "Control Total Result from ~api/FinancialBatches/GetControlTotals/{id}" )]
     public class ControlTotalResult

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Utility;
 
 namespace Rock.Tests.Rock.Utility
 {
-    [TestClass]        
+    [TestClass]
     public class RockSerializableDictionaryTests
     {
         [TestMethod]

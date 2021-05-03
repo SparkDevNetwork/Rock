@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -163,6 +166,7 @@ namespace Rock.Client
             this.CheckMicrParts = source.CheckMicrParts;
             this.FinancialGatewayId = source.FinancialGatewayId;
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            this.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FutureProcessingDateTime = source.FutureProcessingDateTime;
@@ -237,12 +241,12 @@ namespace Rock.Client
         public DefinedValue TransactionTypeValue { get; set; }
 
         /// <summary>
-        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.Attribute> Attributes { get; set; }
 
         /// <summary>
-        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
+        /// NOTE: AttributeValues are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded'
         /// </summary>
         public Dictionary<string, Rock.Client.AttributeValue> AttributeValues { get; set; }
     }

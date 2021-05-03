@@ -48,6 +48,24 @@ namespace Rock
         /// </summary>
         public static bool TimingsOnly = false;
 
+        private static string SessionId = null;
+
+        /// <summary>
+        /// Limits Debug Output to the current asp.net SessionId
+        /// </summary>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        public static void LimitToSessionId( bool enable = true)
+        {
+            if ( enable )
+            {
+                SessionId = System.Web.HttpContext.Current?.Session?.SessionID;
+            }
+            else
+            {
+                SessionId = null;
+            }
+        }
+
         /// <summary>
         /// The summary only
         /// </summary>
@@ -60,7 +78,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class DebugLoggingDbCommandInterceptor : DbCommandInterceptor
         {
@@ -161,6 +179,14 @@ namespace Rock
                     return;
                 }
 
+                if ( SessionId.IsNotNullOrWhiteSpace() )
+                {
+                    if ( System.Web.HttpContext.Current?.Session?.SessionID != SessionId )
+                    {
+                        return;
+                    }
+                }
+
                 var incrementedCallCount = Interlocked.Increment( ref DebugHelper._callCounts );
 
                 if ( !TimingsOnly && !SummaryOnly )
@@ -214,7 +240,7 @@ namespace Rock
                             // if this is a nullable enum, we'll have to look at p.Value instead of p.SqlValue to see what is really getting passed to SQL
                             if ( valueType?.IsEnum == true && p.Value != null )
                             {
-                                /* If this is an enum (for example GroupMemberStatus.Active), show the numeric 
+                                /* If this is an enum (for example GroupMemberStatus.Active), show the numeric
                                  * value getting passed to SQL
                                  * p.Value will be the Enum, so convert it to int;
                                  */

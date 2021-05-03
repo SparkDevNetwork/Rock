@@ -73,16 +73,16 @@ namespace Rock.DownhillCss
             // Build border color utilities
             BorderColors( frameworkCss, settings, applicationColorProperties );
 
-            // Build Margin Utilties
+            // Build Margin Utilities
             Margins( frameworkCss, settings, applicationColorProperties );
 
-            // Build Padding Utilties
+            // Build Padding Utilities
             Paddings( frameworkCss, settings, applicationColorProperties );
 
             // Build Border Width Utilities
             BorderWidths( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
-            
+
 
             return CssUtilities.ParseCss( frameworkCss.ToString(), settings );
         }
@@ -225,7 +225,7 @@ namespace Rock.DownhillCss
                 frameworkCss.AppendLine($"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};");
                 frameworkCss.AppendLine("}");
             }
-            
+
         }
 
         private static void TextColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
@@ -557,7 +557,7 @@ namespace Rock.DownhillCss
             css = Regex.Replace( css, @"/\*[\d\D]*?\*/", string.Empty );
 
             return css;
-         
+
         }
         #endregion
 
@@ -933,14 +933,16 @@ icon {
 
 .modal-anchor-top {
     margin: 0 0 48 0;
+    corner-radius: 0 8;
 }
 
 .modal-anchor-bottom {
     margin: 48 0 0 0;
+    corner-radius: 8 0;
 }
 
 .modal-header {
-    background-color: ?color-brand;
+    background-color: ?color-gray-400;
     padding: 16;
 }
 
@@ -959,7 +961,7 @@ icon {
 
 .modal-close,
 .modal-title {
-    color: #ffffff; 
+    color: #ffffff;
 }
 
 .modal-title {
@@ -967,6 +969,11 @@ icon {
     margin: 0;
     padding: 0;
 }
+
+.modal-close {
+    opacity: 0.5;
+}
+
 
 /* Divider */
 .divider {
@@ -989,8 +996,7 @@ icon {
 /* Buttons */
 .btn {
     border-radius: ?radius-base;
-    padding-left: 16;
-    padding-right: 16;
+    padding: 14 16;
 }
 
 .btn.btn-primary {
@@ -1121,6 +1127,7 @@ icon {
     padding: 20;
 }
 
+/* Once clients have updated to mobile v2 'height: 35' needs to be replaced with 'padding: 11 12'; */
 .btn.btn-sm {
     font-size: micro;
     height: 35;
@@ -1201,6 +1208,40 @@ icon {
 
 .tablet .hero .hero-subtitle {
     font-size: 28;
+}
+
+
+/* My Prayer Requests */
+.block-my-prayer-requests .prayer-request-list {
+    -xf-spacing: 40;
+}
+
+.block-my-prayer-requests .prayer-header {
+    margin-bottom: 20;
+}
+
+.block-my-prayer-requests .actions {
+    margin-top: 20;
+}
+
+.block-my-prayer-requests .answer-header {
+    font-size: 14;
+    font-style: bold;
+    margin-top: 8;
+}
+
+.block-my-prayer-requests .answer-text {
+    font-size: 14;
+}
+
+
+/* Answer To Prayer */
+.block-answer-to-prayer .prayer-header {
+    margin-bottom: 20;
+}
+
+.block-answer-to-prayer .save-button {
+    margin-top: 20;
 }
 
 
@@ -1317,18 +1358,6 @@ icon {
     padding-right: 0;
 }
 
-/* Modals */
-.modal-header {
-    background-color: ?color-gray-400;
-}
-
-.modal-title {  
-}
-
-.modal-close {
-    opacity: 0.5;
-}
-
 /* Forms Styles */
 
 .form-group {
@@ -1347,9 +1376,9 @@ icon {
 }
 ^borderlessentry,
 ^datepicker,
-^checkbox, 
+^checkbox,
 ^picker,
-^entry, 
+^entry,
 ^switch,
 ^editor {
     color: ?color-text;
@@ -1367,7 +1396,7 @@ icon {
 
 /* Field Titles */
 fieldgroupheader {
-   
+
 }
 
 fieldgroupheader .title,
@@ -1429,7 +1458,7 @@ formfield .required-indicator {
 }
 
 .card-container {
-   padding: 0; 
+   padding: 0;
    -xf-spacing: 0;
 }
 
@@ -1464,7 +1493,7 @@ formfield .required-indicator {
 }
 
 .card-tagline,
-.card-description-left, 
+.card-description-left,
 .card-description-right {
     opacity: .7;
 }

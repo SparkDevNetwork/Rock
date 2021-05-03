@@ -20,7 +20,7 @@ using Rock;
 namespace Rock.CodeGeneration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class Form1 : Form
     {
@@ -374,7 +374,7 @@ namespace Rock.CodeGeneration
 
             if ( missingDbSetWarnings.Length > 0 )
             {
-                
+
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }
@@ -715,7 +715,7 @@ GO
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class TableColumnInfo
         {
@@ -829,8 +829,8 @@ GO
                 if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
-        @"            
-            // ignoring {0},{1} 
+        @"
+            // ignoring {0},{1}
 ", item.Table, item.Column );
                     continue;
                 }
@@ -871,12 +871,12 @@ GO
                 }
 
                 canDeleteMiddle +=
-        $@" 
+        $@"
             if ( new Service<{parentTable}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
             {{
                 errorMessage = string.Format( ""This {{0}} {relationShipText} {{1}}."", {type.Name}.FriendlyTypeName, {parentTable}.FriendlyTypeName{pluralizeCode} );
                 return false;
-            }}  
+            }}
 ";
 
                 if ( obsolete != null && obsolete.IsError == false )
@@ -996,7 +996,7 @@ GO
         /// <returns></returns>
         private DirectoryInfo RootFolder()
         {
-            // Should probably be read from config file, or selected from directory dialog.  
+            // Should probably be read from config file, or selected from directory dialog.
             // For now, just traverses parent folders looking for Rock.sln file
             var dirInfo = new DirectoryInfo( Path.GetDirectoryName( lblAssemblyPath.Text ) );
             while ( dirInfo != null && !dirInfo.GetDirectories().Any( a => a.Name == "RockWeb" ) )
@@ -1725,13 +1725,10 @@ GO
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Specs\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
-            
+
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
-
-            Console.WriteLine( "\n\nDone!  Files Updated: {0}\n\nPress any key to continue.", updatedFileCount );
-            Console.ReadLine();
         }
 
         /// <summary>

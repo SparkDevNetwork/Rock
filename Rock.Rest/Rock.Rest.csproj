@@ -147,6 +147,7 @@
     <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityCampusFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialStatementTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionAlertsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionAlertTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.cs" />
@@ -159,6 +160,9 @@
     <Compile Include="Controllers\CodeGenerated\GroupMemberScheduleTemplatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupSyncsController.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MediaAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MediaElementsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\MediaFoldersController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaFirstNameGenderLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaLastNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
@@ -197,13 +201,12 @@
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\DocumentsController.partial.cs" />
-    <Compile Include="Controllers\DataViewsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\InteractionsController.Partial.cs" />
+    <Compile Include="Controllers\MediaElementsController.Partial.cs" />
     <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
-    <Compile Include="Controllers\GroupFinderController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
     <Compile Include="Controllers\AchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
@@ -215,6 +218,7 @@
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
+    <Compile Include="Handler\RockAssembliesResolver.cs" />
     <Compile Include="HeaderTokens.cs" />
     <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Jwt\JwtHelper.cs" />
@@ -444,6 +448,10 @@
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
@@ -465,7 +473,7 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

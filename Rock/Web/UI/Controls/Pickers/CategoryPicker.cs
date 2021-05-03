@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the excluded category ids (comma delimited) 
+        /// Gets or sets the excluded category ids (comma delimited)
         /// </summary>
         /// <value>
         /// The excluded category ids.
@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
                     parentCategory = parentCategory.ParentCategory;
                 }
 
-                InitialItemParentIds = parentCategoryIds.AsDelimited( "," );
+                ExpandedCategoryIds = parentCategoryIds.AsDelimited( "," );
                 ItemName = category.Name;
             }
             else
