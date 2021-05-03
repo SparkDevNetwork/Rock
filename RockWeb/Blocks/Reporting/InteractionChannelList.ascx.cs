@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.Reporting
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
 
                 <div class='pull-right margin-l-md'><i class='fa fa-chevron-right'></i></div>
-                
-                <div class='panel-labels'> 
+
+                <div class='panel-labels'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
                 </div>
             </div>
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.Reporting
 	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
 	            }
 			}
-			
+
             return personId;
         }
 

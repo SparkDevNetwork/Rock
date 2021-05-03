@@ -270,12 +270,12 @@ namespace Rock.Model
         #region HistorySummary classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistorySummaryByDateTimeAndVerb : RockDynamic
         {
             /// <summary>
-            /// Gets or sets the date time 
+            /// Gets or sets the date time
             /// </summary>
             /// <value>
             /// The date time.
@@ -308,7 +308,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistorySummaryListByEntityTypeAndVerb : RockDynamic
         {
@@ -368,7 +368,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistorySummaryByDateTime : RockDynamic
         {
@@ -390,7 +390,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistorySummary : RockDynamic
         {

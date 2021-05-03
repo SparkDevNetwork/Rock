@@ -40,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets a flag indicating if this ContentType is part of the Rock core system/framework. 
+        /// Gets or sets a flag indicating if this ContentType is part of the Rock core system/framework.
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> flag that is <c>true</c> if this ContentChannelType is part of the Rock core system/framework; otherwise <c>false</c>.
@@ -63,7 +63,7 @@ namespace Rock.Model
         /// Gets or sets an <see cref="ContentChannelDateType"/> enumeration that represents the type of date range that this DateRangeTypeEnum supports.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentChannelDateType"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date 
+        /// A <see cref="Rock.Model.ContentChannelDateType"/> that represents the type of DateRangeTypeEnum is supported. When <c>DateRangeTypeEnum.SingleDate</c> a single date
         /// will be supported; when <c>DateRangeTypeEnum.DateRange</c> a date range will be supported.
         /// </value>
         [DataMember]
@@ -203,7 +203,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ContentTypeConfiguration : EntityTypeConfiguration<ContentChannelType>
     {

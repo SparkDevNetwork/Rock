@@ -822,7 +822,7 @@ namespace RockWeb.Blocks.Event
 
                     linkage.CopyPropertiesFrom( linkedRegistrationState );
 
-                    // update registration instance 
+                    // update registration instance
                     if ( linkedRegistrationState.RegistrationInstance != null )
                     {
                         if ( linkedRegistrationState.RegistrationInstance.Id != 0 )
@@ -894,7 +894,7 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion 
+        #endregion
 
         #endregion Edit Panel
 

@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ContentChannelItemsController
     {

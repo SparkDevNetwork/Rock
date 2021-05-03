@@ -95,7 +95,7 @@ namespace Rock.Financial
         public string AmountCurrencyCode { get; set; }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class AutomatedPaymentDetailArgs
         {

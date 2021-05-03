@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.MergeTemplates
 {
     /// <summary>
-    /// Base class for merge template types (i.e. Word Document, HTML, etc) 
+    /// Base class for merge template types (i.e. Word Document, HTML, etc)
     /// </summary>
     public abstract class MergeTemplateType : Component
     {
@@ -58,7 +58,7 @@ namespace Rock.MergeTemplates
         }
 
         /// <summary>
-        /// Gets the supported file extensions 
+        /// Gets the supported file extensions
         /// Returns NULL if the file extension doesn't matter or doesn't apply
         /// Rock will use this to warn the user if the file extension isn't supported
         /// </summary>

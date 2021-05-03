@@ -141,7 +141,7 @@ namespace Rock.Model
         public DateTime? SendDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
+        /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent
         /// and the communication will not be sent until that date and time.
         /// </summary>
         /// <value>
@@ -598,7 +598,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion 
+        #endregion
 
         #region Public Methods
 

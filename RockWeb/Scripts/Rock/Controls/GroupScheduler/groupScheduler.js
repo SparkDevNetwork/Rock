@@ -725,7 +725,7 @@
                     var resourceNameToolTipHtml = schedulerResource.DeclinedReason || 'No reason given.';
                     resourceName.attr('data-original-title', resourceNameToolTipHtml);
                     resourceName.tooltip({ html: true });
-                }                
+                }
 
                 if (schedulerResource.Note) {
                     $resourceDiv.addClass('has-note');

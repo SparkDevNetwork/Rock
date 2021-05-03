@@ -27,7 +27,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Used to map a site and token to a specific url 
+    /// Used to map a site and token to a specific url
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
@@ -113,7 +113,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Static Properties/Methods 
+        #region Static Properties/Methods
 
         private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
         private static char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };

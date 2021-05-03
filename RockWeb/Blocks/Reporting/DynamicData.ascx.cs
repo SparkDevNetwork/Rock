@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -767,7 +766,7 @@ namespace RockWeb.Blocks.Reporting
                                 hPanelTitle.Controls.Add( iPanelHeaderIcon );
                                 hPanelTitle.Controls.Add( spanPanelHeaderText );
                             }
-                            
+
 
                             divPanelBody = new HtmlGenericControl( "div" );
                             divPanelBody.AddCssClass( "panel-body" );

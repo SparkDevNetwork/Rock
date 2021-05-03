@@ -228,9 +228,9 @@ namespace Rock.Model
             var attemptService = new AchievementAttemptService( rockContext );
 
             var attemptsQuery = attemptService.Queryable().AsNoTracking();
-                
+
             var attempts = attemptService.GetOrderedAchieverAttempts( attemptsQuery, achievementTypeCache, achieverEntityId );
-            
+
             var progressStatement = new ProgressStatement( achievementTypeCache );
 
             // If there are no attempts, no other information can be derived
@@ -430,7 +430,7 @@ namespace Rock.Model
         #region ILiquidizable
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
         public object ToLiquid()

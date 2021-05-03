@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DataContract]
     public class KioskSchedule

@@ -30,7 +30,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a scheduled job/routine in Rock. A job class can have multiple ServiceJob instances associated with it in the event that it has different attributes or 
+    /// Represents a scheduled job/routine in Rock. A job class can have multiple ServiceJob instances associated with it in the event that it has different attributes or
     /// has multiple schedules.  For more information on how to create a job see https://github.com/SparkDevNetwork/Rock/wiki/Rock-Jobs
     /// </summary>
     [RockDomain( "Core" )]
@@ -173,7 +173,7 @@ namespace Rock.Model
         public string LastStatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the scheduler that the job ran under the last time that it ran. In most cases this 
+        /// Gets or sets the name of the scheduler that the job ran under the last time that it ran. In most cases this
         /// is used to determine if the was run by the IIS or Windows service.
         /// </summary>
         /// <value>
@@ -200,7 +200,7 @@ namespace Rock.Model
         /// that are associated with this Job
         /// </summary>
         /// <value>
-        /// An <see cref="Rock.Model.JobNotificationStatus"/> that indicates when notification emails should be sent for this job. 
+        /// An <see cref="Rock.Model.JobNotificationStatus"/> that indicates when notification emails should be sent for this job.
         /// When this value is <c>JobNotificationStatus.All</c> a notification email will be sent when the Job completes with any completion status.
         /// When this value is <c>JobNotificationStatus.Success</c> a notification email will be sent when the Job has completed successfully.
         /// When this value is <c>JobNotificationStatus.Error</c> a notification email will be sent when the Job completes with an error status.
@@ -324,7 +324,7 @@ namespace Rock.Model
         /// <summary>
         /// Notification should be sent when the job has completed successfully.
         /// </summary>
-        /// 
+        ///
         Success = 2,
 
         /// <summary>

@@ -39,7 +39,7 @@
                                     <div class="col-md-6">
                                     </div>
                                 </div>
-                                
+
                                 <%-- Special input with rock-fullname class --%>
                                 <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
                                 <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />

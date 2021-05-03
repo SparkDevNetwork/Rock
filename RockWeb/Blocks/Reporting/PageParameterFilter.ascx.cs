@@ -497,7 +497,7 @@ namespace RockWeb.Blocks.Reporting
                  .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
-  
+
             mdFilter.Title = "Edit Filter";
             mdFilter.Show();
         }
@@ -595,7 +595,6 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion Settings
-
         #region Events
 
         /// <summary>

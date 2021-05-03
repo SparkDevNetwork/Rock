@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Communication.SmsActions
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SmsMessage : ILavaDataDictionary, Lava.ILiquidizable
     {

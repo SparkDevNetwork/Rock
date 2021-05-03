@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -239,7 +239,7 @@ namespace RockWeb.Blocks.Cms
             gParentItems.GridRebind += gParentItems_GridRebind;
             gParentItems.EntityTypeId = EntityTypeCache.Get<ContentChannelItem>().Id;
 
-            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID ); 
+            string clearScript = string.Format( "clearDirtyBit(event);", hfIsDirty.ClientID );
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 

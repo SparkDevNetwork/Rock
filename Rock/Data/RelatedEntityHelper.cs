@@ -23,7 +23,7 @@ using Z.EntityFramework.Plus;
 namespace Rock.Data
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public sealed class RelatedEntityHelper<T> where T : Rock.Data.Entity<T>, new()

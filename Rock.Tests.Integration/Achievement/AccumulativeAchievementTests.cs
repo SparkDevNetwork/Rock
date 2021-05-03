@@ -331,7 +331,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             var achievementTypeCache = AchievementTypeCache.Get( _achievementTypeId );
             var attemptsQuery = achievementAttemptService
                 .GetOrderedAchieverAttempts( achievementAttemptService.Queryable().AsNoTracking(), achievementTypeCache, _firstPersonAliasId );
-            
+
             // There should be no attempts
             Assert.That.AreEqual( 0, attemptsQuery.Count() );
 

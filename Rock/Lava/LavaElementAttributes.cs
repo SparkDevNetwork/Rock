@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using DotLiquid;
 
 namespace Rock.Lava
@@ -289,6 +288,5 @@ namespace Rock.Lava
         }
 
         #endregion
-
     }
 }

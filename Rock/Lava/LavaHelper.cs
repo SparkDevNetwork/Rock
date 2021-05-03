@@ -33,7 +33,7 @@ using UAParser;
 namespace Rock.Lava
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class LavaHelper
     {
@@ -453,12 +453,12 @@ namespace Rock.Lava
         /// Remove Lava-style comments from a Lava template.
         /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
         /// and can can be in one of the following forms:
-        /// 
+        ///
         /// /- This Lava block comment style...
         ///    ... can span multiple lines -/
         ///
         /// //- This Lava line comment style can be appended to any single line.
-        /// 
+        ///
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>

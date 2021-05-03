@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationSession" )]

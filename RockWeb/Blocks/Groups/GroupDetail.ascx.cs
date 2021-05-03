@@ -3606,7 +3606,7 @@ namespace RockWeb.Blocks.Groups
 
             // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
             if ( groupId > 0 )
-            { 
+            {
                 groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 

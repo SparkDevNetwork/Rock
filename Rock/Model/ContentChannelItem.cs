@@ -32,7 +32,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItem" )]
@@ -103,7 +103,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.ContentChannelItemStatus"/> (status) of this ContentItem.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is 
+        /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is
         /// awaiting approval; when <c>ContentItemStatus.Approved</c> the item has been approved by the approver, when <c>ContentItemStatus.Denied</c> the item has been denied by the approver.
         /// </value>
         [DataMember]
@@ -518,7 +518,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ContentItemConfiguration : EntityTypeConfiguration<ContentChannelItem>
     {

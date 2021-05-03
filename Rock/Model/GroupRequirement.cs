@@ -336,7 +336,7 @@ namespace Rock.Model
             // shouldn't happen
             return null;
         }
-     
+
 
         /// <summary>
         /// Check if the Person meets the group requirement for the role

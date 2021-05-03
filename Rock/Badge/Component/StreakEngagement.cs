@@ -142,7 +142,6 @@ namespace Rock.Badge.Component
             {
                 return;
             }
-
             var streakTypeCache = GetStreakTypeCache( badge );
 
             if ( streakTypeCache == null )

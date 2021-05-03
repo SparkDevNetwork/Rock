@@ -1,0 +1,112 @@
+{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign group = 'Global' | PageParameter:'GroupId' | GroupById %}
+{% assign startDate = group | Attribute:'OpportunityStartDate' %}
+{% assign endDate = group | Attribute:'OpportunityEndDate' %}
+{% assign groupMemberId = 'Global' | PageParameter:'GroupMemberId' %}
+{% assign groupMember = group.Members | Where:'Id',groupMemberId | First %}
+{% assign groupMemberPerson = groupMember.Person %}
+
+{% capture browserTitle %}{{ groupMember.Person.FullName | Possessive }} {{ group | Attribute:'OpportunityType' }} | {{ group | Attribute:'OpportunityTitle' }} | Missions | NewSpring.cc{% endcapture %}
+{{ browserTitle | SetPageTitle:'BrowserTitle' }}
+
+{% sql return:'fundraising' %}
+    SELECT
+        (
+            SELECT
+                CASE
+                    WHEN SUM(ftd.Amount) IS NULL THEN 0.00
+                    ELSE CAST(SUM(ftd.Amount) AS INT)
+                END
+            FROM FinancialTransaction ft
+            JOIN FinancialTransactionDetail ftd
+            ON ftd.TransactionId = ft.Id
+            WHERE ftd.EntityTypeId = 90
+            AND ftd.EntityId = gm.Id
+        ) 'AmountRaised',
+        CASE
+            WHEN av2.[Value] IS NOT NULL AND av2.[Value] != '' THEN CAST(av2.[Value] AS INT)
+            ELSE CAST(av.[Value] AS INT)
+        END 'FundraisingGoal'
+    FROM GroupMember gm
+    JOIN [Group] g
+    ON gm.GroupId = g.Id
+    LEFT JOIN AttributeValue av2
+    ON av2.EntityId = gm.Id
+    AND av2.AttributeId = 46538
+    LEFT JOIN AttributeValue av
+    ON av.EntityId = g.Id
+    AND av.AttributeId = 46527
+    WHERE gm.Id = {{ groupMemberId }}
+    AND gm.GroupMemberStatus = 1
+    AND gm.IsArchived = 0
+{% endsql %}
+
+{% assign fundraisingGoal = fundraising | First | Property:'FundraisingGoal' %}
+{% assign amountRaised = fundraising | First | Property:'AmountRaised' %}
+{% assign percentRaised = amountRaised | DividedBy:fundraisingGoal,2 | Times:100 | AtMost:100  %}
+
+<section class="bg-white soft hard-bottom clearfix push-bottom xs-push-half-bottom rounded shadowed">
+    <div class="row">
+        <div class="col-md-2 col-sm-2 col-xs-3">
+            <div class="ratio ratio-square background-cover circular push-bottom xs-push-half-bottom" style="background-image: url('{{ groupMemberPerson.PhotoUrl }}'); max-width: 150px;"></div>
+        </div><div class="col-md-7 col-sm-10 col-xs-9">
+            <h2 class="h1 flush">{{ groupMemberPerson.FullName | Possessive }} Trip</h2>
+            <h2 class="h4 text-gray-light push-half-bottom">{{ group | Attribute:'OpportunityLocation' }}</h2>
+            <p>{[ formatDate date:'{{ startDate }}' ]} - {[ formatDate date:'{{ endDate }}' ]}</p>
+        </div><div class="col-md-3 col-sm-12 col-xs-12">
+            <p>
+                <a href="/missions/{{ group.Id }}" class="btn btn-primary btn-block">{{ group | Attribute:'OpportunityType' }} Page</a>
+                <a href="#" class="btn btn-default btn-block js-copy"><i class="fal fa-copy push-quarter-right"></i> Copy Profile Link</a>
+            </p>
+
+            <input type="text" class="form-control js-copy-source hidden" value="{{ currentUrl }}" title="Click to Copy to Clipboard">
+
+            <script>
+            function copyPhoneNumbersForSMS() {
+                // Copies input value to clipboard on button click
+                var copyLink = document.querySelector('.js-copy');
+
+                if(copyLink) {
+                copyLink.addEventListener('click',function(e){
+                    e.preventDefault();
+                    copyLink = e.target;
+                    var copyTarget = $('.js-copy-source')[0];
+                    var copyLinkInnerHTML = copyLink.innerHTML;
+                    copyTarget.setSelectionRange(0, copyTarget.value.length);
+                    navigator.clipboard.writeText(copyTarget.value);
+                    copyLink.innerHTML = '<i class="fal fa-check push-quarter-right"></i> Copied!';
+                    copyLink.classList.toggle('btn-primary');
+                    copyLink.classList.toggle('btn-gray-dark');
+                    setTimeout(function(){
+                    copyLink.innerHTML = copyLinkInnerHTML;
+                    copyLink.classList.toggle('btn-primary');
+                    copyLink.classList.toggle('btn-gray-dark');
+                    }, 1500);
+                });
+                }
+            }
+
+            $(document).ready(function(){
+                copyPhoneNumbersForSMS();
+            });
+
+            // Handles re-binding event handlers after a postback (editing group, add/edit members, etc)
+            var prm = Sys.WebForms.PageRequestManager.getInstance();
+            if(prm){
+                prm.add_endRequest(function() {
+                copyPhoneNumbersForSMS();
+                });
+            }
+            </script>
+        </div>
+    </div>
+
+    <div class="well push-bottom">
+        <h3 class="h5 push-half-bottom">Fundraising Progress</h3>
+        <p class="push-half-bottom">{{ amountRaised | FormatAsCurrency }} <span class="pull-right">{{ fundraisingGoal | FormatAsCurrency }}</span></p>
+
+        {[ progressBar percent:'{{ percentRaised }}' colorstatus:'true' striped:'true' ]}
+
+        <p class="flush text-right"><a href="/page/1025?GroupId={{ group.Id }}&GroupMemberId={{ groupMemberId }}" class="btn btn-sm btn-primary">Contribute to {{ groupMember.Person.NickName | Possessive }} {{ group | Attribute:'OpportunityType' }}</a></p>
+    </div>
+</section>

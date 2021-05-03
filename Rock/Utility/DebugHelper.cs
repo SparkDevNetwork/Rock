@@ -23,7 +23,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
 using Rock.Data;
 
 namespace Rock
@@ -79,7 +78,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class DebugLoggingDbCommandInterceptor : DbCommandInterceptor
         {
@@ -241,7 +240,7 @@ namespace Rock
                             // if this is a nullable enum, we'll have to look at p.Value instead of p.SqlValue to see what is really getting passed to SQL
                             if ( valueType?.IsEnum == true && p.Value != null )
                             {
-                                /* If this is an enum (for example GroupMemberStatus.Active), show the numeric 
+                                /* If this is an enum (for example GroupMemberStatus.Active), show the numeric
                                  * value getting passed to SQL
                                  * p.Value will be the Enum, so convert it to int;
                                  */

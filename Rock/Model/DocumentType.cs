@@ -53,7 +53,7 @@ namespace Rock.Model
         /// Gets or sets the given Name of the DocumentType.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the given Name of the BinaryFileType. 
+        /// A <see cref="System.String"/> representing the given Name of the BinaryFileType.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -61,7 +61,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EntityType"/> that this DocumentType is used for.  A DocumentType can only be associated with a single <see cref="Rock.Model.EntityType"/> and will 
+        /// Gets or sets the Id of the <see cref="Rock.Model.EntityType"/> that this DocumentType is used for.  A DocumentType can only be associated with a single <see cref="Rock.Model.EntityType"/> and will
         /// only contain notes for entities of this type. This property is required.
         /// </summary>
         /// <value>
@@ -72,7 +72,7 @@ namespace Rock.Model
         public int EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the qualifier column/property on the <see cref="Rock.Model.EntityType"/> that this Docuement Type applies to. If this is not 
+        /// Gets or sets the name of the qualifier column/property on the <see cref="Rock.Model.EntityType"/> that this Docuement Type applies to. If this is not
         /// provided, the document type can be used on all entities of the provided <see cref="Rock.Model.EntityType"/>.
         /// </summary>
         /// <value>
@@ -83,7 +83,7 @@ namespace Rock.Model
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity 
+        /// Gets or sets the qualifier value in the qualifier column that this document type applies to.  For instance this note type and related notes will only be applicable to entity
         /// if the value in the EntityTypeQualiferColumn matches this value. This property should not be populated without also populating the EntityTypeQualifierColumn property.
         /// </summary>
         /// <value>
@@ -176,7 +176,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Document">Notes</see> of this DocumentType 
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Document">Notes</see> of this DocumentType
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> that this DocumentType is associated with.

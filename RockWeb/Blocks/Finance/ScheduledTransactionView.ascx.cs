@@ -978,7 +978,7 @@ namespace RockWeb.Blocks.Finance
               However, when the FinancialScheduledTransactionDetail.Amount is used in this EditBox,
               don't include the FinanciaFinancialScheduledTransactionDetaillTransactionDetail.FeeCoverageAmount.
               So in the above example, the Textbox would say $100.00
-             
+
              */
 
             var feeCoverageAmount = transactionDetail.FeeCoverageAmount;

@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.StatementGenerator
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class StatementGeneratorOptions
     {
@@ -221,7 +221,7 @@ namespace Rock.StatementGenerator
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum OrderBy
     {
@@ -229,7 +229,7 @@ namespace Rock.StatementGenerator
         /// Sort by postal code
         /// </summary>
         PostalCode = 0,
-        
+
         /// <summary>
         /// Sort by Last Name
         /// </summary>

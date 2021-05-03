@@ -137,7 +137,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public string ToString( bool includeEventItem, bool includeRegistrationInstance, bool includeGroup )
-        { 
+        {
             var parts = new List<string>();
 
             if ( includeEventItem && EventItemOccurrence != null )

@@ -32,7 +32,7 @@
                         var imageElement = document.createElement('img');
                         var url = encodeURI(Rock.settings.get('baseUrl') + resultParts[0]);
                         var altText = resultParts[1];
-                        
+
                         var imgTarget = context.invoke('editor.restoreTarget');
                         // if they already have an img selected, just change the src of the image
                         if (imgTarget) {
@@ -60,7 +60,7 @@
     });
 
     if (context.options.rockFileBrowserOptions.enabled) {
-        return button.render();   // return button as jquery object 
+        return button.render();   // return button as jquery object
     }
     else {
         return null;

@@ -1495,7 +1495,7 @@ Registration By: {0} Total Cost/Fees:{1}
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     [Newtonsoft.Json.JsonConverter( typeof( FieldValueConverter ) )]
@@ -1792,7 +1792,7 @@ Registration By: {0} Total Cost/Fees:{1}
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class FieldValueConverter : JsonConverter
     {
@@ -1889,13 +1889,13 @@ Registration By: {0} Total Cost/Fees:{1}
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum RegistrationCostSummaryType
     {
         /// <summary>
         /// a cost
-        /// 
+        ///
         /// </summary>
         Cost,
 

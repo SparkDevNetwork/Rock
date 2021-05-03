@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Merge Template Entry" )]
     [Category( "Core" )]
@@ -317,7 +317,7 @@ namespace RockWeb.Blocks.Core
                             GroupId = x.Key,
                             // Order People to match ordering in the GroupMembers.ascx block.
                             Persons =
-                                    // Adult Male 
+                                    // Adult Male
                                     x.Where( xx => xx.GroupMember.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
                                     xx.GroupMember.Person.Gender == Gender.Male ).OrderByDescending( xx => xx.GroupMember.Person.BirthDate ).Select( xx => xx.Person )
                                     // Adult Female

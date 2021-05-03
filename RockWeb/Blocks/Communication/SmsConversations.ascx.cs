@@ -21,7 +21,6 @@ using System.Data;
 using System.Linq;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -940,7 +939,7 @@ namespace RockWeb.Blocks.Communication
                 EntityId = selectedPersonId,
                 CreatedByPersonAlias = this.CurrentPersonAlias
             };
-            
+
             noteEditor.SetNote( note );
         }
 

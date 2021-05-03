@@ -158,7 +158,7 @@ namespace Rock
             var converter = new ExpandoObjectConverter();
             object dynamicObject = null;
 
-            // keep track of which exception most applies. 
+            // keep track of which exception most applies.
             Exception singleObjectException = null;
             Exception arrayObjectException = null;
 

@@ -147,7 +147,7 @@ namespace Rock.Rest.Controllers
             {
                 return ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "Specified group not found." );
             }
-            
+
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );

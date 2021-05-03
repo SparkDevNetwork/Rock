@@ -22,7 +22,7 @@ using Rock.Lava;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DataContract]
     public class CheckInMessage : ILavaDataDictionary

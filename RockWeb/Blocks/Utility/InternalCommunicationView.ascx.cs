@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Utility
                                     LastValue = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.YValue ).FirstOrDefault()
                                 } ).ToList();
 
-                // Get metric values for each metric if requested 
+                // Get metric values for each metric if requested
                 if ( metricValueCount > 0 )
                 {
                     foreach ( var metric in metrics )

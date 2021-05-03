@@ -28,12 +28,12 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// A DefinedType is a dictionary of consistent values for a particular thing in Rock. The individual items are refereed to as <see cref="Rock.Model.DefinedValue">DefinedValues</see> in Rock.  
+    /// A DefinedType is a dictionary of consistent values for a particular thing in Rock. The individual items are refereed to as <see cref="Rock.Model.DefinedValue">DefinedValues</see> in Rock.
     /// Several classic examples of DefinedTypes can be Shirt Sizes, a Country List, etc. Defined Values can be categorized, ordered and can be furthered specified by a <see cref="Rock.Model.FieldType"/>
     /// </summary>
     /// <remarks>
     /// Note: in some systems these are referred to as lookup values. The benefit of storing these values centrally is that it prevents us having to maintain <see cref="Rock.Model.EntityType">EntityTypes</see>
-    /// for each defined value/lookup that you want to create.  In the case of attributes these can be created as the need arises without having to change the core base or add a plug-in just to 
+    /// for each defined value/lookup that you want to create.  In the case of attributes these can be created as the need arises without having to change the core base or add a plug-in just to
     /// provide additional lookup data.
     /// </remarks>
     [RockDomain( "Core" )]
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used to set/select, and at times display the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that are associated with
         /// NOTE: Currently, Text is the only supported fieldType for DefinedTypes.
-        /// this DefinedType. 
+        /// this DefinedType.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the FieldTypeId of the <see cref="Rock.Model.FieldType"/> that is used for DefinedType.
@@ -132,7 +132,7 @@ namespace Rock.Model
         [DataMember]
         public bool EnableSecurityOnValues { get; set; }
 
-        #endregion 
+        #endregion
 
         #region Virtual Properties
 
@@ -156,7 +156,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.FieldType"/> that is used to set/select, and at times display the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that are associated with
-        /// this DefinedType. 
+        /// this DefinedType.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.FieldType"/>.

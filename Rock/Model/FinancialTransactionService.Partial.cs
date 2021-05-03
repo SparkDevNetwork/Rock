@@ -161,7 +161,6 @@ namespace Rock.Model
             refundTransaction.FinancialGatewayId = transaction.FinancialGatewayId;
             refundTransaction.TransactionTypeValueId = transaction.TransactionTypeValueId;
             refundTransaction.SourceTypeValueId = transaction.SourceTypeValueId;
-
             if ( transaction.FinancialPaymentDetail != null )
             {
                 refundTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();

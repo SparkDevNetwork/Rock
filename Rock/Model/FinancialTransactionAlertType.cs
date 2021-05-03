@@ -30,7 +30,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlertType" )]

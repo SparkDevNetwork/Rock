@@ -46,7 +46,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the EntityId of the entity that this Auth entity applies to.
         /// </summary>
@@ -55,9 +55,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the order or priority of the Auth entity. 
+        /// Gets or sets the order or priority of the Auth entity.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the order of the Auth entity.
@@ -65,7 +65,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of action that this Auth entity covers (i.e. view, edit, administrate, etc.).
         /// </summary>
@@ -76,7 +76,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Action { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if this Auth entity allows or denies this action for the role.
         /// </summary>
@@ -87,13 +87,13 @@ namespace Rock.Model
         [MaxLength( 1 )]
         [DataMember( IsRequired = true )]
         public string AllowOrDeny { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the special role that this Auth entity applies to.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.SpecialRole"/> enum indicating the special role that this Auth entity applies to.
-        /// If this Auth entity does not apply to any special role then the value will be <c>SpecialRole.None</c> or (0); 
+        /// If this Auth entity does not apply to any special role then the value will be <c>SpecialRole.None</c> or (0);
         /// If this Auth entity applies to All Users (authenticated and unauthenticated) then the value will be <c>SpecialRole.AllUsers</c> or 1;
         /// If this Auth entity applies to All Authenticated Users then the value will be <c>SpecialRole.AllAuthenticatedUsers</c> or 2;
         /// If this Auth entity applies to All Un-authenticated Users then this value will be <c>SpecialRole.AllUnAuthenticatedUsers</c> or 3.
@@ -111,7 +111,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PersonAliasId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the GroupId of the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for group based authorization.
         /// </summary>
@@ -127,7 +127,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for Group based authorization. 
+        /// Gets or sets the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for Group based authorization.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. If group based authorization is not used, this value will be null.

@@ -173,14 +173,14 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region PowerBI 
+        #region PowerBI
 
         /// <summary>
         /// The category for defined types for PowerBI
         /// </summary>
         public const string POWERBI_DEFINED_TYPE = "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C";
 
-        #endregion 
+        #endregion
 
         #region Group Categories (for a specific group type)
 

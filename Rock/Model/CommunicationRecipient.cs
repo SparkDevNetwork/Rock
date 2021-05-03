@@ -157,7 +157,7 @@ namespace Rock.Model
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
-        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient. 
+        /// A Json formatted <see cref="System.String"/> containing the AdditionalMergeValues for the communication recipient.
         /// </value>
         [DataMember]
         public string AdditionalMergeValuesJson

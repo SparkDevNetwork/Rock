@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
-using System.Data.Entity.Migrations.Infrastructure; 
+using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -64,7 +64,7 @@ namespace Rock.WebStartup
         public static DateTime StartDateTime { get; private set; }
 
         /// <summary>
-        /// Global Quartz scheduler for jobs 
+        /// Global Quartz scheduler for jobs
         /// </summary>
         public static IScheduler QuartzScheduler { get; private set; } = null;
 
@@ -89,7 +89,7 @@ namespace Rock.WebStartup
             {
                 ex = e.Exception;
             }
-            
+
             ExceptionLogService.LogException( ex );
         }
 
@@ -348,7 +348,7 @@ namespace Rock.WebStartup
             }
             catch ( Exception ex )
             {
-                // Just catch any exceptions, log it, and keep moving... 
+                // Just catch any exceptions, log it, and keep moving...
                 try
                 {
                     var startupException = new RockStartupException( "Error sending version update notifications", ex );
@@ -380,7 +380,7 @@ namespace Rock.WebStartup
 
             // first see if the _MigrationHistory table exists. If it doesn't, then this is probably an empty database
             bool _migrationHistoryTableExists = DbService.ExecuteScaler(
-                @"SELECT convert(bit, 1) [Exists] 
+                @"SELECT convert(bit, 1) [Exists]
                     FROM INFORMATION_SCHEMA.TABLES
                     WHERE TABLE_SCHEMA = 'dbo'
                     AND TABLE_NAME = '__MigrationHistory'" ) as bool? ?? false;
@@ -406,7 +406,7 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
-        /// If EF migrations need to be done, does MF Migrations on the database 
+        /// If EF migrations need to be done, does MF Migrations on the database
         /// </summary>
         /// <returns>True if at least one migration was run</returns>
         public static bool MigrateDatabase( bool hasPendingEFMigrations )
@@ -534,7 +534,7 @@ namespace Rock.WebStartup
                 .Where( a => !installedMigrationNumbers.Contains( a.Key ) )
                 .ToDictionary( k => k.Key, v => v.Value );
 
-            // Iterate each migration in the assembly in MigrationNumber order 
+            // Iterate each migration in the assembly in MigrationNumber order
             var migrationTypesToRun = migrationTypesByNumber.OrderBy( a => a.Key ).Select( a => a.Value ).ToList();
 
             var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;

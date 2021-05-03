@@ -470,7 +470,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Gets the current status.
-        /// As determined in precendance 
+        /// As determined in precendance
         /// </summary>
         /// <returns></returns>
         private RosterAttendeeStatus GetCurrentStatus()

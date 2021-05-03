@@ -64,7 +64,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Use GetAttributeValue( FinancialGateway financialGateway, string key) instead.  gateway component attribute values are 
+        /// Use GetAttributeValue( FinancialGateway financialGateway, string key) instead.  gateway component attribute values are
         /// specific to the financial gateway instance (rather than global).  This method will throw an exception
         /// </summary>
         /// <param name="key">The key.</param>
@@ -76,7 +76,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Always returns 0.  
+        /// Always returns 0.
         /// </summary>
         /// <value>
         /// The order.
@@ -90,7 +90,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Always returns true. 
+        /// Always returns true.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
@@ -105,7 +105,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the attribute value for the gateway 
+        /// Gets the attribute value for the gateway
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="key">The key.</param>
@@ -191,7 +191,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type. 
+        /// Returns a boolean value indicating if 'Saved Account' functionality is supported for the given currency type.
         /// </summary>
         /// <param name="currencyType">Type of the currency.</param>
         /// <returns></returns>

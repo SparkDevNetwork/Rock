@@ -451,18 +451,10 @@ namespace RockWeb.Blocks.Streaks
                 subQueries.Aggregate( ( a, b ) => a.Union( b ) ) :
                 new List<AchieverAttemptItem>().AsQueryable();
 
-            return _attemptsQuery;
-        }
         private IQueryable<AchieverAttemptItem> _attemptsQuery = null;
 
         /// <summary>
-        /// Determines whether the person is authorized to view attempts of this achievement type.
-        /// </summary>
-        private bool CanView()
         {
-            if ( !_canView.HasValue )
-            {
-                var achievementType = GetAchievementTypeCache();
 
                 if ( achievementType != null )
                 {

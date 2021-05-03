@@ -433,7 +433,7 @@ namespace Rock.Model
         /// Special class for adding a button field to liquid properties
         /// </summary>
         [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
-        [LavaType( "Name", "Html", "EmailHtml" )]        
+        [LavaType( "Name", "Html", "EmailHtml" )]
         public class LiquidButton
         {
             /// <summary>
@@ -567,7 +567,7 @@ namespace Rock.Model
                     button.ButtonTypeGuid = Rock.SystemGuid.DefinedValue.BUTTON_HTML_PRIMARY;
                 }
 
-                // Determine if the button causes form validation.                    
+                // Determine if the button causes form validation.
                 button.CausesValidation = !nonValidationButtonList.Contains( button.ButtonTypeGuid.AsGuid() );
 
                 if ( button.ButtonTypeGuid.AsGuid() == buttonCancelGuid )
@@ -596,7 +596,7 @@ namespace Rock.Model
     #region Enums
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum WorkflowActionFormPersonEntryOption
     {

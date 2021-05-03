@@ -27,7 +27,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a DefinedValue instance in Rock. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>). 
+    /// Represents a DefinedValue instance in Rock. These values are sortable and can be secured (based on their <see cref="ParentAuthority"/>).
     /// An example of a DefinedValue for a "State List" <see cref="Rock.Model.DefinedType"/> is Arizona.
     /// </summary>
     [RockDomain( "Core" )]
@@ -123,7 +123,7 @@ namespace Rock.Model
         /// </value>
         public override Security.ISecured ParentAuthority
         {
-            get 
+            get
             {
                 return this.DefinedType != null ? this.DefinedType : base.ParentAuthority;
             }

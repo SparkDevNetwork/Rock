@@ -50,7 +50,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this SiteDomain references. This property is required.
         /// </summary>
@@ -60,7 +60,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int SiteId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
@@ -142,7 +142,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Site Domain Configuration class.
     /// </summary>

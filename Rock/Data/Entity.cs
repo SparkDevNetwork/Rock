@@ -54,14 +54,14 @@ namespace Rock.Data
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value 
+        /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value
         /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
         /// objects across across data stores or external /implementations of Rock
         /// </summary>
         /// <remarks>
-        /// A good place for a Guid to be used is when comparing or syncing data across two implementations of Rock. For example, if you 
-        /// were creating a <see cref="Rock.Web.UI.RockBlock"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
-        /// search based on the Guid because it would be guaranteed to be unique across all implementations of Rock. 
+        /// A good place for a Guid to be used is when comparing or syncing data across two implementations of Rock. For example, if you
+        /// were creating a <see cref="Rock.Web.UI.RockBlock"/> with a data migration that adds/remove a new defined value object to the database. You would want to
+        /// search based on the Guid because it would be guaranteed to be unique across all implementations of Rock.
         /// </remarks>
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
@@ -117,7 +117,7 @@ namespace Rock.Data
         /// for the object type it will be created
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
+        /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type.
         /// </value>
         [LavaVisible]
         public virtual int TypeId
@@ -292,7 +292,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Creates a dictionary containing the majority of the entity object's properties. The only properties that are excluded
-        /// are the Id, Guid and Order.  
+        /// are the Id, Guid and Order.
         /// </summary>
         /// <returns>A <see cref="Dictionary{String, Object}"/> that represents the current entity object. Each <see cref="KeyValuePair{String, Object}"/> includes the property
         /// name as the key and the property value as the value.</returns>
@@ -546,7 +546,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
         /// <returns>An instance of the entity object based on the provided JSON string.</returns>
-        [System.Diagnostics.DebuggerStepThrough()] 
+        [System.Diagnostics.DebuggerStepThrough()]
         public static T FromJson( string json )
         {
             return JsonConvert.DeserializeObject( json, typeof( T ) ) as T;
@@ -602,7 +602,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
         public object ToLiquid()
@@ -616,7 +616,7 @@ namespace Rock.Data
     #region KeyEntity
 
     /// <summary>
-    /// Object used for current model (context) implementation 
+    /// Object used for current model (context) implementation
     /// </summary>
     internal class KeyEntity
     {

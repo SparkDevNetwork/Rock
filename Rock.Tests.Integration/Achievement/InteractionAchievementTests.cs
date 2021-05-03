@@ -24,7 +24,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         private static InteractionService _interactionService { get; set; }
 
         private static List<int> _personAliasIds { get; set; }
-        
+
         private static int _achievementTypeId { get; set; }
         private static InteractionComponentCache _interactionComponent { get; set; }
 

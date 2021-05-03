@@ -135,7 +135,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Schedule Schedule { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Campus"/> that this EventItemOccurrence is a member of.
         /// </summary>

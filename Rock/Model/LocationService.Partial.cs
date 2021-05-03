@@ -168,7 +168,7 @@ namespace Rock.Model
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, County = locality, PostalCode = postalCode, Country = country }, group );
             if ( foundLocation != null )
             {
-                // Check for casing 
+                // Check for casing
                 if ( !String.Equals( street1, foundLocation.Street1 ) || !String.Equals( street2, foundLocation.Street2 ) || !String.Equals( city, foundLocation.City ) || !String.Equals( state, foundLocation.State ) || !String.Equals( postalCode, foundLocation.PostalCode ) || !String.Equals( country, foundLocation.Country ) )
                 {
                     var context = new RockContext();
@@ -472,7 +472,7 @@ namespace Rock.Model
             bool anyActiveStandardizationService = false;
             bool anyActiveGeocodingService = false;
 
-            // Save current values for situation when first service may successfully standardize or geocode, but not both 
+            // Save current values for situation when first service may successfully standardize or geocode, but not both
             // In this scenario the first service's values should be preserved
             string street1 = location.Street1;
             string street2 = location.Street2;
@@ -592,7 +592,7 @@ namespace Rock.Model
                 }
             }
 
-            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime 
+            // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime
             // needs to be updated so that the verification job will continue to process additional locations vs just getting
             // stuck on the first batch and doing them over and over again because the other service type's attempted date is
             // never updated.
@@ -693,7 +693,7 @@ namespace Rock.Model
                     INNER JOIN CTE ON CTE.[ParentLocationId] = [a].[Id]
                 )
                 SELECT * FROM CTE
-                WHERE [Name] IS NOT NULL 
+                WHERE [Name] IS NOT NULL
                 AND [Name] <> ''
                 ", locationId ) );
         }
@@ -715,7 +715,7 @@ namespace Rock.Model
                 )
                 SELECT [Id]
                 FROM CTE
-                WHERE [Name] IS NOT NULL 
+                WHERE [Name] IS NOT NULL
                 AND [Name] <> ''
                 ", locationId ) );
         }

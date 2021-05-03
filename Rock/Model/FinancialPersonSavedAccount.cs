@@ -31,10 +31,10 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for 
-    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored 
+    /// Represents a bank or debit/credit card that a <see cref="Rock.Model.Person"/> ( or group ) has saved to Rock for
+    /// future reuse. Please note that account number is not actually stored here. The reference/profile number is stored
     /// here as well as a masked version of the account number.  This saved account will either be associated to a person
-    /// alias or a group. 
+    /// alias or a group.
     /// </summary>
     [RockDomain( "Finance" )]
     [Table( "FinancialPersonSavedAccount" )]
@@ -269,7 +269,7 @@ namespace Rock.Model
             {
                 reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
 
-                // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
+                // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that
                 if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
                 {
                     if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )

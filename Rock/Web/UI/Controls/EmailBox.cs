@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     public class EmailBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.ViewState["AllowMultiple"] as bool? ?? false;
             }
-            
+
             set
             {
                 this.ViewState["AllowMultiple"] = value;

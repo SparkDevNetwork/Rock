@@ -88,7 +88,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.NoteLabel;
             }
-
             set
             {
                 this.NoteOptions.NoteLabel = value;
@@ -158,7 +157,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.AddAlwaysVisible;
             }
-
             set
             {
                 this.NoteOptions.AddAlwaysVisible = value;
@@ -177,7 +175,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.DisplayNoteTypeHeading;
             }
-
             set
             {
                 this.NoteOptions.DisplayNoteTypeHeading = value;
@@ -196,7 +193,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.DisplayType;
             }
-
             set
             {
                 this.NoteOptions.DisplayType = value;
@@ -215,7 +211,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowAlertCheckBox;
             }
-
             set
             {
                 this.NoteOptions.ShowAlertCheckBox = value;
@@ -234,7 +229,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowCreateDateInput;
             }
-
             set
             {
                 this.NoteOptions.ShowCreateDateInput = value;
@@ -253,7 +247,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowPrivateCheckBox;
             }
-
             set
             {
                 this.NoteOptions.ShowPrivateCheckBox = value;
@@ -272,7 +265,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowSecurityButton;
             }
-
             set
             {
                 this.NoteOptions.ShowSecurityButton = value;
@@ -291,7 +283,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.NoteLabel;
             }
-
             set
             {
                 this.NoteOptions.NoteLabel = value;
@@ -310,7 +301,6 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.UsePersonIcon;
             }
-
             set
             {
                 this.NoteOptions.UsePersonIcon = value;
@@ -467,7 +457,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the current display count. Only applies if notes are in descending order. 
+        /// Gets or sets the current display count. Only applies if notes are in descending order.
         /// If notes are displayed in ascending order, all notes will always be displayed
         /// </summary>
         public int DisplayCount
@@ -553,17 +543,14 @@ namespace Rock.Web.UI.Controls
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, true );
                             break;
-
                         case "DenyApproveNote":
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, false );
                             break;
-
                         case "WatchNote":
                             noteId = parameters.AsIntegerOrNull();
                             WatchNote( noteId, true );
                             break;
-
                         case "UnwatchNote":
                             noteId = parameters.AsIntegerOrNull();
                             WatchNote( noteId, false );

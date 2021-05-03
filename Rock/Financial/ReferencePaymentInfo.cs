@@ -20,7 +20,7 @@ using Rock.Web.Cache;
 namespace Rock.Financial
 {
     /// <summary>
-    /// Information about a reference payment to be processed by a financial gateway.  A 
+    /// Information about a reference payment to be processed by a financial gateway.  A
     /// reference payment is initiated using a code returned by previous collected CreditCard/ACH info (i.e. using
     /// a saved account number or payment token)
     /// </summary>

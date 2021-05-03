@@ -29,7 +29,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an account that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.  
+    /// Represents an account that gifts/donations and other <see cref="Rock.Model.FinancialTransaction">Financial Transactions</see> are posted to.
     /// FinancialAccounts are hierarchical and are orderable.
     /// </summary>
     [RockDomain( "Finance" )]
@@ -44,7 +44,7 @@ namespace Rock.Model
         /// FinancialAccount does not have a parent, this property will be null.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. 
+        /// A <see cref="System.Int32"/> representing the FinancialAccountId of the parent FinancialAccount to this FinancialAccount.
         /// This property will be null if the FinancialAccount does not have a parent.
         /// </value>
         [DataMember]
@@ -177,7 +177,7 @@ namespace Rock.Model
         private bool? _isPublic = true;
 
         /// <summary>
-        /// Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account. 
+        /// Gets or sets the opening date for this FinancialAccount. This is the first date that transactions can be posted to this account.
         /// If there isn't a start date for this account, transactions can be posted as soon as the account is created until the <see cref="EndDate"/> (if applicable).
         /// </summary>
         /// <value>
@@ -192,7 +192,7 @@ namespace Rock.Model
         /// for this account, transactions can be posted for an indefinite period of time.  Ongoing FinancialAccounts will not have an end date.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the closing/end date for this FinancialAccounts. Transactions can be posted to this account until this date.  If this is 
+        /// A <see cref="System.DateTime"/> representing the closing/end date for this FinancialAccounts. Transactions can be posted to this account until this date.  If this is
         /// an ongoing account, this property will be null.
         /// </value>
         [DataMember]

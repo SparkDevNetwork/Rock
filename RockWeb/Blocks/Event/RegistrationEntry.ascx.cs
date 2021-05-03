@@ -4026,7 +4026,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.OnWaitList )
                 {
                     /*
-                        1/31/2020 - NA 
+                        1/31/2020 - NA
                         This conditional if block below comes from SECC via PR #4071 (https://github.com/SparkDevNetwork/Rock/pull/4071).
                         I attempted to reproduce the problem described in the PR but was unable.
 

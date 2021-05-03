@@ -24,7 +24,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItemSlug" )]
@@ -98,7 +98,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class ContentChannelItemSlugConfiguration : EntityTypeConfiguration<ContentChannelItemSlug>
     {

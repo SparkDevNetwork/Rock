@@ -461,7 +461,7 @@ namespace Rock.Web.UI.Controls
         {
             get => ViewState["CustomActionConfigs"]
                 .ToStringSafe()
-                .FromJsonOrNull<List<CustomActionConfig>>() ?? 
+                .FromJsonOrNull<List<CustomActionConfig>>() ??
                 new List<CustomActionConfig>();
             set => ViewState["CustomActionConfigs"] = value.ToJson();
         }
@@ -842,7 +842,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the default workflow launch control is visible. 
+        /// Gets or sets a value indicating whether the default workflow launch control is visible.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable default launch workflow]; otherwise, <c>false</c>.

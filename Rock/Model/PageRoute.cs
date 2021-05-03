@@ -34,7 +34,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a PageRoute object in Rock. All pages in Rock are accessed via a PageRoute. The default route that is used in Rock
     /// is /page/{pageId} (for example /page/113 tells Rock to load the <see cref="Rock.Model.Page"/> associated with PageId 113). This model allows
-    /// for custom page routes to be created, which in turn allows us to use Friendlier Urls (for example the default New Account page can be accessed by /NewAccount 
+    /// for custom page routes to be created, which in turn allows us to use Friendlier Urls (for example the default New Account page can be accessed by /NewAccount
     /// as well as /page/4).
     /// </summary>
     [RockDomain( "CMS" )]
@@ -54,7 +54,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that the PageRoute is linked to. This property is required.
         /// </summary>
@@ -66,7 +66,7 @@ namespace Rock.Model
         public int PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the format of the route path. Route examples include: Page <example>NewAccount</example> or <example>Checkin/Welcome</example>. 
+        /// Gets or sets the format of the route path. Route examples include: Page <example>NewAccount</example> or <example>Checkin/Welcome</example>.
         /// A specific group <example>Group/{GroupId} (i.e. Group/16)</example>. A person's history <example>Person/{PersonId}/History (i.e. Person/12/History)</example>.
         /// This property is required.
         /// </summary>
@@ -153,7 +153,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>

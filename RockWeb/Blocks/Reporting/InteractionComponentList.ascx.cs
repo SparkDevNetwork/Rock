@@ -49,11 +49,11 @@ namespace RockWeb.Blocks.Reporting
         </div>
 		<div class='panel-body'>
 			{% for component in InteractionComponents %}
-			
+
 				 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     <a href = '{{ ComponentDetailPage }}?ComponentId={{ component.Id }}'>
                 {% endif %}
-                
+
 				 <div class='panel panel-widget'>
                     <div class='panel-heading clearfix'>
                         {% if component.Name != '' %}<h1 class='panel-title pull-left'>{{ component.Name }}</h1>{% endif %}
@@ -63,8 +63,8 @@ namespace RockWeb.Blocks.Reporting
                 {% if ComponentDetailPage != null and ComponentDetailPage != '' %}
                     </a>
                 {% endif %}
-				
-			{% endfor %}	
+
+			{% endfor %}
             <div class ='nav-paging'>
             {% if PreviousPageNavigateUrl != null and PreviousPageNavigateUrl != '' %}
                 <a Id ='lPrev' class = 'btn btn-primary btn-prev' href='{{ PreviousPageNavigateUrl }}'><i class='fa fa-chevron-left'></i> Prev<a/>
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Reporting
                         .Select( g => new InteractionCount
                                     {
                                         ComponentId = g.Key,
-                                        Count = g.Count() 
+                                        Count = g.Count()
                                     } )
                         .ToList();
 

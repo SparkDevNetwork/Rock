@@ -148,7 +148,7 @@ namespace Rock.CheckIn
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInLocation" /> class.
         /// </summary>

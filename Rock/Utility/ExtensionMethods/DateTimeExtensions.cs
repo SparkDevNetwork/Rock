@@ -659,7 +659,7 @@ namespace Rock
 
         #endregion TimeSpan Extensions
 
-        #region Time/Date Rounding 
+        #region Time/Date Rounding
 
         /// <summary>
         /// Rounds the specified rounding interval.
@@ -711,6 +711,6 @@ namespace Rock
             return new DateTime( ( datetime - DateTime.MinValue ).Round( roundingInterval ).Ticks );
         }
 
-        #endregion Time/Date Rounding 
+        #endregion Time/Date Rounding
     }
 }

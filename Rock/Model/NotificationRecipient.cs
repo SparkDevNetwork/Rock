@@ -87,13 +87,13 @@ namespace Rock.Model
         [DataMember]
         public virtual Notification Notification { get; set; }
 
-        #endregion       
+        #endregion
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class NotificationRecipientConfiguration : EntityTypeConfiguration<NotificationRecipient>
     {

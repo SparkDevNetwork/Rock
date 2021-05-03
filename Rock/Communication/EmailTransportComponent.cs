@@ -209,7 +209,7 @@ namespace Rock.Communication
                     }
 
                     /*
-                     * Now that we have fired off all of the task, we need to wait for them to complete. 
+                     * Now that we have fired off all of the task, we need to wait for them to complete.
                      * Once all of the task have been completed we can continue.
                      */
                     while ( sendingTask.Count > 0 )

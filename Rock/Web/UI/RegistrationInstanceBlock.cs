@@ -475,7 +475,7 @@ namespace Rock.Web.UI
         #region Secondary Block Functions
 
         /// <summary>
-        /// A prefix added to the filter key. 
+        /// A prefix added to the filter key.
         /// </summary>
         protected string FilterPreferenceKeyPrefix { get; set; }
 

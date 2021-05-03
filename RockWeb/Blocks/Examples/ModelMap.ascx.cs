@@ -673,7 +673,6 @@ namespace RockWeb.Blocks.Examples
                 Guid categoryGuid = ( Guid ) obj;
                 return selectedCategoryGuid.HasValue && selectedCategoryGuid.Value == categoryGuid ? "active" : string.Empty;
             }
-
             return string.Empty;
         }
 
@@ -853,7 +852,6 @@ namespace RockWeb.Blocks.Examples
                     return false;
                 }
             }
-
             return false;
         }
 
@@ -882,7 +880,6 @@ namespace RockWeb.Blocks.Examples
             {
                 parent = parent.GetGenericTypeDefinition();
             }
-
             return parent;
         }
     }

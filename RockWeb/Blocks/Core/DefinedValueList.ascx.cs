@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !definedValue.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 

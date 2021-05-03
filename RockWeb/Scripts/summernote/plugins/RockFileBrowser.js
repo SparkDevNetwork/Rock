@@ -46,12 +46,12 @@
                 });
             });
 
-            
+
         }
     });
 
     if (context.options.rockFileBrowserOptions.enabled) {
-        return button.render();   // return button as jquery object 
+        return button.render();   // return button as jquery object
     }
     else {
         return null;

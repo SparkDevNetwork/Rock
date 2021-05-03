@@ -326,7 +326,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in Type page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         [RockObsolete( "1.12" )]
         [Obsolete( "Use CHECK_IN_MANAGER_SETTINGS instead (same guid)" )]
@@ -424,7 +424,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Check-in page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string CHECK_IN_ROOT = "CDF2C599-D341-42FD-B7DC-CD402EA96050";
 
@@ -1001,7 +1001,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the External Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
 
@@ -1245,7 +1245,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Internal Homepage page guid
-        /// ParentPage: 
+        /// ParentPage:
         /// </summary>
         public const string INTERNAL_HOMEPAGE = "20F97A93-7949-4C2A-8A5E-C756FE8585CA";
 

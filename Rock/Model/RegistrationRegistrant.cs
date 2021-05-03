@@ -29,7 +29,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationRegistrant" )]
@@ -92,7 +92,7 @@ namespace Rock.Model
         /// The discount applies.
         /// </value>
         [DataMember]
-        public bool DiscountApplies 
+        public bool DiscountApplies
         {
             get { return _discountApplies; }
             set { _discountApplies = value; }
@@ -164,9 +164,9 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaVisible]
-        public virtual string NickName 
+        public virtual string NickName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -184,9 +184,9 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaVisible]
-        public virtual string FirstName 
+        public virtual string FirstName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -206,7 +206,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual string LastName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -349,7 +349,7 @@ namespace Rock.Model
             // Get all attributes there were defined for instance's template.
             var attributes = new List<AttributeCache>();
             foreach( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
-                .Where( e => 
+                .Where( e =>
                     e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
                     e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
             {

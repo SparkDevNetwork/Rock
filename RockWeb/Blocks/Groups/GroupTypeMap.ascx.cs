@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Groups
 
                     if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                     {
-                        
+
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
                             template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );

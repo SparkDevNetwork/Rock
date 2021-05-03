@@ -169,7 +169,6 @@
                                                 <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
                                             </Columns>
                                         </Rock:Grid>
-
                                         <br />
                                     </asp:Panel>
                                 </ItemTemplate>

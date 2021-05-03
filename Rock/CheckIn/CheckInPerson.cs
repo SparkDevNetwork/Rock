@@ -97,7 +97,7 @@ namespace Rock.CheckIn
 
         /// <inheritdoc cref="Attendance.IsFirstTime"/>
         [DataMember]
-        public bool FirstTime { get; set; } 
+        public bool FirstTime { get; set; }
 
         /// <summary>
         /// Gets or sets the unique code for check-in labels
@@ -222,7 +222,7 @@ namespace Rock.CheckIn
                         {
                             foreach ( var schedule in location.Schedules.Where( s => s.Schedule.Id == scheduleId && ( s.PreSelected || !onlyPreSelected ) ) )
                             {
-                                if ( location.AvailableForSchedule.Contains( schedule.Schedule.Id ) && 
+                                if ( location.AvailableForSchedule.Contains( schedule.Schedule.Id ) &&
                                     ( !onlyOneOptionPerSchedule || !options.Any( o => o.Schedule.Schedule.Id == schedule.Schedule.Id ) ) )
                                 {
                                     options.Add( new CheckInPersonSummary( schedule, groupType, group, location ) );
@@ -572,7 +572,6 @@ namespace Rock.CheckIn
                 }
             }
         }
-
 
     }
 }

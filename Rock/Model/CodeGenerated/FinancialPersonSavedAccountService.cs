@@ -51,8 +51,8 @@ namespace Rock.Model
         public bool CanDelete( FinancialPersonSavedAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring FinancialPaymentDetail,FinancialPersonSavedAccountId 
+
+            // ignoring FinancialPaymentDetail,FinancialPersonSavedAccountId
             return true;
         }
     }

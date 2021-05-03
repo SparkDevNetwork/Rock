@@ -79,7 +79,7 @@ namespace Rock.Transactions
                     {
                         PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
                     }
-                    
+
                     if ( connectionRequest.ConnectionOpportunity != null )
                     {
                         ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;

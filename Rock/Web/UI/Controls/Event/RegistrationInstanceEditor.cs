@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         public int? RegistrationWorkflowTypeId
         {
             get

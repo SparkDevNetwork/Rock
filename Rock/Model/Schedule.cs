@@ -89,11 +89,11 @@ namespace Rock.Model
         private string _iCalendarContent;
 
         /// <summary>
-        /// Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in 
+        /// Gets or sets the number of minutes prior to the Schedule's start time  that Check-in should be active. 0 represents that Check-in
         /// will not be available to the beginning of the event.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing how many minutes prior the Schedule's start time that Check-in should be active. 
+        /// A <see cref="System.Int32"/> representing how many minutes prior the Schedule's start time that Check-in should be active.
         /// 0 means that Check-in will not be available to the Schedule's start time. This schedule will not be available if this value is <c>Null</c>.
         /// </value>
         [DataMember]
@@ -111,7 +111,7 @@ namespace Rock.Model
         public int? CheckInEndOffsetMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the Date that the Schedule becomes effective/active. This property is inclusive, and the schedule will be inactive before this date. 
+        /// Gets or sets the Date that the Schedule becomes effective/active. This property is inclusive, and the schedule will be inactive before this date.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> value that represents the date that this Schedule becomes active.
@@ -169,7 +169,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is check in enabled; otherwise, <c>false</c>.
         /// <remarks>
-        /// The <c>CheckInStartOffsetMinutes</c> is used to determine if Check-in is enabled. If the value is <c>null</c>, it is determined that Check-in is not 
+        /// The <c>CheckInStartOffsetMinutes</c> is used to determine if Check-in is enabled. If the value is <c>null</c>, it is determined that Check-in is not
         /// enabled for this Schedule.
         /// </remarks>
         /// </value>
@@ -307,7 +307,6 @@ namespace Rock.Model
                  * To improve performance, only go out a week (or so) if this is a weekly or daily schedule.
                  * If this optimization fails to find a next scheduled date, fall back to looking out a full year
                  */
-
                 if ( rrule?.Frequency == FrequencyType.Weekly )
                 {
                     var everyXWeeks = rrule.Interval;
@@ -329,7 +328,6 @@ namespace Rock.Model
                     occurrences = GetScheduledStartTimes( currentDateTime, endDate );
                     nextOccurrence = occurrences.Min( o => ( DateTime? ) o );
                 }
-
                 return nextOccurrence;
             }
             else
@@ -516,7 +514,7 @@ namespace Rock.Model
              * is a Date only in SQL, the time portion gets dropped.  Because 12/31/9999 11:59 != 12/31/9999 00:00, this caused false readings
              * when testing for schedules with no end dates. When there was no end date, Rock was calculating all occurrences with
              * GetOccurrences( DateTime.MinValue, DateTime.MaxValue ) which caused timeouts.  We should only call that GetOccurrences method
-             * like that when we know there are a reasonable number of occurrences. 
+             * like that when we know there are a reasonable number of occurrences.
              */
 
             var calEvent = GetICalEvent();
@@ -570,7 +568,7 @@ namespace Rock.Model
                 }
             }
 
-            // If specific recurrence dates exist, adjust the Effective End Date to the last specified date 
+            // If specific recurrence dates exist, adjust the Effective End Date to the last specified date
             // if it occurs after the Effective End Date required by the recurrence rules.
             if ( hasDates )
             {
@@ -1192,7 +1190,7 @@ namespace Rock.Model
                     checkInEnd = calEvent.DtStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                 }
 
-                // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in 
+                // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in
                 // which case, don't need to compare time
                 int checkInEndDateCompare = checkInEnd.Date.CompareTo( checkInStart.Date );
 
@@ -1221,7 +1219,7 @@ namespace Rock.Model
         /// </summary>
         /// <example>
         /// CheckOut Window: 5/1/2013 11:00:00 PM - 5/2/2013 2:00:00 AM
-        /// 
+        ///
         ///  * Current time: 8/8/2019 11:01:00 PM - returns true
         ///  * Current time: 8/8/2019 10:59:00 PM - returns false
         ///  * Current time: 8/8/2019 1:00:00 AM - returns true
@@ -1248,7 +1246,7 @@ namespace Rock.Model
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
-            
+
             if ( checkOutEndDateCompare < 0 )
             {
                 // invalid condition, end before the start
@@ -1549,7 +1547,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets a value indicating whether occurrence did not occur for the selected
-        /// start time. This is determined by not having any attendance records with 
+        /// start time. This is determined by not having any attendance records with
         /// a 'DidAttend' value, and at least one attendance record with 'DidNotOccur'
         /// value.
         /// </summary>
@@ -1646,7 +1644,7 @@ namespace Rock.Model
             var calendarList = Calendar.LoadFromStream( stringReader );
             Event calendarEvent = null;
 
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.
             //// We just need one Calendar and one Event
             if ( calendarList.Count() > 0 )
             {
@@ -1820,7 +1818,7 @@ namespace Rock.Model
                 StringReader stringReader = new StringReader( trimmedContent );
                 var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.
                 //// We just need one Calendar and one Event
                 if ( calendarList.Count > 0 )
                 {

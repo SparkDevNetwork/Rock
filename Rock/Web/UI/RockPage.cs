@@ -703,7 +703,7 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            /*  
+            /*
                 2/16/2021 - JME
                 The code below provides the opportunity for an external system to disable
                 partial postbacks. This was put in place to allow dynamic language translation

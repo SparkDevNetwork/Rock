@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Event
         DefaultValue = Rock.SystemGuid.Page.EVENT_DETAILS,
         Order = 15 )]
 
-    #region Advanced Block Attribute Settings 
+    #region Advanced Block Attribute Settings
 
     [MemoField(
         "Registration Template Instructions Lava Template",

@@ -39,7 +39,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Metric Detail" )]
     [Category( "Reporting" )]
@@ -349,7 +349,6 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
             avcEditAttributeValues.GetEditValues( metric );
-
             // only save if everything saves:
             rockContext.WrapTransaction( () =>
             {
@@ -413,7 +412,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( !metric.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -478,7 +477,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     rockContext.SaveChanges();
                 }
 
-                // update MetricCategories for Metric            
+                // update MetricCategories for Metric
                 metric.MetricCategories = metric.MetricCategories ?? new List<MetricCategory>();
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
@@ -807,22 +806,22 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             nbSQLHelp.InnerHtml = @"There are several ways to design your SQL to populate the Metric Values. If you use the 'SQL' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set (see Example #4).
 <br />
 <br />
-<h4>Example #1</h4> 
+<h4>Example #1</h4>
 Simple metric with the default partition
 <ul>
   <li>The 1st Column will be the YValue </li>
 </ul>
 
 <pre>
-SELECT COUNT(*) 
-FROM [Attendance] 
+SELECT COUNT(*)
+FROM [Attendance]
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 </pre>
 
 <br />
-<h4>Example #2</h4> 
+<h4>Example #2</h4>
 Simple metric with GroupId as the Partition.
 <ul>
   <li>The 1st Column will be the YValue </li>
@@ -834,13 +833,13 @@ SELECT COUNT(*), O.[GroupId]
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId]
 </pre>
 
 <br />
-<h4>Example #3</h4> 
+<h4>Example #3</h4>
 A metric with multiple partitions.
 <ul>
     <li>The 1st Column will be the YValue </li>
@@ -854,14 +853,14 @@ SELECT COUNT(*), O.[GroupId], A.[CampusId], O.[ScheduleId]
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}' 
-  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ RunDateTime | Date:'MM/dd/yyyy' }}'
+  AND StartDateTime < '{{ RunDateTime | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
 
 <br />
-<h4>Example #4</h4> 
-A metric with multiple partitions with a specific MetricValueDateTime specified. 
+<h4>Example #4</h4>
+A metric with multiple partitions with a specific MetricValueDateTime specified.
 <ul>
     <li>The 1st Column will be the YValue </li>
     <li>If a [MetricValueDateTime] field is specified as the 2nd column, that will be the metric value date. NOTE: This should be a constant value for all rows
@@ -877,7 +876,7 @@ SELECT COUNT(*), '{{ weekEndDate }}' [MetricValueDateTime], O.[GroupId], A.[Camp
 FROM [Attendance] A
 INNER JOIN [AttendanceOccurrence] O ON O.Id = A.OccurrenceId
 WHERE DidAttend = 1
-  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}' 
+  AND StartDateTime >= '{{ weekEndDate | DateAdd:-6,'d' | Date:'MM/dd/yyyy' }}'
   AND StartDateTime < '{{ weekEndDate | DateAdd:1,'d' | Date:'MM/dd/yyyy' }}'
 GROUP BY O.[GroupId], A.[CampusId], O.[ScheduleId]
 </pre>
@@ -892,7 +891,7 @@ The SQL can include Lava merge fields:";
             nbLavaHelp.InnerHtml = @"There are several ways to design your Lava to populate the Metric Values. If you use the 'Lava' source type option, the results will be stored with the date of the date when the Calculation is scheduled. To specify a specific date of the metric value, include a [MetricValueDate] column in the result set.
 <br />
 <br />
-<h4>Example #1</h4> 
+<h4>Example #1</h4>
 Simple metric with the default partition
 <ul>
   <li>The output will be the YValue </li>
@@ -907,7 +906,7 @@ Lava Output:
 <pre>15052</pre>
 
 <br />
-<h4>Example #2</h4> 
+<h4>Example #2</h4>
 Simple metric with a MetricValueDateTime specified
 <ul>
   <li>The 1st Column will be the YValue </li>
@@ -916,7 +915,7 @@ Simple metric with a MetricValueDateTime specified
 <br />
 Lava Template:
 <pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers' %}
-    {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }} 
+    {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }}
 {% endwebrequest %}</pre>
 
 Lava Output:
@@ -1729,7 +1728,7 @@ The Lava can include Lava merge fields:";
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ScheduleSelectionType
         {

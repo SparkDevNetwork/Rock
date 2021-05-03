@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Connection
             {
                 mergeFields.Add( "OpportunitySummary", opportunitySummary );
             }
-            
+
             string result = null;
             using ( var rockContext = new RockContext() )
             {
@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
                         }
-                        
+
                         mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", opportunitySummary.DaysUntilRequestIdle ) );
                         lStatusIcons.Text = connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
                     }

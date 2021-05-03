@@ -179,7 +179,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class AttendanceInfo
         {

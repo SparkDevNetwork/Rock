@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,7 +9,7 @@ namespace DotLiquid
 	/// <summary>
 	/// Strainer is the parent class for the filters system.
 	/// New filters are mixed into the strainer class which is then instanciated for each liquid template render run.
-	/// 
+	///
 	/// One of the strainer's responsibilities is to keep malicious method calls out
 	/// </summary>
     /// <remarks>

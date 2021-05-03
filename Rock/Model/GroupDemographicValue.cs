@@ -244,7 +244,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupDemographicValueConfiguration : EntityTypeConfiguration<GroupDemographicValue>
     {

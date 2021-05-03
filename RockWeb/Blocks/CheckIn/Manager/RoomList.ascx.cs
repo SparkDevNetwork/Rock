@@ -489,7 +489,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                // https://app.asana.com/0/0/1199637795718017/f 
+                // https://app.asana.com/0/0/1199637795718017/f
                 // 'Enable Presence' is disabled, so a person automatically gets marked present.
                 // So, no records will be in the 'Checked-In (but no present)' state.
                 // Also, a user thinks of 'Present' as 'Checked-In' if they don't use the 'Enable Presence' feature
@@ -524,7 +524,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private void AddToRoomList( List<RoomInfo> roomList, GroupLocationInfo groupLocation )
         {
             Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesForLocationByGroupId = _attendancesByLocationIdAndGroupId.GetValueOrNull( groupLocation.LocationId );
-
             List<AttendanceCheckinTimeInfo> attendancesForLocationAndGroup;
             if ( attendancesForLocationByGroupId != null )
             {
@@ -852,7 +851,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime StartDateTime { get; internal set; }
 
             public DateTime? EndDateTime { get; internal set; }
-            
+
             public int ScheduleId { get; internal set; }
 
             public DateTime? PresentDateTime { get; internal set; }

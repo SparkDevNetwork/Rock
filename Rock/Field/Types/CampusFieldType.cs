@@ -151,7 +151,7 @@ namespace Rock.Field.Types
                 {
                     ( (CheckBox)controls[0] ).Checked = configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
                 }
-                
+
                 if ( controls.Count > 1 && controls[1] != null && controls[1] is RockCheckBoxList && configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) )
                 {
                     var selectedCampusTypes = configurationValues[FILTER_CAMPUS_TYPES_KEY].Value.SplitDelimitedValues( false );
@@ -160,7 +160,7 @@ namespace Rock.Field.Types
                         listItem.Selected = selectedCampusTypes.Contains( listItem.Value );
                     }
                 }
-                
+
                 if ( controls.Count > 2 && controls[2] != null && controls[2] is RockCheckBoxList && configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) )
                 {
                     var selectedCampusTypes = configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false );
@@ -187,7 +187,7 @@ namespace Rock.Field.Types
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = value;
-            
+
             // Change the formatted value from GUID to Campus.Name
             if ( value.IsNotNullOrWhiteSpace() )
             {
@@ -309,10 +309,10 @@ namespace Rock.Field.Types
             lbl.ID = string.Format( "{0}_lIs", id );
             lbl.AddCssClass( "data-view-filter-label" );
             lbl.Text = "Is";
-            
+
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 

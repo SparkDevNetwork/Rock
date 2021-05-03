@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Finance
                 ShowDetail( batchId );
             }
 
-            // Add any attribute controls. 
+            // Add any attribute controls.
             // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
             var financialBatch = new FinancialBatchService( new RockContext() ).Get( batchId );
             if ( financialBatch == null )

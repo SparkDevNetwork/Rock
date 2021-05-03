@@ -174,7 +174,7 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
-                                        
+
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>

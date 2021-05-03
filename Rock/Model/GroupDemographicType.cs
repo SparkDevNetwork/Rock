@@ -37,7 +37,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Group" )]
     [Table( "GroupDemographicType" )]
@@ -158,7 +158,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class GroupDemographicTypeConfiguration : EntityTypeConfiguration<GroupDemographicType>
     {

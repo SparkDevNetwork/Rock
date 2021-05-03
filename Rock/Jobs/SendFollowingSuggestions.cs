@@ -44,7 +44,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class SendFollowingSuggestions : IJob
     {
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -122,7 +122,7 @@ namespace Rock.Jobs
                             .ToList()
                             .ForEach( a => primaryAliasIds.AddOrIgnore( a.PersonId, a.Id ) );
 
-                        // Get current date/time. 
+                        // Get current date/time.
                         var timestamp = RockDateTime.Now;
 
                         var suggestionTypes = new FollowingSuggestionTypeService( rockContext )
@@ -161,7 +161,7 @@ namespace Rock.Jobs
                                             int entityTypeId = suggestionEntityType.Id;
                                             string reasonNote = suggestionType.ReasonNote;
 
-                                            // Get the existing followings for any of the followers 
+                                            // Get the existing followings for any of the followers
                                             suggestionTypeComponent.ExistingFollowings = new Dictionary<int, List<int>>();
                                             foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
                                             {
@@ -181,7 +181,7 @@ namespace Rock.Jobs
                                         {
                                             if ( suggestionEntityType.AssemblyName != null )
                                             {
-                                                // get the actual type of what is being followed 
+                                                // get the actual type of what is being followed
                                                 Type entityType = suggestionEntityType.GetEntityType();
                                                 if ( entityType != null )
                                                 {
@@ -409,7 +409,7 @@ namespace Rock.Jobs
             bool addSuggestion;
             ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIdToBeSavedAsSuggestions, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
         }
-        
+
         /// <summary>
         /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias then addSuggestion will be true.
         /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.

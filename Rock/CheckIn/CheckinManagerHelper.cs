@@ -29,12 +29,12 @@ using Rock.Web.UI.Controls;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class CheckinManagerHelper
     {
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class PageParameterKey
         {
@@ -51,7 +51,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class BlockAttributeKey
         {
@@ -196,7 +196,7 @@ namespace Rock.CheckIn
             {
                 // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
-                
+
                 if ( locationId > 0 )
                 {
                     // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
@@ -394,7 +394,7 @@ namespace Rock.CheckIn
                 var allowCheckout = groupTypeIdsWithAllowCheckout.Contains( a.GroupTypeId );
                 if ( !allowCheckout )
                 {
-                    /* 
+                    /*
                        If AllowCheckout is false, remove all Attendees whose schedules are not currently active. Per the 'WasSchedule...ActiveForCheckOut()'
                        method below: "Check-out can happen while check-in is active or until the event ends (start time + duration)." This will help to keep
                        the list of 'Present' attendees cleaned up and accurate, based on the room schedules, since the volunteers have no way to manually mark
@@ -411,7 +411,6 @@ namespace Rock.CheckIn
                     return true;
                 }
             } ).ToList();
-
             return attendanceList;
         }
 
@@ -449,7 +448,7 @@ namespace Rock.CheckIn
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class CheckInManagerCookieKey
     {
@@ -498,7 +497,7 @@ namespace Rock.CheckIn
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class CheckinManagerConfiguration
     {

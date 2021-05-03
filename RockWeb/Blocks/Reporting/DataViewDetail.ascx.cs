@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            // Switch does not automatically initialize again after a partial-postback.  This script 
+            // Switch does not automatically initialize again after a partial-postback.  This script
             // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
@@ -300,7 +300,7 @@ $(document).ready(function() {
 
             if ( !dataView.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -797,7 +797,7 @@ $(document).ready(function() {
                  .Where( d => d.DataViewFilter.ChildFilters
                      .Any( f => f.Selection == dataView.Id.ToString()
                          && f.EntityTypeId == otherDataViewFilterComponentEntityId ) ).ToList();
-                
+
 
             relatedDataViews.AddRange( otherDataViewsLegacy );
             relatedDataViews = relatedDataViews.DistinctBy( r => r.Id ).OrderBy(a => a.Name).ToList();

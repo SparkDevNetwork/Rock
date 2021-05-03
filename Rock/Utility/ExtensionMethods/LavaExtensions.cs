@@ -33,7 +33,6 @@ using Rock.Web.Cache;
 
 namespace Rock
 {
-
     /// <summary>
     /// Rock Lava related extensions
     /// </summary>
@@ -76,7 +75,7 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-            System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
+            System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
             var formatLavaTask = new Task( () =>
             {
                 System.Web.HttpContext.Current = taskContext;
@@ -215,7 +214,7 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion)
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.AddOrIgnore( key, string.Empty );
@@ -679,7 +678,7 @@ namespace Rock
 
                     if ( encodeStrings )
                     {
-                        // if encodeStrings = true, we want any string values to be XML Encoded ( 
+                        // if encodeStrings = true, we want any string values to be XML Encoded (
                         RenderParameters renderParameters = new RenderParameters();
                         renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
                         renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
@@ -775,9 +774,9 @@ namespace Rock
 
         /// <summary>
         /// Compiled RegEx for detecting if a string has Lava merge fields
-        /// regex from some ideas in 
-        ///  http://stackoverflow.com/a/16538131/1755417 
-        ///  http://stackoverflow.com/a/25776530/1755417 
+        /// regex from some ideas in
+        ///  http://stackoverflow.com/a/16538131/1755417
+        ///  http://stackoverflow.com/a/25776530/1755417
         /// </summary>
         private static Regex hasLavaMergeFields = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
 

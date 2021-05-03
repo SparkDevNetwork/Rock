@@ -104,7 +104,7 @@ namespace Rock.Achievement
             // the most recent attempts can be found with FirstOrDefault
             var achievementAttemptService = new AchievementAttemptService( rockContext );
             var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, streak.PersonAliasId );
-                
+
             var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
             var overachievementPossible = achievementTypeCache.AllowOverAchievement && mostRecentSuccess != null && !mostRecentSuccess.IsClosed;
             var successfulAttemptCount = attempts.Count( saa => saa.IsSuccessful );

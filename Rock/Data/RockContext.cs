@@ -380,7 +380,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-                
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>

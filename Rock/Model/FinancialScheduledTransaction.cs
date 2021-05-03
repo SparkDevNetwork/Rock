@@ -31,8 +31,8 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a financial transaction schedule in Rock. A user can schedule transactions for varying frequencies, number of transactions and 
-    /// and time period. A scheduled transaction can include multiple <see cref="Rock.Model.FinancialScheduledTransactionDetail"/> items so that a single 
+    /// Represents a financial transaction schedule in Rock. A user can schedule transactions for varying frequencies, number of transactions and
+    /// and time period. A scheduled transaction can include multiple <see cref="Rock.Model.FinancialScheduledTransactionDetail"/> items so that a single
     /// scheduled transaction can include payments/gifts for multiple <see cref="Rock.Model.FinancialAccount">Financial Accounts</see>/accounts.
     /// </summary>
     /// <remarks>
@@ -74,9 +74,9 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE )]
         public int? SourceTypeValueId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the DefinedValueId of the transaction frequency <see cref="Rock.Model.DefinedValue"/> that represents the frequency that this 
+        /// Gets or sets the DefinedValueId of the transaction frequency <see cref="Rock.Model.DefinedValue"/> that represents the frequency that this
         /// transaction will occur.
         /// </summary>
         /// <value>
@@ -97,7 +97,7 @@ namespace Rock.Model
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the end date for this transaction schedule. Transactions will cease to occur on or before this date.  This property is nullable for ongoing 
+        /// Gets or sets the end date for this transaction schedule. Transactions will cease to occur on or before this date.  This property is nullable for ongoing
         /// schedules or for schedules that will end after a specified number of payments/transaction occur (in the <see cref="NumberOfPayments"/> property).
         /// </summary>
         /// <value>
@@ -109,7 +109,7 @@ namespace Rock.Model
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum number of times that this payment should repeat in this schedule.  If there is not a set number of payments, this value will be null. 
+        /// Gets or sets the maximum number of times that this payment should repeat in this schedule.  If there is not a set number of payments, this value will be null.
         /// This property is overridden by the schedule's <see cref="EndDate"/>.
         /// </summary>
         /// <value>
@@ -190,7 +190,7 @@ namespace Rock.Model
         public string Summary { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment gateway's payment schedule key/identifier.  This is the value that uniquely identifies the payment schedule on 
+        /// Gets or sets the payment gateway's payment schedule key/identifier.  This is the value that uniquely identifies the payment schedule on
         /// with the payment gateway.
         /// </summary>
         /// <value>
@@ -276,9 +276,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the payment frequency associated with this 
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the payment frequency associated with this
         /// scheduled transaction.
         /// </summary>
         /// <value>
@@ -303,7 +303,7 @@ namespace Rock.Model
         private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
 
         /// <summary>
-        /// Gets or sets <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that have been processed and have cleared for this scheduled transaction profile. 
+        /// Gets or sets <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> that have been processed and have cleared for this scheduled transaction profile.
         /// </summary>
         /// <value>
         /// A collection of the processed and cleared <see cref="Rock.Model.FinancialTransaction">FinancialTransactions</see> for this scheduled transaction profile.
@@ -323,7 +323,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        public decimal TotalAmount 
+        public decimal TotalAmount
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
         }

@@ -650,7 +650,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 
@@ -689,7 +689,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 
@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 
@@ -761,7 +761,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 
@@ -778,7 +778,6 @@ namespace RockWeb.Blocks.Utility
                         ddlMoveFolderTarget.Items.Add( folder );
                     }
                 }
-
                 ddlMoveFolderTarget.SelectedValue = currentFolder;
 
                 mdMoveFolder.Show();
@@ -804,7 +803,7 @@ namespace RockWeb.Blocks.Utility
         {
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 
@@ -890,7 +889,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( IsRestrictedFolder( hfSelectedFolder.Value ) )
             {
-                // If case they got this far, even though this is a restricted folder, jump out 
+                // If case they got this far, even though this is a restricted folder, jump out
                 return;
             }
 

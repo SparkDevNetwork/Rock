@@ -142,7 +142,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonScheduleExclusionConfiguration : EntityTypeConfiguration<PersonScheduleExclusion>
     {

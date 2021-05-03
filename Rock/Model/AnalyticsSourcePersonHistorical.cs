@@ -374,7 +374,7 @@ namespace Rock.Model
         public string GivingId { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier. 
+        /// Gets or sets the giving leader identifier.
         /// </summary>
         /// <value>
         /// The giving leader identifier.
@@ -444,9 +444,9 @@ namespace Rock.Model
         public int? ViewedCount { get; set; }
 
         #endregion
-        
+
         #region Virtual
-        
+
         /// <summary>
         /// Gets or sets the birth date dim.
         /// </summary>
@@ -462,7 +462,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class AnalyticsSourcePersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourcePersonHistorical>
     {
@@ -471,7 +471,7 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsSourcePersonHistoricalConfiguration()
         {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );
         }

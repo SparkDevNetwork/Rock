@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            
+
             RockPage.AddScriptLink( "~/Scripts/dragula.min.js", true );
             RockPage.AddScriptLink( "~/Scripts/Rock/Controls/GroupPlacementTool/groupPlacementTool.js" );
             RockPage.AddCSSLink( "~/Themes/Rock/Styles/group-placement.css", true );

@@ -34,12 +34,12 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in Rock. A block can be implemented on a Site's <see cref="Rock.Model.Layout"/> and appear on 
-    /// all pages on the site that uses that template or on an individual <see cref="Rock.Model.Page"/>.  
-    /// 
-    /// An example of a Block being implemented on a layout template would be an implementation of a HTML Content Block Type in the footer zone of a layout that contains the site's copyright notice.  
+    /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in Rock. A block can be implemented on a Site's <see cref="Rock.Model.Layout"/> and appear on
+    /// all pages on the site that uses that template or on an individual <see cref="Rock.Model.Page"/>.
+    ///
+    /// An example of a Block being implemented on a layout template would be an implementation of a HTML Content Block Type in the footer zone of a layout that contains the site's copyright notice.
     /// This Block will show on all <see cref="Rock.Model.Page">Pages</see> of the <see cref="Rock.Model.Site"/> that uses the layout.
-    /// 
+    ///
     /// An example of a Block being implemented on a page would be the New Account <see cref="Rock.Model.BlockType"/> being implemented on the New Account page.
     /// </summary>
     [RockDomain( "CMS" )]
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// Blocks that have a specific PageId will only be shown in the specified Page
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on.  This value will be null if this Block is implemented
         /// as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [DataMember]
@@ -81,7 +81,7 @@ namespace Rock.Model
         /// Blocks that have a specific LayoutId will be shown on all pages on a site that have the specified LayoutId
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Block is implemented on.  This value will be null if this Block is implemented
         /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [DataMember]
@@ -93,7 +93,7 @@ namespace Rock.Model
         /// Blocks that have a specific SiteId will be shown on all pages on a site
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on.  This value will be null if this Block is implemented
         /// as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/> .
         /// </value>
         [DataMember]
@@ -127,7 +127,7 @@ namespace Rock.Model
         public string Zone { get; set; }
 
         /// <summary>
-        /// Gets or sets the order that this Block appears in the <see cref="Page"/>/Layout zone that the Block is implemented in.  Blocks are 
+        /// Gets or sets the order that this Block appears in the <see cref="Page"/>/Layout zone that the Block is implemented in.  Blocks are
         /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  <see cref="Rock.Model.Page"/> Blocks have
         /// priority over layout Blocks, so they will appear higher in the Zone than <see cref="Rock.Model.Site"/>/Layout Blocks. This property is required
         /// </summary>
@@ -210,40 +210,40 @@ namespace Rock.Model
         public virtual BlockType BlockType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Page"/> entity that this Block is implemented on. This 
+        /// Gets or sets the <see cref="Rock.Model.Page"/> entity that this Block is implemented on. This
         /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will 
+        /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [LavaVisible]
         public virtual Page Page { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Layout"/> entity that this Block is implemented on. This 
+        /// Gets or sets the <see cref="Rock.Model.Layout"/> entity that this Block is implemented on. This
         /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will 
+        /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Site"/>.
         /// </value>
         [LavaVisible]
         public virtual Layout Layout { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Site"/> entity that this Block is implemented on. This 
+        /// Gets or sets the <see cref="Rock.Model.Site"/> entity that this Block is implemented on. This
         /// property will be null if this Block is being implemented on as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Site"/> entity that this Block is being implemented on. This value will 
+        /// The <see cref="Rock.Model.Site"/> entity that this Block is being implemented on. This value will
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/> or <see cref="Rock.Model.Layout"/>.
         /// </value>
         [LavaVisible]
         public virtual Site Site { get; set; }
 
         /// <summary>
-        /// Gets the location where this Block is being implemented on (Page, Layout, or Site) 
+        /// Gets the location where this Block is being implemented on (Page, Layout, or Site)
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on.
@@ -342,7 +342,7 @@ namespace Rock.Model
 
         #endregion
 
-        
+
 
         #region ICacheable
 

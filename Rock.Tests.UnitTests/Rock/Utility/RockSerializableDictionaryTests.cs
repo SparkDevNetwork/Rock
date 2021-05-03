@@ -6,7 +6,7 @@ using Rock.Utility;
 
 namespace Rock.Tests.Rock.Utility
 {
-    [TestClass]        
+    [TestClass]
     public class RockSerializableDictionaryTests
     {
         [TestMethod]

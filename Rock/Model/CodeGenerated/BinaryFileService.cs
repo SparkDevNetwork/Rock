@@ -51,150 +51,150 @@ namespace Rock.Model
         public bool CanDelete( BinaryFile item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ResponseDocumentId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<BenevolenceRequestDocument>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, BenevolenceRequestDocument.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationAttachment>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationAttachment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationResponseAttachment>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationResponseAttachment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.ImageFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.LogoBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.PushImageBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationTemplateAttachment>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, CommunicationTemplateAttachment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<ConnectionOpportunity>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, ConnectionOpportunity.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<EventItem>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, EventItem.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialStatementTemplate>( Context ).Queryable().Any( a => a.LogoBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialStatementTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ImageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.TemplateBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<NoteAttachment>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, NoteAttachment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Page>( Context ).Queryable().Any( a => a.IconBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocument>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, SignatureDocument.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ConfigurationMobilePhoneBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ConfigurationMobileTabletBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.FavIconBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.SiteLogoBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ThumbnailBinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }

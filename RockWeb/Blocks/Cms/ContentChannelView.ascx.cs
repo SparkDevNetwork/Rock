@@ -425,7 +425,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !dataViewFilter.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -552,7 +552,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected override void ShowSettings()
         {
-            // Switch does not automatically initialize again after a partial-postback.  This script 
+            // Switch does not automatically initialize again after a partial-postback.  This script
             // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
@@ -628,7 +628,7 @@ $(document).ready(function() {
 
         /// <summary>
         /// Shows the content channel item or items. If an output cache duration is set,
-        /// the content will attempt to be fetched from cache unless any of the following 
+        /// the content will attempt to be fetched from cache unless any of the following
         /// settings are enabled or set:
         ///    * MergeContent (bool)
         ///    * SetPageTitle (bool)
@@ -655,7 +655,7 @@ $(document).ready(function() {
             string metaImageAttributeValue = GetAttributeValue( AttributeKey.MetaImageAttribute );
             int pageNumber = PageParameter( PageParameterKey.Page ).AsIntegerOrNull() ?? 1;
 
-            // Try fetching from cache if it's OK to do so. 
+            // Try fetching from cache if it's OK to do so.
             // For now, we'll only cache if pagination is page 1. When our cache supports caching as a region (set)
             // we can then cache all pages and call ClearRegion if the block settings change.
             if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 && pageNumber == 1 &&
@@ -964,7 +964,7 @@ $(document).ready(function() {
         #endregion
 
         /// <summary>
-        /// Gets the content channel items from the item-cache (if there), or from 
+        /// Gets the content channel items from the item-cache (if there), or from
         /// the configured Channel and any given Item id or filter in the query string
         /// if QueryParameterFiltering is enabled.
         /// </summary>
@@ -1257,7 +1257,7 @@ $(document).ready(function() {
                              * - In DataViewDetail this would determine what type of Comparison Control to use (Drop Down, just the word 'is', etc). In the case of a DropDown, the first
                              * one in the drop down is the default comparison type.
                              * - In DynamicReport, the Comparison control is not visible, so that always ends up using the default comparison type of that IFieldType.
-                             * 
+                             *
                              * So for ContentChannelView, we'll use the exact same way to determine the Comparison type (use the first/default comparison type that the field type supports.
                              */
 
@@ -1682,7 +1682,7 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class PaginationPage : RockDynamic
         {

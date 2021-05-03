@@ -329,7 +329,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class EntityTypeInfo
         {
@@ -370,7 +370,7 @@ namespace Rock.Web.UI.Controls
             }
 
             /// <summary>
-            /// 
+            ///
             /// </summary>
             public class EntityTypeQualifier
             {

@@ -177,7 +177,7 @@ namespace Rock.Model
         public string NoteUrl { get; set; }
 
         /// <summary>
-        /// Gets or sets the last time the note text was edited. Use this instead of ModifiedDateTime to determine the last time a person edited a note 
+        /// Gets or sets the last time the note text was edited. Use this instead of ModifiedDateTime to determine the last time a person edited a note
         /// </summary>
         /// <value>
         /// The edited date time.
@@ -373,8 +373,8 @@ namespace Rock.Model
                     using ( var rockContext = new RockContext() )
                     {
                         bool isWatching = new NoteWatchService( rockContext ).Queryable()
-                                .Where( a => a.NoteId == this.Id 
-                                    && a.WatcherPersonAlias.PersonId == currentPersonId.Value 
+                                .Where( a => a.NoteId == this.Id
+                                    && a.WatcherPersonAlias.PersonId == currentPersonId.Value
                                     && a.IsWatching == true ).Any();
 
                         return isWatching;
@@ -511,7 +511,7 @@ namespace Rock.Model
                 {
                     return true;
                 }
-                else 
+                else
                 {
                     return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
                 }

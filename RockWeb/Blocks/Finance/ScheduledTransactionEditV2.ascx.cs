@@ -20,7 +20,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -37,7 +36,7 @@ namespace RockWeb.Blocks.Finance
 
     /// <summary>
     /// Edit an existing scheduled transaction
-    /// This is the *Public* block for editing scheduled transactions 
+    /// This is the *Public* block for editing scheduled transactions
     /// </summary>
     [DisplayName( "Scheduled Transaction Edit (V2)" )]
     [Category( "Finance" )]

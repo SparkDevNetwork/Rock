@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Core
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
-            
+
             if ( lavaShortCode == 0 )
             {
                 lavaShortcode = new LavaShortcode();

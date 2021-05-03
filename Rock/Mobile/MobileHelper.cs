@@ -35,7 +35,7 @@ using Authorization = Rock.Security.Authorization;
 namespace Rock.Mobile
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class MobileHelper
     {

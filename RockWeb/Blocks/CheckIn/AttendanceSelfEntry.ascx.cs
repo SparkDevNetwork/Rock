@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.CheckIn
         "Known Relationship Types",
         description: "A checkbox list of Known Relationship types that should be included in the Relation dropdown.",
         listSource: @"
-SELECT 
+SELECT
 	R.[Guid] AS [Value],
 	R.[Name] AS [Text]
 FROM [GroupType] T
@@ -980,7 +980,7 @@ ORDER BY [Text]",
 
                         var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id,
                             locationId, scheduleId, attendanceGroup.CampusId, null, null, null, null, null, null, attendanceTypeValueId );
-                        
+
                     }
                 }
 

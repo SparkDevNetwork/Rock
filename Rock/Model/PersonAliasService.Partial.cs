@@ -131,7 +131,7 @@ namespace Rock.Model
             }
             else
             {
-                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal
                 // to that personId.  If there isn't for some reason, create it now.
                 var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonId );
                 if ( person != null )
@@ -168,7 +168,7 @@ namespace Rock.Model
             }
             else
             {
-                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal
                 // to that personId.  If there isn't for some reason, create it now.
                 var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonGuid );
                 if ( person != null )

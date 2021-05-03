@@ -1451,10 +1451,7 @@ namespace RockWeb.Blocks.Steps
 
             LoadPrerequisiteStepsList();
             LoadWorkflowTriggerTypesSelectionList();
-            
-            // General properties
-            tbName.Text = stepType.Name;
-            cbIsActive.Checked = stepType.IsActive;
+
             tbDescription.Text = stepType.Description;
 
             tbIconCssClass.Text = stepType.IconCssClass;

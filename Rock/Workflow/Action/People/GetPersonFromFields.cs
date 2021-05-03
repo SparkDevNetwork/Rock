@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute's value to the selected person 
+    /// Sets an attribute's value to the selected person
     /// </summary>
     [ActionCategory( "People" )]
     [Description( "Sets an attribute to a person that matches based on any given name, email, mobile number, and birth date. If match is not found a new person will be created. Note: If a match is found, it does NOT update the person record with any of the supplied values except the email address if enabled by the action setting (the others are only used to find a match)." )]

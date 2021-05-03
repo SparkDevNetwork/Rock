@@ -17,7 +17,7 @@
 namespace Rock.SystemGuid
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class InteractionChannel
     {

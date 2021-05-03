@@ -47,7 +47,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// If a person belongs to one or more groups a particular type (i.e. Family), this field 
+        /// If a person belongs to one or more groups a particular type (i.e. Family), this field
         /// is used to distinguish which group the pledge should be associated with.
         /// </summary>
         /// <value>
@@ -168,7 +168,7 @@ namespace Rock.Model
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
-        /// Gets or sets the pledge frequency <see cref="Rock.Model.DefinedValue"/>. This is how often the <see cref="Rock.Model.Person"/> who is 
+        /// Gets or sets the pledge frequency <see cref="Rock.Model.DefinedValue"/>. This is how often the <see cref="Rock.Model.Person"/> who is
         /// making the pledge promises to give the <see cref="TotalAmount"/>
         /// </summary>
         /// <value>

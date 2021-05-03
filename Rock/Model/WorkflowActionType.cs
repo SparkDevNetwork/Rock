@@ -257,7 +257,7 @@ namespace Rock.Model
                 WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
             }
 
-            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified ); 
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified );
             WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
 

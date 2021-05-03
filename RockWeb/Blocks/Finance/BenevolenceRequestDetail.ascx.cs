@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage("Benevolence Request Statement Page", "The page which summarizes a benevolence request for printing", true)]
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
-        #region Fields 
+        #region Fields
 
         private Guid? _caseWorkerGroupGuid = null;
 
@@ -514,11 +514,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPrint_Click(object sender, EventArgs e)
         {
-            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();       
+            var benevolenceRequestId = this.PageParameter("BenevolenceRequestId").AsIntegerOrNull();
             if (benevolenceRequestId.HasValue && !benevolenceRequestId.Equals(0) && !string.IsNullOrEmpty(GetAttributeValue("BenevolenceRequestStatementPage")))
             {
                 NavigateToLinkedPage("BenevolenceRequestStatementPage", new Dictionary<string, string> { { "BenevolenceRequestId", benevolenceRequestId.ToString() } });
-            }               
+            }
         }
 
         /// <summary>
@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Finance
                 Person person = new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value );
                 if ( person != null )
                 {
-                    // Make sure that the FirstName box gets either FirstName or NickName of person. 
+                    // Make sure that the FirstName box gets either FirstName or NickName of person.
                     if (!string.IsNullOrWhiteSpace(person.FirstName))
                     {
                         dtbFirstName.Text = person.FirstName;
@@ -594,7 +594,7 @@ namespace RockWeb.Blocks.Finance
 
                     // set the campus but not on page load (e will be null) unless from the person profile page (in which case BenevolenceRequestId in the query string will be 0)
                     int? requestId = PageParameter( "BenevolenceRequestId" ).AsIntegerOrNull();
-                    
+
                     if ( !cpCampus.SelectedCampusId.HasValue && ( e != null || (requestId.HasValue && requestId == 0 ) ) )
                     {
                         var personCampus = person.GetCampus();
@@ -784,7 +784,7 @@ namespace RockWeb.Blocks.Finance
                 ddlCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAliasId );
             }
             else
-            { 
+            {
                 if ( benevolenceRequest.CaseWorkerPersonAlias != null )
                 {
                     ppCaseWorker.SetValue( benevolenceRequest.CaseWorkerPersonAlias.Person );
@@ -890,6 +890,6 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
-        
+
     }
 }

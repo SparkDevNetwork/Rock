@@ -33,7 +33,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
@@ -531,7 +531,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>        
+        /// </value>
         [DataMember]
         public int? RegistrationWorkflowTypeId { get; set; }
 

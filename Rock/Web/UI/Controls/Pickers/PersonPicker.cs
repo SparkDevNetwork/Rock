@@ -690,7 +690,7 @@ namespace Rock.Web.UI.Controls
                 pickerClasses.Add( "picker-select picker-person " + this.CssClass );
 
                 writer.AddAttribute( "class", pickerClasses.AsDelimited( " " ) );
-                
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _hiddenFieldsPanel.RenderControl( writer );

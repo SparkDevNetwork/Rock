@@ -87,7 +87,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not 
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not
         /// associated with a campus, this value is null.
         /// </value>
         [HideFromReporting]
@@ -109,7 +109,7 @@ namespace Rock.Model
         /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the Group. 
+        /// A <see cref="System.String"/> representing the name of the Group.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -150,7 +150,7 @@ namespace Rock.Model
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
+        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the
         /// display priority this group has. This property is required.
         /// </summary>
         /// <value>
@@ -168,7 +168,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? AllowGuests { get; set; }
-       
+
         /// <summary>
         /// Gets or sets a value indicating whether the group should be shown in group finders
         /// </summary>
@@ -908,7 +908,7 @@ namespace Rock.Model
         {
             if ( originalIsActive == newActiveStatus || this.Id == 0 )
             {
-                // only change GroupMember status if the Group's status was changed 
+                // only change GroupMember status if the Group's status was changed
                 return;
             }
 
@@ -946,7 +946,7 @@ namespace Rock.Model
         {
             if ( originalIsArchived == newIsArchived || this.Id == 0 )
             {
-                // only change GroupMember archived value if the Group's archived value was changed 
+                // only change GroupMember archived value if the Group's archived value was changed
                 return;
             }
 
@@ -1251,7 +1251,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 
-            // Tell EF that we never want archived groups. 
+            // Tell EF that we never want archived groups.
             // This will prevent archived members from being included in any Group queries.
             // It will also prevent navigation properties of Group from including archived groups.
             Z.EntityFramework.Plus.QueryFilterManager.Filter<Group>( x => x.Where( m => m.IsArchived == false ) );
@@ -1283,7 +1283,7 @@ namespace Rock.Model
         PreSelect = 1,
 
         /// <summary>
-        /// Person cannot check into group unless they have been scheduled 
+        /// Person cannot check into group unless they have been scheduled
         /// </summary>
         ScheduleRequired = 2,
     }
@@ -1293,7 +1293,7 @@ namespace Rock.Model
     #region Custom Exceptions
 
     /// <summary>
-    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy.
     /// </summary>
     /// <remarks>
     ///  An example of this is when a child group is set as the parent of its parent group.

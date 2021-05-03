@@ -2,7 +2,7 @@
 //  ZebraPrint.js
 //  Zebra Print plugin for Cordova iOS and Windows App
 //
-//  Copyright 2013 Spark Development Network. 
+//  Copyright 2013 Spark Development Network.
 //
 
 

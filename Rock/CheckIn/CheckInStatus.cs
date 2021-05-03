@@ -39,8 +39,8 @@ namespace Rock.CheckIn
         public bool UserEnteredSearch { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating if a single family result should be confirmed 
-        /// by user.  Usually the user entered values will need to be confirmed, while the 
+        /// Gets or sets a value indicating if a single family result should be confirmed
+        /// by user.  Usually the user entered values will need to be confirmed, while the
         /// scanned values are more unique and will not need to be confirmed
         /// </summary>
         /// <value>
@@ -50,7 +50,7 @@ namespace Rock.CheckIn
         public bool ConfirmSingleFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of value that was scanned or entered (i.e. "Barcode",  
+        /// Gets or sets the type of value that was scanned or entered (i.e. "Barcode",
         /// "Phone Number", etc)
         /// </summary>
         /// <value>

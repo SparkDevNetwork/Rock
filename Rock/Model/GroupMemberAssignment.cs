@@ -23,7 +23,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [RockDomain( "Group" )]
     [Table( "GroupMemberAssignment" )]
