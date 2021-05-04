@@ -30,6 +30,59 @@ namespace Rock.Tests.Integration.Jobs
     [TestClass]
     public class GivingAnalyticsJobTests
     {
+        #region SplitQuartileRanges
+
+        [TestMethod]
+        public void SplitQuartileRanges_EvenCount()
+        {
+            var orderedValues = new List<decimal> { 1.11m, 2.22m, 3.33m, 4.44m, 5.55m, 6.66m, 7.77m, 8.88m };
+            var ranges = Rock.Jobs.GivingAnalytics.SplitQuartileRanges( orderedValues );
+            var q1 = ranges.Item1;
+            var q2 = ranges.Item2;
+            var q3 = ranges.Item3;
+
+            // The first range should be the values before the median values.
+            Assert.AreEqual( 1.11m, q1[0] );
+            Assert.AreEqual( 2.22m, q1[1] );
+            Assert.AreEqual( 3.33m, q1[2] );
+
+            // The middle range should be the middle 2 values since there is an even count. These would be used to get the median.
+            Assert.AreEqual( 4.44m, q2[0] );
+            Assert.AreEqual( 5.55m, q2[1] );
+
+            // The third range should be the values after the median values.
+            Assert.AreEqual( 6.66m, q3[0] );
+            Assert.AreEqual( 7.77m, q3[1] );
+            Assert.AreEqual( 8.88m, q3[2] );
+        }
+
+        [TestMethod]
+        public void SplitQuartileRanges_OddCount()
+        {
+            var orderedValues = new List<decimal> { 1.11m, 2.22m, 3.33m, 4.44m, 5.55m, 6.66m, 7.77m, 8.88m, 9.99m };
+            var ranges = Rock.Jobs.GivingAnalytics.SplitQuartileRanges( orderedValues );
+            var q1 = ranges.Item1;
+            var q2 = ranges.Item2;
+            var q3 = ranges.Item3;
+
+            // The first range should be the values before the median values.
+            Assert.AreEqual( 1.11m, q1[0] );
+            Assert.AreEqual( 2.22m, q1[1] );
+            Assert.AreEqual( 3.33m, q1[2] );
+            Assert.AreEqual( 4.44m, q1[3] );
+
+            // The middle range should be the middle value since there is an odd count. This is the median.
+            Assert.AreEqual( 5.55m, q2[0] );
+
+            // The third range should be the values after the median values.
+            Assert.AreEqual( 6.66m, q3[0] );
+            Assert.AreEqual( 7.77m, q3[1] );
+            Assert.AreEqual( 8.88m, q3[2] );
+            Assert.AreEqual( 9.99m, q3[3] );
+        }
+
+        #endregion SplitQuartileRanges
+
         #region CreateAlertsForLateTransaction
 
         /// <summary>

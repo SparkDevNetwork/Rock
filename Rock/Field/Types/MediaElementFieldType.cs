@@ -250,7 +250,7 @@ namespace Rock.Field.Types
                     .Select( a => new
                     {
                         a.Name,
-                        a.ThumbnailData
+                        a.ThumbnailDataJson
                     } )
                     .SingleOrDefault();
 
@@ -259,7 +259,7 @@ namespace Rock.Field.Types
                     return string.Empty;
                 }
 
-                var thumbnails = mediaInfo.ThumbnailData.FromJsonOrNull<List<MediaElementThumbnailData>>();
+                var thumbnails = mediaInfo.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailData>>();
                 var thumbnailUrl = string.Empty;
 
                 if ( thumbnails != null )

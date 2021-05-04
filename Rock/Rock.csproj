@@ -773,6 +773,7 @@
     <Compile Include="Model\MediaElement.cs" />
     <Compile Include="Model\MediaElementService.Partial.cs" />
     <Compile Include="Model\MediaFolder.cs" />
+    <Compile Include="Model\MediaFolderService.Partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />

@@ -83,7 +83,7 @@ namespace Rock.Model
         /// A integer representing the duration in seconds of media element.
         /// </value>
         [DataMember]
-        public int? Duration { get; set; }
+        public int? DurationSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="DateTime"/> this instance was created on the provider.
@@ -130,51 +130,44 @@ namespace Rock.Model
         public string SourceKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the thumbnail data.
+        /// Gets or sets the thumbnail data JSON content that will stored
+        /// in the database.
         /// </summary>
         /// <value>
         /// The thumbnail data.
         /// </value>
         [DataMember]
-        public string ThumbnailData
+        public string ThumbnailDataJson
         {
             get
             {
-                return ThumbnailDatas.ToJson();
+                return ThumbnailData.ToJson();
             }
             set
             {
-                ThumbnailDatas = value.FromJsonOrNull<List<MediaElementThumbnailData>>() ?? new List<MediaElementThumbnailData>();
+                ThumbnailData = value.FromJsonOrNull<List<MediaElementThumbnailData>>() ?? new List<MediaElementThumbnailData>();
             }
         }
 
         /// <summary>
-        /// Gets or sets the media element data.
+        /// Gets or sets the file data JSON content that will be stored in
+        /// the database.
         /// </summary>
         /// <value>
-        /// The media element data.
+        /// The file data.
         /// </value>
         [DataMember]
-        public string MediaElementData
+        public string FileDataJson
         {
             get
             {
-                return MediaElementDatas.ToJson();
+                return FileData.ToJson();
             }
             set
             {
-                MediaElementDatas = value.FromJsonOrNull<List<MediaElementFileData>>() ?? new List<MediaElementFileData>();
+                FileData = value.FromJsonOrNull<List<MediaElementFileData>>() ?? new List<MediaElementFileData>();
             }
         }
-
-        /// <summary>
-        /// Gets or sets the download data.
-        /// </summary>
-        /// <value>
-        /// The download data.
-        /// </value>
-        [DataMember]
-        public string DownloadData { get; set; }
 
         #endregion
 
@@ -190,13 +183,15 @@ namespace Rock.Model
         public virtual MediaFolder MediaFolder { get; set; }
 
         /// <summary>
-        /// Gets or sets the media element data.
+        /// Gets or sets the media element file data. This contains all the
+        /// information about the different file URLs available for the user
+        /// to stream or download.
         /// </summary>
         /// <value>
-        /// The media element data.
+        /// The media element file data.
         /// </value>
         [NotMapped]
-        public virtual List<MediaElementFileData> MediaElementDatas { get; set; } = new List<MediaElementFileData>();
+        public virtual List<MediaElementFileData> FileData { get; set; } = new List<MediaElementFileData>();
 
         /// <summary>
         /// Gets or sets the thumbnail data.
@@ -205,7 +200,7 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [NotMapped]
-        public virtual List<MediaElementThumbnailData> ThumbnailDatas { get; set; } = new List<MediaElementThumbnailData>();
+        public virtual List<MediaElementThumbnailData> ThumbnailData { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
 
@@ -267,7 +262,7 @@ namespace Rock.Model
         /// </summary>
         public MediaElementConfiguration()
         {
-            this.HasRequired( p => p.MediaFolder ).WithMany( p => p.MediaElements ).HasForeignKey( p => p.MediaFolderId ).WillCascadeOnDelete( true );
+            this.HasRequired( e => e.MediaFolder ).WithMany( f => f.MediaElements ).HasForeignKey( e => e.MediaFolderId ).WillCascadeOnDelete( true );
         }
     }
 

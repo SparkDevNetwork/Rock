@@ -13,7 +13,9 @@
 </script>
 
 <style>
-    .filter-options .rock-check-box-list label {
+    .filter-options .rock-check-box-list label,
+    .js-currency-list label,
+    .js-source-list label {
         cursor: pointer;
     }
 </style>
@@ -300,8 +302,8 @@
                 });
 
                 // Set checkbox labels to toggle child checkboxes when clicked
-                $('div.rock-check-box-list').find('label.control-label').prop('data-selected', false);
-                $('div.rock-check-box-list').find('label.control-label').on('click', function (e) {
+                $('div.rock-check-box-list, div.js-currency-list, div.js-source-list').find('label.control-label').prop('data-selected', false);
+                $('div.rock-check-box-list, div.js-currency-list, div.js-source-list').find('label.control-label').on('click', function (e) {
                     var selected = $(this).prop('data-selected')
                     $(this).siblings().find('input:checkbox').prop('checked', !selected);
                     $(this).prop('data-selected', !selected);

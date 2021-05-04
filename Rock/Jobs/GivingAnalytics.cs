@@ -565,13 +565,13 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
         /// </summary>
         /// <param name="orderedValues"></param>
         /// <returns></returns>
-        private static (List<decimal>, List<decimal>, List<decimal>) SplitQuartileRanges( List<decimal> orderedValues )
+        public static Tuple<List<decimal>, List<decimal>, List<decimal>> SplitQuartileRanges( List<decimal> orderedValues )
         {
             var count = orderedValues.Count;
 
             if ( count <= 2 )
             {
-                return (new List<decimal>(), orderedValues, new List<decimal>());
+                return Tuple.Create( new List<decimal>(), orderedValues, new List<decimal>() );
             }
 
             var lastMidIndex = count / 2;
@@ -585,7 +585,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             var q1 = orderedValues.GetRange( 0, firstMidIndex );
             var q3 = orderedValues.GetRange( lastMidIndex + 1, count - lastMidIndex - 1 );
 
-            return (q1, medianValues, q3);
+            return Tuple.Create( q1, medianValues, q3 );
         }
 
         /// <summary>

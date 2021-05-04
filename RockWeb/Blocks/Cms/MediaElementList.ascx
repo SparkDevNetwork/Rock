@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MediaElementList.ascx.cs" Inherits="RockWeb.Blocks.Cms.MediaElementList" %>
-
+<%@ Import Namespace="Rock" %>
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -19,7 +19,11 @@
                     <Rock:Grid ID="gElementList" runat="server" AllowSorting="true" OnRowSelected="gElementList_RowSelected"  CssClass="js-grid-elements">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-CssClass="js-name-element" />
-                            <Rock:RockBoundField DataField="Duration" HeaderText="Duration" SortExpression="Duration" />
+                             <Rock:RockTemplateField SortExpression="DurationSeconds" HeaderText="Duration">
+                                 <ItemTemplate>
+                                     <%# ((int?)Eval("DurationSeconds")).ToFriendlyDuration() %>
+                                 </ItemTemplate>
+                             </Rock:RockTemplateField>
                             <Rock:DeleteField OnClick="gElementList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

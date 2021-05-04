@@ -18,10 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
-
 using Humanizer;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -72,6 +71,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbActionResult.Text = string.Empty;
 
             if ( !Page.IsPostBack )
             {
@@ -166,6 +167,24 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSyncWithProvider control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSyncWithProvider_Click( object sender, EventArgs e )
+        {
+            var mediaAccountId = hfMediaAccountId.ValueAsInt();
+
+            Task.Run( async () =>
+            {
+                await MediaAccountService.SyncMediaInAccountAsync( mediaAccountId );
+                await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccountId );
+            } );
+
+            nbActionResult.Text = "Synchronization with provider started and will continue in the background.";
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -198,7 +217,9 @@ namespace RockWeb.Blocks.Cms
             mediaAccount.SaveAttributeValues( rockContext );
             rockContext.SaveChanges();
 
-            NavigateToParentPage();
+            var pageReference = RockPage.PageReference;
+            pageReference.Parameters.AddOrReplace( PageParameterKey.MediaAccountId, mediaAccount.Id.ToString() );
+            Response.Redirect( pageReference.BuildUrl(), false );
         }
 
         /// <summary>
@@ -208,7 +229,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            if ( hfMediaAccountId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString[PageParameterKey.MediaAccountId] = hfMediaAccountId.Value;
+                NavigateToParentPage( qryString );
+            }
+            else
+            {
+                // Cancelling on Edit
+                var mediaAccount = new MediaAccountService( new RockContext() ).Get( int.Parse( hfMediaAccountId.Value ) );
+                ShowReadonlyDetails( mediaAccount );
+            }
         }
 
         #endregion Events
@@ -248,18 +281,23 @@ namespace RockWeb.Blocks.Cms
             {
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
+                btnSyncWithProvider.Visible = false;
+
                 ShowReadonlyDetails( mediaAccount );
             }
             else
             {
                 btnEdit.Visible = true;
                 btnDelete.Visible = true;
+
                 if ( mediaAccount.Id > 0 )
                 {
+                    btnSyncWithProvider.Visible = !( mediaAccount.GetMediaAccountComponent()?.AllowsManualEntry ?? true );
                     ShowReadonlyDetails( mediaAccount );
                 }
                 else
                 {
+                    btnSyncWithProvider.Visible = false;
                     ShowEditDetails( mediaAccount );
                 }
             }
