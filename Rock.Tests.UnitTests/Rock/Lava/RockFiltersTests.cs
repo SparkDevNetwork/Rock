@@ -1418,6 +1418,7 @@ namespace Rock.Tests.Rock.Lava
         {
             // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month. So 12 months from now would be the previous month next year.
             DateTime nextYearSaturday = RockDateTime.Now
+                .AddMonths( -1 )
                 .StartOfMonth()
                 .AddYears( 1 )
                 .GetNextWeekday( DayOfWeek.Saturday )
