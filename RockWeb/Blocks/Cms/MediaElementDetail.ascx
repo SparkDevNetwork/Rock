@@ -34,7 +34,8 @@
                             <asp:Literal ID="lMetricData" runat="server" />
                         </div>
                     </div>
-                    <div class="row margin-b-md">
+
+                    <div class="row">
                         <div class="col-md-12">
                             <label>Media Files</label>
                             <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" >
@@ -48,9 +49,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
-                    </div>
-                    <div class="row margin-b-md">
-                        <div class="col-md-12">
+                        <div class="col-md-12 margin-t-lg">
                             <label>Thumbnail Files</label>
                             <Rock:Grid ID="gViewThumbnailFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
                                 <Columns>
@@ -61,7 +60,8 @@
                             </Rock:Grid>
                         </div>
                     </div>
-                    <div class="actions">
+
+                    <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                     </div>
                 </div>
@@ -71,17 +71,15 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.MediaElement, Rock" PropertyName="Name" />
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaElement, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-12">
                             <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration (seconds)" />
                         </div>
-                    </div>
-                    <div class="row">
+
                         <div class="col-md-12">
                             <label>Media Files</label>
                             <Rock:Grid ID="gMediaFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Media" DisplayType="Light" ShowHeader="true">
@@ -96,8 +94,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
-                    </div>
-                    <div class="row">
+
                         <div class="col-md-12">
                             <label>Thumbnail Files</label>
                             <Rock:Grid ID="gThumbnailFiles" runat="server" EmptyDataText="No Thumbnail Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
@@ -110,7 +107,8 @@
                             </Rock:Grid>
                         </div>
                     </div>
-                    <div class="actions">
+
+                    <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>

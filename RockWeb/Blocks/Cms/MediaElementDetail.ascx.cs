@@ -235,9 +235,8 @@ namespace RockWeb.Blocks.Cms
             mediaElement.ThumbnailDataJson = ThumbnailDataState.ToJson();
             mediaElement.FileDataJson = FileDataState.ToJson();
             rockContext.SaveChanges();
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.MediaFolderId] = mediaElement.MediaFolderId.ToStringSafe();
-            NavigateToParentPage( qryParams );
+
+            ShowDetail( mediaElement.Id );
         }
 
         /// <summary>
@@ -504,7 +503,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( mediaElement.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Add( MediaFolder.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( "Media Element" ).FormatAsHtmlTitle();
             }
             else
             {

@@ -142,31 +142,31 @@ namespace RockWeb.Blocks.Communication
             if ( group != null )
             {
                 var hfGroupId = e.Item.FindControl( "hfGroupId" ) as HiddenField;
-                var cbCommunicationListIsSubscribed = e.Item.FindControl( "cbCommunicationListIsSubscribed" ) as RockCheckBox;
-                var tglCommunicationPreference = e.Item.FindControl( "tglCommunicationPreference" ) as Toggle;
-
                 hfGroupId.Value = group.Id.ToString();
-                cbCommunicationListIsSubscribed.Text = group.GetAttributeValue( "PublicName" );
-                var groupMember = personCommunicationListsMember.GetValueOrNull( group.Id );
-                if ( cbCommunicationListIsSubscribed.Text.IsNullOrWhiteSpace() )
+
+                var groupDescription = group.Description.IsNullOrWhiteSpace() ? string.Empty : $@"<br>{group.Description}";
+                var groupPublicName = group.GetAttributeValue( "PublicName" );
+
+                var cbCommunicationListIsSubscribed = e.Item.FindControl( "cbCommunicationListIsSubscribed" ) as RockCheckBox;
+                cbCommunicationListIsSubscribed.Text = $@"<strong>{groupPublicName}</strong>{groupDescription}";
+                if ( groupPublicName.IsNullOrWhiteSpace() )
                 {
-                    cbCommunicationListIsSubscribed.Text = group.Name;
+                    cbCommunicationListIsSubscribed.Text = $@"<strong>{group.Name}</strong>{groupDescription}";
                 }
 
+                var groupMember = personCommunicationListsMember.GetValueOrNull( group.Id );
                 cbCommunicationListIsSubscribed.Checked = groupMember != null && groupMember.GroupMemberStatus == GroupMemberStatus.Active;
 
                 CommunicationType communicationType = CurrentPerson.CommunicationPreference == CommunicationType.SMS ? CommunicationType.SMS : CommunicationType.Email;
 
                 // if GroupMember record has SMS or Email specified, that takes precedence over their Person.CommunicationPreference
-                var groupMemberHasSmsOrEmailPreference = groupMember != null &&
-                        ( groupMember.CommunicationPreference == CommunicationType.SMS ||
-                            groupMember.CommunicationPreference == CommunicationType.Email );
-
+                var groupMemberHasSmsOrEmailPreference = groupMember != null && ( groupMember.CommunicationPreference == CommunicationType.SMS || groupMember.CommunicationPreference == CommunicationType.Email );
                 if ( groupMemberHasSmsOrEmailPreference )
                 {
                     communicationType = groupMember.CommunicationPreference;
                 }
 
+                var tglCommunicationPreference = e.Item.FindControl( "tglCommunicationPreference" ) as Toggle;
                 tglCommunicationPreference.Checked = communicationType == CommunicationType.Email;
                 tglCommunicationPreference.Visible = showMediumPreference;
             }
