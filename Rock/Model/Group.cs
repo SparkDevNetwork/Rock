@@ -305,15 +305,6 @@ namespace Rock.Model
         /// Gets or sets the system communication to use for sending an RSVP reminder.
         /// </summary>
         /// <value>
-        /// The RSVP reminder system communication object.
-        /// </value>
-        [DataMember]
-        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system communication to use for sending an RSVP reminder.
-        /// </summary>
-        /// <value>
         /// The RSVP reminder system communication identifier.
         /// </value>
         [DataMember]
@@ -346,9 +337,44 @@ namespace Rock.Model
         [DataMember]
         public bool DisableScheduling { get; set; }
 
+        /// <summary>
+        /// List leaders names, in order by males → females.
+        /// Examples: Ted &#38; Cindy Decker -or- Ted Decker &#38; Cindy Wright.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=false, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutation { get; set; }
+
+        /// <summary>
+        /// List all active group members, or order by leaders males → females - non leaders by age.
+        /// Examples: Ted, Cindy, Noah and Alex Decker.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=true, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutationFull { get; set; }
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication object.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets this parent Group of this Group.

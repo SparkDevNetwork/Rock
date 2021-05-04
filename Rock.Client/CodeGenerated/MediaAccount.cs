@@ -49,6 +49,9 @@ namespace Rock.Client
         /// <summary />
         public DateTime? LastRefreshDateTime { get; set; }
 
+        /// <summary />
+        public string MetricData { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -56,6 +59,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
+
+        /// <summary />
+        public string SourceData { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -95,8 +101,10 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.LastRefreshDateTime = source.LastRefreshDateTime;
+            this.MetricData = source.MetricData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.SourceData = source.SourceData;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

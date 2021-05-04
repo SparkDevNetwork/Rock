@@ -289,7 +289,11 @@ namespace RockWeb.Blocks.Connection
                 string sessionKey = string.Format( "ConnectionSearch_{0}", this.BlockId );
                 Session[sessionKey] = searchSelections;
 
-                var opportunities = qrySearch.OrderBy( s => s.PublicName ).ToList();
+                var opportunities = qrySearch
+                    .ToList()
+                    .Where(o => o.IsAuthorized( Authorization.VIEW, CurrentPerson ))
+                    .OrderBy( s => s.PublicName )
+                    .ToList();
 
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "CurrentPerson", CurrentPerson );

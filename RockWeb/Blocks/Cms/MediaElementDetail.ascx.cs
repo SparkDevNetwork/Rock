@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -44,9 +47,9 @@ namespace RockWeb.Blocks.Cms
     {
         #region Properties
 
-        private List<MediaElementData> MediaElementDatasState { get; set; }
+        private List<MediaElementFileDataStateful> FileDataState { get; set; }
 
-        private List<ThumbnailData> ThumbnailDatasState { get; set; }
+        private List<MediaElementThumbnailDataStateful> ThumbnailDataState { get; set; }
 
         #endregion
 
@@ -64,8 +67,8 @@ namespace RockWeb.Blocks.Cms
 
         private static class ViewStateKey
         {
-            public const string MediaElementDatas = "MediaElementDatas";
-            public const string ThumbnailDatas = "ThumbnailDatas";
+            public const string FileDataState = "FileDataState";
+            public const string ThumbnailDataState = "ThumbnailDataState";
         }
 
         #endregion ViewStateKeys
@@ -80,8 +83,8 @@ namespace RockWeb.Blocks.Cms
         {
             base.LoadViewState( savedState );
 
-            MediaElementDatasState = ViewState[ViewStateKey.MediaElementDatas] as List<MediaElementData> ?? new List<MediaElementData>();
-            ThumbnailDatasState = ViewState[ViewStateKey.ThumbnailDatas] as List<ThumbnailData> ?? new List<ThumbnailData>();
+            FileDataState = ViewState[ViewStateKey.FileDataState] as List<MediaElementFileDataStateful> ?? new List<MediaElementFileDataStateful>();
+            ThumbnailDataState = ViewState[ViewStateKey.ThumbnailDataState] as List<MediaElementThumbnailDataStateful> ?? new List<MediaElementThumbnailDataStateful>();
         }
 
         /// <summary>
@@ -129,8 +132,8 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ViewStateKey.MediaElementDatas] = MediaElementDatasState;
-            ViewState[ViewStateKey.ThumbnailDatas] = ThumbnailDatasState;
+            ViewState[ViewStateKey.FileDataState] = FileDataState;
+            ViewState[ViewStateKey.ThumbnailDataState] = ThumbnailDataState;
 
             return base.SaveViewState();
         }
@@ -228,9 +231,9 @@ namespace RockWeb.Blocks.Cms
 
             mediaElement.Name = tbName.Text;
             mediaElement.Description = tbDescription.Text;
-            mediaElement.Duration = nbDuration.Text.AsDecimalOrNull();
-            mediaElement.ThumbnailDatas = ThumbnailDatasState;
-            mediaElement.MediaElementDatas = MediaElementDatasState;
+            mediaElement.DurationSeconds = nbDuration.Text.AsIntegerOrNull();
+            mediaElement.ThumbnailDataJson = ThumbnailDataState.ToJson();
+            mediaElement.FileDataJson = FileDataState.ToJson();
             rockContext.SaveChanges();
             var qryParams = new Dictionary<string, string>();
             qryParams[PageParameterKey.MediaFolderId] = mediaElement.MediaFolderId.ToStringSafe();
@@ -311,11 +314,11 @@ namespace RockWeb.Blocks.Cms
             Guid? guid = hfMediaElementData.Value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var mediaElementData = MediaElementDatasState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                var mediaElementData = FileDataState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
                 if ( mediaElementData == null )
                 {
-                    mediaElementData = new MediaElementData();
-                    MediaElementDatasState.Add( mediaElementData );
+                    mediaElementData = new MediaElementFileDataStateful();
+                    FileDataState.Add( mediaElementData );
                 }
 
                 mediaElementData.PublicName = tbPublicName.Text;
@@ -326,7 +329,13 @@ namespace RockWeb.Blocks.Cms
                 mediaElementData.Width = nbWidth.Text.AsInteger();
                 mediaElementData.Height = nbHeight.Text.AsInteger();
                 mediaElementData.FPS = nbFPS.Text.AsInteger();
-                mediaElementData.Size = nbSize.Text.AsInteger();
+
+                long size;
+                if ( !long.TryParse( nbSize.Text, out size ) )
+                {
+                    size = 0;
+                }
+                mediaElementData.Size = size;
 
                 BindMediaFileGrid();
             }
@@ -344,17 +353,23 @@ namespace RockWeb.Blocks.Cms
             Guid? guid = hfThumbnailFile.Value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                var thumbnailData = ThumbnailDatasState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                var thumbnailData = ThumbnailDataState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
                 if ( thumbnailData == null )
                 {
-                    thumbnailData = new ThumbnailData();
-                    ThumbnailDatasState.Add( thumbnailData );
+                    thumbnailData = new MediaElementThumbnailDataStateful();
+                    ThumbnailDataState.Add( thumbnailData );
                 }
 
                 thumbnailData.Link = urlThumbnailLink.Text;
                 thumbnailData.Width = nbThumbnailWidth.Text.AsInteger();
                 thumbnailData.Height = nbThumbnailHeight.Text.AsInteger();
-                thumbnailData.Size = nbThumbnailSize.Text.AsInteger();
+
+                long size;
+                if ( !long.TryParse( nbThumbnailSize.Text, out size ) )
+                {
+                    size = 0;
+                }
+                thumbnailData.Size = size;
 
                 BindThumbnailDataGrid();
             }
@@ -448,8 +463,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="mediaAccount">The media element.</param>
         private void ShowReadonlyDetails( MediaElement mediaElement )
         {
-            MediaElementDatasState = mediaElement.MediaElementDatas.ToList();
-            ThumbnailDatasState = mediaElement.ThumbnailDatas.ToList();
+            FileDataState = mediaElement.FileDataJson.FromJsonOrNull<List<MediaElementFileDataStateful>>();
+            ThumbnailDataState = mediaElement.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailDataStateful>>();
 
             SetEditMode( false );
 
@@ -462,18 +477,21 @@ namespace RockWeb.Blocks.Cms
                 descriptionList.Add( "Description", mediaElement.Description );
             }
 
-            if ( mediaElement.Duration.HasValue )
+            if ( mediaElement.DurationSeconds.HasValue )
             {
-                descriptionList.Add( "Duration", mediaElement.Duration );
+                descriptionList.Add( "Duration", mediaElement.DurationSeconds.ToFriendlyDuration() );
             }
 
             lDescription.Text = descriptionList.Html;
 
-            gViewMediaFiles.DataSource = MediaElementDatasState
+            lMetricData.Text = mediaElement.MediaFolder.MediaAccount.GetMediaAccountComponent()
+                ?.GetMediaElementHtmlSummary( mediaElement );
+
+            gViewMediaFiles.DataSource = FileDataState
               .ToList();
             gViewMediaFiles.DataBind();
 
-            gViewThumbnailFiles.DataSource = ThumbnailDatasState
+            gViewThumbnailFiles.DataSource = ThumbnailDataState
               .ToList();
             gViewThumbnailFiles.DataBind();
         }
@@ -497,7 +515,7 @@ namespace RockWeb.Blocks.Cms
 
             tbName.Text = mediaElement.Name;
             tbDescription.Text = mediaElement.Description;
-            nbDuration.Text = mediaElement.Duration.ToStringSafe();
+            nbDuration.Text = mediaElement.DurationSeconds.ToStringSafe();
 
             bool readOnly = false;
 
@@ -567,7 +585,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="mediaFileGuid">The media file identifier.</param>
         protected void gMediaFiles_ShowEdit( Guid mediaFileGuid )
         {
-            var mediaElementData = MediaElementDatasState.FirstOrDefault( l => l.Guid.Equals( mediaFileGuid ) );
+            var mediaElementData = FileDataState.FirstOrDefault( l => l.Guid.Equals( mediaFileGuid ) );
 
             if ( mediaElementData != null )
             {
@@ -580,7 +598,7 @@ namespace RockWeb.Blocks.Cms
                 nbWidth.IntegerValue = mediaElementData.Width;
                 nbHeight.IntegerValue = mediaElementData.Height;
                 nbFPS.IntegerValue = mediaElementData.FPS;
-                nbSize.IntegerValue = mediaElementData.Size;
+                nbSize.Text = mediaElementData.Size.ToString();
             }
             else
             {
@@ -605,7 +623,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="thumbnailFileGuid">The thumbnail file identifier.</param>
         protected void gThumbnailFiles_ShowEdit( Guid thumbnailFileGuid )
         {
-            var thumbnailData = ThumbnailDatasState.FirstOrDefault( l => l.Guid.Equals( thumbnailFileGuid ) );
+            var thumbnailData = ThumbnailDataState.FirstOrDefault( l => l.Guid.Equals( thumbnailFileGuid ) );
 
             if ( thumbnailData != null )
             {
@@ -613,7 +631,7 @@ namespace RockWeb.Blocks.Cms
                 urlThumbnailLink.Text = thumbnailData.Link;
                 nbThumbnailWidth.IntegerValue = thumbnailData.Width;
                 nbThumbnailHeight.IntegerValue = thumbnailData.Height;
-                nbThumbnailSize.IntegerValue = thumbnailData.Size;
+                nbThumbnailSize.Text = thumbnailData.Size.ToString();
             }
             else
             {
@@ -688,8 +706,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindMediaFileGrid()
         {
-            MediaElementDatasState = MediaElementDatasState ?? new List<MediaElementData>();
-            gMediaFiles.DataSource = MediaElementDatasState
+            FileDataState = FileDataState ?? new List<MediaElementFileDataStateful>();
+            gMediaFiles.DataSource = FileDataState
                 .ToList();
             gMediaFiles.DataBind();
         }
@@ -699,8 +717,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindThumbnailDataGrid()
         {
-            ThumbnailDatasState = ThumbnailDatasState ?? new List<ThumbnailData>();
-            gThumbnailFiles.DataSource = ThumbnailDatasState
+            ThumbnailDataState = ThumbnailDataState ?? new List<MediaElementThumbnailDataStateful>();
+            gThumbnailFiles.DataSource = ThumbnailDataState
                 .ToList();
             gThumbnailFiles.DataBind();
         }
@@ -724,5 +742,33 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion Internal Methods
+
+        #region Support Classes
+
+        /// <summary>
+        /// Provides an additional Guid property that can be used to track
+        /// individual items in the grids when editing.
+        /// </summary>
+        /// <seealso cref="Rock.Media.MediaElementFileData" />
+        [Serializable]
+        private class MediaElementFileDataStateful : MediaElementFileData
+        {
+            [JsonIgnore]
+            public Guid Guid { get; set; } = Guid.NewGuid();
+        }
+
+        /// <summary>
+        /// Provides an additional Guid property that can be used to track
+        /// individual items in the grids when editing.
+        /// </summary>
+        /// <seealso cref="Rock.Media.MediaElementThumbnailData" />
+        [Serializable]
+        private class MediaElementThumbnailDataStateful : MediaElementThumbnailData
+        {
+            [JsonIgnore]
+            public Guid Guid { get; set; } = Guid.NewGuid();
+        }
+
+        #endregion
     }
 }

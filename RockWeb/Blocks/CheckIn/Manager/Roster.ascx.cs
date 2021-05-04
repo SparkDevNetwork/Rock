@@ -498,10 +498,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             IList<RosterAttendee> attendees = null;
 
-            using ( var rockContext = new RockContext() )
-            {
-                attendees = GetAttendees( rockContext );
-            }
+            // Note, don't wrap this in a Using, we don't want to destroy it just in case there is some lazy loading that will happen (there shouldn't be, but just in case)
+            var rockContext = new RockContext();
+            
+            attendees = GetAttendees( rockContext );
 
             var currentStatusFilter = GetStatusFilterValueFromControl();
 

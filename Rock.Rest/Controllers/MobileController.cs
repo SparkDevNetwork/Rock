@@ -89,7 +89,8 @@ namespace Rock.Rest.Controllers
             {
                 RockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber(),
                 LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
-                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
+                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person ),
+                TimeZoneOffset = ( int ) TimeZoneInfo.Local.GetUtcOffset( RockDateTime.Now ).TotalMinutes
             };
 
             if ( deviceData.DeviceType == DeviceType.Phone )
@@ -364,7 +365,7 @@ namespace Rock.Rest.Controllers
                                 mobileInteraction.Summary,
                                 mobileInteraction.Data,
                                 person?.PrimaryAliasId,
-                                mobileInteraction.DateTime,
+                                RockDateTime.ConvertLocalDateTimeToRockDateTime( mobileInteraction.DateTime.LocalDateTime ),
                                 mobileSession.Application,
                                 mobileSession.OperatingSystem,
                                 mobileSession.ClientType,
@@ -489,7 +490,7 @@ namespace Rock.Rest.Controllers
             }
 
             communicationRecipient.Status = CommunicationRecipientStatus.Opened;
-            communicationRecipient.OpenedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( interaction.DateTime );
+            communicationRecipient.OpenedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( interaction.DateTime.LocalDateTime );
             communicationRecipient.OpenedClient = string.Format(
                 "{0} {1} ({2})",
                 session.OperatingSystem ?? "unknown",

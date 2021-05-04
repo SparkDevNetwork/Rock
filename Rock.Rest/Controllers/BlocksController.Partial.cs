@@ -282,7 +282,7 @@ namespace Rock.Rest.Controllers
                 rockBlock.PageCache = blockCache.Page;
                 rockBlock.RequestContext = requestContext;
 
-                var actionParameters = new Dictionary<string, JToken>();
+                var actionParameters = new Dictionary<string, JToken>( StringComparer.InvariantCultureIgnoreCase );
 
                 //
                 // Parse any posted parameter data.

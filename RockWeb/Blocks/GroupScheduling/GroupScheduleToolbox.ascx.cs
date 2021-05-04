@@ -1846,7 +1846,7 @@ $('#{0}').tooltip();
                         int? maximumCapacitySetting = null;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
-                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault().MaximumCapacity;
+                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
                         }
 
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );

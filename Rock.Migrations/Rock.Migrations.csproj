@@ -89,6 +89,22 @@
     <Compile Include="Migrations\202104271748244_CodeGenerated_0427.Designer.cs">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.cs" />
+    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.Designer.cs">
+      <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104291818024_GroupSalutation.cs" />
+    <Compile Include="Migrations\202104291818024_GroupSalutation.Designer.cs">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.cs" />
+    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.Designer.cs">
+      <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202105041859560_RegistrationTimeout.cs" />
+    <Compile Include="Migrations\202105041859560_RegistrationTimeout.Designer.cs">
+      <DependentUpon>202105041859560_RegistrationTimeout.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -460,6 +476,18 @@
     <EmbeddedResource Include="Migrations\202104271748244_CodeGenerated_0427.resx">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104282103218_MediaElementModelChanges.resx">
+      <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104291818024_GroupSalutation.resx">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.resx">
+      <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105041859560_RegistrationTimeout.resx">
+      <DependentUpon>202105041859560_RegistrationTimeout.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
     </EmbeddedResource>
@@ -735,6 +763,21 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202104291818024_GroupSalutation_spFinance_ContributionStatementQuery.sql">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId.sql">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
       <DependentUpon>202008272036178_AddDocumentsToPersonMerge.cs</DependentUpon>
     </Content>
@@ -785,7 +828,7 @@
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
-	<ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
       <Name>Rock.Lava.Shared</Name>
     </ProjectReference>

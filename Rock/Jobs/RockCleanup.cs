@@ -23,7 +23,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
 using Humanizer;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -190,6 +192,8 @@ namespace Rock.Jobs
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup( dataMap ) );
 
+            RunCleanupTask( "family salutation", () => GroupSalutationCleanup( dataMap ) );
+
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
             RunCleanupTask( "temporary registration", () => CleanUpTemporaryRegistrations() );
@@ -238,6 +242,8 @@ namespace Rock.Jobs
             }
 
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
+
+            RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -293,6 +299,30 @@ namespace Rock.Jobs
                 rowsUpdated += rockContext.BulkUpdate( groupMembersToUpdate, p => new GroupMember { CommunicationPreference = CommunicationType.RecipientPreference } );
             }
             return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Removes the expired registration sessions.
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveExpiredRegistrationSessions()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var maxDate = RockDateTime.Now.AddDays( -30 );
+
+                var sessionsToDeleteQuery = registrationSessionService
+                    .Queryable()
+                    .Where( rs => rs.ExpirationDateTime < maxDate );
+
+                var count = sessionsToDeleteQuery.Count();
+                registrationSessionService.DeleteRange( sessionsToDeleteQuery );
+
+                rockContext.SaveChanges();
+                return count;
+            }
         }
 
         /// <summary>
@@ -400,6 +430,39 @@ namespace Rock.Jobs
                     return stackTrace;
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates <see cref="Group.GroupSalutation" />
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int GroupSalutationCleanup( JobDataMap dataMap )
+        {
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+            // get list of Families that don't have a GroupSalutation populated yet. Include deceased and businesses.
+            var personIdListWithFamilyId = new PersonService( new RockContext() )
+                .Queryable( true, true )
+                .Where( a =>
+                    a.PrimaryFamilyId.HasValue
+                    && ( a.PrimaryFamily.GroupSalutation == null || a.PrimaryFamily.GroupSalutationFull == null || a.PrimaryFamily.GroupSalutation == "" || a.PrimaryFamily.GroupSalutationFull == "" ) )
+                .Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+
+            var recordsUpdated = 0;
+
+            // we only need one person from each family (and it doesn't matter who)
+            var personIdList = personIdListWithFamilyId.GroupBy( a => a.PrimaryFamilyId.Value ).Select( s => s.FirstOrDefault()?.Id ).Where( a => a.HasValue ).Select( s => s.Value ).ToList();
+
+            foreach ( var personId in personIdList )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                }
+            }
+
+            return recordsUpdated;
         }
 
         /// <summary>

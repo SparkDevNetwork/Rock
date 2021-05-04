@@ -78,6 +78,24 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int ComponentEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the custom provider data for this instance.
+        /// </summary>
+        /// <value>
+        /// The custom provider data for this instance.
+        /// </value>
+        [DataMember]
+        public string SourceData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom provider metric data for this instance.
+        /// </summary>
+        /// <value>
+        /// The custom provider metric data for this instance.
+        /// </value>
+        [DataMember]
+        public string MetricData { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -146,7 +164,7 @@ namespace Rock.Model
         /// </summary>
         public MediaAccountConfiguration()
         {
-            this.HasRequired( b => b.ComponentEntityType ).WithMany().HasForeignKey( b => b.ComponentEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.ComponentEntityType ).WithMany().HasForeignKey( a => a.ComponentEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
