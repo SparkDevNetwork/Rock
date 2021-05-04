@@ -205,7 +205,7 @@ namespace Rock
         /// Returns a formatted string of the duration.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>A friendly time duration such as '1h 44m' or '5m 22s'</returns>
         public static string ToFriendlyDuration( this int? value )
         {
             if ( !value.HasValue )
@@ -220,24 +220,24 @@ namespace Rock
             if ( timeSpan.Days != default( int ) )
             {
                 totalSeconds -= timeSpan.Days * 24 * 60 * 60;
-                formattedTime = string.Format( "{0} {1} ", timeSpan.Days, "day".PluralizeIf( timeSpan.Days > 1 ) );
+                formattedTime = string.Format( "{0}d ", timeSpan.Days );
             }
 
             if ( timeSpan.Hours != default( int ) || ( totalSeconds > 0 && formattedTime.IsNotNullOrWhiteSpace() ) )
             {
                 totalSeconds -= timeSpan.Hours * 60 * 60;
-                formattedTime += string.Format( "{0} {1} ", timeSpan.Hours, "hr".PluralizeIf( timeSpan.Hours > 1 ) );
+                formattedTime += string.Format( "{0}h ", timeSpan.Hours );
             }
 
             if ( timeSpan.Minutes != default( int ) || ( totalSeconds > 0 && formattedTime.IsNotNullOrWhiteSpace() ) )
             {
                 totalSeconds -= timeSpan.Minutes * 60;
-                formattedTime += string.Format( "{0} {1} ", timeSpan.Minutes, "min".PluralizeIf( timeSpan.Minutes > 1 ) );
+                formattedTime += string.Format( "{0}m ", timeSpan.Minutes );
             }
 
             if ( timeSpan.Seconds != default( int ) )
             {
-                formattedTime += string.Format( "{0} {1}", timeSpan.Seconds, "sec".PluralizeIf( timeSpan.Seconds > 1 ) );
+                formattedTime += string.Format( "{0}s", timeSpan.Seconds );
             }
 
             return formattedTime;
