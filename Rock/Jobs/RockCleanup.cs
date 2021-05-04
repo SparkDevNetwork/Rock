@@ -243,6 +243,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
 
+            RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
             //// ***********************
@@ -297,6 +299,30 @@ namespace Rock.Jobs
                 rowsUpdated += rockContext.BulkUpdate( groupMembersToUpdate, p => new GroupMember { CommunicationPreference = CommunicationType.RecipientPreference } );
             }
             return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Removes the expired registration sessions.
+        /// </summary>
+        /// <returns></returns>
+        private int RemoveExpiredRegistrationSessions()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var maxDate = RockDateTime.Now.AddDays( -30 );
+
+                var sessionsToDeleteQuery = registrationSessionService
+                    .Queryable()
+                    .Where( rs => rs.ExpirationDateTime < maxDate );
+
+                var count = sessionsToDeleteQuery.Count();
+                registrationSessionService.DeleteRange( sessionsToDeleteQuery );
+
+                rockContext.SaveChanges();
+                return count;
+            }
         }
 
         /// <summary>
