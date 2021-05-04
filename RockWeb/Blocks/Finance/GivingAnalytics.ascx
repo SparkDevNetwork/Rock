@@ -13,9 +13,7 @@
 </script>
 
 <style>
-    .filter-options .rock-check-box-list label,
-    .js-currency-list label,
-    .js-source-list label {
+    .clickable-label label {
         cursor: pointer;
     }
 </style>
@@ -75,8 +73,8 @@
                             </Rock:RockControlWrapper>
                             <Rock:DefinedValuesPicker ID="dvpTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
                         </div>
-                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list clickable-label js-select-all" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list clickable-label js-select-all" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
@@ -302,8 +300,8 @@
                 });
 
                 // Set checkbox labels to toggle child checkboxes when clicked
-                $('div.rock-check-box-list, div.js-currency-list, div.js-source-list').find('label.control-label').prop('data-selected', false);
-                $('div.rock-check-box-list, div.js-currency-list, div.js-source-list').find('label.control-label').on('click', function (e) {
+                $('.js-select-all').find('label.control-label').prop('data-selected', false);
+                $('.js-select-all').find('label.control-label').on('click', function (e) {
                     var selected = $(this).prop('data-selected')
                     $(this).siblings().find('input:checkbox').prop('checked', !selected);
                     $(this).prop('data-selected', !selected);
