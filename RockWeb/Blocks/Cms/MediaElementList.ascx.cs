@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Cms
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
                 gfFilter.ClearFilterClick += gfFilter_ClearFilterClick;
 
-                lTitle.Text = ( _mediaFolder.Name + " Elements" ).FormatAsHtmlTitle();
+                lTitle.Text = ( _mediaFolder.Name + " Media Elements" ).FormatAsHtmlTitle();
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it

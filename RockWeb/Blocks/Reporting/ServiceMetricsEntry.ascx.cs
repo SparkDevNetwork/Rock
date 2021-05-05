@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Reporting
     [CategoryField(
         "Schedule Category",
         Description = "The schedule category to use for list of service times.",
-        AllowMultiple = false,
+        AllowMultiple = true,
         EntityTypeName = "Rock.Model.Schedule",
         IsRequired = true,
         Order = 0,
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 nbMetricsSaved.Text = string.Format( "Your metrics for the {0} service on {1} at the {2} Campus have been saved.",
-                    bddlService.SelectedItem.Text, bddlWeekend.SelectedItem.Text, bddlCampus.SelectedItem.Text );
+     bddlService.SelectedItem.Text, bddlWeekend.SelectedItem.Text, bddlCampus.SelectedItem.Text );
                 nbMetricsSaved.Visible = true;
 
                 BindMetrics();
@@ -610,25 +610,28 @@ namespace RockWeb.Blocks.Reporting
         private List<Schedule> GetServices()
         {
             var services = new List<Schedule>();
-
-            var scheduleCategory = CategoryCache.Get( GetAttributeValue( AttributeKey.ScheduleCategory ).AsGuid() );
-            if ( scheduleCategory != null )
+            var scheduleCategoryGuids = GetAttributeValue( AttributeKey.ScheduleCategory ).SplitDelimitedValues().AsGuidList();
+            foreach ( var scheduleCategoryGuid in scheduleCategoryGuids )
             {
-                using ( var rockContext = new RockContext() )
+                var scheduleCategory = CategoryCache.Get( scheduleCategoryGuid );
+                if ( scheduleCategory != null )
                 {
-                    foreach ( var schedule in new ScheduleService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( s =>
-                            s.IsActive &&
-                            s.CategoryId.HasValue &&
-                            s.CategoryId.Value == scheduleCategory.Id )
-                        .OrderBy( s => s.Name ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        services.Add( schedule );
+                        foreach ( var schedule in new ScheduleService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( s =>
+                                s.IsActive &&
+                                s.CategoryId.HasValue &&
+                                s.CategoryId.Value == scheduleCategory.Id )
+                            .OrderBy( s => s.Name ) )
+                        {
+                            services.Add( schedule );
+                        }
                     }
                 }
             }
-
+           
             return services;
         }
 
