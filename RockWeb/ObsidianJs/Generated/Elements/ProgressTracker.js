@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../Util/Guid", "./JavaScriptAnchor"], function (exports_1, context_1) {
+System.register(["vue", "../Util/Guid"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, Guid_1, JavaScriptAnchor_1, ProgressTrackerItem, ProgressTracker;
+    var vue_1, Guid_1, ProgressTrackerItem, ProgressTracker;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -25,17 +25,11 @@ System.register(["vue", "../Util/Guid", "./JavaScriptAnchor"], function (exports
             },
             function (Guid_1_1) {
                 Guid_1 = Guid_1_1;
-            },
-            function (JavaScriptAnchor_1_1) {
-                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             }
         ],
         execute: function () {
             ProgressTrackerItem = vue_1.defineComponent({
                 name: 'ProgressTrackerItem',
-                components: {
-                    JavaScriptAnchor: JavaScriptAnchor_1.default
-                },
                 props: {
                     isPast: {
                         type: Boolean,
@@ -58,15 +52,14 @@ System.register(["vue", "../Util/Guid", "./JavaScriptAnchor"], function (exports
                         required: true
                     }
                 },
-                template: "\n<li class=\"progress-step progress-tracker-priority\">\n    <JavaScriptAnchor v-if=\"isPast\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon\">\n            <i class=\"fas fa-check\"></i>\n        </div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </JavaScriptAnchor>\n    <div v-else-if=\"isPresent\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon current\"></div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </div>\n    <JavaScriptAnchor v-else-if=\"isFuture\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon upcoming\"></div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </JavaScriptAnchor>\n    <div v-if=\"!isLast\" class=\"progress-tracker-arrow\">\n        <svg viewBox=\"0 0 22 80\" fill=\"none\" preserveAspectRatio=\"none\">\n            <path d=\"M0 -2L20 40L0 82\" vector-effect=\"non-scaling-stroke\" stroke=\"currentcolor\" stroke-linejoin=\"round\" />\n        </svg>\n    </div>\n</li>\n"
+                template: "\n<li class=\"progress-step progress-tracker-priority\">\n    <div v-if=\"isPast\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon\">\n            <i class=\"fas fa-check\"></i>\n        </div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </div>\n    <div v-else-if=\"isPresent\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon current\"></div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </div>\n    <div v-else-if=\"isFuture\" class=\"progress-step-link\">\n        <div class=\"progress-tracker-icon upcoming\"></div>\n        <div class=\"progress-tracker-details\">\n            <span class=\"progress-tracker-title text-truncate\">{{item.Title}}</span>\n            <p class=\"progress-tracker-subtitle text-truncate\">{{item.Subtitle}}</p>\n        </div>\n    </div>\n    <div v-if=\"!isLast\" class=\"progress-tracker-arrow\">\n        <svg viewBox=\"0 0 22 80\" fill=\"none\" preserveAspectRatio=\"none\">\n            <path d=\"M0 -2L20 40L0 82\" vector-effect=\"non-scaling-stroke\" stroke=\"currentcolor\" stroke-linejoin=\"round\" />\n        </svg>\n    </div>\n</li>\n"
             });
             /** Displays a roadmap of successive steps that help the user understand where in a
              *  series of forms they currently are working. */
             ProgressTracker = vue_1.defineComponent({
                 name: 'ProgressTracker',
                 components: {
-                    ProgressTrackerItem: ProgressTrackerItem,
-                    JavaScriptAnchor: JavaScriptAnchor_1.default
+                    ProgressTrackerItem: ProgressTrackerItem
                 },
                 props: {
                     currentIndex: {
@@ -168,7 +161,7 @@ System.register(["vue", "../Util/Guid", "./JavaScriptAnchor"], function (exports
                         }
                     }
                 },
-                template: "\n<nav class=\"progress-tracker\" style=\"margin: 20px auto; max-width: 1200px; width:100%\">\n    <div :id=\"progressTrackerContainerElementId\" class=\"progress-tracker-container d-none d-md-block\">\n        <ul :id=\"progressTrackerElementId\" class=\"progress-steps\">\n            <template v-for=\"(item, index) in items\" :key=\"item.key\">\n                <li v-if=\"isCollapsed(index)\" class=\"progress-step progress-tracker-more\">\n                    <JavaScriptAnchor class=\"progress-step-link\">\n                        <i class=\"fas fa-ellipsis-v\"></i>\n                    </JavaScriptAnchor>\n                    <div class=\"progress-tracker-arrow\">\n                        <svg viewBox=\"0 0 22 80\" fill=\"none\" preserveAspectRatio=\"none\">\n                            <path d=\"M0 -2L20 40L0 82\" vector-effect=\"non-scaling-stroke\" stroke=\"currentcolor\" stroke-linejoin=\"round\" />\n                        </svg>\n                    </div>\n                </li>\n                <ProgressTrackerItem\n                    v-else\n                    :item=\"item\"\n                    :isPast=\"index < currentIndex\"\n                    :isPresent=\"index === currentIndex\"\n                    :isFuture=\"index > currentIndex\"\n                    :isLast=\"index === lastIndex\" />\n            </template>\n        </ul>\n    </div>\n    <slot name=\"aside\" />\n</nav>"
+                template: "\n<nav class=\"progress-tracker\" style=\"margin: 20px auto; max-width: 1200px; width:100%\">\n    <div :id=\"progressTrackerContainerElementId\" class=\"progress-tracker-container d-none d-md-block\">\n        <ul :id=\"progressTrackerElementId\" class=\"progress-steps\">\n            <template v-for=\"(item, index) in items\" :key=\"item.key\">\n                <li v-if=\"isCollapsed(index)\" class=\"progress-step progress-tracker-more\">\n                    <div class=\"progress-step-link\">\n                        <i class=\"fas fa-ellipsis-v\"></i>\n                    </div>\n                    <div class=\"progress-tracker-arrow\">\n                        <svg viewBox=\"0 0 22 80\" fill=\"none\" preserveAspectRatio=\"none\">\n                            <path d=\"M0 -2L20 40L0 82\" vector-effect=\"non-scaling-stroke\" stroke=\"currentcolor\" stroke-linejoin=\"round\" />\n                        </svg>\n                    </div>\n                </li>\n                <ProgressTrackerItem\n                    v-else\n                    :item=\"item\"\n                    :isPast=\"index < currentIndex\"\n                    :isPresent=\"index === currentIndex\"\n                    :isFuture=\"index > currentIndex\"\n                    :isLast=\"index === lastIndex\" />\n            </template>\n        </ul>\n    </div>\n    <slot name=\"aside\" />\n</nav>"
             });
             exports_1("default", ProgressTracker);
         }

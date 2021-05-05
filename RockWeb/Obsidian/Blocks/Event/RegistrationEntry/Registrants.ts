@@ -30,11 +30,12 @@ export default defineComponent( {
     setup()
     {
         return {
-            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
+            registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState,
+            persistSession: inject( 'persistSession' ) as () => Promise<void>
         };
     },
     methods: {
-        onPrevious()
+        async onPrevious()
         {
             if ( this.registrationEntryState.CurrentRegistrantIndex <= 0 )
             {
@@ -45,8 +46,9 @@ export default defineComponent( {
             const lastFormIndex = this.registrationEntryState.ViewModel.RegistrantForms.length - 1;
             this.registrationEntryState.CurrentRegistrantIndex--;
             this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
+            await this.persistSession();
         },
-        onNext()
+        async onNext()
         {
             const lastIndex = this.registrationEntryState.Registrants.length - 1;
 
@@ -58,6 +60,7 @@ export default defineComponent( {
 
             this.registrationEntryState.CurrentRegistrantIndex++;
             this.registrationEntryState.CurrentRegistrantFormIndex = 0;
+            await this.persistSession();
         }
     },
     computed: {

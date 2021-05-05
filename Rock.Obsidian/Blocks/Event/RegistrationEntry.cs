@@ -214,12 +214,12 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
-        /// Persists the specified arguments.
+        /// Gets the payment redirect.
         /// </summary>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult Persist( RegistrationEntryBlockArgs args )
+        public BlockActionResult GetPaymentRedirect( RegistrationEntryBlockArgs args )
         {
             var currentPerson = GetCurrentPerson();
 
@@ -234,32 +234,13 @@ namespace Rock.Obsidian.Blocks.Event
                     return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
                 }
 
-                var sessionData = new RegistrationEntryBlockSession {
-                    AmountToPayNow = args.AmountToPayNow,
-                    DiscountAmount = context.Discount?.RegistrationTemplateDiscount?.DiscountAmount ?? 0,
-                    DiscountCode = context.Discount?.RegistrationTemplateDiscount?.Code,
-                    DiscountPercentage = context.Discount?.RegistrationTemplateDiscount?.DiscountPercentage ?? 0,
-                    FieldValues = args.FieldValues,
-                    GatewayToken = args.GatewayToken,
-                    PreviouslyPaid = 0,
-                    Registrants = args.Registrants,
-                    Registrar = args.Registrar,
-                    RegistrationGuid = context.Registration?.Guid
-                };
+                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
 
-                var registrationSessionService = new RegistrationSessionService( rockContext );
-
-                var registrationSession = new RegistrationSession
+                if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    RegistrationInstanceId = context.RegistrationInstance.Id,
-                    RegistrationData = sessionData.ToJson(),
-                    SessionStartDateTime = RockDateTime.Now,
-                    ExpirationDateTime = RockDateTime.Now.AddMinutes( 30 ),
-                    RegistrationId = context.Registration?.Id,
-                    SessionStatus = SessionStatus.PaymentPending
-                };
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                }
 
-                registrationSessionService.Add( registrationSession );
                 rockContext.SaveChanges();
 
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -267,8 +248,45 @@ namespace Rock.Obsidian.Blocks.Event
                 var discountedCost = costs.Sum( c => c.DiscountedCost );
 
                 // Generate the redirect URL
-                var redirectUrl = GenerateRedirectUrl( rockContext, context, discountedCost, args.Registrar, args.Registrants, registrationSession.Guid );
+                var redirectUrl = GenerateRedirectUrl( rockContext, context, discountedCost, args.Registrar, args.Registrants, session.Guid );
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, redirectUrl );
+            }
+        }
+
+        /// <summary>
+        /// Persists the session.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult PersistSession( RegistrationEntryBlockArgs args )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                var registrationService = new RegistrationService( rockContext );
+                var context = registrationService.GetRegistrationContext( registrationInstanceId, currentPerson, args, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                }
+
+                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                }
+
+                rockContext.SaveChanges();
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                {
+                    session.ExpirationDateTime
+                } );
             }
         }
 
@@ -280,8 +298,6 @@ namespace Rock.Obsidian.Blocks.Event
         [BlockAction]
         public BlockActionResult SubmitRegistration( RegistrationEntryBlockArgs args )
         {
-            var currentPerson = GetCurrentPerson();
-
             using ( var rockContext = new RockContext() )
             {
                 var context = GetContext( rockContext, args, out var errorMessage );
@@ -306,6 +322,78 @@ namespace Rock.Obsidian.Blocks.Event
         #endregion Block Actions
 
         #region Helpers
+
+        /// <summary>
+        /// Upserts the session.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="args">The arguments.</param>
+        private RegistrationSession UpsertSession(
+            RockContext rockContext,
+            RegistrationContext context,
+            RegistrationEntryBlockArgs args,
+            SessionStatus sessionStatus,
+            out string errorMessage )
+        {
+            var sessionData = new RegistrationEntryBlockSession
+            {
+                AmountToPayNow = args.AmountToPayNow,
+                DiscountAmount = context.Discount?.RegistrationTemplateDiscount?.DiscountAmount ?? 0,
+                DiscountCode = context.Discount?.RegistrationTemplateDiscount?.Code,
+                DiscountPercentage = context.Discount?.RegistrationTemplateDiscount?.DiscountPercentage ?? 0,
+                FieldValues = args.FieldValues,
+                GatewayToken = args.GatewayToken,
+                Registrants = args.Registrants,
+                Registrar = args.Registrar,
+                RegistrationGuid = context.Registration?.Guid,
+                RegistrationSessionGuid = args.RegistrationSessionGuid
+            };
+
+            var registrationSessionService = new RegistrationSessionService( rockContext );
+            var registrationSession = registrationSessionService.Get( args.RegistrationSessionGuid );
+            var newExpiration = context.RegistrationInstance.TimeoutLengthMinutes.HasValue ?
+                RockDateTime.Now.AddMinutes( context.RegistrationInstance.TimeoutLengthMinutes.Value ) :
+                RockDateTime.Now.AddDays( 1 );
+
+            var wasExpired = registrationSession != null && registrationSession.ExpirationDateTime < RockDateTime.Now;
+
+            if ( registrationSession is null )
+            {
+                registrationSession = new RegistrationSession
+                {
+                    Guid = args.RegistrationSessionGuid,
+                    RegistrationInstanceId = context.RegistrationInstance.Id,
+                    RegistrationData = sessionData.ToJson(),
+                    SessionStartDateTime = RockDateTime.Now,
+                    ExpirationDateTime = newExpiration,
+                    RegistrationId = context.Registration?.Id,
+                    SessionStatus = sessionStatus
+                };
+
+                registrationSessionService.Add( registrationSession );
+            }
+
+            registrationSession.RegistrationData = sessionData.ToJson();
+            registrationSession.ExpirationDateTime = newExpiration;
+            registrationSession.SessionStatus = sessionStatus;
+
+            var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
+            var newRegistrantCount = wasExpired ?
+                nonWaitlistRegistrantCount :
+                ( nonWaitlistRegistrantCount - registrationSession.RegistrationCount );
+
+            // Handle the possibility that there is a change in the number of registrants in the session
+            if ( context.SpotsRemaining.HasValue && context.SpotsRemaining.Value < newRegistrantCount )
+            {
+                errorMessage = "There is not enough capacity remaining for this many registrants";
+                return registrationSession;
+            }
+
+            errorMessage = string.Empty;
+            registrationSession.RegistrationCount = nonWaitlistRegistrantCount;
+            return registrationSession;
+        }
 
         /// <summary>
         /// Submits the registration.
@@ -585,6 +673,21 @@ namespace Rock.Obsidian.Blocks.Event
                 }
 
                 throw;
+            }
+
+            // Now that the registration is submitted, delete the session if any
+            try
+            {
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var sessionToDeleteQuery = registrationSessionService.Queryable()
+                    .Where( s => s.Guid == args.RegistrationSessionGuid );
+
+                registrationSessionService.DeleteRange( sessionToDeleteQuery );
+                rockContext.SaveChanges();
+            }
+            catch ( Exception e )
+            {
+                ExceptionLogService.LogException( e );
             }
 
             return context.Registration;
@@ -1516,7 +1619,8 @@ namespace Rock.Obsidian.Blocks.Event
                     GatewayToken = PageParameter( PageParameterKey.PaymentToken ),
                     Registrants = session.Registrants,
                     Registrar = session.Registrar,
-                    RegistrationGuid = null
+                    RegistrationGuid = null,
+                    RegistrationSessionGuid = session.RegistrationSessionGuid
                 }, out errorMessage );
 
                 successViewModel = GetSuccessViewModel( context.Registration.Id );
@@ -1682,11 +1786,6 @@ namespace Rock.Obsidian.Blocks.Event
                 ( registrationTemplate.MaxRegistrants ?? int.MaxValue ) :
                 1;
 
-            // Get the number of slots available and if the waitlist is available
-            var waitListEnabled = registrationTemplate.WaitListEnabled;
-            var registrationInstanceService = new RegistrationInstanceService( rockContext );
-            var spotsRemaining = registrationInstanceService.GetSpotsAvailable( context );
-
             // Force the registrar to update their email?
             var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
@@ -1712,6 +1811,7 @@ namespace Rock.Obsidian.Blocks.Event
                 registrationTemplate.DefaultPayment;
 
             // Get the base cost
+            var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var baseCost = registrationInstanceService.GetBaseRegistrantCost( registrationTemplate, registrationInstance );
 
             var viewModel = new RegistrationEntryBlockViewModel
@@ -1739,8 +1839,8 @@ namespace Rock.Obsidian.Blocks.Event
                     Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
-                SpotsRemaining = spotsRemaining,
-                WaitListEnabled = waitListEnabled,
+                SpotsRemaining = context.SpotsRemaining,
+                WaitListEnabled = registrationTemplate.WaitListEnabled,
                 InstanceName = registrationInstance.Name,
                 PluralRegistrationTerm = pluralRegistrationTerm,
                 AmountDueToday = amountDueToday,
@@ -2256,6 +2356,7 @@ namespace Rock.Obsidian.Blocks.Event
             // Create the base args data
             var session = new RegistrationEntryBlockSession
             {
+                RegistrationSessionGuid = Guid.NewGuid(),
                 AmountToPayNow = balanceDue,
                 DiscountCode = registration.DiscountCode,
                 DiscountAmount = registration.DiscountAmount,

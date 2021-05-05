@@ -17,7 +17,6 @@
 
 import { defineComponent, PropType } from 'vue';
 import { newGuid } from '../Util/Guid';
-import JavaScriptAnchor from './JavaScriptAnchor';
 
 /** The data needed to represent an item in a ProgressTracker */
 export interface ProgressTrackerItem
@@ -29,9 +28,6 @@ export interface ProgressTrackerItem
 
 const ProgressTrackerItem = defineComponent( {
     name: 'ProgressTrackerItem',
-    components: {
-        JavaScriptAnchor
-    },
     props: {
         isPast: {
             type: Boolean as PropType<boolean>,
@@ -56,7 +52,7 @@ const ProgressTrackerItem = defineComponent( {
     },
     template: `
 <li class="progress-step progress-tracker-priority">
-    <JavaScriptAnchor v-if="isPast" class="progress-step-link">
+    <div v-if="isPast" class="progress-step-link">
         <div class="progress-tracker-icon">
             <i class="fas fa-check"></i>
         </div>
@@ -64,7 +60,7 @@ const ProgressTrackerItem = defineComponent( {
             <span class="progress-tracker-title text-truncate">{{item.Title}}</span>
             <p class="progress-tracker-subtitle text-truncate">{{item.Subtitle}}</p>
         </div>
-    </JavaScriptAnchor>
+    </div>
     <div v-else-if="isPresent" class="progress-step-link">
         <div class="progress-tracker-icon current"></div>
         <div class="progress-tracker-details">
@@ -72,13 +68,13 @@ const ProgressTrackerItem = defineComponent( {
             <p class="progress-tracker-subtitle text-truncate">{{item.Subtitle}}</p>
         </div>
     </div>
-    <JavaScriptAnchor v-else-if="isFuture" class="progress-step-link">
+    <div v-else-if="isFuture" class="progress-step-link">
         <div class="progress-tracker-icon upcoming"></div>
         <div class="progress-tracker-details">
             <span class="progress-tracker-title text-truncate">{{item.Title}}</span>
             <p class="progress-tracker-subtitle text-truncate">{{item.Subtitle}}</p>
         </div>
-    </JavaScriptAnchor>
+    </div>
     <div v-if="!isLast" class="progress-tracker-arrow">
         <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
             <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />
@@ -93,8 +89,7 @@ const ProgressTrackerItem = defineComponent( {
 const ProgressTracker = defineComponent( {
     name: 'ProgressTracker',
     components: {
-        ProgressTrackerItem,
-        JavaScriptAnchor
+        ProgressTrackerItem
     },
     props: {
         currentIndex: {
@@ -230,9 +225,9 @@ const ProgressTracker = defineComponent( {
         <ul :id="progressTrackerElementId" class="progress-steps">
             <template v-for="(item, index) in items" :key="item.key">
                 <li v-if="isCollapsed(index)" class="progress-step progress-tracker-more">
-                    <JavaScriptAnchor class="progress-step-link">
+                    <div class="progress-step-link">
                         <i class="fas fa-ellipsis-v"></i>
-                    </JavaScriptAnchor>
+                    </div>
                     <div class="progress-tracker-arrow">
                         <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">
                             <path d="M0 -2L20 40L0 82" vector-effect="non-scaling-stroke" stroke="currentcolor" stroke-linejoin="round" />

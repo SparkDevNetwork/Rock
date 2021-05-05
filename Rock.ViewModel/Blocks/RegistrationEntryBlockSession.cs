@@ -26,6 +26,14 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockSession : IRegistrationEntryBlockArgs
     {
         /// <summary>
+        /// Gets or sets the registration session unique identifier.
+        /// </summary>
+        /// <value>
+        /// The registration session unique identifier.
+        /// </value>
+        public Guid RegistrationSessionGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration unique identifier.
         /// </summary>
         /// <value>

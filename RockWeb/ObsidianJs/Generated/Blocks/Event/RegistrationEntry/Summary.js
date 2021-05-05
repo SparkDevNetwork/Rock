@@ -123,6 +123,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                 },
                 setup: function () {
                     return {
+                        getRegistrationEntryBlockArgs: vue_1.inject('getRegistrationEntryBlockArgs'),
                         invokeBlockAction: vue_1.inject('invokeBlockAction'),
                         registrationEntryState: vue_1.inject('registrationEntryState')
                     };
@@ -375,7 +376,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                                         this.loading = true;
                                         if (!this.total) return [3 /*break*/, 4];
                                         if (!this.viewModel.IsRedirectGateway) return [3 /*break*/, 2];
-                                        return [4 /*yield*/, this.persist()];
+                                        return [4 /*yield*/, this.getPaymentRedirect()];
                                     case 1:
                                         redirectUrl = _a.sent();
                                         if (redirectUrl) {
@@ -518,17 +519,6 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         this.loading = false;
                         this.gatewayValidationFields = invalidFields;
                     },
-                    /** Get the common submission or persist args */
-                    getArgs: function () {
-                        return {
-                            GatewayToken: this.registrationEntryState.GatewayToken,
-                            DiscountCode: this.registrationEntryState.DiscountCode,
-                            FieldValues: this.registrationEntryState.RegistrationFieldValues,
-                            Registrar: this.registrationEntryState.Registrar,
-                            Registrants: this.registrationEntryState.Registrants,
-                            AmountToPayNow: this.amountToPayToday
-                        };
-                    },
                     /** Submit the registration to the server */
                     submit: function () {
                         return __awaiter(this, void 0, void 0, function () {
@@ -536,7 +526,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0: return [4 /*yield*/, this.invokeBlockAction('SubmitRegistration', {
-                                            args: this.getArgs()
+                                            args: this.getRegistrationEntryBlockArgs()
                                         })];
                                     case 1:
                                         result = _a.sent();
@@ -552,13 +542,13 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         });
                     },
                     /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
-                    persist: function () {
+                    getPaymentRedirect: function () {
                         return __awaiter(this, void 0, void 0, function () {
                             var result;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.invokeBlockAction('Persist', {
-                                            args: this.getArgs()
+                                    case 0: return [4 /*yield*/, this.invokeBlockAction('GetPaymentRedirect', {
+                                            args: this.getRegistrationEntryBlockArgs()
                                         })];
                                     case 1:
                                         result = _a.sent();

@@ -703,8 +703,7 @@ namespace Rock.Web.UI.Controls
                         _ddlGatewayFunds.SelectedValue = instance.ExternalGatewayFundId.ToString();
                     }
 
-                    _apAccount.SetValue( null );
-                    _apAccount.Visible = false;
+                    _apAccount.Visible = true;
                 }
                 else
                 {

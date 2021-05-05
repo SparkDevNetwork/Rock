@@ -29,8 +29,12 @@ import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTra
 import NumberFilter, { toWord } from '../../Services/Number';
 import StringFilter, { isNullOrWhitespace, toTitleCase } from '../../Services/String';
 import Alert from '../../Elements/Alert';
+import CountdownTimer from '../../Elements/CountdownTimer';
 import RegistrationEntrySuccess from './RegistrationEntry/Success';
 import Page from '../../Util/Page';
+import { RegistrationEntryBlockArgs } from './RegistrationEntry/RegistrationEntryBlockArgs';
+import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
+import JavaScriptAnchor from '../../Elements/JavaScriptAnchor';
 
 export enum Step
 {
@@ -62,6 +66,9 @@ export type RegistrationEntryState = {
     GatewayToken: string;
     DiscountCode: string;
     SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null;
+    AmountToPayToday: number;
+    SessionExpirationDate: Date | null;
+    RegistrationSessionGuid: Guid;
 };
 
 export function getDefaultRegistrantInfo ()
@@ -107,7 +114,9 @@ export default defineComponent( {
         RegistrationEntrySummary,
         RegistrationEntrySuccess,
         ProgressTracker,
-        Alert
+        Alert,
+        CountdownTimer,
+        JavaScriptAnchor
     },
     setup ()
     {
@@ -122,6 +131,7 @@ export default defineComponent( {
 
         const notFound = ref( false );
         const viewModel = inject( 'configurationValues' ) as RegistrationEntryBlockViewModel;
+        const invokeBlockAction = inject( 'invokeBlockAction' ) as InvokeBlockActionFunc;
 
         if ( !viewModel?.RegistrationAttributesStart )
         {
@@ -164,19 +174,68 @@ export default defineComponent( {
             },
             GatewayToken: '',
             DiscountCode: viewModel.Session?.DiscountCode || '',
-            SuccessViewModel: viewModel.SuccessViewModel
+            SuccessViewModel: viewModel.SuccessViewModel,
+            AmountToPayToday: 0,
+            SessionExpirationDate: null,
+            RegistrationSessionGuid: viewModel.Session?.RegistrationSessionGuid || newGuid()
         } as RegistrationEntryState );
 
         provide( 'registrationEntryState', registrationEntryState );
 
+        /** A method to get the args needed for persisting the session */
+        const getRegistrationEntryBlockArgs: () => RegistrationEntryBlockArgs = () =>
+        {
+            return {
+                RegistrationSessionGuid: registrationEntryState.RegistrationSessionGuid,
+                GatewayToken: registrationEntryState.GatewayToken,
+                DiscountCode: registrationEntryState.DiscountCode,
+                FieldValues: registrationEntryState.RegistrationFieldValues,
+                Registrar: registrationEntryState.Registrar,
+                Registrants: registrationEntryState.Registrants,
+                AmountToPayNow: registrationEntryState.AmountToPayToday
+            };
+        };
+
+        provide( 'getRegistrationEntryBlockArgs', getRegistrationEntryBlockArgs );
+
+        /** A method to persist the session */
+        const persistSession: () => Promise<void> = async () =>
+        {
+            const response = await invokeBlockAction<{ ExpirationDateTime: string }>( 'PersistSession', {
+                args: getRegistrationEntryBlockArgs()
+            } );
+
+            if ( response.data )
+            {
+                const asDate = new Date( response.data.ExpirationDateTime );
+                registrationEntryState.SessionExpirationDate = asDate;
+            }
+        };
+
+        provide( 'persistSession', persistSession );
+
+        /** Expose these members and make them available within the rest of the component */
         return {
             viewModel,
             steps,
             registrationEntryState,
-            notFound
+            notFound,
+            persistSession
+        };
+    },
+    data ()
+    {
+        return {
+            secondsBeforeExpiration: -1
         };
     },
     computed: {
+        /** Is the session expired? */
+        isSessionExpired (): boolean
+        {
+            return this.secondsBeforeExpiration === 0 && this.currentStep !== this.steps.success;
+        },
+
         viewModel (): RegistrationEntryBlockViewModel
         {
             return this.registrationEntryState.ViewModel;
@@ -363,50 +422,82 @@ export default defineComponent( {
         }
     },
     methods: {
-        onIntroNext ()
+        /** Restart the registration */
+        restart ()
         {
+            location.reload();
+        },
+
+        async onIntroNext ()
+        {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrationStartPrevious ()
+        async onRegistrationStartPrevious ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.steps.intro;
             Page.smoothScrollToTop();
         },
-        onRegistrationStartNext ()
+        async onRegistrationStartNext ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrantPrevious ()
+        async onRegistrantPrevious ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
             Page.smoothScrollToTop();
         },
-        onRegistrantNext ()
+        async onRegistrantNext ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
-        onRegistrationEndPrevious ()
+        async onRegistrationEndPrevious ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onRegistrationEndNext ()
+        async onRegistrationEndNext ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
-        onSummaryPrevious ()
+        async onSummaryPrevious ()
         {
+            await this.persistSession();
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
-        onSummaryNext ()
+        async onSummaryNext ()
         {
             this.registrationEntryState.CurrentStep = this.steps.success;
             Page.smoothScrollToTop();
+        }
+    },
+    watch: {
+        'registrationEntryState.SessionExpirationDate': {
+            immediate: true,
+            handler ()
+            {
+                if ( !this.registrationEntryState.SessionExpirationDate )
+                {
+                    this.secondsBeforeExpiration = -1;
+                    return;
+                }
+
+                const nowMs = new Date().getTime();
+                const thenMs = this.registrationEntryState.SessionExpirationDate.getTime();
+                const diffMs = thenMs - nowMs;
+                this.secondsBeforeExpiration = diffMs / 1000;
+            }
         }
     },
     mounted ()
@@ -430,13 +521,21 @@ export default defineComponent( {
         <strong>Sorry</strong>
         <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
     </Alert>
+    <Alert v-else-if="isSessionExpired" alertType="warning">
+        Your registration has expired.
+        <JavaScriptAnchor @click="restart">
+            Restart registration
+        </JavaScriptAnchor>
+    </Alert>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
         <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
             <template #aside>
-                <div class="remaining-time flex-grow-1 flex-md-grow-0">
+                <div v-if="secondsBeforeExpiration >= 0 && secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
                     <span class="remaining-time-title">Time left before timeout</span>
-                    <p class="remaining-time-countdown">10:34</p>
+                    <p class="remaining-time-countdown">
+                        <CountdownTimer v-model="secondsBeforeExpiration" />
+                    </p>
                 </div>
             </template>
         </ProgressTracker>

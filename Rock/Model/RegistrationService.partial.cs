@@ -223,7 +223,7 @@ namespace Rock.Model
 
             // Make sure the registration is open
             var isBeforeRegistrationOpens = registrationInstance.StartDateTime.HasValue && registrationInstance.StartDateTime > now;
-            var isAfterRegistrationCloses = registrationInstance.EndDateTime.HasValue && registrationInstance.EndDateTime > now;
+            var isAfterRegistrationCloses = registrationInstance.EndDateTime.HasValue && registrationInstance.EndDateTime < now;
 
             if ( isBeforeRegistrationOpens || isAfterRegistrationCloses )
             {

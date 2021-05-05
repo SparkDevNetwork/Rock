@@ -72,6 +72,7 @@ export default defineComponent( {
     setup()
     {
         return {
+            getRegistrationEntryBlockArgs: inject('getRegistrationEntryBlockArgs') as () => RegistrationEntryBlockArgs,
             invokeBlockAction: inject( 'invokeBlockAction' ) as InvokeBlockActionFunc,
             registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
@@ -411,7 +412,7 @@ export default defineComponent( {
                 // If this is a redirect gateway, then persist and redirect now
                 if ( this.viewModel.IsRedirectGateway )
                 {
-                    const redirectUrl = await this.persist();
+                    const redirectUrl = await this.getPaymentRedirect();
 
                     if ( redirectUrl )
                     {
@@ -554,24 +555,11 @@ export default defineComponent( {
             this.gatewayValidationFields = invalidFields;
         },
 
-        /** Get the common submission or persist args */
-        getArgs (): RegistrationEntryBlockArgs
-        {
-            return {
-                GatewayToken: this.registrationEntryState.GatewayToken,
-                DiscountCode: this.registrationEntryState.DiscountCode,
-                FieldValues: this.registrationEntryState.RegistrationFieldValues,
-                Registrar: this.registrationEntryState.Registrar,
-                Registrants: this.registrationEntryState.Registrants,
-                AmountToPayNow: this.amountToPayToday
-            };
-        },
-
         /** Submit the registration to the server */
         async submit(): Promise<boolean>
         {
             const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>( 'SubmitRegistration', {
-                args: this.getArgs()
+                args: this.getRegistrationEntryBlockArgs()
             } );
 
             if ( result.isError || !result.data )
@@ -587,10 +575,10 @@ export default defineComponent( {
         },
 
         /** Persist the args to the server so the user can be redirected for payment. Returns the redirect URL. */
-        async persist (): Promise<string>
+        async getPaymentRedirect (): Promise<string>
         {
-            const result = await this.invokeBlockAction<string>( 'Persist', {
-                args: this.getArgs()
+            const result = await this.invokeBlockAction<string>( 'GetPaymentRedirect', {
+                args: this.getRegistrationEntryBlockArgs()
             } );
 
             if ( result.isError || !result.data )

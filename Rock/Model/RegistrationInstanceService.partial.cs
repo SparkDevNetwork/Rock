@@ -305,12 +305,18 @@ namespace Rock.Model
         /// <returns></returns>
         public int? GetSpotsAvailable( RegistrationContext context )
         {
-            // Get the number of slots available and if the waitlist is available
-            var waitListEnabled = context.RegistrationTemplate.WaitListEnabled;
+            // Get the number of slots available
             var spotsRemaining = context.RegistrationInstance.MaxAttendees;
+
+            if ( !spotsRemaining.HasValue )
+            {
+                // Unlimited capacity
+                return null;
+            }
 
             if ( spotsRemaining.HasValue )
             {
+                // Check the count of people already registered
                 var otherRegistrantsCount = new RegistrationRegistrantService( Context as RockContext )
                     .Queryable()
                     .AsNoTracking()
@@ -318,7 +324,21 @@ namespace Rock.Model
                         a.Registration.RegistrationInstanceId == context.RegistrationInstance.Id &&
                         !a.Registration.IsTemporary );
 
-                spotsRemaining = spotsRemaining.Value - otherRegistrantsCount;
+                spotsRemaining -= otherRegistrantsCount;
+
+                if ( spotsRemaining > 0 && context.RegistrationInstance.TimeoutIsEnabled )
+                {
+                    // Check the number of people that are in the process of registering right now
+                    var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( s => s.ExpirationDateTime > RockDateTime.Now )
+                        .Select( s => s.RegistrationCount )
+                        .DefaultIfEmpty( 0 )
+                        .Sum();
+
+                    spotsRemaining -= sessionRegistrantCount;
+                }
             }
 
             if ( spotsRemaining < 0 )

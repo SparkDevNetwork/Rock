@@ -102,7 +102,7 @@ namespace Rock.Net
         /// The original page parameters. This is the query string arguments that were included when the current web page
         /// was requested. These are not the query params that are necessarily included in an AJAX or postback request.
         /// </summary>
-        public readonly Dictionary<string, string> OriginalPageParameters = new Dictionary<string, string>();
+        public readonly Dictionary<string, string> OriginalPageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
 
         /// <summary>
         /// Gets the type of the rock client.

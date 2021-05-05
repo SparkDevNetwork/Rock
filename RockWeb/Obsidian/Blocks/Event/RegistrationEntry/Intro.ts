@@ -81,7 +81,7 @@ export default defineComponent( {
                 return '';
             }
 
-            return pluralPhrase( spots, `${spots} more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}` );
+            return pluralPhrase( spots, `more ${this.registrantTerm}`, `more ${this.registrantTermPlural}` );
         },
 
         /** Is this instance full and no one else can register? */

@@ -82,7 +82,7 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                         if (spots === null) {
                             return '';
                         }
-                        return String_1.pluralPhrase(spots, spots + " more " + this.registrantTerm, spots + " more " + this.registrantTermPlural);
+                        return String_1.pluralPhrase(spots, "more " + this.registrantTerm, "more " + this.registrantTermPlural);
                     },
                     /** Is this instance full and no one else can register? */
                     isFull: function () {

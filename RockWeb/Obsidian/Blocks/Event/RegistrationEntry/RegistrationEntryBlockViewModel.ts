@@ -114,7 +114,7 @@ export interface RegistrationEntryBlockViewModel
     HasDiscountsAvailable: boolean,
     RedirectGatewayUrl: string,
     LoginRequiredToRegister: boolean,
-    SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null
+    SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null,
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

@@ -14,9 +14,45 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressTracker", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "./RegistrationEntry/Success", "../../Util/Page"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressTracker", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "../../Elements/CountdownTimer", "./RegistrationEntry/Success", "../../Util/Page", "../../Elements/JavaScriptAnchor"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, Success_1, Page_1, Step;
+    var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    };
+    var __generator = (this && this.__generator) || function (thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (_) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    };
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, CountdownTimer_1, Success_1, Page_1, JavaScriptAnchor_1, Step;
     var __moduleName = context_1 && context_1.id;
     function getDefaultRegistrantInfo() {
         var ownFamilyGuid = Guid_1.newGuid();
@@ -87,11 +123,17 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
             },
+            function (CountdownTimer_1_1) {
+                CountdownTimer_1 = CountdownTimer_1_1;
+            },
             function (Success_1_1) {
                 Success_1 = Success_1_1;
             },
             function (Page_1_1) {
                 Page_1 = Page_1_1;
+            },
+            function (JavaScriptAnchor_1_1) {
+                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
             }
         ],
         execute: function () {
@@ -116,11 +158,14 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     RegistrationEntrySummary: Summary_1.default,
                     RegistrationEntrySuccess: Success_1.default,
                     ProgressTracker: ProgressTracker_1.default,
-                    Alert: Alert_1.default
+                    Alert: Alert_1.default,
+                    CountdownTimer: CountdownTimer_1.default,
+                    JavaScriptAnchor: JavaScriptAnchor_1.default
                 },
                 setup: function () {
                     var _a;
-                    var _b, _c, _d, _e, _f;
+                    var _this = this;
+                    var _b, _c, _d, _e, _f, _g;
                     var steps = (_a = {},
                         _a[Step.intro] = Step.intro,
                         _a[Step.registrationStartForm] = Step.registrationStartForm,
@@ -131,6 +176,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         _a);
                     var notFound = vue_1.ref(false);
                     var viewModel = vue_1.inject('configurationValues');
+                    var invokeBlockAction = vue_1.inject('invokeBlockAction');
                     if (!(viewModel === null || viewModel === void 0 ? void 0 : viewModel.RegistrationAttributesStart)) {
                         notFound.value = true;
                     }
@@ -165,17 +211,63 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         },
                         GatewayToken: '',
                         DiscountCode: ((_f = viewModel.Session) === null || _f === void 0 ? void 0 : _f.DiscountCode) || '',
-                        SuccessViewModel: viewModel.SuccessViewModel
+                        SuccessViewModel: viewModel.SuccessViewModel,
+                        AmountToPayToday: 0,
+                        SessionExpirationDate: null,
+                        RegistrationSessionGuid: ((_g = viewModel.Session) === null || _g === void 0 ? void 0 : _g.RegistrationSessionGuid) || Guid_1.newGuid()
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
+                    /** A method to get the args needed for persisting the session */
+                    var getRegistrationEntryBlockArgs = function () {
+                        return {
+                            RegistrationSessionGuid: registrationEntryState.RegistrationSessionGuid,
+                            GatewayToken: registrationEntryState.GatewayToken,
+                            DiscountCode: registrationEntryState.DiscountCode,
+                            FieldValues: registrationEntryState.RegistrationFieldValues,
+                            Registrar: registrationEntryState.Registrar,
+                            Registrants: registrationEntryState.Registrants,
+                            AmountToPayNow: registrationEntryState.AmountToPayToday
+                        };
+                    };
+                    vue_1.provide('getRegistrationEntryBlockArgs', getRegistrationEntryBlockArgs);
+                    /** A method to persist the session */
+                    var persistSession = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var response, asDate;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, invokeBlockAction('PersistSession', {
+                                        args: getRegistrationEntryBlockArgs()
+                                    })];
+                                case 1:
+                                    response = _a.sent();
+                                    if (response.data) {
+                                        asDate = new Date(response.data.ExpirationDateTime);
+                                        registrationEntryState.SessionExpirationDate = asDate;
+                                    }
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); };
+                    vue_1.provide('persistSession', persistSession);
+                    /** Expose these members and make them available within the rest of the component */
                     return {
                         viewModel: viewModel,
                         steps: steps,
                         registrationEntryState: registrationEntryState,
-                        notFound: notFound
+                        notFound: notFound,
+                        persistSession: persistSession
+                    };
+                },
+                data: function () {
+                    return {
+                        secondsBeforeExpiration: -1
                     };
                 },
                 computed: {
+                    /** Is the session expired? */
+                    isSessionExpired: function () {
+                        return this.secondsBeforeExpiration === 0 && this.currentStep !== this.steps.success;
+                    },
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
                     },
@@ -308,41 +400,145 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     }
                 },
                 methods: {
+                    /** Restart the registration */
+                    restart: function () {
+                        location.reload();
+                    },
                     onIntroNext: function () {
-                        this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrationStartPrevious: function () {
-                        this.registrationEntryState.CurrentStep = this.steps.intro;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.steps.intro;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrationStartNext: function () {
-                        this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrantPrevious: function () {
-                        this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrantNext: function () {
-                        this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrationEndPrevious: function () {
-                        this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onRegistrationEndNext: function () {
-                        this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onSummaryPrevious: function () {
-                        this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 1:
+                                        _a.sent();
+                                        this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
+                                        Page_1.default.smoothScrollToTop();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        });
                     },
                     onSummaryNext: function () {
-                        this.registrationEntryState.CurrentStep = this.steps.success;
-                        Page_1.default.smoothScrollToTop();
+                        return __awaiter(this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                this.registrationEntryState.CurrentStep = this.steps.success;
+                                Page_1.default.smoothScrollToTop();
+                                return [2 /*return*/];
+                            });
+                        });
+                    }
+                },
+                watch: {
+                    'registrationEntryState.SessionExpirationDate': {
+                        immediate: true,
+                        handler: function () {
+                            if (!this.registrationEntryState.SessionExpirationDate) {
+                                this.secondsBeforeExpiration = -1;
+                                return;
+                            }
+                            var nowMs = new Date().getTime();
+                            var thenMs = this.registrationEntryState.SessionExpirationDate.getTime();
+                            var diffMs = thenMs - nowMs;
+                            this.secondsBeforeExpiration = diffMs / 1000;
+                        }
                     }
                 },
                 mounted: function () {
@@ -350,7 +546,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         this.$store.dispatch('redirectToLogin');
                     }
                 },
-                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <template v-else>\n        <h1 v-if=\"currentStep !== steps.intro\" v-html=\"stepTitleHtml\"></h1>\n        <ProgressTracker v-if=\"currentStep !== steps.success\" :items=\"progressTrackerItems\" :currentIndex=\"progressTrackerIndex\">\n            <template #aside>\n                <div class=\"remaining-time flex-grow-1 flex-md-grow-0\">\n                    <span class=\"remaining-time-title\">Time left before timeout</span>\n                    <p class=\"remaining-time-countdown\">10:34</p>\n                </div>\n            </template>\n        </ProgressTracker>\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
+                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isSessionExpired\" alertType=\"warning\">\n        Your registration has expired.\n        <JavaScriptAnchor @click=\"restart\">\n            Restart registration\n        </JavaScriptAnchor>\n    </Alert>\n    <template v-else>\n        <h1 v-if=\"currentStep !== steps.intro\" v-html=\"stepTitleHtml\"></h1>\n        <ProgressTracker v-if=\"currentStep !== steps.success\" :items=\"progressTrackerItems\" :currentIndex=\"progressTrackerIndex\">\n            <template #aside>\n                <div v-if=\"secondsBeforeExpiration >= 0 && secondsBeforeExpiration <= (30 * 60)\" class=\"remaining-time flex-grow-1 flex-md-grow-0\">\n                    <span class=\"remaining-time-title\">Time left before timeout</span>\n                    <p class=\"remaining-time-countdown\">\n                        <CountdownTimer v-model=\"secondsBeforeExpiration\" />\n                    </p>\n                </div>\n            </template>\n        </ProgressTracker>\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
             }));
         }
     };
