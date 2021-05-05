@@ -67,7 +67,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlChannelAttribute" runat="server" Label="Media File Attribute" Required="true" Help="The attribute that the media will be assigned to. The attribute must be of type 'Media File'."/>
+                                <Rock:RockDropDownList ID="ddlChannelAttribute" runat="server" Label="Media File Attribute" Required="true" Help="The attribute that the media will be assigned to. The attribute must be of type 'Media Element'."/>
                             </div>
                         </div>
                     </asp:Panel>

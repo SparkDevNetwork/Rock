@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Cms
         protected void gfAccounts_ApplyFilterClick( object sender, EventArgs e )
         {
             gfAccounts.SaveUserPreference( UserPreferenceKey.AccountType, cpMediaAccountComponent.SelectedValue );
-            gfAccounts.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked.ToString() );
+            gfAccounts.SaveUserPreference( UserPreferenceKey.IncludeInactive, cbShowInactive.Checked ? cbShowInactive.Checked.ToString() : string.Empty );
             gfAccounts.SaveUserPreference( UserPreferenceKey.Name, txtAccountName.Text );
 
             BindGrid();
@@ -196,7 +196,13 @@ namespace RockWeb.Blocks.Cms
                     {
                         e.Value = entityType.FriendlyName;
                     }
-
+                    break;
+                case UserPreferenceKey.IncludeInactive:
+                    var includeFilterValue = e.Value.AsBooleanOrNull();
+                    if ( includeFilterValue.HasValue && includeFilterValue.Value )
+                    {
+                        e.Value = includeFilterValue.Value.ToYesNo();
+                    }
                     break;
             }
         }
