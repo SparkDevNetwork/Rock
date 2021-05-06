@@ -111,6 +111,8 @@ namespace Rock.Rest.Controllers
 
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
+
+                UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }
 
             //
@@ -433,9 +435,12 @@ namespace Rock.Rest.Controllers
                     if ( personalDevice != null && personalDevice.PersonAliasId != userLogin.Person.PrimaryAliasId )
                     {
                         personalDevice.PersonAliasId = userLogin.Person.PrimaryAliasId;
-                        rockContext.SaveChanges();
                     }
                 }
+
+                userLogin.LastLoginDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
 
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );

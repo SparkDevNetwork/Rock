@@ -118,7 +118,7 @@ namespace Rock.Net
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         internal RockRequestContext( HttpRequest request )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = new Uri( request.Url.ToString() );
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
@@ -158,7 +158,7 @@ namespace Rock.Net
         /// <param name="request">The request from an API call that we will initialize from.</param>
         internal RockRequestContext( HttpRequestMessage request )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = request.RequestUri;
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
