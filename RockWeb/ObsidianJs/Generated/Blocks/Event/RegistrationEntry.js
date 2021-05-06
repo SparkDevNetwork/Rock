@@ -231,23 +231,30 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     };
                     vue_1.provide('getRegistrationEntryBlockArgs', getRegistrationEntryBlockArgs);
                     /** A method to persist the session */
-                    var persistSession = function () { return __awaiter(_this, void 0, void 0, function () {
-                        var response, asDate;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, invokeBlockAction('PersistSession', {
-                                        args: getRegistrationEntryBlockArgs()
-                                    })];
-                                case 1:
-                                    response = _a.sent();
-                                    if (response.data) {
-                                        asDate = new Date(response.data.ExpirationDateTime);
-                                        registrationEntryState.SessionExpirationDate = asDate;
-                                    }
-                                    return [2 /*return*/];
-                            }
+                    var persistSession = function (force) {
+                        if (force === void 0) { force = false; }
+                        return __awaiter(_this, void 0, void 0, function () {
+                            var response, asDate;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        if (!force && !viewModel.TimeoutMinutes) {
+                                            return [2 /*return*/];
+                                        }
+                                        return [4 /*yield*/, invokeBlockAction('PersistSession', {
+                                                args: getRegistrationEntryBlockArgs()
+                                            })];
+                                    case 1:
+                                        response = _a.sent();
+                                        if (response.data) {
+                                            asDate = new Date(response.data.ExpirationDateTime);
+                                            registrationEntryState.SessionExpirationDate = asDate;
+                                        }
+                                        return [2 /*return*/];
+                                }
+                            });
                         });
-                    }); };
+                    };
                     vue_1.provide('persistSession', persistSession);
                     /** Expose these members and make them available within the rest of the component */
                     return {
@@ -408,7 +415,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
@@ -422,7 +429,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.steps.intro;
@@ -436,7 +443,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
@@ -450,7 +457,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
@@ -464,7 +471,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
@@ -478,7 +485,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
@@ -492,7 +499,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
@@ -506,7 +513,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         return __awaiter(this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, this.persistSession()];
+                                    case 0: return [4 /*yield*/, this.persistSession(false)];
                                     case 1:
                                         _a.sent();
                                         this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;

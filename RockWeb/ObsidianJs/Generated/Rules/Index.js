@@ -1,6 +1,6 @@
 System.register(["../Services/DateKey", "../Services/Email", "../Services/String", "vee-validate"], function (exports_1, context_1) {
     "use strict";
-    var DateKey_1, Email_1, String_1, vee_validate_1;
+    var DateKey_1, Email_1, String_1, vee_validate_1, isNumeric;
     var __moduleName = context_1 && context_1.id;
     function ruleStringToArray(rulesString) {
         return rulesString.split('|');
@@ -57,35 +57,72 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             }));
             vee_validate_1.defineRule('notequal', (function (value, _a) {
                 var compare = _a[0];
-                if (value !== compare) {
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) !== Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value !== compare) {
+                    return true;
+                }
+                return "must not equal " + compare;
+            }));
+            vee_validate_1.defineRule('equal', (function (value, _a) {
+                var compare = _a[0];
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) === Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value === compare) {
                     return true;
                 }
                 return "must equal " + compare;
             }));
             vee_validate_1.defineRule('gt', (function (value, _a) {
                 var compare = _a[0];
-                if (value > compare) {
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) > Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value > compare) {
                     return true;
                 }
                 return "must be greater than " + compare;
             }));
             vee_validate_1.defineRule('gte', (function (value, _a) {
                 var compare = _a[0];
-                if (value >= compare) {
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) >= Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value >= compare) {
                     return true;
                 }
                 return "must not be less than " + compare;
             }));
             vee_validate_1.defineRule('lt', (function (value, _a) {
                 var compare = _a[0];
-                if (value < compare) {
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) < Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value < compare) {
                     return true;
                 }
                 return "must be less than " + compare;
             }));
             vee_validate_1.defineRule('lte', (function (value, _a) {
                 var compare = _a[0];
-                if (value <= compare) {
+                if (isNumeric(value) && isNumeric(compare)) {
+                    if (Number(value) <= Number(compare)) {
+                        return true;
+                    }
+                }
+                else if (value <= compare) {
                     return true;
                 }
                 return "must not be more than " + compare;
@@ -103,6 +140,23 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
                 }
                 return true;
             }));
+            /**
+             * Is the value numeric?
+             * '0.9' => true
+             * 0.9 => true
+             * '9a' => false
+             * @param value
+             */
+            isNumeric = function (value) {
+                if (typeof value === 'number') {
+                    return true;
+                }
+                if (typeof value === 'string') {
+                    var asNumber = Number(value);
+                    return !isNaN(asNumber) && !isNaN(parseFloat(value));
+                }
+                return false;
+            };
         }
     };
 });

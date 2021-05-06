@@ -93,17 +93,17 @@ System.register([], function (exports_1, context_1) {
     exports_1("toTitleCase", toTitleCase);
     /**
      * Returns a singular or plural phrase depending on if the number is 1.
-     * (0, Cat, Cats) => 0 Cats
+     * (0, Cat, Cats) => Cats
      * (1, Cat, Cats) => Cat
-     * (2, Cat, Cats) => 2 Cats
+     * (2, Cat, Cats) => Cats
      * @param num
      * @param singular
      * @param plural
      */
-    function pluralPhrase(num, singular, plural) {
-        return num === 1 ? singular : num + " " + plural;
+    function pluralConditional(num, singular, plural) {
+        return num === 1 ? singular : plural;
     }
-    exports_1("pluralPhrase", pluralPhrase);
+    exports_1("pluralConditional", pluralConditional);
     return {
         setters: [],
         execute: function () {
@@ -114,7 +114,7 @@ System.register([], function (exports_1, context_1) {
                 isWhitespace: isWhitespace,
                 isEmpty: isEmpty,
                 toTitleCase: toTitleCase,
-                pluralPhrase: pluralPhrase
+                pluralConditional: pluralConditional
             });
         }
     };

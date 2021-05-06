@@ -84,6 +84,7 @@ export enum RegistrarOption
 
 export interface RegistrationEntryBlockViewModel
 {
+    TimeoutMinutes: number | null;
     DoAskForFamily: boolean;
     MaxRegistrants: number;
     RegistrationAttributeTitleStart: string;

@@ -27,6 +27,14 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
+        /// Gets or sets the timeout minutes.
+        /// </summary>
+        /// <value>
+        /// The timeout minutes.
+        /// </value>
+        public int? TimeoutMinutes { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration entry block session. If the registration is existing, then these are the args sent
         /// to create it.
         /// </summary>

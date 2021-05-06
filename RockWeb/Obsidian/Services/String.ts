@@ -111,16 +111,16 @@ export function toTitleCase( str: string | null )
 
 /**
  * Returns a singular or plural phrase depending on if the number is 1.
- * (0, Cat, Cats) => 0 Cats
+ * (0, Cat, Cats) => Cats
  * (1, Cat, Cats) => Cat
- * (2, Cat, Cats) => 2 Cats
+ * (2, Cat, Cats) => Cats
  * @param num
  * @param singular
  * @param plural
  */
-export function pluralPhrase( num: number, singular: string, plural: string )
+export function pluralConditional( num: number, singular: string, plural: string )
 {
-    return num === 1 ? singular : `${num} ${plural}`;
+    return num === 1 ? singular : plural;
 }
 
 export default {
@@ -130,5 +130,5 @@ export default {
     isWhitespace,
     isEmpty,
     toTitleCase,
-    pluralPhrase
+    pluralConditional
 };

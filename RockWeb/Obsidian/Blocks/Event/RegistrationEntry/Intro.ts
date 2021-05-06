@@ -19,7 +19,7 @@ import { defineComponent, inject } from 'vue';
 import Alert from '../../../Elements/Alert';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
-import { toTitleCase, pluralPhrase } from '../../../Services/String';
+import { toTitleCase, pluralConditional } from '../../../Services/String';
 import { getDefaultRegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
@@ -81,7 +81,7 @@ export default defineComponent( {
                 return '';
             }
 
-            return pluralPhrase( spots, `more ${this.registrantTerm}`, `more ${this.registrantTermPlural}` );
+            return pluralConditional( spots, `1 more ${this.registrantTerm}`, `${spots} more ${this.registrantTermPlural}` );
         },
 
         /** Is this instance full and no one else can register? */
@@ -118,7 +118,7 @@ export default defineComponent( {
         }
     },
     methods: {
-        pluralPhrase,
+        pluralConditional,
         onNext()
         {
             // Resize the registrant array to match the selected number
@@ -155,21 +155,7 @@ export default defineComponent( {
     },
     template: `
 <div class="registrationentry-intro">
-    <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
-        <strong>{{registrationTermTitleCase}} Full</strong>
-        <p>
-            This {{registrationTerm}} has reached its capacity. Complete the registration below to be added to the waitlist.
-        </p>
-    </Alert>
-    <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
-        <strong>{{registrationTermTitleCase}} Full</strong>
-        <p>
-            This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
-            The first {{pluralPhrase(viewModel.SpotsRemaining, registrantTerm, registrantTermPlural)}} you add will be registered for {{viewModel.InstanceName}}.
-            The remaining {{pluralPhrase(numberToAddToWaitlist, registrantTerm, registrantTermPlural)}} will be added to the waitlist. 
-        </p>
-    </Alert>
-    <Alert v-else-if="isFull" class="text-left" alertType="warning">
+    <Alert v-if="isFull" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.InstanceName}}. 
@@ -187,6 +173,19 @@ export default defineComponent( {
         <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.MaxRegistrants" />
     </div>
+    <Alert v-if="viewModel.TimeoutMinutes" alertType="info" class="text-left">
+        Due to a high-volume of expected interest your {{registrationTerm}} session will expire after
+        {{pluralConditional(viewModel.TimeoutMinutes, 'a minute', viewModel.TimeoutMinutes + ' minutes')}}
+        of inactivity.
+    </Alert>
+    <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
+        This {{registrationTerm}} has reached its capacity. Complete the registration below to be added to the waitlist.
+    </Alert>
+    <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
+        This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
+        The first {{pluralConditional(viewModel.SpotsRemaining, registrantTerm, viewModel.SpotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.InstanceName}}.
+        The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist. 
+    </Alert>
     <div class="actions text-right">
         <RockButton btnType="primary" @click="onNext">
             Next

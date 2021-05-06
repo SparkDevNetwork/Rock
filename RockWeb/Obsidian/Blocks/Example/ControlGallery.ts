@@ -36,6 +36,8 @@ import Toggle from '../../Elements/Toggle';
 import ItemsWithPreAndPostHtml, { ItemWithPreAndPostHtml } from '../../Elements/ItemsWithPreAndPostHtml';
 import StaticFormControl from '../../Elements/StaticFormControl';
 import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTracker';
+import RockForm from '../../Controls/RockForm';
+import RockButton from '../../Elements/RockButton';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -88,7 +90,9 @@ export default defineComponent({
         Toggle,
         ItemsWithPreAndPostHtml,
         StaticFormControl,
-        ProgressTracker
+        ProgressTracker,
+        RockForm,
+        RockButton
     },
     data() {
         return {
@@ -124,7 +128,10 @@ export default defineComponent({
                 { Key: '7', Title: 'Step 7', Subtitle: 'The seventh step' },
                 { Key: '8', Title: 'Step 8', Subtitle: 'The eighth step' },
                 { Key: 'F', Title: 'Finish', Subtitle: 'The finish' }
-            ] as ProgressTrackerItem[]
+            ] as ProgressTrackerItem[],
+            ruleTestCurrency: 1,
+            ruleTestText: '',
+            rules: 'required'
         };
     },
     methods: {
@@ -336,6 +343,20 @@ export default defineComponent({
             </template>
             <template #result>
                 <ProgressTracker :items="progressTrackerItems" :currentIndex="progressTrackerIndex" />
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult :splitWidth="false">
+            <template #header>
+                Rules
+            </template>
+            <template #gallery>
+                <TextBox label="Rules" v-model="rules" help="Try 'required', 'gte:1', 'lt:2', and others. Combine rules like this: 'required|lt:7|gt:6'" />
+                <hr />
+                <RockForm>
+                    <TextBox label="Text" v-model="ruleTestText" :rules="rules" />
+                    <CurrencyBox label="Currency" v-model="ruleTestCurrency" :rules="rules" />
+                    <RockButton btnType="primary" type="submit">Test</RockButton>
+                </RockForm>
             </template>
         </GalleryAndResult>
     </template>

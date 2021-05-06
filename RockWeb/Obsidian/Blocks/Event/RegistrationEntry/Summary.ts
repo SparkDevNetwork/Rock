@@ -110,9 +110,6 @@ export default defineComponent( {
             /** An error message received from a bad submission */
             submitErrorMessage: '',
 
-            /** The amount that will be paid today */
-            amountToPayToday: 0,
-
             /** The amount already paid in the past (of an existing registration) */
             previouslyPaid: 0
         };
@@ -362,7 +359,7 @@ export default defineComponent( {
         /** After the initial payment, how much will remain of the total? */
         amountRemaining (): number
         {
-            return this.discountedTotal - this.amountToPayToday;
+            return this.discountedTotal - this.registrationEntryState.AmountToPayToday;
         },
 
         /** After the initial payment, how much will remain of the total? Formatted as currency. */
@@ -593,7 +590,7 @@ export default defineComponent( {
     {
         if ( this.viewModel.Session )
         {
-            this.amountToPayToday = this.viewModel.Session.AmountToPayNow;
+            this.registrationEntryState.AmountToPayToday = this.viewModel.Session.AmountToPayNow;
             this.discountCodeInput = this.viewModel.Session.DiscountCode;
             this.discountAmount = this.viewModel.Session.DiscountAmount;
             this.discountPercent = this.viewModel.Session.DiscountPercentage;
@@ -601,11 +598,11 @@ export default defineComponent( {
         }
         else if ( this.viewModel.InitialAmountToPay !== null )
         {
-            this.amountToPayToday = this.viewModel.InitialAmountToPay;
+            this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay;
         }
         else
         {
-            this.amountToPayToday = this.discountAmount;
+            this.registrationEntryState.AmountToPayToday = this.discountAmount;
         }
     },
     watch: {
@@ -741,7 +738,7 @@ export default defineComponent( {
                                 </div>
                             </div>
                         </div>
-                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="amountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
+                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.AmountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
                         <div class="form-group static-control">
                             <label class="control-label">Amount Remaining</label>
                             <div class="control-wrapper">
@@ -763,7 +760,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="gatewayControlModel && total && amountToPayToday" class="well">
+        <div v-if="gatewayControlModel && total && registrationEntryState.AmountToPayToday" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />

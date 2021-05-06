@@ -189,15 +189,6 @@ namespace Rock.Model
                 }
             }
 
-            // Check the spots available
-            var waitListEnabled = context.RegistrationTemplate.WaitListEnabled;
-
-            if ( !waitListEnabled && context.SpotsRemaining.HasValue && context.SpotsRemaining.Value < args.Registrants.Count )
-            {
-                errorMessage = "There are not enough spots left for this many registrants";
-                return null;
-            }
-
             context.Discount = discount;
             context.Registration = registration;
             return context;

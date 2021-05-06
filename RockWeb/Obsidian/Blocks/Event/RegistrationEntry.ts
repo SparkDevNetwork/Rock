@@ -199,8 +199,13 @@ export default defineComponent( {
         provide( 'getRegistrationEntryBlockArgs', getRegistrationEntryBlockArgs );
 
         /** A method to persist the session */
-        const persistSession: () => Promise<void> = async () =>
+        const persistSession: ( force: boolean ) => Promise<void> = async ( force = false ) =>
         {
+            if ( !force && !viewModel.TimeoutMinutes )
+            {
+                return;
+            }
+
             const response = await invokeBlockAction<{ ExpirationDateTime: string }>( 'PersistSession', {
                 args: getRegistrationEntryBlockArgs()
             } );
@@ -430,49 +435,49 @@ export default defineComponent( {
 
         async onIntroNext ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
         async onRegistrationStartPrevious ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.steps.intro;
             Page.smoothScrollToTop();
         },
         async onRegistrationStartNext ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
         async onRegistrantPrevious ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.hasPreAttributes ? this.steps.registrationStartForm : this.steps.intro;
             Page.smoothScrollToTop();
         },
         async onRegistrantNext ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
         async onRegistrationEndPrevious ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },
         async onRegistrationEndNext ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.steps.reviewAndPayment;
             Page.smoothScrollToTop();
         },
         async onSummaryPrevious ()
         {
-            await this.persistSession();
+            await this.persistSession( false );
             this.registrationEntryState.CurrentStep = this.hasPostAttributes ? this.steps.registrationEndForm : this.steps.perRegistrantForms;
             Page.smoothScrollToTop();
         },

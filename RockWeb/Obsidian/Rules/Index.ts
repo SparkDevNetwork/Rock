@@ -79,7 +79,31 @@ defineRule( 'email', ( value =>
 
 defineRule( 'notequal', ( ( value, [ compare ] ) =>
 {
-    if ( value !== compare )
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) !== Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value !== compare )
+    {
+        return true;
+    }
+
+    return `must not equal ${compare}`;
+} ) as ValidationRuleFunction );
+
+defineRule( 'equal', ( ( value, [ compare ] ) =>
+{
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) === Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value === compare )
     {
         return true;
     }
@@ -89,7 +113,14 @@ defineRule( 'notequal', ( ( value, [ compare ] ) =>
 
 defineRule( 'gt', ( ( value, [ compare ] ) =>
 {
-    if ( value > compare )
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) > Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value > compare )
     {
         return true;
     }
@@ -99,7 +130,14 @@ defineRule( 'gt', ( ( value, [ compare ] ) =>
 
 defineRule( 'gte', ( ( value, [ compare ] ) =>
 {
-    if ( value >= compare )
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) >= Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value >= compare )
     {
         return true;
     }
@@ -109,7 +147,14 @@ defineRule( 'gte', ( ( value, [ compare ] ) =>
 
 defineRule( 'lt', ( ( value, [ compare ] ) =>
 {
-    if ( value < compare )
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) < Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value < compare )
     {
         return true;
     }
@@ -119,7 +164,14 @@ defineRule( 'lt', ( ( value, [ compare ] ) =>
 
 defineRule( 'lte', ( ( value, [ compare ] ) =>
 {
-    if ( value <= compare )
+    if ( isNumeric( value ) && isNumeric( compare ) )
+    {
+        if ( Number( value ) <= Number( compare ) )
+        {
+            return true;
+        }
+    }
+    else if ( value <= compare )
     {
         return true;
     }
@@ -148,3 +200,26 @@ defineRule( 'datekey', ( value =>
 
     return true;
 } ) as ValidationRuleFunction );
+
+/**
+ * Is the value numeric?
+ * '0.9' => true
+ * 0.9 => true
+ * '9a' => false
+ * @param value
+ */
+const isNumeric = ( value: unknown ) =>
+{
+    if ( typeof value === 'number' )
+    {
+        return true;
+    }
+
+    if ( typeof value === 'string' )
+    {
+        const asNumber = Number( value );
+        return !isNaN( asNumber ) && !isNaN( parseFloat( value ) );
+    }
+
+    return false;
+};

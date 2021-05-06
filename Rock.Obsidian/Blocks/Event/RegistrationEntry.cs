@@ -1814,6 +1814,21 @@ namespace Rock.Obsidian.Blocks.Event
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var baseCost = registrationInstanceService.GetBaseRegistrantCost( registrationTemplate, registrationInstance );
 
+            // Determine the timeout
+            int? timeoutMinutes = null;
+
+            if ( context.SpotsRemaining.HasValue && registrationInstance.TimeoutLengthMinutes.HasValue )
+            {
+                var hasMetThreshold =
+                    !registrationInstance.TimeoutThreshold.HasValue ||
+                    context.SpotsRemaining.Value <= registrationInstance.TimeoutThreshold.Value;
+
+                if ( hasMetThreshold )
+                {
+                    timeoutMinutes = registrationInstance.TimeoutLengthMinutes.Value;
+                }
+            }
+
             var viewModel = new RegistrationEntryBlockViewModel
             {
                 RegistrationAttributesStart = beforeAttributes,
@@ -1850,7 +1865,8 @@ namespace Rock.Obsidian.Blocks.Event
                 LoginRequiredToRegister = context.RegistrationTemplate.LoginRequired,
                 Session = session,
                 IsUnauthorized = isUnauthorized,
-                SuccessViewModel = successViewModel
+                SuccessViewModel = successViewModel,
+                TimeoutMinutes = timeoutMinutes
             };
 
             return viewModel;
