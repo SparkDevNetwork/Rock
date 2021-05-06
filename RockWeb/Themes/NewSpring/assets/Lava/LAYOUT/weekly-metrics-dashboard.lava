@@ -106,7 +106,7 @@
 
 
 <!-- SETUP CAMPUS PICKER -->
-{% campus where:'IsActive == true && Public == "Y"' iterator:'campuses' order:''%}
+{% campus where:'IsActive == true && Public == "Y"' iterator:'campuses' sort:'Name' %}
     {% assign campuses = campuses %}
 {% endcampus %}
 
