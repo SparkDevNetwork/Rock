@@ -418,14 +418,18 @@ namespace Rock.Obsidian.Blocks.Event
                 // This is a new registration
                 context.Registration = new Registration
                 {
-                    RegistrationInstanceId = context.RegistrationInstance.Id,
-                    PersonAliasId = currentPerson?.PrimaryAliasId
+                    RegistrationInstanceId = context.RegistrationInstance.Id
                 };
 
                 var registrationService = new RegistrationService( rockContext );
                 registrationService.Add( context.Registration );
                 registrationChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Registration" );
-                registrar = currentPerson;
+
+                if ( context.RegistrationTemplate.RegistrarOption == RegistrarOption.UseLoggedInPerson && currentPerson != null )
+                {
+                    registrar = currentPerson;
+                    context.Registration.PersonAliasId = currentPerson.PrimaryAliasId;
+                }
             }
             else
             {

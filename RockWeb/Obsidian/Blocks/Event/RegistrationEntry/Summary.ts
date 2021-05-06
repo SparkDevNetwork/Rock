@@ -69,15 +69,15 @@ export default defineComponent( {
         CurrencyBox,
         StaticFormControl
     },
-    setup()
+    setup ()
     {
         return {
-            getRegistrationEntryBlockArgs: inject('getRegistrationEntryBlockArgs') as () => RegistrationEntryBlockArgs,
+            getRegistrationEntryBlockArgs: inject( 'getRegistrationEntryBlockArgs' ) as () => RegistrationEntryBlockArgs,
             invokeBlockAction: inject( 'invokeBlockAction' ) as InvokeBlockActionFunc,
             registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
         };
     },
-    data()
+    data ()
     {
         return {
             /** Is there an AJAX call in-flight? */
@@ -111,7 +111,10 @@ export default defineComponent( {
             submitErrorMessage: '',
 
             /** The amount already paid in the past (of an existing registration) */
-            previouslyPaid: 0
+            previouslyPaid: 0,
+
+            /** Should the registrar panel be shown */
+            isRegistrarPanelShown: true
         };
     },
     computed: {
@@ -393,7 +396,7 @@ export default defineComponent( {
     },
     methods: {
         /** User clicked the "previous" button */
-        onPrevious()
+        onPrevious ()
         {
             this.$emit( 'previous' );
         },
@@ -438,7 +441,7 @@ export default defineComponent( {
 
         /** Send a user input discount code to the server so the server can check and send back
          *  the discount amount. */
-        async tryDiscountCode()
+        async tryDiscountCode ()
         {
             this.loading = true;
 
@@ -473,8 +476,10 @@ export default defineComponent( {
         },
 
         /** Prefill in the registrar form fields based on the admin's settings */
-        prefillRegistrar()
+        prefillRegistrar ()
         {
+            this.isRegistrarPanelShown = true;
+
             // If the information is aleady recorded, do not change it
             if ( this.registrar.NickName || this.registrar.LastName || this.registrar.Email )
             {
@@ -503,6 +508,14 @@ export default defineComponent( {
                 this.registrar.NickName = firstRegistrantInfo.FirstName;
                 this.registrar.LastName = firstRegistrantInfo.LastName;
                 this.registrar.Email = firstRegistrantInfo.Email;
+
+                const hasAllInfo = ( !!this.registrar.NickName ) && ( !!this.registrar.LastName ) && ( !!this.registrar.Email );
+
+                if ( hasAllInfo && this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
+                {
+                    this.isRegistrarPanelShown = false;
+                }
+
                 return;
             }
         },
@@ -511,7 +524,7 @@ export default defineComponent( {
          * The gateway indicated success and returned a token
          * @param token
          */
-        async onGatewayControlSuccess( token: string )
+        async onGatewayControlSuccess ( token: string )
         {
             this.registrationEntryState.GatewayToken = token;
             const success = await this.submit();
@@ -534,7 +547,7 @@ export default defineComponent( {
          * The gateway indicated an error
          * @param message
          */
-        onGatewayControlError( message: string )
+        onGatewayControlError ( message: string )
         {
             this.doGatewayControlSubmit = false;
             this.loading = false;
@@ -545,7 +558,7 @@ export default defineComponent( {
          * The gateway wants the user to fix some fields
          * @param invalidFields
          */
-        onGatewayControlValidation( invalidFields: Record<string, string> )
+        onGatewayControlValidation ( invalidFields: Record<string, string> )
         {
             this.doGatewayControlSubmit = false;
             this.loading = false;
@@ -553,7 +566,7 @@ export default defineComponent( {
         },
 
         /** Submit the registration to the server */
-        async submit(): Promise<boolean>
+        async submit (): Promise<boolean>
         {
             const result = await this.invokeBlockAction<RegistrationEntryBlockSuccessViewModel>( 'SubmitRegistration', {
                 args: this.getRegistrationEntryBlockArgs()
@@ -608,7 +621,7 @@ export default defineComponent( {
     watch: {
         currentPerson: {
             immediate: true,
-            handler()
+            handler ()
             {
                 this.prefillRegistrar();
             }
@@ -618,7 +631,7 @@ export default defineComponent( {
 <div class="registrationentry-summary">
     <RockForm @submit="onNext">
 
-        <div class="well">
+        <div v-if="isRegistrarPanelShown" class="well">
             <h4>This Registration Was Completed By</h4>
             <template v-if="useLoggedInPersonForRegistrar">
                 <div class="row">
