@@ -433,7 +433,7 @@ namespace Rock.Model
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
             }
 
-            // Filter past due: Allow other states to go throgh, but "future follow-up" must be due today or already past due
+            // Filter past due: Allow other states to go through, but "future follow-up" must be due today or already past due
             if ( args.IsFutureFollowUpPastDueOnly )
             {
                 var midnight = RockDateTime.Today.AddDays( 1 );
@@ -503,9 +503,7 @@ namespace Rock.Model
                         LastActivityTypeId = cr.LastActivityTypeId,
                         LastActivityDate = cr.LastActivityDate,
                         FollowupDate = cr.FollowupDate,
-                        UserHasDirectAccess = campusIdQuery.Contains( null ) || // Global campus connector
-                            campusIdQuery.Contains( cr.CampusId ) || // In a connector group of the appropriate campus
-                            cr.ConnectorPersonAliasId == currentPersonAliasId,
+                        UserHasDirectAccess = cr.ConnectorPersonAliasId == currentPersonAliasId,
                         CanCurrentUserEdit = cr.CanCurrentUserEdit
                     } )
                     .ToList()
@@ -564,8 +562,8 @@ namespace Rock.Model
             else if ( !canViewAllRequests )
             {
                 // There are some scenarios where the current person can see the request even if the permissions say otherwise:
-                // 1) The person is in a global (no campus) connector group
-                // 2) The person is in the campus specific connector group
+                // 1) Connection Request Security is not enabled, and the person is in a global (no campus) connector group
+                // 2) Connection Request Security is not enabled, and the person is in the campus specific connector group
                 var currentPersonId = currentPerson?.Id;
                 var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunityId, currentPersonId );
 
@@ -798,13 +796,16 @@ namespace Rock.Model
             }
 
             // There are some scenarios where the current person can see the request even if the permissions say otherwise:
-            // 1) The person is in a global (no campus) connector group
-            // 2) The person is in the campus specific connector group
-            var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunity.Id, currentPerson.Id );
-            if ( campusIdQuery.Contains( null ) || // Global campus connector
-                campusIdQuery.Contains( connectionRequest.CampusId ) ) // In a connector group of the appropriate campus
+            if ( !isConnectionRequestSecurityEnabled )
             {
-                return true;
+                // 1) Connection Request Security is not enabled, and the person is in a global (no campus) connector group
+                // 2) Connection Request Security is not enabled, and the person is in the campus specific connector group
+                var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunity.Id, currentPerson.Id );
+                if ( campusIdQuery.Contains( null ) || // Global campus connector
+                    campusIdQuery.Contains( connectionRequest.CampusId ) ) // In a connector group of the appropriate campus
+                {
+                    return true;
+                }
             }
 
             // 3) The person is assigned to the request or the request security allows it and the connection type has EnableRequestSecurity

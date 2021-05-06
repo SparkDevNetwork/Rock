@@ -126,8 +126,8 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
-                        <Rock:UrlLinkBox ID="urlLink" runat="server" Label="Link" ValidationGroup="MediaFile" CssClass="input-width-xxl" Required="true"  />
+                    <div class="col-md-12">
+                        <Rock:UrlLinkBox ID="urlLink" runat="server" Label="Link" ValidationGroup="MediaFile" Required="true"  />
                     </div>
                      <div class="col-md-6">
                          <Rock:RockCheckBox ID="cbAllowDownload" runat="server" Label="Allow Download" ValidationGroup="MediaFile" />
@@ -135,7 +135,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbQuality" runat="server" Label="Quality" Help="A text description of the quality of the video. This is typically used to filter media files when several qualities exist. Examples: HD, SD, 4K." ValidationGroup="MediaFile" CssClass="input-width-md"/>
+                        <Rock:RockDropDownList ID="ddlQuality" runat="server" Label="Quality" Help="This is typically used to filter media files when several qualities exist." Required="true" ValidationGroup="MediaFile" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbFormat" runat="server" Label="Format" Help="The MIME type of the media format." ValidationGroup="MediaFile" CssClass="input-width-lg" />
@@ -165,20 +165,20 @@
                 <asp:ValidationSummary ID="ValidationSummary2" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ThumbnailFile" />
                 <div class="row">
                     <div class="col-md-12">
-                        <Rock:UrlLinkBox ID="urlThumbnailLink" runat="server" Label="Link" ValidationGroup="ThumbnailFile" CssClass="input-width-xxl" Required="true" />
+                        <Rock:UrlLinkBox ID="urlThumbnailLink" runat="server" Label="Link" ValidationGroup="ThumbnailFile" Required="true" />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <Rock:NumberBox ID="nbThumbnailWidth" runat="server" Label="Width" Help="The width in pixels of the thumbnail element." NumberType="Integer" ValidationGroup="ThumbnailFile" CssClass="input-width-md"/>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <Rock:NumberBox ID="nbThumbnailHeight" runat="server" Label="Height" Help="The height in pixels of the thumbnail element." NumberType="Integer" ValidationGroup="ThumbnailFile" CssClass="input-width-md"/>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbThumbnailSize" runat="server" Label="Filesize" NumberType="Integer" Help="The size of the thumbnail file in bytes." ValidationGroup="ThumbnailFile" CssClass="input-width-lg"/>
+                        <Rock:NumberBox ID="nbThumbnailSize" runat="server" Label="Filesize" NumberType="Integer" Help="The size of the thumbnail file in bytes." ValidationGroup="ThumbnailFile" CssClass="input-width-md"/>
                     </div>
                 </div>
             </Content>
