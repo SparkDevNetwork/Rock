@@ -432,7 +432,7 @@ namespace Rock.Model
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
             }
 
-            // Filter past due: Allow other states to go throgh, but "future follow-up" must be due today or already past due
+            // Filter past due: Allow other states to go through, but "future follow-up" must be due today or already past due
             if ( args.IsFutureFollowUpPastDueOnly )
             {
                 var midnight = RockDateTime.Today.AddDays( 1 );
@@ -502,9 +502,7 @@ namespace Rock.Model
                         LastActivityTypeId = cr.LastActivityTypeId,
                         LastActivityDate = cr.LastActivityDate,
                         FollowupDate = cr.FollowupDate,
-                        UserHasDirectAccess = campusIdQuery.Contains( null ) || // Global campus connector
-                            campusIdQuery.Contains( cr.CampusId ) || // In a connector group of the appropriate campus
-                            cr.ConnectorPersonAliasId == currentPersonAliasId,
+                        UserHasDirectAccess = cr.ConnectorPersonAliasId == currentPersonAliasId,
                         CanCurrentUserEdit = cr.CanCurrentUserEdit
                     } )
                     .ToList()
