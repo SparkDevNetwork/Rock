@@ -135,7 +135,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbQuality" runat="server" Label="Quality" Help="A text description of the quality of the video. This is typically used to filter media files when several qualities exist. Examples: HD, SD, 4K." ValidationGroup="MediaFile" CssClass="input-width-md"/>
+                        <Rock:RockDropDownList ID="ddlQuality" runat="server" Label="Quality" Help="This is typically used to filter media files when several qualities exist." Required="true" ValidationGroup="MediaFile" />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbFormat" runat="server" Label="Format" Help="The MIME type of the media format." ValidationGroup="MediaFile" CssClass="input-width-lg" />
