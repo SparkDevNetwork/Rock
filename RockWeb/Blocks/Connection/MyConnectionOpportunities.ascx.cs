@@ -548,7 +548,7 @@ namespace RockWeb.Blocks.Connection
             {
                 var service = new ConnectionRequestService( rockContext );
                 var connectionRequest = service.Get( e.RowKeyId );
-                if ( service.IsAuthorizedToEdit( connectionRequest, CurrentPerson ) )
+                if ( !service.IsAuthorizedToEdit( connectionRequest, CurrentPerson ) )
                 {
                     return;
                 }
