@@ -33,12 +33,30 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of times to checkin for.")]
 
-    [TextField( "Title", "Title to display. Use {0} for family/person name.", false, "{0}", "Text", 5 )]
-    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group/location name.", false, "{0}", "Text", 6 )]
-    [TextField( "Caption", "", false, "Select Time(s)", "Text", 7 )]
+    [TextField( "Sub Title",
+        Key = AttributeKey.SubTitle,
+        Description = "Sub-Title to display. Use {0} for selected group/location name.",
+        IsRequired = false,
+        DefaultValue = "{0}",
+        Category = "Text",
+        Order = 5 )]
+
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Time(s)",
+        Category = "Text",
+        Order = 6 )]
 
     public partial class TimeSelect : CheckInBlock
     {
+
+        private new static class AttributeKey
+        {
+            public const string SubTitle = "SubTitle";
+            public const string Caption = "Caption";
+        }
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -84,7 +102,7 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
+                        lTitle.Text = GetTitleText();
 
                         lbSelect.Text = "Next";
                         lbSelect.Attributes.Add( "data-loading-text", "Loading..." );
@@ -116,8 +134,8 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
-                        lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle"), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
+                        lTitle.Text = GetTitleText();
+                        lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.SubTitle ), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
 
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
@@ -126,7 +144,7 @@ namespace RockWeb.Blocks.CheckIn
                         distinctSchedules = personSchedules;
                     }
 
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     if ( distinctSchedules.Count == 1 )
                     {
@@ -199,6 +217,22 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
         }
+
+        private string GetTitleText()
+        {
+            var selectedIndividuals = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).Select( p => p.Person );
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
+                { LavaMergeFieldName.SelectedIndividuals, selectedIndividuals },
+                { LavaMergeFieldName.CheckinType, CurrentCheckInType.TypeOfCheckin }
+            };
+
+            var timeSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.TimeSelectHeaderLavaTemplate ?? string.Empty;
+            return timeSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
+        }
+
         protected void lbSelect_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )
