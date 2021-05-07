@@ -641,6 +641,19 @@ namespace Rock
             return dateTime.AddDays(daysToAdd);
         }
 
+        /// Converts a <see cref="DateTime"/> that is in <see cref="RockDateTime.OrgTimeZoneInfo"/>
+        /// into a <see cref="DateTimeOffset"/> that is also in the organization time zone.
+        /// </summary>
+        /// <param name="dateTime">The Rock date time.</param>
+        /// <returns>The <see cref="DateTimeOffset"/> instance that specifies the same point in time.</returns>
+        public static DateTimeOffset ToRockDateTimeOffset( this DateTime dateTime )
+        {
+            // We can only apply a time zone offset to an unspecified type.
+            var unspecifiedDateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
+
+            return new DateTimeOffset( unspecifiedDateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( unspecifiedDateTime ) );
+        }
+
         #endregion DateTime Extensions
 
         #region TimeSpan Extensions

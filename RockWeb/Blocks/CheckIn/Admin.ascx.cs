@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
-        private static class AttributeKey
+        private new static class AttributeKey
         {
             public const string AllowManualSetup = "AllowManualSetup";
             public const string EnableLocationSharing = "EnableLocationSharing";

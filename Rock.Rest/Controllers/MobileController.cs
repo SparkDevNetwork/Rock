@@ -89,8 +89,7 @@ namespace Rock.Rest.Controllers
             {
                 RockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber(),
                 LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
-                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person ),
-                TimeZoneOffset = ( int ) TimeZoneInfo.Local.GetUtcOffset( RockDateTime.Now ).TotalMinutes
+                IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
 
             if ( deviceData.DeviceType == DeviceType.Phone )
