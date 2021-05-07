@@ -310,6 +310,13 @@ namespace Rock.Mobile
             // Run Lava on CSS to enable color utilities
             cssStyles = cssStyles.ResolveMergeFields(Lava.LavaHelper.GetCommonMergeFields(null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false }));
 
+            // Get the Rock organization time zone. If not found back to the
+            // OS time zone. If not found just use Greenwich.
+            var timeZoneMapping = NodaTime.TimeZones.TzdbDateTimeZoneSource.Default.WindowsMapping.PrimaryMapping;
+            var timeZoneName = timeZoneMapping.GetValueOrNull( RockDateTime.OrgTimeZoneInfo.Id )
+                ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
+                ?? "GMT";
+
             //
             // Initialize the base update package settings.
             //
@@ -324,7 +331,8 @@ namespace Rock.Mobile
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
                 HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
-                DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically
+                DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically,
+                TimeZone = timeZoneName
             };
 
             //
@@ -446,6 +454,14 @@ namespace Rock.Mobile
                         mobileCampus.PostalCode = campus.Location.PostalCode;
                     }
                 }
+
+                // Get the campus time zone, If not found try the Rock
+                // organization time zone. If not found back to the
+                // OS time zone. If not found just use Greenwich.
+                mobileCampus.TimeZone = timeZoneMapping.GetValueOrNull( campus.TimeZoneId ?? string.Empty )
+                    ?? timeZoneMapping.GetValueOrNull( RockDateTime.OrgTimeZoneInfo.Id )
+                    ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
+                    ?? "GMT";
 
                 package.Campuses.Add( mobileCampus );
             }
