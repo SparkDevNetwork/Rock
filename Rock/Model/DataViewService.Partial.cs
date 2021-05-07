@@ -241,17 +241,6 @@ namespace Rock.Model
                 updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;
             }
 
-            if ( persistedLastRunDurationMilliseconds.HasValue )
-            {
-                updateDataViewStatisticsMsg.PersistedLastRefreshDateTime = RockDateTime.Now;
-                updateDataViewStatisticsMsg.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
-                /*
-                 * If the persisted last run duration is set that means this was called after the expression was
-                 * already evaluated, which in turn already counted the run so we don't want to double count it here.
-                 */
-                updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;
-            }
-
             updateDataViewStatisticsMsg.Send();
         }
 

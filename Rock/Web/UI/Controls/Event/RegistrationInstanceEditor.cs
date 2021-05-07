@@ -899,6 +899,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.ID = this.ID + "_apAccount";
                 _apAccount.Label = "Account";
                 _apAccount.Required = true;
+                _apAccount.DisplayActiveOnly = true;
                 Controls.Add( _apAccount );
 
                 _ppContact = new PersonPicker();
