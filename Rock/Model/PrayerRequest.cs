@@ -115,7 +115,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date that this prayer request was entered.
         /// </value>
         [DataMember]
-        public DateTime EnteredDateTime { get; set; }
+        public DateTime EnteredDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>
         /// Gets or sets the date that the prayer request expires. 
