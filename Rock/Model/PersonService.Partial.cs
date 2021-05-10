@@ -4541,5 +4541,41 @@ FROM (
 
         #endregion Anonymous Giver
 
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( RockContext rockContext = null )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var entityTypeId = EntityTypeCache.GetId<Person>();
+            if ( entityTypeId == null )
+            {
+                return null;
+            }
+
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySetService = new EntitySetService( rockContext );
+            var expirationDate = RockDateTime.Now;
+
+            var mergeRequestQry = entitySetService
+                .Queryable()
+                .Where( es => es.EntityTypeId == entityTypeId )
+                .Where( es => es.EntitySetPurposeValueId == definedValueId )
+                .Where( es => es.ExpireDateTime == null || es.ExpireDateTime > expirationDate );
+
+            return mergeRequestQry;
+        }
     }
 }
