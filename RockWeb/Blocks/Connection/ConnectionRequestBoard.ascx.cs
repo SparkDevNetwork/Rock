@@ -895,7 +895,37 @@ namespace RockWeb.Blocks.Connection
                             !string.IsNullOrWhiteSpace( roleName ) && !string.IsNullOrWhiteSpace( statusName ) ? " " : string.Empty,
                             roleName );
                     }
+
+                    if ( viewModel.PlacementGroupId.HasValue )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.Group = connectionRequest.AssignedGroup;
+                        groupMember.GroupId = viewModel.PlacementGroupId.Value;
+                        groupMember.GroupRole = role;
+                        groupMember.GroupRoleId = viewModel.PlacementGroupId.Value;
+                        groupMember.GroupMemberStatus = viewModel.PlacementGroupMemberStatus.Value;
+
+                        groupMember.LoadAttributes();
+
+                        if ( connectionRequest.AssignedGroupMemberAttributeValues.IsNotNullOrWhiteSpace() )
+                        {
+                            var savedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( connectionRequest.AssignedGroupMemberAttributeValues );
+                            if ( savedValues != null )
+                            {
+                                foreach ( var item in savedValues )
+                                {
+                                    groupMember.SetAttributeValue( item.Key, item.Value );
+                                }
+                            }
+                        }
+
+                        phGroupMemberAttributesView.Controls.Clear();
+                        Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
+                    }
                 }
+
+
+
             }
 
             rightDescList.Add( "Placement Group", placementGroupHtml );
@@ -1226,6 +1256,8 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.LoadAttributes( rockContext );
             avcRequestModalAddEditModeRequest.GetEditValues( connectionRequest );
             connectionRequest.SaveAttributeValues( rockContext );
+
+            _connectionRequest = connectionRequest;
 
             // Add an activity that the connector was assigned (or changed)
             if ( originalConnectorPersonAliasId != newConnectorPersonAliasId )
@@ -2640,6 +2672,13 @@ namespace RockWeb.Blocks.Connection
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
 
+                    if ( connectionRequest.ConnectionOpportunityId == newOpportunityId )
+                    {
+                        nbTranferFailed.Visible = true;
+                        return;
+                    }
+                    nbTranferFailed.Visible = false;
+
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
                     var transferredActivityId = connectionActivityTypeService.Queryable()
                         .Where( t => t.Guid == guid )
@@ -2916,6 +2955,7 @@ namespace RockWeb.Blocks.Connection
 
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_Transfer;
             IsRequestModalAddEditMode = false;
+            nbTranferFailed.Visible = false;
             ShowRequestModal();
         }
 
