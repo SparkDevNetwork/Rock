@@ -679,6 +679,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTransfer_Click( object sender, EventArgs e )
         {
+            nbTranferFailed.Visible = false;
             using ( var rockContext = new RockContext() )
             {
                 var connectionRequestService = new ConnectionRequestService( rockContext );
@@ -888,6 +889,13 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null )
                 {
                     int? newOpportunityId = ddlTransferOpportunity.SelectedValueAsId();
+
+                    if ( connectionRequest.ConnectionOpportunityId == newOpportunityId )
+                    {
+                        nbTranferFailed.Visible = true;
+                        return;
+                    }
+                    nbTranferFailed.Visible = false;
 
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
                     var transferredActivityId = connectionActivityTypeService.Queryable()
@@ -2358,6 +2366,7 @@ namespace RockWeb.Blocks.Connection
         private void BuildGroupMemberAttributes( int? groupId, int? groupMemberRoleId, GroupMemberStatus? groupMemberStatus, bool setValues )
         {
             phGroupMemberAttributes.Controls.Clear();
+            phGroupMemberAttributesView.Controls.Clear();
 
             if ( groupId.HasValue && groupMemberRoleId.HasValue && groupMemberStatus != null )
             {
@@ -2389,6 +2398,7 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         Rock.Attribute.Helper.AddEditControls( groupMember, phGroupMemberAttributes, setValues, BlockValidationGroup, 2 );
+                        Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
                     }
                 }
             }

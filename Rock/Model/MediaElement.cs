@@ -213,10 +213,7 @@ namespace Rock.Model
         /// <param name="entry">The entry that identifies this entity in the change tracker.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == EntityState.Added )
-            {
-                _saveOperationIsAdd = true;
-            }
+            _saveOperationIsAdd = entry.State == EntityState.Added;
 
             base.PreSaveChanges( dbContext, entry );
         }
@@ -230,7 +227,7 @@ namespace Rock.Model
             if ( _saveOperationIsAdd )
             {
                 // We don't need to wait for this to complete.
-                Task.Run( () => MediaElementService.AddSyncedContentChannelItem( this.Id ) );
+                Task.Run( () => MediaElementService.TriggerPostSaveTasks( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

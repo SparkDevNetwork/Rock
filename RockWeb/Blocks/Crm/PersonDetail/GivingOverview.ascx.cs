@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var transactionService = new FinancialTransactionService( rockContext );
             var minMonthlyDate = RockDateTime.Now.StartOfMonth().AddMonths( -35 );
 
-            var allGiftsQuery = transactionService.Queryable()
+            var allGiftsQuery = transactionService.GetGivingAnalyticsSourceTransactionQuery()
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionTypeValueId == contributionType.Id &&
@@ -478,62 +478,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindYearlySummary()
         {
-            var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            if ( contributionType != null )
+            var rockContext = new RockContext();
+            var transactionService = new FinancialTransactionService( rockContext );
+            var qry = transactionService.GetGivingAnalyticsSourceTransactionQuery()
+                .AsNoTracking()
+                .Where( t =>
+                    t.TransactionDateTime.HasValue &&
+                    t.AuthorizedPersonAlias.Person.GivingId == Person.GivingId )
+                .SelectMany( t => t.TransactionDetails.Select( td => new
+                {
+                    TransactionDateTime = t.TransactionDateTime.Value,
+                    td.AccountId,
+                    td.Amount
+                } ) );
+
+            if ( !IsYearlySummaryExpanded )
             {
-                var rockContext = new RockContext();
-                var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var qry = transactionDetailService.Queryable()
-                    .AsNoTracking()
-                    .Where( t =>
-                        t.Transaction.TransactionTypeValueId == contributionType.Id &&
-                        t.Transaction.TransactionDateTime.HasValue &&
-                        t.Transaction.AuthorizedPersonAlias.Person.GivingId == Person.GivingId );
-
-                if ( !IsYearlySummaryExpanded )
-                {
-                    // Only show this current year and last year
-                    var minDate = new DateTime( RockDateTime.Now.Year - 1, 1, 1 );
-                    qry = qry.Where( t => t.Transaction.TransactionDateTime >= minDate );
-                }
-
-                var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
-                    .AsNoTracking()
-                    .ToDictionary( k => k.Id, v => v.Name );
-
-                List<SummaryRecord> summaryList;
-                using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
-                {
-                    summaryList = qry
-                        .GroupBy( a => new { a.Transaction.TransactionDateTime.Value.Year, a.AccountId } )
-                        .Select( t => new SummaryRecord
-                        {
-                            Year = t.Key.Year,
-                            AccountId = t.Key.AccountId,
-                            TotalAmount = t.Sum( d => d.Amount )
-                        } ).OrderByDescending( a => a.Year )
-                        .ToList();
-                }
-
-                var contributionSummaries = new List<ContributionSummary>();
-                foreach ( var item in summaryList.GroupBy( a => a.Year ) )
-                {
-                    var contributionSummary = new ContributionSummary();
-                    contributionSummary.Year = item.Key;
-                    contributionSummary.SummaryRecords = new List<SummaryRecord>();
-                    foreach ( var a in item )
-                    {
-                        a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
-                        contributionSummary.SummaryRecords.Add( a );
-                    }
-
-                    contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
-                    contributionSummaries.Add( contributionSummary );
-                }
-
-                rptYearSummary.DataSource = contributionSummaries;
-                rptYearSummary.DataBind();
+                // Only show this current year and last year
+                var minDate = new DateTime( RockDateTime.Now.Year - 1, 1, 1 );
+                qry = qry.Where( t => t.TransactionDateTime >= minDate );
             }
+
+            var views = qry.ToList();
+
+            var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
+                .AsNoTracking()
+                .ToDictionary( k => k.Id, v => v.Name );
+
+            var summaryList = views
+                .GroupBy( a => new { a.TransactionDateTime.Year, a.AccountId } )
+                .Select( t => new SummaryRecord
+                {
+                    Year = t.Key.Year,
+                    AccountId = t.Key.AccountId,
+                    TotalAmount = t.Sum( d => d.Amount )
+                } ).OrderByDescending( a => a.Year )
+                .ToList();
+
+            var contributionSummaries = new List<ContributionSummary>();
+            foreach ( var item in summaryList.GroupBy( a => a.Year ) )
+            {
+                var contributionSummary = new ContributionSummary();
+                contributionSummary.Year = item.Key;
+                contributionSummary.SummaryRecords = new List<SummaryRecord>();
+                foreach ( var a in item )
+                {
+                    a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
+                    contributionSummary.SummaryRecords.Add( a );
+                }
+
+                contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
+                contributionSummaries.Add( contributionSummary );
+            }
+
+            rptYearSummary.DataSource = contributionSummaries;
+            rptYearSummary.DataBind();
 
             // Show the correct button to expand or collapse
             lbShowLessYearlySummary.Visible = IsYearlySummaryExpanded;

@@ -177,6 +177,8 @@ namespace RockWeb.Blocks.Cms
             mediaFolder.Name = tbName.Text;
             mediaFolder.Description = tbDescription.Text;
             mediaFolder.IsContentChannelSyncEnabled = swEnableContentChannelSync.Checked;
+            mediaFolder.WorkflowTypeId = wtpWorkflowType.SelectedValueAsId();
+
             if ( swEnableContentChannelSync.Checked )
             {
                 var contentChannelId = ContentChannelCache.GetId( ddlContentChannel.SelectedValue.AsGuid() );
@@ -415,6 +417,11 @@ namespace RockWeb.Blocks.Cms
                 descriptionList.Add( "Content Channel Item Status", mediaFolder.ContentChannelItemStatus?.ConvertToString() );
             }
 
+            if ( mediaFolder.WorkflowTypeId.HasValue )
+            {
+                descriptionList.Add( "Workflow Type", mediaFolder.WorkflowType?.Name );
+            }
+
             if ( mediaFolder.Description.IsNotNullOrWhiteSpace() )
             {
                 descriptionList.Add( "Description", mediaFolder.Description );
@@ -444,6 +451,8 @@ namespace RockWeb.Blocks.Cms
 
             tbName.Text = mediaFolder.Name;
             tbDescription.Text = mediaFolder.Description;
+            wtpWorkflowType.SetValue( mediaFolder.WorkflowTypeId );
+
             swEnableContentChannelSync.Checked = mediaFolder.IsContentChannelSyncEnabled;
             swEnableContentChannelSync_CheckedChanged( null, null );
             if ( mediaFolder.IsContentChannelSyncEnabled )

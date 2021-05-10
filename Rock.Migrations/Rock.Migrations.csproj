@@ -109,6 +109,10 @@
     <Compile Include="Migrations\202105071346225_CheckinBlockHeaders.Designer.cs">
       <DependentUpon>202105071346225_CheckinBlockHeaders.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202105101552124_GivingAnalyticsUpdates.cs" />
+    <Compile Include="Migrations\202105101552124_GivingAnalyticsUpdates.Designer.cs">
+      <DependentUpon>202105101552124_GivingAnalyticsUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -494,6 +498,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202105071346225_CheckinBlockHeaders.resx">
       <DependentUpon>202105071346225_CheckinBlockHeaders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105101552124_GivingAnalyticsUpdates.resx">
+      <DependentUpon>202105101552124_GivingAnalyticsUpdates.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
