@@ -99,6 +99,14 @@ namespace Rock.Tests.Integration.Jobs
 
             var lateGiftAlertTypes = new List<FinancialTransactionAlertType> {
                 new FinancialTransactionAlertType {
+                    Id = 1,
+                    Order = 1,
+                    FrequencySensitivityScale = 3,
+                    MaximumDaysSinceLastGift = 35,
+                    ContinueIfMatched = true,
+                    AlertType = AlertType.FollowUp
+                },
+                new FinancialTransactionAlertType {
                     Id = 2,
                     Order = 2,
                     FrequencySensitivityScale = 3,
@@ -749,22 +757,30 @@ namespace Rock.Tests.Integration.Jobs
                         AlertType = AlertType.FollowUp
                     },
                     new FinancialTransactionAlertType {
-                        Id = 3,
+                        Id = 33,
                         Order = 3,
+                        AmountSensitivityScale = 3,
+                        MaximumDaysSinceLastGift = 10,
+                        ContinueIfMatched = true,
+                        AlertType = AlertType.Gratitude
+                    },
+                    new FinancialTransactionAlertType {
+                        Id = 3,
+                        Order = 4,
                         AmountSensitivityScale = 3,
                         ContinueIfMatched = true,
                         AlertType = AlertType.Gratitude
                     },
                     new FinancialTransactionAlertType {
                         Id = 4,
-                        Order = 4,
+                        Order = 5,
                         FrequencySensitivityScale = 2,
                         ContinueIfMatched = true,
                         AlertType = AlertType.Gratitude
                     },
                     new FinancialTransactionAlertType {
                         Id = 5,
-                        Order = 5,
+                        Order = 6,
                         FrequencySensitivityScale = 2,
                         ContinueIfMatched = true,
                         AlertType = AlertType.FollowUp
