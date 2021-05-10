@@ -88,7 +88,7 @@ namespace Rock.Migrations
                 @"Lava template to use for the 'Ability Level Select' check-in block header. The available merge fields are:
 {{ Family }} which is a Group object and is the current family.
 {{ Individual }} which is a Person object and is the current selected person.
-{{ SelectedArea }} is a GroupType object and corrasponds to the selected check-in Area listed in Areas and Groups.",
+{{ SelectedArea }} is a GroupType object and corresponds to the selected check-in Area listed in Areas and Groups.",
                 1058,
                 @"{{ Individual.FullName }}",
                 "1A0F70F8-77F9-4712-A214-C2C4B68736C5",
@@ -164,8 +164,8 @@ namespace Rock.Migrations
                 @"Lava template to use for the 'Group Select' check-in block header. The available merge fields are:
 {{ Family }} which is a Group object and is the current family.
 {{ Individual }} which is a Person object and is the current selected person.
-{{ SelectedArea }} is a GroupType object and corrasponds to the selected check-in Area listed in Areas and Groups.
-{{ SelectedGroup }} is a Group object and corrasponds to the selectged check-in group listed in Areas and Groups.",
+{{ SelectedArea }} is a GroupType object and corresponds to the selected check-in Area listed in Areas and Groups.
+{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups.",
                 1061,
                 @"{% if SelectedSchedule != empty %}
     {{ Individual.FullName }} @ {{ SelectedSchedule.Name }}
@@ -225,7 +225,7 @@ namespace Rock.Migrations
                 @"Lava template to use for the 'Location Select' check-in block header. The available merge fields are:
 {{ Family }} which is a Group object and is the current family.
 {{ Individual }} which is a Person object and is the current selected person.
-{{ SelectedGroup }} is a Group object and corrasponds to the selectged check-in group listed in Areas and Groups.
+{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups.
 {{ SelectedSchedule}} is a Schedule object and is the current selected schedule.",
                 1063,
                 @"{% if SelectedSchedule != empty %}
