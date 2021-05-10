@@ -45,6 +45,7 @@
                         </span>
                     </div>
                 </div>
+
                 <div id="pnlEditDetails" runat="server">
                     <div class="row">
                         <div class="col-md-6">
@@ -53,6 +54,12 @@
                     </div>
 
                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaFolder, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The type of workflow to trigger when a new media element is added to this folder." />
+                        </div>
+                    </div>
 
                     <Rock:Switch ID="swEnableContentChannelSync" runat="server" Text="Enable Content Channel Sync" OnCheckedChanged="swEnableContentChannelSync_CheckedChanged" AutoPostBack="true" />
 
@@ -71,6 +78,7 @@
                             </div>
                         </div>
                     </asp:Panel>
+
                     <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
