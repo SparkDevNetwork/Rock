@@ -313,7 +313,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public int? GivingGroupId { get; set; }
+        public int? GivingGroupId
+        {
+            get
+            {
+                return _givingGroupId;
+            }
+
+            set
+            {
+                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+                _givingGroupId = value;
+            }
+        }
+
+        private int? _givingGroupId;
 
         /// <summary>
         /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
@@ -323,21 +337,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId
-        {
-            get
-            {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                return GivingGroupId.HasValue ?
-                    string.Format( "G{0}", GivingGroupId.Value ) :
-                    string.Format( "P{0}", Id );
-            }
-
-            private set
-            {
-                // don't do anything here since EF uses this for loading
-            }
-        }
+        public string GivingId { get; set; }
 
         /// <summary>
         /// Gets or sets the giving leader's Person Id.
@@ -2016,6 +2016,12 @@ namespace Rock.Model
                 NickName = FirstName;
             }
 
+            // Make sure the GivingId is correct.
+            if ( GivingId != ( GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}" ) )
+            {
+                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+            }
+
             if ( PhotoId.HasValue )
             {
                 var originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
@@ -2256,6 +2262,12 @@ namespace Rock.Model
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
             PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
+
+            // If the person was just added then update the GivingId to prevent "P0" values
+            if ( this.GivingId == "P0" )
+            {
+                PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
+            }
         }
 
         /// <summary>
