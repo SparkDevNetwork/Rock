@@ -94,5 +94,47 @@ Document Value (Level 1): document_2";
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
-    }
+
+        /// <summary>
+        /// The purpose of this test is to document a valid but unexpected behavior of the Assign statement in Liquid.
+        /// The Assign statement either creates or replaces an existing variable of the same name, in the current scope or any higher level scope.
+        /// The nesting level at which an Assign statement first creates an internal variable determines the nesting level of that variable for the entire document.
+        /// This does not align with the scoping rules for other programming languages.
+        /// </summary>
+        [TestMethod]
+        public void ForLoop_InnerLoop_Works()
+        {
+            var input = @"
+{%- for i in (1..3) -%}
+> Outer Loop Value: {{ i }}
+    {%- for j in (1..3) -%}
+--> Inner Loop Value: {{i }}.{{ j }}
+    {%- endfor -%}
+{%- endfor -%}
+";
+
+
+            var expectedOutput = @"
+> Outer Loop Value: 1
+--> Inner Loop Value: 1.1
+--> Inner Loop Value: 1.2
+--> Inner Loop Value: 1.3
+> Outer Loop Value: 2
+--> Inner Loop Value: 2.1
+--> Inner Loop Value: 2.2
+--> Inner Loop Value: 2.3
+> Outer Loop Value: 3
+--> Inner Loop Value: 3.1
+--> Inner Loop Value: 3.2
+--> Inner Loop Value: 3.3
+";
+
+            var mergeFields = new LavaDataDictionary() { { "currentBlock", "context" } };
+
+            var options = new LavaTestRenderOptions { MergeFields = mergeFields };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+}
+
 }

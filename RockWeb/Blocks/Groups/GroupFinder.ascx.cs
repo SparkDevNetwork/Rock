@@ -1095,7 +1095,9 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
-                        lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "MapInfo" ) );
+                        var parseResult = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "MapInfo" ) );
+
+                        lavaTemplate = parseResult.Template;
                     }
 
                     // Add mapitems for all the remaining valid group locations

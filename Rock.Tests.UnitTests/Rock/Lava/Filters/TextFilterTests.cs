@@ -289,7 +289,8 @@ namespace Rock.Tests.UnitTests.Lava
         public void RegExMatch_EmailAddressValidationSucceeds( string input, bool isMatch )
         {
             // This regular expression is the same one used in Rock for email validation.
-            var template = @"{{ '<input>' | RegExMatch:'\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*' }}"
+            // We need to use a capture to store the regex to pass into the filter, because a string literal containing the \w escape sequence will throw a parsing error in Fluid.
+            var template = @"{% capture regex %}\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*{% endcapture %}{{ '<input>' | RegExMatch:regex }}"
                            .Replace( "<input>", input );
 
             TestHelper.AssertTemplateOutput( isMatch.ToString().ToLower(), template );
@@ -301,10 +302,8 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void RegExMatchValue_FindsFirstMatchOnly()
         {
-            // [2020-12-22] DJL - This test passes using DotLiquid - modified "\\" to "\".
-            // May need to verify if Fluid automatically escapes the filter parameter input?
-            TestHelper.AssertTemplateOutput( "12345", @"{{ 'group 12345' | RegExMatchValue:'\d+' }}" );
-            TestHelper.AssertTemplateOutput( "Saturday", @"{{ 'Services on Saturday and Sunday' | RegExMatchValue:'\b\w+day\b' }}" );
+            TestHelper.AssertTemplateOutput( "12345", @"{% capture regex %}\d+{% endcapture %}{{ 'group 12345' | RegExMatchValue:regex }}" );
+            TestHelper.AssertTemplateOutput( "Saturday", @"{% capture regex %}\b\w+day\b{% endcapture %}{{ 'Services on Saturday and Sunday' | RegExMatchValue:regex }}" );
         }
 
         /// <summary>
@@ -314,7 +313,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void RegExMatchValues_FindsAllMatches()
         {
             var template = @"
-{% assign days = 'Services on Saturday and Sunday and now also on Monday!' | RegExMatchValues:'\b\w+day\b' %}
+{% capture regex %}\b\w+day\b{% endcapture %}{% assign days = 'Services on Saturday and Sunday and now also on Monday!' | RegExMatchValues:regex %}
 {% for day in days %}{{ day }},{% endfor %}
 ";
             template = template.Replace( "\n", string.Empty ).Replace( "\r", string.Empty );
@@ -336,7 +335,7 @@ namespace Rock.Tests.UnitTests.Lava
         public void RegExReplace_WithCaptureGroup_EmitsExpectedOutput()
         {
             var template = @"
-{{ 'Hello Ted, how are you?' | RegExReplace:'[Hh]ello (\w+)','Greetings $1' }}
+{% capture regex %}[Hh]ello (\w+){% endcapture %}{{ 'Hello Ted, how are you?' | RegExReplace:regex,'Greetings $1' }}
 ";
 
             TestHelper.AssertTemplateOutput( "Greetings Ted, how are you?", template );
@@ -420,7 +419,7 @@ namespace Rock.Tests.UnitTests.Lava
         [DataTestMethod]
         [DataRow( "Ted Decker    ", "Ted Decker" )]
         [DataRow( "   Ted Decker", "Ted Decker" )]
-        [DataRow( "   Ted Decker    ","Ted Decker")]
+        [DataRow( "   Ted Decker    ", "Ted Decker" )]
         [DataRow( "   ", "" )]
         [DataRow( "", "" )]
         public void Trim_LeadingAndTrailingWhitespaceIsRemoved( string input, string expected )
@@ -439,7 +438,7 @@ namespace Rock.Tests.UnitTests.Lava
             var url = "https://www.rockrms.com/WorkflowEntry/35?PersonId=2";
 
             VerifyUrlPart( url, "host", "", "www.rockrms.com" );
-            VerifyUrlPart( url, "port", "", "443" );            
+            VerifyUrlPart( url, "port", "", "443" );
             VerifyUrlPart( url, "scheme", "", "https" );
             VerifyUrlPart( url, "protocol", "", "https" );
             VerifyUrlPart( url, "localpath", "", "/WorkflowEntry/35" );
@@ -459,7 +458,7 @@ namespace Rock.Tests.UnitTests.Lava
             var url = "https://www.rockrms.com/WorkflowEntry/35?PersonId=2";
 
             var template = "{{ '<url>' | Url:'segments' | Join:'|' }}";
-            
+
             template = template.Replace( "<url>", url );
 
             TestHelper.AssertTemplateOutput( "/|WorkflowEntry/|35", template );
@@ -468,9 +467,9 @@ namespace Rock.Tests.UnitTests.Lava
         private void VerifyUrlPart( string url, string part, string key, string expected )
         {
             var template = "{{ '<url>' | Url:<options> }}";
-            
+
             var options = $"'{part}'";
-            
+
             if ( key != null )
             {
                 options += $",'{key}'";
@@ -481,15 +480,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.AssertTemplateOutput( expected, template );
         }
-
-        /// <summary>
-        /// Success text is appended when input text contains value.
-        /// </summary>
-        //[TestMethod]
-        //public void Url_InputTextContainsValue_SuccessTextIsAppended()
-        //{
-        //    _Helper.AssertTemplateOutput( "Ted, are you interested in baptism?", "{{ 'Ted' | WithFallback:', are', 'Are' }} you interested in baptism?" );
-        //}
 
         /// <summary>
         /// Success text is appended when input text contains value.

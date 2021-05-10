@@ -39,8 +39,6 @@ namespace Rock.Lava.Blocks
         private string _attributesMarkup;
         private bool _renderErrors = true;
 
-        LavaElementAttributes _settings = new LavaElementAttributes();
-
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
@@ -65,15 +63,13 @@ namespace Rock.Lava.Blocks
             {
                 var dataSource = new EventOccurrencesLavaDataSource();
 
-                _settings.ParseFromMarkup( _attributesMarkup, context );
+                var settings = LavaElementAttributes.NewFromMarkup( _attributesMarkup, context );
 
-                var events = dataSource.GetEventOccurrencesForEvent( _settings );
+                var events = dataSource.GetEventOccurrencesForEvent( settings );
 
                 AddLavaMergeFieldsToContext( context, events );
 
                 base.OnRender( context, result );
-
-                //RenderAll( this.NodeList, context, result );
             }
             catch ( Exception ex )
             {

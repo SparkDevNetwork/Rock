@@ -411,7 +411,7 @@ namespace Rock.Lava
         {
             return input == null
                 ? input
-                : input.Titleize();
+                : input.ApplyCase( LetterCasing.Title );
         }
 
         /// <summary>
@@ -3801,7 +3801,9 @@ namespace Rock.Lava
                 input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
             }
 
-            return page.ResolveUrl( input );
+            var url = page.ResolveUrl( input );
+
+            return url;
         }
 
         /// <summary>
@@ -4762,6 +4764,15 @@ namespace Rock.Lava
                 result.Add( "Key", key.GetValue( input, null ).ToString() );
                 result.Add( "Value", value.GetValue( input, null ) );
             }
+            else if ( input is List<object> keyValueList )
+            {
+                // If the input value is a list of two items, assume it is a key/value pair.
+                if ( keyValueList.Count == 2 )
+                {
+                    result.Add( "Key", keyValueList[0].ToStringOrDefault( string.Empty ) );
+                    result.Add( "Value", keyValueList[1] );
+                }
+            }
 
             return result;
         }
@@ -5113,10 +5124,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Where( object input, string filter, object filterValue = null, string comparisonType = null )
         {
-            comparisonType = comparisonType.IsNullOrWhiteSpace() ? "equal" : comparisonType.ToLower();
-            comparisonType = ( comparisonType != "equal" || comparisonType != "notequal" ) ? "equal" : comparisonType;
-
-            if ( filter != null && filterValue != null )
+            if ( filter != null
+                 && filterValue != null )
             {
                 return WhereInternal( input, filter, filterValue, comparisonType );
             }
@@ -5136,71 +5145,69 @@ namespace Rock.Lava
         /// <returns></returns>
         private static object WhereInternal( object input, string filterKey, object filterValue, string comparisonType )
         {
-            if ( input == null )
+            if ( input == null || !( input is IEnumerable ) )
             {
                 return input;
             }
 
-            if ( input is IEnumerable )
+            comparisonType = ( comparisonType ?? "equal" ).ToLower();
+            comparisonType = ( comparisonType == "equal" || comparisonType == "notequal" ) ? comparisonType : "equal";
+
+            var result = new List<object>();
+
+            var engine = LavaEngine.CurrentEngine;
+
+            foreach ( var value in ( (IEnumerable)input ) )
             {
-                var result = new List<object>();
+                ILavaDataDictionary lavaObject = null;
 
-                var engine = LavaEngine.CurrentEngine;
-
-                foreach ( var value in ( (IEnumerable)input ) )
+                if ( value is ILavaDataDictionarySource lavaSource )
                 {
-                    ILavaDataDictionary lavaObject = null;
-
-                    if ( value is ILavaDataDictionarySource lavaSource )
-                    {
-                        lavaObject = lavaSource.GetLavaDataDictionary();
-                    }
-                    else if ( value is ILavaDataDictionary )
-                    {
-                        lavaObject = value as ILavaDataDictionary;
-                    }
-
-                    if ( lavaObject != null )
-                    {
-                        if ( lavaObject.ContainsKey( filterKey )
-                                && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                     || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
-                        {
-                            result.Add( lavaObject );
-                        }
-                    }
-                    else if ( value is IDictionary<string, object> )
-                    {
-                        var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey )
-                                 && ( (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue && comparisonType == "equal"
-                                        || ( (dynamic)dictionaryObject[filterKey] != (dynamic)filterValue && comparisonType == "notequal" ) ) )
-                        {
-                            result.Add( dictionaryObject );
-                        }
-                    }
-                    else if ( value is object )
-                    {
-                        var propertyValue = value.GetPropertyValue( filterKey );
-
-                        // Allow for null checking as an empty string. Could be differing opinions on this...?!
-                        if ( propertyValue.IsNull() )
-                        {
-                            propertyValue = string.Empty;
-                        }
-
-                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
-                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
-                        {
-                            result.Add( value );
-                        }
-                    }
+                    lavaObject = lavaSource.GetLavaDataDictionary();
+                }
+                else if ( value is ILavaDataDictionary )
+                {
+                    lavaObject = value as ILavaDataDictionary;
                 }
 
-                return result;
+                if ( lavaObject != null )
+                {
+                    if ( lavaObject.ContainsKey( filterKey )
+                            && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                    {
+                        result.Add( lavaObject );
+                    }
+                }
+                else if ( value is IDictionary<string, object> )
+                {
+                    var dictionaryObject = value as IDictionary<string, object>;
+                    if ( dictionaryObject.ContainsKey( filterKey )
+                             && ( (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue && comparisonType == "equal"
+                                    || ( (dynamic)dictionaryObject[filterKey] != (dynamic)filterValue && comparisonType == "notequal" ) ) )
+                    {
+                        result.Add( dictionaryObject );
+                    }
+                }
+                else if ( value is object )
+                {
+                    var propertyValue = value.GetPropertyValue( filterKey );
+
+                    // Allow for null checking as an empty string. Could be differing opinions on this...?!
+                    if ( propertyValue.IsNull() )
+                    {
+                        propertyValue = string.Empty;
+                    }
+
+                    if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
+                            || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                    {
+                        result.Add( value );
+                    }
+                }
             }
 
-            return input;
+            return result;
         }
 
         /// <summary>

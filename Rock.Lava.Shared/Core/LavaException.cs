@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using Rock.Common;
 
 namespace Rock.Lava
 {
@@ -33,6 +32,8 @@ namespace Rock.Lava
 
         private string _message;
         private string _details;
+
+        private const string _defaultErrorMessage = "A Lava processing error has occurred.";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LavaException"/> class.
@@ -65,16 +66,26 @@ namespace Rock.Lava
         {
             _message = message;
 
-            _details = details.JoinStrings( "\n" );
+            _details = string.Join( "\n", details );
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LavaException"/> class.
         /// </summary>
         public LavaException( string message, Exception ex )
-            : base( ex.Message, ex.InnerException )
+            : base( ex.Message, ex )
         {
             _message = message;
+            _exception = ex;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LavaException"/> class.
+        /// </summary>
+        public LavaException( Exception ex )
+            : base( _defaultErrorMessage, ex )
+        {
+            _message = _defaultErrorMessage;
             _exception = ex;
         }
 

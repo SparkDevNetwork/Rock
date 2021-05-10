@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Fluid.Parser;
 
 namespace Rock.Lava.Fluid
 {
@@ -25,9 +26,9 @@ namespace Rock.Lava.Fluid
     {
         #region Constructors
 
-        private LavaFluidTemplate _template;
+        private FluidTemplate _template;
 
-        public FluidTemplateProxy( LavaFluidTemplate template )
+        public FluidTemplateProxy( FluidTemplate template )
         {
             _template = template;
         }
@@ -37,7 +38,7 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// Get the Fluid template instance.
         /// </summary>
-        public LavaFluidTemplate FluidTemplate
+        public FluidTemplate FluidTemplate
         {
             get
             {

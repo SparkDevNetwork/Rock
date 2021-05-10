@@ -126,9 +126,11 @@ namespace Rock.Lava.Filters
                 throw new Exception( "Must provide a property to group by." );
             }
 
-            return e.AsQueryable()
+            var groupedList = e.AsQueryable()
                 .GroupBy( x => x.GetPropertyValue( property ) )
                 .ToDictionary( g => g.Key != null ? g.Key.ToString() : string.Empty, g => (object)g.ToList() );
+
+            return groupedList;
         }
 
         /// <summary>
