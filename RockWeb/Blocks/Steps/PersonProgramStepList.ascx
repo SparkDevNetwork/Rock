@@ -66,7 +66,7 @@
                 </asp:Panel><!-- pnlGridView -->
 
                 <asp:Panel runat="server" id="pnlCardView">
-                    <div class="row">
+                    <div class="row d-flex flex-wrap">
                         <asp:repeater id="rStepTypeCards" runat="server" OnItemDataBound="rStepTypeCards_ItemDataBound">
                             <itemtemplate>
                                 <div class="col-steps">
@@ -151,7 +151,7 @@ $( ".step-card" ).each(function( index ) {
 
             $(this).mouseenter(function() {
                 if (scale < .5)  {
-                    $(this).find('.card-add-step-button span').css('position', 'relative').css('transform', 'scale(.75)');
+                    $(this).find('.card-add-step-button span').css('font-size', '.75em');
                 } else {
                     $(this).find('.card-add-step-button span').css('transform', 'translateY(-' + pixelOffset + 'px) scale('+scale+')');
                 }
@@ -159,22 +159,6 @@ $( ".step-card" ).each(function( index ) {
                 $(this).find('.card-add-step-button span').css('transform', '');
             });
             $(this).attr('data-scale', (infoHeight * scale));
-        }
-    } else if ( $(this).hasClass('has-steps') ){
-        var cardHeight = $(this).height(),
-        infoHeight = $(this).find(".card-info").height(),
-        tableHeight = $(this).find(".step-records-table-container").height(),
-        freeSpace = (cardHeight - tableHeight),
-        pixelOffset = Math.floor((cardHeight - tableHeight) / 2);
-
-        if ( (freeSpace - infoHeight) >= 0 ) {
-            // $(this).mouseenter(function() {
-            //     $(this).find('.card-info').css('transform', 'translateY(-' + pixelOffset + 'px)');
-            // }).mouseleave(function() {
-            //     $(this).find('.card-info').css('transform', '');
-            // });
-        } else {
-            console.log('needs resize');
         }
     };
 });
