@@ -3969,6 +3969,79 @@ namespace Rock.Model
 
             return qryWithGradeOffset.Select( a => a.Person );
         }
+
+        /// <summary>
+        /// Calculates whether the person is in an active merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the person is part of merge request; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsPartOfMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.Any() ?? false;
+        }
+
+        /// <summary>
+        /// Gets the merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntitySet GetMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( this Person person, RockContext rockContext = null )
+        {
+            var mergeRequestQry = PersonService
+                .GetMergeRequestQuery( rockContext )
+                .Where( es => es.Items.Any( esi => esi.EntityId == person.Id ) );
+
+            return mergeRequestQry;
+        }
+
+        /// <summary>
+        /// Creates the merge request.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="masterPerson">The master person.</param>
+        /// <returns></returns>
+        public static EntitySet CreateMergeRequest( this Person namelessPerson, Person masterPerson )
+        {
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySet
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                EntitySetPurposeValueId = definedValueId
+            };
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = namelessPerson.Id
+            } );
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = masterPerson.Id
+            } );
+
+            return entitySet;
+        }
     }
 
     #endregion

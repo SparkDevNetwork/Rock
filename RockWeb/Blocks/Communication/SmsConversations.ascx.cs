@@ -691,13 +691,18 @@ namespace RockWeb.Blocks.Communication
             e.Row.AddCssClass( "selected" );
             e.Row.RemoveCssClass( "unread" );
 
-            if ( recipientPerson == null || recipientPerson.IsNameless() )
+            // We're checking nameless person first because we don't need to worry about the rest for non-nameless people.
+            var isRecipientPartOfMergeRequest = recipientPerson.IsNameless() && recipientPerson.IsPartOfMergeRequest();
+
+            if ( recipientPerson == null || ( recipientPerson.IsNameless() && !isRecipientPartOfMergeRequest ) )
             {
                 lbLinkConversation.Visible = true;
+                lbViewMergeRequest.Visible = false;
             }
             else
             {
                 lbLinkConversation.Visible = false;
+                lbViewMergeRequest.Visible = isRecipientPartOfMergeRequest;
             }
 
             PopulatePersonLava( e );
@@ -845,6 +850,7 @@ namespace RockWeb.Blocks.Communication
                     return;
                 }
 
+                EntitySet mergeRequest = null;
                 if ( pnlLinkToExistingPerson.Visible )
                 {
                     var existingPersonId = ppPerson.PersonId;
@@ -854,8 +860,9 @@ namespace RockWeb.Blocks.Communication
                     }
 
                     var existingPerson = personService.Get( existingPersonId.Value );
-
-                    personService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
+                    mergeRequest = namelessPerson.CreateMergeRequest( existingPerson );
+                    var entitySetService = new EntitySetService( rockContext );
+                    entitySetService.Add( mergeRequest );
 
                     rockContext.SaveChanges();
                     hfSelectedRecipientPersonAliasId.Value = existingPerson.PrimaryAliasId.ToString();
@@ -866,11 +873,20 @@ namespace RockWeb.Blocks.Communication
                     var newPerson = new Person();
 
                     newPersonEditor.UpdatePerson( newPerson, rockContext );
-                    personService.MergeNamelessPersonToNewPerson( namelessPerson, newPerson, newPersonEditor.PersonGroupRoleId );
+
+                    personService.Add( newPerson );
+                    rockContext.SaveChanges();
+
+                    mergeRequest = namelessPerson.CreateMergeRequest( newPerson );
+                    var entitySetService = new EntitySetService( rockContext );
+                    entitySetService.Add( mergeRequest );
                     rockContext.SaveChanges();
 
                     hfSelectedRecipientPersonAliasId.Value = newPerson.PrimaryAliasId.ToString();
                 }
+
+                RedirectToMergeRequest( mergeRequest );
+
             }
 
             mdLinkToPerson.Hide();
@@ -889,6 +905,39 @@ namespace RockWeb.Blocks.Communication
         }
 
         #endregion Link Conversation Modal
+
+        /// <summary>
+        /// Handles the Click event of the lbViewMergeRequest control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbViewMergeRequest_Click( object sender, EventArgs e )
+        {
+            var namelessPersonAliasId = hfSelectedRecipientPersonAliasId.Value.AsInteger();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var personAliasService = new PersonAliasService( rockContext );
+                var namelessPerson = personAliasService.GetPerson( namelessPersonAliasId );
+
+                var mergeRequest = namelessPerson.GetMergeRequest( rockContext );
+
+                RedirectToMergeRequest( mergeRequest );
+            }
+        }
+
+        /// <summary>
+        /// Redirects to merge request.
+        /// </summary>
+        /// <param name="mergeRequest">The merge request.</param>
+        private void RedirectToMergeRequest( EntitySet mergeRequest )
+        {
+            if ( mergeRequest != null )
+            {
+                Page.Response.Redirect( string.Format( "~/PersonMerge/{0}", mergeRequest.Id ), false );
+                Context.ApplicationInstance.CompleteRequest();
+            }
+        }
 
         #region Edit Note
 
