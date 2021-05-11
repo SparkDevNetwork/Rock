@@ -61,57 +61,61 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs" />
-    <Compile Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104142217434_Metric_AutoPartitionOnPrimaryCampus.Designer.cs">
       <DependentUpon>202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104161249583_AddForeignCurrencySupport.cs" />
-    <Compile Include="Migrations\202104161249583_AddForeignCurrencySupport.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104161249583_AddForeignCurrencySupport.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104161249583_AddForeignCurrencySupport.Designer.cs">
       <DependentUpon>202104161249583_AddForeignCurrencySupport.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.cs" />
-    <Compile Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104161716420_Definedtype_EnableSecurityOnValues.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104161716420_Definedtype_EnableSecurityOnValues.Designer.cs">
       <DependentUpon>202104161716420_Definedtype_EnableSecurityOnValues.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104262212301_CheckinManagerPhase3.cs" />
-    <Compile Include="Migrations\202104262212301_CheckinManagerPhase3.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104262212301_CheckinManagerPhase3.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104262212301_CheckinManagerPhase3.Designer.cs">
       <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.cs" />
-    <Compile Include="Migrations\202104271544551_AddFinancialStatementTemplate.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271544551_AddFinancialStatementTemplate.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271544551_AddFinancialStatementTemplate.Designer.cs">
       <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104271710211_Rollup_04271.cs" />
-    <Compile Include="Migrations\202104271710211_Rollup_04271.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271710211_Rollup_04271.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271710211_Rollup_04271.Designer.cs">
       <DependentUpon>202104271710211_Rollup_04271.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104271748244_CodeGenerated_0427.cs" />
-    <Compile Include="Migrations\202104271748244_CodeGenerated_0427.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271748244_CodeGenerated_0427.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104271748244_CodeGenerated_0427.Designer.cs">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.cs" />
-    <Compile Include="Migrations\202104282103218_MediaElementModelChanges.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104282103218_MediaElementModelChanges.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104282103218_MediaElementModelChanges.Designer.cs">
       <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104291818024_GroupSalutation.cs" />
-    <Compile Include="Migrations\202104291818024_GroupSalutation.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation.Designer.cs">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.cs" />
-    <Compile Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104302057198_MediaElementModelChangesForWorkflow.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104302057198_MediaElementModelChangesForWorkflow.Designer.cs">
       <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105031946496_ClearPersistedDataStatistics.cs" />
-    <Compile Include="Migrations\202105031946496_ClearPersistedDataStatistics.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105031946496_ClearPersistedDataStatistics.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105031946496_ClearPersistedDataStatistics.Designer.cs">
       <DependentUpon>202105031946496_ClearPersistedDataStatistics.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105071346225_CheckinBlockHeaders.cs" />
-    <Compile Include="Migrations\202105071346225_CheckinBlockHeaders.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105071346225_CheckinBlockHeaders.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105071346225_CheckinBlockHeaders.Designer.cs">
       <DependentUpon>202105071346225_CheckinBlockHeaders.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105101552124_GivingAnalyticsUpdates.cs" />
-    <Compile Include="Migrations\202105101552124_GivingAnalyticsUpdates.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105101552124_GivingAnalyticsUpdates.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105101552124_GivingAnalyticsUpdates.Designer.cs">
       <DependentUpon>202105101552124_GivingAnalyticsUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112037055_Rollup_0510.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112037055_Rollup_0510.Designer.cs">
+      <DependentUpon>202105112037055_Rollup_0510.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.Designer.cs">
@@ -1687,44 +1691,47 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202104142217434_Metric_AutoPartitionOnPrimaryCampus.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104142217434_Metric_AutoPartitionOnPrimaryCampus.resx">
       <DependentUpon>202104142217434_Metric_AutoPartitionOnPrimaryCampus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104161249583_AddForeignCurrencySupport.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104161249583_AddForeignCurrencySupport.resx">
       <DependentUpon>202104161249583_AddForeignCurrencySupport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104161716420_Definedtype_EnableSecurityOnValues.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104161716420_Definedtype_EnableSecurityOnValues.resx">
       <DependentUpon>202104161716420_Definedtype_EnableSecurityOnValues.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104262212301_CheckinManagerPhase3.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104262212301_CheckinManagerPhase3.resx">
       <DependentUpon>202104262212301_CheckinManagerPhase3.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104271544551_AddFinancialStatementTemplate.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104271544551_AddFinancialStatementTemplate.resx">
       <DependentUpon>202104271544551_AddFinancialStatementTemplate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104271710211_Rollup_04271.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104271710211_Rollup_04271.resx">
       <DependentUpon>202104271710211_Rollup_04271.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104271748244_CodeGenerated_0427.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104271748244_CodeGenerated_0427.resx">
       <DependentUpon>202104271748244_CodeGenerated_0427.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104282103218_MediaElementModelChanges.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104282103218_MediaElementModelChanges.resx">
       <DependentUpon>202104282103218_MediaElementModelChanges.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104291818024_GroupSalutation.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation.resx">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202104302057198_MediaElementModelChangesForWorkflow.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104302057198_MediaElementModelChangesForWorkflow.resx">
       <DependentUpon>202104302057198_MediaElementModelChangesForWorkflow.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105031946496_ClearPersistedDataStatistics.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105031946496_ClearPersistedDataStatistics.resx">
       <DependentUpon>202105031946496_ClearPersistedDataStatistics.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105071346225_CheckinBlockHeaders.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105071346225_CheckinBlockHeaders.resx">
       <DependentUpon>202105071346225_CheckinBlockHeaders.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105101552124_GivingAnalyticsUpdates.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105101552124_GivingAnalyticsUpdates.resx">
       <DependentUpon>202105101552124_GivingAnalyticsUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112037055_Rollup_0510.resx">
+      <DependentUpon>202105112037055_Rollup_0510.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202104131841162_Rollup_0413.resx">
       <DependentUpon>202104131841162_Rollup_0413.cs</DependentUpon>
@@ -2919,19 +2926,19 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Migrations\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202104291818024_GroupSalutation_spFinance_ContributionStatementQuery.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spFinance_ContributionStatementQuery.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.0\202008272036178_AddDocumentsToPersonMerge_spCrm_PersonMerge.sql">
