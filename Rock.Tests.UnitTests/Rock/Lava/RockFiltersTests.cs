@@ -1594,9 +1594,9 @@ namespace Rock.Tests.Rock.Lava
                 _lavaEngine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
             }
 
-            var output = _lavaEngine.RenderTemplate( template );
+            var result = _lavaEngine.RenderTemplate( template );
 
-            Assert.That.AreEqual( expected, output );
+            Assert.That.AreEqual( expected, result.Text );
         }
 
         #endregion
