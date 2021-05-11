@@ -69,7 +69,7 @@ namespace Rock.Follow.Event
 
                         var today = RockDateTime.Today;
                         var processDate = today;
-                        if ( !followingEvent.SendOnWeekends )
+                        if ( !followingEvent.SendOnWeekends && nextBirthDay.Value.Date != today )
                         {
                             switch ( today.DayOfWeek )
                             {
