@@ -323,6 +323,7 @@ namespace RockWeb.Blocks.Communication
             var communicationLists = new GroupService( rockContext )
                .Queryable()
                .Where( a => a.GroupTypeId == communicationListGroupTypeId && !commGroupSyncsForDefaultRole.Contains( a.Id ) )
+               .IsActive()
                .ToList();
 
             var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
