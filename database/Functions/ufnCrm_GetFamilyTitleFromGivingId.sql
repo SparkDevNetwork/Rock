@@ -18,7 +18,6 @@
 </doc>
 */
 
-/* #Obsolete# - Family Title can be gotten from Group.GroupSalutation */
 ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitleFromGivingId](@GivingId varchar(31) ) 
 
 RETURNS nvarchar(250) AS

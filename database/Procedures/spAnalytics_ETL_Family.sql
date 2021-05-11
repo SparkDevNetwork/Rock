@@ -79,7 +79,7 @@ BEGIN
         )
     SELECT g.Id [FamilyId]
         ,g.NAME
-        ,g.GroupSalutation
+        ,SUBSTRING(ft.PersonNames, 1, 250) [FamilyTitle]
         ,g.CampusId [CampusId]
         ,(
             SELECT TOP 1 (
@@ -121,7 +121,7 @@ BEGIN
         ,hhpc.Id [HeadOfHouseholdPersonKey]
         ,(
             SELECT CASE max(convert(INT, CASE 
- WHEN av.ValueAsBoolean IS NULL
+     WHEN av.ValueAsBoolean IS NULL
                                     THEN 0
                                 ELSE av.ValueAsBoolean
                                 END))
@@ -159,6 +159,7 @@ BEGIN
             ORDER BY FM.GroupRoleId
                 ,P.Gender
             ) --HeadOfHousehold
+    CROSS APPLY dbo.ufnCrm_GetFamilyTitle(NULL, g.Id, NULL, 0) ft
     WHERE g.GroupTypeId = @GroupTypeFamilyId
     ORDER BY g.Id
 

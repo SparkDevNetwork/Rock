@@ -26,8 +26,6 @@
 	</code>
 </doc>
 */
-
-/* #Obsolete# - Family Title can be gotten from Group.GroupSalutation */
 ALTER FUNCTION [dbo].[ufnCrm_GetFamilyTitle] (
 	@PersonId INT
 	,@GroupId INT
