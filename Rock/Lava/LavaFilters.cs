@@ -2909,7 +2909,15 @@ namespace Rock.Lava
                 return null;
             }
 
-            return Person.GetFamilySalutation( person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator );
+            var args = new Person.CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalfinalSeparator,
+                Separator = separator
+            };
+
+            return Person.CalculateFamilySalutation( person, args );
         }
 
         /// <summary>
