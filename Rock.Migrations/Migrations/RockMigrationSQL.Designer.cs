@@ -2459,5 +2459,42 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE TOP(1) [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105112043293_Rollup_0511_kpi_tooltipdelay {
+            get {
+                return ResourceManager.GetString("_202105112043293_Rollup_0511_kpi_tooltipdelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% capture singleQuote %}&apos;&apos;{% endcapture %}
+        ///{% capture escapedQuote %}\&apos;&apos;{% endcapture %}
+        ///{% assign apiKey = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;GoogleApiKey&apos;&apos; %}
+        ///{% assign url = &apos;&apos;key=&apos;&apos; | Append:apiKey %}
+        ///{% assign id = uniqueid | Replace:&apos;&apos;-&apos;&apos;,&apos;&apos;&apos;&apos; %}
+        ///
+        ///{% if apiKey == &quot;&quot; %}
+        ///    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        ///        There is no Google API key defined. Please add your key under: &apos;&apos;Admin Tools &gt; General Settings &gt; Global Attributes &gt; Google API Key&apos;&apos;.
+        ///    &lt;/div&gt;
+        ///{% endif %}
+        ///
+        ///{ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105112043293_Rollup_0511_mapshortcode {
+            get {
+                return ResourceManager.GetString("_202105112043293_Rollup_0511_mapshortcode", resourceCulture);
+            }
+        }
     }
 }

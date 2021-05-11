@@ -454,4 +454,10 @@
   <data name="_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 12.0\version 1.12.4\202104291818024_groupsalutation_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202105112043293_Rollup_0511_mapshortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105112043293_rollup_0511_mapshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202105112043293_Rollup_0511_kpi_tooltipdelay" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105112043293_rollup_0511_kpi-tooltipdelay.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>
