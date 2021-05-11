@@ -2605,13 +2605,13 @@ namespace Rock.Model
             {
                 var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
 
-                if ( primaryLastName.IsNullOrWhiteSpace() )
-                {
-                    primaryLastName = children.First().LastName;
-                }
-
                 if ( children.Count() > 0 )
                 {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
+
                     foreach ( var child in children )
                     {
                         var firstName = child.NickName;
