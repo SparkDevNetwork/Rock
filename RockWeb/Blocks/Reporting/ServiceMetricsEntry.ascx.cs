@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 nbMetricsSaved.Text = string.Format( "Your metrics for the {0} service on {1} at the {2} Campus have been saved.",
-     bddlService.SelectedItem.Text, bddlWeekend.SelectedItem.Text, bddlCampus.SelectedItem.Text );
+                    bddlService.SelectedItem.Text, bddlWeekend.SelectedItem.Text, bddlCampus.SelectedItem.Text );
                 nbMetricsSaved.Visible = true;
 
                 BindMetrics();
