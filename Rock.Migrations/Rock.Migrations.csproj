@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202105121740046_FinancialStatementTemplate.Designer.cs">
       <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.cs" />
+    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.Designer.cs">
+      <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.Designer.cs">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
@@ -1711,6 +1715,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202105121740046_FinancialStatementTemplate.resx">
       <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.resx">
+      <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.resx">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>

@@ -89,7 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
-            target.FooterSettingsJSON = source.FooterSettingsJSON;
+            target.FooterSettingsJson = source.FooterSettingsJson;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;

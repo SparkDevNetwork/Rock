@@ -81,13 +81,13 @@ namespace Rock.Model
         public string ReportTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the footer template.
+        /// Gets or sets the JSON for <see cref="FooterSettings"/>
         /// </summary>
         /// <value>
         /// The footer template.
         /// </value>
         [DataMember]
-        public string FooterSettingsJSON
+        public string FooterSettingsJson
         {
             get
             {
@@ -101,7 +101,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the report settings.
+        /// Gets or sets the JSON for <see cref="ReportSettings"/>
         /// </summary>
         /// <value>
         /// The report settings.

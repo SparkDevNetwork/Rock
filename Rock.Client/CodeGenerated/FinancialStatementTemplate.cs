@@ -38,7 +38,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public string FooterSettingsJSON { get; set; } = @"{""HtmlFragment"":null}";
+        public string FooterSettingsJson { get; set; } = @"{""HtmlFragment"":null}";
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -100,7 +100,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Description = source.Description;
-            this.FooterSettingsJSON = source.FooterSettingsJSON;
+            this.FooterSettingsJson = source.FooterSettingsJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
