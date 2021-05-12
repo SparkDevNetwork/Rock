@@ -37,9 +37,21 @@
                             </div>
                         </div>
                         <Rock:PanelWidget ID="pwTransactionSettings" runat="server" Title="Transaction Settings" Expanded="true">
-                            <Rock:AccountPicker ID="apTransactionAccounts" runat="server" AllowMultiSelect="true" Label="Accounts for Transactions" Required="true" />
-                            <Rock:DefinedValuesPicker ID="dvpCurrencyTypesCashGifts" runat="server" Label="Currency Types for Cash Gifts" />
-                            <Rock:DefinedValuesPicker ID="dvpCurrencyTypesNonCashGifts" runat="server" Label="Currency Types for Non-Cash Gifts" />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockControlWrapper ID="rcwAccountOptions" runat="server" Label="Accounts">
+                                        <Rock:RockRadioButton ID="rbAllTaxDeductibleAccounts" runat="server" GroupName="gAccountSelection" Text="All Tax Deductible Account" AutoPostBack="true" OnCheckedChanged="rbAllTaxDeductibleAccounts_CheckedChanged" />
+                                        <Rock:RockRadioButton ID="rbUseCustomAccountIds" runat="server" GroupName="gAccountSelection" Text="Custom" AutoPostBack="true" OnCheckedChanged="rbAllTaxDeductibleAccounts_CheckedChanged" />
+                                    </Rock:RockControlWrapper>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <Rock:AccountPicker ID="apTransactionAccountsCustom" runat="server" AllowMultiSelect="true" Label="Selected Accounts" Required="true" />
+                                    <Rock:RockCheckBox ID="cbIncludeChildAccountsCustom" runat="server" Text="Include children of selected accounts" />
+                                </div>
+                            </div>
+                            <Rock:DefinedValuesPicker ID="dvpCurrencyTypesCashGifts" runat="server" Label="Currency Types for Cash Gifts" RepeatColumns="5" />
+                            <Rock:DefinedValuesPicker ID="dvpCurrencyTypesNonCashGifts" runat="server" Label="Currency Types for Non-Cash Gifts" RepeatColumns="5" />
                             <label>Filter Settings</label>
                             <div class="row">
                                 <div class="col-md-6">
@@ -62,10 +74,34 @@
                             </div>
                         </Rock:PanelWidget>
                         <Rock:PanelWidget ID="pwReportSettings" runat="server" Title="Report Settings" Expanded="true">
-                            <Rock:CodeEditor ID="ceReportTemplate" runat="server" Label="Report Template" EditorMode="Lava" EditorHeight="200" />
-                            <Rock:CodeEditor ID="ceFooterTemplate" runat="server" Label="Footer Template" EditorMode="Lava" EditorHeight="200" />
+                            <Rock:CodeEditor ID="ceReportTemplate" runat="server" Label="Report Template" EditorMode="Lava" EditorHeight="400" />
+                            <Rock:CodeEditor ID="ceFooterTemplateHtmlFragment" runat="server" Label="Footer Template" EditorMode="Lava" EditorHeight="200">
+                                <HelpBlock>PDF Merge fields include: <code>{page} {total-pages} {url} {date} {time} {html-title} {pdf-title}</code>
+                                    Specify these as a span class to include them in the footer. For example:
+                                    <code>&lt;span class='total-pages'&gt;&lt;span&gt;</code></HelpBlock>
+                            </Rock:CodeEditor>
+
                             <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" />
-                            <Rock:KeyValueList ID="kvlPDFObjectSettings" runat="server" Label="PDF Object Settings (Advanced)" />
+
+                        </Rock:PanelWidget>
+
+                        <Rock:PanelWidget ID="pwPDFSettings" runat="server" Title="PDF Settings" Expanded="false">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <Rock:NumberBox ID="nbMarginTopMillimeters" runat="server" Label="Top Margin (mm)" />
+                                </div>
+                                <div class="col-md-3">
+                                    <Rock:NumberBox ID="nbMarginBottomMillimeters" runat="server" Label="Bottom Margin (mm)" />
+                                </div>
+                                <div class="col-md-3">
+                                    <Rock:NumberBox ID="nbMarginLeftMillimeters" runat="server" Label="Left Margin (mm)" />
+                                </div>
+                                <div class="col-md-3">
+                                    <Rock:NumberBox ID="nbMarginRightMillimeters" runat="server" Label="Right Margin (mm)" />
+                                </div>
+                            </div>
+
+                            <Rock:RockDropDownList ID="ddlPaperSize" runat="server" Label="Page Size" />
                         </Rock:PanelWidget>
                         <div class="actions">
                             <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />

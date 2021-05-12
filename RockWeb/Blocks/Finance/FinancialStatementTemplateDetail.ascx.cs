@@ -20,9 +20,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -35,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the statement template." )]
 
-    public partial class FinancialStatementTemplateDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class FinancialStatementTemplateDetail : RockBlock, IDetailBlock
     {
         #region Page Parameter Keys
 
@@ -158,23 +160,43 @@ namespace RockWeb.Blocks.Finance
             financialStatementTemplate.Description = tbDescription.Text;
             financialStatementTemplate.IsActive = cbIsActive.Checked;
             financialStatementTemplate.ReportTemplate = ceReportTemplate.Text;
-            financialStatementTemplate.FooterTemplate = ceFooterTemplate.Text;
 
-            financialStatementTemplate.ReportSetting.PDFObjectSettings = kvlPDFObjectSettings.Value.AsDictionary();
-            var transactionSetting = new Rock.Finance.ReportSetting.TransactionSetting();
+            financialStatementTemplate.FooterSettings.HtmlFragment = ceFooterTemplateHtmlFragment.Text;
+
+            financialStatementTemplate.ReportSettings.PDFSettings.MarginTopMillimeters = nbMarginTopMillimeters.IntegerValue;
+            financialStatementTemplate.ReportSettings.PDFSettings.MarginBottomMillimeters = nbMarginBottomMillimeters.IntegerValue;
+            financialStatementTemplate.ReportSettings.PDFSettings.MarginLeftMillimeters = nbMarginLeftMillimeters.IntegerValue;
+            financialStatementTemplate.ReportSettings.PDFSettings.MarginRightMillimeters = nbMarginRightMillimeters.IntegerValue;
+            financialStatementTemplate.ReportSettings.PDFSettings.PaperSize = ddlPaperSize.SelectedValueAsEnumOrNull<FinancialStatementTemplatePDFSettingsPaperSize>() ?? FinancialStatementTemplatePDFSettingsPaperSize.Letter;
+
+            var transactionSetting = new FinancialStatementTemplateTransactionSetting();
+
             transactionSetting.CurrencyTypesForCashGiftIds = dvpCurrencyTypesCashGifts.SelectedValuesAsInt;
             transactionSetting.CurrencyTypesForNonCashIds = dvpCurrencyTypesNonCashGifts.SelectedValuesAsInt;
             transactionSetting.TransactionTypeIds = dvpTransactionType.SelectedValuesAsInt;
-            transactionSetting.HideRefundedTransaction = cbHideRefundedTransactions.Checked;
+            transactionSetting.HideRefundedTransactions = cbHideRefundedTransactions.Checked;
             transactionSetting.HideCorrectedTransactionOnSameData = cbHideModifiedTransactions.Checked;
-            transactionSetting.AccountIds = apTransactionAccounts.SelectedValuesAsInt().ToList();
-            financialStatementTemplate.ReportSetting.TransactionSetting = transactionSetting;
+            if ( rbAllTaxDeductibleAccounts.Checked )
+            {
+                transactionSetting.AccountSelectionOption = FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
+            }
+            else if ( cbIncludeChildAccountsCustom.Checked )
+            {
+                transactionSetting.AccountSelectionOption = FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
+            }
+            else
+            {
+                transactionSetting.AccountSelectionOption = FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccounts;
+            }
 
-            var pledgeSetting = new Rock.Finance.ReportSetting.PledgeSetting();
+            transactionSetting.SelectedAccountIds = apTransactionAccountsCustom.SelectedValuesAsInt().ToList();
+            financialStatementTemplate.ReportSettings.TransactionSettings = transactionSetting;
+
+            var pledgeSetting = new FinancialStatementTemplatePledgeSettings();
             pledgeSetting.IncludeGiftsToChildAccounts = cbIncludeGiftsToChildAccounts.Checked;
             pledgeSetting.IncludeNonCashGifts = cbIncludeNonCashGifts.Checked;
             pledgeSetting.AccountIds = apPledgeAccounts.SelectedValuesAsInt().ToList();
-            financialStatementTemplate.ReportSetting.PledgeSetting = pledgeSetting;
+            financialStatementTemplate.ReportSettings.PledgeSettings = pledgeSetting;
 
             int? existingLogoId = null;
             if ( financialStatementTemplate.LogoBinaryFileId != imgTemplateLogo.BinaryFileId )
@@ -223,6 +245,17 @@ namespace RockWeb.Blocks.Finance
             {
                 NavigateToParentPage();
             }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the rbAllTaxDeductibleAccounts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rbAllTaxDeductibleAccounts_CheckedChanged( object sender, EventArgs e )
+        {
+            apTransactionAccountsCustom.Visible = rbUseCustomAccountIds.Checked;
+            cbIncludeChildAccountsCustom.Visible = apTransactionAccountsCustom.Visible;
         }
 
         #endregion Events
@@ -297,15 +330,27 @@ namespace RockWeb.Blocks.Finance
                 hlInactive.Visible = !financialStatementTemplate.IsActive;
                 lAccountDescription.Text = financialStatementTemplate.Description;
 
-                var transactionSettings = financialStatementTemplate.ReportSetting.TransactionSetting;
+                var transactionSettings = financialStatementTemplate.ReportSettings.TransactionSettings;
                 var detailsDescription = new DescriptionList();
-                if ( transactionSettings.AccountIds.Any() )
+                if ( transactionSettings.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts )
                 {
-                    var accountList = new FinancialAccountService( new RockContext() )
-                        .GetByIds( transactionSettings.AccountIds )
-                        .Where( a => a.IsActive )
-                        .ToList();
-                    detailsDescription.Add( "Accounts for Transactions", accountList.Select( a => a.Name ).ToList().AsDelimited("<br/>") );
+                    var accountList = new FinancialAccountService( new RockContext() ).Queryable()
+                            .Where( a => a.IsActive && a.IsTaxDeductible )
+                            .ToList();
+
+                    detailsDescription.Add( "Accounts for Transactions", accountList.Select( a => a.Name ).ToList().AsDelimited( "<br/>" ) );
+                }
+                else
+                {
+
+                    if ( transactionSettings.SelectedAccountIds.Any() )
+                    {
+                        var accountList = new FinancialAccountService( new RockContext() )
+                            .GetByIds( transactionSettings.SelectedAccountIds )
+                            .Where( a => a.IsActive )
+                            .ToList();
+                        detailsDescription.Add( "Accounts for Transactions", accountList.Select( a => a.Name ).ToList().AsDelimited( "<br/>" ) );
+                    }
                 }
 
                 if ( transactionSettings.TransactionTypeIds.Any() )
@@ -344,26 +389,37 @@ namespace RockWeb.Blocks.Finance
             cbIsActive.Checked = financialStatementTemplate.IsActive;
             tbDescription.Text = financialStatementTemplate.Description;
             ceReportTemplate.Text = financialStatementTemplate.ReportTemplate;
-            ceFooterTemplate.Text = financialStatementTemplate.FooterTemplate;
+            ceFooterTemplateHtmlFragment.Text = financialStatementTemplate.FooterSettings.HtmlFragment;
             imgTemplateLogo.BinaryFileId = financialStatementTemplate.LogoBinaryFileId;
-            kvlPDFObjectSettings.Value = financialStatementTemplate.ReportSetting.PDFObjectSettings.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+            nbMarginTopMillimeters.IntegerValue = financialStatementTemplate.ReportSettings.PDFSettings.MarginTopMillimeters;
+            nbMarginBottomMillimeters.IntegerValue = financialStatementTemplate.ReportSettings.PDFSettings.MarginBottomMillimeters;
+            nbMarginLeftMillimeters.IntegerValue = financialStatementTemplate.ReportSettings.PDFSettings.MarginLeftMillimeters;
+            nbMarginRightMillimeters.IntegerValue = financialStatementTemplate.ReportSettings.PDFSettings.MarginRightMillimeters;
+            ddlPaperSize.SetValue( financialStatementTemplate.ReportSettings.PDFSettings.PaperSize.ConvertToInt() );
 
-            var transactionSetting = financialStatementTemplate.ReportSetting.TransactionSetting;
-            cbHideRefundedTransactions.Checked = transactionSetting.HideRefundedTransaction;
+            var transactionSetting = financialStatementTemplate.ReportSettings.TransactionSettings;
+            cbHideRefundedTransactions.Checked = transactionSetting.HideRefundedTransactions;
             cbHideModifiedTransactions.Checked = transactionSetting.HideCorrectedTransactionOnSameData;
             dvpCurrencyTypesCashGifts.SetValues( transactionSetting.CurrencyTypesForCashGiftIds );
             dvpCurrencyTypesNonCashGifts.SetValues( transactionSetting.CurrencyTypesForNonCashIds );
             dvpTransactionType.SetValues( transactionSetting.TransactionTypeIds );
-            if ( transactionSetting.AccountIds.Any() )
+            rbAllTaxDeductibleAccounts.Checked = transactionSetting.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
+            rbUseCustomAccountIds.Checked = transactionSetting.AccountSelectionOption != FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
+            if ( transactionSetting.SelectedAccountIds.Any() )
             {
                 var accountList = new FinancialAccountService( new RockContext() )
-                    .GetByIds( transactionSetting.AccountIds )
+                    .GetByIds( transactionSetting.SelectedAccountIds )
                     .Where( a => a.IsActive )
                     .ToList();
-                apTransactionAccounts.SetValues( accountList );
+                apTransactionAccountsCustom.SetValues( accountList );
             }
 
-            var pledgeSetting = financialStatementTemplate.ReportSetting.PledgeSetting;
+            cbIncludeChildAccountsCustom.Checked = transactionSetting.AccountSelectionOption == FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
+
+            apTransactionAccountsCustom.Visible = transactionSetting.AccountSelectionOption != FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
+            cbIncludeChildAccountsCustom.Visible = apTransactionAccountsCustom.Visible;
+
+            var pledgeSetting = financialStatementTemplate.ReportSettings.PledgeSettings;
             cbIncludeGiftsToChildAccounts.Checked = pledgeSetting.IncludeGiftsToChildAccounts;
             cbIncludeNonCashGifts.Checked = pledgeSetting.IncludeNonCashGifts;
             if ( pledgeSetting.AccountIds.Any() )
@@ -384,6 +440,8 @@ namespace RockWeb.Blocks.Finance
             dvpTransactionType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ).Id;
             dvpCurrencyTypesCashGifts.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
             dvpCurrencyTypesNonCashGifts.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
+
+            ddlPaperSize.BindToEnum<FinancialStatementTemplatePDFSettingsPaperSize>();
         }
 
         /// <summary>
@@ -397,6 +455,10 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
+        
+
         #endregion Internal Methods
+
+        
     }
 }

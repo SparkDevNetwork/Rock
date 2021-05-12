@@ -18,8 +18,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Finance.ReportSetting;
+using Rock.Financial;
 
 namespace Rock.Model
 {
@@ -86,7 +87,18 @@ namespace Rock.Model
         /// The footer template.
         /// </value>
         [DataMember]
-        public string FooterTemplate { get; set; }
+        public string FooterSettingsJSON
+        {
+            get
+            {
+                return FooterSettings.ToJson();
+            }
+
+            set
+            {
+                FooterSettings = value.FromJsonOrNull<FinancialStatementTemplateHeaderFooterSettings>() ?? new FinancialStatementTemplateHeaderFooterSettings();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the report settings.
@@ -95,15 +107,16 @@ namespace Rock.Model
         /// The report settings.
         /// </value>
         [DataMember]
-        public string ReportSettings
+        public string ReportSettingsJson
         {
             get
             {
-                return ReportSetting.ToJson();
+                return ReportSettings.ToJson();
             }
+
             set
             {
-                ReportSetting = value.FromJsonOrNull<ReportSetting>() ?? new ReportSetting();
+                ReportSettings = value.FromJsonOrNull<FinancialStatementTemplateReportSettings>() ?? new FinancialStatementTemplateReportSettings();
             }
         }
 
@@ -136,7 +149,16 @@ namespace Rock.Model
         /// The report setting.
         /// </value>
         [NotMapped]
-        public virtual ReportSetting ReportSetting { get; set; } = new ReportSetting();
+        public virtual FinancialStatementTemplateReportSettings ReportSettings { get; set; } = new FinancialStatementTemplateReportSettings();
+
+        /// <summary>
+        /// Gets or sets the footer settings.
+        /// </summary>
+        /// <value>
+        /// The footer settings.
+        /// </value>
+        [NotMapped]
+        public virtual FinancialStatementTemplateHeaderFooterSettings FooterSettings { get; set; } = new FinancialStatementTemplateHeaderFooterSettings();
 
         #endregion Virtual Properties
     }
@@ -144,7 +166,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Financial Statemen tTemplate Configuration class.
+    /// Financial Statement Template Configuration class.
     /// </summary>
     public partial class FinancialStatementTemplateConfiguration : EntityTypeConfiguration<FinancialStatementTemplate>
     {

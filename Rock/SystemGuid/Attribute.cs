@@ -866,5 +866,10 @@ namespace Rock.SystemGuid
         /// The organization currency code
         /// </summary>
         public const string ORGANIZATION_CURRENCY_CODE = "60B61A30-3FE8-4158-8848-D4D95DBC64CD";
+
+        /// <summary>
+        /// The person do not send giving statement
+        /// </summary>
+        public const string PERSON_DO_NOT_SEND_GIVING_STATEMENT = "B767F2CF-A4F0-45AA-A2E9-8270F31B307B";
     }
 }

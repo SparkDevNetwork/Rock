@@ -1449,13 +1449,25 @@ namespace Rock.Model
         /// <returns></returns>
         public static Person HeadOfHousehold( this IQueryable<GroupMember> members )
         {
+            return GetHeadOfHousehold<Person>( members, s => s.Person );
+        }
+
+        /// <summary>
+        /// Given an IQueryable of members (i.e. family members), returns selected properties of the head of household for those members
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="members">The members.</param>
+        /// <param name="selector">The selector.</param>
+        /// <returns></returns>
+        public static TResult GetHeadOfHousehold<TResult>( this IQueryable<GroupMember> members,System.Linq.Expressions.Expression<Func<GroupMember, TResult>> selector )
+        {
             return members
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .ThenBy( m => m.Person.BirthYear )
                 .ThenBy( m => m.Person.BirthMonth )
                 .ThenBy( m => m.Person.BirthDay )
-                .Select( m => m.Person )
+                .Select( selector )
                 .FirstOrDefault();
         }
 

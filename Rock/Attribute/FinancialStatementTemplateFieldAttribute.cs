@@ -16,16 +16,21 @@
 //
 using System;
 
-namespace Rock.StatementGenerator.SystemGuid
+namespace Rock.Attribute
 {
     /// <summary>
-    /// Static Guids used by the Rock.StatementGenerator application
+    /// Field Attribute to select a FinancialStatementTemplate
+    /// Stored as FinancialStatementTemplate.Guid
     /// </summary>
-    public static class DefinedType
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
+    public class FinancialStatementTemplateFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// The statement generator lava template
+        /// Initializes a new instance of the <see cref="FinancialStatementTemplateFieldAttribute"/> class.
         /// </summary>
-        public const string STATEMENT_GENERATOR_LAVA_TEMPLATE = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
+        /// <param name="name">The name.</param>
+        public FinancialStatementTemplateFieldAttribute( string name ) : base( name )
+        {
+        }
     }
 }

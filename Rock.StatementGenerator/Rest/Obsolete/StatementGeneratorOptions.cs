@@ -22,6 +22,8 @@ namespace Rock.StatementGenerator
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+    [RockObsolete( "1.12.4" )]
     public class StatementGeneratorOptions : DotLiquid.Drop
     {
         /// <summary>
@@ -223,6 +225,8 @@ namespace Rock.StatementGenerator
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+    [RockObsolete( "1.12.4" )]
     public enum OrderBy
     {
         /// <summary>

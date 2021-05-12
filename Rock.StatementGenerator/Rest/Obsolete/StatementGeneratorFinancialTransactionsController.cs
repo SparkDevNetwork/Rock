@@ -33,6 +33,8 @@ namespace Rock.StatementGenerator.Rest
     /// NOTE: WebApi doesn't support Controllers with the Same Name, even if they have different namespaces, so can't call this FinancialTransactionsController
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+    [RockObsolete( "1.12.4" )]
     public class StatementGeneratorFinancialTransactionsController : Rock.Rest.ApiControllerBase
     {
         /// <summary>
@@ -42,6 +44,8 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorTemplates" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public List<DefinedValue> GetStatementGeneratorTemplates()
         {
             List<DefinedValue> result = null;
@@ -65,6 +69,8 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipients" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public List<StatementGeneratorRecipient> GetStatementGeneratorRecipients( [FromBody] StatementGeneratorOptions options )
         {
             if ( options == null )
@@ -218,6 +224,8 @@ namespace Rock.StatementGenerator.Rest
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         private static IQueryable<GroupLocation> GetGroupLocationQuery( RockContext rockContext )
         {
             var groupLocationTypeIdHome = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )?.Id;
@@ -245,6 +253,7 @@ namespace Rock.StatementGenerator.Rest
                 groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
                     .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) );
             }
+
             return groupLocationsQry;
         }
 
@@ -257,6 +266,8 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, ( Guid? ) null, options );
@@ -272,6 +283,8 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, personId, ( Guid? ) null, options );
@@ -287,6 +300,8 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, locationGuid, options );
@@ -309,8 +324,29 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
         public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
+            return GenerateStatementGeneratorRecipientResult( groupId, personId, locationGuid, this.GetPerson(), options );
+        }
+
+        /// <summary>
+        /// Generates the statement generator recipient result.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="locationGuid">The location unique identifier.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// StatementGenerationOption options must be specified
+        /// or
+        /// LayoutDefinedValueGuid option must be specified
+        /// </exception>
+        private static StatementGeneratorRecipientResult GenerateStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, Person currentPerson, StatementGeneratorOptions options )
+        { 
             if ( options == null )
             {
                 throw new Exception( "StatementGenerationOption options must be specified" );
@@ -327,7 +363,7 @@ namespace Rock.StatementGenerator.Rest
 
             using ( var rockContext = new RockContext() )
             {
-                var financialTransactionQry = this.GetFinancialTransactionQuery( options, rockContext, false );
+                var financialTransactionQry = GetFinancialTransactionQuery( options, rockContext, false );
                 var financialPledgeQry = GetFinancialPledgeQuery( options, rockContext, false );
 
                 var personList = new List<Person>();
@@ -522,7 +558,6 @@ namespace Rock.StatementGenerator.Rest
                     .Where( a => a.TransactionDetails.Any( x => x.Amount < 0 ) )
                     .ToList();
 
-
                     foreach ( var transactionsByDate in transactionsByDateList )
                     {
                         foreach ( var negativeTransaction in transactionsByDate.TransactionDetails.Where( a => a.Amount < 0 ) )
@@ -700,8 +735,7 @@ namespace Rock.StatementGenerator.Rest
                 }
 
                 mergeFields.Add( "Options", options );
-
-                var currentPerson = this.GetPerson();
+                
                 result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );
                 if ( !string.IsNullOrEmpty( lavaTemplateFooterLava ) )
                 {
@@ -715,29 +749,17 @@ namespace Rock.StatementGenerator.Rest
         }
 
         /// <summary>
-        /// Render and return a giving statement for the specified person.
+        /// Gets the giving statement HTML.
         /// </summary>
-        /// <param name="personId">The person that made the contributions. That person's entire
-        /// giving group is included, which is typically the family.</param>
-        /// <param name="year">The contribution calendar year. ie 2019.  If not specified, the
-        /// current year is assumed.</param>
-        /// <param name="templateDefinedValueId">The defined value ID that represents the statement
-        /// lava. This defined value should be a part of the Statement Generator Lava Template defined
-        /// type. If no ID is specified, then the default defined value for the Statement Generator Lava
-        /// Template defined type is assumed.</param>
-        /// <param name="hideRefundedTransactions">if set to <c>true</c> transactions that have any
-        /// refunds will be hidden.</param>
-        /// <returns>
-        /// The rendered giving statement
-        /// </returns>
-        [System.Web.Http.Route( "api/GivingStatement/{personId}" )]
-        [HttpGet]
-        [Authenticate, Secured]
-        public HttpResponseMessage RenderGivingStatement(
-            int personId,
-            [FromUri] int? year = null,
-            [FromUri] int? templateDefinedValueId = null,
-            [FromUri] bool hideRefundedTransactions = true )
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="year">The year.</param>
+        /// <param name="templateDefinedValueId">The template defined value identifier.</param>
+        /// <param name="hideRefundedTransactions">if set to <c>true</c> [hide refunded transactions].</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns></returns>
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
+        internal static string GetGivingStatementHTML( int personId, int? year, int? templateDefinedValueId, bool hideRefundedTransactions, Person currentPerson )
         {
             // Assume the current year if no year is specified
             var currentYear = RockDateTime.Now.Year;
@@ -778,6 +800,7 @@ namespace Rock.StatementGenerator.Rest
             {
                 throw new Exception( string.Format( "The person with ID {0} could not be found", personId ) );
             }
+
             if ( !person.PrimaryFamilyId.HasValue )
             {
                 throw new Exception( string.Format( "The person with ID {0} does not have a primary family ID", personId ) );
@@ -794,13 +817,9 @@ namespace Rock.StatementGenerator.Rest
             };
 
             // Get the generator result
-            var result = GetStatementGeneratorRecipientResult( person.PrimaryFamilyId.Value, options );
+            var result = GenerateStatementGeneratorRecipientResult( person.PrimaryFamilyId.Value, null, null, currentPerson, options );
 
-            // Render the statement as HTML and send back to the user
-            var response = new HttpResponseMessage();
-            response.Content = new StringContent( result.Html );
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue( "text/html" );
-            return response;
+            return result.Html;
         }
 
         /// <summary>
@@ -810,7 +829,9 @@ namespace Rock.StatementGenerator.Rest
         /// <param name="rockContext">The rock context.</param>
         /// <param name="usePersonFilters">if set to <c>true</c> [use person filters].</param>
         /// <returns></returns>
-        private IQueryable<FinancialPledge> GetFinancialPledgeQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
+        private static IQueryable<FinancialPledge> GetFinancialPledgeQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
         {
             // pledge information
             var pledgeQry = new FinancialPledgeService( rockContext ).Queryable();
@@ -887,7 +908,9 @@ namespace Rock.StatementGenerator.Rest
         /// <param name="rockContext">The rock context.</param>
         /// <param name="usePersonFilters">if set to <c>true</c> [use person filters].</param>
         /// <returns></returns>
-        private IQueryable<FinancialTransaction> GetFinancialTransactionQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
+        [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+        [RockObsolete( "1.12.4" )]
+        private static IQueryable<FinancialTransaction> GetFinancialTransactionQuery( StatementGeneratorOptions options, RockContext rockContext, bool usePersonFilters )
         {
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var financialTransactionQry = financialTransactionService.Queryable();

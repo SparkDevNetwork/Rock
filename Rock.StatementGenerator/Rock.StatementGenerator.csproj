@@ -71,13 +71,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MigrationResource.resx</DependentUpon>
     </Compile>
-    <Compile Include="PledgeSummary.cs" />
+    <Compile Include="Obsolete\SystemGuid\DefinedType.cs" />
+    <Compile Include="Obsolete\SystemGuid\Attribute.cs" />
+    <Compile Include="Rest\FinancialGivingStatementController.cs" />
+    <Compile Include="Rest\Obsolete\PledgeSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rest\StatementGeneratorFinancialTransactionsController.cs" />
-    <Compile Include="StatementGeneratorRecipient.cs" />
-    <Compile Include="StatementGeneratorOptions.cs" />
-    <Compile Include="SystemGuid\Attribute.cs" />
-    <Compile Include="SystemGuid\DefinedValue.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorFinancialTransactionsController.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorRecipient.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -127,5 +128,6 @@
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

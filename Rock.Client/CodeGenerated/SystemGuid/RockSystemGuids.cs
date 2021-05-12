@@ -103,6 +103,7 @@ namespace Rock.Client.SystemGuid
         public const string PERSON_CONFLICT_THEME_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
         public const string PERSON_DISC_LAST_SAVE_DATE = "990275DB-611B-4D2E-94EA-3FFA1186A5E1";
         public const string PERSON_DISC_PROFILE = "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D";
+        public const string PERSON_DO_NOT_SEND_GIVING_STATEMENT = "B767F2CF-A4F0-45AA-A2E9-8270F31B307B";
         public const string PERSON_DOMINANT_GIFTS = "F76FC75E-B33F-42B8-B360-15BA9A1F0F9A";
         public const string PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS = "A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78";
         public const string PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING = "129C108E-CE61-4DFB-A9A8-1EBC3462022E";
@@ -938,6 +939,13 @@ namespace Rock.Client.SystemGuid
     {
         public const string EVENT_REGISTRATION = "2A6F9E5F-6859-44F1-AB0E-CE9CF6B08EE5";
         public const string GENERAL_FUND = "4410306F-3FB5-4A57-9A80-09A3F9D40D0C";
+    }
+
+    /// <summary>
+    /// </summary>
+    public class FinancialStatementTemplate
+    {
+        public const string ROCK_DEFAULT = "4B93657A-DD5F-4D8A-A13F-1B4E9ADBDAD0";
     }
 
     /// <summary>

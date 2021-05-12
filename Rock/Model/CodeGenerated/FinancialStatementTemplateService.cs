@@ -89,13 +89,13 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
-            target.FooterTemplate = source.FooterTemplate;
+            target.FooterSettingsJSON = source.FooterSettingsJSON;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.LogoBinaryFileId = source.LogoBinaryFileId;
             target.Name = source.Name;
-            target.ReportSettings = source.ReportSettings;
+            target.ReportSettingsJson = source.ReportSettingsJson;
             target.ReportTemplate = source.ReportTemplate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

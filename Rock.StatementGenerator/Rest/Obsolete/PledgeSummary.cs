@@ -24,6 +24,7 @@ namespace Rock.StatementGenerator
     /// A Pledge (or Multiple Pledges) for a specific Account
     /// </summary>
     /// <seealso cref="DotLiquid.Drop" />
+    [Obsolete]
     public class PledgeSummary: DotLiquid.Drop
     {
         /// <summary>
