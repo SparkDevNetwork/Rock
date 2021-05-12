@@ -69,6 +69,14 @@
     <Compile Include="Migrations\202105121613390_PrivatePersonSearchKey.Designer.cs">
       <DependentUpon>202105121613390_PrivatePersonSearchKey.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202105121740046_FinancialStatementTemplate.cs" />
+    <Compile Include="Migrations\202105121740046_FinancialStatementTemplate.Designer.cs">
+      <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.cs" />
+    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.Designer.cs">
+      <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.Designer.cs">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
@@ -481,6 +489,12 @@
     <EmbeddedResource Include="Migrations\202105112104432_CodeGenerated_0511.resx">
       <DependentUpon>202105112104432_CodeGenerated_0511.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105121740046_FinancialStatementTemplate.resx">
+      <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.resx">
+      <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.resx">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
     </EmbeddedResource>
@@ -848,6 +862,12 @@
     </Content>
     <Content Include="Migrations\CreateDatabase\201707311527250_NickName.txt">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511_kpi-tooltipdelay.sql">
+      <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511_mapshortcode.sql">
+      <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">

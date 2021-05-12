@@ -113,6 +113,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsValuePrivate = source.IsValuePrivate;
             target.PersonAliasId = source.PersonAliasId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.SearchValue = source.SearchValue;
