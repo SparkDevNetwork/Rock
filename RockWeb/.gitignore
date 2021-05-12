@@ -3,7 +3,7 @@
 !/bin/roslyn/*.dll
 !/bin/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
 !/bin/Rock.Common.Mobile.dll
-!/bin/System.Runtime.CompilerServices.Unsafe.dll
+
 /bin/*.pdb
 /bin/*.xml
 
