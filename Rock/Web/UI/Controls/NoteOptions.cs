@@ -261,12 +261,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [show create date input].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="NoteContainer.ShowCreateDateInput"/>
         public bool ShowCreateDateInput
         {
             get
