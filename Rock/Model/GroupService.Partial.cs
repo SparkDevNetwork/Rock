@@ -104,7 +104,6 @@ namespace Rock.Model
             return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) );
         }
 
-
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by the Id of their parent <see cref="Rock.Model.Group"/> and by the Group's name.
         /// </summary>
@@ -677,6 +676,8 @@ namespace Rock.Model
             return group.Members.Where( m => m.PersonId == personId ).Any();
         }
 
+        #region Group Requirement Queries
+
         /// <summary>
         /// Groups the members not meeting requirements.
         /// </summary>
@@ -702,14 +703,7 @@ namespace Rock.Model
             }
 
             var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == group.Id );
-            var groupMemberRequirementList = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id ).Select( a => new
-            {
-                a.GroupMemberId,
-                a.RequirementWarningDateTime,
-                a.RequirementFailDateTime,
-                a.RequirementMetDateTime,
-                a.GroupRequirement
-            } ).ToList();
+            var groupMemberRequirementList = GetGroupMemberRequirementList( group );
 
             if ( !includeInactive )
             {
@@ -738,14 +732,7 @@ namespace Rock.Model
 
             if ( includeWarnings )
             {
-                List<int> groupMemberIdsWithRequirementWarningsList = groupMemberRequirementList
-                    .Where(
-                        a =>
-                            a.RequirementWarningDateTime != null ||
-                            a.RequirementFailDateTime != null )
-                    .Select( a => a.GroupMemberId )
-                    .Distinct().ToList();
-
+                List<int> groupMemberIdsWithRequirementWarningsList = GroupMemberIdsWithRequirementWarnings( group, groupMemberRequirementList );
                 membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) || groupMemberIdsWithRequirementWarningsList.Contains( a.Id ) );
             }
             else
@@ -816,6 +803,67 @@ namespace Rock.Model
 
             return results;
         }
+
+        /// <summary>
+        /// Internal DTO class for GroupRequirements.
+        /// </summary>
+        private class GroupRequirementDTO
+        {
+            public int GroupMemberId;
+            public DateTime? RequirementWarningDateTime;
+            public DateTime? RequirementFailDateTime;
+            public DateTime? RequirementMetDateTime;
+            public GroupRequirement GroupRequirement;
+        }
+        /// <summary>
+        /// Gets a list of <see cref="GroupRequirementDTO"/>s for the group.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private List<GroupRequirementDTO> GetGroupMemberRequirementList( Group group )
+        {
+            var rockContext = this.Context as RockContext;
+            var groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
+            var groupMemberRequirementQuery = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
+
+            return groupMemberRequirementQuery
+                .Select( a => new GroupRequirementDTO()
+                {
+                    GroupMemberId = a.GroupMemberId,
+                    RequirementWarningDateTime = a.RequirementWarningDateTime,
+                    RequirementFailDateTime = a.RequirementFailDateTime,
+                    RequirementMetDateTime = a.RequirementMetDateTime,
+                    GroupRequirement = a.GroupRequirement
+                } ).ToList();
+        }
+
+        /// <summary>
+        /// Returns a list of Group Member Ids that have group requirement warnings.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public List<int> GroupMemberIdsWithRequirementWarnings( Group group )
+        {
+            var groupMemberRequirementList = GetGroupMemberRequirementList( group );
+            return GroupMemberIdsWithRequirementWarnings( group, groupMemberRequirementList );
+        }
+
+        /// <summary>
+        /// Internal method for GroupMemberIdsWithRequirementWarnings.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="groupMemberRequirementList">The list of <see cref="GroupRequirementDTO"/>s.</param>
+        /// <returns></returns>
+        private List<int> GroupMemberIdsWithRequirementWarnings( Group group, List<GroupRequirementDTO> groupMemberRequirementList )
+        {
+            return groupMemberRequirementList
+                .Where( a => a.RequirementWarningDateTime != null
+                        || a.RequirementFailDateTime != null )
+                .Select( a => a.GroupMemberId )
+                .Distinct().ToList();
+        }
+
+        #endregion Group Requirement Queries
 
         /// <summary>
         /// Saves the new family to the database

@@ -337,7 +337,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId { get; set; }
+        public string GivingId { get; private set; }
 
         /// <summary>
         /// Gets or sets the giving leader's Person Id.
