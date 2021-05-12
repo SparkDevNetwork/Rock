@@ -145,14 +145,18 @@ namespace RockWeb.Blocks.Finance
             if ( !Page.IsPostBack )
             {
                 cbHideFullyPaidRegistrations.Checked = true;
+
                 LoadDropDowns();
+                
                 BatchId = this.GetBlockUserPreference( UserPreferenceKey.BatchId ).AsIntegerOrNull();
                 RegistrationTemplateId = this.GetBlockUserPreference( UserPreferenceKey.RegistrationTemplateId ).AsIntegerOrNull();
                 RegistrationInstanceId = this.GetBlockUserPreference( UserPreferenceKey.RegistrationInstanceId ).AsIntegerOrNull();
                 ddlBatch.SetValue( BatchId );
                 rtpRegistrationTemplate.SetValue( RegistrationTemplateId );
+
                 LoadRegistrationInstances();
                 ddlRegistrationInstance.SetValue( RegistrationInstanceId );
+
                 BindHtmlGrid();
                 LoadRegistrationDropDowns();
             }
@@ -355,11 +359,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     var financialTransactionDetailQuery = new FinancialTransactionDetailService( rockContext ).Queryable()
                     .Include( a => a.Transaction )
-                    .Include( a => a.Transaction.AuthorizedPersonAlias.Person );
+                    .Include( a => a.Transaction.AuthorizedPersonAlias.Person )
+                    .Where( a => a.Transaction.BatchId == BatchId.Value && ( !a.EntityTypeId.HasValue || a.EntityTypeId == registrationEntityTypeId ) )
+                    .OrderByDescending( a => a.Transaction.TransactionDateTime );
 
-                    financialTransactionDetailQuery = financialTransactionDetailQuery.Where( a => a.Transaction.BatchId == BatchId.Value && ( !a.EntityTypeId.HasValue || a.EntityTypeId == registrationEntityTypeId ) );
-
-                    _financialTransactionDetailList = financialTransactionDetailQuery.OrderByDescending( a => a.Transaction.TransactionDateTime ).Take( 1000 ).ToList();
+                    _financialTransactionDetailList = financialTransactionDetailQuery.Take( 1000 ).ToList();
                 }
                 catch ( Exception ex )
                 {
@@ -382,8 +386,6 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 phTableRows.Controls.Clear();
-                string appRoot = this.ResolveRockUrl( "~/" );
-                string themeRoot = this.ResolveRockUrl( "~~/" );
 
                 int rowCount = 0;
                 foreach ( var financialTransactionDetail in _financialTransactionDetailList )
@@ -541,24 +543,29 @@ namespace RockWeb.Blocks.Finance
             }
 
             var rockContext = new RockContext();
-            Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
+            var registrationService = new RegistrationService( rockContext );
 
-            var registrationEntityTypeId = EntityTypeCache.GetId<Registration>();
-            var registrationQry = new RegistrationService( new RockContext() )
-                .Queryable();
-            var registationListForInstance = registrationQry.AsNoTracking().Include( t => t.PersonAlias.Person ).Include( a => a.Registrants )
-                .Where( a => a.RegistrationInstanceId == RegistrationInstanceId.Value ).AsEnumerable();
+            var registationListForInstance = registrationService
+                .Queryable()
+                .AsNoTracking()
+                .Include( t => t.PersonAlias.Person )
+                .Include( a => a.Registrants )
+                .Where( a => a.RegistrationInstanceId == RegistrationInstanceId.Value )
+                .AsEnumerable();
 
             if ( cbHideFullyPaidRegistrations.Checked )
             {
+                // BalanceDue is a calculated value so we have to get the enumerable before filtering on it.
                 registationListForInstance = registationListForInstance.Where( a => a.BalanceDue > 0 );
             }
+
+            var registationListForInstanceFiltered = registationListForInstance.ToList();
 
             foreach ( var ddlRegistration in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlRegistration_" ) ) )
             {
                 ddlRegistration.Items.Clear();
                 ddlRegistration.Items.Add( new ListItem() );
-                foreach ( var registration in registationListForInstance )
+                foreach ( var registration in registationListForInstanceFiltered )
                 {
                     ddlRegistration.Items.Add( new ListItem( GetRegistrationName( registration, true, RegistrationInstanceId.Value ), registration.Id.ToString() ) );
                 }
@@ -567,7 +574,10 @@ namespace RockWeb.Blocks.Finance
                 ddlRegistration.SetValue( ( int? ) null );
             }
 
-            var registrationList = registrationQry
+            Dictionary<int, int?> entityLookup = _financialTransactionDetailList.Where( a => a.EntityId.HasValue ).ToDictionary( k => k.Id, v => v.EntityId );
+
+            var registrationList = registrationService
+                .Queryable()
                 .AsNoTracking()
                 .Include( a => a.RegistrationInstance ).Include( t => t.PersonAlias.Person ).Include( a => a.Registrants )
                 .Where( a => entityLookup.Values.Contains( a.Id ) )
