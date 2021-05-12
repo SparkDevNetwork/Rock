@@ -224,6 +224,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the NoteOptions indicating whether [show create date input].
+        /// Set this to true to allow the create date time to be editable.
+        /// For example, when Back-Dating Notes is allowed.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
