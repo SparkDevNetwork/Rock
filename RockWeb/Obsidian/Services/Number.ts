@@ -19,8 +19,10 @@
  * Ex: 10001.2 => 10,001.2
  * @param num
  */
-export function asFormattedString(num: number | null, digits = 2) {
-    if (num === null) {
+export function asFormattedString ( num: number | null, digits = 2 )
+{
+    if ( num === null )
+    {
         return '';
     }
 
@@ -38,13 +40,15 @@ export function asFormattedString(num: number | null, digits = 2) {
  * Ex: $1,000.20 => 1000.2
  * @param str
  */
-export function toNumberOrNull(str: string | null) {
-    if (str === null) {
+export function toNumberOrNull ( str: string | null )
+{
+    if ( str === null )
+    {
         return null;
     }
 
-    const replaced = str.replace(/[$,]/g, '');
-    return Number(replaced) || 0;
+    const replaced = str.replace( /[$,]/g, '' );
+    return Number( replaced ) || 0;
 }
 
 /**
@@ -52,21 +56,26 @@ export function toNumberOrNull(str: string | null) {
  * Ex: 1 => 1st
  * @param num
  */
-export function toOrdinalSuffix(num: number | null) {
-    if (!num) {
+export function toOrdinalSuffix ( num: number | null )
+{
+    if ( !num )
+    {
         return '';
     }
 
     const j = num % 10;
     const k = num % 100;
 
-    if (j == 1 && k != 11) {
+    if ( j == 1 && k != 11 )
+    {
         return num + 'st';
     }
-    if (j == 2 && k != 12) {
+    if ( j == 2 && k != 12 )
+    {
         return num + 'nd';
     }
-    if (j == 3 && k != 13) {
+    if ( j == 3 && k != 13 )
+    {
         return num + 'rd';
     }
     return num + 'th';
@@ -77,12 +86,15 @@ export function toOrdinalSuffix(num: number | null) {
  * Ex: 1 => first
  * @param num
  */
-export function toOrdinal(num: number | null) {
-    if (!num) {
+export function toOrdinal ( num: number | null )
+{
+    if ( !num )
+    {
         return '';
     }
 
-    switch (num) {
+    switch ( num )
+    {
         case 1: return 'first';
         case 2: return 'second';
         case 3: return 'third';
@@ -93,7 +105,7 @@ export function toOrdinal(num: number | null) {
         case 8: return 'eighth';
         case 9: return 'ninth';
         case 10: return 'tenth';
-        default: return toOrdinalSuffix(num);
+        default: return toOrdinalSuffix( num );
     }
 }
 

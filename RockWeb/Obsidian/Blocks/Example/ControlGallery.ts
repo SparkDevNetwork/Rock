@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 import PaneledBlockTemplate from '../../Templates/PaneledBlockTemplate';
 import DefinedTypePicker from '../../Controls/DefinedTypePicker';
 import DefinedValuePicker from '../../Controls/DefinedValuePicker';
@@ -38,6 +39,8 @@ import StaticFormControl from '../../Elements/StaticFormControl';
 import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTracker';
 import RockForm from '../../Controls/RockForm';
 import RockButton from '../../Elements/RockButton';
+import RadioButtonList from '../../Elements/RadioButtonList';
+import { DropDownListOption } from '../../Elements/DropDownList';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -92,7 +95,8 @@ export default defineComponent({
         StaticFormControl,
         ProgressTracker,
         RockForm,
-        RockButton
+        RockButton,
+        RadioButtonList
     },
     data() {
         return {
@@ -131,7 +135,14 @@ export default defineComponent({
             ] as ProgressTrackerItem[],
             ruleTestCurrency: 1,
             ruleTestText: '',
-            rules: 'required'
+            rules: 'required',
+            radioValue: 'a',
+            radioOptions: [
+                { key: 'a', text: 'a', value: 'a' },
+                { key: 'b', text: 'b', value: 'b' },
+                { key: 'c', text: 'c', value: 'c' },
+                { key: 'd', text: 'd', value: 'd' }
+            ] as DropDownListOption[]
         };
     },
     methods: {
@@ -357,6 +368,18 @@ export default defineComponent({
                     <CurrencyBox label="Currency" v-model="ruleTestCurrency" :rules="rules" />
                     <RockButton btnType="primary" type="submit">Test</RockButton>
                 </RockForm>
+            </template>
+        </GalleryAndResult>
+        <GalleryAndResult>
+            <template #header>
+                RadioButtonList
+            </template>
+            <template #gallery>
+                <RadioButtonList label="Radio 1" v-model="radioValue" :options="radioOptions" />
+                <RadioButtonList label="Radio 2" v-model="radioValue" :options="radioOptions" />
+            </template>
+            <template #result>
+                <TextBox label="Radio Value" v-model="radioValue" />
             </template>
         </GalleryAndResult>
     </template>

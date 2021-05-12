@@ -246,6 +246,32 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                             return;
                         }
                         this.registrationEntryState.CurrentRegistrantFormIndex++;
+                    },
+                    /** Copy the values that are to have current values used */
+                    copyValuesFromFamilyMember: function () {
+                        if (!this.familyMember) {
+                            // Nothing to copy
+                            return;
+                        }
+                        // If the family member selection is made then set all form fields where use existing value is enabled
+                        for (var _i = 0, _a = this.viewModel.RegistrantForms; _i < _a.length; _i++) {
+                            var form = _a[_i];
+                            for (var _b = 0, _c = form.Fields; _b < _c.length; _b++) {
+                                var field = _c[_b];
+                                if (field.Guid in this.familyMember.FieldValues) {
+                                    var familyMemberValue = this.familyMember.FieldValues[field.Guid];
+                                    if (!familyMemberValue) {
+                                        delete this.currentRegistrant.FieldValues[field.Guid];
+                                    }
+                                    else if (typeof familyMemberValue === 'object') {
+                                        this.currentRegistrant.FieldValues[field.Guid] = __assign({}, familyMemberValue);
+                                    }
+                                    else {
+                                        this.currentRegistrant.FieldValues[field.Guid] = familyMemberValue;
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 watch: {
@@ -254,7 +280,6 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                         this.currentRegistrant.PersonGuid = '';
                     },
                     familyMember: {
-                        immediate: true,
                         handler: function () {
                             if (!this.familyMember) {
                                 // If the family member selection is cleared then clear all form fields
@@ -268,27 +293,13 @@ System.register(["vue", "../../../Elements/DropDownList", "../../../Elements/Rad
                             }
                             else {
                                 // If the family member selection is made then set all form fields where use existing value is enabled
-                                for (var _d = 0, _e = this.viewModel.RegistrantForms; _d < _e.length; _d++) {
-                                    var form = _e[_d];
-                                    for (var _f = 0, _g = form.Fields; _f < _g.length; _f++) {
-                                        var field = _g[_f];
-                                        if (field.Guid in this.familyMember.FieldValues) {
-                                            var familyMemberValue = this.familyMember.FieldValues[field.Guid];
-                                            if (!familyMemberValue) {
-                                                delete this.currentRegistrant.FieldValues[field.Guid];
-                                            }
-                                            else if (typeof familyMemberValue === 'object') {
-                                                this.currentRegistrant.FieldValues[field.Guid] = __assign({}, familyMemberValue);
-                                            }
-                                            else {
-                                                this.currentRegistrant.FieldValues[field.Guid] = familyMemberValue;
-                                            }
-                                        }
-                                    }
-                                }
+                                this.copyValuesFromFamilyMember();
                             }
                         }
                     }
+                },
+                created: function () {
+                    this.copyValuesFromFamilyMember();
                 },
                 template: "\n<div>\n    <RockForm @submit=\"onNext\">\n        <template v-if=\"currentFormIndex === 0\">\n            <div v-if=\"familyOptions.length > 1\" class=\"well js-registration-same-family\">\n                <RadioButtonList :label=\"(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'\" rules='required:{\"allowEmptyString\": true}' v-model=\"currentRegistrant.FamilyGuid\" :options=\"familyOptions\" validationTitle=\"Family\" />\n            </div>\n            <div v-if=\"familyMemberOptions.length\" class=\"row\">\n                <div class=\"col-md-6\">\n                    <DropDownList v-model=\"currentRegistrant.PersonGuid\" :options=\"familyMemberOptions\" label=\"Family Member to Register\" />\n                </div>\n            </div>\n        </template>\n\n        <ItemsWithPreAndPostHtml :items=\"prePostHtmlItems\">\n            <template v-for=\"field in currentFormFields\" :key=\"field.Guid\" v-slot:[field.Guid]>\n                <RegistrantPersonField v-if=\"field.FieldSource === fieldSources.PersonField\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" :isKnownFamilyMember=\"!!currentRegistrant.PersonGuid\" />\n                <RegistrantAttributeField v-else-if=\"field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute\" :field=\"field\" :fieldValues=\"currentRegistrant.FieldValues\" />\n                <Alert alertType=\"danger\" v-else>Could not resolve field source {{field.FieldSource}}</Alert>\n            </template>\n        </ItemsWithPreAndPostHtml>\n\n        <div v-if=\"!isWaitList && isLastForm && viewModel.Fees.length\" class=\"well registration-additional-options\">\n            <h4>{{pluralFeeTerm}}</h4>\n            <template v-for=\"fee in viewModel.Fees\" :key=\"fee.Guid\">\n                <FeeField :fee=\"fee\" v-model=\"currentRegistrant.FeeItemQuantities\" />\n            </template>\n        </div>\n\n        <div class=\"actions row\">\n            <div class=\"col-xs-6\">\n                <RockButton v-if=\"showPrevious\" btnType=\"default\" @click=\"onPrevious\">\n                    Previous\n                </RockButton>\n            </div>\n            <div class=\"col-xs-6 text-right\">\n                <RockButton btnType=\"primary\" type=\"submit\">\n                    Next\n                </RockButton>\n            </div>\n        </div>\n    </RockForm>\n</div>"
             }));

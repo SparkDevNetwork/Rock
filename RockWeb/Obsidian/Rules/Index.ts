@@ -18,6 +18,7 @@ import DateKey from '../Services/DateKey';
 import { isEmail } from '../Services/Email';
 import { isNullOrWhitespace } from '../Services/String';
 import { defineRule } from 'vee-validate';
+import { toNumberOrNull } from '../Services/Number';
 
 export type ValidationRuleFunction = ( value: unknown ) => boolean | string | Promise<boolean | string>;
 
@@ -81,7 +82,7 @@ defineRule( 'notequal', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) !== Number( compare ) )
+        if ( convertToNumber( value ) !== convertToNumber( compare ) )
         {
             return true;
         }
@@ -98,7 +99,7 @@ defineRule( 'equal', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) === Number( compare ) )
+        if ( convertToNumber( value ) === convertToNumber( compare ) )
         {
             return true;
         }
@@ -115,7 +116,7 @@ defineRule( 'gt', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) > Number( compare ) )
+        if ( convertToNumber( value ) > convertToNumber( compare ) )
         {
             return true;
         }
@@ -132,7 +133,7 @@ defineRule( 'gte', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) >= Number( compare ) )
+        if ( convertToNumber( value ) >= convertToNumber( compare ) )
         {
             return true;
         }
@@ -149,7 +150,7 @@ defineRule( 'lt', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) < Number( compare ) )
+        if ( convertToNumber( value ) < convertToNumber( compare ) )
         {
             return true;
         }
@@ -166,7 +167,7 @@ defineRule( 'lte', ( ( value, [ compare ] ) =>
 {
     if ( isNumeric( value ) && isNumeric( compare ) )
     {
-        if ( Number( value ) <= Number( compare ) )
+        if ( convertToNumber( value ) <= convertToNumber( compare ) )
         {
             return true;
         }
@@ -202,6 +203,25 @@ defineRule( 'datekey', ( value =>
 } ) as ValidationRuleFunction );
 
 /**
+ * Convert the string to a number
+ * @param val
+ */
+const convertToNumber = ( value: unknown ) =>
+{
+    if ( typeof value === 'number' )
+    {
+        return value;
+    }
+
+    if ( typeof value === 'string' )
+    {
+        return toNumberOrNull( value ) || 0;
+    }
+
+    return 0;
+};
+
+/**
  * Is the value numeric?
  * '0.9' => true
  * 0.9 => true
@@ -217,8 +237,7 @@ const isNumeric = ( value: unknown ) =>
 
     if ( typeof value === 'string' )
     {
-        const asNumber = Number( value );
-        return !isNaN( asNumber ) && !isNaN( parseFloat( value ) );
+        return toNumberOrNull( value ) !== null;
     }
 
     return false;

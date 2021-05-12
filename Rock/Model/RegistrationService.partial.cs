@@ -414,6 +414,19 @@ namespace Rock.Model
             MaxRegistrants = ( template.AllowMultipleRegistrants ? template.MaxRegistrants : 1 ) ?? instance.MaxAttendees;
             IsLoginRequired = template.LoginRequired;
 
+            // Workflow type ids
+            WorkflowTypeIds = new List<int>();
+
+            if ( template.RegistrationWorkflowTypeId.HasValue )
+            {
+                WorkflowTypeIds.Add( template.RegistrationWorkflowTypeId.Value );
+            }
+
+            if ( instance.RegistrationWorkflowTypeId.HasValue )
+            {
+                WorkflowTypeIds.Add( instance.RegistrationWorkflowTypeId.Value );
+            }
+
             // Terms and text
             Instructions = instance.RegistrationInstructions.IsNullOrWhiteSpace() ? template.RegistrationInstructions : instance.RegistrationInstructions;
             FeeTerm = template.FeeTerm.IsNullOrWhiteSpace() ? "Fee" : template.FeeTerm;
@@ -429,6 +442,11 @@ namespace Rock.Model
             ExternalGatewayMerchantId = instance.ExternalGatewayMerchantId;
             FinancialAccountId = instance.AccountId;
             BatchNamePrefix = template.BatchNamePrefix;
+
+            // Group placement
+            GroupTypeId = template.GroupTypeId;
+            GroupMemberRoleId = template.GroupMemberRoleId;
+            GroupMemberStatus = template.GroupMemberStatus;
         }
 
         /// <summary>
@@ -671,5 +689,37 @@ namespace Rock.Model
         /// The batch name prefix.
         /// </value>
         public string BatchNamePrefix { get; private set; }
+
+        /// <summary>
+        /// Gets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        public int? GroupTypeId { get; private set; }
+
+        /// <summary>
+        /// Gets the group member role identifier.
+        /// </summary>
+        /// <value>
+        /// The group member role identifier.
+        /// </value>
+        public int? GroupMemberRoleId { get; private set; }
+
+        /// <summary>
+        /// Gets the group member status.
+        /// </summary>
+        /// <value>
+        /// The group member status.
+        /// </value>
+        public GroupMemberStatus GroupMemberStatus { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the registration workflow type identifier.
+        /// </summary>
+        /// <value>
+        /// The registration workflow type identifier.
+        /// </value>
+        public List<int> WorkflowTypeIds { get; private set; }
     }
 }

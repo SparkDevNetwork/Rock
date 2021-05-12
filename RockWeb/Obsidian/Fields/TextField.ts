@@ -36,7 +36,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
     props: getFieldTypeProps(),
     data() {
         return {
-            internalValue: this.modelValue
+            internalValue: ''
         };
     },
     computed: {
@@ -70,6 +70,13 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
     watch: {
         internalValue() {
             this.$emit('update:modelValue', this.internalValue);
+        },
+        modelValue: {
+            immediate: true,
+            handler ()
+            {
+                this.internalValue = this.modelValue || '';
+            }
         }
     },
     template: `

@@ -333,7 +333,7 @@ export default defineComponent( {
         /** The amount due today */
         amountDueToday (): number
         {
-            return this.viewModel.AmountDueToday || 0;
+            return ( this.viewModel.AmountDueToday || 0 ) * this.registrationEntryState.Registrants.length;
         },
 
         /** The amount due today formatted as currency */
@@ -346,7 +346,8 @@ export default defineComponent( {
         amountToPayTodayRules (): string
         {
             var rules: string[] = [ 'required' ];
-            let min = this.viewModel.AmountDueToday || 0;
+            const registrantCount = this.registrationEntryState.Registrants.length;
+            let min = ( this.viewModel.AmountDueToday || 0 ) * registrantCount;
             const max = this.discountedTotal;
 
             if ( min > max )
@@ -362,7 +363,9 @@ export default defineComponent( {
         /** After the initial payment, how much will remain of the total? */
         amountRemaining (): number
         {
-            return this.discountedTotal - this.registrationEntryState.AmountToPayToday;
+            const actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday;
+            const bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
+            return bounded;
         },
 
         /** After the initial payment, how much will remain of the total? Formatted as currency. */
@@ -605,7 +608,7 @@ export default defineComponent( {
         }
         else if ( this.viewModel.InitialAmountToPay !== null )
         {
-            this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay;
+            this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay * this.registrationEntryState.Registrants.length;
         }
         else
         {

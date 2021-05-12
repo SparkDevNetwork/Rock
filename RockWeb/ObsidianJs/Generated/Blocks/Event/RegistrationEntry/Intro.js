@@ -131,16 +131,19 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                         // Resize the registrant array to match the selected number
                         while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
                             var registrant = RegistrationEntry_1.getDefaultRegistrantInfo(this.currentPerson, this.viewModel, forcedFamilyGuid);
-                            if (availableFamilyMembers.length) {
-                                var familyMember = availableFamilyMembers.shift();
-                                registrant.PersonGuid = familyMember.Guid;
-                            }
                             this.registrationEntryState.Registrants.push(registrant);
                         }
                         this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+                        // Set people beyond the capacity tro be on the waitlist
                         var firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
                         for (var i = firstWaitListIndex; i < this.numberOfRegistrants; i++) {
                             this.registrationEntryState.Registrants[i].IsOnWaitList = true;
+                        }
+                        // If there are family members, set the first registrant to be the first (feature parity with the original block)
+                        if (availableFamilyMembers.length && this.registrationEntryState.Registrants.length) {
+                            var familyMember = availableFamilyMembers[0];
+                            var registrant = this.registrationEntryState.Registrants[0];
+                            registrant.PersonGuid = familyMember.Guid;
                         }
                         this.$emit('next');
                     },

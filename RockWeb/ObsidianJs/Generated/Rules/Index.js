@@ -1,6 +1,6 @@
-System.register(["../Services/DateKey", "../Services/Email", "../Services/String", "vee-validate"], function (exports_1, context_1) {
+System.register(["../Services/DateKey", "../Services/Email", "../Services/String", "vee-validate", "../Services/Number"], function (exports_1, context_1) {
     "use strict";
-    var DateKey_1, Email_1, String_1, vee_validate_1, isNumeric;
+    var DateKey_1, Email_1, String_1, vee_validate_1, Number_1, convertToNumber, isNumeric;
     var __moduleName = context_1 && context_1.id;
     function ruleStringToArray(rulesString) {
         return rulesString.split('|');
@@ -23,6 +23,9 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             },
             function (vee_validate_1_1) {
                 vee_validate_1 = vee_validate_1_1;
+            },
+            function (Number_1_1) {
+                Number_1 = Number_1_1;
             }
         ],
         execute: function () {
@@ -58,7 +61,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('notequal', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) !== Number(compare)) {
+                    if (convertToNumber(value) !== convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -70,7 +73,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('equal', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) === Number(compare)) {
+                    if (convertToNumber(value) === convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -82,7 +85,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('gt', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) > Number(compare)) {
+                    if (convertToNumber(value) > convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -94,7 +97,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('gte', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) >= Number(compare)) {
+                    if (convertToNumber(value) >= convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -106,7 +109,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('lt', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) < Number(compare)) {
+                    if (convertToNumber(value) < convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -118,7 +121,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
             vee_validate_1.defineRule('lte', (function (value, _a) {
                 var compare = _a[0];
                 if (isNumeric(value) && isNumeric(compare)) {
-                    if (Number(value) <= Number(compare)) {
+                    if (convertToNumber(value) <= convertToNumber(compare)) {
                         return true;
                     }
                 }
@@ -141,6 +144,19 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
                 return true;
             }));
             /**
+             * Convert the string to a number
+             * @param val
+             */
+            convertToNumber = function (value) {
+                if (typeof value === 'number') {
+                    return value;
+                }
+                if (typeof value === 'string') {
+                    return Number_1.toNumberOrNull(value) || 0;
+                }
+                return 0;
+            };
+            /**
              * Is the value numeric?
              * '0.9' => true
              * 0.9 => true
@@ -152,8 +168,7 @@ System.register(["../Services/DateKey", "../Services/Email", "../Services/String
                     return true;
                 }
                 if (typeof value === 'string') {
-                    var asNumber = Number(value);
-                    return !isNaN(asNumber) && !isNaN(parseFloat(value));
+                    return Number_1.toNumberOrNull(value) !== null;
                 }
                 return false;
             };

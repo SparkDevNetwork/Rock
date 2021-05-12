@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Obsidian.Util;
+using Rock.Tasks;
 using Rock.ViewModel.Blocks;
 using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
@@ -411,6 +412,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             var registrationChanges = new History.HistoryChangeList();
             Person registrar = null;
+            List<int> previousRegistrantPersonIds = null;
             var isNewRegistration = context.Registration == null;
 
             if ( isNewRegistration )
@@ -435,6 +437,18 @@ namespace Rock.Obsidian.Blocks.Event
             {
                 // This is an existing registration
                 registrar = context.Registration.PersonAlias.Person;
+
+                var registrationService = new RegistrationService( rockContext );
+                var previousRegistration = registrationService.Get( args.RegistrationGuid.Value );
+
+                if ( previousRegistration != null )
+                {
+                    isNewRegistration = false;
+                    previousRegistrantPersonIds = previousRegistration.Registrants
+                        .Where( r => r.PersonAlias != null )
+                        .Select( r => r.PersonAlias.PersonId )
+                        .ToList();
+                }
             }
 
             // Apply the registrar values to the registration record
@@ -692,6 +706,12 @@ namespace Rock.Obsidian.Blocks.Event
             catch ( Exception e )
             {
                 ExceptionLogService.LogException( e );
+            }
+
+            // If there is a valid registration, and nothing went wrong processing the payment, add registrants to group and send the notifications
+            if ( context.Registration != null && !context.Registration.IsTemporary )
+            {
+                ProcessPostSave( rockContext, context.RegistrationSettings, args, isNewRegistration, context.Registration, previousRegistrantPersonIds );
             }
 
             return context.Registration;
@@ -2464,6 +2484,179 @@ namespace Rock.Obsidian.Blocks.Event
             var registrationService = new RegistrationService( rockContext );
             var context = registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
             return context;
+        }
+
+        /// <summary>
+        /// Sends notifications after the registration is saved
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="settings">The settings.</param>
+        /// <param name="args">The arguments.</param>
+        /// <param name="isNewRegistration">if set to <c>true</c> [is new registration].</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="previousRegistrantPersonIds">The previous registrant person ids.</param>
+        private void ProcessPostSave( RockContext rockContext, RegistrationSettings settings, RegistrationEntryBlockArgs args, bool isNewRegistration, Registration registration, List<int> previousRegistrantPersonIds )
+        {
+            var currentPerson = GetCurrentPerson();
+            var currentPersonAliasId = currentPerson?.PrimaryAliasId;
+
+            if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
+            {
+                registration.SavePersonNotesAndHistory( registration.PersonAlias.Person, currentPersonAliasId, previousRegistrantPersonIds );
+            }
+            // This occurs when the registrar is logged in
+            else if ( registration.PersonAliasId.HasValue )
+            {
+                var registrar = new PersonAliasService( rockContext ).Get( registration.PersonAliasId.Value );
+                registration.SavePersonNotesAndHistory( registrar.Person, currentPersonAliasId, previousRegistrantPersonIds );
+            }
+
+            AddRegistrantsToGroup( rockContext, settings, registration, args );
+
+            // Send/Resend a confirmation
+            var processSendRegistrationConfirmationMsg = new ProcessSendRegistrationConfirmation.Message()
+            {
+                RegistrationId = registration.Id
+            };
+
+            processSendRegistrationConfirmationMsg.Send();
+
+            if ( isNewRegistration )
+            {
+                // Send notice of a new registration
+                new ProcesSendRegistrationNotification.Message
+                {
+                    RegistrationId = registration.Id
+                }.Send();
+            }
+
+            if ( isNewRegistration && settings.WorkflowTypeIds.Any() )
+            {
+                var registrationService = new RegistrationService( new RockContext() );
+                var newRegistration = registrationService.Get( registration.Id );
+
+                if ( newRegistration != null )
+                {
+                    foreach ( var workflowTypeId in settings.WorkflowTypeIds )
+                    {
+                        newRegistration.LaunchWorkflow( workflowTypeId, newRegistration.ToString() );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the registrants to group.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="settings">The settings.</param>
+        /// <param name="registration">The registration.</param>
+        /// <param name="args">The arguments.</param>
+        private void AddRegistrantsToGroup( RockContext rockContext, RegistrationSettings settings, Registration registration, RegistrationEntryBlockArgs args )
+        {
+            if ( !registration.GroupId.HasValue )
+            {
+                return;
+            }
+
+            // If the registration instance linkage specified a group to add registrant to, add them if they're not already
+            // part of that group
+            var groupService = new GroupService( rockContext );
+            var personAliasService = new PersonAliasService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var group = groupService.Get( registration.GroupId.Value );
+
+            if ( group is null )
+            {
+                return;
+            }
+
+            foreach ( var registrant in registration.Registrants.Where( r => !r.OnWaitList && r.PersonAliasId.HasValue ).ToList() )
+            {
+                var personAlias = personAliasService.Get( registrant.PersonAliasId.Value );
+                GroupMember groupMember = group.Members.Where( m => m.PersonId == personAlias.PersonId ).FirstOrDefault();
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    groupMember.GroupId = group.Id;
+                    groupMember.PersonId = personAlias.PersonId;
+
+                    if ( settings.GroupTypeId.HasValue &&
+                        settings.GroupTypeId == group.GroupTypeId &&
+                        settings.GroupMemberRoleId.HasValue )
+                    {
+                        groupMember.GroupRoleId = settings.GroupMemberRoleId.Value;
+                    }
+                    else
+                    {
+                        if ( group.GroupType.DefaultGroupRoleId.HasValue )
+                        {
+                            groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+                        }
+                        else
+                        {
+                            groupMember.GroupRoleId = group.GroupType.Roles.Select( r => r.Id ).FirstOrDefault();
+                        }
+                    }
+
+                    groupMemberService.Add( groupMember );
+                }
+
+                groupMember.GroupMemberStatus = settings.GroupMemberStatus;
+
+                rockContext.SaveChanges();
+
+                registrant.GroupMemberId = groupMember != null ? groupMember.Id : ( int? ) null;
+                rockContext.SaveChanges();
+
+                // Set any of the template's group member attributes
+                groupMember.LoadAttributes();
+
+                var registrantInfo = args.Registrants.FirstOrDefault( r => r.Guid == registrant.Guid );
+                if ( registrantInfo != null )
+                {
+                    foreach ( var field in settings.Forms
+                        .SelectMany( f => f.Fields
+                            .Where( t =>
+                                t.FieldSource == RegistrationFieldSource.GroupMemberAttribute &&
+                                t.AttributeId.HasValue ) ) )
+                    {
+                        // Find the registrant's value
+                        var fieldValue = registrantInfo.FieldValues
+                            .Where( f => f.Key == field.Guid )
+                            .Select( f => f.Value )
+                            .FirstOrDefault();
+
+                        if ( fieldValue != null )
+                        {
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
+                            if ( attribute != null )
+                            {
+                                string originalValue = groupMember.GetAttributeValue( attribute.Key );
+                                string newValue = fieldValue.ToString();
+                                groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                {
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    {
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
+                                    }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #endregion Helpers

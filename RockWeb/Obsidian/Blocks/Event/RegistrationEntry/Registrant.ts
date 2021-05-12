@@ -247,6 +247,41 @@ export default defineComponent( {
             }
 
             this.registrationEntryState.CurrentRegistrantFormIndex++;
+        },
+
+        /** Copy the values that are to have current values used */
+        copyValuesFromFamilyMember ()
+        {
+            if ( !this.familyMember )
+            {
+                // Nothing to copy
+                return;
+            }
+
+            // If the family member selection is made then set all form fields where use existing value is enabled
+            for ( const form of this.viewModel.RegistrantForms )
+            {
+                for ( const field of form.Fields )
+                {
+                    if ( field.Guid in this.familyMember.FieldValues )
+                    {
+                        const familyMemberValue = this.familyMember.FieldValues[ field.Guid ];
+
+                        if ( !familyMemberValue )
+                        {
+                            delete this.currentRegistrant.FieldValues[ field.Guid ];
+                        }
+                        else if ( typeof familyMemberValue === 'object' )
+                        {
+                            this.currentRegistrant.FieldValues[ field.Guid ] = { ...familyMemberValue };
+                        }
+                        else
+                        {
+                            this.currentRegistrant.FieldValues[ field.Guid ] = familyMemberValue;
+                        }
+                    }
+                }
+            }
         }
     },
     watch: {
@@ -256,7 +291,6 @@ export default defineComponent( {
             this.currentRegistrant.PersonGuid = '';
         },
         familyMember: {
-            immediate: true,
             handler ()
             {
                 if ( !this.familyMember )
@@ -273,32 +307,14 @@ export default defineComponent( {
                 else
                 {
                     // If the family member selection is made then set all form fields where use existing value is enabled
-                    for ( const form of this.viewModel.RegistrantForms )
-                    {
-                        for ( const field of form.Fields )
-                        {
-                            if ( field.Guid in this.familyMember.FieldValues )
-                            {
-                                const familyMemberValue = this.familyMember.FieldValues[ field.Guid ];
-
-                                if ( !familyMemberValue )
-                                {
-                                    delete this.currentRegistrant.FieldValues[ field.Guid ];
-                                }
-                                else if ( typeof familyMemberValue === 'object' )
-                                {
-                                    this.currentRegistrant.FieldValues[ field.Guid ] = { ...familyMemberValue };
-                                }
-                                else
-                                {
-                                    this.currentRegistrant.FieldValues[ field.Guid ] = familyMemberValue;
-                                }
-                            }
-                        }
-                    }
+                    this.copyValuesFromFamilyMember();
                 }
             }
         }
+    },
+    created ()
+    {
+        this.copyValuesFromFamilyMember();
     },
     template: `
 <div>

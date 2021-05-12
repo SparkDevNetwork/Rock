@@ -319,7 +319,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     },
                     /** The amount due today */
                     amountDueToday: function () {
-                        return this.viewModel.AmountDueToday || 0;
+                        return (this.viewModel.AmountDueToday || 0) * this.registrationEntryState.Registrants.length;
                     },
                     /** The amount due today formatted as currency */
                     amountDueTodayFormatted: function () {
@@ -328,7 +328,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     /** The vee-validate rules for the amount to pay today */
                     amountToPayTodayRules: function () {
                         var rules = ['required'];
-                        var min = this.viewModel.AmountDueToday || 0;
+                        var registrantCount = this.registrationEntryState.Registrants.length;
+                        var min = (this.viewModel.AmountDueToday || 0) * registrantCount;
                         var max = this.discountedTotal;
                         if (min > max) {
                             min = max;
@@ -339,7 +340,9 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     },
                     /** After the initial payment, how much will remain of the total? */
                     amountRemaining: function () {
-                        return this.discountedTotal - this.registrationEntryState.AmountToPayToday;
+                        var actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday;
+                        var bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
+                        return bounded;
                     },
                     /** After the initial payment, how much will remain of the total? Formatted as currency. */
                     amountRemainingFormatted: function () {
@@ -571,7 +574,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         this.previouslyPaid = this.viewModel.Session.PreviouslyPaid;
                     }
                     else if (this.viewModel.InitialAmountToPay !== null) {
-                        this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay;
+                        this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay * this.registrationEntryState.Registrants.length;
                     }
                     else {
                         this.registrationEntryState.AmountToPayToday = this.discountAmount;

@@ -32,7 +32,7 @@ System.register(["vue", "./Index", "../Elements/TextBox", "../Services/Boolean"]
                 props: Index_1.getFieldTypeProps(),
                 data: function () {
                     return {
-                        internalValue: this.modelValue
+                        internalValue: ''
                     };
                 },
                 computed: {
@@ -61,6 +61,12 @@ System.register(["vue", "./Index", "../Elements/TextBox", "../Services/Boolean"]
                 watch: {
                     internalValue: function () {
                         this.$emit('update:modelValue', this.internalValue);
+                    },
+                    modelValue: {
+                        immediate: true,
+                        handler: function () {
+                            this.internalValue = this.modelValue || '';
+                        }
                     }
                 },
                 template: "\n<TextBox v-if=\"isEditMode\" v-model=\"internalValue\" v-bind=\"configAttributes\" />\n<span v-else>{{ safeValue }}</span>"

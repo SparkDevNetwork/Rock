@@ -145,22 +145,25 @@ export default defineComponent( {
             while ( this.numberOfRegistrants > this.registrationEntryState.Registrants.length )
             {
                 const registrant = getDefaultRegistrantInfo( this.currentPerson, this.viewModel, forcedFamilyGuid );
-
-                if ( availableFamilyMembers.length )
-                {
-                    const familyMember = availableFamilyMembers.shift()!;
-                    registrant.PersonGuid = familyMember.Guid;
-                }
-
                 this.registrationEntryState.Registrants.push( registrant );
             }
 
             this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
+
+            // Set people beyond the capacity tro be on the waitlist
             const firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
 
             for ( let i = firstWaitListIndex; i < this.numberOfRegistrants; i++ )
             {
                 this.registrationEntryState.Registrants[ i ].IsOnWaitList = true;
+            }
+
+            // If there are family members, set the first registrant to be the first (feature parity with the original block)
+            if ( availableFamilyMembers.length && this.registrationEntryState.Registrants.length )
+            {
+                const familyMember = availableFamilyMembers[ 0 ];
+                const registrant = this.registrationEntryState.Registrants[ 0 ];
+                registrant.PersonGuid = familyMember.Guid;
             }
 
             this.$emit( 'next' );
