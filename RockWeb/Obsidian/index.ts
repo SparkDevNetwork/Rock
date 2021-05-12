@@ -22,6 +22,7 @@ import './Rules/Index';
 import Person from './ViewModels/CodeGenerated/PersonViewModel';
 import Entity from './ViewModels/Entity';
 import PageDebugTimings, { DebugTimingViewModel } from './Controls/PageDebugTimings';
+import Alert from './Elements/Alert';
 
 export type ConfigurationValues = Record<string, unknown>;
 
@@ -53,40 +54,55 @@ type DebugTimingConfig = {
 * @param config
 * @param blockComponent
 */
-export async function initializeBlock(config: BlockConfig): Promise<App> {
+export async function initializeBlock ( config: BlockConfig ): Promise<App>
+{
     const blockPath = `${config.blockFileUrl}.js`;
     let blockComponent: Component | null = null;
+    let errorMessage = '';
 
-    try {
-        const blockComponentModule = await import(blockPath);
+    try
+    {
+        const blockComponentModule = await import( blockPath );
         blockComponent = blockComponentModule ?
-            (blockComponentModule.default || blockComponentModule) :
+            ( blockComponentModule.default || blockComponentModule ) :
             null;
     }
-    catch (e) {
+    catch ( e )
+    {
         // Log the error, but continue setting up the app so the UI will show the user an error
-        console.error(e);
+        console.error( e );
+        errorMessage = `${e}`;
     }
 
-    const name = `Root${config.blockFileUrl.replace(/\//g, '.')}`;
-    const startTimeMs = (new Date()).getTime();
+    const name = `Root${config.blockFileUrl.replace( /\//g, '.' )}`;
+    const startTimeMs = ( new Date() ).getTime();
 
-    const app = createApp({
+    const app = createApp( {
         name,
         components: {
-            RockBlock
+            RockBlock,
+            Alert
         },
-        data() {
+        data ()
+        {
             return {
                 config: config,
-                blockComponent: blockComponent ? markRaw(blockComponent) : null,
-                startTimeMs
+                blockComponent: blockComponent ? markRaw( blockComponent ) : null,
+                startTimeMs,
+                errorMessage
             };
         },
-        template: `<RockBlock :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" />`
-    });
-    app.use(store);
-    app.mount(config.rootElement);
+        template: `
+<Alert v-if="errorMessage" alertType="danger">
+    <strong>Error Initializing Block</strong>
+    <br />
+    {{errorMessage}}
+</Alert>
+<RockBlock v-else :config="config" :blockComponent="blockComponent" :startTimeMs="startTimeMs" />`
+    } );
+
+    app.use( store );
+    app.mount( config.rootElement );
 
     return app;
 }
@@ -96,34 +112,38 @@ export async function initializeBlock(config: BlockConfig): Promise<App> {
 * page parameters and context entities.
 * @param {object} pageData
 */
-export async function initializePage(pageConfig: PageConfig) {
-    await store.dispatch('initialize', { pageConfig });
+export async function initializePage ( pageConfig: PageConfig )
+{
+    await store.dispatch( 'initialize', { pageConfig } );
 }
 
 /**
  * Shows the Obsidian debug timings
  * @param debugTimingConfig
  */
-export function initializePageTimings(config: DebugTimingConfig) {
-    const rootElement = document.getElementById(config.elementId);
+export function initializePageTimings ( config: DebugTimingConfig )
+{
+    const rootElement = document.getElementById( config.elementId );
 
-    if (!rootElement) {
-        console.error('Could not show Obsidian debug timings because the HTML element did not resolve.');
+    if ( !rootElement )
+    {
+        console.error( 'Could not show Obsidian debug timings because the HTML element did not resolve.' );
         return;
     }
 
-    const app = createApp({
+    const app = createApp( {
         name: 'PageDebugTimingsRoot',
         components: {
             PageDebugTimings
         },
-        data() {
+        data ()
+        {
             return {
                 viewModels: config.debugTimingViewModels
             };
         },
         template: `<PageDebugTimings :serverViewModels="viewModels" />`
-    });
-    app.use(store);
-    app.mount(rootElement);
+    } );
+    app.use( store );
+    app.mount( rootElement );
 }

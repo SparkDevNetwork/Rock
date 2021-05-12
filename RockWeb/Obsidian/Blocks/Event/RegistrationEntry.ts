@@ -20,7 +20,7 @@ import RockButton from '../../Elements/RockButton';
 import { Guid, newGuid } from '../../Util/Guid';
 import RegistrationEntryIntro from './RegistrationEntry/Intro';
 import RegistrationEntryRegistrants from './RegistrationEntry/Registrants';
-import { RegistrantInfo, RegistrarInfo, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from './RegistrationEntry/RegistrationEntryBlockViewModel';
+import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrationEntryBlockFormViewModel, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel, RegistrationPersonFieldType } from './RegistrationEntry/RegistrationEntryBlockViewModel';
 import RegistrationEntryRegistrationStart from './RegistrationEntry/RegistrationStart';
 import RegistrationEntryRegistrationEnd from './RegistrationEntry/RegistrationEnd';
 import RegistrationEntrySummary from './RegistrationEntry/Summary';
@@ -35,6 +35,8 @@ import Page from '../../Util/Page';
 import { RegistrationEntryBlockArgs } from './RegistrationEntry/RegistrationEntryBlockArgs';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
 import JavaScriptAnchor from '../../Elements/JavaScriptAnchor';
+import store from '../../Store/index';
+import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
 
 export enum Step
 {
@@ -71,13 +73,47 @@ export type RegistrationEntryState = {
     RegistrationSessionGuid: Guid;
 };
 
-export function getDefaultRegistrantInfo ()
+/** If all registrants are to be in the same family, but there is no currently authenticated person,
+ *  then this guid is used as a common family guid */
+const unknownSingleFamilyGuid = newGuid();
+
+/**
+ * If there is a forced family guid because of RegistrantsSameFamily setting, then this returns that guid
+ * @param currentPerson
+ * @param viewModel
+ */
+export function getForcedFamilyGuid ( currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel )
 {
+    return ( currentPerson && viewModel.RegistrantsSameFamily === RegistrantsSameFamily.Yes ) ?
+        ( currentPerson.PrimaryFamilyGuid || unknownSingleFamilyGuid ) :
+        unknownSingleFamilyGuid;
+}
+
+/**
+ * Get a default registrant object with the current family guid set.
+ * @param currentPerson
+ * @param viewModel
+ * @param familyGuid
+ */
+export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel, familyGuid: Guid | null )
+{
+    const forcedFamilyGuid = getForcedFamilyGuid( currentPerson, viewModel );
     const ownFamilyGuid = newGuid();
+
+    if ( forcedFamilyGuid )
+    {
+        familyGuid = forcedFamilyGuid;
+    }
+
+    // If the family is not specified, then assume the person is in their own family
+    if ( !familyGuid )
+    {
+        familyGuid = ownFamilyGuid;
+    }
 
     return {
         IsOnWaitList: false,
-        FamilyGuid: ownFamilyGuid,
+        FamilyGuid: familyGuid,
         FieldValues: {},
         FeeItemQuantities: {},
         Guid: newGuid(),
@@ -164,7 +200,7 @@ export default defineComponent( {
             CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: viewModel.Session?.Registrants || [ getDefaultRegistrantInfo() ],
+            Registrants: viewModel.Session?.Registrants || [ getDefaultRegistrantInfo( null, viewModel, null ) ],
             RegistrationFieldValues: viewModel.Session?.FieldValues || {},
             Registrar: viewModel.Session?.Registrar || {
                 NickName: '',
@@ -235,6 +271,12 @@ export default defineComponent( {
         };
     },
     computed: {
+        /** The person currently authenticated */
+        currentPerson (): Person | null
+        {
+            return this.$store.state.currentPerson;
+        },
+
         /** Is the session expired? */
         isSessionExpired (): boolean
         {
@@ -488,6 +530,21 @@ export default defineComponent( {
         }
     },
     watch: {
+        currentPerson: {
+            immediate: true,
+            handler ()
+            {
+                const forcedFamilyGuid = getForcedFamilyGuid( this.currentPerson, this.viewModel );
+
+                if ( forcedFamilyGuid )
+                {
+                    for ( const registrant of this.registrationEntryState.Registrants )
+                    {
+                        registrant.FamilyGuid = forcedFamilyGuid;
+                    }
+                }
+            }
+        },
         'registrationEntryState.SessionExpirationDate': {
             immediate: true,
             handler ()

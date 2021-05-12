@@ -82,10 +82,17 @@ export enum RegistrarOption
     UseLoggedInPerson = 3
 }
 
+export enum RegistrantsSameFamily
+{
+    No = 0,
+    Yes = 1,
+    Ask = 2
+}
+
 export interface RegistrationEntryBlockViewModel
 {
     TimeoutMinutes: number | null;
-    DoAskForFamily: boolean;
+    RegistrantsSameFamily: RegistrantsSameFamily;
     MaxRegistrants: number;
     RegistrationAttributeTitleStart: string;
     RegistrationAttributeTitleEnd: string;
@@ -154,6 +161,7 @@ export interface RegistrationEntryBlockFormFieldViewModel
     FieldSource: RegistrationFieldSource;
     PersonFieldType: RegistrationPersonFieldType;
     IsRequired: boolean;
+    IsSharedValue: boolean;
     Attribute: Attribute;
     VisibilityRuleType: FilterExpressionType;
     VisibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
@@ -172,10 +180,16 @@ export interface RegistrationEntryBlockFormFieldRuleViewModel
 
 export type RegistrantInfo = {
     IsOnWaitList: boolean;
+
+    /** The family guid that this person is to be a part of */
     FamilyGuid: Guid;
+
+    /** If the person were an existing person, this is his/her guid */
     PersonGuid: Guid;
     FieldValues: Record<Guid, unknown>;
     FeeItemQuantities: Record<Guid, number>;
+
+    /** If the person were in their own family, this would be that family's guid */
     OwnFamilyGuid: Guid;
     Guid: Guid;
 };

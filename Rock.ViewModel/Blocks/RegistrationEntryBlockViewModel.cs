@@ -153,7 +153,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         ///   <c>true</c> if [do ask for family]; otherwise, <c>false</c>.
         /// </value>
-        public bool DoAskForFamily { get; set; }
+        public int RegistrantsSameFamily { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [force email update].
@@ -512,6 +512,14 @@ namespace Rock.ViewModel.Blocks
         ///   <c>true</c> if [show on wait list]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowOnWaitList { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is shared value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is shared value; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSharedValue { get; set; }
     }
 
     /// <summary>

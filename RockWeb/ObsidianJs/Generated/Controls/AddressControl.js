@@ -8,7 +8,8 @@ System.register(["vue", "../Elements/DropDownList", "../Elements/RockLabel", "..
             Street2: '',
             City: '',
             State: 'AZ',
-            PostalCode: ''
+            PostalCode: '',
+            Country: 'US'
         };
     }
     exports_1("getDefaultAddressControlModel", getDefaultAddressControlModel);

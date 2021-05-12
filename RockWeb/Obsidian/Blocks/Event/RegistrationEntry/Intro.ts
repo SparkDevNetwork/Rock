@@ -20,8 +20,10 @@ import Alert from '../../../Elements/Alert';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
 import { toTitleCase, pluralConditional } from '../../../Services/String';
-import { getDefaultRegistrantInfo, RegistrationEntryState } from '../RegistrationEntry';
-import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { areEqual, newGuid } from '../../../Util/Guid';
+import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
+import { getDefaultRegistrantInfo, getForcedFamilyGuid, RegistrationEntryState } from '../RegistrationEntry';
+import { RegistrantsSameFamily, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Intro',
@@ -30,7 +32,7 @@ export default defineComponent( {
         RockButton,
         Alert
     },
-    data()
+    data ()
     {
         const registrationEntryState = inject( 'registrationEntryState' ) as RegistrationEntryState;
 
@@ -46,14 +48,20 @@ export default defineComponent( {
         };
     },
     computed: {
+        /** The currently authenticated person */
+        currentPerson (): Person | null
+        {
+            return this.$store.state.currentPerson;
+        },
+
         /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
-        viewModel(): RegistrationEntryBlockViewModel
+        viewModel (): RegistrationEntryBlockViewModel
         {
             return this.registrationEntryState.ViewModel;
         },
 
         /** The number of these registrants that will be placed on a waitlist because of capacity rules */
-        numberToAddToWaitlist(): number
+        numberToAddToWaitlist (): number
         {
             if ( this.viewModel.SpotsRemaining === null || !this.viewModel.WaitListEnabled )
             {
@@ -72,7 +80,7 @@ export default defineComponent( {
         },
 
         /** The capacity left phrase: Ex: 1 more camper */
-        remainingCapacityPhrase(): string
+        remainingCapacityPhrase (): string
         {
             const spots = this.viewModel.SpotsRemaining;
 
@@ -85,7 +93,7 @@ export default defineComponent( {
         },
 
         /** Is this instance full and no one else can register? */
-        isFull(): boolean
+        isFull (): boolean
         {
             if ( this.viewModel.SpotsRemaining === null )
             {
@@ -95,36 +103,55 @@ export default defineComponent( {
             return this.viewModel.SpotsRemaining < 1;
         },
 
-        registrantTerm(): string
+        registrantTerm (): string
         {
             this.viewModel.InstanceName;
             return ( this.viewModel.RegistrantTerm || 'registrant' ).toLowerCase();
         },
-        registrantTermPlural(): string
+        registrantTermPlural (): string
         {
             return ( this.viewModel.PluralRegistrantTerm || 'registrants' ).toLowerCase();
         },
-        registrationTerm(): string
+        registrationTerm (): string
         {
             return ( this.viewModel.RegistrationTerm || 'registration' ).toLowerCase();
         },
-        registrationTermPlural(): string
+        registrationTermPlural (): string
         {
             return ( this.viewModel.PluralRegistrationTerm || 'registrations' ).toLowerCase();
         },
-        registrationTermTitleCase(): string
+        registrationTermTitleCase (): string
         {
             return toTitleCase( this.registrationTerm );
         }
     },
     methods: {
         pluralConditional,
-        onNext()
+        onNext ()
         {
+            // If the person is authenticated and the setting is to put registrants in the same family, then we force that family guid
+            const forcedFamilyGuid = getForcedFamilyGuid( this.currentPerson, this.viewModel );
+
+            const usedFamilyMemberGuids = this.registrationEntryState.Registrants
+                .filter( r => r.PersonGuid )
+                .map( r => r.PersonGuid );
+
+            const availableFamilyMembers = this.viewModel.FamilyMembers
+                .filter( fm =>
+                    areEqual( fm.FamilyGuid, forcedFamilyGuid ) &&
+                    !usedFamilyMemberGuids.includes( fm.Guid ) );
+
             // Resize the registrant array to match the selected number
             while ( this.numberOfRegistrants > this.registrationEntryState.Registrants.length )
             {
-                const registrant = getDefaultRegistrantInfo();
+                const registrant = getDefaultRegistrantInfo( this.currentPerson, this.viewModel, forcedFamilyGuid );
+
+                if ( availableFamilyMembers.length )
+                {
+                    const familyMember = availableFamilyMembers.shift()!;
+                    registrant.PersonGuid = familyMember.Guid;
+                }
+
                 this.registrationEntryState.Registrants.push( registrant );
             }
 

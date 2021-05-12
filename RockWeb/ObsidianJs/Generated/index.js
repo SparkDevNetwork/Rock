@@ -1,4 +1,4 @@
-System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index", "./Controls/PageDebugTimings"], function (exports_1, context_1) {
+System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index", "./Controls/PageDebugTimings", "./Elements/Alert"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -36,7 +36,7 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, RockBlock_1, Index_1, PageDebugTimings_1;
+    var vue_1, RockBlock_1, Index_1, PageDebugTimings_1, Alert_1;
     var __moduleName = context_1 && context_1.id;
     /**
     * This should be called once per block on the page. The config contains configuration provided by the block's server side logic
@@ -46,12 +46,13 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
     */
     function initializeBlock(config) {
         return __awaiter(this, void 0, void 0, function () {
-            var blockPath, blockComponent, blockComponentModule, e_1, name, startTimeMs, app;
+            var blockPath, blockComponent, errorMessage, blockComponentModule, e_1, name, startTimeMs, app;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         blockPath = config.blockFileUrl + ".js";
                         blockComponent = null;
+                        errorMessage = '';
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
@@ -66,6 +67,7 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
                         e_1 = _a.sent();
                         // Log the error, but continue setting up the app so the UI will show the user an error
                         console.error(e_1);
+                        errorMessage = "" + e_1;
                         return [3 /*break*/, 4];
                     case 4:
                         name = "Root" + config.blockFileUrl.replace(/\//g, '.');
@@ -73,16 +75,18 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
                         app = vue_1.createApp({
                             name: name,
                             components: {
-                                RockBlock: RockBlock_1.default
+                                RockBlock: RockBlock_1.default,
+                                Alert: Alert_1.default
                             },
                             data: function () {
                                 return {
                                     config: config,
                                     blockComponent: blockComponent ? vue_1.markRaw(blockComponent) : null,
-                                    startTimeMs: startTimeMs
+                                    startTimeMs: startTimeMs,
+                                    errorMessage: errorMessage
                                 };
                             },
-                            template: "<RockBlock :config=\"config\" :blockComponent=\"blockComponent\" :startTimeMs=\"startTimeMs\" />"
+                            template: "\n<Alert v-if=\"errorMessage\" alertType=\"danger\">\n    <strong>Error Initializing Block</strong>\n    <br />\n    {{errorMessage}}\n</Alert>\n<RockBlock v-else :config=\"config\" :blockComponent=\"blockComponent\" :startTimeMs=\"startTimeMs\" />"
                         });
                         app.use(Index_1.default);
                         app.mount(config.rootElement);
@@ -151,6 +155,9 @@ System.register(["vue", "./Controls/RockBlock", "./Store/Index", "./Rules/Index"
             },
             function (PageDebugTimings_1_1) {
                 PageDebugTimings_1 = PageDebugTimings_1_1;
+            },
+            function (Alert_1_1) {
+                Alert_1 = Alert_1_1;
             }
         ],
         execute: function () {

@@ -20,6 +20,7 @@ import RockLabel from '../Elements/RockLabel';
 import TextBox from '../Elements/TextBox';
 import { ruleStringToArray } from '../Rules/Index';
 import { newGuid } from '../Util/Guid';
+import Location from '../ViewModels/CodeGenerated/LocationViewModel';
 
 export interface AddressControlModel {
     Street1: string;
@@ -27,6 +28,7 @@ export interface AddressControlModel {
     City: string;
     State: string;
     PostalCode: string;
+    Country: string;
 }
 
 export function getDefaultAddressControlModel() {
@@ -35,7 +37,8 @@ export function getDefaultAddressControlModel() {
         Street2: '',
         City: '',
         State: 'AZ',
-        PostalCode: ''
+        PostalCode: '',
+        Country: 'US'
     } as AddressControlModel;
 }
 

@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDown", "../../../Elements/RockButton", "../../../Services/String", "../RegistrationEntry"], function (exports_1, context_1) {
+System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDown", "../../../Elements/RockButton", "../../../Services/String", "../../../Util/Guid", "../RegistrationEntry"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, Alert_1, NumberUpDown_1, RockButton_1, String_1, RegistrationEntry_1;
+    var vue_1, Alert_1, NumberUpDown_1, RockButton_1, String_1, Guid_1, RegistrationEntry_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -34,6 +34,9 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
             },
             function (String_1_1) {
                 String_1 = String_1_1;
+            },
+            function (Guid_1_1) {
+                Guid_1 = Guid_1_1;
             },
             function (RegistrationEntry_1_1) {
                 RegistrationEntry_1 = RegistrationEntry_1_1;
@@ -59,6 +62,10 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                     };
                 },
                 computed: {
+                    /** The currently authenticated person */
+                    currentPerson: function () {
+                        return this.$store.state.currentPerson;
+                    },
                     /** The view model sent by the C# code behind. This is just a convenient shortcut to the shared object. */
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
@@ -111,9 +118,23 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                 methods: {
                     pluralConditional: String_1.pluralConditional,
                     onNext: function () {
+                        // If the person is authenticated and the setting is to put registrants in the same family, then we force that family guid
+                        var forcedFamilyGuid = RegistrationEntry_1.getForcedFamilyGuid(this.currentPerson, this.viewModel);
+                        var usedFamilyMemberGuids = this.registrationEntryState.Registrants
+                            .filter(function (r) { return r.PersonGuid; })
+                            .map(function (r) { return r.PersonGuid; });
+                        var availableFamilyMembers = this.viewModel.FamilyMembers
+                            .filter(function (fm) {
+                            return Guid_1.areEqual(fm.FamilyGuid, forcedFamilyGuid) &&
+                                !usedFamilyMemberGuids.includes(fm.Guid);
+                        });
                         // Resize the registrant array to match the selected number
                         while (this.numberOfRegistrants > this.registrationEntryState.Registrants.length) {
-                            var registrant = RegistrationEntry_1.getDefaultRegistrantInfo();
+                            var registrant = RegistrationEntry_1.getDefaultRegistrantInfo(this.currentPerson, this.viewModel, forcedFamilyGuid);
+                            if (availableFamilyMembers.length) {
+                                var familyMember = availableFamilyMembers.shift();
+                                registrant.PersonGuid = familyMember.Guid;
+                            }
                             this.registrationEntryState.Registrants.push(registrant);
                         }
                         this.registrationEntryState.Registrants.length = this.numberOfRegistrants;

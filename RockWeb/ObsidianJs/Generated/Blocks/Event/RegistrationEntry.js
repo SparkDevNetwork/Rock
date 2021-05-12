@@ -52,13 +52,38 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, CountdownTimer_1, Success_1, Page_1, JavaScriptAnchor_1, Step;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, CountdownTimer_1, Success_1, Page_1, JavaScriptAnchor_1, Step, unknownSingleFamilyGuid;
     var __moduleName = context_1 && context_1.id;
-    function getDefaultRegistrantInfo() {
+    /**
+     * If there is a forced family guid because of RegistrantsSameFamily setting, then this returns that guid
+     * @param currentPerson
+     * @param viewModel
+     */
+    function getForcedFamilyGuid(currentPerson, viewModel) {
+        return (currentPerson && viewModel.RegistrantsSameFamily === RegistrationEntryBlockViewModel_1.RegistrantsSameFamily.Yes) ?
+            (currentPerson.PrimaryFamilyGuid || unknownSingleFamilyGuid) :
+            unknownSingleFamilyGuid;
+    }
+    exports_1("getForcedFamilyGuid", getForcedFamilyGuid);
+    /**
+     * Get a default registrant object with the current family guid set.
+     * @param currentPerson
+     * @param viewModel
+     * @param familyGuid
+     */
+    function getDefaultRegistrantInfo(currentPerson, viewModel, familyGuid) {
+        var forcedFamilyGuid = getForcedFamilyGuid(currentPerson, viewModel);
         var ownFamilyGuid = Guid_1.newGuid();
+        if (forcedFamilyGuid) {
+            familyGuid = forcedFamilyGuid;
+        }
+        // If the family is not specified, then assume the person is in their own family
+        if (!familyGuid) {
+            familyGuid = ownFamilyGuid;
+        }
         return {
             IsOnWaitList: false,
-            FamilyGuid: ownFamilyGuid,
+            FamilyGuid: familyGuid,
             FieldValues: {},
             FeeItemQuantities: {},
             Guid: Guid_1.newGuid(),
@@ -146,6 +171,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                 Step["success"] = "success";
             })(Step || (Step = {}));
             exports_1("Step", Step);
+            /** If all registrants are to be in the same family, but there is no currently authenticated person,
+             *  then this guid is used as a common family guid */
+            unknownSingleFamilyGuid = Guid_1.newGuid();
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry',
                 components: {
@@ -201,7 +229,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         CurrentStep: currentStep,
                         CurrentRegistrantFormIndex: 0,
                         CurrentRegistrantIndex: 0,
-                        Registrants: ((_c = viewModel.Session) === null || _c === void 0 ? void 0 : _c.Registrants) || [getDefaultRegistrantInfo()],
+                        Registrants: ((_c = viewModel.Session) === null || _c === void 0 ? void 0 : _c.Registrants) || [getDefaultRegistrantInfo(null, viewModel, null)],
                         RegistrationFieldValues: ((_d = viewModel.Session) === null || _d === void 0 ? void 0 : _d.FieldValues) || {},
                         Registrar: ((_e = viewModel.Session) === null || _e === void 0 ? void 0 : _e.Registrar) || {
                             NickName: '',
@@ -271,6 +299,10 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     };
                 },
                 computed: {
+                    /** The person currently authenticated */
+                    currentPerson: function () {
+                        return this.$store.state.currentPerson;
+                    },
                     /** Is the session expired? */
                     isSessionExpired: function () {
                         return this.secondsBeforeExpiration === 0 && this.currentStep !== this.steps.success;
@@ -534,6 +566,18 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     }
                 },
                 watch: {
+                    currentPerson: {
+                        immediate: true,
+                        handler: function () {
+                            var forcedFamilyGuid = getForcedFamilyGuid(this.currentPerson, this.viewModel);
+                            if (forcedFamilyGuid) {
+                                for (var _i = 0, _a = this.registrationEntryState.Registrants; _i < _a.length; _i++) {
+                                    var registrant = _a[_i];
+                                    registrant.FamilyGuid = forcedFamilyGuid;
+                                }
+                            }
+                        }
+                    },
                     'registrationEntryState.SessionExpirationDate': {
                         immediate: true,
                         handler: function () {

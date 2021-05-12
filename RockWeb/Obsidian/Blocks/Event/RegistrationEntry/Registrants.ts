@@ -34,7 +34,14 @@ export default defineComponent( {
             persistSession: inject( 'persistSession' ) as () => Promise<void>
         };
     },
+    data ()
+    {
+        return {
+            hasCopiedCommonValues: false
+        };
+    },
     methods: {
+        /** The event that handles when the user clicks to move to the previous registrant */
         async onPrevious()
         {
             if ( this.registrationEntryState.CurrentRegistrantIndex <= 0 )
@@ -48,6 +55,8 @@ export default defineComponent( {
             this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
         },
+
+        /** The event that handles when the user clicks to move to the next registrant */
         async onNext()
         {
             const lastIndex = this.registrationEntryState.Registrants.length - 1;
@@ -58,9 +67,55 @@ export default defineComponent( {
                 return;
             }
 
+            // If the first registrant was just completed, then copy the common/shared values to other registrants
+            if ( this.registrationEntryState.CurrentRegistrantIndex === 0 )
+            {
+                this.copyCommonValuesFromFirstRegistrant();
+            }
+
             this.registrationEntryState.CurrentRegistrantIndex++;
             this.registrationEntryState.CurrentRegistrantFormIndex = 0;
             await this.persistSession();
+        },
+
+        /** Copy the common values from the first registrant to the others */
+        copyCommonValuesFromFirstRegistrant ()
+        {
+            // Only copy one time
+            if ( this.hasCopiedCommonValues )
+            {
+                return;
+            }
+
+            this.hasCopiedCommonValues = true;
+            const firstRegistrant = this.registrants[ 0 ];
+
+            for ( let i = 1; i < this.registrants.length; i++ )
+            {
+                const currentRegistrant = this.registrants[ i ];
+
+                for ( const form of this.registrationEntryState.ViewModel.RegistrantForms )
+                {
+                    for ( const field of form.Fields )
+                    {
+                        if ( !field.IsSharedValue )
+                        {
+                            continue;
+                        }
+
+                        const valueToShare = firstRegistrant.FieldValues[ field.Guid ];
+
+                        if ( valueToShare && typeof valueToShare === 'object' )
+                        {
+                            currentRegistrant.FieldValues[ field.Guid ] = { ...valueToShare };
+                        }
+                        else
+                        {
+                            currentRegistrant.FieldValues[ field.Guid ] = valueToShare;
+                        }
+                    }
+                }
+            }
         }
     },
     computed: {

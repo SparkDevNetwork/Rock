@@ -16,7 +16,7 @@
 //
 System.register([], function (exports_1, context_1) {
     "use strict";
-    var RegistrationPersonFieldType, RegistrationFieldSource, FilterExpressionType, ComparisonType, RegistrarOption;
+    var RegistrationPersonFieldType, RegistrationFieldSource, FilterExpressionType, ComparisonType, RegistrarOption, RegistrantsSameFamily;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [],
@@ -78,6 +78,12 @@ System.register([], function (exports_1, context_1) {
                 RegistrarOption[RegistrarOption["UseLoggedInPerson"] = 3] = "UseLoggedInPerson";
             })(RegistrarOption || (RegistrarOption = {}));
             exports_1("RegistrarOption", RegistrarOption);
+            (function (RegistrantsSameFamily) {
+                RegistrantsSameFamily[RegistrantsSameFamily["No"] = 0] = "No";
+                RegistrantsSameFamily[RegistrantsSameFamily["Yes"] = 1] = "Yes";
+                RegistrantsSameFamily[RegistrantsSameFamily["Ask"] = 2] = "Ask";
+            })(RegistrantsSameFamily || (RegistrantsSameFamily = {}));
+            exports_1("RegistrantsSameFamily", RegistrantsSameFamily);
         }
     };
 });

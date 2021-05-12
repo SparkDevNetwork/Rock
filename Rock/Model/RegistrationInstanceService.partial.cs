@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -141,20 +142,8 @@ namespace Rock.Model
         /// <returns></returns>
         public List<RegistrationCostSummaryInfo> GetRegistrationCostSummaryInfo( RegistrationContext context, RegistrationEntryBlockArgs registration )
         {
-            var registrationInstance = context.RegistrationInstance;
-            var registrationTemplate = context.RegistrationTemplate;
-
-            var minimumInitialPaymentPerRegistrant = registrationTemplate.MinimumInitialPayment;
-            if ( registrationTemplate.SetCostOnInstance ?? false )
-            {
-                minimumInitialPaymentPerRegistrant = registrationInstance.MinimumInitialPayment;
-            }
-
-            decimal? defaultPaymentAmountPerRegistrant = registrationTemplate.DefaultPayment;
-            if ( registrationTemplate.SetCostOnInstance ?? false )
-            {
-                defaultPaymentAmountPerRegistrant = registrationInstance.DefaultPayment;
-            }
+            var minimumInitialPaymentPerRegistrant = context.RegistrationSettings.PerRegistrantMinInitialPayment;
+            var defaultPaymentAmountPerRegistrant = context.RegistrationSettings.PerRegistrantDefaultInitialPayment;
 
             var rockContext = Context as RockContext;
             var registrationService = new RegistrationService( rockContext );
@@ -176,8 +165,8 @@ namespace Rock.Model
                 // Use this to hold the amount of discount remaining if the discount is greater than the registrant cost. The remaining dollars can be applied to eligable fees.
                 decimal discountAmountRemaining = 0.0m;
 
-                var firstName = registrationService.GetFirstName( registrationTemplate, registrant );
-                var lastName = registrationService.GetLastName( registrationTemplate, registrant );
+                var firstName = registrationService.GetFirstName( context.RegistrationSettings, registrant );
+                var lastName = registrationService.GetLastName( context.RegistrationSettings, registrant );
 
                 // The registrant name for the payment summary grid
                 var costSummary = new RegistrationCostSummaryInfo
@@ -198,7 +187,7 @@ namespace Rock.Model
                 else
                 {
                     // Add the registrant cost to the cost summary
-                    costSummary.Cost = ( registrationTemplate.SetCostOnInstance == true ? registrationInstance.Cost : registrationTemplate.Cost ) ?? 0;
+                    costSummary.Cost = context.RegistrationSettings.PerRegistrantCost;
 
                     // Default the DiscountedCost to the same as the actual cost
                     costSummary.DiscountedCost = costSummary.Cost;
@@ -242,7 +231,7 @@ namespace Rock.Model
                     var quantity = kvp.Value;
 
                     // Get the fee from the template
-                    var templateFeeItems = registrationTemplate.Fees.SelectMany( f => f.FeeItems );
+                    var templateFeeItems = context.RegistrationSettings.Fees.SelectMany( f => f.FeeItems );
                     var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
                     var templateFee = templateFeeItem.RegistrationTemplateFee;
 
@@ -306,7 +295,7 @@ namespace Rock.Model
         public int? GetSpotsAvailable( RegistrationContext context )
         {
             // Get the number of slots available
-            var spotsRemaining = context.RegistrationInstance.MaxAttendees;
+            var spotsRemaining = context.RegistrationSettings.MaxAttendees;
 
             if ( !spotsRemaining.HasValue )
             {
@@ -321,12 +310,12 @@ namespace Rock.Model
                     .Queryable()
                     .AsNoTracking()
                     .Count( a =>
-                        a.Registration.RegistrationInstanceId == context.RegistrationInstance.Id &&
+                        a.Registration.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId &&
                         !a.Registration.IsTemporary );
 
                 spotsRemaining -= otherRegistrantsCount;
 
-                if ( spotsRemaining > 0 && context.RegistrationInstance.TimeoutIsEnabled )
+                if ( spotsRemaining > 0 && context.RegistrationSettings.IsTimeoutEnabled )
                 {
                     // Check the number of people that are in the process of registering right now
                     var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
@@ -350,33 +339,35 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the registrant cost.
+        /// Gets the fee item count remaining.
         /// </summary>
-        /// <param name="registrationTemplate">The registration template.</param>
-        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="context">The context.</param>
         /// <returns></returns>
-        public decimal GetBaseRegistrantCost( RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
+        public Dictionary<Guid, int?> GetFeeItemCountRemaining( RegistrationContext context )
         {
-            var cost = registrationTemplate.SetCostOnInstance == true ?
-                        ( registrationInstance.Cost ?? registrationTemplate.Cost ) :
-                        registrationTemplate.Cost;
+            var feeItems = context.RegistrationSettings.Fees.SelectMany( f => f.FeeItems );
+            var map = feeItems.ToDictionary( fi => fi.Guid, fi => ( int? ) null );
 
-            return cost;
-        }
+            var service = new RegistrationRegistrantFeeService( Context as RockContext );
+            var quantitiesUsed = service.Queryable()
+                .AsNoTracking()
+                .Where( rf =>
+                     rf.RegistrationRegistrant.Registration.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId &&
+                     rf.RegistrationTemplateFeeItem.MaximumUsageCount.HasValue )
+                .Select( f => new
+                {
+                    f.Quantity,
+                    f.RegistrationTemplateFeeItem.Guid
+                } )
+                .ToList();
 
-        /// <summary>
-        /// Gets the registrant cost.
-        /// </summary>
-        /// <param name="registrationTemplate">The registration template.</param>
-        /// <param name="registrationInstance">The registration instance.</param>
-        /// <returns></returns>
-        public decimal? GetMinimumInitialPaymentAmount( RegistrationTemplate registrationTemplate, RegistrationInstance registrationInstance )
-        {
-            var cost = registrationTemplate.SetCostOnInstance == true ?
-                        ( registrationInstance.MinimumInitialPayment ?? registrationTemplate.MinimumInitialPayment ) :
-                        registrationTemplate.MinimumInitialPayment;
+            foreach ( var quantityUsed in quantitiesUsed )
+            {
+                var qtyUsed = map.GetValueOrDefault( quantityUsed.Guid, 0 ) + quantityUsed.Quantity;
+                map[quantityUsed.Guid] = qtyUsed;
+            }
 
-            return cost;
+            return map;
         }
     }
 }

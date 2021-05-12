@@ -358,7 +358,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     },
                     /** The text to be displayed on the "Finish" button */
                     finishButtonText: function () {
-                        return this.viewModel.IsRedirectGateway ? 'Pay' : 'Finish';
+                        return (this.viewModel.IsRedirectGateway && this.registrationEntryState.AmountToPayToday) ? 'Pay' : 'Finish';
                     }
                 },
                 methods: {
@@ -445,10 +445,6 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     /** Prefill in the registrar form fields based on the admin's settings */
                     prefillRegistrar: function () {
                         this.isRegistrarPanelShown = true;
-                        // If the information is aleady recorded, do not change it
-                        if (this.registrar.NickName || this.registrar.LastName || this.registrar.Email) {
-                            return;
-                        }
                         // If the option is to prompt or use the current person, prefill the current person if available
                         if (this.currentPerson &&
                             (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar)) {
