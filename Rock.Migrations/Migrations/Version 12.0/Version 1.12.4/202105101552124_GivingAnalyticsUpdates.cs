@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,25 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-using Fluid;
-
-namespace Rock.Lava.Fluid
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// An implementation of a FluidTemplate that stores some additional information about the parsed template.
+    ///
     /// </summary>
-    internal class LavaFluidTemplate : BaseFluidTemplate<LavaFluidTemplate>
+    public partial class GivingAnalyticsUpdates : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The text of the Lava source template.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public string SourceDocument { get; set; }
-
+        public override void Up()
+        {
+            AddColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift", c => c.Int());
+        }
+        
         /// <summary>
-        /// A collection of elements parsed from the source document.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public List<FluidParsedTemplateElement> Elements { get; set; }
+        public override void Down()
+        {
+            DropColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift");
+        }
     }
 }

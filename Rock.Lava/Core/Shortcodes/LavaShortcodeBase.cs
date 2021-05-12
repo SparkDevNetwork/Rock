@@ -130,17 +130,6 @@ namespace Rock.Lava
             }
         }
 
-
-        /// <summary>
-        /// Parse a set of Lava tokens into a set of document nodes that can be processed by the underlying rendering framework.
-        /// </summary>
-        /// <param name="tokens"></param>
-        /// <param name="nodes"></param>
-        public virtual void OnParsed( List<string> tokens )
-        {
-            //
-        }
-
         /// <summary>
         /// Executed at Rock startup to perform one-time initialization tasks for this code element.
         /// </summary>

@@ -235,14 +235,20 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
+                        string templateContent;
+
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
-                            lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "InfoWindowContents" ).Trim() );
+                            templateContent = GetAttributeValue( "InfoWindowContents" ).Trim();
                         }
                         else
                         {
-                            lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( string.Empty );
+                            templateContent = string.Empty;
                         }
+
+                        var parseResult = LavaEngine.CurrentEngine.ParseTemplate( templateContent );
+
+                        lavaTemplate = parseResult.Template;
                     }
 
                     var groupPageRef = new PageReference( GetAttributeValue( "GroupDetailPage" ) );

@@ -223,8 +223,11 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    defaultLavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+                    var parseResult = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+
+                    defaultLavaTemplate = parseResult.Template;
                 }
+
                 var options = new Rock.Lava.CommonMergeFieldsOptions();
                 options.GetPageContext = false;
                 options.GetLegacyGlobalMergeFields = false;

@@ -15,9 +15,6 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock;
-using Rock.Data;
-using Rock.Model;
 using Rock.Lava;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -86,9 +83,9 @@ Panel 3 - Panel 3 content.
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
             } );
@@ -140,7 +137,7 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
@@ -148,11 +145,24 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
                     return;
                 }
 
-                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
             } );
 
+        }
+
+        /// <summary>
+        /// This test verifies a workaround for an issue with the Fluid parser where repeatedly processing the same shortcode
+        /// fails because of some persistent state that is maintained within the Fluid framework.
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeBlock_ProcessingMultipleShortcodesInSeries_ProducesIdenticalResult()
+        {
+            ShortcodeBlock_WithParameters_CanResolveParameters();
+
+            // This subsequent iteration of the same test will fail with an error if the issue with the Fluid framework is not fixed.
+            ShortcodeBlock_WithParameters_CanResolveParameters();
         }
 
         [TestMethod]
@@ -185,7 +195,7 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
@@ -193,7 +203,7 @@ Font Bold: true
                     return;
                 }
 
-                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
             } );
@@ -242,10 +252,10 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                engine.RegisterDynamicShortcode( shortcode1.Name, ( shortcodeName ) => { return shortcode1; } );
-                engine.RegisterDynamicShortcode( shortcode2.Name, ( shortcodeName ) => { return shortcode2; } );
+                engine.RegisterShortcode( shortcode1.Name, ( shortcodeName ) => { return shortcode1; } );
+                engine.RegisterShortcode( shortcode2.Name, ( shortcodeName ) => { return shortcode2; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input );
 
@@ -425,7 +435,8 @@ var chart = new Chart(ctx, {
         #region Easy Pie Chart
 
         [TestMethod]
-        public void EasyPieChartShortcode_SmallChart_EmitsCorrectHtml()
+        [Ignore( "Fluid produces a decimal result for '{%- assign itemtrackwidth = chartwidth | DividedBy:8.5,0 -%}' rather than int,  which causes this test to fail for Fluid." )]
+        public void EasyPieChartShortcodeTag_SmallChart_EmitsCorrectHtml()
         {
             var input = @"
 {[ easypie value:'25' scalelinelength:'0' chartwidth:'50' ]} {[ endeasypie ]}
@@ -538,8 +549,7 @@ $( document ).ready(function() {
         #region GoogleMap
 
         [TestMethod]
-        [Ignore( "The current template in the Rock Demo database contains an invalid comparison operator '&&' which causes this test to fail for Fluid." )]
-        public void GoogleMapShortcode_SinglePoint_EmitsCorrectHtml()
+        public void GoogleStaticMapShortcode_SinglePoint_EmitsCorrectHtml()
         {
             var input = @"
 {[ googlemap ]}
@@ -661,7 +671,6 @@ $( document ).ready(function() {
         #region GoogleStaticMap
 
         [TestMethod]
-        [Ignore( "The current template in the Rock Demo database contains an invalid comparison operator '&&' which causes this test to fail for Fluid." )]
         public void GoogleStaticMapShortcode_DefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
@@ -929,7 +938,7 @@ This is a super simple panel.
         #region Vimeo
 
         [TestMethod]
-        public void VimeoShortcode_DefaultOptions_EmitsCorrectHtml()
+        public void VimeoShortcodeTag_DefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
 {[ vimeo id:'180467014' ]}
@@ -963,7 +972,7 @@ This is a super simple panel.
         #region Word Cloud
 
         [TestMethod]
-        public void WordCloudShortcode_DefaultOptions_EmitsCorrectHtml()
+        public void WordCloudShortcodeBlock_DefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
 {[ wordcloud ]}
@@ -1044,7 +1053,7 @@ Another possibility would be to merge a word’s tree with a single large tree o
         #region YouTube
 
         [TestMethod]
-        public void YouTubeShortcode_DefaultOptions_EmitsCorrectHtml()
+        public void YouTubeShortcodeTag_DefaultOptions_EmitsCorrectHtml()
         {
             var input = @"
 {[ youtube id:'8kpHK4YIwY4' ]}

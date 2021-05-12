@@ -58,7 +58,7 @@ namespace Rock.Tests.Rock.Lava
                     {
                         DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0 ),
                         DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0 ),
-                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
+                        DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
                         Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
@@ -1418,13 +1418,14 @@ namespace Rock.Tests.Rock.Lava
         {
             // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month. So 12 months from now would be the previous month next year.
             DateTime nextYearSaturday = RockDateTime.Now
+                .AddMonths( -1 )
                 .StartOfMonth()
                 .AddYears( 1 )
                 .GetNextWeekday( DayOfWeek.Saturday )
                 .AddHours( 10 );
 
-            // Get the end datetime of the 12th event in the "First Saturday of the Month" schedule.
-            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" ).LastOrDefault();
+            // Get the end datetime of the 11th event in the "First Saturday of the Month" schedule.
+            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 12, "enddatetime" )[10];
             Assert.That.AreEqual( nextYearSaturday, output );
         }
 
@@ -1593,9 +1594,9 @@ namespace Rock.Tests.Rock.Lava
                 _lavaEngine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions() );
             }
 
-            var output = _lavaEngine.RenderTemplate( template );
+            var result = _lavaEngine.RenderTemplate( template );
 
-            Assert.That.AreEqual( expected, output );
+            Assert.That.AreEqual( expected, result.Text );
         }
 
         #endregion

@@ -306,7 +306,7 @@ namespace Rock.Model
                 a.Communication,
                 a.SentMessage,
             } ).ToList();
-            
+
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
@@ -360,8 +360,19 @@ namespace Rock.Model
 
             var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
 
-            IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
-                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId && r.FromPersonAliasId == personAliasId );
+            /*
+             * 5/4/2021 MSB
+             * When we include conversations we need to make sure we include conversations from all aliases related to the
+             * person so that conversations from merged records still appear here.
+             * 
+             * Reason: Merge People Conversations
+             */
+
+            var communicationResponseQuery = this.Queryable()
+                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId
+                        && r.RelatedSmsFromDefinedValueId == relatedSmsFromDefinedValueId
+                        && r.FromPersonAlias != null
+                        && r.FromPersonAlias.Person.Aliases.Any( fpa => fpa.Id == personAliasId ) );
 
             var communicationResponseList = communicationResponseQuery.ToList();
 
@@ -384,11 +395,12 @@ namespace Rock.Model
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext )
+            var communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext )
                 .Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId )
                 .Where( r => r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId )
-                .Where( r => r.PersonAliasId == personAliasId )
+                .Where( r => r.PersonAlias != null )
+                .Where( r => r.PersonAlias.Person.Aliases.Any( fpa => fpa.Id == personAliasId ))
                 .Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
 
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new

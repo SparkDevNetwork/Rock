@@ -334,11 +334,7 @@ $(document).ready(function() {
             {
                 try
                 {
-                    Stopwatch stopwatch = Stopwatch.StartNew();
                     dataView.PersistResult( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-                    stopwatch.Stop();
-                    dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                    dataView.PersistedLastRunDurationMilliseconds = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
                     rockContext.SaveChanges();
                 }
                 catch ( Exception ex )
@@ -1061,7 +1057,11 @@ $(document).ready(function() {
                 {
                     SortProperty = gPreview.SortProperty,
                     DbContext = dbContext,
-                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
+                    DataViewFilterOverrides = new DataViewFilterOverrides
+                    {
+                        ShouldUpdateStatics = false
+                    }
                 };
 
                 var qry = dataView.GetQuery( dataViewGetQueryArgs );

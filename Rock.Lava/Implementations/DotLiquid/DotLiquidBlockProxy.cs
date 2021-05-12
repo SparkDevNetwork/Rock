@@ -192,9 +192,6 @@ namespace Rock.Lava.DotLiquid
             {
                 this.NodeList = new List<object>();
             }
-
-            // Allow the custom block to perform actions using the parsed tokens prior to rendering.
-            _lavaBlock.OnParsed( blockTokens );
         }
 
         #endregion

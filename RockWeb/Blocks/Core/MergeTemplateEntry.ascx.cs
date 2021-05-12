@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Core
                     {
                         object mergeObject;
 
-                        string commaPersonIds = combinedFamilyItem.Persons.Select( a => a.Id ).Distinct().ToList().AsDelimited( "," );
+                        var personIds = combinedFamilyItem.Persons.Select( a => a.Id ).Distinct().ToArray();
 
                         var primaryGroupPerson = combinedFamilyItem.Persons.FirstOrDefault() as Person;
 
@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.Core
                         {
                             var combinedPerson = primaryGroupPerson.ToJson().FromJsonOrNull<MergeTemplateCombinedPerson>();
 
-                            var familyTitle = RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, combinedFamilyItem.GroupId, commaPersonIds, true );
+                            var familyTitle = Person.CalculateFamilySalutation( primaryGroupPerson, new Person.CalculateFamilySalutationArgs( true ) { LimitToPersonIds = personIds } );
                             combinedPerson.FullName = familyTitle;
 
                             var firstNameList = combinedFamilyItem.Persons.Select( a => ( a as Person ).FirstName ).ToList();

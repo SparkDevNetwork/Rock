@@ -125,7 +125,9 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         public override LavaDataDictionary GetMergeFields()
         {
-            var dictionary = new LavaDataDictionary( this.GetScopeAggregatedValues( _context.LocalScope ) );
+            var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
+
+            var dictionary = new LavaDataDictionary( this.GetScopeAggregatedValues( localScope ) );
 
             return dictionary;
         }
@@ -138,20 +140,21 @@ namespace Rock.Lava.Fluid
         /// <param name="scopeReference">root|parent|current</param>
         public override void SetMergeField( string key, object value, LavaContextRelativeScopeSpecifier scope = LavaContextRelativeScopeSpecifier.Current )
         {
+            var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
+
             if ( scope == LavaContextRelativeScopeSpecifier.Current )
             {
                 _context.SetValue( key, value );
             }
             else if ( scope == LavaContextRelativeScopeSpecifier.Parent )
             {
-                var parentScope = _scopeParentInternalField.GetValue( _context.LocalScope ) as Scope ?? _context.LocalScope;
+                var parentScope = _scopeParentInternalField.GetValue( localScope ) as Scope ?? localScope;
 
-                parentScope.SetValue( key, value );
+                parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
             }
             else if ( scope == LavaContextRelativeScopeSpecifier.Root )
             {
-                var parentScope = _context.LocalScope;
-
+                var parentScope = _contextScopeInternalField.GetValue( _context ) as Scope;
                 var outerScope = _scopeParentInternalField.GetValue( parentScope ) as Scope;
 
                 while ( outerScope != null )
@@ -160,7 +163,7 @@ namespace Rock.Lava.Fluid
                     outerScope = _scopeParentInternalField.GetValue( outerScope ) as Scope;
                 }
 
-                parentScope.SetValue( key, value );
+                parentScope.SetValue( key, FluidValue.Create( value, _context.Options ) );
             }
             else
             {
@@ -218,6 +221,7 @@ namespace Rock.Lava.Fluid
         #endregion
 
         private static FieldInfo _scopeParentInternalField = typeof( Scope ).GetField( "_parent", BindingFlags.NonPublic | BindingFlags.Instance );
+        private static PropertyInfo _contextScopeInternalField = typeof( TemplateContext ).GetProperty( "LocalScope", BindingFlags.NonPublic | BindingFlags.Instance );
 
         /// <summary>
         /// Gets an aggregated set of key/value pairs for variables in the current scope and outer scopes.

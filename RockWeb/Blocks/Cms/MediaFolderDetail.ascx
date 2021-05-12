@@ -7,7 +7,12 @@
 
             <div class="panel-heading ">
                 <h1 class="panel-title"><i class="fa fa-play-circle"></i>
-                    <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                    <asp:Literal ID="lActionTitle" runat="server" />
+                </h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" />
+                </div>
             </div>
 
             <div class="panel-body">
@@ -17,15 +22,30 @@
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
-                    <div class="row margin-b-lg">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lDescription" runat="server" />
+                    <div class="row">
+                        <div class="col-sm-6 col-md-7 col-lg-8">
+                            <div class="margin-b-lg">
+                                <asp:Literal ID="lDescription" runat="server" />
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-5 col-lg-4">
+                            <asp:Literal ID="lMetricData" runat="server" />
                         </div>
                     </div>
+
+                    <Rock:NotificationBox ID="nbActionResult" runat="server" NotificationBoxType="Info" Dismissable="true" />
+
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+
+                        <span class="pull-right">
+                            <asp:LinkButton ID="btnSyncContentChannelItems" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Sync missing content channel items." data-toggle="tooltip" OnClick="btnSyncContentChannelItems_Click" CausesValidation="false">
+                                <i class="fa fa-sync"></i>
+                            </asp:LinkButton>
+                        </span>
                     </div>
                 </div>
+
                 <div id="pnlEditDetails" runat="server">
                     <div class="row">
                         <div class="col-md-6">
@@ -34,6 +54,12 @@
                     </div>
 
                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaFolder, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:WorkflowTypePicker ID="wtpWorkflowType" runat="server" Label="Workflow Type" Help="The type of workflow to trigger when a new media element is added to this folder." />
+                        </div>
+                    </div>
 
                     <Rock:Switch ID="swEnableContentChannelSync" runat="server" Text="Enable Content Channel Sync" OnCheckedChanged="swEnableContentChannelSync_CheckedChanged" AutoPostBack="true" />
 
@@ -48,11 +74,12 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlChannelAttribute" runat="server" Label="Media File Attribute" Required="true" Help="The attribute that the media will be assigned to. The attribute must be of type 'Media File'."/>
+                                <Rock:RockDropDownList ID="ddlChannelAttribute" runat="server" Label="Media File Attribute" Required="true" Help="The attribute that the media will be assigned to. The attribute must be of type 'Media Element'."/>
                             </div>
                         </div>
                     </asp:Panel>
-                    <div class="actions">
+
+                    <div class="actions margin-t-lg">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>

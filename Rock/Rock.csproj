@@ -652,6 +652,7 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -719,6 +720,7 @@
     <Compile Include="Jobs\PostV110DataMigrationsResponseCodeIndex.cs" />
     <Compile Include="Jobs\PostV122_UpdateInteractionIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
+    <Compile Include="Jobs\PostV124DataMigrationsUpdateGroupSalutations.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
@@ -728,7 +730,7 @@
     <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
-    <Compile Include="Jobs\MediaSync.cs" />
+    <Compile Include="Jobs\SyncMedia.cs" />
     <Compile Include="Lava\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\Blocks\EventScheduledInstanceBlock.cs" />
     <Compile Include="Lava\Blocks\InteractionWriteBlock.cs" />
@@ -746,10 +748,13 @@
     <Compile Include="Media\LocalMediaAccount.cs" />
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
-    <Compile Include="Media\MediaElementData.cs" />
+    <Compile Include="Media\MediaElementFileData.cs" />
+    <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
-    <Compile Include="Media\ThumbnailData.cs" />
+    <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
+    <Compile Include="Model\AnalyticsSourceGivingUnit.cs" />
+    <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialStatementTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
@@ -768,7 +773,9 @@
     <Compile Include="Model\MediaAccount.cs" />
     <Compile Include="Model\MediaAccountService.Partial.cs" />
     <Compile Include="Model\MediaElement.cs" />
+    <Compile Include="Model\MediaElementService.Partial.cs" />
     <Compile Include="Model\MediaFolder.cs" />
+    <Compile Include="Model\MediaFolderService.Partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
@@ -827,6 +834,7 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
+    <Compile Include="Finance\StatementTemplate\ReportSetting.cs" />
     <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />

@@ -322,11 +322,167 @@ namespace Rock.Migrations.Migrations {
         ///{%- endif -%}
         ///{%- assign showtitleseparator = showtitleseparator | AsBoolean -%}
         ///
-        ///{%- if title != &apos;&apos;&apos;&apos; -%}&lt;h3 id=&quot;{{ title | ToCssClass }}&quot; class=&quot;kpi-t [rest of string was truncated]&quot;;.
+        ///{%- if title != &apos;&apos;&apos;&apos; -%}&lt;h3 id=&quot;{{ title | ToCssClass }}&quot; class [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202104131841162_Rollup_0413_kpiupdate {
             get {
                 return ResourceManager.GetString("_202104131841162_Rollup_0413_kpiupdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF EXISTS (
+        ///        SELECT *
+        ///        FROM [sysobjects]
+        ///        WHERE [id] = OBJECT_ID(N&apos;[dbo].[spAnalytics_ETL_Family]&apos;)
+        ///            AND OBJECTPROPERTY([id], N&apos;IsProcedure&apos;) = 1
+        ///        )
+        ///    DROP PROCEDURE [dbo].spAnalytics_ETL_Family
+        ///GO
+        ///
+        ///-- EXECUTE [dbo].[spAnalytics_ETL_Family] 
+        ///CREATE PROCEDURE [dbo].[spAnalytics_ETL_Family]
+        ///AS
+        ///BEGIN
+        ///    DECLARE @EtlDate DATE = convert(DATE, SysDateTime())
+        ///        ,@MaxExpireDate DATE = DateFromParts(9999, 1, 1)
+        ///        ,@RecordStatusActiveId INT = (
+        ///    [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104291818024_GroupSalutation_spAnalytics_ETL_Family {
+            get {
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_spAnalytics_ETL_Family", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns the Mailing Addresses and any CustomMessages for the Contribution Statement, but not the actual transactions
+        ///		The StatementGenerator utility uses this procedure along with querying transactions thru REST to generate statements
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* GroupId
+        ///		* AddressPersonNames
+        ///		* Street1
+        ///		* Street2
+        ///		* City
+        ///		* State
+        ///		* PostalCode
+        ///		* StartDate
+        ///		* EndDate
+        ///		* CustomMessage1
+        ///		* CustomMessage2
+        ///	&lt;/returns&gt;
+        ///	&lt;par [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104291818024_GroupSalutation_spFinance_ContributionStatementQuery {
+            get {
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_spFinance_ContributionStatementQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the household name from a giving id.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		String of household name. 
+        ///	&lt;/returns&gt;
+        ///	&lt;remarks&gt;
+        ///		
+        ///
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnCrm_GetFamilyTitleFromGivingId](&apos;G63&apos;) -- Decker&apos;s (married) Returns &apos;Ted &amp; Cindy Decker&apos;
+        ///		SELECT [dbo].[ufnCrm_GetFamilyTitleFromGivingId](&apos;G64&apos;) -- Jones&apos; (single) Returns &apos;Ben Jones&apos;
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ////* #Obsolete# - Family Title can be gotten from Group.GroupSalutation */
+        ///ALTER FUNC [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId {
+            get {
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleFromGivingId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_202104291818024_GroupSalutation_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE TOP(1) [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105112043293_Rollup_0511_kpi_tooltipdelay {
+            get {
+                return ResourceManager.GetString("_202105112043293_Rollup_0511_kpi_tooltipdelay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Markup]=N&apos;{% capture singleQuote %}&apos;&apos;{% endcapture %}
+        ///{% capture escapedQuote %}\&apos;&apos;{% endcapture %}
+        ///{% assign apiKey = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;GoogleApiKey&apos;&apos; %}
+        ///{% assign url = &apos;&apos;key=&apos;&apos; | Append:apiKey %}
+        ///{% assign id = uniqueid | Replace:&apos;&apos;-&apos;&apos;,&apos;&apos;&apos;&apos; %}
+        ///
+        ///{% if apiKey == &quot;&quot; %}
+        ///    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        ///        There is no Google API key defined. Please add your key under: &apos;&apos;Admin Tools &gt; General Settings &gt; Global Attributes &gt; Google API Key&apos;&apos;.
+        ///    &lt;/div&gt;
+        ///{% endif %}
+        ///
+        ///{ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105112043293_Rollup_0511_mapshortcode {
+            get {
+                return ResourceManager.GetString("_202105112043293_Rollup_0511_mapshortcode", resourceCulture);
             }
         }
     }

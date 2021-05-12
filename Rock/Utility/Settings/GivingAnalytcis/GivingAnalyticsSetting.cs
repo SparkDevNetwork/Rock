@@ -29,8 +29,8 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// </summary>
         public GivingAnalyticsSetting()
         {
-            this.GivingAnalytics = new GivingAnalytics();
-            this.Alerting = new Alerting();
+            GivingAnalytics = new GivingAnalytics();
+            Alerting = new Alerting();
         }
 
         /// <summary>
@@ -48,6 +48,31 @@ namespace Rock.Utility.Settings.GivingAnalytics
         /// The alerting.
         /// </value>
         public Alerting Alerting { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction type guids (defined value guids) that will be included in
+        /// classification and alerting.
+        /// </summary>
+        /// <value>
+        /// The transaction type guids.
+        /// </value>
+        public List<Guid> TransactionTypeGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial account guids. If empty, then we assume all tax deductible accounts are used.
+        /// </summary>
+        /// <value>
+        /// The financial account guids.
+        /// </value>
+        public List<Guid> FinancialAccountGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the are child accounts included. This defaults to false.
+        /// </summary>
+        /// <value>
+        /// The are child accounts included.
+        /// </value>
+        public bool? AreChildAccountsIncluded { get; set; }
     }
 
     /// <summary>

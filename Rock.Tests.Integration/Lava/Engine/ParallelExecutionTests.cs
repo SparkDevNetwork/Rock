@@ -59,7 +59,7 @@ Font Bold: true
             shortcodeDefinition.Name = "shortcodetest";
             shortcodeDefinition.Parameters = new Dictionary<string, string> { { "fontname", "Arial" }, { "fontsize", "0" }, { "fontbold", "true" } };
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
@@ -67,7 +67,7 @@ Font Bold: true
                     return;
                 }
 
-                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 100 };
 
@@ -141,7 +141,7 @@ Panel 3 - Panel 3 content.
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
                 {
@@ -149,7 +149,7 @@ Panel 3 - Panel 3 content.
                     return;
                 }
 
-                engine.RegisterDynamicShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };
 

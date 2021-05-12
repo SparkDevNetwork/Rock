@@ -667,7 +667,7 @@ namespace Rock.WebStartup
                 var engineOptions = new LavaEngineConfigurationOptions
                 {
                     FileSystem = new WebsiteLavaFileSystem(),
-                    CacheService = new WebsiteLavaTemplateCache(),
+                    CacheService = new WebsiteLavaTemplateCacheService(),
                     DefaultEnabledCommands = defaultEnabledLavaCommands
                 };
 
@@ -686,14 +686,15 @@ namespace Rock.WebStartup
 
         private static void InitializeLavaShortcodes( ILavaEngine engine )
         {
-            // Register shortcodes defined in the code base.
+            // Register shortcodes defined in the codebase.
             try
             {
                 var shortcodeTypes = Rock.Reflection.FindTypes( typeof( ILavaShortcode ) ).Select( a => a.Value ).ToList();
 
                 foreach ( var shortcodeType in shortcodeTypes )
                 {
-                    engine.RegisterStaticShortcode( shortcodeType.Name, ( shortcodeName ) =>
+                    // Register the shortcode with a factory method to create a new instance of the shortcode from the System.Type defined in the codebase.
+                    engine.RegisterShortcode( shortcodeType.Name, ( shortcodeName ) =>
                     {
                         var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
 
@@ -711,7 +712,9 @@ namespace Rock.WebStartup
 
             foreach ( var shortcode in shortCodes )
             {
-                engine.RegisterDynamicShortcode( shortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
+                // Register the shortcode with the current Lava Engine.
+                // The provider is responsible for retrieving the shortcode definition from the data store and managing the web-based shortcode cache.
+                WebsiteLavaShortcodeProvider.RegisterShortcode( engine, shortcode.TagName );
             }
         }
 

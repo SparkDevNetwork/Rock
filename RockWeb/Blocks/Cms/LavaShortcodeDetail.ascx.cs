@@ -146,18 +146,17 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                // Unregister the existing shortcode.
                 var lavaEngine = LavaEngine.CurrentEngine;
 
                 if ( hfOriginalTagName.Value.IsNotNullOrWhiteSpace() )
                 {
-                    lavaEngine.UnregisterShortcode( hfOriginalTagName.Value );
+                    lavaEngine.DeregisterShortcode( hfOriginalTagName.Value );
                 }
 
                 // Register the new shortcode definition.
                 if ( lavaShortcode.TagType == TagType.Block )
                 {
-                    lavaEngine.RegisterDynamicShortcode( lavaShortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
+                    lavaEngine.RegisterShortcode( lavaShortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
                 }
 
                 lavaEngine.ClearTemplateCache();

@@ -1405,8 +1405,9 @@ $('#{0}').tooltip();
                 var groups = groupMemberService
                     .Queryable()
                     .AsNoTracking()
-                    .Where( g => g.PersonId == this.SelectedPersonId )
-                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true
+                    .Where( g => g.Group.IsActive == true
+                        && g.PersonId == this.SelectedPersonId
+                        && g.Group.GroupType.IsSchedulingEnabled == true
                         && g.Group.DisableScheduling == false
                         && g.Group.DisableScheduleToolboxAccess == false )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
@@ -1846,7 +1847,7 @@ $('#{0}').tooltip();
                         int? maximumCapacitySetting = null;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
-                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault().MaximumCapacity;
+                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
                         }
 
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );

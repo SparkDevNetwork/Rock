@@ -89,7 +89,7 @@ namespace Rock.Lava.Shortcodes
                 return LavaShortcodeTypeSpecifier.Block;
             }
         }
-        
+
         /// <summary>
         /// Initializes the specified tag name.
         /// </summary>
@@ -102,14 +102,7 @@ namespace Rock.Lava.Shortcodes
             _markup = markup;
 
             base.OnInitialize( tagName, markup, tokens );
-        }
 
-        /// <summary>
-        /// Parses the specified tokens.
-        /// </summary>
-        /// <param name="tokens">The tokens.</param>
-        public override void OnParsed( List<string> tokens )
-        {
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
             // the end of the template. This will pull out just the internals of the block.
 
@@ -139,7 +132,7 @@ namespace Rock.Lava.Shortcodes
 
                     if ( endTagMatch.Success )
                     {
-                        if (childTags > 0 )
+                        if ( childTags > 0 )
                         {
                             childTags--; // decrement the child tag counter
                             _blockMarkup.Append( token );
@@ -172,7 +165,7 @@ namespace Rock.Lava.Shortcodes
             var rockContext = new RockContext();
 
             // Get enabled security commands
-            _enabledSecurityCommands = context.GetEnabledCommands().JoinStrings(",");
+            _enabledSecurityCommands = context.GetEnabledCommands().JoinStrings( "," );
 
             using ( TextWriter writer = new StringWriter() )
             {
@@ -181,8 +174,8 @@ namespace Rock.Lava.Shortcodes
                 base.OnRender( context, writer );
 
                 var parms = ParseMarkup( _markup, context );
-                var lookAheadDays = parms[ LOOK_AHEAD_DAYS ].AsInteger();
-                var scheduleCategoryId = parms[ SCHEDULE_CATEGORY_ID ].AsIntegerOrNull();
+                var lookAheadDays = parms[LOOK_AHEAD_DAYS].AsInteger();
+                var scheduleCategoryId = parms[SCHEDULE_CATEGORY_ID].AsIntegerOrNull();
                 var asAtDate = parms[AS_AT_DATE].AsDateTime();
 
                 var now = asAtDate ?? RockDateTime.Now;
@@ -232,9 +225,9 @@ namespace Rock.Lava.Shortcodes
                 if ( nextSchedule.WasScheduleActive( now ) )
                 {
                     isLive = true;
-                    var occurrences = nextSchedule.GetICalOccurrences( now, now.AddDays( lookAheadDays ) ).Take(2);
+                    var occurrences = nextSchedule.GetICalOccurrences( now, now.AddDays( lookAheadDays ) ).Take( 2 );
                     var activeOccurrence = occurrences.FirstOrDefault();
-                    occurrenceEndDateTime = (DateTime) activeOccurrence.Period.EndTime.Value;
+                    occurrenceEndDateTime = (DateTime)activeOccurrence.Period.EndTime.Value;
 
                     // Set the next occurrence to be the literal next occurrence (vs the current occurrence)
                     nextStartDateTime = null;
@@ -245,14 +238,14 @@ namespace Rock.Lava.Shortcodes
                 }
 
                 // Determine when not to show the content
-                if ( ( parms[ SHOW_WHEN ] == "notlive" && isLive )
-                    || ( parms[ SHOW_WHEN ] == "live" && !isLive ) )
+                if ( ( parms[SHOW_WHEN] == "notlive" && isLive )
+                    || ( parms[SHOW_WHEN] == "live" && !isLive ) )
                 {
                     return;
                 }
 
                 // Check role membership
-                var roleId = parms[ ROLE_ID ].AsIntegerOrNull();
+                var roleId = parms[ROLE_ID].AsIntegerOrNull();
 
                 if ( roleId.HasValue )
                 {
@@ -290,10 +283,8 @@ namespace Rock.Lava.Shortcodes
         /// <returns></returns>
         private static Person GetCurrentPerson( ILavaRenderContext context )
         {
-            Person currentPerson = null;
-
             // First check for a person override value included in lava context
-            currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
+            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
 
             if ( currentPerson == null )
             {

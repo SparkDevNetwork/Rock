@@ -903,7 +903,14 @@ $(document).ready(function() {
 
                 if ( template == null )
                 {
-                    template = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+                    var parseResult = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+
+                    if ( parseResult.HasErrors )
+                    {
+                        throw parseResult.GetLavaException();
+                    }
+
+                    template = parseResult.Template;
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
@@ -914,7 +921,9 @@ $(document).ready(function() {
             }
             catch ( Exception ex )
             {
-                template = LavaEngine.CurrentEngine.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+                var parseResult = LavaEngine.CurrentEngine.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+
+                template = parseResult.Template;
             }
 
             return template;

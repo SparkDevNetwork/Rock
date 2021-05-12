@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -90,7 +89,9 @@ namespace Rock.Jobs
                         {
                             context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
                             dataView.PersistResult( sqlCommandTimeout );
+
                             persistContext.SaveChanges();
+
                             updatedDataViewCount++;
                         }
                         catch ( Exception ex )
@@ -103,7 +104,6 @@ namespace Rock.Jobs
                             exceptions.Add( ex2 );
                             ExceptionLogService.LogException( ex2, null );
                             continue;
-
                         }
                     }
                 }

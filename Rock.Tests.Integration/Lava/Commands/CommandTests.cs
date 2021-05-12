@@ -190,7 +190,7 @@ Color 4: blue
 {% endperson %}
             ";
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var context = engine.NewRenderContext();
 
@@ -230,7 +230,7 @@ Color 4: blue
 
             var options = new LavaTestRenderOptions() { EnabledCommands = "Cache;RockEntity" };
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var output = TestHelper.GetTemplateOutput( engine.EngineType, input, options );
 
@@ -566,13 +566,13 @@ Color 4: blue
 {% taglist %}
 ";
 
-            TestHelper.AssertAction( ( engine ) =>
-            { //.AssertTemplateOutput( "readme", input, null, "WebRequest".SplitDelimitedValues(), true );
-                var output = engine.RenderTemplate( input );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( input );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
 
-                output = output.Replace( " ", string.Empty );
+                var output = result.Text.Replace( " ", string.Empty );
 
                 Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
                 Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );

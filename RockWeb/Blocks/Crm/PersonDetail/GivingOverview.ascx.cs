@@ -30,7 +30,6 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using Humanizer;
-using Humanizer.Localisation;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -198,30 +197,47 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             Person.LoadAttributes();
             var rockContext = new RockContext();
-            var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-            var qry = transactionDetailService.Queryable().AsNoTracking()
-                .Where( a =>
-                    a.Transaction.TransactionTypeValueId == contributionType.Id &&
-                    a.Transaction.TransactionDateTime.HasValue );
+            var transactionService = new FinancialTransactionService( rockContext );
+            var minMonthlyDate = RockDateTime.Now.StartOfMonth().AddMonths( -35 );
 
-            qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == Person.GivingId );
+            var allGiftsQuery = transactionService.GetGivingAnalyticsSourceTransactionQuery()
+                .AsNoTracking()
+                .Where( t =>
+                    t.TransactionTypeValueId == contributionType.Id &&
+                    t.TransactionDateTime.HasValue &&
+                    t.AuthorizedPersonAlias.Person.GivingId == Person.GivingId );
 
+            var threeYearsGiftData = allGiftsQuery
+                .Where( t => t.TransactionDateTime.Value >= minMonthlyDate )
+                .Select( t => new
+                {
+                    TransactionDateTime = t.TransactionDateTime.Value,
+                    Details = t.TransactionDetails.Select( td => new
+                    {
+                        td.AccountId,
+                        td.Amount
+                    } )
+                } )
+                .ToList()
+                .OrderBy( t => t.TransactionDateTime )
+                .ToList();
 
-            if ( qry.Any() )
+            if ( threeYearsGiftData.Any() )
             {
                 var inactiveGiverCutOffDate = RockDateTime.Now.AddDays( -GetAttributeValue( AttributeKey.InactiveGiverCutoff ).AsInteger() ).Date;
                 pnlGiving.Visible = true;
-                if ( qry.Where( a => a.Transaction.TransactionDateTime.Value >= inactiveGiverCutOffDate ).Count() == default( int ) )
+                var hasGiftsAfterCutoff = threeYearsGiftData.Any( t => t.TransactionDateTime >= inactiveGiverCutOffDate );
+
+                if ( !hasGiftsAfterCutoff )
                 {
                     pnlInactiveGiver.Visible = true;
                     pnlGivingStats.AddCssClass( "inactive-giving" );
-                    lLastGiver.Text = qry
-                        .OrderByDescending( a => a.Transaction.TransactionDateTime.Value )
-                        .Select( a => a.Transaction.TransactionDateTime.Value )
+                    lLastGiver.Text = allGiftsQuery
+                        .OrderByDescending( a => a.TransactionDateTime.Value )
+                        .Select( a => a.TransactionDateTime.Value )
                         .FirstOrDefault()
                         .ToShortDateString();
                 }
-
             }
             else
             {
@@ -233,7 +249,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             for ( var i = 0; i <= 35; i++ )
             {
                 var startDate = RockDateTime.Now.AddMonths( -i ).StartOfMonth();
-                var amt = GetContributionByMonth( startDate );
+                var endDate = startDate.AddMonths( 1 );
+
+                var amt = threeYearsGiftData
+                    .Where( t => t.TransactionDateTime >= startDate && t.TransactionDateTime < endDate )
+                    .Sum( t => t.Details.Sum( d => d.Amount ) );
+
                 contributionByMonths.AddOrReplace( startDate, amt );
             }
 
@@ -278,11 +299,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var last12MonthStartDate = RockDateTime.Now.AddMonths( -12 ).StartOfMonth();
             var last90DaysStartDate = RockDateTime.Now.AddDays( -90 ).Date;
             var last180DaysStartDate = RockDateTime.Now.AddDays( -180 ).Date;
-            var last12MonthQry = qry.Where( a => a.Transaction.TransactionDateTime.Value >= last12MonthStartDate );
-            var last90DaysQry = qry.Where( a => a.Transaction.TransactionDateTime.Value >= last90DaysStartDate );
-            var baseGrowthQry = qry.Where( a => a.Transaction.TransactionDateTime.Value >= last180DaysStartDate && a.Transaction.TransactionDateTime.Value < last90DaysStartDate );
-            var baseGrowthContribution = baseGrowthQry.Select( a => a.Amount ).DefaultIfEmpty().Sum();
-            var last90DaysContribution = last90DaysQry.Select( a => a.Amount ).DefaultIfEmpty().Sum();
+            var last12MonthCount = threeYearsGiftData.Count( a => a.TransactionDateTime >= last12MonthStartDate );
+            var last90DaysGifts = threeYearsGiftData.Where( a => a.TransactionDateTime >= last90DaysStartDate );
+            var baseGrowthGifts = threeYearsGiftData.Where( a => a.TransactionDateTime >= last180DaysStartDate && a.TransactionDateTime < last90DaysStartDate );
+            var baseGrowthContribution = baseGrowthGifts.Sum( a => a.Details.Sum( d => d.Amount ) );
+            var last90DaysContribution = last90DaysGifts.Sum( a => a.Details.Sum( d => d.Amount ) );
             decimal growthPercent = 0;
 
             if ( baseGrowthContribution == 0 )
@@ -317,8 +338,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     isGrowthPositive ? "success" : "danger", // 2
                     growthTitle ) ); // 3
 
-            kpi += GetKpiShortCode( "Gifts Last 12 Months", last12MonthQry.Select( a => a.TransactionId ).Distinct().Count().ToStringSafe() );
-            kpi += GetKpiShortCode( "Gifts Last 90 Days", last90DaysQry.Select( a => a.TransactionId ).Distinct().Count().ToStringSafe() );
+            kpi += GetKpiShortCode( "Gifts Last 12 Months", last12MonthCount.ToStringSafe() );
+            kpi += GetKpiShortCode( "Gifts Last 90 Days", last90DaysGifts.Count().ToStringSafe() );
             lLastGiving.Text = string.Format( @"{{[kpis size:'lg' columnmin:'220px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
 
             GetGivingAnalyticsKPI( rockContext );
@@ -425,26 +446,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lGivingAnalytics.Text = string.Format( @"{{[kpis columnmin:'220px' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
         }
 
-        private decimal GetContributionByMonth( DateTime date )
-        {
-            var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            var rockContext = new RockContext();
-            var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-            var qry = transactionDetailService.Queryable().AsNoTracking()
-                .Where( a =>
-                    a.Transaction.TransactionTypeValueId == contributionType.Id &&
-                    a.Transaction.TransactionDateTime.HasValue );
-
-            qry = qry.Where( t => t.Transaction.AuthorizedPersonAlias.Person.GivingId == Person.GivingId );
-            var startDate = date.StartOfMonth();
-            var endDate = startDate.AddMonths( 1 );
-            return qry
-                .Where( a => a.Transaction.TransactionDateTime.Value >= startDate && a.Transaction.TransactionDateTime < endDate )
-                .Select( l => l.Amount )
-                .DefaultIfEmpty( 0 )
-                .Sum();
-        }
-
         private string GetKpiShortCode( string label, string value, string subValue = "", string icon = "", string textAlign = "" )
         {
             if ( subValue.IsNotNullOrWhiteSpace() )
@@ -477,62 +478,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindYearlySummary()
         {
-            var contributionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            if ( contributionType != null )
+            var rockContext = new RockContext();
+            var transactionService = new FinancialTransactionService( rockContext );
+            var qry = transactionService.GetGivingAnalyticsSourceTransactionQuery()
+                .AsNoTracking()
+                .Where( t =>
+                    t.TransactionDateTime.HasValue &&
+                    t.AuthorizedPersonAlias.Person.GivingId == Person.GivingId )
+                .SelectMany( t => t.TransactionDetails.Select( td => new
+                {
+                    TransactionDateTime = t.TransactionDateTime.Value,
+                    td.AccountId,
+                    td.Amount
+                } ) );
+
+            if ( !IsYearlySummaryExpanded )
             {
-                var rockContext = new RockContext();
-                var transactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var qry = transactionDetailService.Queryable()
-                    .AsNoTracking()
-                    .Where( t =>
-                        t.Transaction.TransactionTypeValueId == contributionType.Id &&
-                        t.Transaction.TransactionDateTime.HasValue &&
-                        t.Transaction.AuthorizedPersonAlias.Person.GivingId == Person.GivingId );
-
-                if ( !IsYearlySummaryExpanded )
-                {
-                    // Only show this current year and last year
-                    var minDate = new DateTime( RockDateTime.Now.Year - 1, 1, 1 );
-                    qry = qry.Where( t => t.Transaction.TransactionDateTime >= minDate );
-                }
-
-                var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
-                    .AsNoTracking()
-                    .ToDictionary( k => k.Id, v => v.Name );
-
-                List<SummaryRecord> summaryList;
-                using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
-                {
-                    summaryList = qry
-                        .GroupBy( a => new { a.Transaction.TransactionDateTime.Value.Year, a.AccountId } )
-                        .Select( t => new SummaryRecord
-                        {
-                            Year = t.Key.Year,
-                            AccountId = t.Key.AccountId,
-                            TotalAmount = t.Sum( d => d.Amount )
-                        } ).OrderByDescending( a => a.Year )
-                        .ToList();
-                }
-
-                var contributionSummaries = new List<ContributionSummary>();
-                foreach ( var item in summaryList.GroupBy( a => a.Year ) )
-                {
-                    var contributionSummary = new ContributionSummary();
-                    contributionSummary.Year = item.Key;
-                    contributionSummary.SummaryRecords = new List<SummaryRecord>();
-                    foreach ( var a in item )
-                    {
-                        a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
-                        contributionSummary.SummaryRecords.Add( a );
-                    }
-
-                    contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
-                    contributionSummaries.Add( contributionSummary );
-                }
-
-                rptYearSummary.DataSource = contributionSummaries;
-                rptYearSummary.DataBind();
+                // Only show this current year and last year
+                var minDate = new DateTime( RockDateTime.Now.Year - 1, 1, 1 );
+                qry = qry.Where( t => t.TransactionDateTime >= minDate );
             }
+
+            var views = qry.ToList();
+
+            var financialAccounts = new FinancialAccountService( rockContext ).Queryable()
+                .AsNoTracking()
+                .ToDictionary( k => k.Id, v => v.Name );
+
+            var summaryList = views
+                .GroupBy( a => new { a.TransactionDateTime.Year, a.AccountId } )
+                .Select( t => new SummaryRecord
+                {
+                    Year = t.Key.Year,
+                    AccountId = t.Key.AccountId,
+                    TotalAmount = t.Sum( d => d.Amount )
+                } ).OrderByDescending( a => a.Year )
+                .ToList();
+
+            var contributionSummaries = new List<ContributionSummary>();
+            foreach ( var item in summaryList.GroupBy( a => a.Year ) )
+            {
+                var contributionSummary = new ContributionSummary();
+                contributionSummary.Year = item.Key;
+                contributionSummary.SummaryRecords = new List<SummaryRecord>();
+                foreach ( var a in item )
+                {
+                    a.AccountName = financialAccounts.ContainsKey( a.AccountId ) ? financialAccounts[a.AccountId] : string.Empty;
+                    contributionSummary.SummaryRecords.Add( a );
+                }
+
+                contributionSummary.TotalAmount = item.Sum( a => a.TotalAmount );
+                contributionSummaries.Add( contributionSummary );
+            }
+
+            rptYearSummary.DataSource = contributionSummaries;
+            rptYearSummary.DataBind();
 
             // Show the correct button to expand or collapse
             lbShowLessYearlySummary.Visible = IsYearlySummaryExpanded;

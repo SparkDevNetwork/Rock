@@ -151,7 +151,7 @@ namespace Rock.Model
 
             var rockContext = Context as RockContext;
             var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-            var personAliasService = new PersonAliasService( rockContext );
+
 
             var connectionOpportunity = connectionOpportunityService.Queryable()
                 .AsNoTracking()
@@ -171,32 +171,6 @@ namespace Rock.Model
                 currentPersonAliasId,
                 connectionOpportunityId,
                 args );
-
-            // Check and apply security
-            var currentPerson = personAliasService.GetPerson( currentPersonAliasId );
-            var canViewAllRequests = currentPerson != null && connectionOpportunity.IsAuthorized( Authorization.VIEW, currentPerson );
-            var canViewAssignedRequests = connectionType.EnableRequestSecurity;
-
-            if ( !canViewAllRequests )
-            {
-                // There are some scenarios where the current person can see the request even if the permissions say otherwise:
-                // 1) The person is in a global (no campus) connector group
-                // 2) The person is in the campus specific connector group
-                // 3) The person is assigned to the request and the connection type has EnableRequestSecurity
-                var currentPersonId = currentPerson?.Id;
-                var connectionOpportunityConnectorGroupService = new ConnectionOpportunityConnectorGroupService( rockContext );
-                var campusIdQuery = connectionOpportunityConnectorGroupService.Queryable()
-                    .AsNoTracking()
-                    .Where( cocg =>
-                        cocg.ConnectionOpportunityId == connectionOpportunityId &&
-                        cocg.ConnectorGroup.Members.Any( m => m.PersonId == currentPersonId ) )
-                    .Select( cocg => cocg.CampusId );
-
-                connectionRequestViewModelQuery = connectionRequestViewModelQuery.Where( r =>
-                    campusIdQuery.Contains( null ) || // Global campus connector
-                    campusIdQuery.Contains( r.CampusId ) || // In a connector group of the appropriate campus
-                    ( canViewAssignedRequests && r.ConnectorPersonAliasId == currentPersonAliasId ) ); // Is the connector and EnableRequestSecurity
-            }
 
             var connectionStatusQuery = GetConnectionStatusQuery( connectionOpportunityId )
                 .Select( cs => new ConnectionStatusViewModel
@@ -222,9 +196,9 @@ namespace Rock.Model
                 {
                     requestsOfStatusQuery = requestsOfStatusQuery.Take( maxRequestsPerStatus.Value );
                 }
-
+                
                 statusViewModel.Requests = requestsOfStatusQuery.ToList();
-
+               
                 if ( statusViewModel.HighlightColor.IsNullOrWhiteSpace() )
                 {
                     statusViewModel.HighlightColor = ConnectionStatus.DefaultHighlightColor;
@@ -264,6 +238,9 @@ namespace Rock.Model
         {
             ValidateArgs( args );
 
+            // Set the Connection Request Id here so that the GetConnectionRequestViewModelQuery method can filter correctly.
+            args.ConnectionRequestId = connectionRequestId;
+
             var connectionOpportunity = Queryable()
                 .AsNoTracking()
                 .Where( cr => cr.Id == connectionRequestId )
@@ -271,7 +248,7 @@ namespace Rock.Model
                 .FirstOrDefault();
 
             var query = GetConnectionRequestViewModelQuery( currentPersonAliasId, connectionOpportunity.Id, args );
-            var viewModel = query.FirstOrDefault( cr => cr.Id == connectionRequestId );
+            var viewModel = query.FirstOrDefault();
 
             if ( viewModel == null )
             {
@@ -316,16 +293,20 @@ namespace Rock.Model
 
             var daysUntilIdle = connectionType == null ? 1 : connectionType.DaysUntilRequestIdle;
             var idleDate = currentDateTime.AddDays( 0 - daysUntilIdle );
+            var currentPerson = new PersonAliasService( rockContext ).GetPerson( currentPersonAliasId );
+            var canViewAllRequests = currentPerson != null && connectionOpportunity.IsAuthorized( Authorization.VIEW, currentPerson );
+            var canEditAllRequest = currentPerson != null && connectionOpportunity.IsAuthorized( Authorization.EDIT, currentPerson );
 
             // Query the statuses and requests in such a way that we get all statuses, even if there
             // are no requests in that column at this time
             var connectionRequestsQuery = Queryable()
-                .AsNoTracking()
                 .Where( cr =>
                     cr.ConnectionOpportunityId == connectionOpportunityId &&
                     ( !args.CampusId.HasValue || args.CampusId.Value == cr.CampusId.Value ) )
-                .Select( cr => new ConnectionRequestViewModel
+                .Select( cr => new ConnectionRequestViewModelSecurity
                 {
+                    ConnectionRequest = cr,
+                    ConnectionType = cr.ConnectionOpportunity.ConnectionType,
                     Id = cr.Id,
                     ConnectionOpportunityId = cr.ConnectionOpportunityId,
                     ConnectionTypeId = cr.ConnectionOpportunity.ConnectionTypeId,
@@ -406,8 +387,16 @@ namespace Rock.Model
                         .Select( cra => cra.CreatedDateTime )
                         .OrderByDescending( d => d )
                         .FirstOrDefault(),
-                    FollowupDate = cr.FollowupDate
+                    FollowupDate = cr.FollowupDate,
+                    UserHasDirectAccess = false,
+                    CanCurrentUserEdit = canViewAllRequests,
                 } );
+
+            // Filter by connector
+            if ( args.ConnectionRequestId.HasValue )
+            {
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr => cr.Id == args.ConnectionRequestId );
+            }
 
             // Filter by connector
             if ( args.ConnectorPersonAliasId.HasValue )
@@ -444,7 +433,7 @@ namespace Rock.Model
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr => args.ConnectionStates.Contains( cr.ConnectionState ) );
             }
 
-            // Filter past due: Allow other states to go throgh, but "future follow-up" must be due today or already past due
+            // Filter past due: Allow other states to go through, but "future follow-up" must be due today or already past due
             if ( args.IsFutureFollowUpPastDueOnly )
             {
                 var midnight = RockDateTime.Today.AddDays( 1 );
@@ -463,6 +452,176 @@ namespace Rock.Model
                 connectionRequestsQuery = connectionRequestsQuery.Where( cr =>
                     cr.LastActivityTypeId.HasValue &&
                     args.LastActivityTypeIds.Contains( cr.LastActivityTypeId.Value ) );
+            }
+
+            if ( connectionType.EnableRequestSecurity )
+            {
+                var currentPersonId = currentPerson?.Id;
+                var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunityId, currentPersonId );
+
+                var connectionRequestsList = connectionRequestsQuery
+                    .Select( cr => new ConnectionRequestViewModelSecurity
+                    {
+                        ConnectionRequest = cr.ConnectionRequest,
+                        ConnectionType = cr.ConnectionType,
+                        Id = cr.Id,
+                        ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                        ConnectionTypeId = cr.ConnectionTypeId,
+                        PlacementGroupId = cr.PlacementGroupId,
+                        PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                        PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        Comments = cr.Comments,
+                        StatusId = cr.StatusId,
+                        PersonId = cr.PersonId,
+                        PersonAliasId = cr.PersonAliasId,
+                        PersonEmail = cr.PersonEmail,
+                        PersonNickName = cr.PersonNickName,
+                        PersonLastName = cr.PersonLastName,
+                        PersonPhotoId = cr.PersonPhotoId,
+                        PersonPhones = cr.PersonPhones,
+                        CampusId = cr.CampusId,
+                        CampusName = cr.CampusName,
+                        CampusCode = cr.CampusCode,
+                        ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                        ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                        ConnectorPersonId = cr.ConnectorPersonId,
+                        ConnectorPhotoId = cr.ConnectorPhotoId,
+                        ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                        ActivityCount = cr.ActivityCount,
+                        DateOpened = cr.DateOpened,
+                        GroupName = cr.GroupName,
+                        StatusName = cr.StatusName,
+                        StatusHighlightColor = cr.StatusHighlightColor,
+                        IsStatusCritical = cr.IsStatusCritical,
+                        IsAssignedToYou = cr.IsAssignedToYou,
+                        IsCritical = cr.IsCritical,
+                        IsIdle = cr.IsIdle,
+                        IsUnassigned = cr.IsUnassigned,
+                        ConnectionState = cr.ConnectionState,
+                        LastActivityTypeName = cr.LastActivityTypeName,
+                        Order = cr.Order,
+                        LastActivityTypeId = cr.LastActivityTypeId,
+                        LastActivityDate = cr.LastActivityDate,
+                        FollowupDate = cr.FollowupDate,
+                        UserHasDirectAccess = cr.ConnectorPersonAliasId == currentPersonAliasId,
+                        CanCurrentUserEdit = cr.CanCurrentUserEdit
+                    } )
+                    .ToList()
+                    .Select( cr => new ConnectionRequestViewModelSecurity
+                    {
+                        ConnectionRequest = cr.ConnectionRequest,
+                        ConnectionType = cr.ConnectionType,
+                        Id = cr.Id,
+                        ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                        ConnectionTypeId = cr.ConnectionTypeId,
+                        PlacementGroupId = cr.PlacementGroupId,
+                        PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                        PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        Comments = cr.Comments,
+                        StatusId = cr.StatusId,
+                        PersonId = cr.PersonId,
+                        PersonAliasId = cr.PersonAliasId,
+                        PersonEmail = cr.PersonEmail,
+                        PersonNickName = cr.PersonNickName,
+                        PersonLastName = cr.PersonLastName,
+                        PersonPhotoId = cr.PersonPhotoId,
+                        PersonPhones = cr.PersonPhones,
+                        CampusId = cr.CampusId,
+                        CampusName = cr.CampusName,
+                        CampusCode = cr.CampusCode,
+                        ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                        ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                        ConnectorPersonId = cr.ConnectorPersonId,
+                        ConnectorPhotoId = cr.ConnectorPhotoId,
+                        ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                        ActivityCount = cr.ActivityCount,
+                        DateOpened = cr.DateOpened,
+                        GroupName = cr.GroupName,
+                        StatusName = cr.StatusName,
+                        StatusHighlightColor = cr.StatusHighlightColor,
+                        IsStatusCritical = cr.IsStatusCritical,
+                        IsAssignedToYou = cr.IsAssignedToYou,
+                        IsCritical = cr.IsCritical,
+                        IsIdle = cr.IsIdle,
+                        IsUnassigned = cr.IsUnassigned,
+                        ConnectionState = cr.ConnectionState,
+                        LastActivityTypeName = cr.LastActivityTypeName,
+                        Order = cr.Order,
+                        LastActivityTypeId = cr.LastActivityTypeId,
+                        LastActivityDate = cr.LastActivityDate,
+                        FollowupDate = cr.FollowupDate,
+                        UserHasDirectAccess = cr.UserHasDirectAccess,
+                        CanCurrentUserEdit = cr.UserHasDirectAccess ||
+                            cr.ConnectionRequest.IsAuthorized( Authorization.EDIT, currentPerson )
+                    } )
+                    .Where( cr => cr.UserHasDirectAccess ||
+                             cr.ConnectionRequest.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+                connectionRequestsQuery = connectionRequestsList.AsQueryable();
+            }
+            else if ( !canViewAllRequests )
+            {
+                // There are some scenarios where the current person can see the request even if the permissions say otherwise:
+                // 1) Connection Request Security is not enabled, and the person is in a global (no campus) connector group
+                // 2) Connection Request Security is not enabled, and the person is in the campus specific connector group
+                var currentPersonId = currentPerson?.Id;
+                var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunityId, currentPersonId );
+
+                connectionRequestsQuery = connectionRequestsQuery
+                    .Select( cr => new ConnectionRequestViewModelSecurity
+                    {
+                        ConnectionRequest = cr.ConnectionRequest,
+                        ConnectionType = cr.ConnectionType,
+                        Id = cr.Id,
+                        ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                        ConnectionTypeId = cr.ConnectionTypeId,
+                        PlacementGroupId = cr.PlacementGroupId,
+                        PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                        PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                        Comments = cr.Comments,
+                        StatusId = cr.StatusId,
+                        PersonId = cr.PersonId,
+                        PersonAliasId = cr.PersonAliasId,
+                        PersonEmail = cr.PersonEmail,
+                        PersonNickName = cr.PersonNickName,
+                        PersonLastName = cr.PersonLastName,
+                        PersonPhotoId = cr.PersonPhotoId,
+                        PersonPhones = cr.PersonPhones,
+                        CampusId = cr.CampusId,
+                        CampusName = cr.CampusName,
+                        CampusCode = cr.CampusCode,
+                        ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                        ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                        ConnectorPersonId = cr.ConnectorPersonId,
+                        ConnectorPhotoId = cr.ConnectorPhotoId,
+                        ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                        ActivityCount = cr.ActivityCount,
+                        DateOpened = cr.DateOpened,
+                        GroupName = cr.GroupName,
+                        StatusName = cr.StatusName,
+                        StatusHighlightColor = cr.StatusHighlightColor,
+                        IsStatusCritical = cr.IsStatusCritical,
+                        IsAssignedToYou = cr.IsAssignedToYou,
+                        IsCritical = cr.IsCritical,
+                        IsIdle = cr.IsIdle,
+                        IsUnassigned = cr.IsUnassigned,
+                        ConnectionState = cr.ConnectionState,
+                        LastActivityTypeName = cr.LastActivityTypeName,
+                        Order = cr.Order,
+                        LastActivityTypeId = cr.LastActivityTypeId,
+                        LastActivityDate = cr.LastActivityDate,
+                        FollowupDate = cr.FollowupDate,
+                        UserHasDirectAccess = campusIdQuery.Contains( null ) || // Global campus connector
+                                campusIdQuery.Contains( cr.CampusId ) || // In a connector group of the appropriate campus
+                                cr.ConnectorPersonAliasId == currentPersonAliasId,
+                        CanCurrentUserEdit = campusIdQuery.Contains( null ) || // Global campus connector
+                                campusIdQuery.Contains( cr.CampusId ) || // In a connector group of the appropriate campus
+                                cr.ConnectorPersonAliasId == currentPersonAliasId
+                    } )
+                    .Where( r =>
+                        campusIdQuery.Contains( null ) || // Global campus connector
+                        campusIdQuery.Contains( r.CampusId ) // In a connector group of the appropriate campus
+                );
             }
 
             // Sort by the selected sorting property
@@ -552,7 +711,106 @@ namespace Rock.Model
                     break;
             }
 
-            return connectionRequestsQuery;
+            return connectionRequestsQuery.Select( cr => new ConnectionRequestViewModel
+            {
+                Id = cr.Id,
+                ConnectionOpportunityId = cr.ConnectionOpportunityId,
+                ConnectionTypeId = cr.ConnectionTypeId,
+                PlacementGroupId = cr.PlacementGroupId,
+                PlacementGroupRoleId = cr.PlacementGroupRoleId,
+                PlacementGroupMemberStatus = cr.PlacementGroupMemberStatus,
+                Comments = cr.Comments,
+                StatusId = cr.StatusId,
+                PersonId = cr.PersonId,
+                PersonAliasId = cr.PersonAliasId,
+                PersonEmail = cr.PersonEmail,
+                PersonNickName = cr.PersonNickName,
+                PersonLastName = cr.PersonLastName,
+                PersonPhotoId = cr.PersonPhotoId,
+                PersonPhones = cr.PersonPhones,
+                CampusId = cr.CampusId,
+                CampusName = cr.CampusName,
+                CampusCode = cr.CampusCode,
+                ConnectorPersonNickName = cr.ConnectorPersonNickName,
+                ConnectorPersonLastName = cr.ConnectorPersonLastName,
+                ConnectorPersonId = cr.ConnectorPersonId,
+                ConnectorPhotoId = cr.ConnectorPhotoId,
+                ConnectorPersonAliasId = cr.ConnectorPersonAliasId,
+                ActivityCount = cr.ActivityCount,
+                DateOpened = cr.DateOpened,
+                GroupName = cr.GroupName,
+                StatusName = cr.StatusName,
+                StatusHighlightColor = cr.StatusHighlightColor,
+                IsStatusCritical = cr.IsStatusCritical,
+                IsAssignedToYou = cr.IsAssignedToYou,
+                IsCritical = cr.IsCritical,
+                IsIdle = cr.IsIdle,
+                IsUnassigned = cr.IsUnassigned,
+                ConnectionState = cr.ConnectionState,
+                LastActivityTypeName = cr.LastActivityTypeName,
+                Order = cr.Order,
+                LastActivityTypeId = cr.LastActivityTypeId,
+                LastActivityDate = cr.LastActivityDate,
+                FollowupDate = cr.FollowupDate,
+                CanCurrentUserEdit = cr.CanCurrentUserEdit,
+            } );
+        }
+
+        /// <summary>
+        /// Gets the global connector group campus ids.
+        /// </summary>
+        /// <param name="connectionOpportunityId">The connection opportunity identifier.</param>
+        /// <param name="currentPersonId">The current person identifier.</param>
+        /// <returns></returns>
+        private IQueryable<int?> GetGlobalConnectorGroupCampusIds( int connectionOpportunityId, int? currentPersonId )
+        {
+            var rockContext = Context as RockContext;
+            var connectionOpportunityConnectorGroupService = new ConnectionOpportunityConnectorGroupService( rockContext );
+            return connectionOpportunityConnectorGroupService.Queryable()
+                .AsNoTracking()
+                .Where( cocg =>
+                    cocg.ConnectionOpportunityId == connectionOpportunityId &&
+                    cocg.ConnectorGroup.Members.Any( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == currentPersonId ) )
+                .Select( cocg => cocg.CampusId );
+        }
+
+        /// <summary>
+        /// Determines whether the currentPerson is authorized to edit the specified connection request.
+        /// </summary>
+        /// <param name="connectionRequest">The connection request.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns>
+        ///   <c>true</c> if the currentPerson is authorized to edit the specified connection request; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAuthorizedToEdit( ConnectionRequest connectionRequest, Person currentPerson )
+        {
+            var connectionOpportunity = connectionRequest.ConnectionOpportunity;
+            var isConnectionRequestSecurityEnabled = connectionOpportunity.ConnectionType.EnableRequestSecurity;
+            var canEditAllRequests = currentPerson != null
+                                        && connectionOpportunity.IsAuthorized( Authorization.EDIT, currentPerson )
+                                        && !isConnectionRequestSecurityEnabled;
+
+            if ( canEditAllRequests )
+            {
+                return true;
+            }
+
+            // There are some scenarios where the current person can see the request even if the permissions say otherwise:
+            if ( !isConnectionRequestSecurityEnabled )
+            {
+                // 1) Connection Request Security is not enabled, and the person is in a global (no campus) connector group
+                // 2) Connection Request Security is not enabled, and the person is in the campus specific connector group
+                var campusIdQuery = GetGlobalConnectorGroupCampusIds( connectionOpportunity.Id, currentPerson.Id );
+                if ( campusIdQuery.Contains( null ) || // Global campus connector
+                    campusIdQuery.Contains( connectionRequest.CampusId ) ) // In a connector group of the appropriate campus
+                {
+                    return true;
+                }
+            }
+
+            // 3) The person is assigned to the request or the request security allows it and the connection type has EnableRequestSecurity
+            return (connectionRequest.ConnectorPersonAlias != null && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
+                    || connectionRequest.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
@@ -681,6 +939,14 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether this instance is future follow up past due only.
         /// </summary>
         public bool IsFutureFollowUpPastDueOnly { get; set; }
+
+        /// <summary>
+        /// Gets or sets the connection request identifier.
+        /// </summary>
+        /// <value>
+        /// The connection request identifier.
+        /// </value>
+        public int? ConnectionRequestId { get; set; }
     }
 
     /// <summary>
@@ -715,9 +981,22 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// This model is used to include the ConnectionRequest and ConnectionType so security can be checked if needed.
+    /// </summary>
+    /// <seealso cref="Rock.Model.ConnectionRequestViewModel" />
+    internal class ConnectionRequestViewModelSecurity : ConnectionRequestViewModel
+    {
+        public ConnectionRequest ConnectionRequest { get; set; }
+
+        public ConnectionType ConnectionType { get; set; }
+
+        public bool UserHasDirectAccess { get; set; }
+    }
+
+    /// <summary>
     /// Connection Request View Model (cards)
     /// </summary>
-    public sealed class ConnectionRequestViewModel
+    public class ConnectionRequestViewModel
     {
         #region Properties
 
@@ -942,6 +1221,13 @@ namespace Rock.Model
         /// </summary>
         public bool CanConnect { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [current person can edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [current person can edit]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanCurrentUserEdit { get; set; }
         #endregion Properties
 
         #region Computed

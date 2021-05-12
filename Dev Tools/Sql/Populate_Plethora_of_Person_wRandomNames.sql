@@ -1,3 +1,5 @@
+-- ##Special Note##: Run the RockCleanup immediately after running this script so that any inconsistencies on Group or Person can get cleaned up
+
 SET NOCOUNT ON
 
 -- NOTE: Set @maxPerson to the number of people you want to add. Setting it as high as 99999 might take a minute or so
@@ -12291,7 +12293,6 @@ BEGIN
             );
 
         declare @randomCampusId int = (select top 1 Id from Campus order by newid())
-
 
 		-- create family
 		INSERT INTO [Group] (

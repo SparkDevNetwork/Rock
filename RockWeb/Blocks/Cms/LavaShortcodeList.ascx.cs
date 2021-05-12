@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Cms
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
-                LavaEngine.CurrentEngine.UnregisterShortcode( lavaShortcode.TagName );
+                LavaEngine.CurrentEngine.DeregisterShortcode( lavaShortcode.TagName );
 
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();

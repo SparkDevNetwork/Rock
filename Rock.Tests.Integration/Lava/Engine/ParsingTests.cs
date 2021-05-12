@@ -27,7 +27,52 @@ namespace Rock.Tests.Integration.Lava
     public class LiquidLanguageCompatibilityTests : LavaIntegrationTestBase
     {
         [TestMethod]
-        public void Parsing_LavaTemplateWithElseIfKeyword_EmitsCorrectOutput()
+        public void Whitespace_TrimInOutputTagWithVariable_RemovesWhitespace()
+        {
+            var input = @"{%- assign text = 'hello' -%}--> {{- text -}} <--";
+            var expectedOutput = @"-->hello<--";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        [TestMethod]
+        [Ignore("Not supported in Fluid. The empty output tag throws a parsing error.")]
+        public void Whitespace_TrimInEmptyOutputTag_RemovesWhitespace()
+        {
+            var input = @"{{- -}}";
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        [TestMethod]
+        public void Whitespace_TrimInOutputTagWithEmptyString_RemovesWhitespace()
+        {
+            var input = @"--> {{- '' -}} <--";
+            var expectedOutput = @"--><--";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        /// <summary>
+        /// Verify the operation of the whitespace trim character (-) when used in a comment tag.
+        /// </summary>
+        /// <remarks>
+        /// This represents valid Liquid syntax that failed to parse in Fluid v1.
+        /// The behavior has been fixed in Fluid v2.
+        /// </remarks>
+        [TestMethod]
+        public void Whitespace_TrimInCommentTag_RemovesWhitespace()
+        {
+            var input = @"
+-->  {%- comment %}  Comment text.  {% endcomment -%}  <--
+";
+
+            TestHelper.AssertTemplateOutput( "--><--", input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        [TestMethod]
+        public void Keywords_ElseIfKeyword_IsParsedAsElsIf()
         {
             var input = @"
 {% assign speed = 50 %}
@@ -44,13 +89,37 @@ Slow
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
+        [TestMethod]
+        public void Operators_IfWithNoOperator_BooleanTrueIsParsedAsTruthy()
+        {
+            var input = @"
+{% assign isTruthy = true | AsBoolean %}
+{% if isTruthy %}true{% else %}false{% endif %}
+";
+
+            TestHelper.AssertTemplateOutput( "true", input );
+        }
+
+        [TestMethod]
+        public void Operators_IfWithNoOperator_StringWithContentIsParsedAsTruthy()
+        {
+            var input = @"
+{% assign isTruthy = 'true' %}
+{% if isTruthy %}true{% else %}false{% endif %}
+";
+
+            TestHelper.AssertTemplateOutput( "true", input );
+        }
+
         /// <summary>
         /// The double-ampersand (&&) boolean comparison syntax for "and" is not recognized Liquid syntax.
         /// It is also not part of the documented Lava syntax, but it is supported by the DotLiquid framework and has been found in some existing core templates.
         /// This test is designed to document the expected behavior.
         /// </summary>
         [TestMethod]
-        public void Parsing_ConditionalExpressionUsingDoubleAmpersand_EmitsErrorMessage()
+
+        [Ignore("Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava.")]
+        public void Operators_ConditionalExpressionUsingDoubleAmpersand_EmitsErrorMessage()
         {
             var input = @"
 {% assign speed = 50 %}
@@ -62,10 +131,95 @@ Illegal Boolean Operator!
             // This test does not apply to the DotLiquid framework.
             if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
             {
-                var engine = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions() );
-
                 TestHelper.AssertTemplateIsInvalid( LavaEngineTypeSpecifier.Fluid, input );
             }
+        }
+
+        /// <summary>
+        /// Comment tags containing nested comment tags do not parse correctly in Shopify Liquid.
+        /// DotLiquid correctly parses these tags, but Fluid does not.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "Supported in DotLiquid, but not in Fluid. This tag structure is not officially supported in Liquid or Lava." )]
+        public void Tags_NestedCommentTags_AreProcessedAsCommentContent()
+        {
+            var input = @"
+{%comment%}Outer Comment{%comment%}Inner Comment{%endcomment%}{%endcomment%}
+";
+
+            TestHelper.AssertTemplateOutput( string.Empty, input );
+        }
+
+        /// <summary>
+        /// In Lava, the ">" operator returns true for a string comparison if the left value would be sorted after the right value.
+        /// Default Liquid syntax does not support string comparison using this operator.
+        /// Therefore, the condition "{% if mystring > '' %}" returns false, even if "mystring" is assigned a value.
+        /// This operator is supported by the DotLiquid framework.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava." )]
+        public void Operators_GreaterThanStringComparison_IsProcessedCorrectly()
+        {
+            var input = @"
+{% if 'abc' > 'aba' -%}
+abc > aba.
+{% endif -%}
+{% if 'abc' >= 'abc' -%}
+abc >= abc.
+{% endif -%}
+{% if 'abc' > 'abd' -%}
+abc > abd (!!!)
+{% endif -%}
+";
+
+            var expectedOutput = @"
+abc > aba.
+abc >= abc.
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        /// <summary>
+        /// In Lava, the "<" operator returns true for a string comparison if the left value would be sorted before the right value.
+        /// Default Liquid syntax does not support string comparison using this operator.
+        /// Therefore, the condition "{% if 'a' < 'b' %}" returns false.
+        /// This operator is supported natively by the DotLiquid framework.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava." )]
+        public void Operators_LessThanStringComparison_IsProcessedCorrectly()
+        {
+            var input = @"
+{% if 'abc' < 'abd' -%}
+abc < abd.
+{% endif -%}
+{% if 'abc' <= 'abc' -%}
+abc <= abc.
+{% endif -%}
+{% if 'abc' < 'abb' -%}
+abc < abb (!!!)
+{% endif -%}
+";
+
+            var expectedOutput = @"
+abc < abd.
+abc <= abc.
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [TestMethod]
+        [Ignore( "Requires a fix for the Fluid library. Tags embedded in a raw tag are incorrectly parsed by the Fluid engine." )]
+        public void Tags_RawTagWithEmbeddedTag_ReturnsLiteralTagText()
+        {
+            var inputTemplate = @"
+{% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
+{{ lava | RunLava }}
+";
+
+            TestHelper.AssertTemplateOutput( "hello", inputTemplate );
         }
 
         [TestMethod]

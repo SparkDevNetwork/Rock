@@ -121,9 +121,9 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( _parentsNames == null && _person.AgeClassification != AgeClassification.Adult )
+                if ( _person.AgeClassification == AgeClassification.Adult)
                 {
-                    _parentsNames = Rock.Model.Person.GetFamilySalutation( _person, finalSeparator: "and" );
+                    return null;
                 }
 
                 return _parentsNames;
@@ -650,6 +650,8 @@ namespace Rock.CheckIn
 
             // ScheduleId should have a value, but just in case, we'll do some null safety.
             this.ScheduleId = latestAttendance.ScheduleId ?? 0;
+
+            this._parentsNames = latestAttendance.ParentsNames;
 
             this.ScheduleIds = this.Attendances.Select( a => a.ScheduleId ?? 0 ).Distinct().ToArray();
 

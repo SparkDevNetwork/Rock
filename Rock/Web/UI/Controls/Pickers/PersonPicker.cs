@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.SystemKey;
 
 namespace Rock.Web.UI.Controls
 {
@@ -290,6 +291,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                var alwaysInclude = SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
+                if ( alwaysInclude )
+                {
+                    return true;
+                }
+
                 EnsureChildControls();
                 return _hfIncludeBusinesses.Value.AsBooleanOrNull() ?? false;
             }
@@ -571,7 +578,7 @@ namespace Rock.Web.UI.Controls
 
             _hfIncludeDeceased = new HiddenFieldWithClass();
             _hfIncludeDeceased.CssClass = "js-include-deceased";
-            _hiddenFieldsPanel.Controls.Add( _hfIncludeBusinesses );
+            _hiddenFieldsPanel.Controls.Add( _hfIncludeDeceased );
             _hfIncludeDeceased.ID = "hfIncludeDeceased";
 
             _hfExpandSearchFields = new HiddenFieldWithClass();
