@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "RegistrationStatusLabel", registrationStatusLabels.Values.FirstOrDefault() );
 
 
-                // Status of each registration instance
+                // Status of each registration instance 
                 mergeFields.Add( "RegistrationStatusLabels", registrationStatusLabels );
 
                 mergeFields.Add( "EventItemOccurrence", eventItemOccurrence );

@@ -17,19 +17,73 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Lava;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Lava
 {
     /// <summary>
-    /// Returns the definition of a specified Lava shortcode that is stored in the current Rock database.
+    /// Returns the definition of Lava shortcodes stored in the current Rock database.
     /// This implementation uses a website-based data caching model.
     /// </summary>
-    public static class WebsiteLavaShortcodeProvider
+    public class WebsiteLavaShortcodeProvider
     {
+        /// <summary>
+        /// Register the specified shortcodes with the Lava Engine.
+        /// </summary>
+        /// <param name="engine"></param>
+        public static void RegisterShortcodes( ILavaEngine engine )
+        {
+            ClearCache();
+
+            // Register shortcodes defined in the code base.
+            try
+            {
+                var shortcodeTypes = Rock.Reflection.FindTypes( typeof( ILavaShortcode ) ).Select( a => a.Value ).ToList();
+
+                foreach ( var shortcodeType in shortcodeTypes )
+                {
+                    engine.RegisterShortcode( shortcodeType.Name, ( shortcodeName ) =>
+                    {
+                        var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
+
+                        return shortcode;
+                    } );
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+
+            // Register shortcodes defined in the current database.
+            var shortCodes = LavaShortcodeCache.All();
+
+            foreach ( var shortcode in shortCodes )
+            {
+                engine.RegisterShortcode( shortcode.TagName, ( shortcodeName ) => GetShortcodeDefinition( shortcodeName ) );
+            }
+        }
+
+        /// <summary>
+        /// Register the specified shortcodes with the Lava Engine.
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <param name="shortcodeName"></param>
+        public static void RegisterShortcode( ILavaEngine engine, string shortcodeName )
+        {
+            // Register a factory method that will retrieve the shortcde definition from the data store on demand.
+            engine.RegisterShortcode( shortcodeName, ( name ) => GetShortcodeDefinition( name ) );
+        }
+
+        /// <summary>
+        /// Clears all of the entries from the shortcode cache.
+        /// </summary>
+        public static void ClearCache()
+        {
+            LavaShortcodeCache.Clear();
+        }
+
         /// <summary>
         /// Gets a shortcode definition for the specified shortcode name.
         /// </summary>

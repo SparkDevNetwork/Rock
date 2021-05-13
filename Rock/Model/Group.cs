@@ -87,7 +87,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not 
         /// associated with a campus, this value is null.
         /// </value>
         [HideFromReporting]
@@ -109,7 +109,7 @@ namespace Rock.Model
         /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the Group.
+        /// A <see cref="System.String"/> representing the name of the Group. 
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -150,7 +150,7 @@ namespace Rock.Model
         public bool IsActive { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the
+        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
         /// display priority this group has. This property is required.
         /// </summary>
         /// <value>
@@ -168,7 +168,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? AllowGuests { get; set; }
-
+       
         /// <summary>
         /// Gets or sets a value indicating whether the group should be shown in group finders
         /// </summary>
@@ -305,15 +305,6 @@ namespace Rock.Model
         /// Gets or sets the system communication to use for sending an RSVP reminder.
         /// </summary>
         /// <value>
-        /// The RSVP reminder system communication object.
-        /// </value>
-        [DataMember]
-        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system communication to use for sending an RSVP reminder.
-        /// </summary>
-        /// <value>
         /// The RSVP reminder system communication identifier.
         /// </value>
         [DataMember]
@@ -346,9 +337,44 @@ namespace Rock.Model
         [DataMember]
         public bool DisableScheduling { get; set; }
 
+        /// <summary>
+        /// List leaders names, in order by males → females.
+        /// Examples: Ted &#38; Cindy Decker -or- Ted Decker &#38; Cindy Wright.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=false, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutation { get; set; }
+
+        /// <summary>
+        /// List all active group members, or order by leaders males → females - non leaders by age.
+        /// Examples: Ted, Cindy, Noah and Alex Decker.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=true, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutationFull { get; set; }
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication object.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets this parent Group of this Group.
@@ -908,7 +934,7 @@ namespace Rock.Model
         {
             if ( originalIsActive == newActiveStatus || this.Id == 0 )
             {
-                // only change GroupMember status if the Group's status was changed
+                // only change GroupMember status if the Group's status was changed 
                 return;
             }
 
@@ -946,7 +972,7 @@ namespace Rock.Model
         {
             if ( originalIsArchived == newIsArchived || this.Id == 0 )
             {
-                // only change GroupMember archived value if the Group's archived value was changed
+                // only change GroupMember archived value if the Group's archived value was changed 
                 return;
             }
 
@@ -1251,7 +1277,7 @@ namespace Rock.Model
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 
-            // Tell EF that we never want archived groups.
+            // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.
             // It will also prevent navigation properties of Group from including archived groups.
             Z.EntityFramework.Plus.QueryFilterManager.Filter<Group>( x => x.Where( m => m.IsArchived == false ) );
@@ -1283,7 +1309,7 @@ namespace Rock.Model
         PreSelect = 1,
 
         /// <summary>
-        /// Person cannot check into group unless they have been scheduled
+        /// Person cannot check into group unless they have been scheduled 
         /// </summary>
         ScheduleRequired = 2,
     }
@@ -1293,7 +1319,7 @@ namespace Rock.Model
     #region Custom Exceptions
 
     /// <summary>
-    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy.
+    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
     /// </summary>
     /// <remarks>
     ///  An example of this is when a child group is set as the parent of its parent group.

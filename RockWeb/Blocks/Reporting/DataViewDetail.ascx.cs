@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            // Switch does not automatically initialize again after a partial-postback.  This script
+            // Switch does not automatically initialize again after a partial-postback.  This script 
             // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
@@ -300,7 +300,7 @@ $(document).ready(function() {
 
             if ( !dataView.IsValid )
             {
-                // Controls will render the error messages
+                // Controls will render the error messages                    
                 return;
             }
 
@@ -334,11 +334,7 @@ $(document).ready(function() {
             {
                 try
                 {
-                    Stopwatch stopwatch = Stopwatch.StartNew();
                     dataView.PersistResult( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-                    stopwatch.Stop();
-                    dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                    dataView.PersistedLastRunDurationMilliseconds = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
                     rockContext.SaveChanges();
                 }
                 catch ( Exception ex )
@@ -797,7 +793,7 @@ $(document).ready(function() {
                  .Where( d => d.DataViewFilter.ChildFilters
                      .Any( f => f.Selection == dataView.Id.ToString()
                          && f.EntityTypeId == otherDataViewFilterComponentEntityId ) ).ToList();
-
+                
 
             relatedDataViews.AddRange( otherDataViewsLegacy );
             relatedDataViews = relatedDataViews.DistinctBy( r => r.Id ).OrderBy(a => a.Name).ToList();
@@ -1061,7 +1057,11 @@ $(document).ready(function() {
                 {
                     SortProperty = gPreview.SortProperty,
                     DbContext = dbContext,
-                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
+                    DataViewFilterOverrides = new DataViewFilterOverrides
+                    {
+                        ShouldUpdateStatics = false
+                    }
                 };
 
                 var qry = dataView.GetQuery( dataViewGetQueryArgs );

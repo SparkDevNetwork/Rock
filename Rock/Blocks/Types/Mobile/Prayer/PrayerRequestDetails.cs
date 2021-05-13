@@ -551,13 +551,13 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     ##HEADER##
 
     ##FIELDS##
-
+    
     <Rock:Validator x:Name=""vForm"">
         ##VALIDATORS##
     </Rock:Validator>
-
+    
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Error"" />
-
+    
     <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""24 0 0 0"" Command=""{{Binding Callback}}"">
         <Button.CommandParameter>
             <Rock:CallbackParameters Name=""Save"" Validator=""{{x:Reference vForm}}"" Notification=""{{x:Reference nbError}}"">

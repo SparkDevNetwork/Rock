@@ -1298,13 +1298,15 @@ namespace Rock.Blocks.Types.Mobile.Security
 
             if ( details.BirthDate.HasValue )
             {
-                var localBirthDate = details.BirthDate.Value.LocalDateTime;
+                // Special case for birth dates. They don't get time zone
+                // offsets applied, so just take the raw date value.
+                var absBirthDate = details.BirthDate.Value.Date;
 
-                person.BirthMonth = localBirthDate.Month;
-                person.BirthDay = localBirthDate.Day;
-                if ( localBirthDate.Year != DateTime.MinValue.Year )
+                person.BirthMonth = absBirthDate.Month;
+                person.BirthDay = absBirthDate.Day;
+                if ( absBirthDate.Year != DateTime.MinValue.Year )
                 {
-                    person.BirthYear = localBirthDate.Year;
+                    person.BirthYear = absBirthDate.Year;
                 }
             }
 
@@ -1344,9 +1346,13 @@ namespace Rock.Blocks.Types.Mobile.Security
             // will always provide a year to this method.
             if ( details.BirthDate.HasValue )
             {
-                person.BirthDay = details.BirthDate.Value.LocalDateTime.Day;
-                person.BirthMonth = details.BirthDate.Value.LocalDateTime.Month;
-                person.BirthYear = details.BirthDate.Value.LocalDateTime.Year;
+                // Special case for birth dates. They don't get time zone
+                // offsets applied, so just take the raw date value.
+                var absBirthDate = details.BirthDate.Value.Date;
+
+                person.BirthDay = absBirthDate.Day;
+                person.BirthMonth = absBirthDate.Month;
+                person.BirthYear = absBirthDate.Year;
             }
             else
             {
@@ -1734,7 +1740,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     isSamePerson = false;
                 }
 
-                if ( isSamePerson && person.BirthDate.HasValue && person.BirthDate.Value != request.Details.BirthDate?.LocalDateTime )
+                if ( isSamePerson && person.BirthDate.HasValue && person.BirthDate.Value != request.Details.BirthDate?.Date )
                 {
                     isSamePerson = false;
                 }

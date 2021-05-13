@@ -43,6 +43,9 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public override void Delete( int id )
         {
+            // We need to enable proxy creation so the IsAuthorizedToEdit call works correctly.
+            SetProxyCreation( true );
+
             var rockContext = Service.Context as RockContext;
             var service = Service as ConnectionRequestService;
             var connectionRequest = service.Queryable()
@@ -57,6 +60,12 @@ namespace Rock.Rest.Controllers
             if ( !service.CanDelete( connectionRequest, out var errorMessage ) )
             {
                 var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            if ( !service.IsAuthorizedToEdit( connectionRequest, GetPerson() ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, string.Empty );
                 throw new HttpResponseException( errorResponse );
             }
 
@@ -279,7 +288,8 @@ namespace Rock.Rest.Controllers
             var connectionStatusViewModels = connectionRequestService.GetConnectionBoardStatusViewModels(
                 personAliasId.Value,
                 connectionOpportunityId,
-                new ConnectionRequestViewModelQueryArgs {
+                new ConnectionRequestViewModelQueryArgs
+                {
                     CampusId = campusId,
                     ConnectorPersonAliasId = connectorPersonAliasId,
                     RequesterPersonAliasId = requesterPersonAliasId,

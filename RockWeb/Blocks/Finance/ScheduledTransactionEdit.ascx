@@ -130,7 +130,7 @@
                     <% if ( FluidLayout )
                     { %>
                         </div>
-                    </div>
+                    </div>            
                     <% } %>
 
                 </asp:Panel>

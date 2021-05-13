@@ -75,7 +75,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public class AttendanceCheckInSessionConfiguration : EntityTypeConfiguration<AttendanceCheckInSession>
     {

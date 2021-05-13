@@ -648,7 +648,7 @@ namespace Rock.Web.UI.Controls
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
-
+            
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
             if ( this.UserSpecificRoot )

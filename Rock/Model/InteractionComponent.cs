@@ -204,7 +204,7 @@ namespace Rock.Model
         #endregion
 
         #region Obsolete Properties
-
+        
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
         /// </summary>
@@ -220,7 +220,7 @@ namespace Rock.Model
             get { return InteractionChannelId; }
             set { InteractionChannelId = value; }
         }
-
+        
         /// <summary>
         /// Gets or sets the channel.
         /// </summary>

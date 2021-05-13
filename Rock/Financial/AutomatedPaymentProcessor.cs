@@ -612,7 +612,7 @@ namespace Rock.Financial
                 metadata[MetadataKey.IdempotencyKey] = _automatedPaymentArgs.IdempotencyKey;
             }
 
-            //
+            // 
             var automatedGatewayComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
             _payment = automatedGatewayComponent.AutomatedCharge( _financialGateway, _referencePaymentInfo, out errorMessage, metadata );
 
@@ -853,7 +853,7 @@ namespace Rock.Financial
                 {
                     /*
                      * The amount coming from the gateway is always in the Organization's currency.
-                     * As such the Amount value could be different than the original amount passed in if the
+                     * As such the Amount value could be different than the original amount passed in if the 
                      * specified currency code is different then the Organization's currency code.
                      */
                     financialTransaction.SetApportionedDetailAmounts( _payment.Amount );

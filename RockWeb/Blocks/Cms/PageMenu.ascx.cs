@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    var lavaTemplate = GetLavaTemplate();
+                    var templateText = GetAttributeValue( AttributeKey.Template );
 
                     // Apply Enabled Lava Commands
                     var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( pageProperties );
@@ -237,14 +237,14 @@ namespace RockWeb.Blocks.Cms
 
                     lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
 
-                    List<Exception> errors;
+                    var result = LavaEngine.CurrentEngine.RenderTemplate( templateText,
+                        new LavaRenderParameters { Context = lavaContext, CacheKey = CacheKey() } );
 
-                    lavaTemplate.TryRender( lavaContext, out content, out errors );
+                    content = result.Text;
 
-                    // Check for Lava rendering errors.
-                    if ( errors.Any() )
+                    if ( result.HasErrors )
                     {
-                        throw errors.First();
+                        throw result.GetLavaException();
                     }
                 }
 
@@ -291,11 +291,6 @@ namespace RockWeb.Blocks.Cms
             return cacheTemplate != null ? cacheTemplate.Template as Template : null;
         }
         #endregion
-
-        private ILavaTemplate GetLavaTemplate()
-        {
-            return LavaEngine.CurrentEngine.TemplateCacheService.GetOrAddTemplate( GetAttributeValue( AttributeKey.Template ) );
-        }
 
         /// <summary>
         /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.

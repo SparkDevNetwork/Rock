@@ -50,7 +50,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a description of the device.
         /// </summary>
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
-
+        
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// Gets or sets the DeviceId of the printer that is associated with this device. This is mostly used if this device is a kiosk.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the DeviceId of the printer that is associated with this device. If there is not a printer
+        /// A <see cref="System.Int32"/> representing the DeviceId of the printer that is associated with this device. If there is not a printer 
         /// associated with this Device, this value will be null.
         /// </value>
         [DataMember]
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.PrintTo"/> that indicates overrides where the print job is set to.  If <c>PrintTo.Default</c> the print job will be sent to the default
-        /// printer, if <c>PrintTo.Kiosk</c> the print job will be sent to the printer associated with the kiosk, if <c>PrintTo.Location</c> the print job will be sent to the
+        /// printer, if <c>PrintTo.Kiosk</c> the print job will be sent to the printer associated with the kiosk, if <c>PrintTo.Location</c> the print job will be sent to the 
         /// printer at the check in location.
         /// </value>
         [DataMember]
@@ -165,7 +165,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.Location"/> entity that represents the physical location of or the geographic fence for the device.
         /// </value>
         /// <remarks>
-        /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in,
+        /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
         /// where if the device is within the fence, a user would be able to check in from their mobile device.
         /// </remarks>
         [LavaVisible]
@@ -186,7 +186,7 @@ namespace Rock.Model
         private ICollection<Location> _locations;
 
         /// <summary>
-        /// Gets or sets the printer that is associated with this device.
+        /// Gets or sets the printer that is associated with this device. 
         /// </summary>
         /// <value>
         /// The printer that is associated with the device.

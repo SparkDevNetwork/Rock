@@ -93,7 +93,7 @@ namespace Rock.Model
         /// Gets or sets the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> that belongs to this GroupType is called.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this
+        /// A <see cref="System.String"/> that represents the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this 
         /// GroupType is called.
         /// </value>
         /// <example>
@@ -389,9 +389,9 @@ namespace Rock.Model
 			<div class=""alert alert-{{ warningLevel }} margin-t-sm"">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
 		{% endif %}
 	{% endif %}
-
-
-
+	
+	
+	
 {% if Group.Description != '' -%}
     <p class='description'>{{ Group.Description }}</p>
 {% endif -%}
@@ -471,7 +471,7 @@ namespace Rock.Model
 		        <h4> {{ groupLocation.GroupLocationTypeValue.Value }} </h4>
 		        {% endif %}
 		    <a href = '{{ GroupMapUrl }}'><img class='img-thumbnail' src='{{ mapLink }}'/></a>
-		    </div>
+		    </div>	
 		    {% endif %}
 		{% endfor %}
 		{% endif %}
@@ -814,7 +814,7 @@ namespace Rock.Model
                     - Area 1
                         - Kittens Group
                     - Area 2
-                        - Bobcat Group
+                        - Bobcat Group    
                     - Area 3
                         - Tigers Group
                         - Bears Group
@@ -867,7 +867,7 @@ namespace Rock.Model
             set { _triggers = value; }
         }
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-
+        
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -897,7 +897,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a
+        /// Gets or sets the default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a 
         /// <see cref="Rock.Model.Group"/> of this GroupType.
         /// </summary>
         /// <value>
@@ -997,7 +997,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from. 
         /// This is similar to a parent or a template GroupType.
         /// </summary>
         /// <value>The <see cref="Rock.Model.GroupType"/> that this GroupType is inheriting settings and properties from.</value>
@@ -1418,7 +1418,7 @@ namespace Rock.Model
     public enum AttendanceRule
     {
         /// <summary>
-        /// None, person does not need to belong to the group, and they will not automatically
+        /// None, person does not need to belong to the group, and they will not automatically 
         /// be added to the group
         /// </summary>
         None = 0,

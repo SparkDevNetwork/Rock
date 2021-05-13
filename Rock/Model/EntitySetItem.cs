@@ -121,7 +121,7 @@ namespace Rock.Model
         /// </summary>
         public override Security.ISecured ParentAuthority
         {
-            get
+            get 
             {
                 return this.EntitySet != null ? this.EntitySet : base.ParentAuthority;
             }

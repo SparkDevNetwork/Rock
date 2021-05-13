@@ -1381,6 +1381,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion
+        #endregion       
     }
 }

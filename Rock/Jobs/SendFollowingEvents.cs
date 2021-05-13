@@ -43,7 +43,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class SendFollowingEvents : IJob
     {
-        /// <summary>
+        /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -139,7 +139,8 @@ namespace Rock.Jobs
                     // Get a distinct list of each entitytype/entity that is being followed by anyone that subscribes to events
                     var followings = followingService
                         .Queryable( "PersonAlias" ).AsNoTracking()
-                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId ) )
+                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId )
+                            && string.IsNullOrEmpty( f.PurposeKey ) )
                         .ToList();
 
                     // group the followings by their type
@@ -176,7 +177,7 @@ namespace Rock.Jobs
                         EntityTypeCache itemEntityType = EntityTypeCache.Get( keyVal.Key );
                         if ( itemEntityType != null && itemEntityType.AssemblyName != null )
                         {
-                            // get the actual type of what is being followed
+                            // get the actual type of what is being followed 
                             Type entityType = itemEntityType.GetEntityType();
                             if ( entityType != null )
                             {
@@ -201,7 +202,7 @@ namespace Rock.Jobs
 
                                         var entityList = entityQry.Where( q => keyVal.Value.Contains( q.Id ) ).ToList();
 
-                                        // If there are any followed entities of this type
+                                        // If there are any followed entities of this type 
                                         if ( entityList.Any() )
                                         {
                                             // Get the active event types for this entity type
@@ -317,7 +318,7 @@ namespace Rock.Jobs
                                         // If any were found
                                         if ( personFollowedEntities.Any() )
                                         {
-                                            // Add the entry
+                                            // Add the entry 
                                             var eventTypeObj = eventTypes.Where( e => e.Id == eventType.Key ).FirstOrDefault();
                                             if ( eventTypeObj != null )
                                             {
@@ -336,7 +337,7 @@ namespace Rock.Jobs
 
                                         var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
                                         emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                        var errors = new List<string>();
+                                        var errors = new List<string>(); 
                                         emailMessage.Send(out errors);
                                         exceptionMsgs.AddRange( errors );
                                         if ( !errors.Any() )

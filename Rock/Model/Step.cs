@@ -41,7 +41,7 @@ namespace Rock.Model
          * PersonAliasId, StepTypeId
          *      Includes CompletedDateTime
          *      This was added for Step Program Achievement
-         *
+         *      
          *  StepTypeId, PersonAliasId
          *      Includes CompletedDateTime
          *      This was added for Step Program Achievement

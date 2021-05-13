@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Finance
                 ShowDetail( pledgeId );
             }
 
-            // Add any attribute controls.
+            // Add any attribute controls. 
             // This must be done here regardless of whether it is a postback so that the attribute values will get saved.
             var pledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
             if ( pledge == null )

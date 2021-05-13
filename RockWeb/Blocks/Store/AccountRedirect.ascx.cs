@@ -111,14 +111,14 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            
         }
 
         #endregion
 
         #region Methods
 
-
+        
 
         #endregion
 

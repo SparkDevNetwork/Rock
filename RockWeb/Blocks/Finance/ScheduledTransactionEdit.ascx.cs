@@ -1374,7 +1374,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 if ( scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount != null )
                 {
-                    // If we have FinancialPersonSavedAccount for this, get the reference info from that
+                    // If we have FinancialPersonSavedAccount for this, get the reference info from that 
                     referencePaymentInfo = scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount.GetReferencePayment();
                 }
                 else

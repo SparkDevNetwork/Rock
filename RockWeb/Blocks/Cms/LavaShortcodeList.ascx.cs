@@ -32,7 +32,7 @@ using Rock.Lava;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [DisplayName("Lava Shortcode List")]
     [Category("CMS")]
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Events
+        #region Events 
 
         /// <summary>
         /// Handles the BlockUpdated event of the Block control.
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Cms
             if ( lavaShortcode != null )
             {
                 // unregister the shortcode
-                LavaEngine.CurrentEngine.UnregisterShortcode( lavaShortcode.TagName );
+                LavaEngine.CurrentEngine.DeregisterShortcode( lavaShortcode.TagName );
 
                 lavaShortcodeService.Delete( lavaShortcode );
                 rockContext.SaveChanges();
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Cms
 
         protected void rptShortcodes_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem ) 
             {
                 if ( !canAddEditDelete )
                 {
@@ -291,6 +291,7 @@ namespace RockWeb.Blocks.Cms
             {
                 var shortcode = shortcodeInCode.Value;
                 var shortcodeMetadataAttribute = shortcode.GetCustomAttributes( typeof( LavaShortcodeMetadataAttribute ), true ).FirstOrDefault() as LavaShortcodeMetadataAttribute;
+
                 // ignore shortcodes with no metadata
                 if ( shortcodeMetadataAttribute == null )
                 {

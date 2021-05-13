@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -44,7 +45,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
-    public partial class MediaElementList : RockBlock, ICustomGridColumns
+    public partial class MediaElementList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -122,7 +123,7 @@ namespace RockWeb.Blocks.Cms
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
                 gfFilter.ClearFilterClick += gfFilter_ClearFilterClick;
 
-                lTitle.Text = ( _mediaFolder.Name + " Elements" ).FormatAsHtmlTitle();
+                lTitle.Text = ( _mediaFolder.Name + " Media Elements" ).FormatAsHtmlTitle();
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -152,6 +153,19 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion Base Control Methods
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlView.Visible = visible;
+        }
+
+        #endregion
 
         #region Filter Events
 

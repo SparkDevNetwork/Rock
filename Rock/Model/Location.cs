@@ -33,8 +33,8 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Location Entity class. A location in Rock is any physical place. It could be a street address, building, floor, room, kiosk location, etc. A location
-    /// is also stackable/hierarchical. For example for a church's campus <seealso cref="Campus"/> can have multiple buildings or facilities,
+    /// Location Entity class. A location in Rock is any physical place. It could be a street address, building, floor, room, kiosk location, etc. A location 
+    /// is also stackable/hierarchical. For example for a church's campus <seealso cref="Campus"/> can have multiple buildings or facilities, 
     /// each building can be multi story and a story can have multiple rooms.
     /// </summary>
     [RockDomain( "Core" )]
@@ -45,7 +45,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the if the location's parent Location.
+        /// Gets or sets the if the location's parent Location. 
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32 "/> representing the Id of this Location's parent Location. If this Location does not have a parent Location, this value will be null.
@@ -100,10 +100,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the geographic parameter around the a Location's GeoPoint. This can also be used to define a large area
-        /// like a neighborhood.
+        /// like a neighborhood.  
         /// </summary>
         /// <remarks>
-        /// Examples of this could be  a radius around a church campus to allow mobile check in if a person is located within a certain radius of
+        /// Examples of this could be  a radius around a church campus to allow mobile check in if a person is located within a certain radius of 
         /// the campus, or it could be used to define the parameter of an area (i.e. neighborhood, park, etc.)
         /// </remarks>
         /// <value>
@@ -125,10 +125,10 @@ namespace Rock.Model
         public string Street1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the second line of the Location's Street/Mailing Address.
+        /// Gets or sets the second line of the Location's Street/Mailing Address. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the second line of the Location's Street/Mailing Address. if this Location does not have
+        /// A <see cref="System.String"/> representing the second line of the Location's Street/Mailing Address. if this Location does not have 
         /// Street/Mailing Address or if the address does not have a 2nd line, this value is null.
         /// </value>
         [MaxLength( 100 )]
@@ -160,7 +160,7 @@ namespace Rock.Model
         /// Gets or sets the State component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the state component of the Location's Street/Mailing Address. If this Location does not have
+        /// A <see cref="System.String"/> representing the state component of the Location's Street/Mailing Address. If this Location does not have 
         /// a Street/Mailing Address, this value will be null.
         /// </value>
         [MaxLength( 50 )]
@@ -168,10 +168,10 @@ namespace Rock.Model
         public string State { get; set; }
 
         /// <summary>
-        /// Gets or sets the country component of the Location's Street/Mailing Address.
+        /// Gets or sets the country component of the Location's Street/Mailing Address. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.String" /> representing the country component of the Location's Street/Mailing Address. If this Location does not have a
+        /// A <see cref="System.String" /> representing the country component of the Location's Street/Mailing Address. If this Location does not have a 
         /// Street/Mailing Address, this value will be null.
         /// </value>
         [MaxLength( 50 )]
@@ -182,7 +182,7 @@ namespace Rock.Model
         /// Gets or sets the Zip/Postal Code component of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Zip/Postal Code component of the Location's Street/Mailing Address. If this Location does not have
+        /// A <see cref="System.String"/> representing the Zip/Postal Code component of the Location's Street/Mailing Address. If this Location does not have 
         /// Street/Mailing Address, this value will be null.
         /// </value>
         [MaxLength( 50 )]
@@ -235,7 +235,7 @@ namespace Rock.Model
         /// Gets or sets the result code returned from the address standardization service.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the result code that was returned by the address standardization service. If an address standardization has not been attempted for this location,
+        /// A <see cref="System.String"/> representing the result code that was returned by the address standardization service. If an address standardization has not been attempted for this location, 
         /// this value will be null.
         /// </value>
         [MaxLength( 200 )]
@@ -256,7 +256,7 @@ namespace Rock.Model
         /// Gets and sets the date and time that an attempt was made to geocode the Location's address.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime" /> representing the date and time that an attempt was made to geocode the Location's address. If a geocoding has not been attempted for this location,
+        /// A <see cref="System.DateTime" /> representing the date and time that an attempt was made to geocode the Location's address. If a geocoding has not been attempted for this location, 
         /// the value will be null.
         /// </value>
         [DataMember]
@@ -266,7 +266,7 @@ namespace Rock.Model
         /// Gets or sets the component name of the Geocoding service that attempted the most recent address Geocode attempt.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the component name of the Geocoding service that attempted the most recent address Geocode attempt. If geocoding has not been attempted
+        /// A <see cref="System.String"/> representing the component name of the Geocoding service that attempted the most recent address Geocode attempt. If geocoding has not been attempted 
         /// for this location, the value will be null.
         /// </value>
         [MaxLength( 50 )]
@@ -285,10 +285,10 @@ namespace Rock.Model
         public string GeocodeAttemptedResult { get; set; }
 
         /// <summary>
-        /// Gets or sets date and time that this Location's  address has been successfully geocoded.
+        /// Gets or sets date and time that this Location's  address has been successfully geocoded. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attempted for this location or
+        /// A <see cref="System.DateTime"/> representing the date and time that the address of this location was successfully geocoded. If geocoding has not been attempted for this location or 
         /// the location had not been successfully geocoded this value will be null.
         /// </value>
         [DataMember]
@@ -548,7 +548,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the distance (in miles).
+        /// Gets the distance (in miles). 
         /// Note, this just stores whatever value was passed into SetDistance
         /// Some of the REST apis, such as Groups/ByLocation, will set this for you
         /// </summary>
@@ -703,8 +703,8 @@ namespace Rock.Model
 
             if ( fullAddress.IsNotNullOrWhiteSpace() )
             {
-                /*
-                    02/05/2021 MDP
+                /* 
+                    02/05/2021 MDP 
 
                     Even if Location.Name has a value, return the Full Street Address
                     for ToString() if there is a full address. This way we don't change
@@ -910,7 +910,7 @@ namespace Rock.Model
 
         #endregion ICacheable
 
-        #region
+        #region 
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -1041,7 +1041,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public class MapItem
     {

@@ -58,7 +58,7 @@ namespace Rock.Jobs
         #endregion Keys
         #region Constructor
 
-        /// <summary>
+        /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -75,7 +75,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Job that will run quick SQL queries on a schedule.
-        ///
+        /// 
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.

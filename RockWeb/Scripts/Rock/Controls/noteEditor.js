@@ -1,4 +1,4 @@
-(function ($) {
+﻿(function ($) {
     'use strict';
     window.Rock = window.Rock || {};
     Rock.controls = Rock.controls || {};
@@ -49,7 +49,7 @@
                         self.$noteEditor.slideDown().find('textarea').trigger("focus");
                     }
                     else {
-                        // new note, so just show it
+                        // new note, so just show it 
                         self.$noteEditor.fadeIn();
                     }
                 }
@@ -113,7 +113,7 @@
                         }
                     }
 
-
+                    
                 });
 
                 $('.js-notecontainer .js-notesecurity').on('click', function (e) {

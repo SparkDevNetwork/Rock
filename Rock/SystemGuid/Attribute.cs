@@ -141,37 +141,37 @@ namespace Rock.SystemGuid
         public const string PERSON_CONFLICT_MODE_WINNING = "7147F706-388E-45E6-BE21-893FC7D652AA";
 
         /// <summary>
-        /// The person attribute for the conflict mode: resolving
+        /// The person attribute for the conflict mode: resolving 
         /// </summary>
         public const string PERSON_CONFLICT_MODE_RESOLVING = "5B811EAC-51B2-41F2-A55A-C966D9DB05EE";
 
         /// <summary>
-        /// The person attribute for the conflict mode: compromising
+        /// The person attribute for the conflict mode: compromising  
         /// </summary>
         public const string PERSON_CONFLICT_MODE_COMPROMISING = "817D6B13-E4AA-4E93-8547-FE711A0065F2";
 
         /// <summary>
-        /// The person attribute for the conflict mode: avoiding
+        /// The person attribute for the conflict mode: avoiding  
         /// </summary>
         public const string PERSON_CONFLICT_MODE_AVOIDING = "071A8EFA-AD1C-436A-8E1E-23D215617004";
 
         /// <summary>
-        /// The person attribute for the conflict mode: yielding
+        /// The person attribute for the conflict mode: yielding  
         /// </summary>
         public const string PERSON_CONFLICT_MODE_YIELDING = "D30A33AD-7A60-43E0-84DA-E23600156BF7";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: accommodating
+        /// The person attribute for the conflict engagement profile: accommodating  
         /// </summary>
         public const string PERSON_CONFLICT_THEME_ACCOMMODATING = "404A64FB-7396-4896-9C94-84DE21E995CA";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: winning
+        /// The person attribute for the conflict engagement profile: winning  
         /// </summary>
         public const string PERSON_CONFLICT_THEME_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
 
         /// <summary>
-        /// The person attribute for the conflict engagement profile: solving
+        /// The person attribute for the conflict engagement profile: solving  
         /// </summary>
         public const string PERSON_CONFLICT_THEME_SOLVING = "33235605-D8BB-4C1E-B231-6F085970A14F";
 
@@ -846,7 +846,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
-        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occassionally update the classification.
+        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occassionally update the classification. 
         /// </summary>
         public const string PERSON_GIVING_LAST_CLASSIFICATION_DATE = "7220B230-03CE-4D1E-985B-26AA28BE06F8";
 

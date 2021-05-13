@@ -64,7 +64,7 @@ namespace Rock.Model
         public string StepTerm
         {
             get => _stepTerm.IsNullOrWhiteSpace() ? _defaultStepTerm : _stepTerm;
-            set => _stepTerm = value;
+            set => _stepTerm = value;            
         }
         private string _stepTerm;
 

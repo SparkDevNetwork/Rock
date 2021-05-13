@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [Description( "Select the total giving amount of the person" )]
     [Export( typeof( DataSelectComponent ) )]

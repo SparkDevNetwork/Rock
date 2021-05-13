@@ -137,7 +137,7 @@ namespace Rock.Model
             var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
             var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees", attendanceTypeValueId );
 
-            // If we still don't have an occurrence record (i.e. validation failed) return null
+            // If we still don't have an occurrence record (i.e. validation failed) return null 
             if ( occurrence == null )
             {
                 return null;
@@ -386,7 +386,7 @@ namespace Rock.Model
             var includeNullCampus = ( campusIds ?? "" ).Split( ',' ).ToList().Any( a => a.Equals( "null", StringComparison.OrdinalIgnoreCase ) );
             var campusIdList = ( campusIds ?? "" ).Split( ',' ).AsIntegerList();
 
-            // remove 0 from the list, just in case it is there
+            // remove 0 from the list, just in case it is there 
             campusIdList.Remove( 0 );
 
             if ( campusIdList.Any() )
@@ -667,7 +667,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class AttendanceWithSummaryDateTime
         {
@@ -1289,8 +1289,8 @@ namespace Rock.Model
                 {
                     PersonId = a.PersonId,
 
-                    /* 2020-07-17 MDP
-                     *  This is their GroupMember information from the *ResourceGroup*, and not always the Occurrence Group.
+                    /* 2020-07-17 MDP  
+                     *  This is their GroupMember information from the *ResourceGroup*, and not always the Occurrence Group. 
                      *  This is how the Group Member information displayed in the Resources Lists is determined:
                      *  - Group Member (Or Group Member Matching Preference)
                      *    - Occurrence Group
@@ -1583,7 +1583,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of SchedulerResourceAttend records
+        /// Gets a list of SchedulerResourceAttend records 
         /// </summary>
         /// <param name="attendanceOccurrenceId">The attendance occurrence identifier.</param>
         /// <returns></returns>
@@ -1776,7 +1776,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            // they this schedule as a preference, but for a different location
+                            // they this schedule as a preference, but for a different location 
                             matchesPreference = ScheduledAttendanceItemMatchesPreference.NotMatchesPreference;
                         }
                     }
@@ -2308,7 +2308,7 @@ namespace Rock.Model
             {
                 return;
             }
-
+            
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             var group = attendance.Occurrence.Group;
 
@@ -2360,7 +2360,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private class GroupMemberAssignmentInfo
         {
@@ -2589,7 +2589,7 @@ namespace Rock.Model
                 .Select( a => new { PersonAliasId = a.Id, a.PersonId } )
                 .ToDictionary( k => k.PersonId, v => ( int? ) v.PersonAliasId );
 
-            // create a list of Attendances to BulkImport (specify the number of records we are going to put in the list initialize the list
+            // create a list of Attendances to BulkImport (specify the number of records we are going to put in the list initialize the list 
             List<Attendance> attendancesToBulkInsert = attendanceImportList.Select( attendanceImport =>
              {
                  var attendance = new Attendance
@@ -2599,7 +2599,7 @@ namespace Rock.Model
                  };
 
                  // If PersonId was specified, we'll use that (and ignore the imported PersonAliasId if there is one)
-                 // Then we'll use the PrimaryAliasId associated with the specified PersonId
+                 // Then we'll use the PrimaryAliasId associated with the specified PersonId 
                  if ( attendanceImport.PersonId.HasValue )
                  {
                      var personAliasId = primaryAliasIdFromPersonIdLookup.GetValueOrNull( attendanceImport.PersonId.Value );
@@ -2720,7 +2720,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <seealso cref="Rock.Model.SchedulerResourceAssignment" />
     public class SchedulerResourcePreference : SchedulerResourceAssignment
@@ -2728,7 +2728,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <seealso cref="Rock.Model.SchedulerResourceAssignment" />
     public class SchedulerResourceScheduled : SchedulerResourceAssignment
@@ -2736,7 +2736,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public abstract class SchedulerResourceAssignment
     {
@@ -3042,7 +3042,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum ScheduledAttendanceItemMatchesPreference
     {
@@ -3063,7 +3063,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum ScheduledAttendanceItemStatus
     {
@@ -3089,7 +3089,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockObsolete( "1.12" )]
     [Obsolete( "Use GroupSchedulerResourceListSourceType instead" )]
@@ -3113,7 +3113,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
@@ -3149,7 +3149,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum SchedulerResourceGroupMemberFilterType
     {
@@ -3165,7 +3165,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockClientInclude( "Use this as the Content of a ~/api/Attendances/GetSchedulerResources POST" )]
     public class SchedulerResourceParameters
@@ -3248,7 +3248,7 @@ namespace Rock.Model
     #endregion Group Scheduling related classes and types
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public static class AttendanceQryExtensions
     {
@@ -3356,7 +3356,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a queryable of Attendance where the person is scheduled (RequestedToAttend), limited to scheduled persons with the specified <see cref="ScheduledAttendanceItemStatus">scheduledAttendanceItemStatuses</see>
+        /// Returns a queryable of Attendance where the person is scheduled (RequestedToAttend), limited to scheduled persons with the specified <see cref="ScheduledAttendanceItemStatus">scheduledAttendanceItemStatuses</see> 
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="scheduledAttendanceItemStatuses">The scheduled attendance item statuses.</param>

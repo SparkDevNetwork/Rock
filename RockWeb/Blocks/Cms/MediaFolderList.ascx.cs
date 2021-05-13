@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -44,7 +45,7 @@ namespace RockWeb.Blocks.Cms
         Key = AttributeKey.DetailPage,
         Order = 0 )]
 
-    public partial class MediaFolderList : RockBlock, ICustomGridColumns
+    public partial class MediaFolderList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -166,6 +167,19 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion Base Control Methods
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlView.Visible = visible;
+        }
+
+        #endregion
 
         #region Filter Events
 

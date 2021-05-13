@@ -82,7 +82,7 @@ namespace Rock.DownhillCss
             // Build Border Width Utilities
             BorderWidths( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
 
-
+            
 
             return CssUtilities.ParseCss( frameworkCss.ToString(), settings );
         }
@@ -225,7 +225,7 @@ namespace Rock.DownhillCss
                 frameworkCss.AppendLine($"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};");
                 frameworkCss.AppendLine("}");
             }
-
+            
         }
 
         private static void TextColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
@@ -557,7 +557,7 @@ namespace Rock.DownhillCss
             css = Regex.Replace( css, @"/\*[\d\D]*?\*/", string.Empty );
 
             return css;
-
+         
         }
         #endregion
 
@@ -961,7 +961,7 @@ icon {
 
 .modal-close,
 .modal-title {
-    color: #ffffff;
+    color: #ffffff; 
 }
 
 .modal-title {
@@ -1376,9 +1376,9 @@ icon {
 }
 ^borderlessentry,
 ^datepicker,
-^checkbox,
+^checkbox, 
 ^picker,
-^entry,
+^entry, 
 ^switch,
 ^editor {
     color: ?color-text;
@@ -1396,7 +1396,7 @@ icon {
 
 /* Field Titles */
 fieldgroupheader {
-
+   
 }
 
 fieldgroupheader .title,
@@ -1458,7 +1458,7 @@ formfield .required-indicator {
 }
 
 .card-container {
-   padding: 0;
+   padding: 0; 
    -xf-spacing: 0;
 }
 
@@ -1493,7 +1493,7 @@ formfield .required-indicator {
 }
 
 .card-tagline,
-.card-description-left,
+.card-description-left, 
 .card-description-right {
     opacity: .7;
 }

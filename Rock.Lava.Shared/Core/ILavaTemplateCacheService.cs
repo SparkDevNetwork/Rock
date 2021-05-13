@@ -34,8 +34,9 @@ namespace Rock.Lava
         /// Gets a compiled template from cache or adds it to the cache if it does not already exist.
         /// </summary>
         /// <param name="templateContent">The template source text.</param>
+        /// <param name="cacheKey">An optional key that uniquely identifies the template. If not specified, the template source text is used to calculate a key for cache storage and retrieval.</param>
         /// <returns></returns>
-        ILavaTemplate GetOrAddTemplate( string templateContent );
+        ILavaTemplate GetOrAddTemplate( string templateContent, string cacheKey = null );
 
         /// <summary>
         /// Remove all templates from the cache.

@@ -710,6 +710,7 @@ function onTaskCompleted( resultData )
                 result.Add( CommunicationType.PushNotification );
             }
 
+
             return result;
         }
 
@@ -2599,7 +2600,7 @@ function onTaskCompleted( resultData )
                     communication.Status = CommunicationStatus.Approved;
                     communication.ReviewedDateTime = RockDateTime.Now;
                     communication.ReviewerPersonAliasId = CurrentPersonAliasId;
-
+                    
                     if ( communication.FutureSendDateTime.HasValue &&
                                    communication.FutureSendDateTime > RockDateTime.Now )
                     {

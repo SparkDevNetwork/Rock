@@ -270,6 +270,7 @@ namespace RockWeb.Blocks.Core
                 var followings = followingService.Queryable()
                             .Where( a => a.EntityTypeId == entityType.Id )
                             .Where( a => entityIds.Contains( a.EntityId ) )
+                            .Where( a => string.IsNullOrEmpty( a.PurposeKey ) )
                             .Where( a => a.PersonAlias.PersonId == personId );
 
                 foreach ( var following in followings )

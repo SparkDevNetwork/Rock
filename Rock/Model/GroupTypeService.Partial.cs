@@ -32,7 +32,7 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
         /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupTypeRole"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupTypeRole"/> as the 
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
@@ -261,7 +261,7 @@ namespace Rock.Model
                       FROM   [GroupTypeAssociation] GTA
 		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
                       WHERE  [GroupTypeId] = {0}
-                      UNION ALL
+                      UNION ALL 
                       SELECT
                             GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT2.[Order], 3)  )
                       FROM
@@ -275,7 +275,7 @@ namespace Rock.Model
                 SELECT GT3.*
                 FROM CTE
                 INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
-				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) )
+				ORDER BY CONVERT(nvarchar(500), CTE.HierarchyOrder + '|' + RIGHT(1000 + GT3.[Order], 3) ) 
                 ", parentGroupTypeId );
         }
 
@@ -301,7 +301,7 @@ namespace Rock.Model
                       FROM   [GroupTypeAssociation] GTA
 		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
                       WHERE  [GroupTypeId] = {0}
-                      UNION ALL
+                      UNION ALL 
                       SELECT
                             GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
                       FROM
@@ -507,7 +507,7 @@ namespace Rock.Model
                     */
 
                     // if the group type has the specified rootGroupType as a parent,
-                    // we can stop there since that would be the best path
+                    // we can stop there since that would be the best path 
                     if ( parentGroupType.ParentGroupTypes.Any( x => x.Id == rootGroupType.Id ) )
                     {
                         break;
@@ -549,7 +549,7 @@ namespace Rock.Model
 
             // We're basically building a hierarchy ordering path using padded zeros of the GroupType's order
             // such that the results of the HierarchyOrder looks something like this:
-            ////
+            //// 
             //// |000
             //// |000
             //// |001
@@ -625,10 +625,10 @@ namespace Rock.Model
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the full associated ancestor path (of group type associations).
+        /// Gets or sets the full associated ancestor path (of group type associations). 
         /// </summary>
         /// <value>
-        /// Full path of the ancestor group type associations.
+        /// Full path of the ancestor group type associations. 
         /// </value>
         public string Path { get; set; }
 

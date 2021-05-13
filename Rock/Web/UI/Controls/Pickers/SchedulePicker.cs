@@ -77,6 +77,7 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             SetExtraRestParams();
+
             this.IconCssClass = "fa fa-calendar";
             base.OnInit( e );
         }

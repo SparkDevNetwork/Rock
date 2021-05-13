@@ -216,6 +216,33 @@ namespace Rock.Lava.DotLiquid
         }
 
         /// <summary>
+        /// Register the filters implemented by the provided System.Type entries so they can be used to resolve templates.
+        /// </summary>
+        /// <param name="implementingType"></param>
+        /// <param name="filterName"></param>
+        protected override void OnRegisterFilter( MethodInfo filterMethodInfo, string filterName )
+        {
+            // Define the DotLiquid-compatible function that will wrap the Lava filter.
+            // When the wrapper function is executed by DotLiquid, it performs some necessary pre-processing before executing the Lava filter.
+            Func<Context, List<object>, object> filterFunctionWrapper = ( Context context, List<object> args ) =>
+            {
+                var parameterInfos = filterMethodInfo.GetParameters();
+
+                filterName = filterName ?? filterMethodInfo.Name;
+
+                GetLavaFilterCompatibleArguments( filterName, args, parameterInfos, context );
+
+                // Execute the static filter function and return the result.
+                var result = filterMethodInfo.Invoke( null, args.ToArray() );
+
+                return result;
+            };
+
+            // Register the filter with DotLiquid.
+            Strainer.RegisterFilter( filterName, filterFunctionWrapper );
+        }
+
+        /// <summary>
         /// Translate a set of DotLiquid filter arguments to a set of arguments that are compatible with a Lava filter.
         /// </summary>
         private void GetLavaFilterCompatibleArguments( string filterName, List<object> args, ParameterInfo[] lavaFilterFunctionParams, Context dotLiquidContext )
@@ -232,7 +259,6 @@ namespace Rock.Lava.DotLiquid
                 {
                     args[i] = ( (DropProxy)args[i] ).ConvertToValueType();
                 }
-
             }
 
             // Add the DotLiquid Context wrapped in a LavaContext.
@@ -464,6 +490,11 @@ namespace Rock.Lava.DotLiquid
 
                 // Call the Render method of the underlying DotLiquid template.
                 var templateProxy = template as DotLiquidTemplateProxy;
+
+                if ( templateProxy == null )
+                {
+                    throw new Exception( "Render failed. The provided template instance is not compatible with the DotLiquid engine." );
+                }
 
                 output = templateProxy.DotLiquidTemplate.Render( renderSettings );
 

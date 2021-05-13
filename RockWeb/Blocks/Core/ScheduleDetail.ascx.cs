@@ -349,7 +349,7 @@ namespace RockWeb.Blocks.Core
 
             pnlDetails.Visible = true;
             hfScheduleId.Value = schedule.Id.ToString();
-
+            
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
 
@@ -459,7 +459,7 @@ namespace RockWeb.Blocks.Core
             {
                 friendlyText = string.Format( "<label class='label label-warning'>{0}</label> <i class='fa fa-exclamation-triangle text-warning'></i>", friendlyText );
             }
-
+            
             DescriptionList descriptionList = new DescriptionList()
                 .Add( "Description", schedule.Description ?? string.Empty )
                 .Add( "Schedule", friendlyText )
@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Core
             }
 
             lblMainDetails.Text = descriptionList.Html;
-
+            
             schedule.LoadAttributes();
             Rock.Attribute.Helper.AddDisplayControls( schedule, phDisplayAttributes, null, false, false );
         }

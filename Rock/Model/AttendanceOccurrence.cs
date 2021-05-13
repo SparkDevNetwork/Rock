@@ -51,7 +51,7 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
@@ -124,7 +124,7 @@ namespace Rock.Model
 
             set
             {
-                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
             }
         }
 

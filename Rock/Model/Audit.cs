@@ -77,9 +77,9 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The type of the audit.
-        /// A <see cref="Rock.Model.AuditType"/> enumeration that indicates the type of change that was made.
-        ///     <c>AuditType.Add</c> (0) indicates that a new entity was added;
-        ///     <c>AuditType.Modify</c> (1) indicates that the entity was modified;
+        /// A <see cref="Rock.Model.AuditType"/> enumeration that indicates the type of change that was made. 
+        ///     <c>AuditType.Add</c> (0) indicates that a new entity was added; 
+        ///     <c>AuditType.Modify</c> (1) indicates that the entity was modified; 
         ///     <c>AuditType.Delete</c> (2) indicates that the entity was deleted.
         /// </value>
         [Required]

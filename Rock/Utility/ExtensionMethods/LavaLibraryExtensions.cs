@@ -523,16 +523,14 @@ namespace Rock
                 context.SetMergeField( "CurrentPerson", currentPersonOverride );
                 context.SetMergeFields( mergeObjects );
 
-                ILavaTemplate template;
+                var result = LavaEngine.CurrentEngine.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
 
-                LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
+                if ( result.HasErrors )
+                {
+                    throw result.GetLavaException();
+                }
 
-                List<Exception> errors;
-                string output;
-
-                var isRendered = template.TryRender( context, out output, out errors );
-
-                return output;
+                return result.Text;
             }
             catch ( Exception ex )
             {
@@ -611,29 +609,20 @@ namespace Rock
 
                 renderParameters.ShouldEncodeStringsAsXml = encodeStrings;
 
-                string result;
-                List<Exception> errors;
+                //string result;
+                //List<Exception> errors;
 
-                ILavaTemplate template;
+                //ILavaTemplate template;
 
                 // Try and parse the template, or retrieve it from the cache if it has been previously parsed.
-                LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
+                var result = LavaEngine.CurrentEngine.RenderTemplate( content, renderParameters );
 
-                var isRendered = template.TryRender( renderParameters, out result, out errors );
-
-                if ( throwExceptionOnErrors && errors.Any() )
+                if ( result.HasErrors )
                 {
-                    if ( errors.Count == 1 )
-                    {
-                        throw errors[0];
-                    }
-                    else
-                    {
-                        throw new AggregateException( errors );
-                    }
+                    throw result.GetLavaException();
                 }
 
-                return result;
+                return result.Text;
             }
             catch ( System.Threading.ThreadAbortException )
             {
@@ -650,6 +639,21 @@ namespace Rock
                 {
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                     return "Error resolving Lava merge fields: " + ex.Message;
+                }
+            }
+        }
+
+        private static void ThrowExceptions( ICollection<Exception> errors )
+        {
+            if ( errors.Any() )
+            {
+                if ( errors.Count == 1 )
+                {
+                    throw errors.First();
+                }
+                else
+                {
+                    throw new AggregateException( errors );
                 }
             }
         }

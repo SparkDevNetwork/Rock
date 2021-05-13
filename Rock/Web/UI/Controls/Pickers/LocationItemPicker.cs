@@ -238,6 +238,7 @@ namespace Rock.Web.UI.Controls
             {
                 return _includeInactive ?? false;
             }
+
             set
             {
                 _includeInactive = value;
@@ -262,6 +263,7 @@ namespace Rock.Web.UI.Controls
             {
                 return _rootLocationId;
             }
+
             set
             {
                 _rootLocationId = value;

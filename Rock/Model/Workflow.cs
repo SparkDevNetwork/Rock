@@ -496,7 +496,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class LogEntry
         {
@@ -600,7 +600,7 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="processStartTime">A <see cref="System.DateTime" /> that represents the process start time.</param>
         /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">A
+        /// <param name="errorMessages">A 
         /// <see cref="System.Collections.Generic.List{String}" /> containing error messages for any
         /// errors that occurred while the activity was being processed..</param>
         /// <returns>

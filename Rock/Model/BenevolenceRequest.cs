@@ -53,7 +53,7 @@ namespace Rock.Model
         /// Gets or sets the Last Name of the person that this benevolence request is about. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> containing the last name of the person that this benevolence request is about.
+        /// A <see cref="System.String"/> containing the last name of the person that this benevolence request is about.  
         /// </value>
         [Required]
         [MaxLength( 50 )]
@@ -185,7 +185,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated with this BenevolenceRequest.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated with this BenevolenceRequest.
+        /// An <see cref="System.Int32"/> referencing the Id of the <see cref="Rock.Model.Location"/> that is associated with this BenevolenceRequest. 
         /// </value>
         [HideFromReporting]
         [DataMember]

@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [Serializable]
     [DataContract]
@@ -143,7 +143,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the name of the attribute
+        /// Gets the name of the attribute 
         /// </summary>
         /// <remarks>
         /// Note: this property is provided specifically for Lava templates when the Attribute property is not available

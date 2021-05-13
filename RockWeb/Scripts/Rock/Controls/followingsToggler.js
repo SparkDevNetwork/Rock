@@ -11,7 +11,7 @@
             // personId and personAliasId are the person that is doing the following/un-following
             // callback is optional and called on follow or unfollow events with a param indicating
             // if the person is now following
-            initialize: function ($followingDiv, entityTypeId, entityId, personId, personAliasId, callback) {
+            initialize: function ($followingDiv, entityTypeId, entityId, purposeKey, personId, personAliasId, callback) {
                 var hasCallback = typeof callback === 'function';
 
                 $followingDiv.on('click', function () {
@@ -19,7 +19,7 @@
 
                         $.ajax({
                             type: 'DELETE',
-                            url: Rock.settings.get('baseUrl') + 'api/followings/' + entityTypeId + '/' + entityId + '/' + personId,
+                            url: Rock.settings.get('baseUrl') + 'api/followings/' + entityTypeId + '/' + entityId + '/' + personId + '?purposeKey=' + encodeURIComponent(purposeKey),
                             success: function (data, status, xhr) {
                                 $followingDiv.removeClass('following');
 
@@ -38,7 +38,8 @@
                         var following = {
                             EntityTypeId: entityTypeId,
                             EntityId: entityId,
-                            PersonAliasId: personAliasId
+                            PersonAliasId: personAliasId,
+                            PurposeKey: purposeKey
                         };
 
                         $.ajax({

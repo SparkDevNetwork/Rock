@@ -35,16 +35,58 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description( "Check-in Ability Level Select block" )]
 
-    [LinkedPage( "Previous Page (Family Check-in)", "The page to navigate back to if none of the people and schedules have been processed.", false, "", "", 8, "FamilyPreviousPage" )]
+    #region Block Attributes
 
-    [TextField( "Title", "Title to display. Use {0} for person's name.", false, "{0}", "Text", 9 )]
-    [TextField( "Caption", "", false, "Select Ability Level", "Text", 10 )]
-    [TextField( "No Option Title", "", false, "Sorry", "Text", 11)]
-    [TextField( "No Option Caption", "", false, "Sorry, there are currently not any available options to check into.", "Text", 12 )]
-    [TextField( "Selection No Option", "Text displayed if there are not any options after selecting an ability level. Use {0} for person's name.", false, "Sorry, based on your selection, there are currently not any available locations that {0} can check into.", "Text", 13 )]
+    [LinkedPage( "Previous Page (Family Check-in)",
+        Key = "FamilyPreviousPage",
+        Description = "The page to navigate back to if none of the people and schedules have been processed.",
+        IsRequired = false,
+        Order = 8 )]
+
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Ability Level",
+        Category = "Text",
+        Order = 9 )]
+
+    [TextField( "No Option Title",
+        Key = AttributeKey.NoOptionTitle,
+        IsRequired = false,
+        DefaultValue = "Sorry",
+        Category = "Text",
+        Order = 10 )]
+
+    [TextField( "No Option Caption",
+        Key = AttributeKey.NoOptionCaption,
+        IsRequired = false,
+        DefaultValue = "Sorry, there are currently not any available options to check into.",
+        Category = "Text",
+        Order = 11 )]
+
+    [TextField( "Selection No Option",
+        Key = AttributeKey.SelectionNoOption,
+        Description = "Text displayed if there are not any options after selecting an ability level. Use {0} for person's name.",
+        IsRequired = false,
+        DefaultValue = "Sorry, based on your selection, there are currently not any available locations that {0} can check into.",
+        Category = "Text",
+        Order = 12 )]
+
+    #endregion Block Attributes
 
     public partial class AbilityLevelSelect : CheckInBlockMultiPerson
     {
+        private new static class AttributeKey
+        {
+            public const string FamilyPreviousPage = "FamilyPreviousPage";
+            public const string Caption = "Caption";
+            public const string NoOptionTitle = "NoOptionTitle";
+            public const string NoOptionCaption = "NoOptionCaption";
+            public const string SelectionNoOption = "SelectionNoOption";
+            public const string MultiPersonLastPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonLastPage;
+
+        }
+
         private string _personAbilityLevelGuid;
         private bool _shouldLowlight = true;
 
@@ -280,14 +322,13 @@ namespace RockWeb.Blocks.CheckIn
                 pnlNoOptions.Visible = true;
                 divAbilityLevel.Visible = false;
 
-                lNoOptionTitle.Text = GetAttributeValue( "NoOptionTitle" );
-                lNoOptionCaption.Text = GetAttributeValue( "NoOptionCaption" );
-
+                lNoOptionTitle.Text = GetAttributeValue( AttributeKey.NoOptionTitle );
+                lNoOptionCaption.Text = GetAttributeValue( AttributeKey.NoOptionCaption );
             }
             else
             {
-                lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
-                lCaption.Text = GetAttributeValue( "Caption" );
+                lTitle.Text = GetTitleText(); 
+                lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                 if ( IsOverride || NoConfiguredAbilityLevels( person.GroupTypes ) )
                 {
@@ -321,7 +362,22 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
 
+        private string GetTitleText()
+        {
+            var selectedArea = CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.Where( a => a.Selected ).FirstOrDefault()?.GroupType
+                ?? CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.FirstOrDefault()?.GroupType;
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
+                { LavaMergeFieldName.Individual, CurrentCheckInState.CheckIn.CurrentPerson.Person },
+                { LavaMergeFieldName.SelectedArea, selectedArea }
+            };
+
+            var abilityLevelSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.AbilityLevelSelectHeaderLavaTemplate ?? string.Empty;
+            return abilityLevelSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -334,7 +390,7 @@ namespace RockWeb.Blocks.CheckIn
                 () => CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes
                     .Where( t => !t.ExcludedByFilter ) 
                     .Count() <= 0,
-                string.Format( "<p>{0}</p>", string.Format( GetAttributeValue( "SelectionNoOption" ), CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ) ),
+                string.Format( "<p>{0}</p>", string.Format( GetAttributeValue( AttributeKey.SelectionNoOption ), CurrentCheckInState.CheckIn.CurrentPerson.Person.NickName ) ),
                 true ) ) 
             {
                 // Clear any filtered items so that user can select another option
@@ -424,22 +480,22 @@ namespace RockWeb.Blocks.CheckIn
                 { 
                     if ( validateSelectionRequired )
                     {
-                        var nextBlock = GetCheckInBlock( "MultiPersonLastPage" );
+                        var nextBlock = GetCheckInBlock( AttributeKey.MultiPersonLastPage );
                         if ( nextBlock != null && nextBlock.RequiresSelection( true ) )
                         {
-                            NavigateToLinkedPage( "MultiPersonLastPage", queryParams );
+                            NavigateToLinkedPage( AttributeKey.MultiPersonLastPage, queryParams );
                         }
                     }
                     else
                     {
-                        NavigateToLinkedPage( "MultiPersonLastPage", queryParams );
+                        NavigateToLinkedPage( AttributeKey.MultiPersonLastPage, queryParams );
                     }
                 }
                 else
                 {
                     // If the current person did not have any processed schedules, then this would be the first person
                     // and we should navigate to previous page (person selection)
-                    NavigateToLinkedPage( "FamilyPreviousPage", queryParams );
+                    NavigateToLinkedPage( AttributeKey.FamilyPreviousPage, queryParams );
                 }
             }
             else

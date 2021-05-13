@@ -127,9 +127,19 @@ namespace Rock.SystemKey
         #region Display
 
         /// <summary>
-        /// The grouptype attribute key for the checkin start lava template
+        /// The GroupType attribute key of the block header lava template for the checkin "AbilityLevel" block
         /// </summary>
-        public const string CHECKIN_START_LAVA_TEMPLATE = "core_checkin_StartLavaTemplate";
+        public const string CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_AbilityLevelSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "ActionSelect" block
+        /// </summary>
+        public const string CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_ActionSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "PersonSelect" block
+        /// </summary>
+        public const string CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_CheckoutPersonSelectHeaderLavaTemplate";
 
         /// <summary>
         /// The grouptype attribute key for the checkin familyselect lava template
@@ -137,14 +147,49 @@ namespace Rock.SystemKey
         public const string CHECKIN_FAMILYSELECT_LAVA_TEMPLATE = "core_checkin_FamilyLavaTemplate";
 
         /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "GroupSelect" block
+        /// </summary>
+        public const string CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_GroupSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "GroupTypeSelect" block
+        /// </summary>
+        public const string CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_GroupTypeSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "LocationSelect" block
+        /// </summary>
+        public const string CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_LocationSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "MultiPersonSelect" block
+        /// </summary>
+        public const string CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_MultiPersonSelectHeaderLavaTemplate";
+
+        /// <summary>
         /// The GroupType attribute key for the checkin PersonSelect lava template.
         /// </summary>
         public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationLavaTemplate";
 
         /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "PersonSelect" block
+        /// </summary>
+        public const string CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_PersonSelectHeaderLavaTemplate";
+
+        /// <summary>
+        /// The grouptype attribute key for the checkin start lava template
+        /// </summary>
+        public const string CHECKIN_START_LAVA_TEMPLATE = "core_checkin_StartLavaTemplate";
+
+        /// <summary>
         /// The grouptype attribute key for the checkin success lava template
         /// </summary>
         public const string CHECKIN_SUCCESS_LAVA_TEMPLATE = "core_checkin_SuccessLavaTemplate";
+
+        /// <summary>
+        /// The GroupType attribute key of the block header lava template for the checkin "TimeSelect" block
+        /// </summary>
+        public const string CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE = "core_checkin_TimeSelectHeaderLavaTemplate";
 
         #endregion Display
 

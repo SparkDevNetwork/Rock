@@ -53,7 +53,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int? EntityTypeId { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
@@ -64,17 +64,17 @@ namespace Rock.Model
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
         public string UserName { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the password.
+        /// A <see cref="System.String"/> representing the password. 
         /// </value>
         [MaxLength( 128 )]
         [HideFromReporting]
         public string Password { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a flag indicating if the UserLogin has been confirmed.
         /// </summary>
@@ -123,7 +123,7 @@ namespace Rock.Model
         [NotAudited]
         [DataMember]
         public bool? IsOnLine { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a flag indicating if the UserLogin is currently locked out.
         /// </summary>
@@ -151,7 +151,7 @@ namespace Rock.Model
         [NotAudited]
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the number of failed password attempts within the failed password attempt window.
         /// </summary>
@@ -189,7 +189,7 @@ namespace Rock.Model
         [DataMember]
         [HideFromReporting]
         public string ApiKey { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who this UserLogin belongs to.
         /// </summary>

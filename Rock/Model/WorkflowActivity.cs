@@ -277,7 +277,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A
+        /// <param name="errorMessages">A 
         /// <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that are
         /// returned while processing this WorkflowActivity</param>
         /// <returns>

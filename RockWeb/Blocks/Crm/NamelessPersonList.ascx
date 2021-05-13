@@ -29,6 +29,7 @@
                 <Content>
                     <asp:HiddenField ID="hfNamelessPersonId" runat="server" />
 
+                    <Rock:NotificationBox ID="nbMergeRequestCreated" runat="server" Heading="To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save." NotificationBoxType="Info" Visible="true" />
                     <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
                     <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgLinkToPerson" />
 

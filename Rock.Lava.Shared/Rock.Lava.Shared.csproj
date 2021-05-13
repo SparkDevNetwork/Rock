@@ -85,12 +85,14 @@
     <Compile Include="Core\ILavaSecured.cs" />
     <Compile Include="Core\ILavaDataDictionary.cs" />
     <Compile Include="Core\ILavaDataDictionarySource.cs" />
+    <Compile Include="Core\ILavaShortcodeProvider.cs" />
     <Compile Include="Core\ILavaTemplateCacheService.cs" />
     <Compile Include="Core\IRockLavaElement.cs" />
     <Compile Include="Core\ILavaTag.cs" />
     <Compile Include="Core\ILavaBlock.cs" />
     <Compile Include="Core\LavaDataDictionary.cs" />
     <Compile Include="Core\LavaEngineConfigurationOptions.cs" />
+    <Compile Include="Core\LavaException.cs" />
     <Compile Include="Core\LavaHiddenAttribute.cs" />
     <Compile Include="Core\LavaVisibleAttribute.cs" />
     <Compile Include="Core\LavaRenderParameters.cs" />

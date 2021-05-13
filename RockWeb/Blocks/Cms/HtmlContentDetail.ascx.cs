@@ -223,14 +223,14 @@ namespace RockWeb.Blocks.Cms
              * for an example of forcing a full postback, by way of the 'PostBackTrigger' control:
              *
              * https://github.com/SparkDevNetwork/Rock/blob/b0239d87882d6986afb32bc5a5353dcbfc3edee3/RockWeb/Blocks/Cms/EmailForm.ascx#L87
-             *
+             * 
              * When this happens, any 'HtmlContentDetail' Blocks on the page lose their content,
              * because the 'this.IsPostBack' check below only returns true for partial postbacks.
              * The fix is to detect if the current postback represents a full postback, and reload
              * the HTML content in this case.
-             *
+             * 
              * '!ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack'
-             *
+             * 
              * Reason: Issue #4237
              * https://github.com/SparkDevNetwork/Rock/issues/4237
              */
@@ -870,7 +870,7 @@ namespace RockWeb.Blocks.Cms
                     the query string did not contain the configured context paramater. This was added
                     to allow having different content for each context object. The specific use case
                     is when used in conjection with the campus context switcher. This change will allow
-                    having separate content per campus (without any Lava case statements).
+                    having separate content per campus (without any Lava case statements).  
                 */
                 var entityId = PageParameter( contextParameter );
 

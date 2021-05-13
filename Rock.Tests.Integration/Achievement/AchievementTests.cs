@@ -354,7 +354,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         /// <summary>
-        /// Tests StreakAchievementProcess with open attempt that doesn't make sense with the data and it should be closed.
+        /// Tests StreakAchievementProcess with open attempt that doesn't make sense with the data and it should be closed. 
         /// </summary>
         [TestMethod]
         public void StreakAchievementProcessWithSuccessfulAttempt()
