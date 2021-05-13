@@ -296,7 +296,7 @@ namespace RockWeb.Blocks.CheckIn
                 { LavaMergeFieldName.SelectedSchedule, CurrentCheckInState.CheckIn.CurrentPerson.CurrentSchedule.Schedule }
             };
 
-            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectHeaderLavaTemplate ?? string.Empty;
+            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.GroupTypeSelectHeaderLavaTemplate ?? string.Empty;
             return personSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 

@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.CheckIn
                         }
 
                         lTitle.Text = GetTitleText();
-                        lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.SubTitle ), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
+                        //lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.SubTitle ), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
 
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
