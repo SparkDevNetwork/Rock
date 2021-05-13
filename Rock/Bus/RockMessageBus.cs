@@ -22,6 +22,7 @@ using Rock.Bus.Queue;
 using Rock.Bus.Statistics;
 using Rock.Bus.Transport;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
 using System;
 using System.Configuration;
@@ -232,6 +233,9 @@ namespace Rock.Bus
         public static async Task SendAsync<TQueue>( ICommandMessage<TQueue> message, Type messageType )
             where TQueue : ISendCommandQueue, new()
         {
+
+            RockLogger.Log.Debug( RockLogDomains.Core, "Send Message Async: {@message} Message Type: {1}", message, messageType );
+
             if ( !IsReady() )
             {
                 ExceptionLogService.LogException( $"A message was sent before the message bus was ready: {RockMessage.GetLogString( message )}" );
