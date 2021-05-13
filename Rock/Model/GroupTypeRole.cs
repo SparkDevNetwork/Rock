@@ -27,7 +27,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In Rock each member of a group has one
+    /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In Rock each member of a group has one 
     /// or more <see cref="Rock.Model.GroupTypeRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
     /// of roles include leader, member, team leader, coach, host, etc.
     /// </summary>
@@ -79,7 +79,7 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the sort order position of the GroupRole.  The lower the SortOrder the higher the GroupRole shows in lists/controls.
+        /// Gets or sets the sort order position of the GroupRole.  The lower the SortOrder the higher the GroupRole shows in lists/controls.  
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the sort order of the GroupRole.
@@ -89,7 +89,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the maximum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have who
+        /// Gets or sets the maximum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have who 
         /// belong to this GroupRole.
         /// </summary>
         /// <value>
@@ -111,7 +111,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets a flag indicating if this is a group leader role.
+        /// Gets or sets a flag indicating if this is a group leader role.  
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is a GroupLeader role; otherwise <c>false</c>.

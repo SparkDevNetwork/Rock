@@ -33,13 +33,37 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of groups that a person is configured to checkin to.")]
 
-    [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 8 )]
-    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group type name.", false, "{0}", "Text", 9 )]
-    [TextField( "Caption", "", false, "Select Group", "Text", 10 )]
-    [TextField( "No Option Message", "", false, "Sorry, no one in your family is eligible to check-in at this location.", "Text", 11 )]
+    [TextField( "Sub Title",
+        Key = AttributeKey.Subtitle,
+        Description = "Sub-Title to display. Use {0} for selected group type name.",
+        IsRequired = false,
+        DefaultValue = "{0}",
+        Category = "Text",
+        Order = 8 )]
+
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Group",
+        Category = "Text",
+        Order = 9 )]
+
+    [TextField( "No Option Message",
+        Key = AttributeKey.NoOptionMessage,
+        IsRequired = false,
+        DefaultValue = "Sorry, no one in your family is eligible to check-in at this location.",
+        Category = "Text",
+        Order = 10 )]
 
     public partial class GroupSelect : CheckInBlockMultiPerson
     {
+        private new static class AttributeKey
+        {
+            public const string Subtitle = "SubTitle";
+            public const string Caption = "Caption";
+            public const string NoOptionMessage = "NoOptionMessage";
+        }
+
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
@@ -158,15 +182,15 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), GetPersonScheduleSubTitle() );
+                    lTitle.Text = GetTitleText();
 
                     string groupTypeNames = groupTypes
                         .Where( t => t.GroupType != null )
                         .Select( t => t.GroupType.Name )
                         .ToList().AsDelimited( ", " );
-                    lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle" ), groupTypeNames );
+                    lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), groupTypeNames );
 
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
                     var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
                     if ( availGroups.Any() )
                     {
@@ -238,6 +262,25 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        private string GetTitleText()
+        {
+            var checkinPerson = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
+            var selectedGroup = checkinPerson.SelectedGroupTypes( checkinPerson.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson.CurrentSchedule ).FirstOrDefault()?.Group;
+            var selectedArea = CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.Where( a => a.Selected ).FirstOrDefault()?.GroupType
+                ?? CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.FirstOrDefault()?.GroupType;
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
+                { LavaMergeFieldName.Individual, checkinPerson?.Person },
+                { LavaMergeFieldName.SelectedArea, selectedArea },
+                { LavaMergeFieldName.SelectedGroup, selectedGroup }
+            };
+
+            var abilityLevelSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.AbilityLevelSelectHeaderLavaTemplate ?? string.Empty;
+            return abilityLevelSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>

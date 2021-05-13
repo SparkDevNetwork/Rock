@@ -639,7 +639,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class MotivatorData
         {
@@ -715,7 +715,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public enum OptionType
         {

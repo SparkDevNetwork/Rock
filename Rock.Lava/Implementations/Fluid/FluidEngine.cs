@@ -17,8 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Reflection;
 using Fluid;
+using Fluid.Ast;
+using Fluid.Parser;
 using Fluid.Values;
+using Parlot.Fluent;
 
 namespace Rock.Lava.Fluid
 {
@@ -29,7 +34,8 @@ namespace Rock.Lava.Fluid
     {
         #region Static methods
 
-        private static LavaFluidParserFactory _parserFactory = new LavaFluidParserFactory();
+        private static TemplateOptions _templateOptions = null;
+        private static readonly LavaFluidParser _parser = new LavaFluidParser();
 
         #endregion
         /// <summary>
@@ -61,9 +67,9 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         protected override ILavaRenderContext OnCreateRenderContext()
         {
-            var fluidContext = new global::Fluid.TemplateContext();
+            var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
 
-            fluidContext.ParserFactory = _parserFactory;
+            //fluidContext.ParserFactory = _parserFactory;
 
             var context = new FluidRenderContext( fluidContext );
 
@@ -78,13 +84,15 @@ namespace Rock.Lava.Fluid
         /// </summary>
         public override void OnSetConfiguration( LavaEngineConfigurationOptions options )
         {
+            var templateOptions = GetTemplateOptions();
+
             // Re-register the basic Liquid filters implemented by Fluid using CamelCase rather than the default snakecase.
-            HideSnakeCaseFilters();
-            RegisterBaseFilters();
+            HideSnakeCaseFilters( templateOptions );
+            RegisterBaseFilters( templateOptions );
 
             // Set the default strategy for locating object properties to our custom implementation that adds
             // the ability to resolve properties of nested anonymous Types using Reflection.
-            TemplateContext.GlobalMemberAccessStrategy = new LavaObjectMemberAccessStrategy();
+            templateOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
 
             // Register all Types that implement LavaDataDictionary interfaces as safe to render.
             RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ) );
@@ -96,7 +104,19 @@ namespace Rock.Lava.Fluid
                 options.FileSystem = new LavaNullFileSystem();
             }
 
-            TemplateContext.GlobalFileProvider = new FluidFileSystem( options.FileSystem );
+            templateOptions.FileProvider = new FluidFileSystem( options.FileSystem );
+        }
+
+        private TemplateOptions GetTemplateOptions()
+        {
+            if ( _templateOptions == null )
+            {
+                _templateOptions = new TemplateOptions();
+
+
+            }
+
+            return _templateOptions;
         }
 
         /// <summary>
@@ -104,112 +124,112 @@ namespace Rock.Lava.Fluid
         /// by default. Rock uses CamelCase filter names and to ensure that
         /// a mistype doesn't cause it to work anyway we hide these.
         /// </summary>
-        private void HideSnakeCaseFilters()
+        private void HideSnakeCaseFilters( TemplateOptions options )
         {
-            TemplateContext.GlobalFilters.AddFilter( "join", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "first", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "last", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "concat", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "map", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "reverse", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "size", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "sort", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "sort_natural", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "uniq", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "where", NoOp );
+            options.Filters.AddFilter( "join", NoOp );
+            options.Filters.AddFilter( "first", NoOp );
+            options.Filters.AddFilter( "last", NoOp );
+            options.Filters.AddFilter( "concat", NoOp );
+            options.Filters.AddFilter( "map", NoOp );
+            options.Filters.AddFilter( "reverse", NoOp );
+            options.Filters.AddFilter( "size", NoOp );
+            options.Filters.AddFilter( "sort", NoOp );
+            options.Filters.AddFilter( "sort_natural", NoOp );
+            options.Filters.AddFilter( "uniq", NoOp );
+            options.Filters.AddFilter( "where", NoOp );
 
-            TemplateContext.GlobalFilters.AddFilter( "default", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "date", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "format_date", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "raw", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "compact", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "url_encode", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "url_decode", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "strip_html", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "escape", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "escape_once", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "handle", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "handleize", NoOp );
+            options.Filters.AddFilter( "default", NoOp );
+            options.Filters.AddFilter( "date", NoOp );
+            options.Filters.AddFilter( "format_date", NoOp );
+            options.Filters.AddFilter( "raw", NoOp );
+            options.Filters.AddFilter( "compact", NoOp );
+            options.Filters.AddFilter( "url_encode", NoOp );
+            options.Filters.AddFilter( "url_decode", NoOp );
+            options.Filters.AddFilter( "strip_html", NoOp );
+            options.Filters.AddFilter( "escape", NoOp );
+            options.Filters.AddFilter( "escape_once", NoOp );
+            options.Filters.AddFilter( "handle", NoOp );
+            options.Filters.AddFilter( "handleize", NoOp );
 
-            TemplateContext.GlobalFilters.AddFilter( "abs", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "at_least", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "at_most", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "ceil", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "divided_by", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "floor", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "minus", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "modulo", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "plus", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "round", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "times", NoOp );
+            options.Filters.AddFilter( "abs", NoOp );
+            options.Filters.AddFilter( "at_least", NoOp );
+            options.Filters.AddFilter( "at_most", NoOp );
+            options.Filters.AddFilter( "ceil", NoOp );
+            options.Filters.AddFilter( "divided_by", NoOp );
+            options.Filters.AddFilter( "floor", NoOp );
+            options.Filters.AddFilter( "minus", NoOp );
+            options.Filters.AddFilter( "modulo", NoOp );
+            options.Filters.AddFilter( "plus", NoOp );
+            options.Filters.AddFilter( "round", NoOp );
+            options.Filters.AddFilter( "times", NoOp );
 
-            TemplateContext.GlobalFilters.AddFilter( "append", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "capitalize", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "downcase", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "lstrip", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "rstrip", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "newline_to_br", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "prepend", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "removefirst", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "remove", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "replacefirst", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "replace", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "slice", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "split", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "strip", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "strip_newlines", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "truncate", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "truncatewords", NoOp );
-            TemplateContext.GlobalFilters.AddFilter( "upcase", NoOp );
+            options.Filters.AddFilter( "append", NoOp );
+            options.Filters.AddFilter( "capitalize", NoOp );
+            options.Filters.AddFilter( "downcase", NoOp );
+            options.Filters.AddFilter( "lstrip", NoOp );
+            options.Filters.AddFilter( "rstrip", NoOp );
+            options.Filters.AddFilter( "newline_to_br", NoOp );
+            options.Filters.AddFilter( "prepend", NoOp );
+            options.Filters.AddFilter( "removefirst", NoOp );
+            options.Filters.AddFilter( "remove", NoOp );
+            options.Filters.AddFilter( "replacefirst", NoOp );
+            options.Filters.AddFilter( "replace", NoOp );
+            options.Filters.AddFilter( "slice", NoOp );
+            options.Filters.AddFilter( "split", NoOp );
+            options.Filters.AddFilter( "strip", NoOp );
+            options.Filters.AddFilter( "strip_newlines", NoOp );
+            options.Filters.AddFilter( "truncate", NoOp );
+            options.Filters.AddFilter( "truncatewords", NoOp );
+            options.Filters.AddFilter( "upcase", NoOp );
         }
 
         /// <summary>
         /// Registers all the base Fluid filters with the proper CamelCase.
         /// </summary>
-        private void RegisterBaseFilters()
+        private void RegisterBaseFilters( TemplateOptions options )
         {
-            TemplateContext.GlobalFilters.AddFilter( "Join", global::Fluid.Filters.ArrayFilters.Join );
-            TemplateContext.GlobalFilters.AddFilter( "First", global::Fluid.Filters.ArrayFilters.First );
-            TemplateContext.GlobalFilters.AddFilter( "Last", global::Fluid.Filters.ArrayFilters.Last );
-            TemplateContext.GlobalFilters.AddAsyncFilter( "Map", global::Fluid.Filters.ArrayFilters.Map );
-            TemplateContext.GlobalFilters.AddFilter( "Reverse", global::Fluid.Filters.ArrayFilters.Reverse );
-            TemplateContext.GlobalFilters.AddAsyncFilter( "Size", global::Fluid.Filters.ArrayFilters.Size );
-            TemplateContext.GlobalFilters.AddAsyncFilter( "Sort", global::Fluid.Filters.ArrayFilters.Sort );
-            TemplateContext.GlobalFilters.AddFilter( "Uniq", global::Fluid.Filters.ArrayFilters.Uniq );
-            TemplateContext.GlobalFilters.AddAsyncFilter( "Where", global::Fluid.Filters.ArrayFilters.Where );
+            options.Filters.AddFilter( "Join", global::Fluid.Filters.ArrayFilters.Join );
+            options.Filters.AddFilter( "First", global::Fluid.Filters.ArrayFilters.First );
+            options.Filters.AddFilter( "Last", global::Fluid.Filters.ArrayFilters.Last );
+            options.Filters.AddFilter( "Map", global::Fluid.Filters.ArrayFilters.Map );
+            options.Filters.AddFilter( "Reverse", global::Fluid.Filters.ArrayFilters.Reverse );
+            options.Filters.AddFilter( "Size", global::Fluid.Filters.ArrayFilters.Size );
+            options.Filters.AddFilter( "Sort", global::Fluid.Filters.ArrayFilters.Sort );
+            options.Filters.AddFilter( "Uniq", global::Fluid.Filters.ArrayFilters.Uniq );
+            options.Filters.AddFilter( "Where", global::Fluid.Filters.ArrayFilters.Where );
 
-            TemplateContext.GlobalFilters.AddFilter( "Default", global::Fluid.Filters.MiscFilters.Default );
-            TemplateContext.GlobalFilters.AddFilter( "Date", global::Fluid.Filters.MiscFilters.Date );
-            TemplateContext.GlobalFilters.AddFilter( "UnescapeDataString", global::Fluid.Filters.MiscFilters.UrlDecode );
-            TemplateContext.GlobalFilters.AddFilter( "EscapeDataString", global::Fluid.Filters.MiscFilters.UrlEncode );
-            TemplateContext.GlobalFilters.AddFilter( "StripHtml", global::Fluid.Filters.MiscFilters.StripHtml );
-            TemplateContext.GlobalFilters.AddFilter( "Escape", global::Fluid.Filters.MiscFilters.Escape );
+            options.Filters.AddFilter( "Default", global::Fluid.Filters.MiscFilters.Default );
+            options.Filters.AddFilter( "Date", global::Fluid.Filters.MiscFilters.Date );
+            options.Filters.AddFilter( "UnescapeDataString", global::Fluid.Filters.MiscFilters.UrlDecode );
+            options.Filters.AddFilter( "EscapeDataString", global::Fluid.Filters.MiscFilters.UrlEncode );
+            options.Filters.AddFilter( "StripHtml", global::Fluid.Filters.MiscFilters.StripHtml );
+            options.Filters.AddFilter( "Escape", global::Fluid.Filters.MiscFilters.Escape );
 
-            TemplateContext.GlobalFilters.AddFilter( "AtLeast", global::Fluid.Filters.NumberFilters.AtLeast );
-            TemplateContext.GlobalFilters.AddFilter( "AtMost", global::Fluid.Filters.NumberFilters.AtMost );
-            TemplateContext.GlobalFilters.AddFilter( "Ceiling", global::Fluid.Filters.NumberFilters.Ceil );
-            TemplateContext.GlobalFilters.AddFilter( "DividedBy", global::Fluid.Filters.NumberFilters.DividedBy );
-            TemplateContext.GlobalFilters.AddFilter( "Floor", global::Fluid.Filters.NumberFilters.Floor );
-            TemplateContext.GlobalFilters.AddFilter( "Minus", global::Fluid.Filters.NumberFilters.Minus );
-            TemplateContext.GlobalFilters.AddFilter( "Modulo", global::Fluid.Filters.NumberFilters.Modulo );
-            TemplateContext.GlobalFilters.AddFilter( "Plus", global::Fluid.Filters.NumberFilters.Plus );
-            TemplateContext.GlobalFilters.AddFilter( "Times", global::Fluid.Filters.NumberFilters.Times );
+            options.Filters.AddFilter( "AtLeast", global::Fluid.Filters.NumberFilters.AtLeast );
+            options.Filters.AddFilter( "AtMost", global::Fluid.Filters.NumberFilters.AtMost );
+            options.Filters.AddFilter( "Ceiling", global::Fluid.Filters.NumberFilters.Ceil );
+            options.Filters.AddFilter( "DividedBy", global::Fluid.Filters.NumberFilters.DividedBy );
+            options.Filters.AddFilter( "Floor", global::Fluid.Filters.NumberFilters.Floor );
+            options.Filters.AddFilter( "Minus", global::Fluid.Filters.NumberFilters.Minus );
+            options.Filters.AddFilter( "Modulo", global::Fluid.Filters.NumberFilters.Modulo );
+            options.Filters.AddFilter( "Plus", global::Fluid.Filters.NumberFilters.Plus );
+            options.Filters.AddFilter( "Times", global::Fluid.Filters.NumberFilters.Times );
 
-            TemplateContext.GlobalFilters.AddFilter( "Append", global::Fluid.Filters.StringFilters.Append );
-            TemplateContext.GlobalFilters.AddFilter( "Capitalize", global::Fluid.Filters.StringFilters.Capitalize );
-            TemplateContext.GlobalFilters.AddFilter( "Downcase", global::Fluid.Filters.StringFilters.Downcase );
-            TemplateContext.GlobalFilters.AddFilter( "NewlineToBr", global::Fluid.Filters.StringFilters.NewLineToBr );
-            TemplateContext.GlobalFilters.AddFilter( "Prepend", global::Fluid.Filters.StringFilters.Prepend );
-            TemplateContext.GlobalFilters.AddFilter( "RemoveFirst", global::Fluid.Filters.StringFilters.RemoveFirst );
-            TemplateContext.GlobalFilters.AddFilter( "Remove", global::Fluid.Filters.StringFilters.Remove );
-            TemplateContext.GlobalFilters.AddFilter( "ReplaceFirst", global::Fluid.Filters.StringFilters.ReplaceFirst );
-            TemplateContext.GlobalFilters.AddFilter( "Replace", global::Fluid.Filters.StringFilters.Replace );
-            TemplateContext.GlobalFilters.AddFilter( "Slice", global::Fluid.Filters.StringFilters.Slice );
-            TemplateContext.GlobalFilters.AddFilter( "Split", global::Fluid.Filters.StringFilters.Split );
-            TemplateContext.GlobalFilters.AddFilter( "StripNewlines", global::Fluid.Filters.StringFilters.StripNewLines );
-            TemplateContext.GlobalFilters.AddFilter( "Truncate", global::Fluid.Filters.StringFilters.Truncate );
-            TemplateContext.GlobalFilters.AddFilter( "Truncatewords", global::Fluid.Filters.StringFilters.TruncateWords );
-            TemplateContext.GlobalFilters.AddFilter( "Upcase", global::Fluid.Filters.StringFilters.Upcase );
+            options.Filters.AddFilter( "Append", global::Fluid.Filters.StringFilters.Append );
+            options.Filters.AddFilter( "Capitalize", global::Fluid.Filters.StringFilters.Capitalize );
+            options.Filters.AddFilter( "Downcase", global::Fluid.Filters.StringFilters.Downcase );
+            options.Filters.AddFilter( "NewlineToBr", global::Fluid.Filters.StringFilters.NewLineToBr );
+            options.Filters.AddFilter( "Prepend", global::Fluid.Filters.StringFilters.Prepend );
+            options.Filters.AddFilter( "RemoveFirst", global::Fluid.Filters.StringFilters.RemoveFirst );
+            options.Filters.AddFilter( "Remove", global::Fluid.Filters.StringFilters.Remove );
+            options.Filters.AddFilter( "ReplaceFirst", global::Fluid.Filters.StringFilters.ReplaceFirst );
+            options.Filters.AddFilter( "Replace", global::Fluid.Filters.StringFilters.Replace );
+            options.Filters.AddFilter( "Slice", global::Fluid.Filters.StringFilters.Slice );
+            options.Filters.AddFilter( "Split", global::Fluid.Filters.StringFilters.Split );
+            options.Filters.AddFilter( "StripNewlines", global::Fluid.Filters.StringFilters.StripNewLines );
+            options.Filters.AddFilter( "Truncate", global::Fluid.Filters.StringFilters.Truncate );
+            options.Filters.AddFilter( "Truncatewords", global::Fluid.Filters.StringFilters.TruncateWords );
+            options.Filters.AddFilter( "Upcase", global::Fluid.Filters.StringFilters.Upcase );
         }
 
         /// <summary>
@@ -230,6 +250,8 @@ namespace Rock.Lava.Fluid
 
             string lastFilterName = null;
 
+            var templateOptions = GetTemplateOptions();
+
             foreach ( var lavaFilterMethod in lavaFilterMethods )
             {
                 if ( lavaFilterMethod.Name == lastFilterName )
@@ -239,69 +261,84 @@ namespace Rock.Lava.Fluid
 
                 lastFilterName = lavaFilterMethod.Name;
 
-                var lavaFilterMethodParameters = lavaFilterMethod.GetParameters();
+                this.OnRegisterFilter( lavaFilterMethod, null );
+            }
+        }
 
-                if ( lavaFilterMethodParameters.Length == 0 )
+        /// <summary>
+        /// Registers a set of Liquid-style filter functions for use with the Fluid templating engine.
+        /// The original filters are wrapped in a function with a Fluid-compatible signature so they can be called by Fluid.
+        /// </summary>
+        /// <param name="lavaFilterMethod">The MethodInfo object that describes the function.</param>
+        /// <param name="filterName">The Lava name for the filter.</param>
+        protected override void OnRegisterFilter( MethodInfo lavaFilterMethod, string filterName )
+        {
+            var lavaFilterMethodParameters = lavaFilterMethod.GetParameters();
+
+            if ( lavaFilterMethodParameters.Length == 0 )
+            {
+                return;
+            }
+
+            var templateOptions = GetTemplateOptions();
+
+            filterName = filterName ?? lavaFilterMethod.Name;
+
+            // The first argument passed to the Lava filter is either the Lava Context or the template input.
+            var hasContextParameter = lavaFilterMethodParameters[0].ParameterType == typeof( ILavaRenderContext );
+
+            var firstParameterIndex = 1 + ( hasContextParameter ? 1 : 0 );
+
+            // Define the Fluid-compatible filter function that will wrap the Lava filter method.
+            ValueTask<FluidValue> fluidFilterFunction( FluidValue input, FilterArguments arguments, TemplateContext context )
+            {
+                var lavaFilterMethodArguments = new object[lavaFilterMethodParameters.Length];
+
+                for ( int i = 0; i < lavaFilterMethodParameters.Length; i++ )
                 {
-                    continue;
-                }
+                    FluidValue fluidFilterArgument = null;
 
-                // The first argument passed to the Lava filter is either the Lava Context or the template input.
-                var hasContextParameter = lavaFilterMethodParameters[0].ParameterType == typeof( ILavaRenderContext );
-
-                var firstParameterIndex = 1 + ( hasContextParameter ? 1 : 0 );
-
-                // Define the Fluid-compatible filter function that will wrap the Lava filter method.
-                FluidValue fluidFilterFunction( FluidValue input, FilterArguments arguments, TemplateContext context )
-                {
-                    var lavaFilterMethodArguments = new object[lavaFilterMethodParameters.Length];
-
-                    for ( int i = 0; i < lavaFilterMethodParameters.Length; i++ )
+                    // Get the value for the argument.
+                    if ( i == 0 )
                     {
-                        FluidValue fluidFilterArgument = null;
-
-                        // Get the value for the argument.
-                        if ( i == 0 )
+                        // If this is the first parameter, it may be a LavaContext or the input template.
+                        if ( hasContextParameter )
                         {
-                            // If this is the first parameter, it may be a LavaContext or the input template.
-                            if ( hasContextParameter )
-                            {
-                                lavaFilterMethodArguments[0] = new FluidRenderContext( context );
-                                continue;
-                            }
-                            else
-                            {
-                                fluidFilterArgument = input;
-                            }
-                        }
-                        else if ( i == 1 && hasContextParameter )
-                        {
-                            // If this is the second parameter, it must be the input template if the first parameter is a LavaContext.
-                            fluidFilterArgument = input;
-                        }
-                        else if ( arguments.Count > ( i - firstParameterIndex ) )
-                        {
-                            // This parameter is a filter argument.
-                            fluidFilterArgument = arguments.At( i - firstParameterIndex );
-                        }
-
-                        if ( fluidFilterArgument == null && lavaFilterMethodParameters[i].IsOptional )
-                        {
-                            lavaFilterMethodArguments[i] = lavaFilterMethodParameters[i].DefaultValue;
+                            lavaFilterMethodArguments[0] = new FluidRenderContext( context );
+                            continue;
                         }
                         else
                         {
-                            lavaFilterMethodArguments[i] = GetLavaParameterArgumentFromFluidValue( fluidFilterArgument, lavaFilterMethodParameters[i].ParameterType );
+                            fluidFilterArgument = input;
                         }
                     }
+                    else if ( i == 1 && hasContextParameter )
+                    {
+                        // If this is the second parameter, it must be the input template if the first parameter is a LavaContext.
+                        fluidFilterArgument = input;
+                    }
+                    else if ( arguments.Count > ( i - firstParameterIndex ) )
+                    {
+                        // This parameter is a filter argument.
+                        fluidFilterArgument = arguments.At( i - firstParameterIndex );
+                    }
 
-                    var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
-
-                    return FluidValue.Create( result );
+                    if ( fluidFilterArgument == null && lavaFilterMethodParameters[i].IsOptional )
+                    {
+                        lavaFilterMethodArguments[i] = lavaFilterMethodParameters[i].DefaultValue;
+                    }
+                    else
+                    {
+                        lavaFilterMethodArguments[i] = GetLavaParameterArgumentFromFluidValue( fluidFilterArgument, lavaFilterMethodParameters[i].ParameterType );
+                    }
                 }
 
-                TemplateContext.GlobalFilters.AddFilter( lavaFilterMethod.Name, fluidFilterFunction );
+                var result = lavaFilterMethod.Invoke( null, lavaFilterMethodArguments );
+
+                return FluidValue.Create( result, templateOptions );
             }
+
+            templateOptions.Filters.AddFilter( filterName, fluidFilterFunction );
         }
 
         private static object GetLavaParameterArgumentFromFluidValue( FluidValue fluidFilterArgument, Type argumentType )
@@ -361,7 +398,7 @@ namespace Rock.Lava.Fluid
         /// <param name="arguments">The arguments.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static FluidValue NoOp( FluidValue input, FilterArguments arguments, TemplateContext context )
+        private static ValueTask<FluidValue> NoOp( FluidValue input, FilterArguments arguments, TemplateContext context )
         {
             return input;
         }
@@ -373,14 +410,16 @@ namespace Rock.Lava.Fluid
         /// <param name="allowedMembers"></param>
         public override void RegisterSafeType( Type type, IEnumerable<string> allowedMembers )
         {
+            var options = GetTemplateOptions();
+
             if ( allowedMembers != null
                  && allowedMembers.Any() )
             {
-                TemplateContext.GlobalMemberAccessStrategy.Register( type, allowedMembers.ToArray() );
+                options.MemberAccessStrategy.Register( type, allowedMembers.ToArray() );
             }
             else
             {
-                TemplateContext.GlobalMemberAccessStrategy.Register( type );
+                options.MemberAccessStrategy.Register( type );
             }
         }
 
@@ -390,10 +429,10 @@ namespace Rock.Lava.Fluid
         /// <param name="lavaTemplate"></param>
         /// <param name=""></param>
         /// <returns></returns>
-        private LavaFluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
+        private FluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
         {
             IEnumerable<string> errors;
-            LavaFluidTemplate template;
+            FluidTemplate template;
 
             liquidTemplate = ConvertToLiquid( lavaTemplate );
 
@@ -407,34 +446,26 @@ namespace Rock.Lava.Fluid
             return template;
         }
 
-        private bool TryParse( string template, out LavaFluidTemplate result, out IEnumerable<string> errors )
+
+        private bool TryParse( string template, out FluidTemplate result, out IEnumerable<string> errors )
         {
-            // This is a replacement for the BaseFluidTemplate.TryParse() method, which allows us to use a modified parser.
-            var parser = _parserFactory.CreateParser() as FluidParserEx;
+            string error;
+            IFluidTemplate fluidTemplate;
 
-            var elements = new List<FluidParsedTemplateElement>();
+            var success = _parser.TryParse( template, out fluidTemplate, out error );
 
-            parser.ElementParsed += ( object sender, FluidElementParseEventArgs e ) =>
-            {
-                elements.Add( new FluidParsedTemplateElement { ElementId = e.ElementId, Statement = e.Statement, Node = e.ElementText, StartIndex = e.StartIndex, EndIndex = e.EndIndex } );
-            };
+            errors = new List<string> { error };
 
-            List<global::Fluid.Ast.Statement> statements;
-
-            var success = parser.TryParse( template, false, out statements, out errors );
+            var fluidTemplateObject = (FluidTemplate)fluidTemplate;
 
             if ( success )
             {
-                result = new LavaFluidTemplate
-                {
-                    Elements = elements,
-                    Statements = statements
-                };
+                result = new FluidTemplate( new List<Statement>( fluidTemplateObject.Statements ) );
                 return true;
             }
             else
             {
-                result = new LavaFluidTemplate();
+                result = new FluidTemplate( new List<Statement>() );
                 return false;
             }
         }
@@ -448,7 +479,7 @@ namespace Rock.Lava.Fluid
             return TryRenderInternal( fluidTemplate, parameters, out output, out errors );
         }
 
-        private bool TryRenderInternal( LavaFluidTemplate template, LavaRenderParameters parameters, out string output, out List<Exception> errors )
+        private bool TryRenderInternal( FluidTemplate template, LavaRenderParameters parameters, out string output, out List<Exception> errors )
         {
             var templateContext = parameters.Context as FluidRenderContext;
 
@@ -462,12 +493,8 @@ namespace Rock.Lava.Fluid
              * the information necessary to render their output. For this reason, we need to store the source in the context so that it can be passed
              * to the Lava custom components when they are rendered.
              */
-            templateContext.SetInternalField( Constants.ContextKeys.SourceTemplateElements, template.Elements );
-
-            templateContext.FluidContext.ParserFactory = _parserFactory;
             try
             {
-
                 output = template.Render( templateContext.FluidContext );
                 errors = new List<Exception>();
 
@@ -502,16 +529,9 @@ namespace Rock.Lava.Fluid
 
             // Some Lava elements, such as shortcodes, are defined dynamically at runtime.
             // Therefore, we register the tag as a factory that can produce the requested element on demand.
-            var lavaTag = factoryMethod( name );
+            FluidLavaTagStatement.RegisterFactory( name, factoryMethod );
 
-            var fluidTag = new FluidTagProxy();
-
-            FluidTagProxy.RegisterFactory( name, factoryMethod );
-
-            // Register the proxy for the specified tag name.
-            var proxyInstance = new FluidTagProxy();
-
-            _parserFactory.RegisterTag( name, proxyInstance );
+            _parser.RegisterLavaTag( name );
         }
 
         /// <summary>
@@ -532,11 +552,9 @@ namespace Rock.Lava.Fluid
 
             // Some Lava elements, such as shortcodes, are defined dynamically at runtime.
             // To implement this behaviour, register the tag as a factory that can create the requested element on demand.
-            FluidBlockProxy.RegisterFactory( name, factoryMethod );
+            FluidLavaBlockStatement.RegisterFactory( name, factoryMethod );
 
-            var proxyInstance = new FluidBlockProxy();
-
-            _parserFactory.RegisterBlock( name, proxyInstance );
+            _parser.RegisterLavaBlock( name );
         }
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )

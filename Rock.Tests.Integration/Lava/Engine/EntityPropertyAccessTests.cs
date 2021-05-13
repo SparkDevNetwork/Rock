@@ -32,28 +32,28 @@ namespace Rock.Tests.Integration.Lava
         /// Accessing the AttributeValues collection of an entity returns the Attribute values.
         /// </summary>
         [TestMethod]
-        public void EntityPropertyAccess_ForGroupAttributeValues_ReturnsCorrectValue()
+        public void EntityPropertyAccess_ForPersonAttributeValues_ReturnsCorrectValues()
         {
             var rockContext = new RockContext();
 
-            var testGroup = new GroupService( rockContext ).Queryable().First( x => x.Name == "Decker Group" );
+            var testPerson = new PersonService( rockContext ).Queryable().First( x => x.NickName == "Ted" && x.LastName == "Decker" );
 
-            testGroup.LoadAttributes();
+            testPerson.LoadAttributes();
 
-            var values = new LavaDataDictionary { { "Group", testGroup } };
+            var values = new LavaDataDictionary { { "Person", testPerson } };
 
             var input = @"
- {% for attribute in Group.AttributeValues %}
-    {% if attribute.ValueFormatted > '' %}
-        {{ attribute.AttributeName }}: {{ attribute.ValueFormatted }}<br>
+{% for av in Person.AttributeValues %}
+    {% if av.ValueFormatted != null and av.ValueFormatted != '' %}
+        {{ av.AttributeName }}: {{ av.ValueFormatted }}<br>
     {% endif %}
 {% endfor %}
 ";
             var expectedOutput = @"
-Topic: Book of Genesis<br>
+ Employer: Rock Solid Church<br>
 ";
 
-            var options = new LavaTestRenderOptions() { MergeFields = values };
+            var options = new LavaTestRenderOptions() { MergeFields = values, OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains };
 
             TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }

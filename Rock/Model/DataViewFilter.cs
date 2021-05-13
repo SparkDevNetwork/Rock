@@ -34,8 +34,8 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /*
-	    06/12/2020 - MSB
-        This class is not only used by dataviews, but also by content channel filters to filter which items from the content channels should be shown,
+	    06/12/2020 - MSB 
+        This class is not only used by dataviews, but also by content channel filters to filter which items from the content channels should be shown, 
         and Registration Instance Group Placement for filtering purposes.
         The above two places will add records to the DataViewFilter table, but no corresponding records will be added to the DataView table so
         the DataViewFilter records will incorrectly appear to be orphans.
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// Gets or sets the expression type of this DataViewFilter.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.FilterExpressionType" /> that represents the expression type for the filter.  When <c>FilterExpressionType.Filter</c> it represents a filter expression, when <c>FilterExpressionType.GroupAll</c> it means that
+        /// A <see cref="Rock.Model.FilterExpressionType" /> that represents the expression type for the filter.  When <c>FilterExpressionType.Filter</c> it represents a filter expression, when <c>FilterExpressionType.GroupAll</c> it means that 
         /// all conditions found in child expressions must be met, when <c>FilterExpressionType.GroupOr</c> it means that at least one condition found in the child filter expressions must be met.
         /// </value>
         [DataMember]
@@ -147,8 +147,8 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="DataViewFilter" />
-        /// is currently expanded.  This property is only used by the DataView ui to
+        /// Gets or sets a value indicating whether this <see cref="DataViewFilter" /> 
+        /// is currently expanded.  This property is only used by the DataView ui to 
         /// track which filters are currently expanded
         /// </summary>
         /// <value>
@@ -218,8 +218,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether the specified action is authorized but instead of traversing child
-        /// filters (an expensive query), a list of all filters can be passed in and this will be
+        /// Determines whether the specified action is authorized but instead of traversing child 
+        /// filters (an expensive query), a list of all filters can be passed in and this will be 
         /// checked instead ( See DataViewPicker.LoadDropDownItems() for example of use ).
         /// </summary>
         /// <param name="action">The action.</param>
@@ -360,7 +360,7 @@ namespace Rock.Model
                             return null and allow the caller to handle this in a manner appropriate to the given filter.
                             */
 
-                            // If the dataview filter should not be included, don't have this filter filter anything.
+                            // If the dataview filter should not be included, don't have this filter filter anything. 
                             return null;
                         }
                         else
@@ -662,10 +662,18 @@ namespace Rock.Model
                 return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether stats for this dataview filter should be logged].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [should log statics]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldUpdateStatics { get; set; } = true;
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public class DataViewFilterOverride
     {
@@ -705,7 +713,7 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion 
 
     #region Enumerations
 

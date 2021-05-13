@@ -688,7 +688,7 @@ namespace Rock.Web.UI.Controls
         protected virtual void RegisterJavaScript()
         {
             string treeViewScript =
-$@"Rock.controls.itemPicker.initialize({{
+$@"Rock.controls.itemPicker.initialize({{ 
     controlId: '{this.ClientID}',
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
@@ -869,7 +869,7 @@ $@"Rock.controls.itemPicker.initialize({{
                                 </div>
                                 <div class='viewport'>
                                     <div class='overview'>
-                                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>
+                                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
                                     </div>
                                 </div>
                             </div>",

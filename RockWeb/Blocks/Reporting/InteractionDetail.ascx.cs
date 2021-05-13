@@ -65,11 +65,11 @@ namespace RockWeb.Blocks.Reporting
                             <dt>Person</dt><dd>{{ Interaction.PersonAlias.Person.FullName }}<dd/>
                         {% endif %}
                         
-                        {% if Interaction.InteractionSummary && Interaction.InteractionSummary != '' %}
+                        {% if Interaction.InteractionSummary and Interaction.InteractionSummary != '' %}
                             <dt>Interaction Summary</dt><dd>{{ Interaction.InteractionSummary }}<dd/>
                         {% endif %}
                         
-                        {% if Interaction.InteractionData && Interaction.InteractionData != '' %}
+                        {% if Interaction.InteractionData and Interaction.InteractionData != '' %}
                             <dt>Interaction Data</dt><dd>{{ Interaction.InteractionData }}<dd/>
                         {% endif %}
                     </dl>

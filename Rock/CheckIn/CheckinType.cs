@@ -294,6 +294,78 @@ namespace Rock.CheckIn
         /// </value>
         public string SuccessLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
 
+        /// <summary>
+        /// Gets the action select header lava template.
+        /// </summary>
+        /// <value>
+        /// The action select header lava template.
+        /// </value>
+        public string ActionSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the checkout person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The checkout person select header lava template.
+        /// </value>
+        public string CheckoutPersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The person select header lava template.
+        /// </value>
+        public string PersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the multi person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The multi person select header lava template.
+        /// </value>
+        public string MultiPersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the group type select header lava template.
+        /// </summary>
+        /// <value>
+        /// The group type select header lava template.
+        /// </value>
+        public string GroupTypeSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the time select header lava template.
+        /// </summary>
+        /// <value>
+        /// The time select header lava template.
+        /// </value>
+        public string TimeSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the ability level select header lava template.
+        /// </summary>
+        /// <value>
+        /// The ability level select header lava template.
+        /// </value>
+        public string AbilityLevelSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the location select header lava template.
+        /// </summary>
+        /// <value>
+        /// The location select header lava template.
+        /// </value>
+        public string LocationSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the group select header lava template.
+        /// </summary>
+        /// <value>
+        /// The group select header lava template.
+        /// </value>
+        public string GroupSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE );
+
         #region registration
 
         /// <summary>

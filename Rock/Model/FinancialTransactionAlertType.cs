@@ -30,7 +30,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlertType" )]
@@ -199,6 +199,15 @@ namespace Rock.Model
         [Index]
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum days since last gift.
+        /// </summary>
+        /// <value>
+        /// The maximum days since last gift.
+        /// </value>
+        [DataMember]
+        public int? MaximumDaysSinceLastGift { get; set; }
 
         #endregion Entity Properties
 

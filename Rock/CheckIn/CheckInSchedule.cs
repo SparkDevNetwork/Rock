@@ -58,7 +58,7 @@ namespace Rock.CheckIn
         public DateTime? StartTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the last time person checked into this schedule for the selected group type, location and group
+        /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
         /// </summary>
         /// <value>
         /// The last check-in.

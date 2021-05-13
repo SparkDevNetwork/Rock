@@ -29,7 +29,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an image that is associated with a <see cref="Rock.Model.FinancialTransaction"/>. Examples could be
+    /// Represents an image that is associated with a <see cref="Rock.Model.FinancialTransaction"/>. Examples could be 
     /// the front or back side of a check or an offering envelope.
     /// </summary>
     [RockDomain( "Finance" )]
@@ -50,7 +50,7 @@ namespace Rock.Model
         public int TransactionId { get; set; }
 
         /// <summary>
-        /// Gets or sets the BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/>
+        /// Gets or sets the BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/> 
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing BinaryFileId of the image's <see cref="Rock.Model.BinaryFile"/>
@@ -153,7 +153,7 @@ namespace Rock.Model
                     }
                 case EntityState.Deleted:
                     {
-                        // if deleting, and there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=true
+                        // if deleting, and there is an binaryfile (image) associated with this, make sure that it is flagged as IsTemporary=true 
                         // so that it'll get cleaned up
                         if ( !binaryFile.IsTemporary )
                         {

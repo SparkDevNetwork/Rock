@@ -27,10 +27,10 @@ namespace Rock.Lava.Fluid
     /// The MemberAccessStrategy determines the way in which property values are retrieved from specific types of objects supported by Lava:
     /// anonymous types, types that implement ILavaDataDictionary or ILavaDataDictionarySource, and types that are decorated with the LavaTypeAttribute.
     /// </summary>
-    internal class LavaObjectMemberAccessStrategy : IMemberAccessStrategy
+    internal class LavaObjectMemberAccessStrategy : MemberAccessStrategy
     {
         private Dictionary<Type, Dictionary<string, IMemberAccessor>> _map;
-        private readonly IMemberAccessStrategy _parent;
+        private readonly MemberAccessStrategy _parent;
 
         private DynamicMemberAccessor _dynamicMemberAccessor = new DynamicMemberAccessor();
         private LavaDataSourceMemberAccessor _lavaDataSourceMemberAccessor = new LavaDataSourceMemberAccessor();
@@ -40,7 +40,7 @@ namespace Rock.Lava.Fluid
             _map = new Dictionary<Type, Dictionary<string, IMemberAccessor>>();
         }
 
-        public LavaObjectMemberAccessStrategy( IMemberAccessStrategy parent ) : this()
+        public LavaObjectMemberAccessStrategy( MemberAccessStrategy parent ) : this()
         {
             _parent = parent;
             MemberNameStrategy = _parent.MemberNameStrategy;
@@ -52,11 +52,7 @@ namespace Rock.Lava.Fluid
         /// </summary>
         public bool ThrowOnInvalidMemberAccess { get; set; } = true;
 
-        public MemberNameStrategy MemberNameStrategy { get; set; } = MemberNameStrategies.Default;
-
-        public bool IgnoreCasing { get; set; }
-
-        public IMemberAccessor GetAccessor( Type type, string name )
+        public override IMemberAccessor GetAccessor( Type type, string name )
         {
             IMemberAccessor accessor = null;
 
@@ -146,11 +142,11 @@ namespace Rock.Lava.Fluid
 
                 var newAccessor = new LavaTypeMemberAccessor( includedProperty );
 
-                Register( type, includedProperty.Name, newAccessor );
+                Register( type, new List<KeyValuePair<string, IMemberAccessor>> { new KeyValuePair<string, IMemberAccessor>( includedProperty.Name, newAccessor ) } );
             }
         }
 
-        public void Register( Type type, string name, IMemberAccessor getter )
+        public override void Register( Type type, IEnumerable<KeyValuePair<string, IMemberAccessor>> accessors )
         {
             if ( !_map.TryGetValue( type, out var typeMap ) )
             {
@@ -161,7 +157,10 @@ namespace Rock.Lava.Fluid
                 _map[type] = typeMap;
             }
 
-            typeMap[name] = getter;
+            foreach ( var kvp in accessors )
+            {
+                typeMap[kvp.Key] = kvp.Value;
+            }
         }
     }
 
@@ -185,7 +184,9 @@ namespace Rock.Lava.Fluid
                 lavaObject = (ILavaDataDictionary)obj;
             }
 
-            return lavaObject.GetValue( name );
+            var value = lavaObject.GetValue( name );
+
+            return value;
         }
     }
 
@@ -206,7 +207,9 @@ namespace Rock.Lava.Fluid
                 return obj;
             }
 
-            return Rock.Common.ExtensionMethods.GetPropertyValue( obj, propertyPath );
+            var value = Rock.Common.ExtensionMethods.GetPropertyValue( obj, propertyPath );
+
+            return value;
         }
     }
 
@@ -224,7 +227,9 @@ namespace Rock.Lava.Fluid
 
         public object Get( object obj, string name, TemplateContext ctx )
         {
-            return _info.GetValue( obj );
+            var value = _info.GetValue( obj );
+
+            return value;
         }
     }
 

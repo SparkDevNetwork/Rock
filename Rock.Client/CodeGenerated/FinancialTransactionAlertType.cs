@@ -62,6 +62,9 @@ namespace Rock.Client
         public decimal? FrequencySensitivityScale { get; set; }
 
         /// <summary />
+        public int? MaximumDaysSinceLastGift { get; set; }
+
+        /// <summary />
         public decimal? MaximumGiftAmount { get; set; }
 
         /// <summary />
@@ -138,6 +141,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FrequencySensitivityScale = source.FrequencySensitivityScale;
+            this.MaximumDaysSinceLastGift = source.MaximumDaysSinceLastGift;
             this.MaximumGiftAmount = source.MaximumGiftAmount;
             this.MaximumMedianGiftAmount = source.MaximumMedianGiftAmount;
             this.MinimumGiftAmount = source.MinimumGiftAmount;

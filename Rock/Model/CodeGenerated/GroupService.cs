@@ -216,6 +216,8 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
+            target.GroupSalutation = source.GroupSalutation;
+            target.GroupSalutationFull = source.GroupSalutationFull;
             target.GroupTypeId = source.GroupTypeId;
             target.InactiveDateTime = source.InactiveDateTime;
             target.InactiveReasonNote = source.InactiveReasonNote;

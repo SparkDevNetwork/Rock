@@ -308,7 +308,7 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             // no match - set or add to dictionary
-            // ensure name is starts with an upper case
+            // ensure name is starts with an upper case 
             var name = char.ToUpper( binder.Name[0] ) + binder.Name.Substring( 1 );
             _members[name] = value;
             return true;

@@ -47,7 +47,7 @@ namespace Rock.Jobs
         List<NotificationItem> _notificationList = new List<NotificationItem>();
         List<GroupsMissingRequirements> _groupsMissingRequirements = new List<GroupsMissingRequirements>();
 
-        /// <summary>
+        /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the

@@ -22,7 +22,7 @@ using Rock.Web.Cache;
 namespace Rock
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -202,7 +202,7 @@ namespace Rock
 
         /// <summary>
         /// Formats the value to include commas and decimal point. But without
-        /// a currency symbol.
+        /// a currency symbol. 
         /// For example: 123456.55345 returns "123,456.55" (depending on browser language settings).
         /// Use <seealso cref="FormatAsCurrency(decimal)"/> to include the currency symbol.
         /// </summary>

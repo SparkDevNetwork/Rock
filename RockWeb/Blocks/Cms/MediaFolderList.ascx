@@ -19,6 +19,7 @@
                     <Rock:Grid ID="gFolderList" runat="server" AllowSorting="true" OnRowSelected="gFolderList_RowSelected"  CssClass="js-grid-folders">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-CssClass="js-name-folder" />
+                            <Rock:RockBoundField DataField="ContentChannel.Name" HeaderText="Content Channel Sync" SortExpression="ContentChannel.Name" />
                             <Rock:RockBoundField DataField="Videos" HeaderText="Videos" SortExpression="Videos" />
                             <Rock:DeleteField OnClick="gFolderList_DeleteClick" />
                         </Columns>

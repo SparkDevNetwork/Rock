@@ -32,7 +32,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
@@ -257,8 +257,8 @@ namespace Rock.Model
             to a JSON string.
 
             https://github.com/SparkDevNetwork/Rock/issues/4250
-
-            Reason: Web Api Controller
+	
+            Reason: Web Api Controller	
         */
 
         /// <summary>
@@ -486,7 +486,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public partial class ContentChannelConfiguration : EntityTypeConfiguration<ContentChannel>
     {

@@ -33,7 +33,7 @@ using Rock.Security;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationInstance" )]
@@ -225,7 +225,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// The workflow type id.
-        /// </value>
+        /// </value>        
         [DataMember]
         public int? RegistrationWorkflowTypeId { get; set; }
 

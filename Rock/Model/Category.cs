@@ -29,7 +29,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a category or group of entity objects in Rock. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>.
+    /// Represents a category or group of entity objects in Rock. A category can be used to group entity instances of <see cref="Rock.Model.EntityType">EntityTypes</see>. 
     /// For an EntityType to be categorizable the EntityType will need to implement the <see cref="Rock.Data.ICategorized"/> interface.
     /// </summary>
     [RockDomain( "Core" )]
@@ -51,7 +51,7 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId of the parent Category.
+        /// Gets or sets the CategoryId of the parent Category. 
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the CategoryId of the parent Category.
@@ -73,7 +73,7 @@ namespace Rock.Model
         /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used to narrow the scope of the Category.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualifierValue"/> that is used to
+        /// A <see cref="System.String"/> representing the name of the Qualifier Column/Property that contains the <see cref="EntityTypeQualifierValue"/> that is used to 
         /// narrow the scope of the Category.
         /// </value>
         [MaxLength( 50 )]
@@ -99,7 +99,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Name of the Category
         /// </summary>
@@ -119,7 +119,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
         /// </summary>

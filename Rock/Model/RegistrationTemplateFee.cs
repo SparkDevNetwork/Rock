@@ -33,7 +33,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateFee" )]
@@ -504,7 +504,7 @@ namespace Rock.Model
             }
             else
             {
-
+                
                 if ( fee.AllowMultiple )
                 {
                     feeControl = GetFeeMultipleOptionMultipleQuantityControl( setValues, feeValues, registrationInstance, otherRegistrants );

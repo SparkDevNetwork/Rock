@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Finance
             gList.Actions.ShowAdd = _canAddEditDelete;
             gList.IsDeleteEnabled = _canAddEditDelete;
 
-            // in case this is used as a Person Block, set the TargetPerson
+            // in case this is used as a Person Block, set the TargetPerson 
             TargetPerson = ContextEntity<Person>();
         }
 
@@ -148,9 +148,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters
+            // Parse the attribute filters 
             AvailableAttributes = new List<AttributeCache>();
-
+            
             int entityTypeId = new BenevolenceRequest().TypeId;
             foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Finance
             {
                 AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
-
+            
         }
 
         /// <summary>
@@ -586,14 +586,14 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                // Filter by First Name
+                // Filter by First Name 
                 string firstName = tbFirstName.Text;
                 if ( !string.IsNullOrWhiteSpace( firstName ) )
                 {
                     qry = qry.Where( b => b.FirstName.StartsWith( firstName ) );
                 }
 
-                // Filter by Last Name
+                // Filter by Last Name 
                 string lastName = tbLastName.Text;
                 if ( !string.IsNullOrWhiteSpace( lastName ) )
                 {

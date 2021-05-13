@@ -143,6 +143,7 @@ namespace RockWeb.Blocks.Follow
                         .Where( f =>
                             f.EntityTypeId == personAliasEntityType.Id &&
                             f.PersonAliasId == CurrentPersonAliasId.Value &&
+                            string.IsNullOrEmpty( f.PurposeKey ) &&
                             selectedPersonAliasIds.Contains( f.EntityId ) )
                         .Select( f => f.EntityId )
                         .Distinct()
@@ -261,6 +262,7 @@ namespace RockWeb.Blocks.Follow
                 var followedPersonIds = new FollowingService( rockContext ).Queryable()
                     .Where( f =>
                         f.EntityTypeId == personAliasEntityType.Id &&
+                        string.IsNullOrEmpty( f.PurposeKey ) &&
                         f.PersonAliasId == CurrentPersonAlias.Id )
                     .Join( personAliasQry, s => s.EntityId, p => p.Id, ( s, p ) => p.PersonId )
                     .Distinct();

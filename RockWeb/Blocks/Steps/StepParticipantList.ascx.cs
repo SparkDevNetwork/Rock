@@ -682,7 +682,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void GetAvailableAttributes()
         {
-            // Parse the attribute filters
+            // Parse the attribute filters 
             this.AvailableAttributes = new List<AttributeCache>();
 
             if ( _stepType != null )

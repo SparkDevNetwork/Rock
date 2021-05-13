@@ -618,7 +618,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum RegistrationPersonFieldType
     {

@@ -61,7 +61,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string ReportSettings { get; set; }
+        public string ReportSettings { get; set; } = @"{""TransactionSetting"":{""AccountIds"":[],""CurrencyTypesForCashGiftIds"":[],""CurrencyTypesForNonCashIds"":[],""TransactionTypeIds"":[],""HideRefundedTransaction"":false,""HideCorrectedTransactionOnSameData"":false},""PledgeSetting"":{""AccountIds"":[],""IncludeGiftsToChildAccounts"":false,""IncludeNonCashGifts"":false},""PDFObjectSettings"":{}}";
 
         /// <summary />
         public string ReportTemplate { get; set; }

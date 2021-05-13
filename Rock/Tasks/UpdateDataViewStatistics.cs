@@ -54,16 +54,6 @@ namespace Rock.Tasks
                     }
                 }
 
-                if ( message.PersistedLastRefreshDateTime != null )
-                {
-                    dataView.PersistedLastRefreshDateTime = message.PersistedLastRefreshDateTime;
-                }
-
-                if ( message.PersistedLastRunDurationMilliseconds != null )
-                {
-                    dataView.PersistedLastRunDurationMilliseconds = message.PersistedLastRunDurationMilliseconds;
-                }
-
                 // We will only update the RunCount if we were given a TimeToRun value.
                 if ( message.TimeToRunDurationMilliseconds != null )
                 {
@@ -112,22 +102,6 @@ namespace Rock.Tasks
             /// The time to run in ms.
             /// </value>
             public int? TimeToRunDurationMilliseconds { get; set; }
-
-            /// <summary>
-            /// Gets or sets the persisted last run date.
-            /// </summary>
-            /// <value>
-            /// The persisted last run date.
-            /// </value>
-            public DateTime? PersistedLastRefreshDateTime { get; set; }
-
-            /// <summary>
-            /// Gets or sets the persisted last run duration in milliseconds.
-            /// </summary>
-            /// <value>
-            /// The persisted last run duration in milliseconds.
-            /// </value>
-            public int? PersistedLastRunDurationMilliseconds { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether the run count should be incremented.

@@ -27,7 +27,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplatePlacement" )]

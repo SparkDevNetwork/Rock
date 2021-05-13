@@ -30,7 +30,7 @@ namespace Rock.CheckIn
     public class CheckInFamily : RockDynamic
     {
         /// <summary>
-        /// A list of <see cref="Rock.Model.Attendance"/> records for the family check-in
+        /// A list of <see cref="Rock.Model.Attendance"/> records for the family check-in 
         /// </summary>
         /// <value>
         /// A list of attendance Ids.
@@ -141,7 +141,7 @@ namespace Rock.CheckIn
         [DataMember]
         public List<string> FirstNames { get; set; }
 
-
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInFamily" /> class.

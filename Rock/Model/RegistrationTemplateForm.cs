@@ -29,7 +29,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateForm" )]

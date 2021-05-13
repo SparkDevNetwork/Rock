@@ -1545,6 +1545,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var modified = new StringBuilder();
+
                 if ( txn.CreatedByPersonAlias != null && txn.CreatedByPersonAlias.Person != null && txn.CreatedDateTime.HasValue )
                 {
                     modified.AppendFormat( "Created by {0} on {1} at {2}<br/>", txn.CreatedByPersonAlias.Person.GetAnchorTag( rockUrlRoot ),
@@ -2356,7 +2357,7 @@ namespace RockWeb.Blocks.Finance
               However, when the FinancialTransactionDetail.Amount is used in this EditBox,
               don't include the FinancialTransactionDetail.FeeCoverageAmount.
               So in the above example, the Textbox would say $100.00
-
+             
              */
 
             var feeCoverageAmount = transactionDetail.FeeCoverageAmount;

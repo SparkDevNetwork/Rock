@@ -661,7 +661,8 @@ namespace Rock.Data
                     .Queryable()
                     .Where( f =>
                         f.EntityTypeId == entityType.Id &&
-                        f.EntityId == id )
+                        f.EntityId == id &&
+                        string.IsNullOrEmpty( f.PurposeKey ) )
                     .Select( f => f.PersonAlias.PersonId );
 
                 return new Rock.Model.PersonService( rockContext )

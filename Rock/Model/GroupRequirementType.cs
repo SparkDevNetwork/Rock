@@ -27,7 +27,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Group" )]
     [Table( "GroupRequirementType" )]
@@ -257,7 +257,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public partial class GroupRequirementTypeConfiguration : EntityTypeConfiguration<GroupRequirementType>
     {

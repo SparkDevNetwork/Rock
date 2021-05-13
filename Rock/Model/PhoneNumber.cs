@@ -83,7 +83,7 @@ namespace Rock.Model
         public string Number { get; set; }
 
         /// <summary>
-        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons.
+        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons. 
         /// NOTE: If <seealso cref="Number"/> is a partial number (for example, no area code), then FullNumber isn't really the full number, and neither is NumberFormatted.
         /// </summary>
         /// <value>
@@ -129,10 +129,10 @@ namespace Rock.Model
         public string NumberReversed { get; set; }
 
         /// <summary>
-        /// Gets or sets the extension (if any) that would need to be dialed to contact the owner.
+        /// Gets or sets the extension (if any) that would need to be dialed to contact the owner. 
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the extensions that would need to be dialed to contact the owner. If no extension is required, this property will be null.
+        /// A <see cref="System.String"/> representing the extensions that would need to be dialed to contact the owner. If no extension is required, this property will be null. 
         /// </value>
         [MaxLength( 20 )]
         [DataMember]

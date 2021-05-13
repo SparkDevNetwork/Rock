@@ -332,7 +332,7 @@ namespace Rock.Model
         /// </returns>
         public override bool IsAuthorized( string action, Person person )
         {
-            // Because a metric can belong to more than one category, security for a metric is handled a bit differently.
+            // Because a metric can belong to more than one category, security for a metric is handled a bit differently. 
             // If the user is specifically granted or denied access at the metric level, that will overrule any security defined
             // at any of the categories that metric belongs to.
 
@@ -344,8 +344,8 @@ namespace Rock.Model
                 return isAuthorized.Value;
             }
 
-            // If metric belongs to any categories, give them access if they have access to any of the categories (even if
-            // one or more denies them access). If not granted access by a category, check to see if any category denies
+            // If metric belongs to any categories, give them access if they have access to any of the categories (even if 
+            // one or more denies them access). If not granted access by a category, check to see if any category denies 
             // them access.
             if ( this.MetricCategories != null )
             {

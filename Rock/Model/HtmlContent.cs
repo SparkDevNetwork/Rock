@@ -47,7 +47,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int BlockId { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Entity Value that must be present on the page for this HTML Content to be displayed. If this value will null
         /// there will not be an entity restriction on the HTMLContent object.
@@ -58,7 +58,7 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember]
         public string EntityValue { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the version number for the HTMLContent
         /// </summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int Version { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the HTML content that will display on the block when conditions (if any) are met.
         /// </summary>
@@ -77,7 +77,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Content { get; set; }
-
+        
         /// <summary>
         /// Gets or sets a flag indicating if the content has been approved. If approval is required, the content will not be displayed until it has been approved.
         /// </summary>
@@ -87,7 +87,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsApproved { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who approved the HTMLContent.
         /// </summary>
@@ -96,7 +96,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ApprovedByPersonAliasId { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the date and time that the HTMLContent was approved.
         /// </summary>
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? StartDateTime { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the date and time that the HTMLContent expires and is no longer available. If this value is null the HTMLContent remains available until it is overwritten or replaced with a new version.
         /// </summary>
@@ -130,7 +130,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Block"/> that this HTMLContent appears on.
+        /// Gets or sets the <see cref="Rock.Model.Block"/> that this HTMLContent appears on. 
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.

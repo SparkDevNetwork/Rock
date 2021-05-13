@@ -498,10 +498,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             IList<RosterAttendee> attendees = null;
 
-            using ( var rockContext = new RockContext() )
-            {
-                attendees = GetAttendees( rockContext );
-            }
+            // Note, don't wrap this in a Using, we don't want to destroy it just in case there is some lazy loading that will happen (there shouldn't be, but just in case)
+            var rockContext = new RockContext();
+            
+            attendees = GetAttendees( rockContext );
 
             var currentStatusFilter = GetStatusFilterValueFromControl();
 
@@ -981,7 +981,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 stayingAttendance.IsFirstTime = false;
             }
 
-            /* 2020-12-18 MDP
+            /* 2020-12-18 MDP 
                 Keep StartDateTime the same as the original StartDateTime, since that is when they checked into the room.
                 see https://app.asana.com/0/0/1199643530714803/f
             */
@@ -1268,7 +1268,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( selectedStatusFilter == RosterStatusFilter.CheckedIn )
                 {
-                    // if Presence is NOT enabled, there isn't a CheckedIn status.
+                    // if Presence is NOT enabled, there isn't a CheckedIn status. 
                     SetStatusFilterControl( RosterStatusFilter.Present );
                 }
             }

@@ -23,11 +23,54 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [LinkedPage( "Multi-Person First Page (Family Check-in)", "The first page for each person during family check-in.", false, "", "", 5, "MultiPersonFirstPage" )]
-    [LinkedPage( "Multi-Person Last Page  (Family Check-in)", "The last page for each person during family check-in.", false, "", "", 6, "MultiPersonLastPage" )]
-    [LinkedPage( "Multi-Person Done Page (Family Check-in)", "The page to navigate to once all people have checked in during family check-in.", false, "", "", 7, "MultiPersonDonePage" )]
+    [LinkedPage( "Multi-Person First Page (Family Check-in)",
+        Key = AttributeKey.MultiPersonFirstPage,
+        Description = "The first page for each person during family check-in.",
+        IsRequired = false,
+        Order = 5 )]
+
+    [LinkedPage( "Multi-Person Last Page  (Family Check-in)",
+        Key = AttributeKey.MultiPersonLastPage,
+        Description = "The last page for each person during family check-in.",
+        IsRequired = false,
+        Order = 6 )]
+
+    [LinkedPage( "Multi-Person Done Page (Family Check-in)",
+        Key = AttributeKey.MultiPersonDonePage,
+        Description = "The page to navigate to once all people have checked in during family check-in.",
+        IsRequired = false,
+        Order = 7 )]
+
     public abstract class CheckInBlockMultiPerson : CheckInBlock
     {
+        /// <summary>
+        /// The attribute keys that can be used by all blocks that inherit this one. In the child class create a new private AttributeKey sub class and point those const to this class.
+        /// e.g.
+        /// private new static class AttributeKey
+        /// {
+        ///     public const string Caption = "Caption";
+        ///     public const string NextPage = CheckinBlock.AttributeKey.NextPage;
+        ///     public const string MultiPersonFirstPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonFirstPage;
+        /// }
+        /// </summary>
+        protected new static class AttributeKey
+        {
+            /// <summary>
+            /// The first page for each person during family check-in.
+            /// </summary>
+            public const string MultiPersonFirstPage = "MultiPersonFirstPage";
+
+            /// <summary>
+            /// The last page for each person during family check-in.
+            /// </summary>
+            public const string MultiPersonLastPage = "MultiPersonLastPage";
+
+            /// <summary>
+            /// The page to navigate to once all people have checked in during family check-in.
+            /// </summary>
+            public const string MultiPersonDonePage = "MultiPersonDonePage";
+        }
+
         /// <summary>
         /// Processes result of current person not having any option
         /// </summary>

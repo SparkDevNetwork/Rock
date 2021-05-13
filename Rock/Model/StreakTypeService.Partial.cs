@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -1982,8 +1983,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence
-        /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks
+        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence 
+        /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks 
         /// should be synchronized, but the calling process should continue quickly and without regard to the success of this operation.
         /// This method creates it's own data context and any changes will be saved automatically.
         /// </summary>

@@ -31,6 +31,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
 using System.Collections.Generic;
+
 using System.Dynamic;
 using Rock.Web;
 
@@ -68,7 +69,7 @@ namespace RockWeb.Blocks.Groups
     </div>
 
     <div class='clearfix'>
-		{% if Location.Address && Location.Address != '' %}
+		{% if Location.Address and Location.Address != '' %}
 			<strong>{{ Location.Type }}</strong>
 			<br>{{ Location.Address }}
 		{% endif %}

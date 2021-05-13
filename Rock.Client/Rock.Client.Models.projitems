@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Assessment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssessmentType.cs" />
@@ -124,6 +125,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPledge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialStatementTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlertType.cs" />
@@ -178,6 +180,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LocationExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaFolder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MergeTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaFirstNameGenderLookup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaLastNameLookup.cs" />

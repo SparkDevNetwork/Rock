@@ -928,7 +928,7 @@ namespace Rock.Chart
         /// </summary>
         public string BorderColor { get; set; }
 
-        /// <summary>
+        /// <summary> 
         /// The fill color of the region described by this dataset.
         /// </summary>
         public string FillColor { get; set; }

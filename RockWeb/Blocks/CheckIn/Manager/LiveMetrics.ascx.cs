@@ -717,8 +717,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         navGroup.ChildGroupIds = childGroupIds;
                         NavData.Groups.Add( navGroup );
 
-                        /*
-                            2/5/2021 MDP
+                        /* 
+                            2/5/2021 MDP 
 
                             This used to only add the group to the GroupTypes.ChildGroups if it didn't have
                             a parent group, or the parent group was one of the groups we are displaying.

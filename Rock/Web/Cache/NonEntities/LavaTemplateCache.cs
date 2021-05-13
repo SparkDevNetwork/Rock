@@ -114,7 +114,7 @@ namespace Rock.Web.Cache
 
             var template = Template.Parse( content );
 
-            /*
+            /* 
              * 2/19/2020 - JPH
              * The DotLiquid library's Template object was not originally designed to be thread safe, but a PR has since
              * been merged into that repository to add this functionality (https://github.com/dotliquid/dotliquid/pull/220).

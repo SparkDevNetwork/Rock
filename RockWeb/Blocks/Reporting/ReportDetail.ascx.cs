@@ -603,7 +603,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !report.IsValid )
             {
-                // Controls will render the error messages
+                // Controls will render the error messages                    
                 return;
             }
 
@@ -737,7 +737,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private class FieldTypeSelection
         {
@@ -1645,7 +1645,7 @@ namespace RockWeb.Blocks.Reporting
         #region ReportFieldInfo Class
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         [Serializable]
         protected class ReportFieldInfo
@@ -1669,7 +1669,7 @@ namespace RockWeb.Blocks.Reporting
             public ReportFieldType ReportFieldType { get; set; }
 
             /// <summary>
-            /// Gets or sets the field selection.
+            /// Gets or sets the field selection. 
             /// </summary>
             /// <value>
             /// The selection.

@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -227,7 +228,11 @@ namespace RockWeb.Blocks.GroupScheduling
                 DetermineRecipientAndSendResponseEmails( attendanceId );
             }
 
+            BindPendingConfirmations();
         }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPendingConfirmations control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
@@ -550,7 +555,7 @@ namespace RockWeb.Blocks.GroupScheduling
             }
             catch ( Exception ex )
             {
-                // ignore but log
+                // ignore but log 
                 ExceptionLogService.LogException( ex );
             }
         }

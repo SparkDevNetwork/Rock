@@ -733,6 +733,7 @@ function(item) {
             var accountIdList = GetSetting( keyPrefix, "AccountIds" ).Split( ',' ).ToList();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
+                cblAccounts.FormGroupCssClass = "clickable-label js-select-all";
                 cblAccounts.SetValues( accountIdList );
             }
 

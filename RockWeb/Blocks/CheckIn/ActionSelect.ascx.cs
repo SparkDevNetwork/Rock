@@ -32,14 +32,33 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays option for family to Check In or Check Out.")]
 
-    [LinkedPage( "Next Page (Family Check-in)", "", false, "", "", 5, "FamilyNextPage" )]
-    [LinkedPage( "Check Out Page", "", false, "", "", 6, "CheckOutPage" )]
+    [LinkedPage( "Next Page (Family Check-in)",
+        Key = AttributeKey.FamilyNextPage,
+        IsRequired = false,
+        Order = 5 )]
 
-    [TextField( "Title", "Title to display. Use {0} for family name", false, "{0}", "Text", 7 )]
-    [TextField( "Caption", "", false, "Select Action", "Text", 8 )]
+    [LinkedPage( "Check Out Page",
+        Key = AttributeKey.CheckOutPage,
+        IsRequired = false,
+        Order = 6 )]
+
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Action",
+        Category = "Text",
+        Order = 7 )]
 
     public partial class ActionSelect : CheckInBlock
     {
+        private new static class AttributeKey
+        {
+            public const string Caption = "Caption";
+            public const string CheckOutPage = "CheckOutPage";
+            public const string FamilyNextPage = "FamilyNextPage";
+            public const string NextPage = CheckInBlock.AttributeKey.NextPage;
+        }
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -80,9 +99,8 @@ namespace RockWeb.Blocks.CheckIn
                             }
                             else
                             {
-
-                                lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
-                                lCaption.Text = GetAttributeValue( "Caption" );
+                                lTitle.Text = GetTitleText();
+                                lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                                 lbCheckIn.Visible = family.People.Count > 0;
                             }
@@ -98,6 +116,17 @@ namespace RockWeb.Blocks.CheckIn
             {
                 family.Action = CheckinAction.CheckIn;
             }
+        }
+
+        private string GetTitleText()
+        {
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group }
+            };
+
+            var actionSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.ActionSelectHeaderLavaTemplate ?? string.Empty;
+            return actionSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
@@ -134,16 +163,16 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckOut )
             {
-                NavigateToLinkedPage( "CheckOutPage" );
+                NavigateToLinkedPage( AttributeKey.CheckOutPage );
             }
             else
             {
-                string pageAttributeKey = "NextPage";
+                string pageAttributeKey = AttributeKey.NextPage;
                 if ( CurrentCheckInType != null &&
                     CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Family &&
-                    !string.IsNullOrWhiteSpace( LinkedPageUrl( "FamilyNextPage" ) ) )
+                    !string.IsNullOrWhiteSpace( LinkedPageUrl( AttributeKey.FamilyNextPage ) ) )
                 {
-                    pageAttributeKey = "FamilyNextPage";
+                    pageAttributeKey = AttributeKey.FamilyNextPage;
                 }
 
                 queryParams = CheckForOverride( queryParams );

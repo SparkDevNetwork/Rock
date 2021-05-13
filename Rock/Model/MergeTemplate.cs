@@ -27,7 +27,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "MergeTemplate" )]
@@ -157,7 +157,7 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns the Name of the MergeTemplate
+        /// Returns the Name of the MergeTemplate 
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> that represents this instance.
@@ -247,7 +247,7 @@ namespace Rock.Model
     #region enums
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public enum MergeTemplateOwnership
     {

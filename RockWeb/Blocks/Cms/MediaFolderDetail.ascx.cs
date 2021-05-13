@@ -17,11 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Humanizer;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -31,7 +30,6 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -76,6 +74,8 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbActionResult.Text = string.Empty;
 
             if ( !Page.IsPostBack )
             {
@@ -177,6 +177,8 @@ namespace RockWeb.Blocks.Cms
             mediaFolder.Name = tbName.Text;
             mediaFolder.Description = tbDescription.Text;
             mediaFolder.IsContentChannelSyncEnabled = swEnableContentChannelSync.Checked;
+            mediaFolder.WorkflowTypeId = wtpWorkflowType.SelectedValueAsId();
+
             if ( swEnableContentChannelSync.Checked )
             {
                 var contentChannelId = ContentChannelCache.GetId( ddlContentChannel.SelectedValue.AsGuid() );
@@ -186,19 +188,20 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 mediaFolder.ContentChannelAttributeId = ddlChannelAttribute.SelectedValueAsInt();
-                mediaFolder.Status = rrbContentChannelItemStatus.SelectedValueAsEnum<ContentChannelItemStatus>();
+                mediaFolder.ContentChannelItemStatus = rrbContentChannelItemStatus.SelectedValueAsEnum<ContentChannelItemStatus>();
             }
             else
             {
                 mediaFolder.ContentChannelId = null;
                 mediaFolder.ContentChannelAttributeId = null;
-                mediaFolder.Status = null;
+                mediaFolder.ContentChannelItemStatus = null;
             }
 
             rockContext.SaveChanges();
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.MediaAccountId] = mediaFolder.MediaAccountId.ToStringSafe();
-            NavigateToParentPage( qryParams );
+
+            var pageReference = RockPage.PageReference;
+            pageReference.Parameters.AddOrReplace( PageParameterKey.MediaFolderId, mediaFolder.Id.ToString() );
+            Response.Redirect( pageReference.BuildUrl(), false );
         }
 
         /// <summary>
@@ -210,17 +213,28 @@ namespace RockWeb.Blocks.Cms
         {
             if ( hfId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add
+                // Canceling on Add
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString[PageParameterKey.MediaAccountId] = hfMediaAccountId.Value;
                 NavigateToParentPage( qryString );
             }
             else
             {
-                // Cancelling on Edit
+                // Canceling on Edit
                 var mediaFolder = new MediaFolderService( new RockContext() ).Get( int.Parse( hfId.Value ) );
                 ShowReadonlyDetails( mediaFolder );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSyncContentChannelItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSyncContentChannelItems_Click( object sender, EventArgs e )
+        {
+            Task.Run( () => MediaFolderService.AddMissingSyncedContentChannelItems( hfId.ValueAsInt() ) );
+            nbActionResult.Text = "Content channel item creation has started and will continue in the background.";
         }
 
         /// <summary>
@@ -276,16 +290,24 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var channel = new ContentChannelService( rockContext ).GetNoTracking( channelGuid.Value );
 
-                // add channel attributes
-                channel.LoadAttributes();
-                channelAttributes = channel.Attributes.Select( a => a.Value ).ToList();
+                // Fake in-memory content channel item so we can properly
+                // load all the attributes.
+                var contentChannelItem = new ContentChannelItem
+                {
+                    ContentChannelId = channel.Id,
+                    ContentChannelTypeId = channel.ContentChannelTypeId
+                };
+
+                // add content channel item attributes
+                contentChannelItem.LoadAttributes( rockContext );
+                channelAttributes = contentChannelItem.Attributes.Select( a => a.Value ).ToList();
             }
 
             ddlChannelAttribute.Items.Clear();
             ddlChannelAttribute.Items.Add( new ListItem() );
             foreach ( var attribute in channelAttributes )
             {
-                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.VideoFileFieldType ).FullName )
+                if ( attribute.FieldType.Class == typeof( Rock.Field.Types.MediaElementFieldType ).FullName )
                 {
                     ddlChannelAttribute.Items.Add( new ListItem( attribute.Name, attribute.Id.ToStringSafe() ) );
                 }
@@ -352,17 +374,22 @@ namespace RockWeb.Blocks.Cms
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnSyncContentChannelItems.Visible = false;
+
                 ShowReadonlyDetails( mediaFolder );
             }
             else
             {
                 btnEdit.Visible = true;
+
                 if ( mediaFolder.Id > 0 )
                 {
+                    btnSyncContentChannelItems.Visible = !( mediaFolder.MediaAccount.GetMediaAccountComponent()?.AllowsManualEntry ?? true );
                     ShowReadonlyDetails( mediaFolder );
                 }
                 else
                 {
+                    btnSyncContentChannelItems.Visible = false;
                     ShowEditDetails( mediaFolder );
                 }
             }
@@ -378,14 +405,31 @@ namespace RockWeb.Blocks.Cms
 
             lActionTitle.Text = mediaFolder.Name.FormatAsHtmlTitle();
 
+            hlSyncStatus.Visible = mediaFolder.IsContentChannelSyncEnabled;
+
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Account", mediaFolder.MediaAccount.Name );
+
+            if ( mediaFolder.IsContentChannelSyncEnabled )
+            {
+                descriptionList.Add( "Content Channel", mediaFolder.ContentChannel?.Name );
+                descriptionList.Add( "Content Channel Attribute", mediaFolder.ContentChannelAttribute?.Name );
+                descriptionList.Add( "Content Channel Item Status", mediaFolder.ContentChannelItemStatus?.ConvertToString() );
+            }
+
+            if ( mediaFolder.WorkflowTypeId.HasValue )
+            {
+                descriptionList.Add( "Workflow Type", mediaFolder.WorkflowType?.Name );
+            }
+
             if ( mediaFolder.Description.IsNotNullOrWhiteSpace() )
             {
                 descriptionList.Add( "Description", mediaFolder.Description );
             }
 
             lDescription.Text = descriptionList.Html;
+
+            lMetricData.Text = mediaFolder.MediaAccount.GetMediaAccountComponent()?.GetFolderHtmlSummary( mediaFolder );
         }
 
         /// <summary>
@@ -407,6 +451,8 @@ namespace RockWeb.Blocks.Cms
 
             tbName.Text = mediaFolder.Name;
             tbDescription.Text = mediaFolder.Description;
+            wtpWorkflowType.SetValue( mediaFolder.WorkflowTypeId );
+
             swEnableContentChannelSync.Checked = mediaFolder.IsContentChannelSyncEnabled;
             swEnableContentChannelSync_CheckedChanged( null, null );
             if ( mediaFolder.IsContentChannelSyncEnabled )
@@ -417,7 +463,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 ddlContentChannel_SelectedIndexChanged( null, null );
-                rrbContentChannelItemStatus.SetValue( mediaFolder.Status.ConvertToInt().ToString() );
+                rrbContentChannelItemStatus.SetValue( mediaFolder.ContentChannelItemStatus.ConvertToInt().ToString() );
                 if ( mediaFolder.ContentChannelAttributeId.HasValue )
                 {
                     ddlChannelAttribute.SetValue( mediaFolder.ContentChannelAttributeId.Value );

@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [Description( "Filter people based on their total contribution amount" )]
     [Export( typeof( DataFilterComponent ) )]
@@ -82,7 +82,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -99,17 +99,17 @@ function() {
     var accountPicker = $('.js-account-picker', $content);
     var accountNames = accountPicker.find('.selected-names').text()
 
-    var result = '';
+    var result = '';    
     if (combineGiving) {
         result += 'Combined Giving amount total ';
     }
     else {
         result += 'Giving amount total ';
     }
-    result += comparisonText.toLowerCase() + ' $' + totalAmount;
+    result += comparisonText.toLowerCase() + ' $' + totalAmount; 
     result += ' to accounts:' + accountNames;
     result += ' DateRange: ' + dateRangeText;
-
+    
 
     return result;
 }
@@ -428,7 +428,7 @@ function() {
                 {
                     // NOTE: Since we want people that have less than the specified, but also want to include people to didn't give anything at all (no transactions)
                     // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
-                    // way the filter will include people that had no transactions for the specified date/range and account
+                    // way the filter will include people that had no transactions for the specified date/range and account 
                     financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount >= amount );
                     excludePersonsWithTransactions = true;
                 }
@@ -493,7 +493,7 @@ function() {
                 {
                     // NOTE: Since we want people that have less than the specified, but also want to include people to didn't give anything at all (no transactions)
                     // make this query the same as the GreaterThan, but use it to EXCLUDE people that gave MORE than the specified amount. That
-                    // way the filter will include people that had no transactions for the specified date/range and account
+                    // way the filter will include people that had no transactions for the specified date/range and account 
                     financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount >= amount );
                     excludePersonsWithTransactions = true;
                 }

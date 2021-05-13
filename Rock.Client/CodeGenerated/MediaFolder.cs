@@ -41,6 +41,9 @@ namespace Rock.Client
         public int? ContentChannelId { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.ContentChannelItemStatus? ContentChannelItemStatus { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -76,7 +79,7 @@ namespace Rock.Client
         public string SourceKey { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.ContentChannelItemStatus? Status { get; set; }
+        public int? WorkflowTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -113,6 +116,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ContentChannelAttributeId = source.ContentChannelAttributeId;
             this.ContentChannelId = source.ContentChannelId;
+            this.ContentChannelItemStatus = source.ContentChannelItemStatus;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -124,7 +128,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.SourceData = source.SourceData;
             this.SourceKey = source.SourceKey;
-            this.Status = source.Status;
+            this.WorkflowTypeId = source.WorkflowTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -148,6 +152,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<MediaElement> MediaElements { get; set; }
+
+        /// <summary />
+        public WorkflowType WorkflowType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

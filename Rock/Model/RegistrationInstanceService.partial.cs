@@ -20,7 +20,7 @@ using System.Linq;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public partial class RegistrationInstanceService
     {

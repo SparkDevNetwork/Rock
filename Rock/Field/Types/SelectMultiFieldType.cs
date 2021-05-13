@@ -394,7 +394,7 @@ namespace Rock.Field.Types
             Expression comparison = null;
             if ( filterValues.Count > 1 )
             {
-                //// OR up the where clauses for each of the selected values
+                //// OR up the where clauses for each of the selected values 
                 // and make sure to wrap commas around things so we don't collide with partial matches
                 // so it'll do something like this:
                 //

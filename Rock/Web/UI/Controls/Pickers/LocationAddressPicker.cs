@@ -118,6 +118,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -145,6 +146,7 @@ namespace Rock.Web.UI.Controls
             {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( WarningBlock != null )
@@ -184,6 +186,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -392,6 +395,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _hfPanelIsVisible.Value.AsBooleanOrNull() ?? false;
             }
+
             set
             {
                 EnsureChildControls();
@@ -409,6 +413,7 @@ namespace Rock.Web.UI.Controls
             {
                 return base.Enabled;
             }
+
             set
             {
                 base.Enabled = value;

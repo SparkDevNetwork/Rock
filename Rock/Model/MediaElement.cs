@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Media;
@@ -34,6 +37,16 @@ namespace Rock.Model
     [DataContract]
     public partial class MediaElement : Model<MediaElement>
     {
+        #region Fields
+
+        /// <summary>
+        /// <c>true</c> if the <see cref="PostSaveChanges(Data.DbContext)"/> method
+        /// call will be for an add operation.
+        /// </summary>
+        private bool _saveOperationIsAdd;
+
+        #endregion
+
         #region Entity Properties
 
         /// <summary>
@@ -64,105 +77,97 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or set the duration of media element.
+        /// Gets or set the duration in seconds of media element.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Decimal"/> representing the duration of media element.
+        /// A integer representing the duration in seconds of media element.
         /// </value>
         [DataMember]
-        [DecimalPrecision( 18, 2 )]
-        public decimal? Duration { get; set; }
+        public int? DurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the source created date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was created on the provider.
         /// </summary>
         /// <value>
-        /// The source created date time.
+        /// The <see cref="DateTime"/> this instance was created on the provider.
         /// </value>
         public DateTime? SourceCreatedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source modified date time.
+        /// Gets or sets the <see cref="DateTime"/> this instance was modified on the provider.
         /// </summary>
         /// <value>
-        /// The source modified date time.
+        /// The <see cref="DateTime"/> this instance was modified on the provider.
         /// </value>
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the source data.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The source data.
+        /// The custom provider data for this instance.
         /// </value>
         [DataMember]
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source metric.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The source metric.
+        /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
-        public string SourceMetric { get; set; }
+        public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source key.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The source key.
+        /// The provider's unique identifier for this instance.
         /// </value>
         [DataMember]
         [MaxLength( 60 )]
         public string SourceKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the thumbnail data.
+        /// Gets or sets the thumbnail data JSON content that will stored
+        /// in the database.
         /// </summary>
         /// <value>
         /// The thumbnail data.
         /// </value>
         [DataMember]
-        public string ThumbnailData
+        public string ThumbnailDataJson
         {
             get
             {
-                return ThumbnailDatas.ToJson();
+                return ThumbnailData.ToJson();
             }
             set
             {
-                ThumbnailDatas = value.FromJsonOrNull<List<ThumbnailData>>() ?? new List<ThumbnailData>();
+                ThumbnailData = value.FromJsonOrNull<List<MediaElementThumbnailData>>() ?? new List<MediaElementThumbnailData>();
             }
         }
 
         /// <summary>
-        /// Gets or sets the media element data.
+        /// Gets or sets the file data JSON content that will be stored in
+        /// the database.
         /// </summary>
         /// <value>
-        /// The media element data.
+        /// The file data.
         /// </value>
         [DataMember]
-        public string MediaElementData
+        public string FileDataJson
         {
             get
             {
-                return MediaElementDatas.ToJson();
+                return FileData.ToJson();
             }
             set
             {
-                MediaElementDatas = value.FromJsonOrNull<List<MediaElementData>>() ?? new List<MediaElementData>();
+                FileData = value.FromJsonOrNull<List<MediaElementFileData>>() ?? new List<MediaElementFileData>();
             }
         }
-
-        /// <summary>
-        /// Gets or sets the download data.
-        /// </summary>
-        /// <value>
-        /// The download data.
-        /// </value>
-        [DataMember]
-        public string DownloadData { get; set; }
 
         #endregion
 
@@ -178,13 +183,15 @@ namespace Rock.Model
         public virtual MediaFolder MediaFolder { get; set; }
 
         /// <summary>
-        /// Gets or sets the media element data.
+        /// Gets or sets the media element file data. This contains all the
+        /// information about the different file URLs available for the user
+        /// to stream or download.
         /// </summary>
         /// <value>
-        /// The media element data.
+        /// The media element file data.
         /// </value>
         [NotMapped]
-        public virtual List<MediaElementData> MediaElementDatas { get; set; } = new List<MediaElementData>();
+        public virtual List<MediaElementFileData> FileData { get; set; } = new List<MediaElementFileData>();
 
         /// <summary>
         /// Gets or sets the thumbnail data.
@@ -193,11 +200,38 @@ namespace Rock.Model
         /// The thumbnail data.
         /// </value>
         [NotMapped]
-        public virtual List<ThumbnailData> ThumbnailDatas { get; set; } = new List<ThumbnailData>();
+        public virtual List<MediaElementThumbnailData> ThumbnailData { get; set; } = new List<MediaElementThumbnailData>();
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context this operation was called on.</param>
+        /// <param name="entry">The entry that identifies this entity in the change tracker.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            _saveOperationIsAdd = entry.State == EntityState.Added;
+
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context this operation was called on.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( _saveOperationIsAdd )
+            {
+                // We don't need to wait for this to complete.
+                Task.Run( () => MediaElementService.TriggerPostSaveTasks( this.Id ) );
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -225,7 +259,7 @@ namespace Rock.Model
         /// </summary>
         public MediaElementConfiguration()
         {
-            this.HasRequired( p => p.MediaFolder ).WithMany( p => p.MediaElements ).HasForeignKey( p => p.MediaFolderId ).WillCascadeOnDelete( true );
+            this.HasRequired( e => e.MediaFolder ).WithMany( f => f.MediaElements ).HasForeignKey( e => e.MediaFolderId ).WillCascadeOnDelete( true );
         }
     }
 

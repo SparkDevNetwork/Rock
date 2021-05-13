@@ -33,9 +33,9 @@ namespace Rock.Lava.Fluid
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static FluidValue ToFluidValue( this string input )
+        public static FluidValue ToFluidValue( this string input, TemplateOptions options )
         {
-            return FluidValue.Create( input );
+            return FluidValue.Create( input, options );
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Rock.Lava.Fluid
         /// <param name="name">An optional name for the parameter that describes the expected value.</param>
         /// <param name="defaultValue"></param>
         /// <returns></returns>
-        public static FluidValue GetArgumentOrDefault( this FilterArguments arguments, int ordinalPosition, string name, string defaultValue )
+        public static FluidValue GetArgumentOrDefault( this FilterArguments arguments, int ordinalPosition, string name, string defaultValue, TemplateOptions options )
         {
             // Check for named argument first.
             if ( !string.IsNullOrWhiteSpace( name )
@@ -87,37 +87,11 @@ namespace Rock.Lava.Fluid
 
             if ( !value.IsNil() )
             {
-                return FluidValue.Create( value );
+                return FluidValue.Create( value, options );
             }
 
             // Return default value
-            return FluidValue.Create( defaultValue );
-        }
-
-        /// <summary>
-        /// Get a filter argument from the arguments collection, or return a default value if the argument does not exist.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="ordinalPosition"></param>
-        /// <param name="name">An optional name for the parameter that describes the expected value.</param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public static bool GetArgumentValueOrDefault( this FilterArguments arguments, int ordinalPosition, string name, bool defaultValue = false )
-        {
-            return arguments.GetArgumentOrDefault( ordinalPosition, name, string.Empty ).AsBooleanOrDefault( defaultValue );
-        }
-
-        /// <summary>
-        /// Get a filter argument from the arguments collection, or return a default value if the argument does not exist.
-        /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="ordinalPosition"></param>
-        /// <param name="name">An optional name for the parameter that describes the expected value.</param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public static int GetArgumentValueOrDefault( this FilterArguments arguments, int ordinalPosition, string name, int defaultValue = 0 )
-        {
-            return arguments.GetArgumentOrDefault( ordinalPosition, name, string.Empty ).AsIntegerOrDefault( defaultValue );
+            return FluidValue.Create( defaultValue, options );
         }
 
         /// <summary>

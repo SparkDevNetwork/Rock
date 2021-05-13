@@ -24,7 +24,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "RegistrationRegistrantFee" )]
@@ -144,7 +144,7 @@ namespace Rock.Model
         public decimal DiscountedCost ( decimal discountPercent )
         {
             var discountedCost = TotalCost;
-
+            
             if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies && ( RegistrationRegistrant == null || RegistrationRegistrant.DiscountApplies ) )
             {
                 discountedCost = discountedCost - ( discountedCost * discountPercent );
