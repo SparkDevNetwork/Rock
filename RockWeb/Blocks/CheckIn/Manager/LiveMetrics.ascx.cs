@@ -843,7 +843,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 foreach ( var groupLoc in attendanceList
                         .Where( a =>
                             a.PersonAliasId.HasValue &&
-                            schedules.Any( b => b.Id == a.Occurrence.ScheduleId.Value ) )
+                            schedules.Where( b => b.IsCheckInActive ).Any( b => b.Id == a.Occurrence.ScheduleId.Value ) )
                         .GroupBy( a => new
                         {
                             GroupId = a.Occurrence.GroupId.Value,
@@ -1367,6 +1367,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             a.DidAttend.HasValue &&
                             a.DidAttend.Value &&
                             a.Occurrence.ScheduleId.HasValue )
+                        .AsEnumerable()
+                        .Where( a => a.IsCurrentlyCheckedIn )
                         .ToList();
 
                     int? scheduleId = CurrentScheduleId.AsIntegerOrNull();
