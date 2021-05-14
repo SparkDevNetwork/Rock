@@ -41,6 +41,7 @@ var Rock;
                 if (this.options.mediaUrl === "") {
                     throw "Required mediaUrl option was not specified.";
                 }
+                this.options.mediaUrl = this.translateWellKnownUrls(this.options.mediaUrl);
                 if (this.options.type !== "video" && this.options.type !== "audio") {
                     this.options.type = this.isAudio(this.options.mediaUrl) ? "audio" : "video";
                 }
@@ -174,6 +175,19 @@ var Rock;
                 var pattern = /https?:\/\/player\.vimeo\.com\/video\/([^\?]+)\??/i;
                 var match = pattern.exec(url);
                 return match !== null;
+            };
+            MediaPlayer.prototype.translateWellKnownUrls = function (url) {
+                var youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
+                var vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+                var match = youTubePattern.exec(url);
+                if (match !== null) {
+                    return "https://www.youtube.com/embed/" + match[1];
+                }
+                match = vimeoPattern.exec(url);
+                if (match !== null) {
+                    return "https://player.vimeo.com/video/" + match[1];
+                }
+                return url;
             };
             MediaPlayer.prototype.markBitWatched = function () {
                 var playBit = Math.floor(this.player.currentTime);

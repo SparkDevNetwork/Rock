@@ -229,7 +229,9 @@ it work with your site. Let's take a look at how simple this shortcode is to use
 <pre>{[ mediaplayer src:'https://rockrms.blob.core.windows.net/sampledata/podcasting/money-wise.mp4' ]}{[ endmediaplayer ]}</pre>
 
 <p>Isn't that easy? With just that much you get a simple media player on screen
-that the user can use to watch a video.</p>
+that the user can use to watch a video. Better still, you can also use this to
+embed Vimeo and YouTube videos. Just use the same URL you use in the browser to
+watch the video in the src parameter.</p>
 
 <p>What is even more amazing is when you use this shortcode along with the
 media system in Rock. By passing either the Id number or Guid of a media element

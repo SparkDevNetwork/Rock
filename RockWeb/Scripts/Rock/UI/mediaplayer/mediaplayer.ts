@@ -281,6 +281,9 @@ namespace Rock.UI {
                 throw "Required mediaUrl option was not specified.";
             }
 
+            // Update the URL if it needs to be translated.
+            this.options.mediaUrl = this.translateWellKnownUrls(this.options.mediaUrl);
+
             // Auto-detect the media type if it hasn't been specified.
             if (this.options.type !== "video" && this.options.type !== "audio") {
                 this.options.type = this.isAudio(this.options.mediaUrl) ? "audio" : "video";
@@ -502,6 +505,35 @@ namespace Rock.UI {
             const match = pattern.exec(url);
 
             return match !== null;
+        }
+
+        /**
+         * Examines the URL and translates well known browser URLS into
+         * their embed versions. For example, if a user copies and pastes
+         * a YouTube URL from their browser it will be translated into the
+         * embed version of the URL.
+         * 
+         * @param url The URL to be translated if we know what it is.
+         * @returns A modified URL if it was translated or the original url if not.
+         */
+        private translateWellKnownUrls(url: string) {
+            // https://www.youtube.com/watch?v=uQpLrumQP0E
+            const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
+            const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+
+            // Check if this URL looks like a standard YouTube link from the browser.
+            let match = youTubePattern.exec(url);
+            if (match !== null) {
+                return `https://www.youtube.com/embed/${match[1]}`;
+            }
+
+            // Check if this URL looks like a standard Vimeo link from the browser.
+            match = vimeoPattern.exec(url);
+            if (match !== null) {
+                return `https://player.vimeo.com/video/${match[1]}`;
+            }
+
+            return url;
         }
 
         /**
