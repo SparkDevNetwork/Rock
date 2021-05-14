@@ -33,33 +33,24 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of groups that a person is configured to checkin to.")]
 
-    [TextField( "Sub Title",
-        Key = AttributeKey.Subtitle,
-        Description = "Sub-Title to display. Use {0} for selected group type name.",
-        IsRequired = false,
-        DefaultValue = "{0}",
-        Category = "Text",
-        Order = 8 )]
-
     [TextField( "Caption",
         Key = AttributeKey.Caption,
         IsRequired = false,
         DefaultValue = "Select Group",
         Category = "Text",
-        Order = 9 )]
+        Order = 8 )]
 
     [TextField( "No Option Message",
         Key = AttributeKey.NoOptionMessage,
         IsRequired = false,
         DefaultValue = "Sorry, no one in your family is eligible to check-in at this location.",
         Category = "Text",
-        Order = 10 )]
+        Order = 9 )]
 
     public partial class GroupSelect : CheckInBlockMultiPerson
     {
         private new static class AttributeKey
         {
-            public const string Subtitle = "SubTitle";
             public const string Caption = "Caption";
             public const string NoOptionMessage = "NoOptionMessage";
         }
@@ -184,11 +175,11 @@ namespace RockWeb.Blocks.CheckIn
 
                     lTitle.Text = GetTitleText();
 
-                    string groupTypeNames = groupTypes
-                        .Where( t => t.GroupType != null )
-                        .Select( t => t.GroupType.Name )
-                        .ToList().AsDelimited( ", " );
-                    lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), groupTypeNames );
+                    //string groupTypeNames = groupTypes
+                    //    .Where( t => t.GroupType != null )
+                    //    .Select( t => t.GroupType.Name )
+                    //    .ToList().AsDelimited( ", " );
+                    //lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), groupTypeNames );
 
                     lCaption.Text = GetAttributeValue( AttributeKey.Caption );
                     var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
@@ -267,7 +258,7 @@ namespace RockWeb.Blocks.CheckIn
         private string GetTitleText()
         {
             var checkinPerson = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
-            var selectedGroup = checkinPerson.SelectedGroupTypes( checkinPerson.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson.CurrentSchedule ).FirstOrDefault()?.Group;
+            var selectedGroup = checkinPerson?.SelectedGroupTypes( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.Group;
             var selectedArea = CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.Where( a => a.Selected ).FirstOrDefault()?.GroupType
                 ?? CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.FirstOrDefault()?.GroupType;
 
@@ -276,10 +267,10 @@ namespace RockWeb.Blocks.CheckIn
                 { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
                 { LavaMergeFieldName.Individual, checkinPerson?.Person },
                 { LavaMergeFieldName.SelectedArea, selectedArea },
-                { LavaMergeFieldName.SelectedGroup, selectedGroup }
+                { LavaMergeFieldName.SelectedSchedule, checkinPerson?.CurrentSchedule?.Schedule }
             };
 
-            var abilityLevelSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.AbilityLevelSelectHeaderLavaTemplate ?? string.Empty;
+            var abilityLevelSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.GroupSelectHeaderLavaTemplate ?? string.Empty;
             return abilityLevelSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
