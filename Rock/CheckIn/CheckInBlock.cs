@@ -147,6 +147,11 @@ namespace Rock.CheckIn
             /// Lava Merge field 'SelectedSchedule' is a Schedule and is the current selected schedule.
             /// </summary>
             public const string SelectedSchedule = "SelectedSchedule";
+
+            /// <summary>
+            /// Lava Merge field 'SelectedLocation' is a Location and is the current selected location.
+            /// </summary>
+            public const string SelectedLocation = "SelectedLocation";
         }
 
         #region Page Parameter Keys
