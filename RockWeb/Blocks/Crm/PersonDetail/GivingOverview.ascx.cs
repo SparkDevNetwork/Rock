@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             kpi += GetKpiShortCode( "Gifts Last 12 Months", last12MonthCount.ToStringSafe() );
             kpi += GetKpiShortCode( "Gifts Last 90 Days", last90DaysGifts.Count().ToStringSafe() );
-            lLastGiving.Text = string.Format( @"{{[kpis size:'lg' columnmin:'220px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
+            lLastGiving.Text = string.Format( @"{{[kpis size:'lg' columnmin:'200px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
 
             GetGivingAnalyticsKPI( rockContext );
 
@@ -443,7 +443,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     hasAlertListLink ? "</a>" : string.Empty ), // 3
                 icon: "fa-fw fa-comment-alt" ) );
 
-            lGivingAnalytics.Text = string.Format( @"{{[kpis columnmin:'220px' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
+            lGivingAnalytics.Text = string.Format( @"{{[kpis columnmin:'200px' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
         }
 
         private string GetKpiShortCode( string label, string value, string subValue = "", string icon = "", string textAlign = "" )
