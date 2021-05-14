@@ -31,7 +31,9 @@ namespace Rock.Migrations
         {
             DeleteOldBlockTitleAttributes();
             UpdateGroupSelectHeaderTemplate();
-
+            CreateGroupTypeSelectHeaderTemplate();
+            CreateLocationSelectHeaderTemplate();
+            CreateTimeSelectHeaderTemplate();
         }
         
         /// <summary>
@@ -82,15 +84,14 @@ namespace Rock.Migrations
 {{ Family }} which is a Group object and is the current family.
 {{ Individual }} which is a Person object and is the current selected person.
 {{ SelectedArea }} is a GroupType object and corresponds to the selected check-in Area listed in Areas and Groups.
-{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups.
 {{ SelectedSchedule}} is a Schedule object and is the current selected schedule.",
                 1061,
                 @"{{ Individual.FullName }}
-{% if SelectedArea != empty && SelectedSchedule != empty %}
+{% if SelectedArea != null && SelectedSchedule != null %}
    <div class=""checkin-sub-title"">{{ SelectedArea.Name }} @ {{ SelectedSchedule.Name }}</div>
-{% elseif SelectedSchedule != empty %}
+{% elseif SelectedSchedule != null %}
     <div class=""checkin-sub-title"">{{ SelectedSchedule.Name }}</div>
-{% elseif SelectedArea != empty %}
+{% elseif SelectedArea != null %}
     <div class=""checkin-sub-title"">{{ SelectedArea.Name }}</div>
 {% endif %}",
                 "81236834-ED01-4377-95C7-923EA4A6B803",
@@ -112,10 +113,9 @@ namespace Rock.Migrations
 {{ Individual }} which is a Person object and is the current selected person.
 {{ SelectedSchedule}} is a Schedule object and is the current selected schedule.",
                 1062,
-                @"{% if SelectedSchedule != empty %}
-    {{ Individual.FullName }} @ {{ SelectedSchedule.Name }}
-{% else %}}
-    {{ Individual.FullName }}
+                @"{{ Individual.FullName }}
+{% if SelectedSchedule != null %}
+    <div class=""checkin-sub-title"">{{ SelectedSchedule.Name }}</div>
 {% endif %}",
                 "DE20567B-BB5D-4E12-8B83-6ADCB92FB4CA",
                 "core_checkin_GroupTypeSelectHeaderLavaTemplate");
@@ -136,10 +136,13 @@ namespace Rock.Migrations
 {{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups.
 {{ SelectedSchedule}} is a Schedule object and is the current selected schedule.",
                 1063,
-                @"{% if SelectedSchedule != empty %}
-    {{ Individual.FullName }} @ {{ SelectedSchedule.Name }}
-{% else %}}
-    {{ Individual.FullName }}
+                @"{{ Individual.FullName }}
+{% if SelectedGroup != null && SelectedSchedule != null %}
+   <div class=""checkin-sub-title"">{{ SelectedGroup.Name }} @ {{ SelectedSchedule.Name }}</div>
+{% elseif SelectedSchedule != null %}
+    <div class=""checkin-sub-title"">{{ SelectedSchedule.Name }}</div>
+{% elseif SelectedGroup != null %}
+    <div class=""checkin-sub-title"">{{ SelectedGroup.Name }}</div>
 {% endif %}",
                 "44A8BBF1-354D-4581-B6E8-189FEEBFF45F",
                 "core_checkin_LocationSelectHeaderLavaTemplate");
@@ -157,13 +160,18 @@ namespace Rock.Migrations
                 @"Lava template to use for the 'Time Select' check-in block header. The available merge fields are:
 {{ Family }} which is a Group object and is the current family.
 {{ SelectedIndividuals }} is a list of Person objects which contains all of the currently selected persons.
-{{ CheckinType }} is the type of check-in given as a string which will be either 'Family' or 'Individual'.",
+{{ CheckinType }} is the type of check-in given as a string which will be either 'Family' or 'Individual'.
+{{ SelectedGroup }} is a Group object and corresponds to the selected check-in group listed in Areas and Groups. This only applies for individual checkin types.
+{{ SelectedLocation }} is a Location and corresponds to the selected location for the group. This only applies for individual checkin types.",
                 1066,
                 @"{% if CheckinType == 'Family' %}
     {{ Family.Name }}
 {% else %}
     {% assign selectedIndividual = SelectedIndividuals | First %}
     {{ selectedIndividual.FullName }}
+{% endif %}
+{% if SelectedGroup != null %}
+    <div class=""checkin-sub-title"">{{ SelectedGroup.Name }} - {{ SelectedLocation.Name }}</div>
 {% endif %}",
                 "90D9CAEA-843B-4D32-84CF-E25A3258087F",
                 "core_checkin_TimeSelectHeaderLavaTemplate" );
