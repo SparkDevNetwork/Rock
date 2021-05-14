@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Finance
                 .Where( r => r.PersonAlias != null && r.PersonAlias.Person != null );
             if ( isEdit )
             {
-                registrationName += string.Format( "- {0} - {1}", registration.CreatedDateTime.ToShortDateString(), registrantNames.Select( a => a.Person.NickName ).ToList().AsDelimited( "," ) );
+                registrationName += string.Format( "- {0} - {1}", registration.CreatedDateTime.ToShortDateString(), registrantNames.Select( a => a.Person.NickName ).ToList().AsDelimited( ", " ) );
             }
             else
             {
