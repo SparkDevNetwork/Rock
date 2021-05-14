@@ -657,6 +657,7 @@ namespace Rock.WebStartup
 
                 Template.FileSystem = new LavaFileSystem();
 
+                Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
                 Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
             }
             else
@@ -676,12 +677,18 @@ namespace Rock.WebStartup
                 // Initialize Lava extensions.
                 var engine = LavaEngine.CurrentEngine;
 
-                engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
-
-                InitializeLavaShortcodes( engine );
-                InitializeLavaBlocks( engine );
+                InitializeLavaFilters( engine );
                 InitializeLavaTags( engine );
+                InitializeLavaBlocks( engine );
+                InitializeLavaShortcodes( engine );
             }
+        }
+
+        private static void InitializeLavaFilters( ILavaEngine engine )
+        {
+            // Register the common Rock.Lava filters first, then overwrite with the engine-specific filters.
+            engine.RegisterFilters( typeof( Rock.Lava.Filters.TemplateFilters ) );
+            engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
         }
 
         private static void InitializeLavaShortcodes( ILavaEngine engine )
