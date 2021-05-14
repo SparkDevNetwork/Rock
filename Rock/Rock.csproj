@@ -624,6 +624,8 @@
     <Compile Include="Financial\IRedirectionGateway.cs" />
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
+    <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
@@ -657,6 +659,7 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
+    <Compile Include="Media\MediaWatchedInteractionData.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
