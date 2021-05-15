@@ -823,6 +823,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
 
                 var attendanceList = attendanceQry
+                    .AsNoTracking()
+                    .AsEnumerable()
                     .Select( s => new
                     {
                         s.PersonAliasId,
@@ -830,6 +832,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         s.EndDateTime,
                         s.StartDateTime,
                         s.PresentDateTime,
+                        s.IsCurrentlyCheckedIn,
                         Occurrence = new
                         {
                             s.Occurrence.ScheduleId,
@@ -838,12 +841,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         }
                     }
                     )
-                    .AsNoTracking().ToList();
+                    .ToList();
 
                 foreach ( var groupLoc in attendanceList
                         .Where( a =>
                             a.PersonAliasId.HasValue &&
-                            schedules.Where( b => b.IsCheckInActive ).Any( b => b.Id == a.Occurrence.ScheduleId.Value ) )
+                            a.IsCurrentlyCheckedIn &&
+                            schedules.Any( b => b.Id == a.Occurrence.ScheduleId.Value ) )
                         .GroupBy( a => new
                         {
                             GroupId = a.Occurrence.GroupId.Value,
@@ -901,6 +905,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     foreach ( var groupLocSched in attendanceList
                         .Where( a =>
                             a.StartDateTime < chartTime &&
+                            ( !a.EndDateTime.HasValue || ( a.EndDateTime.HasValue && a.EndDateTime > chartTime ) ) &&
                             a.PersonAliasId.HasValue &&
                             activeSchedules.Contains( a.Occurrence.ScheduleId.Value ) )
                         .GroupBy( a => new
