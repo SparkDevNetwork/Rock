@@ -29,6 +29,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -566,6 +567,7 @@ namespace Rock.Model
             }
 
             // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
             if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
             {
                 DataViewService.AddRunDataViewTransaction( Id );
