@@ -2207,6 +2207,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;
