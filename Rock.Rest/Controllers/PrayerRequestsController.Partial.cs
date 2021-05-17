@@ -26,7 +26,7 @@ using Rock.Rest.Filters;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public partial class PrayerRequestsController
     {
@@ -119,7 +119,7 @@ namespace Rock.Rest.Controllers
 
             Service.Context.SaveChanges();
         }
-
+        
         /// <summary>
         /// Increment the prayer count for a prayer request
         /// </summary>

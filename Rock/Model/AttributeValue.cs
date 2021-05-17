@@ -36,7 +36,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a value of an <see cref="Rock.Model.Attribute"/>.
+    /// Represents a value of an <see cref="Rock.Model.Attribute"/>. 
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AttributeValue" )]
@@ -97,9 +97,9 @@ namespace Rock.Model
         public int AttributeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each
-        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured
-        /// with a different value on each <see cref="Rock.Model.Block"/> that implements the <see cref="Rock.Model.BlockType"/>. This value will either be 0 or null for global attributes or attributes that have a
+        /// Gets or sets the Id of the entity instance that uses this AttributeValue. An <see cref="Rock.Model.Attribute"/> is a configuration setting, so each 
+        /// instance of the Entity that uses the same Attribute can have a different value.  For instance a <see cref="Rock.Model.BlockType"/> has a declared attribute, and that attribute can be configured 
+        /// with a different value on each <see cref="Rock.Model.Block"/> that implements the <see cref="Rock.Model.BlockType"/>. This value will either be 0 or null for global attributes or attributes that have a 
         /// constant across all instances of an EntityType.
         /// </summary>
         /// <value>
@@ -180,7 +180,7 @@ namespace Rock.Model
         /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
         /// </summary>
         /// <remarks>
-        /// see tgrAttributeValue_InsertUpdate
+        /// see tgrAttributeValue_InsertUpdate                                                                                    
         /// </remarks>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
@@ -203,10 +203,10 @@ namespace Rock.Model
         /// </summary>
         /// <remarks>
         /// Computed Column Spec:
-        /// case
-        ///     when [Value] like '________-____-____-____-____________'
-        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value])
-        ///     else null
+        /// case 
+        ///     when [Value] like '________-____-____-____-____________' 
+        ///         then [dbo].[ufnUtility_GetPersonIdFromPersonAliasGuid]([Value]) 
+        ///     else null 
         /// end
         /// </remarks>
         [DataMember]
@@ -281,7 +281,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the name of the attribute
+        /// Gets the name of the attribute 
         /// </summary>
         /// <remarks>
         /// Note: this property is provided specifically for Lava templates when the Attribute property is not available

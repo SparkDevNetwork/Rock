@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -100,83 +101,71 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lConnectionOpportunityList = e.Item.FindControl( "lConnectionOpportunityList" ) as Literal;
             if ( lConnectionOpportunityList != null )
             {
-                var connectionType = e.Item.DataItem as ConnectionType;
+                var connectRequest = e.Item.DataItem as ConnectionRequestViewModel;
 
-                if ( connectionType != null && this.Person != null )
+                if ( connectRequest != null && this.Person != null )
                 {
                     var pageGuid = this.GetAttributeValue( AttributeKey.ConnectionRequestDetail ).AsGuidOrNull();
                     PageReference connectionRequestDetailPage = null;
 
                     if ( GetAttributeValue( AttributeKey.UseConnectionRequestDetailPageFromConnectionType ).AsBoolean() &&
-                         ( connectionType.ConnectionRequestDetailPageId.HasValue || connectionType.ConnectionRequestDetailPageRouteId.HasValue ) )
+                         ( connectRequest.ConnectionRequestDetailPageId.HasValue || connectRequest.ConnectionRequestDetailPageRouteId.HasValue ) )
                     {
-                        connectionRequestDetailPage = new PageReference( connectionType.ConnectionRequestDetailPageId ?? 0, connectionType.ConnectionRequestDetailPageRouteId ?? 0 );
+                        connectionRequestDetailPage = new PageReference( connectRequest.ConnectionRequestDetailPageId ?? 0, connectRequest.ConnectionRequestDetailPageRouteId ?? 0 );
                     }
-                    else if( pageGuid.HasValue )
+                    else if ( pageGuid.HasValue )
                     {
                         connectionRequestDetailPage = new PageReference( pageGuid.Value.ToString() );
                     }
 
-                    using ( var rockContext = new RockContext() )
+                    string listHtml = string.Empty;
+                    string connectionNameHtml;
+                    string connectionName;
+
+                    if ( connectRequest.CampusId.HasValue )
                     {
-                        string listHtml = string.Empty;
 
-                        int personId = this.Person.Id;
-                        var connectionRequestService = new ConnectionRequestService( rockContext );
-                        var connectionRequestQuery = connectionRequestService
-                            .Queryable()
-                            .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunity.ConnectionTypeId == connectionType.Id );
-
-                        var hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
-
-                        if ( hideInactive )
-                        {
-                            connectionRequestQuery = connectionRequestQuery
-                                .Where( r => r.ConnectionState == ConnectionState.Active ||
-                                    ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow ) );
-                        }
-
-                        var connectionRequestList = connectionRequestQuery
-                            .OrderBy( a => a.ConnectionOpportunity.Name )
-                            .AsNoTracking()
-                            .ToList();
-
-                        foreach ( var connectionRequest in connectionRequestList )
-                        {
-                            string connectionNameHtml;
-                            string connectionName;
-                            if ( connectionRequest.CampusId.HasValue )
-                            {
-
-                                connectionName = string.Format( "{0} ({1})", connectionRequest.ConnectionOpportunity, CampusCache.Get( connectionRequest.CampusId.Value ) );
-                            }
-                            else
-                            {
-                                connectionName = string.Format( "{0}", connectionRequest.ConnectionOpportunity );
-                            }
-
-                            if ( connectionRequestDetailPage != null && connectionRequestDetailPage.PageId > 0 )
-                            {
-                                connectionRequestDetailPage.Parameters = new System.Collections.Generic.Dictionary<string, string>();
-                                connectionRequestDetailPage.Parameters.Add( "ConnectionRequestId", connectionRequest.Id.ToString() );
-                                connectionRequestDetailPage.Parameters.Add( "ConnectionOpportunityId", connectionRequest.ConnectionOpportunityId.ToString() );
-
-                                connectionNameHtml = string.Format( "<a href='{0}'>{1}</a>", connectionRequestDetailPage.BuildUrl(), connectionName );
-                            }
-                            else
-                            {
-                                connectionNameHtml = connectionName;
-                            }
-
-                            listHtml += string.Format(
-                                "<li {0}>{1} - <small>{2}</small></li>",
-                                ( connectionRequest.ConnectionState == ConnectionState.Connected || connectionRequest.ConnectionState == ConnectionState.Inactive ) ? "class='is-inactive'" : string.Empty,
-                                connectionNameHtml,
-                                connectionRequest.ConnectionState == ConnectionState.Connected ? "Connected" : connectionRequest.ConnectionStatus.ToString() );
-                        }
-
-                        lConnectionOpportunityList.Text = listHtml;
+                        connectionName = string.Format( "{0} ({1})", connectRequest.ConnectionOpportunity, CampusCache.Get( connectRequest.CampusId.Value ) );
                     }
+                    else
+                    {
+                        connectionName = string.Format( "{0}", connectRequest.ConnectionOpportunity );
+                    }
+
+                    if ( connectionRequestDetailPage != null && connectionRequestDetailPage.PageId > 0 )
+                    {
+                        connectionRequestDetailPage.Parameters = new System.Collections.Generic.Dictionary<string, string>();
+                        connectionRequestDetailPage.Parameters.Add( "ConnectionRequestId", connectRequest.ConnectionRequestId.ToString() );
+                        connectionRequestDetailPage.Parameters.Add( "ConnectionOpportunityId", connectRequest.ConnectionOpportunity.Id.ToString() );
+
+                        connectionNameHtml = string.Format( "<a href='{0}'>{1}</a>", connectionRequestDetailPage.BuildUrl(), connectionName );
+                    }
+                    else
+                    {
+                        connectionNameHtml = connectionName;
+                    }
+
+                    listHtml += string.Format(
+                        "<li {0}>{1} - <small>{2}</small></li>",
+                        ( connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected || connectRequest.ConnectionRequestConnectionState == ConnectionState.Inactive ) ? "class='is-inactive'" : string.Empty,
+                        connectionNameHtml,
+                        connectRequest.ConnectionRequestConnectionState == ConnectionState.Connected ? "Connected" : connectRequest.ConnectionStatus.ToString() );
+
+                    var isFirstRow = _currentConnectionTypeId == 0;
+                    if ( ShowNewConnectionType( connectRequest.ConnectionType.Id ) )
+                    {
+                        var headerHtml = @"<li>
+                                <span class=""control-label"">" + connectRequest.ConnectionType.Name + @"</span>
+                                  <ul class=""connectionopportunity-list list-unstyled margin-l-md"">";
+
+                        if ( !isFirstRow )
+                        {
+                            // Close previous connection type.
+                            headerHtml = "</ul></li>" + headerHtml;
+                        }
+                        listHtml = headerHtml + listHtml;
+                    }
+                    lConnectionOpportunityList.Text = listHtml;
                 }
             }
         }
@@ -190,33 +179,76 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                bool hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
-                var rockContext = new RockContext();
-                var connectionTypeService = new ConnectionTypeService( rockContext );
-                var connectionTypesQry = connectionTypeService
-                    .Queryable();
-
-                if ( hideInactive )
+                var hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
+                using ( var rockContext = new RockContext() )
                 {
-                    connectionTypesQry = connectionTypesQry
-                        .Where( t => t.ConnectionOpportunities.Any( o => o.IsActive == true ) )
-                        .Where( t => t.ConnectionOpportunities
-                        .Any( o => o.ConnectionRequests
-                            .Any( r => r.PersonAlias.PersonId == Person.Id && ( r.ConnectionState == ConnectionState.Active ||
-                                ( r.ConnectionState == ConnectionState.FutureFollowUp && r.FollowupDate.HasValue && r.FollowupDate.Value <= _midnightTomorrow ) ) ) ) );
-                }
-                else
-                {
-                    connectionTypesQry = connectionTypesQry.Where( t => t.ConnectionOpportunities.Any( o => o.ConnectionRequests.Any( r => r.PersonAlias.PersonId == Person.Id ) ) );
-                }
+                    var connectionTypeService = new ConnectionTypeService( rockContext );
+                    var connectionTypesQry = connectionTypeService.Queryable();
 
-                var connectionTypesList = connectionTypesQry.OrderBy( a => a.Name ).AsNoTracking().ToList();
+                    var connectionTypesList = connectionTypesQry
+                        .SelectMany( ct => ct.ConnectionOpportunities )
+                        .SelectMany( co => co.ConnectionRequests )
+                        .Select( cr => new ConnectionRequestViewModel
+                        {
+                            ConnectionType = cr.ConnectionOpportunity.ConnectionType,
+                            CampusId = cr.CampusId,
+                            ConnectionRequestId = cr.Id,
+                            ConnectionRequestConnectionState = cr.ConnectionState,
+                            ConnectionOpportunity = cr.ConnectionOpportunity,
+                            ConnectionRequestDetailPageId = cr.ConnectionOpportunity.ConnectionType.ConnectionRequestDetailPageId,
+                            ConnectionRequestDetailPageRouteId = cr.ConnectionOpportunity.ConnectionType.ConnectionRequestDetailPageRouteId,
+                            ConnectionStatus = cr.ConnectionStatus,
+                            ConnectionState = cr.ConnectionState,
+                            PersonId = cr.PersonAlias.PersonId,
+                            IsActive = cr.ConnectionOpportunity.IsActive,
+                            FollowupDate = cr.FollowupDate,
+                        } )
+                        .Where( crvm => crvm.PersonId == Person.Id );
 
-                rConnectionTypes.DataSource = connectionTypesList.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).ToList();
-                rConnectionTypes.DataBind();
+                    if ( hideInactive )
+                    {
+                        connectionTypesList = connectionTypesList
+                            .Where( t => t.IsActive )
+                            .Where( t => t.ConnectionState == ConnectionState.Active ||
+                                            ( t.ConnectionState == ConnectionState.FutureFollowUp && t.FollowupDate.HasValue && t.FollowupDate.Value <= _midnightTomorrow ) );
+                    }
+
+                    rConnectionTypes.DataSource = connectionTypesList
+                        .ToList()
+                        .Where( crm => crm.ConnectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        .Where( crm => crm.ConnectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        .OrderBy( a => a.ConnectionType.Name );
+                    rConnectionTypes.DataBind();
+                }
             }
         }
 
+        private int _currentConnectionTypeId = 0;
+        protected bool ShowNewConnectionType(int connectionTypeId )
+        {
+            if(_currentConnectionTypeId == connectionTypeId )
+            {
+                return false;
+            }
+            _currentConnectionTypeId = connectionTypeId;
+            return true;
+        }
         #endregion Methods
+
+        protected class ConnectionRequestViewModel
+        {
+            public int? CampusId { get; set; }
+            public int ConnectionRequestId { get; set; }
+            public ConnectionState ConnectionRequestConnectionState { get; set; }
+            public ConnectionOpportunity ConnectionOpportunity { get; set; }
+            public int? ConnectionRequestDetailPageId { get; set; }
+            public int? ConnectionRequestDetailPageRouteId { get; set; }
+            public ConnectionStatus ConnectionStatus { get; set; }
+            public int PersonId { get; set; }
+            public bool IsActive { get; set; }
+            public ConnectionState ConnectionState { get; set; }
+            public DateTime? FollowupDate { get; set; }
+            public ConnectionType ConnectionType { get; set; }
+        }
     }
 }

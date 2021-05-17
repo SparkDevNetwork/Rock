@@ -37,7 +37,7 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public DataViewFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) :
+        public DataViewFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) : 
             base( name, description, required, defaultValue, category, order, key, typeof( DataViewFieldType ).FullName )
         {
             if ( !string.IsNullOrWhiteSpace( entityTypeName ) )

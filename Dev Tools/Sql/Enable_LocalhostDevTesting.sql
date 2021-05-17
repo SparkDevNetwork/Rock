@@ -144,6 +144,10 @@ BEGIN
            ,null)
 END
 
+
+-- Remove the Printer to  for 'Main Campus: Central Kiosk' so that Checkin doesn't spend a bunch of time trying to print to a printer that doesn't exist
+Update [Device] set PrinterDeviceId = null where [Guid] = '61111232-01D7-427D-9C1F-D45CF4D3F7CB' and PrinterDeviceId is not null
+
 /*
 
 --

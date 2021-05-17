@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -65,7 +66,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipients" )]
-        public List<StatementGeneratorRecipient> GetStatementGeneratorRecipients( [FromBody]StatementGeneratorOptions options )
+        public List<StatementGeneratorRecipient> GetStatementGeneratorRecipients( [FromBody] StatementGeneratorOptions options )
         {
             if ( options == null )
             {
@@ -93,9 +94,9 @@ namespace Rock.StatementGenerator.Rest
                         GroupId = a.Value
                     } ).Distinct();
 
-                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.
-                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order
-                // to determine which address(es) the statements need to be mailed to
+                // Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
+                // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
+                // to determine which address(es) the statements need to be mailed to 
                 var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
                 var groupMembersQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
 
@@ -257,7 +258,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, ( Guid? ) null, options );
         }
@@ -272,7 +273,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, personId, ( Guid? ) null, options );
         }
@@ -287,7 +288,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, Guid? locationGuid, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
             return GetStatementGeneratorRecipientResult( groupId, ( int? ) null, locationGuid, options );
         }
@@ -309,7 +310,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialTransactions/GetStatementGeneratorRecipientResult" )]
-        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, [FromBody]StatementGeneratorOptions options )
+        public StatementGeneratorRecipientResult GetStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, [FromBody] StatementGeneratorOptions options )
         {
             if ( options == null )
             {
@@ -427,7 +428,23 @@ namespace Rock.StatementGenerator.Rest
                 var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
                 mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
-                var familyTitle = Rock.Data.RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, personId, groupId, null, false, !options.ExcludeInActiveIndividuals );
+                string familyTitle;
+                if ( person != null && person.PrimaryFamilyId == groupId )
+                {
+                    // this is how familyTitle should able to be determined in most cases
+                    familyTitle = person.PrimaryFamily.GroupSalutation;
+                }
+                else
+                {
+                    // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
+                    familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                }
+
+                if ( familyTitle.IsNullOrWhiteSpace() )
+                {
+                    // shouldn't happen, just in case the familyTitle is blank, just return the person's name
+                    familyTitle = person.FullName;
+                }
 
                 mergeFields.Add( "Salutation", familyTitle );
 
@@ -605,10 +622,10 @@ namespace Rock.StatementGenerator.Rest
                     //// Pledges but organized by Account (in case more than one pledge goes to the same account)
                     //// NOTE: In the case of multiple pledges to the same account (just in case they accidently or intentionally had multiple pledges to the same account)
                     ////  -- Date Range
-                    ////    -- StartDate: Earliest StartDate of all the pledges for that account
+                    ////    -- StartDate: Earliest StartDate of all the pledges for that account 
                     ////    -- EndDate: Lastest EndDate of all the pledges for that account
                     ////  -- Amount Pledged: Sum of all Pledges to that account
-                    ////  -- Amount Given:
+                    ////  -- Amount Given: 
                     ////    --  The sum of transaction amounts to that account between
                     ////      -- Start Date: Earliest Start Date of all the pledges to that account
                     ////      -- End Date: Whatever is earlier (Statement End Date or Pledges' End Date)

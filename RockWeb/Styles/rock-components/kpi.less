@@ -51,6 +51,7 @@
   margin: 0 8px 16px;
   font-size: 26px;
   color: #aeaeae;
+  overflow-y: hidden;
 }
 
 .kpi-card {
@@ -111,8 +112,6 @@
   vertical-align: top;
 
   .kpi-card & {
-    // display: inline-block;
-    // min-width: fit-content;
     margin-left: 12px;
   }
 
@@ -166,6 +165,33 @@
   }
 }
 
+
+// Firefox does not correctly render.
+@supports not (width: fit-content) {
+  .kpi-lg.has-icon-bg .kpi-icon {
+    min-width: 86px;
+  }
+
+  .has-icon-bg .kpi-icon {
+    height: 100%;
+    min-width: 57px;
+
+    &:before {
+      position: absolute;
+      display: block;
+      opacity: .2;
+      content: ' ';
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: currentColor;
+    }
+
+    .svg-placeholder {
+      opacity: 0 !important;
+    }
+  }
+}
 
 .kpi-sm {
   .kpi-icon {

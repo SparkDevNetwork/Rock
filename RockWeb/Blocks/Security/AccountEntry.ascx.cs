@@ -323,7 +323,7 @@ var usernameTextbox = $('#{0}');
 var usernameRegExp = /{1}/;
 var usernameValidCaption = '{2}';
 var usernameFieldLabel = '{3}';
-
+        
 availabilityMessageRow.hide();
 
 usernameTextbox.blur(function () {{
@@ -370,7 +370,7 @@ usernameTextbox.blur(function () {{
                 tbUserName.ClientID, //0
                 regexString, //1
                 usernameValidCaption, //2
-                tbUserName.Label //3
+                tbUserName.Label //3 
                 );
 
             ScriptManager.RegisterStartupScript( this, GetType(), "AccountEntry_" + this.ClientID, script, true );
@@ -412,7 +412,7 @@ usernameTextbox.blur(function () {{
                         cpCampus.Campuses = CampusCache.All( false );
                     }
                 }
-
+                
                 // set birthday picker required if minimum age > 0
                 if ( GetAttributeValue( AttributeKey.MinimumAge ).AsInteger() > 0 )
                 {

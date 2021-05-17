@@ -39,7 +39,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class CalculateMetrics : IJob
     {
-        /// <summary>
+        /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -89,14 +89,14 @@ namespace Rock.Jobs
                         metric = metricService.Get( metricId );
 
                         /*  Get the last time the metric has run, if it has never run then set it as the first day of the current week to give it a chance to run now.
-                            NOTE: This is being used instead of Min Date to prevent a schedule with a start date of months or years back from running for each period since then.
+                            NOTE: This is being used instead of Min Date to prevent a schedule with a start date of months or years back from running for each period since then. 
                             This would be the case for the "out-of-the-box" Rock daily metrics "Active Records", "Active Families", and "Active Connection Requests" if they
                             have never run before. Or if a new user created metric uses a schedule that has an older start date.
                         */
                         DateTime currentDateTime = RockDateTime.Now;
                         DateTime? startOfWeek = currentDateTime.StartOfWeek( RockDateTime.FirstDayOfWeek );
                         DateTime? lastRunDateTime = metric.LastRunDateTime ?? startOfWeek;
-
+                        
                         // get all the schedule times that were supposed to run since that last time it was scheduled to run
                         var scheduledDateTimesToProcess = metric.Schedule.GetScheduledStartTimes( lastRunDateTime.Value, currentDateTime ).Where( a => a > lastRunDateTime.Value ).ToList();
                         foreach ( var scheduleDateTime in scheduledDateTimesToProcess )
@@ -123,7 +123,7 @@ namespace Rock.Jobs
                                         {
                                             throw new NotImplementedException( "Partitioned Metrics using DataViews is only supported for Person data views using a single partition of type 'Campus' with 'Auto Partition on Primary Campus' checked. Any other dataview partition configuration is not supported." );
                                         }
-
+                                        
                                         Stopwatch stopwatch = Stopwatch.StartNew();
                                         var qry = metric.DataView.GetQuery( new DataViewGetQueryArgs() );
 
@@ -415,7 +415,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private struct ResultValue
         {

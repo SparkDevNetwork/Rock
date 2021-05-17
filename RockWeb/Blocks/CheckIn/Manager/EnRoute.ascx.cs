@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         "Filter By",
         Key = AttributeKey.FilterBy,
         DefaultValue = "2",
-        ListSource = "2^Checked-In,3^Present,4^Checked-Out",
+        ListSource = "2^Checked-in,3^Present,4^Checked-out",
         IsRequired = true,
         Order = 1
         )]
@@ -118,7 +118,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
+            {
+                HandleCustomPostback();
+            }
+            else
             {
                 BindFilter();
                 BindGrid();
@@ -128,6 +132,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void HandleCustomPostback()
+        {
+            var eventArg = this.Request.Params["__EVENTARGUMENT"];
+            if ( eventArg == "search" && tbSearch.Text.Length > 2 )
+            {
+                BindGrid();
+            }
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.
@@ -275,7 +293,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             foreach ( var attendance in attendances )
             {
                 var listItem = new ListItem();
-                listItem.Text = $"{attendance.Occurrence.Group.Name} in {attendance.Occurrence.Location.Name} at {attendance.Occurrence.Schedule.Name}.";
+                listItem.Text = $"{attendance.Occurrence.Group.Name} in {attendance.Occurrence.Location.Name} at {attendance.Occurrence.Schedule.Name}";
                 listItem.Value = attendance.Id.ToString();
                 ddlMovePersonSelectAttendance.Items.Add( listItem );
             }

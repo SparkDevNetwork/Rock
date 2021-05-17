@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Mobile
             pnlStyles.Visible = tabName == Tabs.Styles.ConvertToString();
             pnlLayouts.Visible = tabName == Tabs.Layouts.ConvertToString();
             pnlPages.Visible = tabName == Tabs.Pages.ConvertToString();
-
+            
             switch ( showTab )
             {
                 case Tabs.Application:
@@ -313,7 +313,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 lLastDeployDate.Text = "<span class='label label-warning'>Not Deployed</span>";
             }
-
+            
 
             // Set the UI fields for the preview thumbnail.
             imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
@@ -774,7 +774,7 @@ namespace RockWeb.Blocks.Mobile
             //
             additionalSettings.ShellType = rblEditApplicationType.SelectedValueAsEnum<ShellType>();
             additionalSettings.TabLocation = rblEditAndroidTabLocation.SelectedValueAsEnum<TabLocation>();
-
+            
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
             additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
@@ -1274,7 +1274,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 return;
             }
-
+            
             var deleteField = gPages.ColumnsOfType<DeleteField>().FirstOrDefault();
             if ( deleteField == null || !deleteField.Visible )
             {

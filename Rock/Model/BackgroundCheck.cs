@@ -26,7 +26,7 @@ using Rock.Lava;
 namespace Rock.Model
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "BackgroundCheck" )]

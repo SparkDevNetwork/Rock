@@ -314,6 +314,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _dtCreateDate.SelectedDateTime;
             }
+
             set
             {
                 EnsureChildControls();

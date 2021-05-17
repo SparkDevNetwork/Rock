@@ -299,7 +299,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets the best picker mode for location.
-        /// NOTE: Use SetBestPickerModeForLocation to *set* the CurrentPickerMode based on Location
+        /// NOTE: Use SetBestPickerModeForLocation to *set* the CurrentPickerMode based on Location 
         /// </summary>
         /// <param name="location">The location.</param>
         /// <returns></returns>
@@ -640,6 +640,7 @@ namespace Rock.Web.UI.Controls
             _radAddress.Checked = CurrentPickerMode == LocationPickerMode.Address;
             _radPoint.Checked = CurrentPickerMode == LocationPickerMode.Point;
             _radPolygon.Checked = CurrentPickerMode == LocationPickerMode.Polygon;
+
             _namedPicker.Visible = CurrentPickerMode == LocationPickerMode.Named;
             _namedPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Named;
             _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;
@@ -927,7 +928,7 @@ namespace Rock.Web.UI.Controls
     #region class enums
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <summary>
     /// Represents the type of <see cref="Rock.Model.Location">Locations</see> that should be allowed to be selected using the location picker.

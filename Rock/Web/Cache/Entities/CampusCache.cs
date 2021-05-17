@@ -104,7 +104,7 @@ namespace Rock.Web.Cache
         /// If this is not set, the Campus time zone will be the default Rock time zone (<see cref="Rock.RockDateTime.OrgTimeZoneInfo" /> )
         /// </summary>
         /// <value>
-        /// The time zone identifier.
+        /// The time zone identifier. 
         /// </value>
         [DataMember]
         public string TimeZoneId { get; private set; }

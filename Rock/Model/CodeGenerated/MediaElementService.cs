@@ -112,19 +112,18 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
-            target.DownloadData = source.DownloadData;
-            target.Duration = source.Duration;
+            target.DurationSeconds = source.DurationSeconds;
+            target.FileDataJson = source.FileDataJson;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.MediaElementData = source.MediaElementData;
             target.MediaFolderId = source.MediaFolderId;
+            target.MetricData = source.MetricData;
             target.Name = source.Name;
             target.SourceCreatedDateTime = source.SourceCreatedDateTime;
             target.SourceData = source.SourceData;
             target.SourceKey = source.SourceKey;
-            target.SourceMetric = source.SourceMetric;
             target.SourceModifiedDateTime = source.SourceModifiedDateTime;
-            target.ThumbnailData = source.ThumbnailData;
+            target.ThumbnailDataJson = source.ThumbnailDataJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -45,17 +45,22 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbStoredProcedure" runat="server" Label="Query is a Stored Procedure" />
+                                    <Rock:RockCheckBox ID="cbStoredProcedure" runat="server" Label="Query is a Stored Procedure" Help="Provide only the name of the stored procedure in the Query field. The parameters (if any) for the stored procedure should be configured using the Parameters field." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
-                                        Help="The parameters that the query expects in the format of 'param1=value;param2=value'.  Any parameter with the same name as a page parameter (i.e. querystring,
-                                            form, or page route) will have its value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id." />
+                                    <div class="input-group">
+                                        <label>Timeout</label>
+                                        <div class="input-group input-width-md">
+                                            <Rock:NumberBox ID="nbTimeout" CssClass="form-control" runat="server" /><span class="input-group-addon">(sec)</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:NumberBox ID="nbTimeout" runat="server" Label="Timeout" Help="In seconds." />
+                                    <Rock:RockTextBox ID="tbParams" runat="server" Label="Parameters" TextMode="MultiLine" Rows="1" CssClass="input-xlarge"
+                                        Help="The parameters that the query expects in the format of 'param1=value;param2=value'. The equals sign must be provided for each parameter, but you don't have to provide a default value if you want it to default to blank.  Any parameter with the same name as a page parameter (i.e. querystring,
+                                            form, or page route) will have its value replaced with the page's current value.  A parameter with the name of 'CurrentPersonId' will have its value replaced with the currently logged in person's id." />
                                 </div>
                             </div>
 
@@ -78,7 +83,7 @@
                                     <Rock:RockTextBox ID="tbUrlMask" runat="server" Label="Selection URL" CssClass="input-large"
                                         Help="The URL to redirect user to when they click on a row in the grid.  Any column's value can be used in the URL by including it in braces.  For example if the grid includes an 'Id' column that contains Person Ids, you can link to the Person view, by specifying a value here of '~/Person/{Id}" />
                                     <Rock:Switch ID="cbShowGridFilter" runat="server" Text="Show Grid Filter" TextAlign="Right" />
-
+                                    <Rock:Switch ID="swWrapInPanel" runat="server" Text="Wrap in Panel" CssClass="js-checkbox-wrap-in-panel" />
                                 </div>
                                 <div class="col-md-6">
                                     <div class="js-grid-options-container">
@@ -97,13 +102,7 @@
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <Rock:Switch ID="swWrapInPanel" runat="server" Text="Wrap in Panel" CssClass="js-checkbox-wrap-in-panel" />
-                                </div>
-                            </div>
-
-                            <div class="row js-wrap-in-panel">
+                           <div class="row js-wrap-in-panel">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbPanelTitle" runat="server" Label="Panel Title" />
                                 </div>

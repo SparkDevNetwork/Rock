@@ -48,7 +48,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the AttributeId of the <see cref="Rock.Model.Attribute"/> that this AttributeQualifier limits the values of.
         /// </summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Index("IX_AttributeIdKey", 0, IsUnique=true)]
         public int AttributeId { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Key value that represents the type of qualifier that is being used.
         /// </summary>
@@ -71,7 +71,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
         public string Key { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the value of the AttributeQualifier
         /// </summary>

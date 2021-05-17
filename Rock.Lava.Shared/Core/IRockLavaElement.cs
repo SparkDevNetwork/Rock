@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -52,12 +53,6 @@ namespace Rock.Lava
         /// <param name="context"></param>
         /// <param name="result"></param>
         void OnRender( ILavaRenderContext context, TextWriter result );
-
-        /// <summary>
-        /// Called after the parser has divided the document into a set of recognized Lava tokens.
-        /// </summary>
-        /// <param name="tokens"></param>
-        void OnParsed( List<string> tokens );
 
         /// <summary>
         /// Executed when the element is first loaded during engine startup.

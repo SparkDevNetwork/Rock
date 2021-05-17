@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 
 namespace Rock
 {
+
     /// <summary>
     /// Rock Lava related extensions
     /// </summary>
@@ -75,7 +76,7 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-            System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
+            System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
             var formatLavaTask = new Task( () =>
             {
                 System.Web.HttpContext.Current = taskContext;
@@ -214,7 +215,7 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion)
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.AddOrIgnore( key, string.Empty );
@@ -571,16 +572,14 @@ namespace Rock
                     context.SetMergeField( "CurrentPerson", currentPersonOverride );
                     context.SetMergeFields( mergeObjects );
 
-                    ILavaTemplate template;
+                    var result = LavaEngine.CurrentEngine.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
 
-                    LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
+                    if ( result.HasErrors )
+                    {
+                        throw result.GetLavaException();
+                    }
 
-                    List<Exception> errors;
-                    string output;
-
-                    var isRendered = template.TryRender( context, out output, out errors );
-
-                    return output;
+                    return result.Text;
                 }
             }
             catch ( Exception ex )
@@ -678,7 +677,7 @@ namespace Rock
 
                     if ( encodeStrings )
                     {
-                        // if encodeStrings = true, we want any string values to be XML Encoded (
+                        // if encodeStrings = true, we want any string values to be XML Encoded ( 
                         RenderParameters renderParameters = new RenderParameters();
                         renderParameters.LocalVariables = Hash.FromDictionary( mergeObjects );
                         renderParameters.ValueTypeTransformers = new Dictionary<Type, Func<object, object>>();
@@ -717,29 +716,15 @@ namespace Rock
 
                     renderParameters.ShouldEncodeStringsAsXml = encodeStrings;
 
-                    string result;
-                    List<Exception> errors;
 
-                    ILavaTemplate template;
+                    var result = LavaEngine.CurrentEngine.RenderTemplate( content, renderParameters );
 
-                    // Try and parse the template, or retrieve it from the cache if it has been previously parsed.
-                    LavaEngine.CurrentEngine.TryParseTemplate( content, out template );
-
-                    var isRendered = template.TryRender( renderParameters, out result, out errors );
-
-                    if ( throwExceptionOnErrors && errors.Any() )
+                    if ( result.HasErrors )
                     {
-                        if ( errors.Count == 1 )
-                        {
-                            throw errors[0];
-                        }
-                        else
-                        {
-                            throw new AggregateException( errors );
-                        }
+                        throw result.GetLavaException();
                     }
 
-                    return result;
+                    return result.Text;
                 }
             }
             catch ( System.Threading.ThreadAbortException )
@@ -774,9 +759,9 @@ namespace Rock
 
         /// <summary>
         /// Compiled RegEx for detecting if a string has Lava merge fields
-        /// regex from some ideas in
-        ///  http://stackoverflow.com/a/16538131/1755417
-        ///  http://stackoverflow.com/a/25776530/1755417
+        /// regex from some ideas in 
+        ///  http://stackoverflow.com/a/16538131/1755417 
+        ///  http://stackoverflow.com/a/25776530/1755417 
         /// </summary>
         private static Regex hasLavaMergeFields = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
 

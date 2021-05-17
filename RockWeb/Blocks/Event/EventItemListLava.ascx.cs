@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Event
             {
                 lMessages.Text = string.Empty;
             }
-
+            
             var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
 
             // Grab events
@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Event
                 dateRange.End = dateRange.Start.Value.AddDays( 1000 );
             }
 
-            // Get the occurrences
+            // Get the occurrences 
             var occurrences = qry.ToList();
             var occurrencesWithDates = occurrences
                 .Select( o => new EventOccurrenceDate
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Event
 
         /// <summary>
         /// A class to store event item occurrence data for Lava.
-        /// </summary>
+        /// </summary>      
         [DotLiquid.LiquidType( "EventItem", "EventItemOccurrence", "DateTime", "Name", "Date", "Time", "EndDate", "EndTime", "Location", "Description", "Summary", "DetailPage" )]
         public class EventOccurrenceSummary : LavaDataObject
         {
@@ -247,6 +247,7 @@ namespace RockWeb.Blocks.Event
             /// The event item.
             /// </value>
             public EventItem EventItem { get; set; }
+
             /// <summary>
             /// Gets or sets the event item occurrence.
             /// </summary>

@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.RSVP
             {
                 key = string.Format( "{0}-{1}", groupId.Value.ToString(), key );
             }
-
+            
             return "RSVPList-" + key;
         }
 

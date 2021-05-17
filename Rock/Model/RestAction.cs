@@ -144,7 +144,7 @@ namespace Rock.Model
         /// </value>
         public override Security.ISecured ParentAuthority
         {
-            get
+            get 
             {
                 return this.Controller != null ? this.Controller : base.ParentAuthority;
             }

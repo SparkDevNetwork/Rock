@@ -23,7 +23,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+
 using Humanizer;
+
 using Quartz;
 
 using Rock.Attribute;
@@ -189,6 +191,8 @@ namespace Rock.Jobs
 
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "person", () => PersonCleanup( dataMap ) );
+
+            RunCleanupTask( "family salutation", () => GroupSalutationCleanup( dataMap ) );
 
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
@@ -400,6 +404,39 @@ namespace Rock.Jobs
                     return stackTrace;
                 }
             }
+        }
+
+        /// <summary>
+        /// Updates <see cref="Group.GroupSalutation" />
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int GroupSalutationCleanup( JobDataMap dataMap )
+        {
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+
+            // get list of Families that don't have a GroupSalutation populated yet. Include deceased and businesses.
+            var personIdListWithFamilyId = new PersonService( new RockContext() )
+                .Queryable( true, true )
+                .Where( a =>
+                    a.PrimaryFamilyId.HasValue
+                    && ( a.PrimaryFamily.GroupSalutation == null || a.PrimaryFamily.GroupSalutationFull == null || a.PrimaryFamily.GroupSalutation == "" || a.PrimaryFamily.GroupSalutationFull == "" ) )
+                .Select( a => new { a.Id, a.PrimaryFamilyId } ).ToArray();
+
+            var recordsUpdated = 0;
+
+            // we only need one person from each family (and it doesn't matter who)
+            var personIdList = personIdListWithFamilyId.GroupBy( a => a.PrimaryFamilyId.Value ).Select( s => s.FirstOrDefault()?.Id ).Where( a => a.HasValue ).Select( s => s.Value ).ToList();
+
+            foreach ( var personId in personIdList )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                }
+            }
+
+            return recordsUpdated;
         }
 
         /// <summary>
@@ -1747,13 +1784,15 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 
                 var personService = new PersonService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
-
+                
                 var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+                var currentMergeRequestQry = PersonService.GetMergeRequestQuery( rockContext );
 
                 int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
                 var namelessPersonPhoneNumberQry = phoneNumberService.Queryable()
                     .Where( pn => pn.Person.RecordTypeValueId == namelessPersonRecordTypeId )
+                    .Where( pn => !currentMergeRequestQry.Any( mr => mr.Items.Any( i => i.EntityId == pn.Person.Id ) ) )
                     .AsNoTracking();
 
                 var personPhoneNumberQry = phoneNumberService.Queryable()
@@ -1790,10 +1829,45 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                         {
                             mergeContext.Database.CommandTimeout = commandTimeout;
                             var mergePersonService = new PersonService( mergeContext );
+                            var mergeRequestService = new EntitySetService( mergeContext );
+
                             var namelessPerson = mergePersonService.Get( namelessPersonId );
                             var existingPerson = mergePersonService.Get( existingPersonId );
-                            mergePersonService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
-                            mergeContext.SaveChanges();
+
+                            // If nameless person has edited attributes that differ from the existing person's attributes
+                            // we need to create a merge request so a human can select how to merge the attributes.
+                            namelessPerson.LoadAttributes();
+                            existingPerson.LoadAttributes();
+
+                            var defaultAttributeValues = namelessPerson.Attributes.ToDictionary(a => a.Key, a => a.Value.DefaultValue);
+                            var namelessPersonEditedAttributeValues = namelessPerson.AttributeValues.Where( av => av.Value.Value != defaultAttributeValues[av.Key] );
+                            var existingPersonEditedAttributeValues = existingPerson.AttributeValues.Where( av => av.Value.Value != defaultAttributeValues[av.Key] );
+
+                            var hasMissingAttributes = namelessPersonEditedAttributeValues.Any( av => !existingPersonEditedAttributeValues.Any( eav => eav.Key == av.Key ) );
+
+                            var hasDifferentValues = false;
+                            if ( !hasMissingAttributes )
+                            {
+                                hasDifferentValues = namelessPersonEditedAttributeValues
+                                    .Any( av => !existingPersonEditedAttributeValues
+                                        .Any( eav => eav.Key == av.Key && eav.Value.Value.Equals(av.Value.Value, StringComparison.OrdinalIgnoreCase)  ) );
+                            }
+
+                            if ( !hasMissingAttributes && !hasDifferentValues )
+                            {
+                                mergePersonService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
+                                mergeContext.SaveChanges();
+                            }
+                            else
+                            {
+                                var mergeRequest = namelessPerson.CreateMergeRequest( existingPerson );
+                                if ( mergeRequest != null )
+                                {
+                                    mergeRequestService.Add( mergeRequest );
+                                    mergeContext.SaveChanges();
+                                }
+                            }
+
                             mergedNamelessPersonIds.Add( namelessPersonId );
                             rowsUpdated++;
                         }

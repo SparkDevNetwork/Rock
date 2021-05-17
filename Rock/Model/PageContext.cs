@@ -51,7 +51,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this PageContext is used on. This property is required.
         /// </summary>
@@ -63,7 +63,7 @@ namespace Rock.Model
         [Index( "IX_PageId")]
         [Index( "IX_PageIdEntityIdParameter", 0, IsUnique=true )]
         public int PageId { get; set; }
-
+        
         /// <summary>
         /// Gets or sets the object type name of the entity object that is being shared through this PageContext. This property is required.
         /// </summary>
@@ -80,7 +80,7 @@ namespace Rock.Model
         /// Gets or sets the name of the Page Attribute/Parameter that stores the Id of the shared entity object. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> containing the name of the Page Attribute/Parameter storing the Id of the entity object.
+        /// A <see cref="System.String"/> containing the name of the Page Attribute/Parameter storing the Id of the entity object. 
         /// </value>
         [Required]
         [MaxLength( 100 )]

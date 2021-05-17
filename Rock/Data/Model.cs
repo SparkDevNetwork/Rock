@@ -526,6 +526,7 @@ namespace Rock.Data
                     {
                         return null;
                     }
+
                     if ( this.Attributes != null )
                     {
                         string attributeKey = keyString;

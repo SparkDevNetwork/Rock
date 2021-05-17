@@ -51,12 +51,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialScheduledTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
+ 
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
-            }
+            }  
             return true;
         }
     }

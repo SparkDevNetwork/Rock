@@ -141,8 +141,8 @@ namespace Rock.Workflow.Action.CheckIn
                         // Get the date time that person last checked in.
                         person.LastCheckIn = personAttendance.Max( a => a.StartDateTime );
 
-                        // If the date they last checked in is greater than the PreSelect cutoff date, then get all the group/location/schedules
-                        // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule,
+                        // If the date they last checked in is greater than the PreSelect cutoff date, then get all the group/location/schedules 
+                        // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
                         // only consider the most recent group/location per schedule.
                         var previousCheckins = new List<CheckinInfo>();
                         if ( person.LastCheckIn.HasValue &&

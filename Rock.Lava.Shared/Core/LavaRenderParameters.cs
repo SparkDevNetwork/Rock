@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 
 namespace Rock.Lava
@@ -24,6 +23,20 @@ namespace Rock.Lava
     /// </summary>
     public class LavaRenderParameters
     {
+        #region Factory Methods
+
+        public static LavaRenderParameters WithContext( ILavaRenderContext context )
+        {
+            return new LavaRenderParameters { Context = context };
+        }
+
+        public static LavaRenderParameters Default()
+        {
+            return new LavaRenderParameters();
+        }
+
+        #endregion
+
         /// <summary>
         /// The context in which the Lava template is rendered.
         /// </summary>
@@ -33,5 +46,11 @@ namespace Rock.Lava
         /// Should string values be XML encoded?
         /// </summary>
         public bool ShouldEncodeStringsAsXml { get; set; }
+
+        /// <summary>
+        /// The key value to uniquely identify this template for caching purposes.
+        /// If not specified, the template content is used to calculate the cache key.
+        /// </summary>
+        public string CacheKey { get; set; } = null;
     }
 }

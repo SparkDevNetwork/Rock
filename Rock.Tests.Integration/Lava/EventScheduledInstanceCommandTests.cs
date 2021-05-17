@@ -233,6 +233,8 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [Ignore("In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop.")]
+        // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
         public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
         {
             var template = @"
@@ -257,15 +259,9 @@ namespace Rock.Tests.Integration.Lava
     {% endfor %}
 {% endeventscheduledinstance %}
 ";
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                //if ( engine.EngineType == Rock.Lava.LavaEngineTypeSpecifier.Fluid )
-                //{
-                //    return;
-                //}
-
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template ); //, new LavaTestRenderOptions {  } );
-                //var output = template.ResolveMergeFields( null );
+                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
 
                 TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
 

@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( personGuid == Guid.Empty )
             {
-                // When the personGuid is empty, then we check based on the given person's Id is in the group.
+                // When the personGuid is empty, then we check based on the given person's Id is in the group. 
                 return IsValidPersonForGroup( person, group );
             }
             else
@@ -918,13 +918,11 @@ namespace RockWeb.Blocks.Cms
                         {
                             HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
                             PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-                            CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
                             CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
-                            if ( hfPhoneType != null &&
-                                pnbPhone != null &&
-                                cbSms != null &&
-                                cbUnlisted != null )
+                            if ( hfPhoneType != null
+                                && pnbPhone != null
+                                && cbSms != null )
                             {
                                 if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
                                 {
@@ -957,7 +955,6 @@ namespace RockWeb.Blocks.Cms
                                             smsSelected = cbSms.Checked;
                                         }
 
-                                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                         phoneNumberTypeIds.Add( phoneNumberTypeId );
                                     }
                                 }
@@ -985,7 +982,7 @@ namespace RockWeb.Blocks.Cms
                       we'll require an SMS number in these situations. The goal is to only enforce if they are able to do something about it.
                       1) The block is configured to show both 'Communication Preference' and 'Phone Numbers'.
                       2) Communication Preference is set to SMS
-
+                      
                      Edge cases
                        - Both #1 and #2 are true, but no Phone Types are selected in block settings. In this case, still enforce.
                          Think of this as a block configuration issue (they shouldn't have configured it that way)

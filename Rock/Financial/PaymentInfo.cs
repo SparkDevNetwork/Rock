@@ -198,7 +198,7 @@ namespace Rock.Financial
                 };
 
                 return tempLocation.GetFullStreetAddress();
-
+                
             }
         }
 

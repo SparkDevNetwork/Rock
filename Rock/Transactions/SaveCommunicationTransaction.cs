@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class SaveCommunicationTransaction : ITransaction

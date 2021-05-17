@@ -84,6 +84,7 @@
                                 </a>
                                 <asp:Literal ID="litSelectedRecipientDescription" runat="server"></asp:Literal>
                                 <asp:LinkButton ID="lbLinkConversation" runat="server" Text="Link To Person" Visible="false" CausesValidation="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbLinkConversation_Click"></asp:LinkButton>
+                                <asp:LinkButton ID="lbViewMergeRequest" runat="server" Text="View Merge Request" Visible="false" CausesValidation="false" CssClass="btn btn-default btn-xs pull-right" OnClick="lbViewMergeRequest_Click"></asp:LinkButton>
                             </div>
                             <div class="messages-outer-container">
                                 <div class="messages-scroll-container">
@@ -202,6 +203,7 @@
             <Content>
                 <asp:HiddenField ID="hfNamelessPersonId" runat="server" />
 
+                <Rock:NotificationBox ID="nbMergeRequestCreated" runat="server" Heading="To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save." NotificationBoxType="Info" Visible="true" />
                 <Rock:NotificationBox ID="nbAddPerson" runat="server" Heading="Please correct the following:" NotificationBoxType="Danger" Visible="false" />
                 <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgLinkToPerson" />
 

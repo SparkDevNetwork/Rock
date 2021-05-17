@@ -21,7 +21,7 @@ using Rock.Lava;
 namespace Rock.Store
 {
     /// <summary>
-    /// Base model class for the store
+    /// Base model class for the store 
     /// </summary>
     public class StoreModel : DotLiquid.ILiquidizable, ILavaDataDictionarySource
     {
@@ -38,7 +38,7 @@ namespace Rock.Store
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
         public object ToLiquid()

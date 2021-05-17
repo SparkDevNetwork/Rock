@@ -229,7 +229,7 @@ namespace Rock.Rest.Controllers
                 .Select( g => g.OrderByDescending( t => t.TransactionDateTime ).FirstOrDefault() )
                 .ToDictionary( t => t.ScheduledTransactionId.Value, t => t );
 
-            // Build an object for each schedule to return to the user
+            // Build an object for each schedule to return to the user  
             var schedulesWithMostRecentTransaction = schedules.Select( s => new
             {
                 Schedule = s,

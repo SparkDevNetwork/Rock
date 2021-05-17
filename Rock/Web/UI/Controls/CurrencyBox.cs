@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     public class CurrencyBox : NumberBoxBase
     {
         private readonly RockCurrencyCodeInfo _organizationCurrencyCodeInfo;
-
+        
         private int _currencyDecimalPlaces;
 
         /// <summary>
@@ -129,9 +129,9 @@ namespace Rock.Web.UI.Controls
                 var step = $"0.{ new string( '0', _currencyDecimalPlaces - 1 ) }1";
                 this.Attributes["step"] = step;
             }
-
+            
             /* 2020-11-20 MDP
-               inputmode tells the browser what type of input to expect. If we
+               inputmode tells the browser what type of input to expect. If we 
                see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inputmode
 
                This fixes an issue where some browsers (especially mobile phones) would allow non-decimal characters to be allowed in the input box

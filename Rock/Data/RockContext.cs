@@ -230,6 +230,14 @@ namespace Rock.Data
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
 
         /// <summary>
+        /// Gets or sets the analytics source giving units.
+        /// </summary>
+        /// <value>
+        /// The analytics source giving units.
+        /// </value>
+        public DbSet<AnalyticsSourceGivingUnit> AnalyticsSourceGivingUnits { get; set; }
+
+        /// <summary>
         /// Gets or sets the asset storage providers.
         /// </summary>
         /// <value>
@@ -380,7 +388,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-
+                
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>

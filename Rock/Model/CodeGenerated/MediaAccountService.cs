@@ -116,7 +116,9 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.LastRefreshDateTime = source.LastRefreshDateTime;
+            target.MetricData = source.MetricData;
             target.Name = source.Name;
+            target.SourceData = source.SourceData;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

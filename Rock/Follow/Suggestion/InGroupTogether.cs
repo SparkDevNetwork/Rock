@@ -188,6 +188,7 @@ namespace Rock.Follow.Suggestion
                                     bool isFollowing = followingService.Queryable().Where( f =>
                                                             f.EntityTypeId == personAliasEntityType.Id
                                                             && f.EntityId == followeePersonAliasId
+                                                            && string.IsNullOrEmpty( f.PurposeKey )
                                                             && f.PersonAliasId == followerPersonAliasId ).Any();
                                     if ( !isFollowing )
                                     {

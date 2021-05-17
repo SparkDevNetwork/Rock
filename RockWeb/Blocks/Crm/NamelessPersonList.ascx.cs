@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -116,10 +115,13 @@ namespace RockWeb.Blocks.Crm
             PersonService personService = new PersonService( rockContext );
 
             var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+            var currentMergeRequestQry = PersonService.GetMergeRequestQuery( rockContext );
 
-            var qry = personService.Queryable( new Rock.Model.PersonService.PersonQueryOptions() { IncludeNameless = true } )
-                    .Where( p => p.RecordTypeValueId == namelessPersonRecordTypeId )
-                    .AsNoTracking();
+            var qry = personService
+                .Queryable( new PersonService.PersonQueryOptions() { IncludeNameless = true } )
+                .Where( p => p.RecordTypeValueId == namelessPersonRecordTypeId )
+                .Where( p => !currentMergeRequestQry.Any( mr => mr.Items.Any( i => i.EntityId == p.Id ) ) )
+                .AsNoTracking();
 
             int? namelessPersonId = PageParameter( PageParameterKey.NamelessPersonId ).AsIntegerOrNull();
             if ( namelessPersonId.HasValue )
@@ -193,6 +195,7 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
+                EntitySet mergeRequest = null;
                 if ( pnlLinkToExistingPerson.Visible )
                 {
                     var existingPersonId = ppPerson.PersonId;
@@ -203,7 +206,9 @@ namespace RockWeb.Blocks.Crm
 
                     var existingPerson = personService.Get( existingPersonId.Value );
 
-                    personService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
+                    mergeRequest = namelessPerson.CreateMergeRequest( existingPerson );
+                    var entitySetService = new EntitySetService( rockContext );
+                    entitySetService.Add( mergeRequest );
 
                     rockContext.SaveChanges();
                 }
@@ -213,9 +218,17 @@ namespace RockWeb.Blocks.Crm
                     var newPerson = new Person();
 
                     newPersonEditor.UpdatePerson( newPerson, rockContext );
-                    personService.MergeNamelessPersonToNewPerson( namelessPerson, newPerson, newPersonEditor.PersonGroupRoleId );
+
+                    personService.Add( newPerson );
+                    rockContext.SaveChanges();
+
+                    mergeRequest = namelessPerson.CreateMergeRequest( newPerson );
+                    var entitySetService = new EntitySetService( rockContext );
+                    entitySetService.Add( mergeRequest );
                     rockContext.SaveChanges();
                 }
+
+                RedirectToMergeRequest( mergeRequest );
             }
 
             mdLinkToPerson.Hide();
@@ -253,6 +266,19 @@ namespace RockWeb.Blocks.Crm
                 {
                     lPhoneNumberDisplay.Text = "Unknown Person";
                 }
+            }
+        }
+
+        /// <summary>
+        /// Redirects to merge request.
+        /// </summary>
+        /// <param name="mergeRequest">The merge request.</param>
+        private void RedirectToMergeRequest( EntitySet mergeRequest )
+        {
+            if ( mergeRequest != null )
+            {
+                Page.Response.Redirect( string.Format( "~/PersonMerge/{0}", mergeRequest.Id ), false );
+                Context.ApplicationInstance.CompleteRequest();
             }
         }
     }

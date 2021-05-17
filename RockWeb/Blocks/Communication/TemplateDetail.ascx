@@ -94,23 +94,23 @@
                     </div>
 
                     <label class="control-label">Message Template</label>
-
+                    
                     <div class="well">
                     <Rock:Toggle ID="tglPreviewAdvanced" runat="server" CssClass="pull-right" OnText="Preview" OffText="Advanced" Checked="true" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglPreviewAdvanced_CheckedChanged" />
-
+                    
                     <asp:Panel ID="pnlAdvanced" runat="server" CssClass="margin-t-md">
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="js-help-container">
-                                    <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
-                                    <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
+                                    <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>        
+                                    <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>                                
                                 </div>
                                 <Rock:CodeEditor ID="ceEmailTemplate" runat="server" EditorHeight="400" EditorMode="Html" />
                             </div>
                             <div class="col-md-4">
                                 <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients. This requires support for inlining by the configured email transport." />
                                 <Rock:KeyValueList ID="kvlMergeFields" runat="server" Label="Lava Fields" KeyPrompt="Key" Help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor." ValuePrompt="Default Value" />
-
+                                
                                 <asp:LinkButton ID="lbUpdateLavaFields" runat="server" Text="Update Lava Fields" CssClass="btn btn-xs btn-action" OnClick="lbUpdateLavaFields_Click" CausesValidation="false" />
                                 <Rock:HelpBlock ID="hbUpdateLavaFields" runat="server" Text="This will update the Message Template and above lava fields to match. If a field has a different value set in Preview mode, the lava field controls will be updated to use the value from the preview's value." />
                             </div>
@@ -128,7 +128,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <Rock:RockControlWrapper ID="rcwPreviewMode" runat="server" Label="Preview Mode">
-
+                                                
                                                 <div class="btn-group" role="group">
                                                     <button type="button" class="btn btn-xs btn-info active js-preview-desktop">
                                                         <i class="fa fa-desktop"></i>
@@ -289,7 +289,7 @@
                 var $hf = $('#' + hf);
                 var fileIds = $hf.val().split(',');
 
-                // Remove the selected attachment
+                // Remove the selected attachment 
                 var removeAt = $.inArray(fileId, fileIds);
                 fileIds.splice(removeAt, 1);
                 $hf.val(fileIds.join());
