@@ -745,121 +745,153 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gTransactions_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
+            if ( e.Row.RowType != DataControlRowType.DataRow )
             {
-                var txn = e.Row.DataItem as FinancialTransactionRow;
+                return;
+            }
 
-                if ( txn != null )
+            var txn = e.Row.DataItem as FinancialTransactionRow;
+
+            if ( txn == null )
+            {
+                return;
+            }
+
+            string currencyType = string.Empty;
+            string creditCardType = string.Empty;
+
+            var lPersonFullNameReversed = e.Row.FindControl( "lPersonFullNameReversed" ) as Literal;
+            var lPersonId = e.Row.FindControl( "lPersonId" ) as Literal;
+            if ( lPersonFullNameReversed != null && lPersonId != null && txn.AuthorizedPersonAliasId.HasValue )
+            {
+                var personDetail = _personDetails.FirstOrDefault( a => a.PersonAliasId == txn.AuthorizedPersonAliasId.Value );
+                if ( personDetail != null )
                 {
-                    string currencyType = string.Empty;
-                    string creditCardType = string.Empty;
+                    lPersonId.Text = personDetail.PersonId.ToString();
+                    lPersonFullNameReversed.Text = personDetail.FullName;
+                }
+            }
 
-                    var lPersonFullNameReversed = e.Row.FindControl( "lPersonFullNameReversed" ) as Literal;
-                    var lPersonId = e.Row.FindControl( "lPersonId" ) as Literal;
-                    if ( lPersonFullNameReversed != null && lPersonId != null && txn.AuthorizedPersonAliasId.HasValue )
-                    {
-                        var personDetail = _personDetails.FirstOrDefault( a => a.PersonAliasId == txn.AuthorizedPersonAliasId.Value );
-                        if ( personDetail != null )
-                        {
-                            lPersonId.Text = personDetail.PersonId.ToString();
-                            lPersonFullNameReversed.Text = personDetail.FullName;
-                        }
-                    }
+            if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+            {
+                int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
+                if ( _currencyTypes.ContainsKey( currencyTypeId ) )
+                {
+                    currencyType = _currencyTypes[currencyTypeId];
+                }
+                else
+                {
+                    var currencyTypeValue = DefinedValueCache.Get( currencyTypeId );
+                    currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
+                    _currencyTypes.Add( currencyTypeId, currencyType );
+                }
 
-                    if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+                var lCurrencyType = e.Row.FindControl( "lCurrencyType" ) as Literal;
+                if ( lCurrencyType != null )
+                {
+                    if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
                     {
-                        int currencyTypeId = txn.FinancialPaymentDetail.CurrencyTypeValueId.Value;
-                        if ( _currencyTypes.ContainsKey( currencyTypeId ) )
+                        int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
+                        if ( _creditCardTypes.ContainsKey( creditCardTypeId ) )
                         {
-                            currencyType = _currencyTypes[currencyTypeId];
+                            creditCardType = _creditCardTypes[creditCardTypeId];
                         }
                         else
                         {
-                            var currencyTypeValue = DefinedValueCache.Get( currencyTypeId );
-                            currencyType = currencyTypeValue != null ? currencyTypeValue.Value : string.Empty;
-                            _currencyTypes.Add( currencyTypeId, currencyType );
+                            var creditCardTypeValue = DefinedValueCache.Get( creditCardTypeId );
+                            creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
+                            _creditCardTypes.Add( creditCardTypeId, creditCardType );
                         }
 
-                        var lCurrencyType = e.Row.FindControl( "lCurrencyType" ) as Literal;
-                        if ( lCurrencyType != null )
-                        {
-                            if ( txn.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-                            {
-                                int creditCardTypeId = txn.FinancialPaymentDetail.CreditCardTypeValueId.Value;
-                                if ( _creditCardTypes.ContainsKey( creditCardTypeId ) )
-                                {
-                                    creditCardType = _creditCardTypes[creditCardTypeId];
-                                }
-                                else
-                                {
-                                    var creditCardTypeValue = DefinedValueCache.Get( creditCardTypeId );
-                                    creditCardType = creditCardTypeValue != null ? creditCardTypeValue.Value : string.Empty;
-                                    _creditCardTypes.Add( creditCardTypeId, creditCardType );
-                                }
-
-                                lCurrencyType.Text = string.Format( "{0} - {1}", currencyType, creditCardType );
-                            }
-                            else
-                            {
-                                lCurrencyType.Text = currencyType;
-                            }
-                        }
+                        lCurrencyType.Text = string.Format( "{0} - {1}", currencyType, creditCardType );
                     }
-
-                    var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
-                    if ( lTransactionImage != null && lTransactionImage.Visible )
+                    else
                     {
-                        if ( _imageBinaryFileIdLookupByTransactionId.ContainsKey( txn.Id ) )
-                        {
-                            int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
-                            if ( firstImageId != null )
-                            {
-                                string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
-                                lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
-                            }
-                        }
-                    }
-
-                    bool isExporting = false;
-                    if ( e is RockGridViewRowEventArgs )
-                    {
-                        isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
-                    }
-
-                    var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
-                    if ( lBatchId != null )
-                    {
-                        if ( _batchPageRoute.IsNotNullOrWhiteSpace() && txn.BatchId.HasValue && !isExporting )
-                        {
-                            var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
-                            cell.RemoveCssClass( "grid-select-cell" );
-                            lBatchId.Text = string.Format( "<a href='{0}?BatchId={1}'>{1}</a>", _batchPageRoute, txn.BatchId );
-                        }
-                        else
-                        {
-                            lBatchId.Text = txn.BatchId.ToString();
-                        }
-                    }
-
-                    var lAccounts = e.Row.FindControl( "lAccounts" ) as Literal;
-                    if ( lAccounts != null )
-                    {
-                        lAccounts.Text = this.GetAccounts( txn, isExporting );
-                    }
-
-                    var lForeignCurrencySymbol = e.Row.FindControl( "lForeignCurrencySymbol" ) as Literal;
-                    if ( lForeignCurrencySymbol != null && txn.ForeignCurrencyCodeValueId != null )
-                    {
-                        var currencyCode = DefinedValueCache.Get( txn.ForeignCurrencyCodeValueId.Value );
-                        if ( currencyCode != null )
-                        {
-                            var currencySymbol = currencyCode.GetAttributeValue( "Symbol" );
-                            lForeignCurrencySymbol.Text = currencyCode.Value + " " + currencySymbol;
-                        }
+                        lCurrencyType.Text = currencyType;
                     }
                 }
             }
 
+            var lTransactionImage = e.Row.FindControl( "lTransactionImage" ) as Literal;
+            if ( lTransactionImage != null && lTransactionImage.Visible )
+            {
+                if ( _imageBinaryFileIdLookupByTransactionId.ContainsKey( txn.Id ) )
+                {
+                    int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
+                    if ( firstImageId != null )
+                    {
+                        string imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
+                        lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
+                    }
+                }
+            }
+
+            bool isExporting = false;
+            if ( e is RockGridViewRowEventArgs )
+            {
+                isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
+            }
+
+            var lBatchId = e.Row.FindControl( "lBatchId" ) as Literal;
+            if ( lBatchId != null )
+            {
+                if ( _batchPageRoute.IsNotNullOrWhiteSpace() && txn.BatchId.HasValue && !isExporting )
+                {
+                    var cell = e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a == lBatchId.FirstParentControlOfType<DataControlFieldCell>() ).First();
+                    cell.RemoveCssClass( "grid-select-cell" );
+                    lBatchId.Text = string.Format( "<a href='{0}?BatchId={1}'>{1}</a>", _batchPageRoute, txn.BatchId );
+                }
+                else
+                {
+                    lBatchId.Text = txn.BatchId.ToString();
+                }
+            }
+
+            var lAccounts = e.Row.FindControl( "lAccounts" ) as Literal;
+            if ( lAccounts != null )
+            {
+                lAccounts.Text = this.GetAccounts( txn, isExporting );
+            }
+
+            var lForeignCurrencySymbol = e.Row.FindControl( "lForeignCurrencySymbol" ) as Literal;
+            if ( lForeignCurrencySymbol != null && txn.ForeignCurrencyCodeValueId != null )
+            {
+                var currencyCode = DefinedValueCache.Get( txn.ForeignCurrencyCodeValueId.Value );
+                if ( currencyCode != null )
+                {
+                    var currencySymbol = currencyCode.GetAttributeValue( "Symbol" );
+                    lForeignCurrencySymbol.Text = currencyCode.Value + " " + currencySymbol;
+                }
+            }
+
+            // Calculate the days since the last transaction. This is done as a C# calculate so that the
+            // block doesn't sacrifice much in query performance to get this value. The previous date could be
+            // previous or next in the row order depending on how the data is sorted
+            var lDaysSinceLastTransaction = e.Row.FindControl( "lDaysSinceLastTransaction" ) as Literal;
+            var transactionsShown = gTransactions.DataSourceAsList;
+            var transactionsShownCount = transactionsShown?.Count ?? 0;
+            var currentDate = txn.TransactionDateTime;
+
+            var nextTransactionIndex = e.Row.RowIndex + 1;
+            var nextTransaction = ( nextTransactionIndex >= 0 && nextTransactionIndex < transactionsShownCount ) ?
+                transactionsShown[nextTransactionIndex] as FinancialTransactionRow :
+                null;
+            var nextDate = nextTransaction?.TransactionDateTime;
+
+            var prevTransactionIndex = e.Row.RowIndex - 1;
+            var prevTransaction = ( prevTransactionIndex >= 0 && prevTransactionIndex < transactionsShownCount ) ?
+                transactionsShown[prevTransactionIndex] as FinancialTransactionRow :
+                null;
+            var prevDate = prevTransaction?.TransactionDateTime;
+
+            if ( nextDate.HasValue && nextDate.Value < currentDate && txn.Id != nextTransaction.Id )
+            {
+                lDaysSinceLastTransaction.Text = ( currentDate - nextDate.Value ).TotalDays.ToString( "N1" );
+            }
+            else if ( prevDate.HasValue && prevDate.Value < currentDate && txn.Id != prevTransaction.Id )
+            {
+                lDaysSinceLastTransaction.Text = ( currentDate - prevDate.Value ).TotalDays.ToString( "N1" );
+            }
         }
 
         /// <summary>

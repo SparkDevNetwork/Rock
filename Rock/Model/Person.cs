@@ -319,8 +319,8 @@ namespace Rock.Model
 
             set
             {
-                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
                 _givingGroupId = value;
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
             }
         }
 
