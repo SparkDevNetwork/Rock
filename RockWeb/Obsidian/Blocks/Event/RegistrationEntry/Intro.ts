@@ -204,7 +204,7 @@ export default defineComponent( {
         <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.MaxRegistrants" />
     </div>
     <Alert v-if="viewModel.TimeoutMinutes" alertType="info" class="text-left">
-        Due to a high-volume of expected interest your {{registrationTerm}} session will expire after
+        Due to a high-volume of expected interest, your {{registrationTerm}} session will expire after
         {{pluralConditional(viewModel.TimeoutMinutes, 'a minute', viewModel.TimeoutMinutes + ' minutes')}}
         of inactivity.
     </Alert>

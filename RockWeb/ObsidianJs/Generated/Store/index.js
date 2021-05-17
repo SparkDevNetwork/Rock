@@ -33,7 +33,8 @@ System.register(["vuex", "./CommonEntities"], function (exports_1, context_1) {
                     pageGuid: '',
                     executionStartTime: new Date(),
                     debugTimings: [],
-                    loginUrlWithReturnUrl: ''
+                    loginUrlWithReturnUrl: '',
+                    isModalOpen: false
                 },
                 getters: {
                     isAuthenticated: function (state) {

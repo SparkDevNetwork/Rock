@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressTracker", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "../../Elements/CountdownTimer", "./RegistrationEntry/Success", "../../Util/Page", "../../Elements/JavaScriptAnchor"], function (exports_1, context_1) {
+System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./RegistrationEntry/Intro", "./RegistrationEntry/Registrants", "./RegistrationEntry/RegistrationEntryBlockViewModel", "./RegistrationEntry/RegistrationStart", "./RegistrationEntry/RegistrationEnd", "./RegistrationEntry/Summary", "../../Elements/ProgressTracker", "../../Services/Number", "../../Services/String", "../../Elements/Alert", "../../Elements/CountdownTimer", "./RegistrationEntry/Success", "../../Util/Page", "../../Elements/JavaScriptAnchor", "../../Controls/Dialog"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, CountdownTimer_1, Success_1, Page_1, JavaScriptAnchor_1, Step, unknownSingleFamilyGuid;
+    var vue_1, RockButton_1, Guid_1, Intro_1, Registrants_1, RegistrationEntryBlockViewModel_1, RegistrationStart_1, RegistrationEnd_1, Summary_1, Registrants_2, ProgressTracker_1, Number_1, String_1, Alert_1, CountdownTimer_1, Success_1, Page_1, JavaScriptAnchor_1, Dialog_1, Step, unknownSingleFamilyGuid;
     var __moduleName = context_1 && context_1.id;
     /**
      * If there is a forced family guid because of RegistrantsSameFamily setting, then this returns that guid
@@ -159,6 +159,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
             },
             function (JavaScriptAnchor_1_1) {
                 JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
+            },
+            function (Dialog_1_1) {
+                Dialog_1 = Dialog_1_1;
             }
         ],
         execute: function () {
@@ -188,7 +191,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     ProgressTracker: ProgressTracker_1.default,
                     Alert: Alert_1.default,
                     CountdownTimer: CountdownTimer_1.default,
-                    JavaScriptAnchor: JavaScriptAnchor_1.default
+                    JavaScriptAnchor: JavaScriptAnchor_1.default,
+                    Dialog: Dialog_1.default
                 },
                 setup: function () {
                     var _a;
@@ -247,6 +251,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     vue_1.provide('registrationEntryState', registrationEntryState);
                     /** A method to get the args needed for persisting the session */
                     var getRegistrationEntryBlockArgs = function () {
+                        var _a;
                         return {
                             RegistrationSessionGuid: registrationEntryState.RegistrationSessionGuid,
                             GatewayToken: registrationEntryState.GatewayToken,
@@ -254,7 +259,8 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             FieldValues: registrationEntryState.RegistrationFieldValues,
                             Registrar: registrationEntryState.Registrar,
                             Registrants: registrationEntryState.Registrants,
-                            AmountToPayNow: registrationEntryState.AmountToPayToday
+                            AmountToPayNow: registrationEntryState.AmountToPayToday,
+                            RegistrationGuid: ((_a = viewModel.Session) === null || _a === void 0 ? void 0 : _a.RegistrationGuid) || null
                         };
                     };
                     vue_1.provide('getRegistrationEntryBlockArgs', getRegistrationEntryBlockArgs);
@@ -597,7 +603,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         this.$store.dispatch('redirectToLogin');
                     }
                 },
-                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isSessionExpired\" alertType=\"warning\">\n        Your registration has expired.\n        <JavaScriptAnchor @click=\"restart\">\n            Restart registration\n        </JavaScriptAnchor>\n    </Alert>\n    <template v-else>\n        <h1 v-if=\"currentStep !== steps.intro\" v-html=\"stepTitleHtml\"></h1>\n        <ProgressTracker v-if=\"currentStep !== steps.success\" :items=\"progressTrackerItems\" :currentIndex=\"progressTrackerIndex\">\n            <template #aside>\n                <div v-if=\"secondsBeforeExpiration >= 0 && secondsBeforeExpiration <= (30 * 60)\" class=\"remaining-time flex-grow-1 flex-md-grow-0\">\n                    <span class=\"remaining-time-title\">Time left before timeout</span>\n                    <p class=\"remaining-time-countdown\">\n                        <CountdownTimer v-model=\"secondsBeforeExpiration\" />\n                    </p>\n                </div>\n            </template>\n        </ProgressTracker>\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n</div>"
+                template: "\n<div>\n    <Alert v-if=\"notFound\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>The selected registration could not be found or is no longer active.</p>\n    </Alert>\n    <Alert v-else-if=\"mustLogin\" alertType=\"warning\">\n        <strong>Please log in</strong>\n        <p>You must be logged in to access this registration.</p>\n    </Alert>\n    <Alert v-else-if=\"isUnauthorized\" alertType=\"warning\">\n        <strong>Sorry</strong>\n        <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>\n    </Alert>\n    <template v-else>\n        <h1 v-if=\"currentStep !== steps.intro\" v-html=\"stepTitleHtml\"></h1>\n        <ProgressTracker v-if=\"currentStep !== steps.success\" :items=\"progressTrackerItems\" :currentIndex=\"progressTrackerIndex\">\n            <template #aside>\n                <div v-if=\"secondsBeforeExpiration >= 0 && secondsBeforeExpiration <= (30 * 60)\" class=\"remaining-time flex-grow-1 flex-md-grow-0\">\n                    <span class=\"remaining-time-title\">Time left before timeout</span>\n                    <p class=\"remaining-time-countdown\">\n                        <CountdownTimer v-model=\"secondsBeforeExpiration\" />\n                    </p>\n                </div>\n            </template>\n        </ProgressTracker>\n        <RegistrationEntryIntro v-if=\"currentStep === steps.intro\" @next=\"onIntroNext\" />\n        <RegistrationEntryRegistrationStart v-else-if=\"currentStep === steps.registrationStartForm\" @next=\"onRegistrationStartNext\" @previous=\"onRegistrationStartPrevious\" />\n        <RegistrationEntryRegistrants v-else-if=\"currentStep === steps.perRegistrantForms\" @next=\"onRegistrantNext\" @previous=\"onRegistrantPrevious\" />\n        <RegistrationEntryRegistrationEnd v-else-if=\"currentStep === steps.registrationEndForm\" @next=\"onRegistrationEndNext\" @previous=\"onRegistrationEndPrevious\" />\n        <RegistrationEntrySummary v-else-if=\"currentStep === steps.reviewAndPayment\" @next=\"onSummaryNext\" @previous=\"onSummaryPrevious\" />\n        <RegistrationEntrySuccess v-else-if=\"currentStep === steps.success\" />\n        <Alert v-else alertType=\"danger\">Invalid State: '{{currentStep}}'</Alert>\n    </template>\n    <Dialog :modelValue=\"isSessionExpired\" :dismissible=\"false\">\n        <template #header>\n            <h4>Registration Timed Out</h4>\n        </template>\n        <template #default>\n            Your registration has timed out. Do you wish to request an extension in time?\n        </template>\n        <template #footer>\n            <RockButton btnType=\"primary\">Yes</RockButton>\n            <RockButton btnType=\"link\" @click=\"restart\">No, cancel registration</RockButton>\n        </template>\n    </Dialog>\n</div>"
             }));
         }
     };

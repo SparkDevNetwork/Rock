@@ -27,6 +27,14 @@ namespace Rock.ViewModel.Blocks
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
+        /// Gets or sets a value indicating whether [allow registration updates].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow registration updates]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowRegistrationUpdates { get; set; }
+
+        /// <summary>
         /// Gets or sets the timeout minutes.
         /// </summary>
         /// <value>

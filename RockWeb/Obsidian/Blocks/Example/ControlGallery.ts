@@ -41,6 +41,8 @@ import RockForm from '../../Controls/RockForm';
 import RockButton from '../../Elements/RockButton';
 import RadioButtonList from '../../Elements/RadioButtonList';
 import { DropDownListOption } from '../../Elements/DropDownList';
+import Dialog from '../../Controls/Dialog';
+import CheckBox from '../../Elements/CheckBox';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -73,7 +75,87 @@ const GalleryAndResult = defineComponent({
         </div>
     </template>
 </PanelWidget>`
-});
+} );
+
+const CheckBoxGallery = defineComponent( {
+    name: 'CheckBoxGallery',
+    components: {
+        GalleryAndResult,
+        CheckBox
+    },
+    data ()
+    {
+        return {
+            isChecked: false
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        CheckBox
+    </template>
+    <template #gallery>
+        <CheckBox label="Check 1" v-model="isChecked" />
+        <CheckBox label="Check 2" v-model="isChecked" />
+    </template>
+    <template #result>
+        {{isChecked}}
+    </template>
+</GalleryAndResult>`
+} );
+
+const DialogGallery = defineComponent( {
+    name: 'DialogGallery',
+    components: {
+        GalleryAndResult,
+        RockButton,
+        Dialog,
+        CheckBox
+    },
+    data ()
+    {
+        return {
+            isDialogVisible: false,
+            isDismissible: false
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        Dialog
+    </template>
+    <template #gallery>
+        <RockButton @click="isDialogVisible = true">Show</RockButton>
+        <CheckBox label="Dismissible" v-model="isDismissible" />
+    </template>
+    <template #result>
+        <Dialog v-model="isDialogVisible" :dismissible="isDismissible">
+            <template #header>
+                <h4>Romans 11:33-36</h4>
+            </template>
+            <template #default>
+                <p>
+                    Oh, the depth of the riches<br />
+                    and the wisdom and the knowledge of God!<br />
+                    How unsearchable his judgments<br />
+                    and untraceable his ways!<br />
+                    For who has known the mind of the Lord?<br />
+                    Or who has been his counselor?<br />
+                    And who has ever given to God,<br />
+                    that he should be repaid?<br />
+                    For from him and through him<br />
+                    and to him are all things.<br />
+                    To him be the glory forever. Amen.
+                </p>
+            </template>
+            <template #footer>
+                <RockButton @click="isDialogVisible = false" btnType="primary">OK</RockButton>
+                <RockButton @click="isDialogVisible = false" btnType="default">Cancel</RockButton>
+            </template>
+        </Dialog>
+    </template>
+</GalleryAndResult>`
+} );
 
 export default defineComponent({
     name: 'Example.ControlGallery',
@@ -96,7 +178,9 @@ export default defineComponent({
         ProgressTracker,
         RockForm,
         RockButton,
-        RadioButtonList
+        RadioButtonList,
+        DialogGallery,
+        CheckBoxGallery
     },
     data() {
         return {
@@ -142,7 +226,8 @@ export default defineComponent({
                 { key: 'b', text: 'b', value: 'b' },
                 { key: 'c', text: 'c', value: 'c' },
                 { key: 'd', text: 'd', value: 'd' }
-            ] as DropDownListOption[]
+            ] as DropDownListOption[],
+            isDialogVisible: false
         };
     },
     methods: {
@@ -382,6 +467,8 @@ export default defineComponent({
                 <TextBox label="Radio Value" v-model="radioValue" />
             </template>
         </GalleryAndResult>
+        <DialogGallery />
+        <CheckBoxGallery />
     </template>
 </PaneledBlockTemplate>`
 });

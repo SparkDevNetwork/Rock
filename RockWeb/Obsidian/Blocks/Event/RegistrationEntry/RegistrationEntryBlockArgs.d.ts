@@ -20,6 +20,7 @@ import { RegistrantInfo, RegistrarInfo } from './RegistrationEntryBlockViewModel
 
 export interface RegistrationEntryBlockArgs
 {
+    RegistrationGuid: Guid | null;
     RegistrationSessionGuid: Guid | null;
     Registrants: RegistrantInfo[];
     FieldValues: Record<Guid, unknown>;

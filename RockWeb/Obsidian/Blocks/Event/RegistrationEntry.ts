@@ -37,6 +37,7 @@ import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
 import JavaScriptAnchor from '../../Elements/JavaScriptAnchor';
 import store from '../../Store/index';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
+import Dialog from '../../Controls/Dialog';
 
 export enum Step
 {
@@ -152,7 +153,8 @@ export default defineComponent( {
         ProgressTracker,
         Alert,
         CountdownTimer,
-        JavaScriptAnchor
+        JavaScriptAnchor,
+        Dialog
     },
     setup ()
     {
@@ -228,7 +230,8 @@ export default defineComponent( {
                 FieldValues: registrationEntryState.RegistrationFieldValues,
                 Registrar: registrationEntryState.Registrar,
                 Registrants: registrationEntryState.Registrants,
-                AmountToPayNow: registrationEntryState.AmountToPayToday
+                AmountToPayNow: registrationEntryState.AmountToPayToday,
+                RegistrationGuid: viewModel.Session?.RegistrationGuid || null
             };
         };
 
@@ -583,12 +586,6 @@ export default defineComponent( {
         <strong>Sorry</strong>
         <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
     </Alert>
-    <Alert v-else-if="isSessionExpired" alertType="warning">
-        Your registration has expired.
-        <JavaScriptAnchor @click="restart">
-            Restart registration
-        </JavaScriptAnchor>
-    </Alert>
     <template v-else>
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
         <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
@@ -609,5 +606,17 @@ export default defineComponent( {
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
         <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
     </template>
+    <Dialog :modelValue="isSessionExpired" :dismissible="false">
+        <template #header>
+            <h4>Registration Timed Out</h4>
+        </template>
+        <template #default>
+            Your registration has timed out. Do you wish to request an extension in time?
+        </template>
+        <template #footer>
+            <RockButton btnType="primary">Yes</RockButton>
+            <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
+        </template>
+    </Dialog>
 </div>`
 } );

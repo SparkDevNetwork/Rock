@@ -413,6 +413,7 @@ namespace Rock.Model
             AreCurrentFamilyMembersShown = template.ShowCurrentFamilyMembers;
             MaxRegistrants = ( template.AllowMultipleRegistrants ? template.MaxRegistrants : 1 ) ?? instance.MaxAttendees;
             IsLoginRequired = template.LoginRequired;
+            AllowExternalRegistrationUpdates = template.AllowExternalRegistrationUpdates;
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -721,5 +722,13 @@ namespace Rock.Model
         /// The registration workflow type identifier.
         /// </value>
         public List<int> WorkflowTypeIds { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow registration updates].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow registration updates]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowExternalRegistrationUpdates { get; private set; }
     }
 }

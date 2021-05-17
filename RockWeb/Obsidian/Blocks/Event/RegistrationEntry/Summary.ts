@@ -89,9 +89,6 @@ export default defineComponent( {
             /** A warning message about the discount code that is a result of a failed AJAX call */
             discountCodeWarningMessage: '',
 
-            /** A success message about the discount code that is a result of a successful AJAX call */
-            discountCodeSuccessMessage: '',
-
             /** The dollar amount to be discounted because of the discount code entered. */
             discountAmount: 0,
 
@@ -118,6 +115,35 @@ export default defineComponent( {
         };
     },
     computed: {
+        /** The success message displayed once a discount code has been applied */
+        discountCodeSuccessMessage (): string
+        {
+            const discountAmount = this.viewModel.Session?.DiscountAmount || this.discountAmount;
+            const discountPercent = this.viewModel.Session?.DiscountPercentage || this.discountPercent;
+
+            if ( !discountPercent && !discountAmount )
+            {
+                return '';
+            }
+
+            const discountText = discountPercent ?
+                `${asFormattedString( discountPercent * 100, 0 )}%` :
+                `$${asFormattedString( discountAmount, 2 )}`;
+
+            return `Your ${discountText} discount code for all registrants was successfully applied.`;
+        },
+
+        /** Should the discount panel be shown? */
+        isDiscountPanelVisible (): boolean
+        {
+            if ( !this.viewModel.HasDiscountsAvailable || !this.maxAmountCanBePaid )
+            {
+                return false;
+            }
+
+            return true;
+        },
+
         /** Is the registrar option set to UseLoggedInPerson */
         useLoggedInPersonForRegistrar (): boolean
         {
@@ -333,7 +359,14 @@ export default defineComponent( {
         /** The amount due today */
         amountDueToday (): number
         {
-            return ( this.viewModel.AmountDueToday || 0 ) * this.registrationEntryState.Registrants.length;
+            const amountDue = ( ( this.viewModel.AmountDueToday || 0 ) * this.registrationEntryState.Registrants.length ) - this.previouslyPaid;
+
+            if ( amountDue > 0 )
+            {
+                return amountDue;
+            }
+
+            return 0;
         },
 
         /** The amount due today formatted as currency */
@@ -342,13 +375,32 @@ export default defineComponent( {
             return `$${asFormattedString( this.amountDueToday )}`;
         },
 
+        /** The maximum amount that can be paid */
+        maxAmountCanBePaid (): number
+        {
+            const balance = this.discountedTotal - this.previouslyPaid;
+
+            if ( balance > 0 )
+            {
+                return balance;
+            }
+
+            return 0;
+        },
+
+        /** The total after discounts and previous payments as a formatted string */
+        maxAmountCanBePaidFormatted (): string
+        {
+            return `$${asFormattedString( this.maxAmountCanBePaid )}`;
+        },
+
         /** The vee-validate rules for the amount to pay today */
         amountToPayTodayRules (): string
         {
             var rules: string[] = [ 'required' ];
             const registrantCount = this.registrationEntryState.Registrants.length;
-            let min = ( this.viewModel.AmountDueToday || 0 ) * registrantCount;
-            const max = this.discountedTotal;
+            let min = this.previouslyPaid ? 0 : ( ( this.viewModel.AmountDueToday || 0 ) * registrantCount );
+            const max = this.maxAmountCanBePaid;
 
             if ( min > max )
             {
@@ -360,10 +412,10 @@ export default defineComponent( {
             return ruleArrayToString( rules );
         },
 
-        /** After the initial payment, how much will remain of the total? */
+        /** After previous payments and the payment for today, how much will remain of the total? */
         amountRemaining (): number
         {
-            const actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday;
+            const actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday - this.previouslyPaid;
             const bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
             return bounded;
         },
@@ -410,7 +462,7 @@ export default defineComponent( {
             this.loading = true;
 
             // If there is a cost, then the gateway will need to be used to pay
-            if ( this.total )
+            if ( this.maxAmountCanBePaid )
             {
                 // If this is a redirect gateway, then persist and redirect now
                 if ( this.viewModel.IsRedirectGateway )
@@ -463,12 +515,6 @@ export default defineComponent( {
                     this.discountCodeWarningMessage = '';
                     this.discountAmount = result.data.DiscountAmount;
                     this.discountPercent = result.data.DiscountPercentage;
-
-                    const discountText = result.data.DiscountPercentage ?
-                        `${asFormattedString( this.discountPercent * 100, 0 )}%` :
-                        `$${asFormattedString( this.discountAmount, 2 )}`;
-
-                    this.discountCodeSuccessMessage = `Your ${discountText} discount code for all registrants was successfully applied.`;
                     this.registrationEntryState.DiscountCode = result.data.DiscountCode;
                 }
             }
@@ -622,6 +668,12 @@ export default defineComponent( {
             {
                 this.prefillRegistrar();
             }
+        },
+
+        /** When the discount code changes, then adjust the amount to pay */
+        'registrationEntryState.DiscountCode' ()
+        {
+            this.registrationEntryState.AmountToPayToday = this.maxAmountCanBePaid;
         }
     },
     template: `
@@ -667,7 +719,7 @@ export default defineComponent( {
             <h4>Payment Summary</h4>
             <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
             <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
-            <div v-if="viewModel.HasDiscountsAvailable" class="clearfix">
+            <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
                 <div class="form-group pull-right">
                     <label class="control-label">Discount Code</label>
                     <div class="input-group">
@@ -739,7 +791,7 @@ export default defineComponent( {
                             </div>
                         </div>
                     </div>
-                    <template v-if="showAmountDueToday">
+                    <template v-if="showAmountDueToday && maxAmountCanBePaid">
                         <div class="form-group static-control">
                             <label class="control-label">Minimum Due Today</label>
                             <div class="control-wrapper">
@@ -762,7 +814,7 @@ export default defineComponent( {
                         <label class="control-label">Amount Due</label>
                         <div class="control-wrapper">
                             <div class="form-control-static">
-                                {{discountedTotalFormatted}}
+                                {{maxAmountCanBePaidFormatted}}
                             </div>
                         </div>
                     </div>
@@ -770,7 +822,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="gatewayControlModel && total && registrationEntryState.AmountToPayToday" class="well">
+        <div v-if="gatewayControlModel && total && maxAmountCanBePaid" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />
@@ -796,11 +848,11 @@ export default defineComponent( {
 
         <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
 
-        <div class="actions">
-            <RockButton btnType="default" @click="onPrevious" :isLoading="loading">
+        <div class="actions text-right">
+            <RockButton v-if="viewModel.AllowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
                 Previous
             </RockButton>
-            <RockButton btnType="primary" class="pull-right" type="submit" :isLoading="loading">
+            <RockButton btnType="primary" type="submit" :isLoading="loading">
                 {{finishButtonText}}
             </RockButton>
         </div>

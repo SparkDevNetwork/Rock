@@ -1868,7 +1868,8 @@ namespace Rock.Obsidian.Blocks.Event
                 Session = session,
                 IsUnauthorized = isUnauthorized,
                 SuccessViewModel = successViewModel,
-                TimeoutMinutes = timeoutMinutes
+                TimeoutMinutes = timeoutMinutes,
+                AllowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates
             };
 
             return viewModel;

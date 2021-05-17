@@ -15,10 +15,9 @@
 // </copyright>
 //
 
-using Rock.Financial;
 using Rock.Model;
 
-namespace Rock.Obsidian.Util
+namespace Rock.Financial
 {
     /// <summary>
     /// A Financial Gateway that has an Obsidian control
@@ -40,8 +39,7 @@ namespace Rock.Obsidian.Util
         object GetObsidianControlSettings( FinancialGateway financialGateway );
 
         /// <summary>
-        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="GetHostedPaymentInfoControl" />
-        /// and returns a customer account token that can be used for future transactions.
+        /// Creates the customer account using a token received and returns a customer account token that can be used for future transactions.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="paymentInfo">The payment information.</param>

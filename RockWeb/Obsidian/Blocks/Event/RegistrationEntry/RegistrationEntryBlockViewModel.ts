@@ -123,6 +123,7 @@ export interface RegistrationEntryBlockViewModel
     RedirectGatewayUrl: string,
     LoginRequiredToRegister: boolean,
     SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null,
+    AllowRegistrationUpdates: boolean
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel

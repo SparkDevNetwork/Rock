@@ -59,7 +59,7 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
 
@@ -76,6 +76,44 @@ namespace Rock.Financial
 
         #endregion
 
+        #region Obsidian
+
+        /// <summary>
+        /// Creates the customer account using a token received and returns a customer account token that can be used for future transactions.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return Guid.NewGuid().ToString( "N" );
+        }
+
+        /// <summary>
+        /// Gets the obsidian control file URL.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/ObsidianJs/Generated/Controls/TestGatewayControl.js";
+        }
+
+        /// <summary>
+        /// Gets the obsidian control settings.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        {
+            return new
+            {
+            };
+        }
+
+        #endregion Obsidian
 
         #region Automated Gateway Component
 
