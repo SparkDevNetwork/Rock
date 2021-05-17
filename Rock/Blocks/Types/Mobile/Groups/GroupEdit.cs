@@ -489,6 +489,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Details"" />
 <Rock:Divider />" );
             }
+            else
+            {
+                content = content.Replace( "##HEADER##", string.Empty );
+            }
 
             return content.Replace( "##FIELDS##", fieldsContent )
                 .Replace( "##VALIDATORS##", string.Join( string.Empty, validatorsContent ) )

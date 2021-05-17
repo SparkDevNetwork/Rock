@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Steps
             /// The kpi lava
             /// </summary>
             public const string KpiLava =
-@"{[kpis]}
+@"{[kpis style:'card' iconbackground:'true']}
   [[ kpi icon:'fa-user' value:'{{IndividualsCompleting | Format:'N0'}}' label:'Individuals Completing Program' color:'blue-700']][[ endkpi ]]
   [[ kpi icon:'fa-calendar' value:'{{AvgDaysToComplete | Format:'N0'}}' label:'Average Days to Complete Program' color:'green-600']][[ endkpi ]]
   [[ kpi icon:'fa-map-marker' value:'{{StepsStarted | Format:'N0'}}' label:'Steps Started' color:'#FF385C']][[ endkpi ]]

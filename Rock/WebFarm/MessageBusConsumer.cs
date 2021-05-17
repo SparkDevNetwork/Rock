@@ -33,13 +33,19 @@ namespace Rock.WebFarm
         /// <param name="message">The message.</param>
         public override void Consume( WebFarmWasUpdatedMessage message )
         {
+            if ( !RockWebFarm.IsRunning() )
+            {
+                // Don't act on any messages until this node is fully started
+                return;
+            }
+
             switch ( message.MessageType )
             {
                 case RockWebFarm.EventType.Ping:
-                    RockWebFarm.OnReceivedPing( message.SenderNodeName );
+                    RockWebFarm.OnReceivedPing( message.SenderNodeName, message.Payload.AsGuidOrNull() );
                     break;
                 case RockWebFarm.EventType.Pong:
-                    RockWebFarm.OnReceivedPong( message.SenderNodeName, message.RecipientNodeName );
+                    RockWebFarm.OnReceivedPong( message.SenderNodeName, message.RecipientNodeName, message.Payload.AsGuidOrNull() );
                     break;
                 case RockWebFarm.EventType.Startup:
                     RockWebFarm.OnReceivedStartup( message.SenderNodeName );

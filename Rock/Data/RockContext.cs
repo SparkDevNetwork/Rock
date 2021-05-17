@@ -510,6 +510,14 @@ namespace Rock.Data
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication response attachments.
+        /// </summary>
+        /// <value>
+        /// The communication response attachments.
+        /// </value>
+        public DbSet<CommunicationResponseAttachment> CommunicationResponseAttachments { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication responses.
         /// </summary>
         /// <value>
@@ -1278,6 +1286,30 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the media accounts.
+        /// </summary>
+        /// <value>
+        /// The media accounts.
+        /// </value>
+        public DbSet<MediaAccount> MediaAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media elements.
+        /// </summary>
+        /// <value>
+        /// The media elements.
+        /// </value>
+        public DbSet<MediaElement> MediaElements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media folders.
+        /// </summary>
+        /// <value>
+        /// The media folders.
+        /// </value>
+        public DbSet<MediaFolder> MediaFolders { get; set; }
+
+        /// <summary>
         /// Gets or sets the merge templates.
         /// </summary>
         /// <value>
@@ -1604,6 +1636,14 @@ namespace Rock.Data
         /// The registration registrant fees.
         /// </value>
         public DbSet<RegistrationRegistrantFee> RegistrationRegistrantFees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration sessions.
+        /// </summary>
+        /// <value>
+        /// The registration sessions.
+        /// </value>
+        public DbSet<RegistrationSession> RegistrationSessions { get; set; }
 
         /// <summary>
         /// Gets or sets the registration templates.

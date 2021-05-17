@@ -1077,10 +1077,13 @@ namespace RockWeb.Blocks.Connection
                 connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
+            bool isNew = false;
             if ( connectionStatus == null )
             {
                 connectionStatus = new ConnectionStatus();
+                isNew = true;
             }
+
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -1101,12 +1104,16 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            if ( StatusesState.Any( a => a.Guid.Equals( connectionStatus.Guid ) ) )
+            
+            if ( isNew )
             {
-                StatusesState.RemoveEntity( connectionStatus.Guid );
+               /*
+                 SK - 22 Feb 2020
+                 Avoid removing and then adding Connection Type's Statuses on edit as it causes them to reorder
+               */
+                StatusesState.Add( connectionStatus );
             }
 
-            StatusesState.Add( connectionStatus );
             BindConnectionStatusesGrid();
             HideDialog();
         }

@@ -53,6 +53,12 @@ namespace Rock.Model
             errorMessage = string.Empty;
             
             // ignoring Registration,RegistrationInstanceId 
+ 
+            if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.RegistrationInstanceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationInstance.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -100,6 +106,8 @@ namespace Rock.Model
             target.DefaultPayment = source.DefaultPayment;
             target.Details = source.Details;
             target.EndDateTime = source.EndDateTime;
+            target.ExternalGatewayFundId = source.ExternalGatewayFundId;
+            target.ExternalGatewayMerchantId = source.ExternalGatewayMerchantId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
@@ -108,6 +116,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.PaymentRedirectData = source.PaymentRedirectData;
             target.RegistrationInstructions = source.RegistrationInstructions;
+            target.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             target.RegistrationTemplateId = source.RegistrationTemplateId;
             target.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             target.ReminderSent = source.ReminderSent;

@@ -172,6 +172,29 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         </header>
         <div class="note-content">
             {{ noteText }}
+
+            {% comment %}Only Display Attibute Markup if Exists, and only if the current person has rights to view it{% endcomment %}
+            {% assign totalAttributes = note.AttributeValues | Size %}
+            {% assign totalEmptyAttributes = note.AttributeValues | Where:'ValueFormatted','' | Size %}
+            {% if totalAttributes != totalEmptyAttributes %}
+                <div class="note-attributes">
+                    <div class="row">
+                        {% for attribute in note.AttributeValues %}
+                            {%- assign canViewAttribute = attribute.AttributeId | FromCache:'Attribute'  | HasRightsTo:'View' -%}
+                            {% if canViewAttribute %}
+                                {% if attribute.ValueFormatted != '' %}
+                                <div class="col-lg-4 col-md-6 col-sm-1">
+                                    <dl class="note-attribute">
+                                        <dt>{{ attribute.AttributeName }}</dt>
+                                        <dd>{{ attribute.ValueFormatted }}</dd>
+                                    </dl>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
         <footer class="note-footer">
             {% comment %} <ul class="note-footer-actions-list list-horizontal">

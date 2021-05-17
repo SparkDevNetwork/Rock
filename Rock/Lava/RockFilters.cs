@@ -1277,7 +1277,7 @@ namespace Rock.Lava
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
-
+            
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
@@ -4897,7 +4897,7 @@ namespace Rock.Lava
         /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
         /// <param name="randomLength">The random length.</param>
         /// <returns></returns>
-        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 7 )
+        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10 )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -4948,10 +4948,10 @@ namespace Rock.Lava
             var shortLink = shortLinkService.GetByToken( token, siteId.Value );
             if ( shortLink != null && overwrite == false )
             {
-                // We can't use the provided shortlink because it's ready used, so get a random token
+                // We can't use the provided shortlink because it's already used, so get a random token.
                 // Garbage in Random out
                 shortLink = null;
-                token = shortLinkService.GetUniqueToken( siteId.Value, 7 );
+                token = shortLinkService.GetUniqueToken( siteId.Value, 10 );
             }
 
             if ( shortLink == null )
@@ -5073,6 +5073,10 @@ namespace Rock.Lava
             {
                 return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
             }
+            else if ( valueName == "aspnetversion" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
+            }
 
             return $"Configuration setting \"{ input }\" is not available.";
         }
@@ -5132,13 +5136,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Wheres the specified input.
+        /// Filters a collection of items by applying the specified Linq predicate.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns></returns>
+        public static object Where( object input, string filter )
+        {
+            if ( input is IEnumerable )
+            {
+                var enumerableInput = ( IEnumerable ) input;
+                return enumerableInput.Where( filter );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Filters a collection of items on a specified property and value.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="filterKey">The filter key.</param>
         /// <param name="filterValue">The filter value.</param>
+        /// <param name="comparisonType">The type of comparison for the filter value, either "equal" (default) or "notequal".</param>
         /// <returns></returns>
-        public static object Where( object input, string filterKey, object filterValue )
+        public static object Where( object input, string filterKey, object filterValue, string comparisonType = "equal" )
         {
             if ( input == null )
             {
@@ -5156,17 +5178,38 @@ namespace Rock.Lava
                         var liquidObject = value as ILiquidizable;
                         var condition = DotLiquid.Condition.Operators["=="];
 
-                        if ( liquidObject.ContainsKey( filterKey ) && condition( liquidObject[filterKey], filterValue ) )
+                        if ( liquidObject.ContainsKey( filterKey )
+                                && ( ( condition( liquidObject[filterKey], filterValue ) && comparisonType == "equal" )
+                                     || ( !condition( liquidObject[filterKey], filterValue ) && comparisonType == "notequal" ) ) )
                         {
                             result.Add( liquidObject );
                         }
+
                     }
                     else if ( value is IDictionary<string, object> )
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey ) && ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue )
+                        if ( dictionaryObject.ContainsKey( filterKey )
+                                 && ( ( dynamic ) dictionaryObject[filterKey] == ( dynamic ) filterValue && comparisonType == "equal"
+                                        || ( ( dynamic ) dictionaryObject[filterKey] != ( dynamic ) filterValue && comparisonType == "notequal" ) ) )
                         {
                             result.Add( dictionaryObject );
+                        }
+                    }
+                    else if ( value is object )
+                    {
+                        var propertyValue = value.GetPropertyValue( filterKey );
+
+                        // Allow for null checking as an empty string. Could be differing opinions on this...?!
+                        if ( propertyValue.IsNull() )
+                        {
+                            propertyValue = string.Empty;
+                        }
+
+                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
+                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                        {
+                            result.Add( value );
                         }
                     }
                 }

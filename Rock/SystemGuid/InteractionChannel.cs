@@ -40,5 +40,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for wifi presence
         /// </summary>
         public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
+
+        /// <summary>
+        /// Interaction Channel GUID for prayer events.
+        /// </summary>
+        public const string PRAYER_EVENTS = "3D49FB99-94D1-4F63-B1A2-30D4FEDE11E9";
     }
 }

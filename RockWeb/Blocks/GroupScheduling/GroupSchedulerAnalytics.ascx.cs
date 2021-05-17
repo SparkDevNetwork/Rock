@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -973,6 +974,7 @@ var barChart = new Chart(barCtx, {{
             {
                 Name = person.FullName;
                 SetCountFields( attendances );
+                SetDeclineReasonsField( attendances );
             }
 
             private void SetCountFields( List<Attendance> attendances )
@@ -982,6 +984,19 @@ var barChart = new Chart(barCtx, {{
                 DeclineCount = attendances.Count( aa => aa.RSVP == RSVP.No & aa.DidAttend == false );
                 AttendedCount = attendances.Count( aa => aa.DidAttend == true );
                 CommittedNoShowCount = attendances.Count( aa => aa.RSVP == RSVP.Yes && aa.DidAttend == false );
+            }
+
+            private void SetDeclineReasonsField( List<Attendance> attendances )
+            {
+                var declinedAttendances = attendances.Where( a => a.RSVP == RSVP.No );
+                var declinedReasons = new StringBuilder("<ul class='list-unstyled m-0'>");
+                foreach ( var declinedAttendance in declinedAttendances )
+                {
+                    var declinedReason = DefinedValueCache.GetValue( declinedAttendance.DeclineReasonValueId );
+                    declinedReasons.Append( string.Format( "<li><small>{0}</small> {1}</li>", declinedAttendance.StartDateTime.ToShortDateTimeString(), declinedReason.EncodeHtml() ) );
+                }
+                declinedReasons.Append( "</ul>" );
+                DeclinedReasons = declinedReasons.ToString();
             }
 
             public string Name { get; private set; }
@@ -1037,6 +1052,8 @@ var barChart = new Chart(barCtx, {{
                     return CommittedNoShowCount == 0 ? "-" : CommittedNoShowCount.ToString();
                 }
             }
+
+            public string DeclinedReasons { get; private set; }
         }
 
         /// <summary>

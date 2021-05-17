@@ -31,9 +31,9 @@
         </div>
         <div class="row">
           {% if eventItemOccurrence.Date != eventItemOccurrence.EndDate %}
-            {{ eventItemOccurrence.Date | Date: 'MMM d' }} - {{ eventItemOccurrence.EndDate | Date: 'MMM d' }}
+            {{ eventItemOccurrence.Date | Date:'MMM d' }} - {{ eventItemOccurrence.EndDate | Date:'MMM d' }}
           {% else %}
-            {{ eventItemOccurrence.Date | Date: 'MMM d' }}
+            {{ eventItemOccurrence.Date | Date:'MMM d' }}
           {% endif %}
         </div>
       </div>

@@ -40,7 +40,6 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [TextField( "Title Text",
         Description = "The title to display at the top of the block. Leave blank to hide.",
-        DefaultValue = "Let's Pray",
         IsRequired = false,
         Key = AttributeKeys.TitleText,
         Order = 0 )]

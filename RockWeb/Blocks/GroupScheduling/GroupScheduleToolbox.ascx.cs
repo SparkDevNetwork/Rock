@@ -1604,11 +1604,10 @@ $('#{0}').tooltip();
         /// <param name="dateTime">The date time.</param>
         private void CreateDateHeader( DateTime dateTime )
         {
-            string date = dateTime.ToShortDateString();
-            string dayOfWeek = dateTime.DayOfWeek.ToString();
+            string date = dateTime.ToLongDateString();
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "<div class='form-control-group'>" );
-            sb.AppendLine( string.Format( "<label class='control-label'>{0}&nbsp;({1})</label><br /><br />", date, dayOfWeek ) );
+            sb.AppendLine( "<div class='form-control-group margin-b-lg'>" );
+            sb.AppendLine( string.Format( "<div class=\"clearfix\"><label class='control-label'>{0}</label></div>", date ) );
             phSignUpSchedules.Controls.Add( new LiteralControl( sb.ToString() ) );
         }
 
@@ -1620,9 +1619,8 @@ $('#{0}').tooltip();
         private void CreateScheduleSignUpRow( PersonScheduleSignup personScheduleSignup, List<PersonScheduleSignup> availableGroupLocationSchedules )
         {
             var scheduleSignUpRowItem = new HtmlGenericContainer();
-            scheduleSignUpRowItem.Attributes.Add( "class", "row" );
+            scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
             scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
-            scheduleSignUpRowItem.AddCssClass( "margin-b-sm" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 
             var hfGroupId = new HiddenField { ID = "hfGroupId", Value = personScheduleSignup.GroupId.ToString() };
@@ -1639,12 +1637,21 @@ $('#{0}').tooltip();
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
-            cbSignupSchedule.Text = personScheduleSignup.ScheduledDateTime.ToString( "hh:mm tt" );
+            cbSignupSchedule.DisplayInline = true;
+            cbSignupSchedule.Text = personScheduleSignup.ScheduledDateTime.ToShortTimeString();
             cbSignupSchedule.ToolTip = personScheduleSignup.ScheduleName;
             cbSignupSchedule.AddCssClass( "js-person-schedule-signup-checkbox" );
             cbSignupSchedule.Checked = false;
             cbSignupSchedule.AutoPostBack = true;
             cbSignupSchedule.CheckedChanged += CbSignupSchedule_CheckedChanged;
+            cbSignupSchedule.Enabled = !personScheduleSignup.MaxScheduled;
+
+            if ( personScheduleSignup.MaxScheduled )
+            {
+                cbSignupSchedule.Text += " (filled)";
+                cbSignupSchedule.AddCssClass( "text-muted" );
+            }
+
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
             var locations = availableGroupLocationSchedules
@@ -1659,6 +1666,8 @@ $('#{0}').tooltip();
             ddlSignupLocations.Visible = false;
 
             ddlSignupLocations.AddCssClass( "js-person-schedule-signup-ddl" );
+            ddlSignupLocations.AddCssClass( "input-sm" );
+            ddlSignupLocations.AddCssClass( "my-1" );
             ddlSignupLocations.Items.Insert( 0, new ListItem( NO_LOCATION_PREFERENCE, string.Empty ) );
             foreach ( var location in locations )
             {
@@ -1800,6 +1809,13 @@ $('#{0}').tooltip();
                 {
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
+                        //  find if this has max volunteers here
+                        int? maximumCapacitySetting = null;
+                        if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
+                        {
+                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault().MaximumCapacity;
+                        }
+
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
                         foreach ( var startDateTime in startDateTimeList )
                         {
@@ -1822,6 +1838,15 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
+                            // If there is a maximum Campacity then find out how many aleady RSVP with "Yes"
+                            var currentScheduled = maximumCapacitySetting != null
+                                ? attendanceService
+                                    .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )
+                                    .Count()
+                                : 0;
+
+                            bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
+
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
                             {
@@ -1835,6 +1860,7 @@ $('#{0}').tooltip();
                                 ScheduleId = schedule.Id,
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
+                                MaxScheduled = maxScheduled
                             } );
                         }
                     }
@@ -1865,6 +1891,8 @@ $('#{0}').tooltip();
             public string LocationName { get; set; }
 
             public int LocationOrder { get; set; }
+
+            public bool MaxScheduled { get; set; }
         }
 
         #endregion Sign-up Tab
