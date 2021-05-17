@@ -28,6 +28,7 @@ using DotLiquid;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -820,6 +821,17 @@ namespace Rock
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// NOTE: This function may return a false positive if the target string contains anything that resembles a Lava element, perhaps contained in a string literal.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool IsLavaTemplate( this string content )
+        {
+            return LavaHelper.IsLavaTemplate( content );
         }
 
         #endregion Lava Extensions
