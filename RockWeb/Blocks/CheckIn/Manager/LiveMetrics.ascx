@@ -54,7 +54,7 @@
         var data = {
             labels: chartLabel,
             datasets: [{
-                fill: false,
+                fill: true,
                 backgroundColor: '#059BFF',
                 borderColor: '#059BFF',
                 borderWidth: 0,
