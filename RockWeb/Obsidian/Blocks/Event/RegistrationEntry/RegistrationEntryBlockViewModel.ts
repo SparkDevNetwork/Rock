@@ -89,6 +89,12 @@ export enum RegistrantsSameFamily
     Ask = 2
 }
 
+export interface SessionRenewalResult
+{
+    SpotsSecured: number;
+    ExpirationDateTime: string;
+}
+
 export interface RegistrationEntryBlockViewModel
 {
     TimeoutMinutes: number | null;

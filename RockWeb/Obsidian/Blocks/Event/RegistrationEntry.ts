@@ -35,9 +35,8 @@ import Page from '../../Util/Page';
 import { RegistrationEntryBlockArgs } from './RegistrationEntry/RegistrationEntryBlockArgs';
 import { InvokeBlockActionFunc } from '../../Controls/RockBlock';
 import JavaScriptAnchor from '../../Elements/JavaScriptAnchor';
-import store from '../../Store/index';
 import Person from '../../ViewModels/CodeGenerated/PersonViewModel';
-import Dialog from '../../Controls/Dialog';
+import SessionRenewal from './RegistrationEntry/SessionRenewal';
 
 export enum Step
 {
@@ -154,7 +153,7 @@ export default defineComponent( {
         Alert,
         CountdownTimer,
         JavaScriptAnchor,
-        Dialog
+        SessionRenewal
     },
     setup ()
     {
@@ -270,7 +269,8 @@ export default defineComponent( {
     data ()
     {
         return {
-            secondsBeforeExpiration: -1
+            secondsBeforeExpiration: -1,
+            hasSessionRenewalSuccess: false
         };
     },
     computed: {
@@ -472,10 +472,11 @@ export default defineComponent( {
         }
     },
     methods: {
-        /** Restart the registration */
-        restart ()
+        /** The user requested an extension in time and it was granted */
+        onSessionRenewalSuccess ()
         {
-            location.reload();
+            this.hasSessionRenewalSuccess = true;
+            setTimeout( () => this.hasSessionRenewalSuccess = false, 5000 );
         },
 
         async onIntroNext ()
@@ -590,7 +591,10 @@ export default defineComponent( {
         <h1 v-if="currentStep !== steps.intro" v-html="stepTitleHtml"></h1>
         <ProgressTracker v-if="currentStep !== steps.success" :items="progressTrackerItems" :currentIndex="progressTrackerIndex">
             <template #aside>
-                <div v-if="secondsBeforeExpiration >= 0 && secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
+                <div v-if="secondsBeforeExpiration >= 0" v-show="secondsBeforeExpiration <= (30 * 60)" class="remaining-time flex-grow-1 flex-md-grow-0">
+                    <Alert v-if="hasSessionRenewalSuccess" alertType="success" class="m-0 pt-3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                        <h4>Success</h4>
+                    </Alert>
                     <span class="remaining-time-title">Time left before timeout</span>
                     <p class="remaining-time-countdown">
                         <CountdownTimer v-model="secondsBeforeExpiration" />
@@ -606,17 +610,6 @@ export default defineComponent( {
         <RegistrationEntrySuccess v-else-if="currentStep === steps.success" />
         <Alert v-else alertType="danger">Invalid State: '{{currentStep}}'</Alert>
     </template>
-    <Dialog :modelValue="isSessionExpired" :dismissible="false">
-        <template #header>
-            <h4>Registration Timed Out</h4>
-        </template>
-        <template #default>
-            Your registration has timed out. Do you wish to request an extension in time?
-        </template>
-        <template #footer>
-            <RockButton btnType="primary">Yes</RockButton>
-            <RockButton btnType="link" @click="restart">No, cancel registration</RockButton>
-        </template>
-    </Dialog>
+    <SessionRenewal :isSessionExpired="isSessionExpired" @success="onSessionRenewalSuccess" />
 </div>`
 } );

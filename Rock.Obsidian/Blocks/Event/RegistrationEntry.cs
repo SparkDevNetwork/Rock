@@ -292,6 +292,58 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
+        /// Persists the session.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult TryToRenewSession( Guid registrationSessionGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
+                var registrationService = new RegistrationService( rockContext );
+                var context = registrationService.GetRegistrationContext( registrationInstanceId, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                }
+
+                var registrationSessionService = new RegistrationSessionService( rockContext );
+                var registrationSession = registrationSessionService.Get( registrationSessionGuid );
+
+                if ( registrationSession is null )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+                }
+
+                // Set the new expiration
+                var wasExpired = registrationSession.ExpirationDateTime < RockDateTime.Now;
+                var newExpiration = context.RegistrationSettings.TimeoutMinutes.HasValue ?
+                    RockDateTime.Now.AddMinutes( context.RegistrationSettings.TimeoutMinutes.Value ) :
+                    RockDateTime.Now.AddDays( 1 );
+
+                registrationSession.ExpirationDateTime = newExpiration;
+
+                if ( wasExpired && context.SpotsRemaining.HasValue && context.SpotsRemaining.Value < registrationSession.RegistrationCount )
+                {
+                    // Adjust the number of registrants to fit the available spots
+                    registrationSession.RegistrationCount = context.SpotsRemaining.Value;
+                }
+
+                // The session wasn't expired yet, there is no capacity limit, or there are enough spots, so renew without issue
+                rockContext.SaveChanges();
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, new SessionRenewalResult
+                {
+                    SpotsSecured = registrationSession.RegistrationCount,
+                    ExpirationDateTime = registrationSession.ExpirationDateTime
+                } );
+            }
+        }
+
+        /// <summary>
         /// Submits the registration.
         /// </summary>
         /// <param name="args">The arguments.</param>

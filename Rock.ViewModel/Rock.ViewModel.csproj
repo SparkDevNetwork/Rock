@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Blocks\SessionRenewalResult.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockSession.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockSuccessViewModel.cs" />
     <Compile Include="Blocks\RegistrationEntryBlockArgs.cs" />
