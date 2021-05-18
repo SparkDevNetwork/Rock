@@ -155,7 +155,7 @@ namespace Rock.Model
 
             foreach ( var registrant in registration.Registrants )
             {
-                var discountApplies = discountedRegistrantsRemaining.HasValue && discountedRegistrantsRemaining.Value > 0;
+                var discountApplies = discountModel != null && ( !discountedRegistrantsRemaining.HasValue || discountedRegistrantsRemaining.Value > 0 );
 
                 if ( discountedRegistrantsRemaining.HasValue )
                 {

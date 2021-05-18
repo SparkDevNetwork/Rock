@@ -292,6 +292,29 @@ namespace Rock.Obsidian.Blocks.Event
         }
 
         /// <summary>
+        /// Calculates the cost.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult CalculateCost( RegistrationEntryBlockArgs args )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, args, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                }
+
+                var registrationInstanceService = new RegistrationInstanceService( rockContext );
+                var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args );
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, costs );
+            }
+        }
+
+        /// <summary>
         /// Persists the session.
         /// </summary>
         /// <param name="args">The arguments.</param>

@@ -28,11 +28,11 @@ import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
 import StaticFormControl from '../../../Elements/StaticFormControl';
 import TextBox from '../../../Elements/TextBox';
-import { ruleArrayToString } from '../../../Rules/Index';
 import { asFormattedString } from '../../../Services/Number';
 import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
+import CostSummary from './CostSummary';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
 import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
@@ -41,17 +41,6 @@ type CheckDiscountCodeResult = {
     UsagesRemaining: number | null;
     DiscountAmount: number;
     DiscountPercentage: number;
-};
-
-type LineItem = {
-    Key: Guid;
-    IsFee: boolean;
-    Description: string;
-    Amount: number;
-    AmountFormatted: string;
-    DiscountedAmount: number;
-    DiscountedAmountFormatted: string;
-    DiscountHelp: string;
 };
 
 export default defineComponent( {
@@ -67,7 +56,8 @@ export default defineComponent( {
         RockValidation,
         JavaScriptAnchor,
         CurrencyBox,
-        StaticFormControl
+        StaticFormControl,
+        CostSummary
     },
     setup ()
     {
@@ -107,9 +97,6 @@ export default defineComponent( {
             /** An error message received from a bad submission */
             submitErrorMessage: '',
 
-            /** The amount already paid in the past (of an existing registration) */
-            previouslyPaid: 0,
-
             /** Should the registrar panel be shown */
             isRegistrarPanelShown: true
         };
@@ -136,7 +123,7 @@ export default defineComponent( {
         /** Should the discount panel be shown? */
         isDiscountPanelVisible (): boolean
         {
-            if ( !this.viewModel.HasDiscountsAvailable || !this.maxAmountCanBePaid )
+            if ( !this.viewModel.HasDiscountsAvailable )
             {
                 return false;
             }
@@ -186,244 +173,10 @@ export default defineComponent( {
             return !this.viewModel.ForceEmailUpdate && !!this.currentPerson?.Email;
         },
 
-        /** Should the discount column in the fee table be shown? */
-        showDiscountCol (): boolean
-        {
-            return this.discountPercent > 0 || this.discountAmount > 0;
-        },
-
         /** Info about the registrants made available by .FirstName instead of by field guid */
         registrantInfos (): RegistrantBasicInfo[]
         {
             return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.RegistrantForms ) );
-        },
-
-        /** The fee line items that will be displayed in the summary */
-        lineItems (): LineItem[]
-        {
-            const lineItems: LineItem[] = [];
-
-            for ( const registrant of this.registrationEntryState.Registrants )
-            {
-                let total = this.viewModel.Cost;
-                let discountedTotal = total;
-                let discountRemaining = 0;
-
-                if ( this.discountAmount && total < this.discountAmount )
-                {
-                    discountRemaining = this.discountAmount - total;
-                    discountedTotal = 0;
-                }
-                else if ( this.discountAmount )
-                {
-                    discountedTotal = total - this.discountAmount;
-                }
-                else if ( this.discountPercent )
-                {
-                    const discount = this.discountPercent >= 1 ?
-                        this.total :
-                        this.discountPercent <= 0 ?
-                            0 :
-                            ( total * this.discountPercent );
-
-                    discountedTotal = total - discount;
-                }
-
-                const info = this.registrantInfos.find( r => r.Guid === registrant.Guid )!;
-                const name = registrant.IsOnWaitList ?
-                    `${info.FirstName} ${info.LastName} (Waiting List)` :
-                    `${info.FirstName} ${info.LastName}`;
-
-                if ( registrant.IsOnWaitList )
-                {
-                    total = 0;
-                    discountedTotal = 0;
-                }
-
-                lineItems.push( {
-                    Key: registrant.Guid,
-                    IsFee: false,
-                    Description: name,
-                    Amount: total,
-                    AmountFormatted: asFormattedString( total ),
-                    DiscountedAmount: discountedTotal,
-                    DiscountedAmountFormatted: asFormattedString( discountedTotal ),
-                    DiscountHelp: ''
-                } );
-
-                // Don't show fees if on the waitlist
-                if ( registrant.IsOnWaitList )
-                {
-                    continue;
-                }
-
-                for ( const fee of this.viewModel.Fees )
-                {
-                    for ( const feeItem of fee.Items )
-                    {
-                        const qty = registrant.FeeItemQuantities[ feeItem.Guid ];
-
-                        if ( !qty )
-                        {
-                            continue;
-                        }
-
-                        const itemTotal = qty * feeItem.Cost;
-                        let itemDiscountedTotal = itemTotal;
-
-                        if ( fee.DiscountApplies )
-                        {
-                            if ( itemTotal < discountRemaining )
-                            {
-                                discountRemaining -= itemTotal;
-                                itemDiscountedTotal = 0;
-                            }
-                            else if ( discountRemaining )
-                            {
-                                itemDiscountedTotal -= discountRemaining;
-                                discountRemaining = 0;
-                            }
-                            else if ( this.discountPercent )
-                            {
-                                const discount = this.discountPercent >= 1 ?
-                                    itemTotal :
-                                    this.discountPercent <= 0 ?
-                                        0 :
-                                        ( itemTotal * this.discountPercent );
-
-                                itemDiscountedTotal = itemTotal - discount;
-                            }
-                        }
-
-                        lineItems.push( {
-                            Key: `${registrant.Guid}-${feeItem.Guid}`,
-                            IsFee: true,
-                            Description: `${fee.Name}-${feeItem.Name} (${qty} @ $${asFormattedString( feeItem.Cost )})`,
-                            Amount: itemTotal,
-                            AmountFormatted: asFormattedString( itemTotal ),
-                            DiscountedAmount: itemDiscountedTotal,
-                            DiscountedAmountFormatted: asFormattedString( itemDiscountedTotal ),
-                            DiscountHelp: fee.DiscountApplies ? '' : 'This item is not eligible for the discount.'
-                        } );
-                    }
-                }
-            }
-
-            return lineItems;
-        },
-
-        /** The total amount of the registration before discounts */
-        total (): number
-        {
-            let total = 0;
-
-            for ( const lineItem of this.lineItems )
-            {
-                total += lineItem.Amount;
-            }
-
-            return total;
-        },
-
-        /** The total amount of the registration after discounts */
-        discountedTotal (): number
-        {
-            let total = 0;
-
-            for ( const lineItem of this.lineItems )
-            {
-                total += lineItem.DiscountedAmount;
-            }
-
-            return total;
-        },
-
-        /** The total before discounts as a formatted string */
-        totalFormatted (): string
-        {
-            return `$${asFormattedString( this.total )}`;
-        },
-
-        /** The total after discounts as a formatted string */
-        discountedTotalFormatted (): string
-        {
-            return `$${asFormattedString( this.discountedTotal )}`;
-        },
-
-        /** Is there a user selectable amount to pay today (as opposed to paying in full) */
-        showAmountDueToday (): boolean
-        {
-            return this.viewModel.AmountDueToday !== null;
-        },
-
-        /** The amount due today */
-        amountDueToday (): number
-        {
-            const amountDue = ( ( this.viewModel.AmountDueToday || 0 ) * this.registrationEntryState.Registrants.length ) - this.previouslyPaid;
-
-            if ( amountDue > 0 )
-            {
-                return amountDue;
-            }
-
-            return 0;
-        },
-
-        /** The amount due today formatted as currency */
-        amountDueTodayFormatted (): string
-        {
-            return `$${asFormattedString( this.amountDueToday )}`;
-        },
-
-        /** The maximum amount that can be paid */
-        maxAmountCanBePaid (): number
-        {
-            const balance = this.discountedTotal - this.previouslyPaid;
-
-            if ( balance > 0 )
-            {
-                return balance;
-            }
-
-            return 0;
-        },
-
-        /** The total after discounts and previous payments as a formatted string */
-        maxAmountCanBePaidFormatted (): string
-        {
-            return `$${asFormattedString( this.maxAmountCanBePaid )}`;
-        },
-
-        /** The vee-validate rules for the amount to pay today */
-        amountToPayTodayRules (): string
-        {
-            var rules: string[] = [ 'required' ];
-            const registrantCount = this.registrationEntryState.Registrants.length;
-            let min = this.previouslyPaid ? 0 : ( ( this.viewModel.AmountDueToday || 0 ) * registrantCount );
-            const max = this.maxAmountCanBePaid;
-
-            if ( min > max )
-            {
-                min = max;
-            }
-
-            rules.push( `gte:${min}` );
-            rules.push( `lte:${max}` );
-            return ruleArrayToString( rules );
-        },
-
-        /** After previous payments and the payment for today, how much will remain of the total? */
-        amountRemaining (): number
-        {
-            const actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday - this.previouslyPaid;
-            const bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
-            return bounded;
-        },
-
-        /** After the initial payment, how much will remain of the total? Formatted as currency. */
-        amountRemainingFormatted (): string
-        {
-            return `$${asFormattedString( this.amountRemaining )}`;
         },
 
         /** The registrant term - plural if there are more than 1 */
@@ -436,11 +189,6 @@ export default defineComponent( {
         instanceName (): string
         {
             return this.viewModel.InstanceName;
-        },
-
-        previouslyPaidFormatted (): string
-        {
-            return `$${asFormattedString( this.previouslyPaid )}`;
         },
 
         /** The text to be displayed on the "Finish" button */
@@ -462,7 +210,7 @@ export default defineComponent( {
             this.loading = true;
 
             // If there is a cost, then the gateway will need to be used to pay
-            if ( this.maxAmountCanBePaid )
+            if ( this.registrationEntryState.AmountToPayToday )
             {
                 // If this is a redirect gateway, then persist and redirect now
                 if ( this.viewModel.IsRedirectGateway )
@@ -642,25 +390,6 @@ export default defineComponent( {
             return result.data || '';
         }
     },
-    created ()
-    {
-        if ( this.viewModel.Session )
-        {
-            this.registrationEntryState.AmountToPayToday = this.viewModel.Session.AmountToPayNow;
-            this.discountCodeInput = this.viewModel.Session.DiscountCode;
-            this.discountAmount = this.viewModel.Session.DiscountAmount;
-            this.discountPercent = this.viewModel.Session.DiscountPercentage;
-            this.previouslyPaid = this.viewModel.Session.PreviouslyPaid;
-        }
-        else if ( this.viewModel.InitialAmountToPay !== null )
-        {
-            this.registrationEntryState.AmountToPayToday = this.viewModel.InitialAmountToPay * this.registrationEntryState.Registrants.length;
-        }
-        else
-        {
-            this.registrationEntryState.AmountToPayToday = this.discountAmount;
-        }
-    },
     watch: {
         currentPerson: {
             immediate: true,
@@ -668,12 +397,6 @@ export default defineComponent( {
             {
                 this.prefillRegistrar();
             }
-        },
-
-        /** When the discount code changes, then adjust the amount to pay */
-        'registrationEntryState.DiscountCode' ()
-        {
-            this.registrationEntryState.AmountToPayToday = this.maxAmountCanBePaid;
         }
     },
     template: `
@@ -715,7 +438,7 @@ export default defineComponent( {
             </template>
         </div>
 
-        <div v-if="total">
+        <div v-if="viewModel.Cost">
             <h4>Payment Summary</h4>
             <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
             <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
@@ -730,99 +453,10 @@ export default defineComponent( {
                     </div>
                 </div>
             </div>
-            <div class="fee-table">
-                <div class="row hidden-xs fee-header">
-                    <div class="col-sm-6">
-                        <strong>Description</strong>
-                    </div>
-                    <div v-if="showDiscountCol" class="col-sm-3 fee-value">
-                        <strong>Discounted Amount</strong>
-                    </div>
-                    <div class="col-sm-3 fee-value">
-                        <strong>Amount</strong>
-                    </div>
-                </div>
-                <div v-for="lineItem in lineItems" :key="lineItem.Key" class="row" :class="lineItem.IsFee ? 'fee-row-fee' : 'fee-row-cost'">
-                    <div class="col-sm-6 fee-caption">
-                        {{lineItem.Description}}
-                    </div>
-                    <div v-if="showDiscountCol" class="col-sm-3 fee-value">
-                        <JavaScriptAnchor v-if="lineItem.DiscountHelp" class="help" :title="lineItem.DiscountHelp">
-                            <i class="fa fa-info-circle"></i>
-                        </JavaScriptAnchor>
-                        <span class="visible-xs-inline">Discounted Amount:</span>
-                        $ {{lineItem.DiscountedAmountFormatted}}
-                    </div>
-                    <div class="col-sm-3 fee-value">
-                        <span class="visible-xs-inline">Amount:</span>
-                        $ {{lineItem.AmountFormatted}}
-                    </div>
-                </div>
-                <div class="row fee-row-total">
-                    <div class="col-sm-6 fee-caption">
-                        Total
-                    </div>
-                    <div v-if="showDiscountCol" class="col-sm-3 fee-value">
-                        <span class="visible-xs-inline">Discounted Amount:</span>
-                        {{discountedTotalFormatted}}
-                    </div>
-                    <div class="col-sm-3 fee-value">
-                        <span class="visible-xs-inline">Amount:</span>
-                        {{totalFormatted}}
-                    </div>
-                </div>
-            </div>
-
-            <div class="row fee-totals">
-                <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
-                    <div class="form-group static-control">
-                        <label class="control-label">Total Cost</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{discountedTotalFormatted}}
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="previouslyPaid" class="form-group static-control">
-                        <label class="control-label">Previously Paid</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{previouslyPaidFormatted}}
-                            </div>
-                        </div>
-                    </div>
-                    <template v-if="showAmountDueToday && maxAmountCanBePaid">
-                        <div class="form-group static-control">
-                            <label class="control-label">Minimum Due Today</label>
-                            <div class="control-wrapper">
-                                <div class="form-control-static">
-                                    {{amountDueTodayFormatted}}
-                                </div>
-                            </div>
-                        </div>
-                        <CurrencyBox label="Amount To Pay Today" :rules="amountToPayTodayRules" v-model="registrationEntryState.AmountToPayToday" class="form-right" inputGroupClasses="input-width-md amount-to-pay" />
-                        <div class="form-group static-control">
-                            <label class="control-label">Amount Remaining</label>
-                            <div class="control-wrapper">
-                                <div class="form-control-static">
-                                    {{amountRemainingFormatted}}
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                    <div v-else class="form-group static-control">
-                        <label class="control-label">Amount Due</label>
-                        <div class="control-wrapper">
-                            <div class="form-control-static">
-                                {{maxAmountCanBePaidFormatted}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <CostSummary />
         </div>
 
-        <div v-if="gatewayControlModel && total && maxAmountCanBePaid" class="well">
+        <div v-if="gatewayControlModel && registrationEntryState.AmountToPayToday" class="well">
             <h4>Payment Method</h4>
             <Alert v-if="gatewayErrorMessage" alertType="danger">{{gatewayErrorMessage}}</Alert>
             <RockValidation :errors="gatewayValidationFields" />
@@ -837,7 +471,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="!total" class="margin-b-md">
+        <div v-if="!viewModel.Cost" class="margin-b-md">
             <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
             <ul>
                 <li v-for="r in registrantInfos" :key="r.Guid">

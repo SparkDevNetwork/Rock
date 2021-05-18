@@ -450,7 +450,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                     onSessionRenewalSuccess: function () {
                         var _this = this;
                         this.hasSessionRenewalSuccess = true;
-                        setTimeout(function () { return _this.hasSessionRenewalSuccess = false; }, 3000);
+                        setTimeout(function () { return _this.hasSessionRenewalSuccess = false; }, 5000);
                     },
                     onIntroNext: function () {
                         return __awaiter(this, void 0, void 0, function () {
