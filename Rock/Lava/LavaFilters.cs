@@ -5232,9 +5232,16 @@ namespace Rock.Lava
 
                 if ( input is List<object> objectList )
                 {
-                    var itemType = objectList.FirstOrDefault().GetType();
+                    if ( objectList.Any() )
+                    {
+                        var itemType = objectList.FirstOrDefault().GetType();
 
-                    enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                        enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                    }
+                    else
+                    {
+                        return new List<object>();
+                    }
                 }
                 else
                 {
