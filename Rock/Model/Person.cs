@@ -322,8 +322,8 @@ namespace Rock.Model
 
             set
             {
-                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
                 _givingGroupId = value;
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
             }
         }
 
@@ -2217,6 +2217,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;

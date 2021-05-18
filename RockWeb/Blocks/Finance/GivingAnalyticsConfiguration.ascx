@@ -37,7 +37,7 @@
 
                 <div class="well">
                     <h4>Alerts</h4>
-                    <span class="text-muted">The configuration below will be used to generate alerts. An alert will be triggered the first nmatching rule unless that rule is configured to continue matching other rules.</span>
+                    <span class="text-muted">The configuration below will be used to generate alerts. An alert will be triggered the first matching rule unless that rule is configured to continue matching other rules.</span>
                     <hr class="margin-t-sm">
                     <div class="row">
                         <div class="col-md-6">
@@ -115,8 +115,8 @@
                             <p>
                                 Typical Values are shown below.
                                 <ul>
-                                    <li>2 - Aggressive - This would alert when a gift was within 2 times the interquatile range (IQR) from their median gift amount. For a bi-weekly giver with a median gift of $400 and an IQR of $65, this alert would be generated if a gift of $530 was recieved.</li>
-                                    <li>3 - Normal - This would alert when a gift was within 3 times the interquartile range (IQR) from their median gift amount. For a bi-weekly giver with a median gift of $400 and an IQR of $65, this alert would be generated if a gift of $595 was recieved.</li>
+                                    <li>2 (Aggressive) - This would alert when a gift was within 2 times the interquatile range (IQR) from their median gift amount. For a bi-weekly giver with a median gift of $400 and an IQR of $65, this alert would be generated if a gift of $530 was recieved.</li>
+                                    <li>3 (Normal) - This would alert when a gift was within 3 times the interquartile range (IQR) from their median gift amount. For a bi-weekly giver with a median gift of $400 and an IQR of $65, this alert would be generated if a gift of $595 was recieved.</li>
                                 </ul>
                             </p>
                             <p>
@@ -138,8 +138,8 @@
                             <p>
                                 Typical Values are shown below.
                                 <ul>
-                                    <li>2 - Aggressive - This would alert when a gift was within 2 standard deviations from their mean. For a bi-weekly giver with a mean of 14 days and a standard deviation of 3.8, this alert would be generated if no gift was recieved within 22 days since their last gift.</li>
-                                    <li>3 - Normal - This would alert when a gift was within 3 standard deviations from their mean. For a bi-weekly giver with a mean of 14 days and a standard deviations of 3.8, this alert would be generated if no gift was recieved within 26 days since their last gift.</li>
+                                    <li>2 (Aggressive) - This would alert when a gift was within 2 standard deviations from their mean. For a bi-weekly giver with a mean of 14 days and a standard deviation of 3.8, this alert would be generated if no gift was recieved within 22 days since their last gift.</li>
+                                    <li>3 (Normal) - This would alert when a gift was within 3 standard deviations from their mean. For a bi-weekly giver with a mean of 14 days and a standard deviations of 3.8, this alert would be generated if no gift was recieved within 26 days since their last gift.</li>
                                 </ul>
                             </p>
                             <p>
@@ -151,21 +151,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:CurrencyBox ID="cbMinimumGiftAmount" runat="server" Label="Minimum Gift Amount" ValidationGroup="vgAlertDetails" Help="The minimum amount the specific gift must be to be considered a match." />
+                            <Rock:CurrencyBox ID="cbMinimumMedianGiftAmount" runat="server" Label="Minimum Median Gift Amount" ValidationGroup="vgAlertDetails" Help="The minimum median gift amount for the giver to be considered a match." />
+                            <Rock:NumberBox ID="nbMaxDaysSinceLastGift" runat="server" AppendText="Days" Label="Maximum Days Since Last Gift" ValidationGroup="vgAlertDetails" Help="The maximum number of days since the last gift." />
+                            <Rock:DataViewItemPicker ID="dvpPersonDataView" runat="server" Label="Person Data View" ValidationGroup="vgAlertDetails" Help="Data view to filter if any individual with the giving id of the gift is in the data is in." />
                         </div>
                         <div class="col-md-6">
                             <Rock:CurrencyBox ID="cbMaximumGiftAmount" runat="server" Label="Maximum Gift Amount" ValidationGroup="vgAlertDetails" Help="The maximum amount the specific gift must be to be considered a match." />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:CurrencyBox ID="cbMinimumMedianGiftAmount" runat="server" Label="Minimum Median Gift Amount" ValidationGroup="vgAlertDetails" Help="The minimum median gift amount for the giver to be considered a match." />
-                        </div>
-                        <div class="col-md-6">
                             <Rock:CurrencyBox ID="cbMaximumMedianGiftAmount" runat="server" Label="Maximum Median Gift Amount" ValidationGroup="vgAlertDetails" Help="The maximum median gift amount for the giver to be considered a match." />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:NumberBox ID="nbMaxDaysSinceLastGift" runat="server" AppendText="Days" Label="Maximum Days Since Last Gift" ValidationGroup="vgAlertDetails" Help="The maximum number of days since the last gift." />
-                        </div>
-                        <div class="col-md-6">
-                            <Rock:DataViewItemPicker ID="dvpPersonDataView" runat="server" Label="Person Data View" ValidationGroup="vgAlertDetails" Help="Data view to filter if any individual with the giving id of the gift is in the data is in." />
                         </div>
                     </div>
                 </div>
