@@ -991,16 +991,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.Cost = cbCost.Value ?? 0.0M;
             registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Value;
             registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Value;
-
-            if ( sUsePushPay.Visible && sUsePushPay.Checked )
-            {
-                var pushPayGateway = GetPushPayGateway( rockContext );
-                registrationTemplate.FinancialGatewayId = pushPayGateway?.Id;
-            }
-            else
-            {
-                registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
-            }
+            registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
             if ( IsRedirectionGateway() )
             {
@@ -2558,8 +2549,6 @@ The logged-in person's information will be used to complete the registrar inform
                 txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
             }
 
-            ShowOrHidePushPayButton( registrationTemplate, rockContext );
-
             SetCostVisibility();
             ShowHideBatchPrefixTextbox();
 
@@ -3989,72 +3978,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
-        #region PushPay
-
-        /// <summary>
-        /// Shows or hides pushpay button depending on if the plugin is installed and active.
-        /// </summary>
-        private void ShowOrHidePushPayButton( RegistrationTemplate registrationTemplate, RockContext rockContext )
-        {
-            if ( sUsePushPay.Visible )
-            {
-                // The controls defaults to not visible. So this method must have already executed and made it visible.
-                return;
-            }
-
-            // Determine if the gateway is installed and if the toggle should be shown
-            var pushPayGateway = GetPushPayGateway(rockContext);
-            var isPushPayInstalled = pushPayGateway != null;
-            sUsePushPay.Visible = isPushPayInstalled;
-
-            // Set the state of the toggle and the oither gateways' panel
-            if ( registrationTemplate.Id == 0 || !registrationTemplate.FinancialGatewayId.HasValue )
-            {
-                // This is a new template or a template without a gateway
-                // Since they have PushPay installed, default to using it
-                sUsePushPay.Checked = isPushPayInstalled;
-                pnlGatewayPanel.Visible = !isPushPayInstalled;
-            }
-            else
-            {
-                // This is an existing template with a gateway already selected
-                var selectedGatewayId = registrationTemplate.FinancialGatewayId.Value;
-                var isPushPaySelected = pushPayGateway?.Id == selectedGatewayId;
-
-                sUsePushPay.Checked = isPushPaySelected;
-                pnlGatewayPanel.Visible = !isPushPaySelected;
-            }
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the sUsePushPay control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void sUsePushPay_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlGatewayPanel.Visible = !sUsePushPay.Checked;
-        }
-
-        /// <summary>
-        /// Gets the push pay gateway.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private FinancialGateway GetPushPayGateway( RockContext rockContext )
-        {
-            var pushPayGuid = Rock.SystemGuid.FinancialGateway.PUSHPAY.AsGuid();
-
-            var financialGatewayService = new FinancialGatewayService( rockContext );
-            var pushPayGateway = financialGatewayService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( g => g.IsActive && g.Guid == pushPayGuid );
-
-            return pushPayGateway;
-        }
-
-        #endregion PushPay
-
         protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
         {
             ShowHideBatchPrefixTextbox();
@@ -4067,11 +3990,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         private bool IsRedirectionGateway()
         {
-            if ( sUsePushPay.Visible && sUsePushPay.Checked )
-            {
-                return true;
-            }
-
             var gatewayId = fgpFinancialGateway.SelectedValueAsInt();
 
             // validate gateway
@@ -4082,6 +4000,7 @@ The logged-in person's information will be used to complete the registrar inform
                     return new FinancialGatewayService( rockContext ).IsRedirectionGateway( gatewayId );
                 }
             }
+
             return false;
         }
     }
