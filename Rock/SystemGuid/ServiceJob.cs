@@ -137,6 +137,11 @@ namespace Rock.SystemGuid
         public const string MIGRATE_COMMUNICATION_MEDIUM_DATA = "E7C54AAB-451E-4E89-8083-CF398D37416E";
 
         /// <summary>
+        /// The Job to run Post v12.4 Data Migrations to decrypt the expiration month / year and the name on card fields.
+        /// </summary>
+        public const string DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS = "6C795E61-9DD4-4BE8-B9EB-E662E43B5E12";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

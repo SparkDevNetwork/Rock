@@ -840,7 +840,7 @@ namespace Rock.Rest.Controllers
             public string ForeignKey { get; set; }
 
             /// <summary>
-            /// Gets the expiration month by decrypting ExpirationMonthEncrypted
+            /// Gets the expiration month
             /// </summary>
             /// <value>
             /// The expiration month.
@@ -848,7 +848,7 @@ namespace Rock.Rest.Controllers
             public int? ExpirationMonth { get; set; }
 
             /// <summary>
-            /// Gets the expiration year by decrypting ExpirationYearEncrypted
+            /// Gets the expiration year
             /// </summary>
             /// <value>
             /// The expiration year.

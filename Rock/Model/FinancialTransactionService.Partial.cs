@@ -172,9 +172,9 @@ namespace Rock.Model
                 refundTransaction.FinancialPaymentDetail.BillingLocationId = transaction.FinancialPaymentDetail.BillingLocationId;
                 refundTransaction.FinancialPaymentDetail.CreditCardTypeValueId = transaction.FinancialPaymentDetail.CreditCardTypeValueId;
                 refundTransaction.FinancialPaymentDetail.CurrencyTypeValueId = transaction.FinancialPaymentDetail.CurrencyTypeValueId;
-                refundTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted = transaction.FinancialPaymentDetail.ExpirationMonthEncrypted;
-                refundTransaction.FinancialPaymentDetail.ExpirationYearEncrypted = transaction.FinancialPaymentDetail.ExpirationYearEncrypted;
-                refundTransaction.FinancialPaymentDetail.NameOnCardEncrypted = transaction.FinancialPaymentDetail.NameOnCardEncrypted;
+                refundTransaction.FinancialPaymentDetail.ExpirationMonth = transaction.FinancialPaymentDetail.ExpirationMonth;
+                refundTransaction.FinancialPaymentDetail.ExpirationYear = transaction.FinancialPaymentDetail.ExpirationYear;
+                refundTransaction.FinancialPaymentDetail.NameOnCard = transaction.FinancialPaymentDetail.NameOnCard;
             }
 
             decimal remainingBalance = amount.Value;
