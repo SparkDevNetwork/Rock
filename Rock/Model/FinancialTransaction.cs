@@ -215,7 +215,7 @@ namespace Rock.Model
         public int? ProcessedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when is when the transaction 
+        /// Gets or sets the processed date time. For example, if the transaction is from a scanned check, the ProcessedDateTime is when the transaction 
         /// was matched (or started to match) to the person who wrote the check.
         /// </summary>
         /// <value>
