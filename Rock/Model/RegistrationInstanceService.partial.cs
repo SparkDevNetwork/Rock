@@ -230,18 +230,19 @@ namespace Rock.Model
                     var feeItemGuid = kvp.Key;
                     var quantity = kvp.Value;
 
+                    if ( quantity < 1 )
+                    {
+                        // Don't include a line item for things the user didn't choose
+                        continue;
+                    }
+
                     // Get the fee from the template
                     var templateFeeItems = context.RegistrationSettings.Fees.SelectMany( f => f.FeeItems );
                     var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
                     var templateFee = templateFeeItem.RegistrationTemplateFee;
 
                     decimal cost = templateFeeItem.Cost;
-                    string desc = string.Format(
-                        "{0}{1} ({2:N0} @ {3})",
-                        templateFee.Name,
-                        string.IsNullOrWhiteSpace( templateFeeItem.Name ) ? string.Empty : "-" + templateFeeItem.Name,
-                        quantity,
-                        cost.FormatAsCurrency() );
+                    var desc = GetFeeLineItemDescription( templateFee, templateFeeItem, quantity );
 
                     var feeCostSummary = new RegistrationCostSummaryInfo
                     {
@@ -285,6 +286,22 @@ namespace Rock.Model
             }
 
             return costs;
+        }
+
+        /// <summary>
+        /// Gets the fee line item description.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        private static string GetFeeLineItemDescription( RegistrationTemplateFee fee, RegistrationTemplateFeeItem item, int quantity )
+        {
+            var useFeeNameOnly = item.Name.IsNullOrWhiteSpace() || ( fee.FeeType == RegistrationFeeType.Single && fee.Name == item.Name );
+            var name = useFeeNameOnly ? fee.Name : $"{fee.Name} - {item.Name}";
+            var formattedCost = item.Cost.FormatAsCurrency().Trim();
+            var costDesc = fee.AllowMultiple ? $"{quantity} @ {formattedCost}" : formattedCost;
+            return $"{name} ({costDesc})";
         }
 
         /// <summary>

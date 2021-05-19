@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Controls/RockValidation", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/CurrencyBox", "../../../Elements/EmailBox", "../../../Elements/JavaScriptAnchor", "../../../Elements/RockButton", "../../../Elements/StaticFormControl", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./CostSummary", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/RockForm", "../../../Controls/RockValidation", "../../../Elements/Alert", "../../../Elements/CheckBox", "../../../Elements/EmailBox", "../../../Elements/RockButton", "../../../Elements/TextBox", "../../../Services/Number", "../RegistrationEntry", "./CostSummary", "./Registrar"], function (exports_1, context_1) {
     "use strict";
     var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -52,7 +52,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
         }
     };
-    var vue_1, GatewayControl_1, RockForm_1, RockValidation_1, Alert_1, CheckBox_1, CurrencyBox_1, EmailBox_1, JavaScriptAnchor_1, RockButton_1, StaticFormControl_1, TextBox_1, Number_1, RegistrationEntry_1, CostSummary_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, GatewayControl_1, RockForm_1, RockValidation_1, Alert_1, CheckBox_1, EmailBox_1, RockButton_1, TextBox_1, Number_1, RegistrationEntry_1, CostSummary_1, Registrar_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -74,20 +74,11 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             function (CheckBox_1_1) {
                 CheckBox_1 = CheckBox_1_1;
             },
-            function (CurrencyBox_1_1) {
-                CurrencyBox_1 = CurrencyBox_1_1;
-            },
             function (EmailBox_1_1) {
                 EmailBox_1 = EmailBox_1_1;
             },
-            function (JavaScriptAnchor_1_1) {
-                JavaScriptAnchor_1 = JavaScriptAnchor_1_1;
-            },
             function (RockButton_1_1) {
                 RockButton_1 = RockButton_1_1;
-            },
-            function (StaticFormControl_1_1) {
-                StaticFormControl_1 = StaticFormControl_1_1;
             },
             function (TextBox_1_1) {
                 TextBox_1 = TextBox_1_1;
@@ -101,8 +92,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
             function (CostSummary_1_1) {
                 CostSummary_1 = CostSummary_1_1;
             },
-            function (RegistrationEntryBlockViewModel_1_1) {
-                RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
+            function (Registrar_1_1) {
+                Registrar_1 = Registrar_1_1;
             }
         ],
         execute: function () {
@@ -117,10 +108,8 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                     Alert: Alert_1.default,
                     GatewayControl: GatewayControl_1.default,
                     RockValidation: RockValidation_1.default,
-                    JavaScriptAnchor: JavaScriptAnchor_1.default,
-                    CurrencyBox: CurrencyBox_1.default,
-                    StaticFormControl: StaticFormControl_1.default,
-                    CostSummary: CostSummary_1.default
+                    CostSummary: CostSummary_1.default,
+                    Registrar: Registrar_1.default
                 },
                 setup: function () {
                     return {
@@ -148,9 +137,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         /** Gateway indicated validation issues */
                         gatewayValidationFields: {},
                         /** An error message received from a bad submission */
-                        submitErrorMessage: '',
-                        /** Should the registrar panel be shown */
-                        isRegistrarPanelShown: true
+                        submitErrorMessage: ''
                     };
                 },
                 computed: {
@@ -174,34 +161,13 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         }
                         return true;
                     },
-                    /** Is the registrar option set to UseLoggedInPerson */
-                    useLoggedInPersonForRegistrar: function () {
-                        return (!!this.currentPerson) && this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson;
-                    },
                     /** The settings for the gateway (MyWell, etc) control */
                     gatewayControlModel: function () {
                         return this.viewModel.GatewayControl;
                     },
-                    /** The person that is currently authenticated */
-                    currentPerson: function () {
-                        return this.$store.state.currentPerson;
-                    },
-                    /** The person entering the registration information. This object is part of the registration state. */
-                    registrar: function () {
-                        return this.registrationEntryState.Registrar;
-                    },
-                    /** The first registrant entered into the registration. */
-                    firstRegistrant: function () {
-                        return this.registrationEntryState.Registrants[0];
-                    },
                     /** This is the data sent from the C# code behind when the block initialized. */
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
-                    },
-                    /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
-                    doShowUpdateEmailOption: function () {
-                        var _a;
-                        return !this.viewModel.ForceEmailUpdate && !!((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.Email);
                     },
                     /** Info about the registrants made available by .FirstName instead of by field guid */
                     registrantInfos: function () {
@@ -298,33 +264,6 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                             });
                         });
                     },
-                    /** Prefill in the registrar form fields based on the admin's settings */
-                    prefillRegistrar: function () {
-                        this.isRegistrarPanelShown = true;
-                        // If the option is to prompt or use the current person, prefill the current person if available
-                        if (this.currentPerson &&
-                            (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar)) {
-                            this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
-                            this.registrar.LastName = this.currentPerson.LastName || '';
-                            this.registrar.Email = this.currentPerson.Email || '';
-                            return;
-                        }
-                        if (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar) {
-                            return;
-                        }
-                        // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
-                        if (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
-                            var firstRegistrantInfo = RegistrationEntry_1.getRegistrantBasicInfo(this.firstRegistrant, this.viewModel.RegistrantForms);
-                            this.registrar.NickName = firstRegistrantInfo.FirstName;
-                            this.registrar.LastName = firstRegistrantInfo.LastName;
-                            this.registrar.Email = firstRegistrantInfo.Email;
-                            var hasAllInfo = (!!this.registrar.NickName) && (!!this.registrar.LastName) && (!!this.registrar.Email);
-                            if (hasAllInfo && this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
-                                this.isRegistrarPanelShown = false;
-                            }
-                            return;
-                        }
-                    },
                     /**
                      * The gateway indicated success and returned a token
                      * @param token
@@ -418,15 +357,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         });
                     }
                 },
-                watch: {
-                    currentPerson: {
-                        immediate: true,
-                        handler: function () {
-                            this.prefillRegistrar();
-                        }
-                    }
-                },
-                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n\n        <div v-if=\"isRegistrarPanelShown\" class=\"well\">\n            <h4>This Registration Was Completed By</h4>\n            <template v-if=\"useLoggedInPersonForRegistrar\">\n                <div class=\"row\">\n                    <div class=\"col-md-6\">\n                        <StaticFormControl label=\"First Name\" v-model=\"registrar.NickName\" />\n                    </div>\n                    <div class=\"col-md-6\">\n                        <StaticFormControl label=\"Last Name\" v-model=\"registrar.LastName\" />\n                    </div>\n                </div>\n                <div class=\"row\">\n                    <div class=\"col-md-6\">\n                        <StaticFormControl label=\"Email\" v-model=\"registrar.Email\" />\n                    </div>\n                </div>\n            </template>\n            <template v-else>\n                <div class=\"row\">\n                    <div class=\"col-md-6\">\n                        <TextBox label=\"First Name\" rules=\"required\" v-model=\"registrar.NickName\" />\n                    </div>\n                    <div class=\"col-md-6\">\n                        <TextBox label=\"Last Name\" rules=\"required\" v-model=\"registrar.LastName\" />\n                    </div>\n                </div>\n                <div class=\"row\">\n                    <div class=\"col-md-6\">\n                        <EmailBox label=\"Send Confirmation Emails To\" rules=\"required\" v-model=\"registrar.Email\" />\n                        <CheckBox v-if=\"doShowUpdateEmailOption\" label=\"Should Your Account Be Updated To Use This Email Address?\" v-model=\"registrar.UpdateEmail\" />\n                    </div>\n                </div>\n            </template>\n        </div>\n\n        <div v-if=\"viewModel.Cost\">\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div v-if=\"isDiscountPanelVisible || discountCodeInput\" class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"loading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"loading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <CostSummary />\n        </div>\n\n        <div v-if=\"gatewayControlModel && registrationEntryState.AmountToPayToday\" class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @reset=\"onGatewayControlReset\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div v-if=\"!viewModel.Cost\" class=\"margin-b-md\">\n            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>\n            <ul>\n                <li v-for=\"r in registrantInfos\" :key=\"r.Guid\">\n                    <strong>{{r.FirstName}} {{r.LastName}}</strong>\n                </li>\n            </ul>\n        </div>\n\n        <Alert v-if=\"submitErrorMessage\" alertType=\"danger\">{{submitErrorMessage}}</Alert>\n\n        <div class=\"actions text-right\">\n            <RockButton v-if=\"viewModel.AllowRegistrationUpdates\" class=\"pull-left\" btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" type=\"submit\" :isLoading=\"loading\">\n                {{finishButtonText}}\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n\n        <Registrar />\n\n        <div v-if=\"viewModel.Cost\">\n            <h4>Payment Summary</h4>\n            <Alert v-if=\"discountCodeWarningMessage\" alertType=\"warning\">{{discountCodeWarningMessage}}</Alert>\n            <Alert v-if=\"discountCodeSuccessMessage\" alertType=\"success\">{{discountCodeSuccessMessage}}</Alert>\n            <div v-if=\"isDiscountPanelVisible || discountCodeInput\" class=\"clearfix\">\n                <div class=\"form-group pull-right\">\n                    <label class=\"control-label\">Discount Code</label>\n                    <div class=\"input-group\">\n                        <input type=\"text\" :disabled=\"loading || !!discountCodeSuccessMessage\" class=\"form-control input-width-md input-sm\" v-model=\"discountCodeInput\" />\n                        <RockButton v-if=\"!discountCodeSuccessMessage\" btnSize=\"sm\" :isLoading=\"loading\" class=\"margin-l-sm\" @click=\"tryDiscountCode\">\n                            Apply\n                        </RockButton>\n                    </div>\n                </div>\n            </div>\n            <CostSummary />\n        </div>\n\n        <div v-if=\"gatewayControlModel && registrationEntryState.AmountToPayToday\" class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @reset=\"onGatewayControlReset\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div v-if=\"!viewModel.Cost\" class=\"margin-b-md\">\n            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>\n            <ul>\n                <li v-for=\"r in registrantInfos\" :key=\"r.Guid\">\n                    <strong>{{r.FirstName}} {{r.LastName}}</strong>\n                </li>\n            </ul>\n        </div>\n\n        <Alert v-if=\"submitErrorMessage\" alertType=\"danger\">{{submitErrorMessage}}</Alert>\n\n        <div class=\"actions text-right\">\n            <RockButton v-if=\"viewModel.AllowRegistrationUpdates\" class=\"pull-left\" btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" type=\"submit\" :isLoading=\"loading\">\n                {{finishButtonText}}\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

@@ -1556,7 +1556,7 @@ namespace Rock.Obsidian.Blocks.Event
                                     f.RegistrationTemplateFeeItemId == feeItemModel.Id );
 
                         // If this fee is required and this is the last item, then make sure at least 1 is selected
-                        if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 )
+                        if ( isLastFeeItemModel && totalFeeQuantity < 1 && quantity < 1 && feeModel.IsRequired )
                         {
                             quantity = 1;
                         }
@@ -1723,8 +1723,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             if ( wasRedirectedFromPayment )
             {
-                // This is a redirect from a redirect gateway. The user was sent to another site, made payment, and has come back after completion
-                SubmitRegistration( rockContext, context, new RegistrationEntryBlockArgs
+                var args = new RegistrationEntryBlockArgs
                 {
                     AmountToPayNow = session.AmountToPayNow,
                     DiscountCode = session.DiscountCode,
@@ -1734,7 +1733,13 @@ namespace Rock.Obsidian.Blocks.Event
                     Registrar = session.Registrar,
                     RegistrationGuid = null,
                     RegistrationSessionGuid = session.RegistrationSessionGuid
-                }, out errorMessage );
+                };
+
+                // Get a new context with the args
+                context = GetContext( rockContext, args, out errorMessage );
+
+                // This is a redirect from a redirect gateway. The user was sent to another site, made payment, and has come back after completion
+                SubmitRegistration( rockContext, context, args, out errorMessage );
 
                 successViewModel = GetSuccessViewModel( context.Registration.Id );
             }

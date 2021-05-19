@@ -22,19 +22,15 @@ import RockForm from '../../../Controls/RockForm';
 import RockValidation from '../../../Controls/RockValidation';
 import Alert from '../../../Elements/Alert';
 import CheckBox from '../../../Elements/CheckBox';
-import CurrencyBox from '../../../Elements/CurrencyBox';
 import EmailBox from '../../../Elements/EmailBox';
-import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
 import RockButton from '../../../Elements/RockButton';
-import StaticFormControl from '../../../Elements/StaticFormControl';
 import TextBox from '../../../Elements/TextBox';
 import { asFormattedString } from '../../../Services/Number';
-import { Guid } from '../../../Util/Guid';
-import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
 import CostSummary from './CostSummary';
+import Registrar from './Registrar';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
-import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 type CheckDiscountCodeResult = {
     DiscountCode: string;
@@ -54,10 +50,8 @@ export default defineComponent( {
         Alert,
         GatewayControl,
         RockValidation,
-        JavaScriptAnchor,
-        CurrencyBox,
-        StaticFormControl,
-        CostSummary
+        CostSummary,
+        Registrar
     },
     setup ()
     {
@@ -95,10 +89,7 @@ export default defineComponent( {
             gatewayValidationFields: {} as Record<string, string>,
 
             /** An error message received from a bad submission */
-            submitErrorMessage: '',
-
-            /** Should the registrar panel be shown */
-            isRegistrarPanelShown: true
+            submitErrorMessage: ''
         };
     },
     computed: {
@@ -131,46 +122,16 @@ export default defineComponent( {
             return true;
         },
 
-        /** Is the registrar option set to UseLoggedInPerson */
-        useLoggedInPersonForRegistrar (): boolean
-        {
-            return ( !!this.currentPerson ) && this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson;
-        },
-
         /** The settings for the gateway (MyWell, etc) control */
         gatewayControlModel (): GatewayControlModel
         {
             return this.viewModel.GatewayControl;
         },
 
-        /** The person that is currently authenticated */
-        currentPerson (): Person | null
-        {
-            return this.$store.state.currentPerson;
-        },
-
-        /** The person entering the registration information. This object is part of the registration state. */
-        registrar (): RegistrarInfo
-        {
-            return this.registrationEntryState.Registrar;
-        },
-
-        /** The first registrant entered into the registration. */
-        firstRegistrant (): RegistrantInfo
-        {
-            return this.registrationEntryState.Registrants[ 0 ];
-        },
-
         /** This is the data sent from the C# code behind when the block initialized. */
         viewModel (): RegistrationEntryBlockViewModel
         {
             return this.registrationEntryState.ViewModel;
-        },
-
-        /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
-        doShowUpdateEmailOption (): boolean
-        {
-            return !this.viewModel.ForceEmailUpdate && !!this.currentPerson?.Email;
         },
 
         /** Info about the registrants made available by .FirstName instead of by field guid */
@@ -272,45 +233,6 @@ export default defineComponent( {
             }
         },
 
-        /** Prefill in the registrar form fields based on the admin's settings */
-        prefillRegistrar ()
-        {
-            this.isRegistrarPanelShown = true;
-
-            // If the option is to prompt or use the current person, prefill the current person if available
-            if ( this.currentPerson &&
-                ( this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar ) )
-            {
-                this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
-                this.registrar.LastName = this.currentPerson.LastName || '';
-                this.registrar.Email = this.currentPerson.Email || '';
-                return;
-            }
-
-            if ( this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar )
-            {
-                return;
-            }
-
-            // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
-            if ( this.viewModel.RegistrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
-            {
-                const firstRegistrantInfo = getRegistrantBasicInfo( this.firstRegistrant, this.viewModel.RegistrantForms );
-                this.registrar.NickName = firstRegistrantInfo.FirstName;
-                this.registrar.LastName = firstRegistrantInfo.LastName;
-                this.registrar.Email = firstRegistrantInfo.Email;
-
-                const hasAllInfo = ( !!this.registrar.NickName ) && ( !!this.registrar.LastName ) && ( !!this.registrar.Email );
-
-                if ( hasAllInfo && this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
-                {
-                    this.isRegistrarPanelShown = false;
-                }
-
-                return;
-            }
-        },
-
         /**
          * The gateway indicated success and returned a token
          * @param token
@@ -390,53 +312,11 @@ export default defineComponent( {
             return result.data || '';
         }
     },
-    watch: {
-        currentPerson: {
-            immediate: true,
-            handler ()
-            {
-                this.prefillRegistrar();
-            }
-        }
-    },
     template: `
 <div class="registrationentry-summary">
     <RockForm @submit="onNext">
 
-        <div v-if="isRegistrarPanelShown" class="well">
-            <h4>This Registration Was Completed By</h4>
-            <template v-if="useLoggedInPersonForRegistrar">
-                <div class="row">
-                    <div class="col-md-6">
-                        <StaticFormControl label="First Name" v-model="registrar.NickName" />
-                    </div>
-                    <div class="col-md-6">
-                        <StaticFormControl label="Last Name" v-model="registrar.LastName" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <StaticFormControl label="Email" v-model="registrar.Email" />
-                    </div>
-                </div>
-            </template>
-            <template v-else>
-                <div class="row">
-                    <div class="col-md-6">
-                        <TextBox label="First Name" rules="required" v-model="registrar.NickName" />
-                    </div>
-                    <div class="col-md-6">
-                        <TextBox label="Last Name" rules="required" v-model="registrar.LastName" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
-                        <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
-                    </div>
-                </div>
-            </template>
-        </div>
+        <Registrar />
 
         <div v-if="viewModel.Cost">
             <h4>Payment Summary</h4>
