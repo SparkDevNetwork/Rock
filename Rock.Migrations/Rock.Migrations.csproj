@@ -61,8 +61,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.cs" />
-    <Compile Include="Migrations\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.Designer.cs">
       <DependentUpon>202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112104432_CodeGenerated_0511.cs" />
@@ -1719,7 +1719,7 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.resx">
       <DependentUpon>202105192103086_AddUnencryptedFieldsToFinancialPaymentDetail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112104432_CodeGenerated_0511.resx">
