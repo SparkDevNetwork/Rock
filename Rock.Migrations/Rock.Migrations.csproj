@@ -61,25 +61,29 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202105112104432_CodeGenerated_0511.cs" />
-    <Compile Include="Migrations\202105112104432_CodeGenerated_0511.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112104432_CodeGenerated_0511.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112104432_CodeGenerated_0511.Designer.cs">
       <DependentUpon>202105112104432_CodeGenerated_0511.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105121613390_PrivatePersonSearchKey.cs" />
-    <Compile Include="Migrations\202105121613390_PrivatePersonSearchKey.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121613390_PrivatePersonSearchKey.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121613390_PrivatePersonSearchKey.Designer.cs">
       <DependentUpon>202105121613390_PrivatePersonSearchKey.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105121740046_FinancialStatementTemplate.cs" />
-    <Compile Include="Migrations\202105121740046_FinancialStatementTemplate.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121740046_FinancialStatementTemplate.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121740046_FinancialStatementTemplate.Designer.cs">
       <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.cs" />
-    <Compile Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121904154_FinancialStatementTemplateFooterSettingsJson.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105121904154_FinancialStatementTemplateFooterSettingsJson.Designer.cs">
       <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202105131600176_MoveCheckinSubtitlesToLavaHeader.cs" />
-    <Compile Include="Migrations\202105131600176_MoveCheckinSubtitlesToLavaHeader.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105131600176_MoveCheckinSubtitlesToLavaHeader.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105131600176_MoveCheckinSubtitlesToLavaHeader.Designer.cs">
       <DependentUpon>202105131600176_MoveCheckinSubtitlesToLavaHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105191827316_Rollup_0519.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105191827316_Rollup_0519.Designer.cs">
+      <DependentUpon>202105191827316_Rollup_0519.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.Designer.cs">
@@ -1711,20 +1715,23 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202105112104432_CodeGenerated_0511.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112104432_CodeGenerated_0511.resx">
       <DependentUpon>202105112104432_CodeGenerated_0511.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105121613390_PrivatePersonSearchKey.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105121613390_PrivatePersonSearchKey.resx">
       <DependentUpon>202105121613390_PrivatePersonSearchKey.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105121740046_FinancialStatementTemplate.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105121740046_FinancialStatementTemplate.resx">
       <DependentUpon>202105121740046_FinancialStatementTemplate.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105121904154_FinancialStatementTemplateFooterSettingsJson.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105121904154_FinancialStatementTemplateFooterSettingsJson.resx">
       <DependentUpon>202105121904154_FinancialStatementTemplateFooterSettingsJson.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202105131600176_MoveCheckinSubtitlesToLavaHeader.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105131600176_MoveCheckinSubtitlesToLavaHeader.resx">
       <DependentUpon>202105131600176_MoveCheckinSubtitlesToLavaHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105191827316_Rollup_0519.resx">
+      <DependentUpon>202105191827316_Rollup_0519.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511.resx">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
