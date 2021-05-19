@@ -1565,11 +1565,14 @@ tr.inactive {
   .likert {
     .radio-inline {
       padding: 5px @padding-base-horizontal 7px (@custom-control-indicator-size + @padding-base-horizontal + 4px);
-      margin-right: @padding-base-horizontal;
-      margin-left: -@padding-base-horizontal;
       cursor: pointer;
       background-clip: padding-box;
       border-radius: 4px;
+
+      @media (min-width: @likert-screen-column-min) {
+        margin-right: @padding-base-horizontal;
+        margin-left: -@padding-base-horizontal;
+      }
 
       &:hover {
         background-color: @gray-lighter;
@@ -1719,12 +1722,12 @@ tr.inactive {
       display: -ms-flexbox;
       display: -webkit-box;
       display: flex;
+      -ms-flex-align: center;
+      -ms-flex-pack: center;
+      align-items: center;
+      justify-content: center;
       -webkit-box-align: center;
-          -ms-flex-align: center;
-              align-items: center;
       -webkit-box-pack: center;
-          -ms-flex-pack: center;
-              justify-content: center;
     }
 
     .card-top,
