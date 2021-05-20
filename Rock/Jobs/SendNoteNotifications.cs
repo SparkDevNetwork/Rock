@@ -460,7 +460,7 @@ namespace Rock.Jobs
             // if there are any NoteWatches that relate to this note, process them
             if ( noteWatchesQuery.Any() )
             {
-                var noteWatchesForNote = noteWatchesQuery.Include( a => a.WatcherPersonAlias.Person ).AsNoTracking().ToList();
+                var noteWatchesForNote = noteWatchesQuery.Include( a => a.WatcherPersonAlias.Person ).ToList();
                 List<NoteWatchPersonToNotify> noteWatchPersonToNotifyListAll = new List<NoteWatchPersonToNotify>();
 
                 // loop thru Watches to get a list of people to possibly notify/override
