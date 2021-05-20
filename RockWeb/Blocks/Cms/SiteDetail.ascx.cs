@@ -441,7 +441,15 @@ namespace RockWeb.Blocks.Cms
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
-                site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
+
+                // re-format allowed frame domains to ensure the header ouput is correctly formatted.
+                site.AllowedFrameDomains = tbAllowedFrameDomains.Text
+                    .Replace( ", ", " " )
+                    .Replace( ",", " " )
+                    .Replace( Environment.NewLine, " " )
+                    .Replace( "\n", " " )
+                    .Replace( "  ", " " );
+
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.IsActive = cbIsActive.Checked;
