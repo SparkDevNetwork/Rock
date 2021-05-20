@@ -40,7 +40,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivedevice" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivedevice" Label="Active" />
                         </div>
                     </div>
 

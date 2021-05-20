@@ -22,17 +22,13 @@
                             <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbScheduleDescription" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-6">
                             <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="Mins Before Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" Label="Category" Required="true" />
