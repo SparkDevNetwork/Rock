@@ -119,6 +119,7 @@ namespace Rock.Workflow.Action
                 note.IsAlert = GetAttributeValue( action, AttributeKey.Alert ).AsBoolean();
                 note.IsPrivateNote = false;
                 note.Text = GetAttributeValue( action, AttributeKey.Text ).ResolveMergeFields( mergeFields ); ;
+                note.EditedDateTime = RockDateTime.Now;
 
                 var noteType = NoteTypeCache.Get( GetAttributeValue( action, AttributeKey.NoteType ).AsGuid() );
                 if ( noteType != null )
