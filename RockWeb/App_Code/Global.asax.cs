@@ -87,7 +87,12 @@ namespace RockWeb
                     if ( site != null && !string.IsNullOrWhiteSpace( site.AllowedFrameDomains ) )
                     {
                         useFrameDomains = true;
-                        allowedDomains = site.AllowedFrameDomains;
+                        allowedDomains = site.AllowedFrameDomains
+                            .Replace( ", ", " " )
+                            .Replace( ",", " " )
+                            .Replace( Environment.NewLine, " " )
+                            .Replace( "\n", " " )
+                            .Replace( "  ", " " );
                     }
                 }
             }
