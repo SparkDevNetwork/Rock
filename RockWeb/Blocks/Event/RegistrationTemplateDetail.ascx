@@ -48,7 +48,7 @@
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.RegistrationTemplate" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
                     </div>
                     <div class="row">
