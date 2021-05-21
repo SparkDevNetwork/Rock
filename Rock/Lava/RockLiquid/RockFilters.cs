@@ -25,7 +25,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -5325,7 +5325,9 @@ namespace Rock.Lava
             if ( input is IEnumerable )
             {
                 var enumerableInput = ( IEnumerable ) input;
-                return enumerableInput.Where( filter );
+
+                // The new System.Linq.Dynamic.Core only works on Queryables
+                return enumerableInput.AsQueryable().Where( filter );
             }
 
             return null;
@@ -5569,7 +5571,8 @@ namespace Rock.Lava
                 return input;
             }
 
-            return e.Distinct().Cast<object>().ToList();
+            // The new System.Linq.Dynamic.Core only works on Queryables
+            return e.AsQueryable().Distinct().Cast<object>().ToList();
         }
 
         /// <summary>
