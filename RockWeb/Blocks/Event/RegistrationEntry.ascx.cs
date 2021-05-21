@@ -5758,6 +5758,7 @@ namespace RockWeb.Blocks.Event
             {
                 divDiscountCode.Visible = false;
                 tbDiscountCode.Text = RegistrationState.DiscountCode;
+                return;
             }
 
             divDiscountCode.Visible = true;
