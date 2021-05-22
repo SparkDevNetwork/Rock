@@ -27,12 +27,6 @@ namespace Rock.Lava
         private string _template;
         private string _message;
 
-        //public LavaRenderException( string message ) :
-        //    base( message )
-        //{
-        //    //
-        //}
-
         public LavaRenderException( string engineName, string template, string message )
         {
             _engineName = engineName;

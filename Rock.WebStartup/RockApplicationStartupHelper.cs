@@ -726,8 +726,18 @@ namespace Rock.WebStartup
 
                 foreach ( var shortcodeType in shortcodeTypes )
                 {
+                    // Create an instance of the shortcode to get the registration name.
+                    var instance = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
+
+                    var name = instance.SourceElementName;
+
+                    if ( string.IsNullOrWhiteSpace( name ) )
+                    {
+                        name = shortcodeType.Name;
+                    }
+
                     // Register the shortcode with a factory method to create a new instance of the shortcode from the System.Type defined in the codebase.
-                    engine.RegisterShortcode( shortcodeType.Name, ( shortcodeName ) =>
+                    engine.RegisterShortcode( name, ( shortcodeName ) =>
                     {
                         var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
 
