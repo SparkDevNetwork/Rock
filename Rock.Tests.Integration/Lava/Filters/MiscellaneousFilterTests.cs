@@ -118,6 +118,23 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        public void RockInstanceConfigFilter_LavaEngine_RendersExpectedValue()
+        {
+            var template = "{{ 'LavaEngine' | RockInstanceConfig }}";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( template );
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+
+                var expectedOutput = RockInstanceConfig.LavaEngineName;
+
+                Assert.That.AreEqual( expectedOutput, result.Text );
+            } );
+        }
+
+        [TestMethod]
         public void RockInstanceConfigFilter_InvalidParameterName_RendersErrorMessage()
         {
             var template = "{{ 'unknown_setting' | RockInstanceConfig }}";
