@@ -1586,7 +1586,7 @@ function(item) {
                 var lDescription = e.Row.FindControl( "lDescription" ) as Literal;
                 if ( lDescription != null )
                 {
-                    lDescription.Text = exceptionLogViewModel.Description.ConvertCrLfToHtmlBr().Truncate( 255, true );
+                    lDescription.Text = exceptionLogViewModel.Description.EncodeHtml().ConvertCrLfToHtmlBr().Truncate( 255, true );
                 }
             }
         }

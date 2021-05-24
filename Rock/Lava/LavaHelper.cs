@@ -180,7 +180,7 @@ namespace Rock.Lava
 
             try
             {
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     /*
                         7/6/2020 - JH
@@ -409,7 +409,7 @@ namespace Rock.Lava
                 return false;
             }
 
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            if ( LavaService.RockLiquidIsEnabled )
             {
                 return obj != null && obj is Rock.Lava.ILiquidizable;
             }
@@ -698,6 +698,65 @@ namespace Rock.Lava
                         parms.AddOrReplace( key, value );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Parse the provided Lava template using the current Lava engine, and write any errors to the exception log.
+        /// </summary>
+        /// <param name="content"></param>
+        public static void VerifyParseTemplateForCurrentEngine( string content )
+        {
+            // If RockLiquid mode is enabled, try to render uncached templates using the current Lava engine and record any errors that occur.
+            // Render the final output using the RockLiquid legacy code.
+            var engine = LavaService.GetCurrentEngine();
+
+            if ( engine == null )
+            {
+                return;
+            }
+
+            if ( engine != null )
+            {
+                var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
+                var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
+
+                if ( !isCached )
+                {
+                    // Verify the Lava template using the current LavaEngine.
+                    // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
+                    try
+                    {
+                        var result = engine.ParseTemplate( content );
+
+                        if ( result.HasErrors )
+                        {
+                            throw result.GetLavaException();
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        // Log the exception and continue, because the final render will be performed by RockLiquid.
+                        ExceptionLogService.LogException( ConvertToLavaException( ex ), System.Web.HttpContext.Current );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wrap an existing Exception if it is not a LavaException.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        public static LavaException ConvertToLavaException( Exception ex )
+        {
+            if ( ex is LavaException lex )
+            {
+                return lex;
+            }
+            else
+            {
+                return new LavaException( "Lava Processing Error.", ex );
             }
         }
 

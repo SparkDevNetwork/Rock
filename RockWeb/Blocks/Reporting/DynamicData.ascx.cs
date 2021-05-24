@@ -655,7 +655,7 @@ namespace RockWeb.Blocks.Reporting
                             return;
                         }
 
-                        if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                        if ( LavaService.RockLiquidIsEnabled )
                         {
                             foreach ( DataTable dataTable in dataSet.Tables )
                             {

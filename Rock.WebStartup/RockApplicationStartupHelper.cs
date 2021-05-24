@@ -186,7 +186,7 @@ namespace Rock.WebStartup
 
             // Initialize the Lava engine.
             InitializeLava();
-            ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaEngine.CurrentEngine.EngineName})" );
+            ShowDebugTimingMessage( $"Initialize Lava Engine ({LavaService.CurrentEngineName})" );
 
             // setup and launch the jobs infrastructure if running under IIS
             bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
@@ -625,63 +625,89 @@ namespace Rock.WebStartup
 
             var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK ).ToLower();
 
-            if ( string.IsNullOrWhiteSpace( liquidEngineTypeValue ) || liquidEngineTypeValue == "default" )
-            {
-                // If no engine specified, use the legacy implementation as the default.
-                engineType = LavaEngineTypeSpecifier.RockLiquid;
-            }
-            else if ( liquidEngineTypeValue == "rockliquid" )
-            {
-                engineType = LavaEngineTypeSpecifier.RockLiquid;
-            }
-            else if ( liquidEngineTypeValue == "dotliquid" )
+            if ( liquidEngineTypeValue == "dotliquid" )
             {
                 engineType = LavaEngineTypeSpecifier.DotLiquid;
+                LavaService.RockLiquidIsEnabled = false;
             }
             else if ( liquidEngineTypeValue == "fluid" )
             {
                 engineType = LavaEngineTypeSpecifier.Fluid;
+                LavaService.RockLiquidIsEnabled = false;
+            }
+            else if ( liquidEngineTypeValue == "fluidverification" )
+            {
+                engineType = LavaEngineTypeSpecifier.Fluid;
+                LavaService.RockLiquidIsEnabled = true;
             }
 
             if ( engineType == null )
             {
+                // If no engine specified, use the legacy implementation as the default.
+                LavaService.RockLiquidIsEnabled = true;
+
                 // Log an error for the invalid configuration setting, and continue with the default value.
-                ExceptionLogService.LogException( $"Invalid Lava Engine Type. The value \"{liquidEngineTypeValue}\" is not valid, must be [default|dotliquid|fluid]." );
-                engineType = LavaEngineTypeSpecifier.RockLiquid;
-            }
-
-            if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                // Initialize the legacy implementation of the DotLiquid Engine.
-                LavaEngine.Initialize( LavaEngineTypeSpecifier.RockLiquid, null );
-
-                Template.FileSystem = new LavaFileSystem();
-
-                Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
-                Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-            }
-            else
-            {
-                // Initialize the Lava engine.
-                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-                var engineOptions = new LavaEngineConfigurationOptions
+                if ( !string.IsNullOrWhiteSpace( liquidEngineTypeValue ) )
                 {
-                    FileSystem = new WebsiteLavaFileSystem(),
-                    CacheService = new WebsiteLavaTemplateCacheService(),
-                    DefaultEnabledCommands = defaultEnabledLavaCommands
-                };
-
-                LavaEngine.Initialize( engineType, engineOptions );
-
-                // Initialize Lava extensions.
-                var engine = LavaEngine.CurrentEngine;
-
-                InitializeLavaFilters( engine );
-                InitializeLavaTags( engine );
-                InitializeLavaBlocks( engine );
-                InitializeLavaShortcodes( engine );
+                    ExceptionLogService.LogException( $"Invalid Lava Engine Type. The value \"{liquidEngineTypeValue}\" is not valid, must be [(empty)|dotliquid|fluid|fluidverification]." );
+                }
             }
+
+            InitializeRockLiquidLibrary();
+
+            InitializeLavaEngineInstance( engineType );
+        }
+
+        private static void InitializeRockLiquidLibrary()
+        {
+            // Only initialize the RockLiquid library if we are operating in legacy mode.
+            if ( !LavaService.RockLiquidIsEnabled )
+            {
+                return;
+            }
+
+            // Initialize an instance of the RockLiquid engine.
+            // This engine is used primarily for testing purposes and is not referenced in Rock source code.
+            // However, when created it performs necessary global initialization tasks for the RockLiquid framework.
+            var rockLiquidEngine = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, new LavaEngineConfigurationOptions() );
+
+            InitializeLavaTags( rockLiquidEngine );
+            InitializeLavaBlocks( rockLiquidEngine );
+
+            // Register the set of filters that are compatible with RockLiquid.
+            Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
+            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
+            // Initialize the RockLiquid file system.
+            Template.FileSystem = new LavaFileSystem();
+        }
+
+        private static void InitializeLavaEngineInstance( LavaEngineTypeSpecifier? engineType )
+        {
+            if ( engineType == null )
+            {
+                return;
+            }
+
+            // Initialize the Lava engine.
+            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+
+            var engineOptions = new LavaEngineConfigurationOptions
+            {
+                FileSystem = new WebsiteLavaFileSystem(),
+                CacheService = new WebsiteLavaTemplateCacheService(),
+                DefaultEnabledCommands = defaultEnabledLavaCommands
+            };
+
+            LavaService.Initialize( engineType, engineOptions );
+
+            // Initialize Lava extensions.
+            var engine = LavaService.GetCurrentEngine();
+
+            InitializeLavaFilters( engine );
+            InitializeLavaTags( engine );
+            InitializeLavaBlocks( engine );
+            InitializeLavaShortcodes( engine );
         }
 
         private static void InitializeLavaFilters( ILavaEngine engine )

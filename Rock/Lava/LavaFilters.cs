@@ -5163,8 +5163,6 @@ namespace Rock.Lava
 
             var result = new List<object>();
 
-            var engine = LavaEngine.CurrentEngine;
-
             foreach ( var value in ( (IEnumerable)input ) )
             {
                 ILavaDataDictionary lavaObject = null;
@@ -5181,8 +5179,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
                     {
                         result.Add( lavaObject );
                     }

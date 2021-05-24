@@ -37,6 +37,7 @@ namespace Rock.Tests.Integration.Lava
         /// correctly unwraps Lava library types when the filter is called.
         /// </summary>
         [TestMethod]
+        [Ignore( "Enable this test only if needed to test specific aspects of the RockLiquid implementation." )]
         public void DotLiquid_FilterRegisteredToDotLiquidFramework_ProducesCorrectResultInLavaLibrary()
         {
             DotLiquid.Template.RegisterFilter( typeof( TestDotLiquidFilter ) );

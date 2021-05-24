@@ -17,13 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
 using Fluid.Values;
-using Parlot.Fluent;
 
 namespace Rock.Lava.Fluid
 {
@@ -69,8 +68,6 @@ namespace Rock.Lava.Fluid
         {
             var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
 
-            //fluidContext.ParserFactory = _parserFactory;
-
             var context = new FluidRenderContext( fluidContext );
 
             return context;
@@ -94,6 +91,9 @@ namespace Rock.Lava.Fluid
             // the ability to resolve properties of nested anonymous Types using Reflection.
             templateOptions.MemberAccessStrategy = new LavaObjectMemberAccessStrategy();
 
+            // Register value converters for Types that are not natively handled by Fluid.
+            RegisterValueConverters();
+
             // Register all Types that implement LavaDataDictionary interfaces as safe to render.
             RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionary ) );
             RegisterSafeType( typeof( Rock.Lava.ILavaDataDictionarySource ) );
@@ -105,6 +105,18 @@ namespace Rock.Lava.Fluid
             }
 
             templateOptions.FileProvider = new FluidFileSystem( options.FileSystem );
+        }
+
+        /// <summary>
+        /// Register value converters for Types that are not natively handled by Fluid.
+        /// </summary>
+        private void RegisterValueConverters()
+        {
+            var templateOptions = GetTemplateOptions();
+
+            // DBNull is required to process results from the Sql command.
+            // If this type is not registered, Fluid throws some seemingly unrelated exceptions.
+            templateOptions.ValueConverters.Add( ( value ) => value is System.DBNull ? FluidValue.Create( null, templateOptions ) : null );
         }
 
         private TemplateOptions GetTemplateOptions()
@@ -431,56 +443,35 @@ namespace Rock.Lava.Fluid
         /// <returns></returns>
         private FluidTemplate CreateNewFluidTemplate( string lavaTemplate, out string liquidTemplate )
         {
-            IEnumerable<string> errors;
             FluidTemplate template;
 
             liquidTemplate = ConvertToLiquid( lavaTemplate );
 
-            var isValidTemplate = TryParse( liquidTemplate, out template, out errors );
-
-            if ( !isValidTemplate )
-            {
-                throw new LavaException( "Create Lava Template failed.", errors );
-            }
-
-            return template;
-        }
-
-
-        private bool TryParse( string template, out FluidTemplate result, out IEnumerable<string> errors )
-        {
             string error;
             IFluidTemplate fluidTemplate;
 
-            var success = _parser.TryParse( template, out fluidTemplate, out error );
-
-            errors = new List<string> { error };
+            var success = _parser.TryParse( liquidTemplate, out fluidTemplate, out error );
 
             var fluidTemplateObject = (FluidTemplate)fluidTemplate;
 
             if ( success )
             {
-                result = new FluidTemplate( new List<Statement>( fluidTemplateObject.Statements ) );
-                return true;
+                template = new FluidTemplate( new List<Statement>( fluidTemplateObject.Statements ) );
             }
             else
             {
-                result = new FluidTemplate( new List<Statement>() );
-                return false;
+                throw new LavaParseException( this.EngineName, liquidTemplate, error );
             }
+
+            return template;
         }
 
-        protected override bool OnTryRender( ILavaTemplate inputTemplate, LavaRenderParameters parameters, out string output, out List<Exception> errors )
+        protected override LavaRenderResult OnRenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
         {
             var templateProxy = inputTemplate as FluidTemplateProxy;
 
-            var fluidTemplate = templateProxy?.FluidTemplate;
+            var template = templateProxy?.FluidTemplate;
 
-            return TryRenderInternal( fluidTemplate, parameters, out output, out errors );
-        }
-
-        private bool TryRenderInternal( FluidTemplate template, LavaRenderParameters parameters, out string output, out List<Exception> errors )
-        {
             var templateContext = parameters.Context as FluidRenderContext;
 
             if ( templateContext == null )
@@ -488,27 +479,11 @@ namespace Rock.Lava.Fluid
                 throw new LavaException( "Invalid LavaContext parameter. This context type is not compatible with the Fluid templating engine." );
             }
 
-            /* The Fluid framework parses the input template into a set of executable statements that can be rendered.
-             * To remain independent of a specific framework, custom Lava tags and blocks parse the original source template text to extract
-             * the information necessary to render their output. For this reason, we need to store the source in the context so that it can be passed
-             * to the Lava custom components when they are rendered.
-             */
-            try
-            {
-                output = template.Render( templateContext.FluidContext );
-                errors = new List<Exception>();
+            var result = new LavaRenderResult();
 
-                return true;
-            }
-            catch ( Exception ex )
-            {
-                ProcessException( ex, out output );
+            result.Text = template.Render( templateContext.FluidContext );
 
-                errors = new List<Exception> { ex };
-
-                return false;
-            }
-
+            return result;
         }
 
         /// <summary>
@@ -523,7 +498,7 @@ namespace Rock.Lava.Fluid
                 throw new ArgumentException( "Name must be specified." );
             }
 
-            name = name.Trim().ToLower();
+            name = name.Trim();
 
             base.RegisterTag( name, factoryMethod );
 
@@ -546,7 +521,7 @@ namespace Rock.Lava.Fluid
                 throw new ArgumentException( "Name must be specified." );
             }
 
-            name = name.Trim().ToLower();
+            name = name.Trim();
 
             base.RegisterBlock( name, factoryMethod );
 
@@ -561,7 +536,7 @@ namespace Rock.Lava.Fluid
         {
             string liquidTemplate;
 
-            var fluidTemplate = this.CreateNewFluidTemplate( lavaTemplate, out liquidTemplate );
+            var fluidTemplate = CreateNewFluidTemplate( lavaTemplate, out liquidTemplate );
 
             var newTemplate = new FluidTemplateProxy( fluidTemplate );
 
