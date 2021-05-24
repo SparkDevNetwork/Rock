@@ -162,7 +162,7 @@ namespace Rock.Jobs
             }
 
             var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( new RockContext() ).Queryable()
-                .Where( a => a.FinancialPaymentDetail.ExpirationDate != null )
+                .Where( a => a.FinancialPaymentDetail.CardExpirationDate != null )
                 .Where( a => a.PersonAliasId.HasValue || a.GroupId.HasValue )
                 .Where( a => a.FinancialPaymentDetailId.HasValue )
                 .Where( a => a.IsSystem == false )
@@ -299,7 +299,7 @@ namespace Rock.Jobs
             }
 
             var financialScheduledTransactionQuery = new FinancialScheduledTransactionService( rockContext ).Queryable()
-                .Where( t => t.IsActive && t.FinancialPaymentDetail.ExpirationDate != null && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
+                .Where( t => t.IsActive && t.FinancialPaymentDetail.CardExpirationDate != null && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
                 .AsNoTracking();
 
             List<ScheduledTransactionInfo> scheduledTransactionInfoList = financialScheduledTransactionQuery.Select( a => new ScheduledTransactionInfo
