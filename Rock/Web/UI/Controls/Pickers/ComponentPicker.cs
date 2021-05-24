@@ -124,7 +124,16 @@ namespace Rock.Web.UI.Controls
                     var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
                     if ( entityType != null )
                     {
-                        Items.Add( new ListItem( component.Value.Key.SplitCase(), entityType.Guid.ToString().ToUpper() ) );
+                        var componentName = component.Value.Key;
+
+                        // If the component name already has a space then trust
+                        // that they are using the exact name formatting they want.
+                        if ( !componentName.Contains( ' ' ) )
+                        {
+                            componentName = componentName.SplitCase();
+                        }
+
+                        Items.Add( new ListItem( componentName, entityType.Guid.ToString().ToUpper() ) );
                     }
                 }
             }

@@ -33,7 +33,7 @@
             },
             onloadInitialize: function () {
                 // Perform final initialization on all captchas.
-                if (typeof (grecaptcha) != 'undefined') {
+                if (typeof (grecaptcha) !== 'undefined' && typeof(grecaptcha.render) !== 'undefined') {
                     $('.js-captcha').each(function () {
                         var $captcha = $(this);
                         var $validator = $captcha.closest('.form-group').find('.js-captcha-validator');
