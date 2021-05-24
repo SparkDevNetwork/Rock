@@ -104,6 +104,35 @@ System.register([], function (exports_1, context_1) {
         return num === 1 ? singular : plural;
     }
     exports_1("pluralConditional", pluralConditional);
+    /**
+     * Formats as a phone number
+     * 3214567 => 321-4567
+     * 3214567890 => (321) 456-7890
+     * @param str
+     */
+    function formatPhoneNumber(str) {
+        str = stripPhoneNumber(str);
+        if (str.length === 7) {
+            return str.substring(0, 3) + "-" + str.substring(3, 7);
+        }
+        if (str.length === 10) {
+            return "(" + str.substring(0, 3) + ") " + str.substring(3, 6) + "-" + str.substring(6, 10);
+        }
+        return str;
+    }
+    exports_1("formatPhoneNumber", formatPhoneNumber);
+    /**
+     * Strips special characters from the phone number.
+     * (321) 456-7890 => 3214567890
+     * @param str
+     */
+    function stripPhoneNumber(str) {
+        if (!str) {
+            return '';
+        }
+        return str.replace(/\D/g, '');
+    }
+    exports_1("stripPhoneNumber", stripPhoneNumber);
     return {
         setters: [],
         execute: function () {
@@ -114,7 +143,9 @@ System.register([], function (exports_1, context_1) {
                 isWhitespace: isWhitespace,
                 isEmpty: isEmpty,
                 toTitleCase: toTitleCase,
-                pluralConditional: pluralConditional
+                pluralConditional: pluralConditional,
+                formatPhoneNumber: formatPhoneNumber,
+                stripPhoneNumber: stripPhoneNumber
             });
         }
     };

@@ -123,6 +123,44 @@ export function pluralConditional( num: number, singular: string, plural: string
     return num === 1 ? singular : plural;
 }
 
+/**
+ * Formats as a phone number
+ * 3214567 => 321-4567
+ * 3214567890 => (321) 456-7890
+ * @param str
+ */
+export function formatPhoneNumber ( str: string )
+{
+    str = stripPhoneNumber( str );
+
+    if ( str.length === 7 )
+    {
+        return `${str.substring( 0, 3 )}-${str.substring( 3, 7 )}`;
+    }
+
+    if ( str.length === 10 )
+    {
+        return `(${str.substring( 0, 3 )}) ${str.substring( 3, 6 )}-${str.substring( 6, 10 )}`;
+    }
+
+    return str;
+}
+
+/**
+ * Strips special characters from the phone number.
+ * (321) 456-7890 => 3214567890
+ * @param str
+ */
+export function stripPhoneNumber ( str: string )
+{
+    if ( !str )
+    {
+        return '';
+    }
+
+    return str.replace( /\D/g, '' );
+}
+
 export default {
     asCommaAnd,
     splitCamelCase,
@@ -130,5 +168,7 @@ export default {
     isWhitespace,
     isEmpty,
     toTitleCase,
-    pluralConditional
+    pluralConditional,
+    formatPhoneNumber,
+    stripPhoneNumber
 };

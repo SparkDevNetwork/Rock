@@ -43,6 +43,7 @@ import RadioButtonList from '../../Elements/RadioButtonList';
 import { DropDownListOption } from '../../Elements/DropDownList';
 import Dialog from '../../Controls/Dialog';
 import CheckBox from '../../Elements/CheckBox';
+import PhoneNumberBox from '../../Elements/PhoneNumberBox';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -75,6 +76,33 @@ const GalleryAndResult = defineComponent({
         </div>
     </template>
 </PanelWidget>`
+} );
+
+const PhoneNumberBoxGallery = defineComponent( {
+    name: 'PhoneNumberBoxGallery',
+    components: {
+        GalleryAndResult,
+        PhoneNumberBox
+    },
+    data ()
+    {
+        return {
+            phoneNumber: ''
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        PhoneNumberBox
+    </template>
+    <template #gallery>
+        <PhoneNumberBox label="Phone 1" v-model="phoneNumber" />
+        <PhoneNumberBox label="Phone 2" v-model="phoneNumber" />
+    </template>
+    <template #result>
+        {{phoneNumber}}
+    </template>
+</GalleryAndResult>`
 } );
 
 const CheckBoxGallery = defineComponent( {
@@ -180,7 +208,8 @@ export default defineComponent({
         RockButton,
         RadioButtonList,
         DialogGallery,
-        CheckBoxGallery
+        CheckBoxGallery,
+        PhoneNumberBoxGallery
     },
     data() {
         return {
@@ -469,6 +498,7 @@ export default defineComponent({
         </GalleryAndResult>
         <DialogGallery />
         <CheckBoxGallery />
+        <PhoneNumberBoxGallery />
     </template>
 </PaneledBlockTemplate>`
 });
