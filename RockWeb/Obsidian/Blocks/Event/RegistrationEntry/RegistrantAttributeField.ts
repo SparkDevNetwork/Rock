@@ -123,7 +123,7 @@ export default defineComponent( {
             {
                 if ( !( this.field.Guid in this.fieldValues ) )
                 {
-                    this.fieldValues[ this.field.Guid ] = '';
+                    this.fieldValues[ this.field.Guid ] = this.attribute?.DefaultValue ||  '';
                 }
             }
         }

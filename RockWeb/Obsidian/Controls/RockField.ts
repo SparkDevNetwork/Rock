@@ -25,6 +25,7 @@ import TextField from '../Fields/TextField';
 import '../Fields/BooleanField';
 import '../Fields/DateField';
 import '../Fields/DefinedValueField';
+import '../Fields/SingleSelect';
 
 export default defineComponent({
     name: 'RockField',

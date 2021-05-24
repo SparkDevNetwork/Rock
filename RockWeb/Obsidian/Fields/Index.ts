@@ -50,7 +50,7 @@ export function getFieldTypeProps() {
 }
 
 export function registerFieldType(fieldTypeGuid: Guid, component: Component) {
-    const normalizedGuid = normalize(fieldTypeGuid);
+    const normalizedGuid = normalize(fieldTypeGuid)!;
 
     const dataToExport: FieldTypeModule = {
         fieldTypeGuid: normalizedGuid,
@@ -68,7 +68,7 @@ export function registerFieldType(fieldTypeGuid: Guid, component: Component) {
 }
 
 export function getFieldTypeComponent(fieldTypeGuid: Guid): Component | null {
-    const field = fieldTypeComponentPaths[normalize(fieldTypeGuid)];
+    const field = fieldTypeComponentPaths[normalize(fieldTypeGuid)!];
 
     if (field) {
         return field;

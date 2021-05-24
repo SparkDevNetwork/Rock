@@ -1,4 +1,4 @@
-System.register(["../Fields/Index", "vue", "../Fields/TextField", "../Fields/BooleanField", "../Fields/DateField", "../Fields/DefinedValueField"], function (exports_1, context_1) {
+System.register(["../Fields/Index", "vue", "../Fields/TextField", "../Fields/BooleanField", "../Fields/DateField", "../Fields/DefinedValueField", "../Fields/SingleSelect"], function (exports_1, context_1) {
     "use strict";
     var Index_1, vue_1, TextField_1;
     var __moduleName = context_1 && context_1.id;
@@ -18,6 +18,8 @@ System.register(["../Fields/Index", "vue", "../Fields/TextField", "../Fields/Boo
             function (_2) {
             },
             function (_3) {
+            },
+            function (_4) {
             }
         ],
         execute: function () {

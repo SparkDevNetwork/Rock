@@ -116,8 +116,9 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                     field: {
                         immediate: true,
                         handler: function () {
+                            var _a;
                             if (!(this.field.Guid in this.fieldValues)) {
-                                this.fieldValues[this.field.Guid] = '';
+                                this.fieldValues[this.field.Guid] = ((_a = this.attribute) === null || _a === void 0 ? void 0 : _a.DefaultValue) || '';
                             }
                         }
                     }
