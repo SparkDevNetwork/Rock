@@ -623,6 +623,7 @@
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\AttendanceFieldType.cs" />
+    <Compile Include="Field\Types\CaptchaFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\CheckinConfigurationTypeFieldType.cs" />
     <Compile Include="Field\Types\FinancialStatementTemplateFieldType.cs" />
