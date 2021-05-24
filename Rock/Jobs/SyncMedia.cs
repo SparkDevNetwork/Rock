@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -82,7 +83,7 @@ namespace Rock.Jobs
 
             if ( result.Errors.Any() )
             {
-                throw new Exception( "One or more errors occurred while syncing accounts..." + Environment.NewLine + string.Join( Environment.NewLine, result.Errors ) );
+                throw new Exception( "One or more errors occurred while syncing accounts:" + Environment.NewLine + string.Join( Environment.NewLine, result.Errors ) );
             }
         }
 
@@ -97,13 +98,8 @@ namespace Rock.Jobs
             {
                 var tasks = new List<Task<OperationResult>>();
                 var mediaAccounts = new MediaAccountService( rockContext ).Queryable()
+                    .AsNoTracking()
                     .Where( a => a.IsActive )
-                    .Select( a => new
-                    {
-                        a.Id,
-                        a.Name,
-                        a.LastRefreshDateTime
-                    } )
                     .ToList();
 
                 if ( mediaAccounts.Count == 0 )
@@ -116,60 +112,77 @@ namespace Rock.Jobs
                 {
                     var task = Task.Run( async () =>
                     {
-                        var sw = System.Diagnostics.Stopwatch.StartNew();
-                        var errors = new List<string>();
-
-                        // Determine if this is a full sync or a partial refresh.
-                        var currentDateTime = RockDateTime.Now;
-                        var lastFullSync = mediaAccount.LastRefreshDateTime;
-                        var haveSyncedToday = lastFullSync.HasValue && lastFullSync.Value.Date == currentDateTime.Date;
-                        var refreshOnly = limitFullSync && haveSyncedToday;
-
-                        if ( refreshOnly )
+                        try
                         {
-                            // Quick refresh media and folders only.
-                            var result = await MediaAccountService.RefreshMediaInAccountAsync( mediaAccount.Id );
-                            errors.AddRange( result.Errors );
+                            return await ProcessOneAccount( mediaAccount, limitFullSync );
                         }
-                        else
+                        catch ( Exception ex )
                         {
-                            // First sync all the media and folders.
-                            var result = await MediaAccountService.SyncMediaInAccountAsync( mediaAccount.Id );
-                            errors.AddRange( result.Errors );
-
-                            // Next sync all the analytics.
-                            result = await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccount.Id );
-                            errors.AddRange( result.Errors );
+                            ExceptionLogService.LogException( ex );
+                            return new OperationResult( $"Failed to sync account.", new[] { $"{mediaAccount.Name}: {ex.Message}" } );
                         }
-
-                        sw.Stop();
-                        var seconds = ( int ) sw.Elapsed.TotalSeconds;
-
-                        var message = $"{(refreshOnly ? "Refreshed" : "Synchronized")} account {mediaAccount.Name} in {seconds}s.";
-
-                        // Since we will be aggregating errors include the
-                        // account name if there were any errors.
-                        return new OperationResult( message, errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
                     } );
 
                     tasks.Add( task );
                 }
 
-                try
-                {
-                    // Wait for all operational tasks to complete and then
-                    // aggregate the results.
-                    var results = await Task.WhenAll( tasks );
+                // Wait for all operational tasks to complete and then
+                // aggregate the results.
+                var results = await Task.WhenAll( tasks );
 
-                    var message = string.Join( Environment.NewLine, results.Select( a => a.Message ) );
+                var message = string.Join( Environment.NewLine, results.Select( a => a.Message ) );
 
-                    return new OperationResult( message, results.SelectMany( a => a.Errors ) );
-                }
-                catch
-                {
-                    throw new AggregateException( "One or more accounts failed to sync media.", tasks.Where( t => t.IsFaulted ).SelectMany( t => t.Exception.InnerExceptions ) );
-                }
+                return new OperationResult( message, results.SelectMany( a => a.Errors ) );
             }
+        }
+
+        /// <summary>
+        /// Processes one account and return the result of the operation.
+        /// </summary>
+        /// <param name="mediaAccount">The media account.</param>
+        /// <param name="limitFullSync"><c>true</c> if a full-sync should only be performed once per day.</param>
+        /// <returns>The result of the operation.</returns>
+        private async Task<OperationResult> ProcessOneAccount( MediaAccount mediaAccount, bool limitFullSync )
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var errors = new List<string>();
+
+            if ( mediaAccount.GetMediaAccountComponent() == null )
+            {
+                return new OperationResult( $"Skipped account {mediaAccount.Name}.", new[] { $"{mediaAccount.Name}: Media Account component was not found." } );
+            }
+
+            // Determine if this is a full sync or a partial refresh.
+            var currentDateTime = RockDateTime.Now;
+            var lastFullSync = mediaAccount.LastRefreshDateTime;
+            var haveSyncedToday = lastFullSync.HasValue && lastFullSync.Value.Date == currentDateTime.Date;
+            var refreshOnly = limitFullSync && haveSyncedToday;
+
+            if ( refreshOnly )
+            {
+                // Quick refresh media and folders only.
+                var result = await MediaAccountService.RefreshMediaInAccountAsync( mediaAccount.Id );
+                errors.AddRange( result.Errors );
+            }
+            else
+            {
+                // First sync all the media and folders.
+                var result = await MediaAccountService.SyncMediaInAccountAsync( mediaAccount.Id );
+                errors.AddRange( result.Errors );
+
+                // Next sync all the analytics.
+                result = await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccount.Id );
+                errors.AddRange( result.Errors );
+            }
+
+            sw.Stop();
+            var seconds = ( int ) sw.Elapsed.TotalSeconds;
+
+            var message = $"{( refreshOnly ? "Refreshed" : "Synchronized" )} account {mediaAccount.Name} in {seconds}s.";
+
+            // Since we will be aggregating errors include the
+            // account name if there were any errors.
+            return new OperationResult( message, errors.Select( a => $"{mediaAccount.Name}: {a}" ) );
         }
 
         /// <summary>
