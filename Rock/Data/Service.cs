@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -704,7 +704,7 @@ namespace Rock.Data
         /// <returns></returns>
         public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
-            return _objectSet.SqlQuery( query, parameters );
+            return _objectSet.FromSqlRaw( query, parameters );
         }
 
         /// <summary>
@@ -726,12 +726,12 @@ namespace Rock.Data
         /// <param name="transformation">The transformation.</param>
         /// <param name="sortProperty">The sort property.</param>
         /// <returns></returns>
-        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
-        {
-            var paramExpression = Expression.Parameter( source.ElementType, "p" );
-            var whereExpression = transformation.GetExpression( this, source, paramExpression );
-            return Get( paramExpression, whereExpression, sortProperty );
-        }
+        //public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
+        //{
+        //    var paramExpression = Expression.Parameter( source.ElementType, "p" );
+        //    var whereExpression = transformation.GetExpression( this, source, paramExpression );
+        //    return Get( paramExpression, whereExpression, sortProperty );
+        //}
 
         /// <summary>
         /// Copies the Values from a Source Entity into a Target Entity

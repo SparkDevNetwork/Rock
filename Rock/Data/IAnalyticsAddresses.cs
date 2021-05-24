@@ -14,7 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Data.Entity.Spatial;
+using NetTopologySuite.Geometries;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 
 namespace Rock.Data
 {

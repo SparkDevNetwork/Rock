@@ -17,8 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+using DbModelBuilder = Microsoft.EntityFrameworkCore.ModelBuilder;
+#else
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+#endif
 using System.Linq;
 using System.Reflection;
 
@@ -63,7 +68,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
-            : base()
+            : base( "RockContext" )
         {
         }
 
@@ -2088,7 +2093,7 @@ namespace Rock.Data
             }
             else
             {
-                this.Configuration.ValidateOnSaveEnabled = false;
+                //this.Configuration.ValidateOnSaveEnabled = false;
                 this.Set<T>().AddRange( records );
                 this.SaveChanges( true );
             }
@@ -2161,15 +2166,44 @@ namespace Rock.Data
     /// </summary>
     public static class ContextHelper
     {
+        public static ModelBuilder ModelBuilder { get; set; }
+
         /// <summary>
         /// Adds the configurations.
         /// </summary>
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
-            modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
-            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-            modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
+            AddConfigurationsFromAssembly( modelBuilder, typeof( RockContext ).Assembly );
+            //modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
+            //modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+            //modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
+        }
+
+        public static void AddConfigurationsFromAssembly( ModelBuilder modelBuilder, Assembly assembly )
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly( assembly );
+
+            // Add legacy configurations
+            var types = assembly.GetTypes()
+                .Where( t => !t.IsAbstract && t.BaseType != null )
+                .Where( t => t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof( System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<> ) );
+
+            foreach ( var type in types )
+            {
+                Activator.CreateInstance( type );
+            }
+        }
+
+        public static void FinalizeConfigurations( ModelBuilder modelBuilder )
+        {
+            // Equivalent of .Remove<PluralizingTableNameconvention>()
+            foreach ( var entityType in modelBuilder.Model.GetEntityTypes() )
+            {
+                var tableAttribute = entityType.ClrType.GetCustomAttribute<TableAttribute>();
+
+                entityType.SetTableName( tableAttribute?.Name ?? entityType.Name );
+            }
         }
     }
 }

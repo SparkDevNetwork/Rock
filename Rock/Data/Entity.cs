@@ -66,7 +66,7 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]

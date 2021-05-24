@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -30,6 +28,8 @@ using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Lava;
+
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 
 namespace Rock.Data
 {
@@ -549,7 +549,7 @@ namespace Rock.Data
                             var attribute = this.Attributes[attributeKey];
                             if ( attribute.IsAuthorized( Authorization.VIEW, null ) )
                             {
-                                Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey ), System.Web.HttpContext.Current );
+                                Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey )/*, System.Web.HttpContext.Current */);
 
                                 if ( unformatted )
                                 {

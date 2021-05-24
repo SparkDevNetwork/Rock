@@ -15,10 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 
 using Rock.Model;
+
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+using Microsoft.EntityFrameworkCore;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+using EFEntityEntry = System.Data.Entity.Infrastructure.EntityEntry;
+using System.Data.Entity;
+#endif
 
 namespace Rock.Data
 {
@@ -97,7 +105,7 @@ namespace Rock.Data
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved
         /// </summary>
-        void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry );
+        void PreSaveChanges( Rock.Data.DbContext dbContext, EFEntityEntry entry );
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved
@@ -111,7 +119,7 @@ namespace Rock.Data
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state );
+        void PreSaveChanges( Rock.Data.DbContext dbContext, EFEntityEntry entry, EntityState state );
 
         /// <summary>
         /// Gets the Created By audit HTML details.
