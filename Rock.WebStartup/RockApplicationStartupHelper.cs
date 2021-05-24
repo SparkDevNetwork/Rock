@@ -623,7 +623,7 @@ namespace Rock.WebStartup
             // Get the Lava Engine configuration settings.
             LavaEngineTypeSpecifier? engineType = null;
 
-            var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK ).ToLower();
+            var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK )?.ToLower();
 
             if ( liquidEngineTypeValue == "dotliquid" )
             {
@@ -644,7 +644,8 @@ namespace Rock.WebStartup
             if ( engineType == null )
             {
                 // If no engine specified, use the legacy implementation as the default.
-                LavaService.RockLiquidIsEnabled = true;
+                LavaService.RockLiquidIsEnabled = false;
+                engineType = LavaEngineTypeSpecifier.DotLiquid;
 
                 // Log an error for the invalid configuration setting, and continue with the default value.
                 if ( !string.IsNullOrWhiteSpace( liquidEngineTypeValue ) )
