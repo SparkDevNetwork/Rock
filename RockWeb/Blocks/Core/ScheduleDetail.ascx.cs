@@ -266,11 +266,7 @@ namespace RockWeb.Blocks.Core
             sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText( true );
 
             var sbPreviewHtml = new System.Text.StringBuilder();
-
-            //if ( sbSchedule.iCalendarContent.IsNotNullOrWhiteSpace() )
-            //{
             sbPreviewHtml.Append( $@"<strong>iCalendar Content</strong><div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />{ sbSchedule.iCalendarContent }</div>" );
-            //}
 
             var calendar = Calendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
