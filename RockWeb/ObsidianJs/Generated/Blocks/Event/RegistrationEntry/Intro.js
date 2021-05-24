@@ -134,7 +134,7 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/NumberUpDo
                             this.registrationEntryState.Registrants.push(registrant);
                         }
                         this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
-                        // Set people beyond the capacity tro be on the waitlist
+                        // Set people beyond the capacity to be on the waitlist
                         var firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
                         for (var i = firstWaitListIndex; i < this.numberOfRegistrants; i++) {
                             this.registrationEntryState.Registrants[i].IsOnWaitList = true;

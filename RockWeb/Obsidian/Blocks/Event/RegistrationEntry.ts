@@ -86,7 +86,7 @@ export function getForcedFamilyGuid ( currentPerson: Person | null, viewModel: R
 {
     return ( currentPerson && viewModel.RegistrantsSameFamily === RegistrantsSameFamily.Yes ) ?
         ( currentPerson.PrimaryFamilyGuid || unknownSingleFamilyGuid ) :
-        unknownSingleFamilyGuid;
+        null;
 }
 
 /**
@@ -207,7 +207,9 @@ export default defineComponent( {
                 NickName: '',
                 LastName: '',
                 Email: '',
-                UpdateEmail: true
+                UpdateEmail: true,
+                OwnFamilyGuid: newGuid(),
+                FamilyGuid: null
             },
             GatewayToken: '',
             DiscountCode: viewModel.Session?.DiscountCode || '',

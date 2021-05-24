@@ -242,5 +242,13 @@ namespace Rock.ViewModel.Blocks
         ///   <c>true</c> if [update email]; otherwise, <c>false</c>.
         /// </value>
         public bool UpdateEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the family unique identifier.
+        /// </summary>
+        /// <value>
+        /// The family unique identifier.
+        /// </value>
+        public Guid? FamilyGuid { get; set; }
     }
 }

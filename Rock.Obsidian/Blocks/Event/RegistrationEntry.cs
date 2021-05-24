@@ -586,6 +586,11 @@ namespace Rock.Obsidian.Blocks.Event
             int? singleFamilyId = null;
             var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
+            if (currentPerson?.PrimaryFamily != null)
+            {
+                multipleFamilyGroupIds.AddOrReplace( currentPerson.PrimaryFamily.Guid, currentPerson.PrimaryFamily.Id );
+            }
+
             if ( !context.Registration.PersonAliasId.HasValue )
             {
                 // If a match was not found, create a new person
@@ -610,7 +615,18 @@ namespace Rock.Obsidian.Blocks.Event
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
-                registrar = SavePerson( rockContext, context.RegistrationSettings, person, Guid.NewGuid(), campusId, null, adultRoleId, childRoleId, multipleFamilyGroupIds, ref singleFamilyId );
+                registrar = SavePerson(
+                    rockContext,
+                    context.RegistrationSettings,
+                    person,
+                    args.Registrar.FamilyGuid ?? Guid.NewGuid(),
+                    campusId,
+                    null,
+                    adultRoleId,
+                    childRoleId,
+                    multipleFamilyGroupIds,
+                    ref singleFamilyId );
+
                 context.Registration.PersonAliasId = registrar != null ? registrar.PrimaryAliasId : ( int? ) null;
                 History.EvaluateChange( registrationChanges, "Registrar", string.Empty, registrar.FullName );
             }

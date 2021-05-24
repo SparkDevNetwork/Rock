@@ -206,6 +206,8 @@ export type RegistrarInfo = {
     LastName: string;
     Email: string;
     UpdateEmail: boolean;
+    FamilyGuid: Guid | null;
+    OwnFamilyGuid: Guid
 };
 
 export type RegistrationEntryBlockSuccessViewModel = {

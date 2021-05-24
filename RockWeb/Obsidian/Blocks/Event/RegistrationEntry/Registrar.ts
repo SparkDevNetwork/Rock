@@ -17,13 +17,16 @@
 
 import { defineComponent, inject } from 'vue';
 import CheckBox from '../../../Elements/CheckBox';
+import { DropDownListOption } from '../../../Elements/DropDownList';
 import EmailBox from '../../../Elements/EmailBox';
+import RadioButtonList from '../../../Elements/RadioButtonList';
 import StaticFormControl from '../../../Elements/StaticFormControl';
 import TextBox from '../../../Elements/TextBox';
+import { Guid } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
-import { RegistrantInfo, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { RegistrantInfo, RegistrantsSameFamily, RegistrarInfo, RegistrarOption, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Registrar',
@@ -31,7 +34,8 @@ export default defineComponent( {
         TextBox,
         CheckBox,
         EmailBox,
-        StaticFormControl
+        StaticFormControl,
+        RadioButtonList
     },
     setup ()
     {
@@ -100,7 +104,57 @@ export default defineComponent( {
         instanceName (): string
         {
             return this.viewModel.InstanceName;
-        }
+        },
+
+        /** The radio options that are displayed to allow the user to pick another person that this
+         *  registrar is part of a family. */
+        familyOptions (): DropDownListOption[]
+        {
+            const options: DropDownListOption[] = [];
+            const usedFamilyGuids: Record<Guid, boolean> = {};
+
+            if ( this.viewModel.RegistrantsSameFamily !== RegistrantsSameFamily.Ask )
+            {
+                return options;
+            }
+
+            // Add previous registrants as options
+            for ( let i = 0; i < this.registrationEntryState.Registrants.length; i++ )
+            {
+                const registrant = this.registrationEntryState.Registrants[ i ];
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                console.log( info, usedFamilyGuids );
+
+                if ( !usedFamilyGuids[ registrant.FamilyGuid ] && info?.FirstName && info?.LastName )
+                {
+                    options.push( {
+                        key: registrant.FamilyGuid,
+                        text: `${info.FirstName} ${info.LastName}`,
+                        value: registrant.FamilyGuid
+                    } );
+
+                    usedFamilyGuids[ registrant.FamilyGuid ] = true;
+                }
+            }
+
+            // Add the current person (registrant) if not already added
+            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName && !usedFamilyGuids[ this.currentPerson.PrimaryFamilyGuid ] )
+            {
+                options.push( {
+                    key: this.currentPerson.PrimaryFamilyGuid,
+                    text: this.currentPerson.FullName,
+                    value: this.currentPerson.PrimaryFamilyGuid
+                } );
+            }
+
+            options.push( {
+                key: this.registrar.OwnFamilyGuid,
+                text: 'None of the above',
+                value: this.registrar.OwnFamilyGuid
+            } );
+
+            return options;
+        },
     },
     methods: {
         /** Prefill in the registrar form fields based on the admin's settings */
@@ -115,6 +169,7 @@ export default defineComponent( {
                 this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
                 this.registrar.LastName = this.currentPerson.LastName || '';
                 this.registrar.Email = this.currentPerson.Email || '';
+                this.registrar.FamilyGuid = this.currentPerson.PrimaryFamilyGuid;
                 return;
             }
 
@@ -130,6 +185,7 @@ export default defineComponent( {
                 this.registrar.NickName = firstRegistrantInfo.FirstName;
                 this.registrar.LastName = firstRegistrantInfo.LastName;
                 this.registrar.Email = firstRegistrantInfo.Email;
+                this.registrar.FamilyGuid = this.firstRegistrant.FamilyGuid;
 
                 const hasAllInfo = ( !!this.registrar.NickName ) && ( !!this.registrar.LastName ) && ( !!this.registrar.Email );
 
@@ -158,14 +214,10 @@ export default defineComponent( {
         <div class="row">
             <div class="col-md-6">
                 <StaticFormControl label="First Name" v-model="registrar.NickName" />
+                <StaticFormControl label="Email" v-model="registrar.Email" />
             </div>
             <div class="col-md-6">
                 <StaticFormControl label="Last Name" v-model="registrar.LastName" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <StaticFormControl label="Email" v-model="registrar.Email" />
             </div>
         </div>
     </template>
@@ -173,15 +225,18 @@ export default defineComponent( {
         <div class="row">
             <div class="col-md-6">
                 <TextBox label="First Name" rules="required" v-model="registrar.NickName" />
+                <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
+                <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
             </div>
             <div class="col-md-6">
                 <TextBox label="Last Name" rules="required" v-model="registrar.LastName" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
-                <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
+                <RadioButtonList
+                    v-if="familyOptions"
+                    :label="(registrar.NickName || 'Person') + ' is in the same immediate family as'"
+                    rules='required:{"allowEmptyString": true}'
+                    v-model="registrar.FamilyGuid"
+                    :options="familyOptions"
+                    validationTitle="Family" />
             </div>
         </div>
     </template>

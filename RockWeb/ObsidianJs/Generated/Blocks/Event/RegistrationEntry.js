@@ -62,7 +62,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
     function getForcedFamilyGuid(currentPerson, viewModel) {
         return (currentPerson && viewModel.RegistrantsSameFamily === RegistrationEntryBlockViewModel_1.RegistrantsSameFamily.Yes) ?
             (currentPerson.PrimaryFamilyGuid || unknownSingleFamilyGuid) :
-            unknownSingleFamilyGuid;
+            null;
     }
     exports_1("getForcedFamilyGuid", getForcedFamilyGuid);
     /**
@@ -239,7 +239,9 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                             NickName: '',
                             LastName: '',
                             Email: '',
-                            UpdateEmail: true
+                            UpdateEmail: true,
+                            OwnFamilyGuid: Guid_1.newGuid(),
+                            FamilyGuid: null
                         },
                         GatewayToken: '',
                         DiscountCode: ((_f = viewModel.Session) === null || _f === void 0 ? void 0 : _f.DiscountCode) || '',

@@ -17,6 +17,9 @@ System.register([], function (exports_1, context_1) {
      * @param a
      */
     function normalize(a) {
+        if (!a) {
+            return null;
+        }
         return a.toLowerCase();
     }
     exports_1("normalize", normalize);

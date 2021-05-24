@@ -150,7 +150,7 @@ export default defineComponent( {
 
             this.registrationEntryState.Registrants.length = this.numberOfRegistrants;
 
-            // Set people beyond the capacity tro be on the waitlist
+            // Set people beyond the capacity to be on the waitlist
             const firstWaitListIndex = this.numberOfRegistrants - this.numberToAddToWaitlist;
 
             for ( let i = firstWaitListIndex; i < this.numberOfRegistrants; i++ )

@@ -19,19 +19,27 @@ export type Guid = string;
 /**
 * Generates a new Guid
 */
-export function newGuid(): Guid {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+export function newGuid (): Guid
+{
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace( /[xy]/g, ( c ) =>
+    {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : r & 0x3 | 0x8;
-        return v.toString(16);
-    });
+        return v.toString( 16 );
+    } );
 }
 
 /**
  * Returns a normalized Guid that can be compared with string equality (===)
  * @param a
  */
-export function normalize(a: Guid) {
+export function normalize ( a: Guid | null )
+{
+    if ( !a )
+    {
+        return null;
+    }
+
     return a.toLowerCase();
 }
 
@@ -40,8 +48,9 @@ export function normalize(a: Guid) {
  * @param a
  * @param b
  */
-export function areEqual(a: Guid, b: Guid) {
-    return normalize(a) === normalize(b);
+export function areEqual ( a: Guid | null, b: Guid | null )
+{
+    return normalize( a ) === normalize( b );
 }
 
 export default {
