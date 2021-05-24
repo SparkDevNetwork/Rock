@@ -448,7 +448,7 @@ textarea,
 
 .badge-circle {
   width: @line-height-computed;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .grid-select-cell .status-list .badge {
@@ -577,6 +577,15 @@ textarea,
     > .pull-right {
       margin-left: auto;
       text-align: right;
+    }
+
+    > .panel-labels {
+      margin-top: -8px;
+      margin-bottom: -8px;
+
+      .btn {
+        vertical-align: baseline;
+      }
     }
 
     > .description {
