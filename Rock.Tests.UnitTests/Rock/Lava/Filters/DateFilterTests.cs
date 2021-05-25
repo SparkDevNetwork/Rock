@@ -427,51 +427,15 @@ namespace Rock.Tests.UnitTests.Lava
         #region Filter Tests: HumanizeDateTime
 
         /// <summary>
-        /// Using the previous day as a parameter should return "yesterday".
+        /// Applying the filter without specifying any parameters uses today as the reference date.
         /// </summary>
         [TestMethod]
-        public void HumanizeDateTime_CompareDayEarlier_YieldsYesterday()
+        public void HumanizeDateTime_WithNoParameters_UsesCurrentDateTime()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
             template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "yesterday", template );
-        }
-
-        /// <summary>
-        /// Comparing an input date/time that is X hours earlier than the current date/time should return "X hours ago".
-        /// </summary>
-        [TestMethod]
-        public void HumanizeDateTime_CompareHoursEarlier_YieldsHoursAgo()
-        {
-            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddHours( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
-
-            TestHelper.AssertTemplateOutput( "2 hours ago", template );
-        }
-
-        /// <summary>
-        /// Comparing an input date/time that is X days earlier than the current date/time should return "X days ago".
-        /// </summary>
-        [TestMethod]
-        public void HumanizeDateTime_CompareDaysEarlier_YieldsDaysAgo()
-        {
-            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
-
-            TestHelper.AssertTemplateOutput( "2 days ago", template );
-        }
-
-        /// <summary>
-        /// Comparing an input date/time that is X months earlier than the current date/time should return "X months ago".
-        /// </summary>
-        [TestMethod]
-        public void HumanizeDateTime_CompareMonthsEarlier_YieldsMonthsAgo()
-        {
-            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
-            template = template.Replace( "<compareDate>", RockDateTime.Now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
-
-            TestHelper.AssertTemplateOutput( "2 months ago", template );
         }
 
         /// <summary>

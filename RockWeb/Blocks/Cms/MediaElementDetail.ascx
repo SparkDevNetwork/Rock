@@ -77,7 +77,7 @@
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaElement, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
                         <div class="col-md-12">
-                            <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration (seconds)" />
+                           <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" AppendText="seconds" />
                         </div>
 
                         <div class="col-md-12">

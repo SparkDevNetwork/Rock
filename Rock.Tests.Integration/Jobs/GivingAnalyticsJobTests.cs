@@ -2531,7 +2531,8 @@ namespace Rock.Tests.Integration.Jobs
             {
                 new Person
                 {
-                    Id = personId
+                    Id = personId,
+                    GivingGroupId = null 
                 },
             };
 

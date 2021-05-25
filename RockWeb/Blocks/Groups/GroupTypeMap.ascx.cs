@@ -221,12 +221,13 @@ namespace RockWeb.Blocks.Groups
                     Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
-                    {
-                        
+                    if ( LavaService.RockLiquidIsEnabled )
+                    {                        
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
                             template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );
+
+                            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "InfoWindowContents" ).Trim() );
                         }
                         else
                         {
@@ -246,7 +247,7 @@ namespace RockWeb.Blocks.Groups
                             templateContent = string.Empty;
                         }
 
-                        var parseResult = LavaEngine.CurrentEngine.ParseTemplate( templateContent );
+                        var parseResult = LavaService.ParseTemplate( templateContent );
 
                         lavaTemplate = parseResult.Template;
                     }
@@ -392,7 +393,7 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                            if ( LavaService.RockLiquidIsEnabled )
                             {
                                 infoWindow = template.Render( Hash.FromDictionary( groupDict ) ).Replace( "\n", string.Empty );
                             }

@@ -133,6 +133,18 @@ Position: Outreach Pastor <br>
         }
 
         [TestMethod]
+        public void Where_WithMultipleConditionsHavingNoMatches_ReturnsEmptyString()
+        {
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
+
+            var templateInput = GetWhereFilterTestTemplatePersonAttributes( "'AttributeName == \"Unmatched\" || Value == \"Unmatched\"'" );
+
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        [TestMethod]
         public void Where_WithSingleConditionEqualComparison_ReturnsOnlyEqualValues()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -225,6 +237,70 @@ Home: (623)555-3322 <br>
             Debug.Write( "** Pass 2:" );
 
             Where_WithSingleConditionNotEqual_ReturnsOnlyNotEqualValues();
+        }
+
+        [TestMethod]
+        public void Where_WithSingleConditionHavingNoMatches_ReturnsEmptyString()
+        {
+            var items = new List<Dictionary<string, object>>
+                {
+                   new Dictionary<string, object> { { "Id", "1" } },
+                   new Dictionary<string, object> { { "Id", "2" } }
+                };
+
+            var mergeFields = new Dictionary<string, object> { { "Items", items } };
+
+            var templateInput = @"
+{% assign matches = Items | Where:'Id','3' %}
+{% for match in matches %}
+    {{ match.Id }}<br>
+{% endfor %}
+";
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        [TestMethod]
+        public void Where_EmptyInputSetWithSingleCondition_ReturnsEmptyString()
+        {
+            var items = new List<TestWhereFilterCollectionItem>();
+
+            var mergeFields = new Dictionary<string, object> { { "Items", items } };
+
+            var templateInput = @"
+{% assign matches = Items | Where:'Id','1' %}
+{% for match in matches %}
+    {{ match.Id }}<br>
+{% endfor %}
+";
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        [TestMethod]
+        public void Where_EmptyInputSetWithMultipleConditions_ReturnsEmptyString()
+        {
+            var items = new List<TestWhereFilterCollectionItem>();
+
+            var mergeFields = new Dictionary<string, object> { { "Items", items } };
+
+            var templateInput = @"
+{% assign matches = Items | Where:'Id ==""1"" || Id == ""2""' %}
+{% for match in matches %}
+    {{ match.Id }}<br>
+{% endfor %}
+";
+            var expectedOutput = @"";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+        }
+
+        private class TestWhereFilterCollectionItem
+        {
+            public string Id { get; set; }
+            public string Name { get; set; }
         }
 
         private string GetWhereFilterTestTemplatePersonAttributes( string whereParameters )

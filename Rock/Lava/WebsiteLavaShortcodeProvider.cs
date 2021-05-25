@@ -95,27 +95,29 @@ namespace Rock.Lava
 
             var shortcodeDefinition = LavaShortcodeCache.All().Where( c => c.TagName != null && c.TagName.Equals( shortcodeName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
 
-            if ( shortcodeDefinition != null )
+            if ( shortcodeDefinition == null )
             {
-                newShortcode = new DynamicShortcodeDefinition();
+                return null;
+            }
 
-                newShortcode.Name = shortcodeDefinition.Name;
-                newShortcode.TemplateMarkup = shortcodeDefinition.Markup;
+            newShortcode = new DynamicShortcodeDefinition();
 
-                var parameters = RockSerializableDictionary.FromUriEncodedString( shortcodeDefinition.Parameters );
+            newShortcode.Name = shortcodeDefinition.Name;
+            newShortcode.TemplateMarkup = shortcodeDefinition.Markup;
 
-                newShortcode.Parameters = new Dictionary<string, string>( parameters.Dictionary );
+            var parameters = RockSerializableDictionary.FromUriEncodedString( shortcodeDefinition.Parameters );
 
-                newShortcode.EnabledLavaCommands = shortcodeDefinition.EnabledLavaCommands.SplitDelimitedValues( "," ).ToList();
+            newShortcode.Parameters = new Dictionary<string, string>( parameters.Dictionary );
 
-                if ( shortcodeDefinition.TagType == TagType.Block )
-                {
-                    newShortcode.ElementType = LavaShortcodeTypeSpecifier.Block;
-                }
-                else
-                {
-                    newShortcode.ElementType = LavaShortcodeTypeSpecifier.Inline;
-                }
+            newShortcode.EnabledLavaCommands = shortcodeDefinition.EnabledLavaCommands.SplitDelimitedValues( "," ).ToList();
+
+            if ( shortcodeDefinition.TagType == TagType.Block )
+            {
+                newShortcode.ElementType = LavaShortcodeTypeSpecifier.Block;
+            }
+            else
+            {
+                newShortcode.ElementType = LavaShortcodeTypeSpecifier.Inline;
             }
 
             return newShortcode;

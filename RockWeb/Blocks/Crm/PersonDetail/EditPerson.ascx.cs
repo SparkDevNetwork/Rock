@@ -897,7 +897,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var dv = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
             if ( dv != null )
             {
-                values = values.Where( s => s.SearchTypeValueId == dv.Id ).ToList();
+                values = values.Where( s => s.SearchTypeValueId == dv.Id && !s.IsValuePrivate ).ToList();
             }
             gAlternateIds.DataKeyNames = new string[] { "Guid" };
             gAlternateIds.DataSource = values;

@@ -323,7 +323,7 @@ namespace Rock.Model
             set
             {
                 _givingGroupId = value;
-                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
             }
         }
 
@@ -337,7 +337,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId { get; set; }
+        public string GivingId { get; private set; }
 
         /// <summary>
         /// Gets or sets the giving leader's Person Id.
@@ -2217,6 +2217,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;

@@ -71,7 +71,7 @@ namespace Rock.Tests.Integration.Lava
 
             if ( fi == null )
             {
-                return $"File Load Failed. The file \"{templateName}\" could not be found.";
+                throw new Exception( $"File Load Failed. The file \"{templateName}\" could not be found." );
             }
 
             var sb = new StringBuilder();

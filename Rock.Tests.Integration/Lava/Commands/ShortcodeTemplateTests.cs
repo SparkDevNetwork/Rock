@@ -31,7 +31,7 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void ShortcodeBlock_WithChildItems_EmitsCorrectHtml()
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            if ( LavaService.RockLiquidIsEnabled )
             {
                 Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
                 return;
@@ -209,12 +209,59 @@ Font Bold: true
             } );
         }
 
+        /// <summary>
+        /// This test exists to document an observed behavior in Lava.
+        /// for more information, refer to https://github.com/SparkDevNetwork/Rock/issues/3605
+        /// </summary>
+        [TestMethod]
+        public void ShortcodeBlock_WithParameterVariableContainingQuotes_CanResolveParameters()
+        {
+            var shortcodeTemplate = @"
+Parameter 1: {{ parameterstring }}
+";
+
+            // Create a new test shortcode.
+            var shortcodeDefinition = new DynamicShortcodeDefinition();
+
+            shortcodeDefinition.ElementType = LavaShortcodeTypeSpecifier.Block;
+            shortcodeDefinition.TemplateMarkup = shortcodeTemplate;
+            shortcodeDefinition.Name = "shortcodeparametertest";
+            shortcodeDefinition.Parameters = new Dictionary<string, string> { { "parameterstring", "(default)" } };
+
+            var input = @"
+{[ shortcodeparametertest parameterstring:parameterStringValue ]}
+{[ endshortcodeparametertest ]}
+";
+
+            var expectedOutput = @"
+Parameter 1: Testing 'single' quotes...
+";
+
+            var mergeFields = new Dictionary<string, object> { { "parameterStringValue", "Testing 'single' quotes..." } };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    // Unfortunately, there is no way of testing dynamically-defined shortcodes with RockLiquid.
+                    TestHelper.DebugWriteRenderResult( engine.EngineType, "(Not Implemented)", "(Not Implemented)" );
+                    return;
+                }
+
+                engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
+
+                var options = new LavaTestRenderOptions { MergeFields = mergeFields };
+
+                TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );
+            } );
+        }
+
         #region Accordion
 
         [TestMethod]
         public void ShortcodeBlock_RepeatedShortcodeBlock_ProducesExpectedOutput()
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            if ( LavaService.RockLiquidIsEnabled )
             {
                 System.Diagnostics.Debug.Print( "This test is not implemented for the RockLiquid Lava Engine." );
                 return;

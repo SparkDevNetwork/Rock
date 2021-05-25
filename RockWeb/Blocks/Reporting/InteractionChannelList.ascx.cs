@@ -217,13 +217,15 @@ namespace RockWeb.Blocks.Reporting
                 Template defaultTemplate = null;
                 ILavaTemplate defaultLavaTemplate = null;
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "DefaultTemplate" ) );
                 }
                 else
                 {
-                    var parseResult = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
 
                     defaultLavaTemplate = parseResult.Template;
                 }
@@ -238,7 +240,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var channelItems = new List<ChannelItem>();
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     foreach ( var channel in channelQry )
                     {

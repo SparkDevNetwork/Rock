@@ -230,6 +230,8 @@
     <Compile Include="Core\Shortcodes\LavaShortcodeBase.cs" />
     <Compile Include="Core\Tags\LavaTagInfo.cs" />
     <Compile Include="Engine\LavaNullFileSystem.cs" />
+    <Compile Include="Engine\LavaRenderException.cs" />
+    <Compile Include="Engine\LavaParseException.cs" />
     <Compile Include="Engine\LavaToLiquidTemplateConverter.cs" />
     <Compile Include="Engine\LavaUtilityHelper.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Utility.cs" />
@@ -239,7 +241,7 @@
     <Compile Include="Implementations\RockLiquidEngine.cs" />
     <Compile Include="Utilities\LavaDataObjectHelper.cs" />
     <Compile Include="Implementations\Fluid\FluidFileSystem.cs" />
-    <Compile Include="Engine\LavaEngine.cs" />
+    <Compile Include="LavaService.cs" />
     <Compile Include="Engine\LavaEngineBase.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Collections.partial.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Colors.partial.cs" />

@@ -38,7 +38,7 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public string FooterTemplate { get; set; }
+        public string FooterSettingsJson { get; set; } = @"{""HtmlFragment"":null}";
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -61,7 +61,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string ReportSettings { get; set; } = @"{""TransactionSetting"":{""AccountIds"":[],""CurrencyTypesForCashGiftIds"":[],""CurrencyTypesForNonCashIds"":[],""TransactionTypeIds"":[],""HideRefundedTransaction"":false,""HideCorrectedTransactionOnSameData"":false},""PledgeSetting"":{""AccountIds"":[],""IncludeGiftsToChildAccounts"":false,""IncludeNonCashGifts"":false},""PDFObjectSettings"":{}}";
+        public string ReportSettingsJson { get; set; } = @"{""TransactionSettings"":{""AccountSelectionOption"":0,""SelectedAccountIds"":[],""CurrencyTypesForCashGiftIds"":[],""CurrencyTypesForNonCashIds"":[],""TransactionTypeIds"":[],""HideRefundedTransactions"":false,""HideCorrectedTransactionOnSameData"":false},""PledgeSettings"":{""AccountIds"":[],""IncludeGiftsToChildAccounts"":false,""IncludeNonCashGifts"":false},""PDFSettings"":{""PaperSize"":0,""MarginRightMillimeters"":10,""MarginLeftMillimeters"":10,""MarginBottomMillimeters"":10,""MarginTopMillimeters"":10}}";
 
         /// <summary />
         public string ReportTemplate { get; set; }
@@ -100,14 +100,14 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Description = source.Description;
-            this.FooterTemplate = source.FooterTemplate;
+            this.FooterSettingsJson = source.FooterSettingsJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.LogoBinaryFileId = source.LogoBinaryFileId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.ReportSettings = source.ReportSettings;
+            this.ReportSettingsJson = source.ReportSettingsJson;
             this.ReportTemplate = source.ReportTemplate;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -33,20 +33,12 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of locations a person is able to check into.")]
 
-    [TextField( "Subtitle",
-        Key = AttributeKey.Subtitle,
-        Description = "Subtitle to display. Use {0} for selected group name.",
-        IsRequired = false,
-        DefaultValue = "{0}",
-        Category = "Text",
-        Order = 8 )]
-
     [TextField( "Caption",
         Key = AttributeKey.Caption,
         IsRequired = false,
         DefaultValue = "Select Location",
         Category =  "Text",
-        Order = 9 )]
+        Order = 8 )]
 
     [TextField( "No Option Message",
         Key = AttributeKey.NoOptionMessage,
@@ -54,7 +46,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         DefaultValue = "Sorry, there are currently not any available locations that {0} can check into at {1}.",
         Category = "Text",
-        Order = 10 )]
+        Order = 9 )]
 
     [TextField( "No Option After Select Message",
         Key = AttributeKey.NoOptionAfterSelectMessage,
@@ -62,20 +54,19 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         DefaultValue = "Sorry, based on your selection, there are currently not any available times that {0} can check into.",
         Category = "Text",
-        Order = 11 )]
+        Order = 10 )]
 
     [CustomDropdownListField( "Sort By",
         Key = AttributeKey.SortBy,
         ListSource = "0^Location Name,1^Check-In Group Location Order",
         IsRequired = false,
         DefaultValue = "0",
-        Order = 12 )]
+        Order = 11 )]
 
     public partial class LocationSelect : CheckInBlockMultiPerson
     {
         private new static class AttributeKey
         {
-            public const string Subtitle = "SubTitle";
             public const string Caption = "Caption";
             public const string NoOptionMessage = "NoOptionMessage";
             public const string NoOptionAfterSelectMessage = "NoOptionAfterSelectMessage";
@@ -217,7 +208,6 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lTitle.Text = GetTitleText();
-                    lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), group.ToString() );
                     lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     var availLocations = group.GetAvailableLocations( schedule );
@@ -319,7 +309,7 @@ namespace RockWeb.Blocks.CheckIn
                 { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
                 { LavaMergeFieldName.Individual, checkinPerson.Person },
                 { LavaMergeFieldName.SelectedGroup, selectedGroup },
-                { LavaMergeFieldName.SelectedSchedule, checkinPerson.CurrentSchedule }
+                { LavaMergeFieldName.SelectedSchedule, checkinPerson.CurrentSchedule?.Schedule }
             };
 
             var locationSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.LocationSelectHeaderLavaTemplate ?? string.Empty;

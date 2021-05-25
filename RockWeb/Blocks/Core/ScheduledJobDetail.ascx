@@ -23,7 +23,7 @@
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="Name"/>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" />
                     </div>
                 </div>
 
