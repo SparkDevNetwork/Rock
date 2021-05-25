@@ -328,6 +328,10 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.AddToGroup
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_ADD_TO_GROUP = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry
         /// </summary>
         public const string MOBILE_GROUPS_GROUP_ATTENDANCE_ENTRY_BLOCK_TYPE = "1655E6A9-2BD6-4FA0-8886-D64DCA177FBB";
