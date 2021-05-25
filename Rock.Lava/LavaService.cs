@@ -138,16 +138,6 @@ namespace Rock.Lava
         /// </summary>
         public static ILavaEngine GetCurrentEngine()
         {
-            lock ( _initializationLock )
-            {
-                if ( _engine == null )
-                {
-                    // Make sure that the global engine instance has been intentionally initialized before it is first accessed.
-                    // This provides more certainty for the order of events in the Rock application startup process.
-                    throw new LavaException( "LavaEngine not initialized. The Initialize() method must be called before the engine instance can be accessed." );
-                }
-            }
-
             return _engine;
         }
 

@@ -627,8 +627,13 @@ namespace Rock.WebStartup
 
             if ( liquidEngineTypeValue == "dotliquid" )
             {
-                engineType = LavaEngineTypeSpecifier.DotLiquid;
-                LavaService.RockLiquidIsEnabled = false;
+                // The "DotLiquid" configuration setting here corresponds to what is referred to internally as "RockLiquid":
+                // the Rock-specific fork of the DotLiquid framework.
+                // This mode executes pre-v13 code to process Lava, and does not use a Lava Engine implementation.
+                // Note that this should not be confused with the LavaEngine referred to by LavaEngineTypeSpecifier.DotLiquid,
+                // which is a Lava Engine implementation of the DotLiquid framework used for testing purposes.
+                engineType = null;
+                LavaService.RockLiquidIsEnabled = true;
             }
             else if ( liquidEngineTypeValue == "fluid" )
             {
@@ -640,23 +645,21 @@ namespace Rock.WebStartup
                 engineType = LavaEngineTypeSpecifier.Fluid;
                 LavaService.RockLiquidIsEnabled = true;
             }
-
-            if ( engineType == null )
+            else
             {
-                // If no engine specified, use the legacy implementation as the default.
-                LavaService.RockLiquidIsEnabled = false;
-                engineType = LavaEngineTypeSpecifier.DotLiquid;
+                // If no valid engine is specified, use the DotLiquid pre-v13 implementation as the default.
+                LavaService.RockLiquidIsEnabled = true;
 
                 // Log an error for the invalid configuration setting, and continue with the default value.
                 if ( !string.IsNullOrWhiteSpace( liquidEngineTypeValue ) )
                 {
-                    ExceptionLogService.LogException( $"Invalid Lava Engine Type. The value \"{liquidEngineTypeValue}\" is not valid, must be [(empty)|dotliquid|fluid|fluidverification]." );
+                    ExceptionLogService.LogException( $"Invalid Lava Engine Type. The setting value \"{liquidEngineTypeValue}\" is not valid, must be [(empty)|dotliquid|fluid|fluidverification]. The DotLiquid engine will be activated by default." );
                 }
             }
 
             InitializeRockLiquidLibrary();
 
-            InitializeLavaEngineInstance( engineType );
+            InitializeGlobalLavaEngineInstance( engineType );
         }
 
         private static void InitializeRockLiquidLibrary()
@@ -668,8 +671,8 @@ namespace Rock.WebStartup
             }
 
             // Initialize an instance of the RockLiquid engine.
-            // This engine is used primarily for testing purposes and is not referenced in Rock source code.
-            // However, when created it performs necessary global initialization tasks for the RockLiquid framework.
+            // This engine is used for testing purposes and is not referenced in Rock source code.
+            // However, it is created here to perform some necessary global initialization tasks for the RockLiquid framework.
             var rockLiquidEngine = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, new LavaEngineConfigurationOptions() );
 
             InitializeLavaTags( rockLiquidEngine );
@@ -683,7 +686,7 @@ namespace Rock.WebStartup
             Template.FileSystem = new LavaFileSystem();
         }
 
-        private static void InitializeLavaEngineInstance( LavaEngineTypeSpecifier? engineType )
+        private static void InitializeGlobalLavaEngineInstance( LavaEngineTypeSpecifier? engineType )
         {
             if ( engineType == null )
             {
@@ -707,7 +710,8 @@ namespace Rock.WebStartup
 
             engine.ExceptionEncountered += Engine_ExceptionEncountered;
 
-            // Initialize Lava extensions.            InitializeLavaFilters( engine );
+            // Initialize Lava extensions.
+            InitializeLavaFilters( engine );
             InitializeLavaTags( engine );
             InitializeLavaBlocks( engine );
             InitializeLavaShortcodes( engine );
@@ -715,7 +719,7 @@ namespace Rock.WebStartup
 
         private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
         {
-            ExceptionLogService.LogException( e.Exception );
+            ExceptionLogService.LogException( e.Exception, System.Web.HttpContext.Current );
         }
 
         private static void InitializeLavaFilters( ILavaEngine engine )

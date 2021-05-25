@@ -716,29 +716,26 @@ namespace Rock.Lava
                 return;
             }
 
-            if ( engine != null )
+            var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
+            var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
+
+            if ( !isCached )
             {
-                var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
-                var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
-
-                if ( !isCached )
+                // Verify the Lava template using the current LavaEngine.
+                // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
+                try
                 {
-                    // Verify the Lava template using the current LavaEngine.
-                    // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
-                    try
-                    {
-                        var result = engine.ParseTemplate( content );
+                    var result = engine.ParseTemplate( content );
 
-                        if ( result.HasErrors )
-                        {
-                            throw result.GetLavaException();
-                        }
-                    }
-                    catch ( Exception ex )
+                    if ( result.HasErrors )
                     {
-                        // Log the exception and continue, because the final render will be performed by RockLiquid.
-                        ExceptionLogService.LogException( ConvertToLavaException( ex ), System.Web.HttpContext.Current );
+                        throw result.GetLavaException();
                     }
+                }
+                catch ( Exception ex )
+                {
+                    // Log the exception and continue, because the final render will be performed by RockLiquid.
+                    ExceptionLogService.LogException( ConvertToLavaException( ex ), System.Web.HttpContext.Current );
                 }
             }
         }
