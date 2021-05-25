@@ -81,6 +81,15 @@ namespace Rock.Lava
         /// </summary>
         public abstract string EngineName { get; }
 
+        #region Events
+
+        /// <summary>
+        /// An event that is triggered when the LavaEngine encounters a processing exception.
+        /// </summary>
+        public event EventHandler<LavaEngineExceptionEventArgs> ExceptionEncountered;
+
+        #endregion
+
         /// <summary>
         /// Create a new template context.
         /// </summary>
@@ -799,13 +808,18 @@ namespace Rock.Lava
 
         protected void ProcessException( Exception ex, ExceptionHandlingStrategySpecifier? exceptionStrategy )
         {
-            string discardedOutput;
-
-            ProcessException( ex, exceptionStrategy, out discardedOutput );
+            ProcessException( ex, exceptionStrategy, out _ );
         }
 
         protected void ProcessException( Exception ex, ExceptionHandlingStrategySpecifier? exceptionStrategy, out string message )
         {
+            // Raise an event to notify subscribers that an exception has occurred.
+            if ( this.ExceptionEncountered != null )
+            {
+                ExceptionEncountered( this, new LavaEngineExceptionEventArgs { Exception = GetLavaException( ex ) } );
+            }
+
+            // Process the exception according to the specified exception strategy.
             exceptionStrategy = exceptionStrategy ?? this.ExceptionHandlingStrategy;
 
             if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )

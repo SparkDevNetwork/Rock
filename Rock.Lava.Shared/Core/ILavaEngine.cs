@@ -27,6 +27,11 @@ namespace Rock.Lava
     public interface ILavaEngine
     {
         /// <summary>
+        /// An event that is triggered when the LavaEngine encounters a processing exception.
+        /// </summary>
+        event EventHandler<LavaEngineExceptionEventArgs> ExceptionEncountered;
+
+        /// <summary>
         /// Remove all items from the template cache.
         /// </summary>
         void ClearTemplateCache();
@@ -292,6 +297,10 @@ namespace Rock.Lava
         Ignore = 2
     }
 
+    #endregion
+
+    #region Support Classes
+
     /// <summary>
     /// Contains the result of a Lava template rendering operation.
     /// </summary>
@@ -379,6 +388,14 @@ namespace Rock.Lava
                 return new LavaException( "An error occurred while parsing a Lava template.", this.Error );
             }
         }
+    }
+
+    /// <summary>
+    /// Contains details of an event that is fired when the Lava Engine encounters a processing exception.
+    /// </summary>
+    public class LavaEngineExceptionEventArgs : EventArgs
+    {
+        public LavaException Exception;
     }
 
     #endregion

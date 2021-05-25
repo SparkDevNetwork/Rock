@@ -702,13 +702,20 @@ namespace Rock.WebStartup
 
             LavaService.Initialize( engineType, engineOptions );
 
-            // Initialize Lava extensions.
+            // Subscribe to exception notifications from the Lava Engine.
             var engine = LavaService.GetCurrentEngine();
 
-            InitializeLavaFilters( engine );
+            engine.ExceptionEncountered += Engine_ExceptionEncountered;
+
+            // Initialize Lava extensions.            InitializeLavaFilters( engine );
             InitializeLavaTags( engine );
             InitializeLavaBlocks( engine );
             InitializeLavaShortcodes( engine );
+        }
+
+        private static void Engine_ExceptionEncountered( object sender, LavaEngineExceptionEventArgs e )
+        {
+            ExceptionLogService.LogException( e.Exception );
         }
 
         private static void InitializeLavaFilters( ILavaEngine engine )
