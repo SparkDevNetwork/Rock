@@ -66,7 +66,9 @@ namespace Rock.Migrations
                 DECLARE @AttributeId INT = ( SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = '{v13_GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK}' )
                 UPDATE [AttributeValue] 
             	SET [Value] = ''
-            	WHERE [AttributeId] = @AttributeId AND [Value] NOT IN ('DotLiquid','Fluid','FluidVerification')"
+            	WHERE [AttributeId] = @AttributeId AND [Value] NOT IN ('DotLiquid','Fluid','FluidVerification')
+                
+                UPDATE [Attribute] SET [DefaultValue] = '' WHERE [Id] = @AttributeId"
             );
         }
     }
