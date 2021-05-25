@@ -61,6 +61,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart.Designer.cs">
+      <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105212139258_UpdateLavaEngineGlobalSettings.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105212139258_UpdateLavaEngineGlobalSettings.Designer.cs">
       <DependentUpon>202105212139258_UpdateLavaEngineGlobalSettings.cs</DependentUpon>
@@ -1723,6 +1727,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart.resx">
+      <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105212139258_UpdateLavaEngineGlobalSettings.resx">
       <DependentUpon>202105212139258_UpdateLavaEngineGlobalSettings.cs</DependentUpon>
     </EmbeddedResource>
@@ -3119,6 +3126,9 @@
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202105112043293_Rollup_0511_mapshortcode.sql">
       <DependentUpon>202105112043293_Rollup_0511.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.4\202105251443228_SparklineChart_SparklineUpdate.sql">
+      <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 9.0\Version 1.9.0\201808062254493_Rollup_0806_spCrm_FamilyAnalyticsGiving.sql">
       <DependentUpon>201808062254493_Rollup_0806.cs</DependentUpon>

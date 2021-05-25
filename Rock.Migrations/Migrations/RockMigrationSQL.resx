@@ -460,4 +460,7 @@
   <data name="_202105112043293_Rollup_0511_kpi_tooltipdelay" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 12.0\version 1.12.4\202105112043293_rollup_0511_kpi-tooltipdelay.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202105251443228_SparklineChart_SparklineUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105251443228_sparklinechart_sparklineupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
