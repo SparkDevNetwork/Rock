@@ -673,10 +673,7 @@ namespace Rock.WebStartup
             // Initialize an instance of the RockLiquid engine.
             // This engine is used for testing purposes and is not referenced in Rock source code.
             // However, it is created here to perform some necessary global initialization tasks for the RockLiquid framework.
-            var rockLiquidEngine = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, new LavaEngineConfigurationOptions() );
-
-            InitializeLavaTags( rockLiquidEngine );
-            InitializeLavaBlocks( rockLiquidEngine );
+            _ = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, new LavaEngineConfigurationOptions() );
 
             // Register the set of filters that are compatible with RockLiquid.
             Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
