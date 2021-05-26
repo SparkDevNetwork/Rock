@@ -230,7 +230,7 @@ namespace Rock.Model
         /// <value>
         /// The field visibility rules.
         /// </value>
-        [NotMapped]
+        //[NotMapped]
         //public virtual Rock.Field.FieldVisibilityRules FieldVisibilityRules { get; set; } = new Rock.Field.FieldVisibilityRules();
 
         /// <summary>
